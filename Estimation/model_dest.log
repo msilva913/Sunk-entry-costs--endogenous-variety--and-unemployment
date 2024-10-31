@@ -1,0 +1,208 @@
+Starting Dynare (version 6.2).
+Calling Dynare with arguments: none
+Starting preprocessing of the model file ... 
+Substitution of endo lags >= 2: added 1 auxiliary variables and equations. 
+Found 40 equation(s). 
+Evaluating expressions... 
+Computing static model derivatives (order 1). 
+Normalizing the static model... 
+Finding the optimal block decomposition of the static model... 
+8 block(s) found: 
+  7 recursive block(s) and 1 simultaneous block(s). 
+  the largest simultaneous block has 20 equation(s) 
+                                 and 20 feedback variable(s). 
+Computing dynamic model derivatives (order 1). 
+Normalizing the dynamic model... 
+Finding the optimal block decomposition of the dynamic model... 
+3 block(s) found: 
+  2 recursive block(s) and 1 simultaneous block(s). 
+  the largest simultaneous block has 23 equation(s) 
+                                 and 18 feedback variable(s). 
+Preprocessing completed. 
+Preprocessing time: 0h00m00s.
+
+
+Residuals of the static equations:
+Equation number  1: Job creation condition                          :       0.000000
+Equation number  2: Marginal revenue product                        :       0.000000
+Equation number  3: Wage equation                                   :       0.000000
+Equation number  4: Value of a vacancy                              :       0.000000
+Equation number  5: Expected discounted difference in vacancy value :       0.000000
+Equation number  6: Market tightness                                :       0.000000
+Equation number  7: Job finding probability                         :       0.000000
+Equation number  8: Vacancy filling probability                     :       0.000000
+Equation number  9: Aggregate labor                                 :       0.000000
+Equation number 10: Composition of labor                            :       0.000000
+Equation number 11: Relative price                                  :       0.000000
+Equation number 12: Lagrangian multiplier                           :       0.000000
+Equation number 13: Firm value                                      :       0.000000
+Equation number 14: Retail output: resources                        :       0.000000
+Equation number 15: Retail output: expenditure                      :       0.000000
+Equation number 16: Sunk vacancy posting costs                      :       0.000000
+Equation number 17: Business entrants                               :       0.000000
+Equation number 18: Firm value relative to price                    :       0.000000
+Equation number 19: Output: expenditure                             :       0.000000
+Equation number 20: Output: income                                  :       0.000000
+Equation number 21: LOM of vacancies                                :       0.000000
+Equation number 22: LOM of unemployment                             :       0.000000
+Equation number 23: LOM of firms                                    :       0.000000
+Equation number 24: labor share                                     :       0.000000
+Equation number 25: Aggregate separation rate                       :       0.000000
+Equation number 26: z_obs_m                                         :       0.000000
+Equation number 27: z_obs                                           :       0.000000
+Equation number 28: u_obs                                           :       0.000000
+Equation number 29: v_obs                                           :       0.000000
+Equation number 30: u_imp                                           :       0.000000
+Equation number 31: v_imp                                           :       0.000000
+Equation number 32: theta_imp                                       :       0.000000
+Equation number 33: e_imp                                           :       0.000000
+Equation number 34: N_imp                                           :       0.000000
+Equation number 35: N_e_imp                                         :       0.000000
+Equation number 36: C_imp                                           :       0.000000
+Equation number 37: Y_imp                                           :       0.000000
+Equation number 38: Labor productivity process                      :       0.000000
+Equation number 39: theta_delta                                     :       0.000000
+
+
+
+STEADY-STATE RESULTS:
+
+Q                 		 6.93844
+K                 		 0.16792
+w                 		 1
+e                 		 0.0202804
+v                 		 0.0360261
+u                 		 0.0702948
+theta             		 0.5125
+f                 		 0.418795
+q                 		 0.81716
+N                 		 1
+N_e               		 0.0214505
+p                 		 1
+w_R               		 1.2039
+nu_f              		 11.6676
+d_f               		 0.289375
+Y_c               		 1.15837
+C                 		 1.06381
+Omega             		 0.070357
+lam               		 0.911384
+Y                 		 1.40864
+L                 		 0.929705
+L_e               		 0.207888
+L_c               		 0.721817
+labor_share_obs   		 0.66
+s_agg             		 0.031
+theta_z           		 0
+theta_delta       		 0
+z_obs_m           		 0
+z_obs             		 0
+u_obs             		 0
+v_obs             		 0
+u_imp             		 -265.506
+v_imp             		 -332.351
+theta_imp         		 -66.8455
+e_imp             		 -389.81
+N_imp             		 0
+N_e_imp           		 -384.201
+C_imp             		 6.18603
+Y_imp             		 34.2628
+
+EIGENVALUES:
+         Modulus             Real        Imaginary
+               0                0                0
+               0                0                0
+        1.83e-18         1.83e-18                0
+       5.132e-18        5.132e-18                0
+       1.082e-17        1.082e-17                0
+          0.4019           0.4019                0
+          0.9105           0.9105                0
+          0.9734           0.9734                0
+           0.975            0.975                0
+           0.975            0.975                0
+           1.041            1.041                0
+           1.095            1.095                0
+           3.197            3.197                0
+       1.091e+16       -1.091e+16                0
+       1.366e+17       -1.366e+17                0
+       6.587e+17        6.587e+17                0
+        9.21e+17         9.21e+17                0
+       1.738e+18       -1.738e+18                0
+
+There are 8 eigenvalue(s) larger than 1 in modulus for 8 forward-looking variable(s)
+The rank condition is verified.
+
+
+MODEL SUMMARY
+
+  Number of variables:         40
+  Number of stochastic shocks: 2
+  Number of state variables:   10
+  Number of jumpers:           8
+  Number of static variables:  23
+
+
+MATRIX OF COVARIANCE OF EXOGENOUS SHOCKS
+Variables         e_z   e_delta
+e_z          0.000019  0.000000
+e_delta      0.000000  0.000019
+
+
+
+THEORETICAL MOMENTS
+VARIABLE            MEAN  STD. DEV.   VARIANCE
+theta_z           0.0000     0.0198     0.0004
+theta_delta       0.0000     0.0198     0.0004
+Y_imp            34.2628     3.1968    10.2195
+u_imp          -265.5058     8.0358    64.5748
+v_imp          -332.3512    12.3264   151.9404
+theta_imp       -66.8455    20.2342   409.4222
+e_imp          -389.8102     1.9125     3.6575
+N_imp             0.0000     3.2737    10.7172
+N_e_imp        -384.2009     4.3979    19.3417
+C_imp             6.1860     3.0052     9.0314
+
+
+
+VARIANCE DECOMPOSITION (in percent)
+                   e_z  e_delta
+theta_z         100.00     0.00
+theta_delta      -0.00   100.00
+Y_imp            92.11     7.89
+u_imp            67.91    32.09
+v_imp            82.96    17.04
+theta_imp        77.63    22.37
+e_imp            64.31    35.69
+N_imp            74.23    25.77
+N_e_imp          98.31     1.69
+C_imp            85.66    14.34
+
+
+
+MATRIX OF CORRELATIONS
+Variables          theta_z  theta_delta        Y_imp        u_imp        v_imp    theta_imp        e_imp        N_imp      N_e_imp        C_imp
+theta_z             1.0000       0.0000       0.9012      -0.6047       0.7275       0.6833       0.7793       0.5977       0.9882       0.8075
+theta_delta         0.0000       1.0000      -0.2055       0.4625      -0.2713      -0.3490       0.5878      -0.3584      -0.1208      -0.2735
+Y_imp               0.9012      -0.2055       1.0000      -0.8868       0.9514       0.9318       0.5041       0.8859       0.8831       0.9833
+u_imp              -0.6047       0.4625      -0.8868       1.0000      -0.9738      -0.9903      -0.0648      -0.9902      -0.6005      -0.9526
+v_imp               0.7275      -0.2713       0.9514      -0.9738       1.0000       0.9959       0.2771       0.9825       0.6998       0.9902
+theta_imp           0.6833      -0.3490       0.9318      -0.9903       0.9959       1.0000       0.1946       0.9918       0.6648       0.9815
+e_imp               0.7793       0.5878       0.5041      -0.0648       0.2771       0.1946       1.0000       0.1110       0.7131       0.3630
+N_imp               0.5977      -0.3584       0.8859      -0.9902       0.9825       0.9918       0.1110       1.0000       0.5726       0.9555
+N_e_imp             0.9882      -0.1208       0.8831      -0.6005       0.6998       0.6648       0.7131       0.5726       1.0000       0.7865
+C_imp               0.8075      -0.2735       0.9833      -0.9526       0.9902       0.9815       0.3630       0.9555       0.7865       1.0000
+
+
+
+COEFFICIENTS OF AUTOCORRELATION
+Order               1       2       3       4       5
+theta_z        0.9750  0.9506  0.9269  0.9037  0.8811
+theta_delta    0.9750  0.9506  0.9269  0.9037  0.8811
+Y_imp          0.9918  0.9834  0.9749  0.9661  0.9571
+u_imp          0.9995  0.9981  0.9959  0.9931  0.9896
+v_imp          0.9994  0.9978  0.9955  0.9924  0.9888
+theta_imp      0.9995  0.9983  0.9963  0.9936  0.9903
+e_imp          0.9662  0.9339  0.9032  0.8737  0.8455
+N_imp          0.9997  0.9988  0.9973  0.9953  0.9927
+N_e_imp        0.9738  0.9484  0.9235  0.8990  0.8749
+C_imp          0.9966  0.9928  0.9886  0.9839  0.9788
+Total computing time : 0h00m02s
