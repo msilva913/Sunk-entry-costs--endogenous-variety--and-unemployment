@@ -53,7 +53,7 @@ include("steady_state.jl")
         eta = Array([0.0; 0.0; 0.0; σ_z]) # size of state space
 
     # Array of symbolics storing model equtions 
-    f = fill(Sym("x"), 23)
+    f = fill(Sym("x"), 24)
     # Equilibrium conditions
         # Job creation condition
         f[1]  =  κ + K/q - β*λp/λ*(1-δ)*(w_Rp-wp-Kp+(1-s)*(κ+Kp/qp))
@@ -103,7 +103,7 @@ include("steady_state.jl")
         f[23] = d_f - Y_c/(N*ε)
 
         # Exogenous processes
-        f[23]  =   log(zp) - ρ_z * log(z)
+        f[24]  =   log(zp) - ρ_z * log(z)
 
     # Steady state     
         # Values 
