@@ -207,8 +207,8 @@ include("steady_state.jl")
         flag_logdev = true
         T_IR = 30
         sim_IR = simulate_model(model, sol_mat, T_IR, eta, SS, flag_IR, flag_logdev)
-        colnames = [:z :u :θ :q :K :L :u :v :v_pret :e :K :Q  :N :p :N_e :ν_f :d_f :w_R :w :L_e :L_c :Y_c :C :λ :Y] 
-        irf_df = DataFrame(sim_IR, colnames)
+        #colnames = [:z :u :θ :q :K :L :u :v :v_pret :e :K :Q  :N :p :N_e :ν_f :d_f :w_R :w :L_e :L_c :Y_c :C :λ :Y] 
+        #irf_df = DataFrame(sim_IR, colnames)
         using Plots
         plot(sim_IR,xlabel="Periods", ylabel= "%", yformatter=:percent)
 
