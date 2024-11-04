@@ -13,7 +13,8 @@ using MKL
 #BLAS.vendor() 
 #:mkl
 
-include("solution_functions_7_0.jl")
+include("solution_functions.jl")
+include("steady_state.jl")
 
 
 ## Model
@@ -23,8 +24,8 @@ include("solution_functions_7_0.jl")
         flag_SSsolver   = false
 
     # Parameters
-        @syms f_e τ δ s zbar b ϕ ρ σ ε A η_L F κ ξ_inv ρ_z μ_z
-        parameters      = [f_e; τ; δ; s; zbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; μ_z]
+        @syms f_e δ s zbar b ϕ ρ σ ε A η_L F κ ξ_inv ρ_z  σ_z
+        parameters      = [f_e; δ; s; zbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z;  σ_z]
         estimate        = []
         position        = []
         priors          = (;)
@@ -36,23 +37,23 @@ include("solution_functions_7_0.jl")
         μ = ε/(ε-1)
 
     # Variables
-        @syms  z u θ jf q K L u v v_pret e K Q  N p N_e ν_f d_f w_R w L_e L_c Y_c C λ Y 
-        @syms zp θp jfp qp Kp Lp up vp v_pretp ep Kp Qp Np pp N_ep ν_fp d_fp w_Rp wp L_ep L_cp Y_cp Cp λp Yp 
+        @syms  z u θ q K L u v v_pret e K Q  N p N_e ν_f d_f w_R w L_e L_c Y_c C λ Y 
+        @syms zp θp qp Kp Lp up vp v_pretp ep Kp Qp Np pp N_ep ν_fp d_fp w_Rp wp L_ep L_cp Y_cp Cp λp Yp 
        
         
         x               = [u; N; v_pret; z] # predetermined
-        y               = [θ; jf; q; L; v; e; K; Q; N; p; N_e; ν_f; d_f; w_R; w; L_e; L_c; C; λ; Y]
+        y               = [θ; q; L; v; e; K; Q; N; p; N_e; ν_f; d_f; w_R; w; L_e; L_c; Y_c; C; λ; Y]
         xp              = [up; Np; v_pretp; zp]
-        yp              = [θp; jfp; qp; Lp; vp; ep; Kp; Qp; Np; pp; N_ep; ν_fp; d_fp; w_Rp; wp; L_ep; L_cp; Cp; λp; Yp]
+        yp              = [θp; qp; Lp; vp; ep; Kp; Qp; Np; pp; N_ep; ν_fp; d_fp; w_Rp; wp; L_ep; L_cp; Y_cp; Cp; λp; Yp]
         variables       = [x; y; xp; yp]
 
     # Shock
         @syms epsilon
         ex               = [epsilon]
-        eta             = Array([0.0; μ_z])
+        eta = Array([0.0; 0.0; 0.0; σ_z]) # size of state space
 
     # Array of symbolics storing model equtions 
-    f = fill(Sym("x"), 25)
+    f = fill(Sym("x"), 23)
     # Equilibrium conditions
         # Job creation condition
         f[1]  =  κ + K/q - β*λp/λ*(1-δ)*(w_Rp-wp-Kp+(1-s)*(κ+Kp/qp))
@@ -66,42 +67,43 @@ include("solution_functions_7_0.jl")
         f[5] = K - (Q-β*λp/λ*(1-δ)*Qp)
         # Market tightness 
         f[6] = θ - v/u 
-        # Job finding probability 
-        f[7] = jf -A*θ^(1-η_L) 
         # Vacancy filling probability 
-        f[8] = q - A*θ^(-η_L) 
+        f[7] = q - A*θ^(-η_L) 
         # Aggregate labor 
-        f[9] = L - (1-u)
+        f[8] = L - (1-u)
         # Composition of labor 
-        f[10] = L - (L_c+L_e) 
+        f[9] = L - (L_c+L_e) 
         # Relative price 
-        f[11] = p - N^(1/(ε-1))
+        f[10] = p - N^(1/(ε-1))
         # Lagrangian multiplier 
-        f[12] = λ - C^(-σ)
+        f[11] = λ - C^(-σ)
         # Firm value 
-        f[13] = ν_f - β*(1-δ)*λp/λ*(ν_fp+d_fp)
+        f[12] = ν_f - β*(1-δ)*λp/λ*(ν_fp+d_fp)
         # Retail output: resources 
-        f[14] = Y_c - p*z*zbar*L_c
+        f[13] = Y_c - p*z*zbar*L_c
         # Retail output: expenditure 
-        f[15] = Y_c - (C+F/(1+ξ_inv)*(e/F)^(1+ξ_inv)+κ*v*q)
+        f[14] = Y_c - (C+F/(1+ξ_inv)*(e/F)^(1+ξ_inv)+κ*v*q)
         # Business entrants
-        f[16] = N_e - L_e*z*zbar/f_e 
+        f[15] = N_e - L_e*z*zbar/f_e 
         # Firm value relative to price 
-        f[17] = ν_f - p*f_e/μ 
+        f[16] = ν_f - p*f_e/μ 
         # Output = expenditure
-        f[18] = Y - (Y_c+ν_f*N_e)
+        f[17] = Y - (Y_c+ν_f*N_e)
         # Output = income 
-        f[19] = Y - (w_R*L+N*d_f)
+        f[18] = Y - (w_R*L+N*d_f)
         # LOM of vacancies 
-        f[20] = v - (v_pret + e)
+        f[19] = v - (v_pret + e)
         # Predetermined vacancies 
-        f[21] = v_pretp - (1-δ)*((1-q)*v+s*(1-u))
+        f[20] = v_pretp - (1-δ)*((1-q)*v+s*(1-u))
         # LOM of unemployment
-        f[22] = up - ((1-(1-δ)*jf)*u + τ*(1-u))
+        f[21] = up - ((1-(1-δ)*(θ*q))*u + τ*(1-u))
         # LOM of firms 
-        f[23] = Np - (1-δ)*(N+N_e)
+        f[22] = Np - (1-δ)*(N+N_e)
+        # Profits 
+        f[23] = d_f - Y_c/(N*ε)
+
         # Exogenous processes
-        f[24]  =   log(zp) - ρ_z * log(z)
+        f[23]  =   log(zp) - ρ_z * log(z)
 
     # Steady state     
         # Values 
@@ -110,44 +112,40 @@ include("solution_functions_7_0.jl")
         N_s = 1.0
         w_s = 1.0
         z_s = 1.0
-        x_v = 0.2
-        labor_share = 0.66
         fbar = 0.41
         qbar = 0.8
-        #β = 0.99673
-        #ξ_inv = 1.0
+        x_v = 0.20 
+        labor_share = 0.66
 
         p_s = N_s^(1/(ε-1))
-        N_es = δ/(1-δ)N_s
-        jf_s = fbar/(1-δ)
+        N_es = δ/(1-δ)*N_s
         q_s = qbar/(1-δ)
-        θ_s = jf_s/q_s
-        u_s = τ/(τ+(1-δ)*jf)
+        θ_s = fbar/qbar
+        u_s = τ/(τ+(1-δ)*(θ_s*q_s))
         L_s = 1 - u_s 
         v_s = θ_s*u_s
         e_s = δ*(v_s+1-u_s)
         v_prets = v_s - e_s 
         recruiter_share= (δ+(ρ+δ)*(ε-1))/(δ+(ρ+δ)*ε)
         w_wR = labor_share/recruiter_share
-        w_Rs = w/(w_wR)
-        z_bar = (μ/p_s)*w_R
+        w_Rs = w_s/(w_wR)
         surplus_ratio = (ρ+τ)/(1-δ)*(1/(q_s*x_v))
-        K_s = (w_R-w)/(1+surplus_ratio) 
+        K_s = (w_Rs-w_s)/(1+surplus_ratio) 
         κ   = (1-x_v)/x_v*K_s/q_s
-        f_e = (μ-1)*z_bar*(L_s/N_s)*(1-δ)/(δ*μ+ρ)
+        f_e = (μ-1)*zbar*(L_s/N_s)*(1-δ)/(δ*μ+ρ)
         ν_fs =p_s*f_e/μ
         d_fs = (ρ+δ)/(1-δ)*ν_fs
         L_es = N_es*f_e/zbar
-        L_cs = L - L_es 
-        Y_cs = p_s*z_bar*L_cs
+        L_cs = L_s - L_es 
+        Y_cs = p_s*zbar*L_cs
         Q_s = K_s*(1+ρ)/(ρ+δ)
-        C_s = Y_c -  F/(1+ξ_inv)*(e/F)^(1+ξ_inv) -  κ*v_s*q_s 
+        C_s = Y_cs -  F/(1+ξ_inv)*(e_s/F)^(1+ξ_inv) -  κ*v_s*q_s 
         λ_s = C_s^(-σ)
-        Y_s = Y_cs + ν_fs*N_es;
+        Y_s = Y_cs + ν_fs*N_es
         #x               = [u; N; v_pret; z] # predetermined
-        #y               = [θ; jf; q; L; v; e; K; Q; N; p; N_e; ν_f; d_f; w_R; w; L_e; L_c; C; λ; Y]
+        #y               = [θ; q; L; v; e; K; Q; N; p; N_e; ν_f; d_f; w_R; w; L_e; L_c; Y_c; C; λ; Y]
         # Vector
-        SS_block  = [log(x) for x in [u_s, N_s, v_prets, z_s, θ_s, jf_s, q_s, L_s, v_s, e_s, K_s, Q_s, N_s, p_s, N_es, ν_fs, d_fs, w_Rs, w_s, L_es, L_cs, C_s, λ_s, Y_s]]
+        SS_block  = [log(x) for x in [u_s, N_s, v_prets, z_s, θ_s, q_s, L_s, v_s, e_s, K_s, Q_s, N_s, p_s, N_es, ν_fs, d_fs, w_Rs, w_s, L_es, L_cs, Y_cs, C_s, λ_s, Y_s]]
         # vertical concatenate: represent both current and future variables
         SS = vcat(SS_block, SS_block)
 
@@ -174,18 +172,20 @@ include("solution_functions_7_0.jl")
 
 ## Solution
     # Parametrization: need to handle dependent parameters 
-    #parameters      = [f_e; τ; δ; s; zbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; μ_z]
-    targets = (labor_share=0.66, dest_ann=0.06, r_ann=0.04, f =fbar, η_L=0.6, q=qbar, sep=0.031, b_ratio=0.71, 
+    #parameters      = [f_e; δ; s; zbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; μ_z]
+    targets = (labor_share=labor_share, dest_ann=0.06, r_ann=0.04, f =fbar, η_L=0.6, q=qbar, sep=0.031, b_ratio=0.71, 
             x_v=0.20, ξ_inv=1, ε=4.3, σ=1.5, N=N_s, w=w_s)
+    cal = calibrate_labor_share(targets)
     
-        ALPHA  =   0.30
-        BETA   =   0.95
-        DELTA  =   1.00
-        RHO    =   0.90
-        SIGMA  =   2.00
-        MUU    =   0.05
+    
+    # Shock values
+    ρ_z = 0.975
+    σ_z = 0.007
 
-        PAR     =   [ALPHA; BETA; DELTA; RHO; SIGMA; MUU]
+    @unpack  f_e, δ, s, z, b, ϕ, ρ, σ, ε, A, η_L, F, κ, ξ_inv = cal
+    zbar = z
+
+    PAR     =   [f_e; δ; s; zbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; σ_z ]
 
 
     # Solution functions (no adjustment needed)
@@ -207,6 +207,8 @@ include("solution_functions_7_0.jl")
         flag_logdev = true
         T_IR = 30
         sim_IR = simulate_model(model, sol_mat, T_IR, eta, SS, flag_IR, flag_logdev)
+        colnames = [:z :u :θ :q :K :L :u :v :v_pret :e :K :Q  :N :p :N_e :ν_f :d_f :w_R :w :L_e :L_c :Y_c :C :λ :Y] 
+        irf_df = DataFrame(sim_IR, colnames)
         using Plots
         plot(sim_IR,xlabel="Periods", ylabel= "%", yformatter=:percent)
 

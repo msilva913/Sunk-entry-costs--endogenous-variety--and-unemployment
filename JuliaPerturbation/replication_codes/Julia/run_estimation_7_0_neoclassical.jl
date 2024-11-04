@@ -50,7 +50,7 @@ include("solution_functions_7_0.jl")
                 f4  =   log(ap) - ρ * log(a)
                 f5  =   r - a * α * k^(α-1) * n^(1-α)
                 f6  =   yy - a * k^α * n^(1-α)
-                f7  =   ii - (kp - (1-DELTA) * k)
+                f7  =   ii - (kp - (1-δ) * k)
 
                 f   =   [f1;f2;f3;f4;f5;f6;f7]
 

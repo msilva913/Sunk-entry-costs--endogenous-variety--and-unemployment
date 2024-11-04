@@ -23,14 +23,14 @@ include("solution_functions_7_0.jl")
         flag_SSsolver   = false
 
     # Parameters
-        @vars ALPHA BETA DELTA RHO SIGMA MUU AA
+        @syms ALPHA BETA DELTA RHO SIGMA MUU AA
         parameters      = [ALPHA; BETA; DELTA; RHO; SIGMA; MUU; AA]
         estimate        = []
         position        = []
         priors          = (;)
 
     # Variables
-        @vars k kp a ap c cp n np yy yyp r rp ii iip
+        @syms k kp a ap c cp n np yy yyp r rp ii iip
         x               = [k; a]
         y               = [c; n; r; yy; ii]
         xp              = [kp; ap]
@@ -38,7 +38,7 @@ include("solution_functions_7_0.jl")
         variables       = [x; y; xp; yp]
 
     # Shock
-        @vars epsilon
+        @syms epsilon
         e               = [epsilon]
         eta             = Array([0.0; MUU])
 
