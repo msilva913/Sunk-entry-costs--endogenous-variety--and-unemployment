@@ -97,8 +97,8 @@ xi_inv = 1.0; % 0 corresponds to infinitely elastic vacancy creation--standard D
 
 //r_ann = 0.04; % annual interest rate 
 
-//delta = 0.00514;
-delta = 0.021;
+delta = 0.00514;
+//delta = 0.021;
 tau = 0.031;
 //fbar = 0.41;
 fbar = 0.41;
@@ -109,7 +109,7 @@ x_v = 0.2;
 N_ss = 1.0;
 w_ss = 1.0;
 
-mu_net = 0.333;
+mu_net = 0.30;
 //mu_net = 0.01;
 sigma = 1.5;
 b_ratio = 0.71;
@@ -361,7 +361,7 @@ end;
 
 //set shock variances
 shocks;
-    var e_z=0.0044^2;
+    var e_z=0.007^2;
     var e_delta = 0.0044^2;
     //var e_b = 0.0072^2;
     //var e_alphaL=0.0072^2;

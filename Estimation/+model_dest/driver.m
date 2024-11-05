@@ -795,7 +795,7 @@ M_.params(1) = 0.99673;
 beta = M_.params(1);
 M_.params(9) = 1.0;
 xi_inv = M_.params(9);
-M_.params(2) = 0.021;
+M_.params(2) = 0.00514;
 delta = M_.params(2);
 M_.params(5) = 0.031;
 tau = M_.params(5);
@@ -811,7 +811,7 @@ M_.params(13) = 1.0;
 N_ss = M_.params(13);
 M_.params(14) = 1.0;
 w_ss = M_.params(14);
-M_.params(3) = 0.333;
+M_.params(3) = 0.30;
 mu_net = M_.params(3);
 M_.params(4) = 1.5;
 sigma = M_.params(4);
@@ -827,7 +827,7 @@ rho_delta = M_.params(16);
 % SHOCKS instructions
 %
 M_.exo_det_length = 0;
-M_.Sigma_e(1, 1) = 1.936e-05;
+M_.Sigma_e(1, 1) = 4.900000000000001e-05;
 M_.Sigma_e(2, 2) = 1.936e-05;
 options_resid_ = struct();
 display_static_residuals(M_, options_, oo_, options_resid_);

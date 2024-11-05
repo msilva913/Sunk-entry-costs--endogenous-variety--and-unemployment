@@ -47,14 +47,15 @@ include("steady_state.jl")
         xp              = [up; Np; v_pretp; zp]
         yp              = [θp; qp; Lp; vp; ep; Kp; Qp; pp; N_ep; ν_fp; d_fp; w_Rp; wp; L_ep; L_cp; Y_cp; Cp; λp; Yp]
         variables       = [x; y; xp; yp]
+        varnames = vcat(Symbol.(x), Symbol.(y))
 
     # Shock
         @syms epsilon
         ex               = [epsilon]
-        eta = Array([0.0; 0.0; 0.0; σ_z]) # size of state space
+        eta = Array([0.0; 0.0; 0.0; -σ_z]) # size of state space
 
     # Array of symbolics storing model equtions 
-    f = fill(Sym("x"), 24)
+    f = fill(Sym("x"), 23)
     # Equilibrium conditions
         # Job creation condition -> θ
         f[1]  =  κ + K/q - β*λp/λ*(1-δ)*(w_Rp-wp-Kp+(1-s)*(κ+Kp/qp))
@@ -194,7 +195,10 @@ include("steady_state.jl")
         SS      =   eval_SS(PAR_SS)
         SS_err  =   eval_SS_error(PAR_SS, SS)
         deriv   =   eval_deriv(PAR_SS, SS)
-        println("Residuals: $SS_err")
+        SS_max = maximum(abs.(SS_err))
+        println("Residuals: $SS_max")
+
+        ss = NamedTuple(zip(varnames, exp.(SS[1:23])))
 
         # @btime sol_mat = solve_model(model, deriv, eta)
         sol_mat = solve_model(model, deriv, eta)
@@ -205,13 +209,30 @@ include("steady_state.jl")
     # Impulse-Response functions
         flag_IR = true
         flag_logdev = true
-        T_IR = 30
+        T_IR = 100
         sim_IR = simulate_model(model, sol_mat, T_IR, eta, SS, flag_IR, flag_logdev)
-        colnames = vcat(Symbol.(x), Symbol.(y))
-        irf_df = DataFrame(sim_IR, colnames)
+        irf_df = 100 .*DataFrame(sim_IR, varnames)
 
-        using Plots
-        Plots.plot(sim_IR,xlabel="Periods", ylabel= "%", yformatter=:percent)
+        #using Plots
+        #Plots.plot(sim_IR,xlabel="Periods", ylabel= "%", yformatter=:percent)
+
+        fig, ax = plt.subplots(ncols=3, figsize=(16, 4))
+        ax[1].plot(irf_df.u, label=:u, alpha=0.6)
+        ax[1].plot(irf_df.v, label=:v, alpha=0.6)
+        ax[1].plot(irf_df.θ, label=:θ, alpha=0.6)
+        ax[1].plot(irf_df.e, label=:e, alpha=0.6)
+        ax[1].legend()
+
+        ax[2].plot(irf_df.C, label=:C, alpha=0.6)
+        ax[2].plot(irf_df.Y_c, label=:Y_c, alpha=0.6)
+        ax[2].plot(irf_df.Y, label=:Y, alpha=0.6)
+        ax[2].legend()
+
+        ax[3].plot(irf_df.N_e, label=:N_e, alpha=0.6)
+        ax[3].plot(irf_df.N, label=:N, alpha=0.6)
+        ax[3].legend()
+        display(fig)
+
 
 
 ## Simulation    
