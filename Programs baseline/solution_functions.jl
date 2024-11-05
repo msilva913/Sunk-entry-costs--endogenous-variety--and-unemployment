@@ -219,7 +219,7 @@ function first_order(model::NamedTuple, deriv::NamedTuple)
     @unpack parameters, estimate, estimation, npar, ns = model
     @unpack x, y, xp, yp, variables, nx, ny, nvar = model 
     
-    fd_ = deriv.d1
+    fd_ = deriv.d1 #neq x nvar (including next-period values)
     
     fx  = @views fd_[:,1:nx]
     fy  = @views fd_[:,nx+1:nvar]
