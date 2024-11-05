@@ -8,7 +8,8 @@
 
 #v1.7+
 using MKL
-
+using PyPlot
+using DataFrames
 #v1.7- 
 #BLAS.vendor() 
 #:mkl
@@ -42,9 +43,9 @@ include("steady_state.jl")
        
         
         x               = [u; N; v_pret; z] # predetermined
-        y               = [θ; q; L; v; e; K; Q; N; p; N_e; ν_f; d_f; w_R; w; L_e; L_c; Y_c; C; λ; Y]
+        y               = [θ; q; L; v; e; K; Q; p; N_e; ν_f; d_f; w_R; w; L_e; L_c; Y_c; C; λ; Y]
         xp              = [up; Np; v_pretp; zp]
-        yp              = [θp; qp; Lp; vp; ep; Kp; Qp; Np; pp; N_ep; ν_fp; d_fp; w_Rp; wp; L_ep; L_cp; Y_cp; Cp; λp; Yp]
+        yp              = [θp; qp; Lp; vp; ep; Kp; Qp; pp; N_ep; ν_fp; d_fp; w_Rp; wp; L_ep; L_cp; Y_cp; Cp; λp; Yp]
         variables       = [x; y; xp; yp]
 
     # Shock
@@ -55,35 +56,35 @@ include("steady_state.jl")
     # Array of symbolics storing model equtions 
     f = fill(Sym("x"), 24)
     # Equilibrium conditions
-        # Job creation condition
+        # Job creation condition -> θ
         f[1]  =  κ + K/q - β*λp/λ*(1-δ)*(w_Rp-wp-Kp+(1-s)*(κ+Kp/qp))
-        # Marginal revenue product
+        # Marginal revenue product -> w_R
         f[2] = w_R - p*z*zbar/μ
-        # Wage equation 
+        # Wage equation -> w
         f[3] = w - (ϕ*(w_R-K+θ/(1-δ)*(K+q*κ)) +(1-ϕ)*b)
-        # Value of a vacancy
+        # Value of a vacancy -> Q
         f[4] = Q - (e/F)^(ξ_inv)
-        # Expected discounted difference in vacancy value 
+        # Expected discounted difference in vacancy value -> K
         f[5] = K - (Q-β*λp/λ*(1-δ)*Qp)
-        # Market tightness 
+        # Market tightness -> v
         f[6] = θ - v/u 
-        # Vacancy filling probability 
+        # Vacancy filling probability -> q
         f[7] = q - A*θ^(-η_L) 
-        # Aggregate labor 
+        # Aggregate labor -> L
         f[8] = L - (1-u)
-        # Composition of labor 
+        # Composition of labor -> L_c
         f[9] = L - (L_c+L_e) 
-        # Relative price 
+        # Relative price -> p
         f[10] = p - N^(1/(ε-1))
-        # Lagrangian multiplier 
+        # Lagrangian multiplier -> λ
         f[11] = λ - C^(-σ)
-        # Firm value 
+        # Firm value -> ν_f
         f[12] = ν_f - β*(1-δ)*λp/λ*(ν_fp+d_fp)
-        # Retail output: resources 
+        # Retail output: resources -> Y_c
         f[13] = Y_c - p*z*zbar*L_c
-        # Retail output: expenditure 
+        # Retail output: expenditure -> C
         f[14] = Y_c - (C+F/(1+ξ_inv)*(e/F)^(1+ξ_inv)+κ*v*q)
-        # Business entrants
+        # Business entrants -> N_e
         f[15] = N_e - L_e*z*zbar/f_e 
         # Firm value relative to price 
         f[16] = ν_f - p*f_e/μ 
@@ -100,10 +101,10 @@ include("steady_state.jl")
         # LOM of firms 
         f[22] = Np - (1-δ)*(N+N_e)
         # Profits 
-        f[23] = d_f - Y_c/(N*ε)
+        #f[23] = d_f - Y_c/(N*ε)
 
         # Exogenous processes
-        f[24]  =   log(zp) - ρ_z * log(z)
+        f[23]  =   log(zp) - ρ_z * log(z)
 
     # Steady state     
         # Values 
@@ -143,9 +144,9 @@ include("steady_state.jl")
         λ_s = C_s^(-σ)
         Y_s = Y_cs + ν_fs*N_es
         #x               = [u; N; v_pret; z] # predetermined
-        #y               = [θ; q; L; v; e; K; Q; N; p; N_e; ν_f; d_f; w_R; w; L_e; L_c; Y_c; C; λ; Y]
+        #y               = [θ; q; L; v; e; K; Q; p; N_e; ν_f; d_f; w_R; w; L_e; L_c; Y_c; C; λ; Y]
         # Vector
-        SS_block  = [log(x) for x in [u_s, N_s, v_prets, z_s, θ_s, q_s, L_s, v_s, e_s, K_s, Q_s, N_s, p_s, N_es, ν_fs, d_fs, w_Rs, w_s, L_es, L_cs, Y_cs, C_s, λ_s, Y_s]]
+        SS_block  = [log(x) for x in [u_s, N_s, v_prets, z_s, θ_s, q_s, L_s, v_s, e_s, K_s, Q_s, p_s, N_es, ν_fs, d_fs, w_Rs, w_s, L_es, L_cs, Y_cs, C_s, λ_s, Y_s]]
         # vertical concatenate: represent both current and future variables
         SS = vcat(SS_block, SS_block)
 
@@ -155,8 +156,7 @@ include("steady_state.jl")
 
 
     # Procesing the model (no adjustment needed)                
-        model = (parameters = parameters,
-                 estimate = estimate, estimation = position,
+        model = (parameters = parameters, estimate = estimate, estimation = position,
                 npar = length(parameters), ns = length(estimate), 
                 priors = priors,
                 x = x, y = y, xp = xp, yp = yp, variables = variables,
@@ -207,10 +207,11 @@ include("steady_state.jl")
         flag_logdev = true
         T_IR = 30
         sim_IR = simulate_model(model, sol_mat, T_IR, eta, SS, flag_IR, flag_logdev)
-        #colnames = [:z :u :θ :q :K :L :u :v :v_pret :e :K :Q  :N :p :N_e :ν_f :d_f :w_R :w :L_e :L_c :Y_c :C :λ :Y] 
-        #irf_df = DataFrame(sim_IR, colnames)
+        colnames = vcat(Symbol.(x), Symbol.(y))
+        irf_df = DataFrame(sim_IR, colnames)
+
         using Plots
-        plot(sim_IR,xlabel="Periods", ylabel= "%", yformatter=:percent)
+        Plots.plot(sim_IR,xlabel="Periods", ylabel= "%", yformatter=:percent)
 
 
 ## Simulation    
@@ -219,4 +220,4 @@ include("steady_state.jl")
         T_SM = 100
         sim_SM = simulate_model(model, sol_mat, T_SM, eta, SS, flag_IR, flag_logdev)
         using Plots
-        plot(sim_SM)
+        Plots.plot(sim_SM)

@@ -230,6 +230,8 @@ Y = Y_c + nu_f*N_e;
 [Name = 'Output: income']
 Y = w_R*L + N*d_f;
 
+//d_f = Y_c/(N*epsi);
+
 [name = 'LOM of vacancies']
 v = (1-delta*exp(theta_delta))*((1-q(-1))*v(-1) + s*(1-u(-1))) + e;
 
