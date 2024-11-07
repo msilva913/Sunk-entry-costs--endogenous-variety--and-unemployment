@@ -189,7 +189,7 @@ include("steady_state.jl")
     ρ_z = 0.975
     σ_z = 0.007
     ρ_δ = 0.975
-    σ_δ = 0.044
+    σ_δ = 0.0044
 
     @unpack  f_e, δ, s, z, b, ϕ, ρ, σ, ε, A, η_L, F, κ, ξ_inv = cal
 
@@ -219,7 +219,20 @@ include("steady_state.jl")
         flag_IR = true
         flag_logdev = true
         T_IR = 100
-        sim_IR = simulate_model(model, sol_mat, T_IR, eta, SS, flag_IR, flag_logdev)
+        # eta array considers all shocks simultaneously
+        # For impulse responses, we can modify arrays to consider one shock at a time 
+        eta_z = zero(eta)
+        eta_z[4] = eta[4]
+
+        eta_δ = zero(eta) 
+        eta_δ[5] = eta[5]
+
+        # Technology shock
+        sim_IR = simulate_model(model, sol_mat, T_IR, eta_z, SS, flag_IR, flag_logdev)
+        irf_df = 100 .*DataFrame(sim_IR, varnames)
+
+        # Destruction rate shock 
+        sim_IR = simulate_model(model, sol_mat, T_IR, eta_δ, SS, flag_IR, flag_logdev)
         irf_df = 100 .*DataFrame(sim_IR, varnames)
 
         #using Plots
