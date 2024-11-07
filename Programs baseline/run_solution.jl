@@ -15,6 +15,34 @@ using DataFrames
 include("solution_functions.jl")
 include("steady_state.jl")
 
+function gen_irf(irf::DataFrame)
+    fig, ax = plt.subplots(ncols=2, nrows=2, figsize=(16, 12))
+    ax[1,1].plot(irf_df.u, label=:u, alpha=0.6)
+    ax[1,1].plot(irf_df.v, label=:v, alpha=0.6)
+    ax[1,1].plot(irf_df.θ, label=:θ, alpha=0.6)
+    ax[1,1].plot(irf_df.e, label=:e, alpha=0.6)
+    ax[1,1].yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter())
+    ax[1,1].legend()
+
+    ax[1,2].plot(irf_df.C, label=:C, alpha=0.6)
+    ax[1,2].plot(irf_df.Y_c, label=:Y_c, alpha=0.6)
+    ax[1,2].plot(irf_df.Y, label=:Y, alpha=0.6)
+    ax[1,2].yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter())
+    ax[1,2].legend()
+
+    ax[2,1].plot(irf_df.N_e, label=:N_e, alpha=0.6)
+    ax[2,1].plot(irf_df.N, label=:N, alpha=0.6)
+    ax[2,1].yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter())
+    ax[2,1].legend()
+
+    ax[2,2].plot(irf_df.z, label=:z, alpha=0.6)
+    #ax[2,2].plot(irf_df.w, label=:w, alpha=0.6)
+    #ax[2,2].plot(irf_df.w_R,label=:w_R, alpha=0.6)
+    ax[2,2].plot(irf_df.Y, label=:Y, alpha=0.6)
+    ax[2,2].yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter())
+    ax[2,2].legend()
+    display(fig)
+end
 
 ## Model
     # Adjustments
@@ -230,40 +258,16 @@ include("steady_state.jl")
         # Technology shock
         sim_IR = simulate_model(model, sol_mat, T_IR, eta_z, SS, flag_IR, flag_logdev)
         irf_df = 100 .*DataFrame(sim_IR, varnames)
+        gen_irf(irf_df)
 
         # Destruction rate shock 
         sim_IR = simulate_model(model, sol_mat, T_IR, eta_δ, SS, flag_IR, flag_logdev)
         irf_df = 100 .*DataFrame(sim_IR, varnames)
+        gen_irf(irf_df)
 
         #using Plots
         #Plots.plot(sim_IR,xlabel="Periods", ylabel= "%", yformatter=:percent)
 
-        fig, ax = plt.subplots(ncols=2, nrows=2, figsize=(16, 12))
-        ax[1,1].plot(irf_df.u, label=:u, alpha=0.6)
-        ax[1,1].plot(irf_df.v, label=:v, alpha=0.6)
-        ax[1,1].plot(irf_df.θ, label=:θ, alpha=0.6)
-        ax[1,1].plot(irf_df.e, label=:e, alpha=0.6)
-        ax[1,1].yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter())
-        ax[1,1].legend()
-
-        ax[1,2].plot(irf_df.C, label=:C, alpha=0.6)
-        ax[1,2].plot(irf_df.Y_c, label=:Y_c, alpha=0.6)
-        ax[1,2].plot(irf_df.Y, label=:Y, alpha=0.6)
-        ax[1,2].yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter())
-        ax[1,2].legend()
-
-        ax[2,1].plot(irf_df.N_e, label=:N_e, alpha=0.6)
-        ax[2,1].plot(irf_df.N, label=:N, alpha=0.6)
-        ax[2,1].yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter())
-        ax[2,1].legend()
-
-        ax[2,2].plot(irf_df.z, label=:z, alpha=0.6)
-        #ax[2,2].plot(irf_df.w, label=:w, alpha=0.6)
-        #ax[2,2].plot(irf_df.w_R,label=:w_R, alpha=0.6)
-        ax[2,2].plot(irf_df.Y, label=:Y, alpha=0.6)
-        ax[2,2].yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter())
-        ax[2,2].legend()
-        display(fig)
 
 
 
