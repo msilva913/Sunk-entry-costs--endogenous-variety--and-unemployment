@@ -15,6 +15,25 @@ using DataFrames
 include("solution_functions.jl")
 include("steady_state.jl")
 
+
+function solution_interface(model, PAR)
+    eta     =   eval_ShockVAR(PAR)
+    PAR_SS  =   eval_PAR_SS(PAR)
+    SS      =   eval_SS(PAR_SS)
+    SS_err  =   eval_SS_error(PAR_SS, SS)
+    deriv   =   eval_deriv(PAR_SS, SS)
+    SS_max = maximum(abs.(SS_err))
+    println("Residuals: $SS_max")
+
+    ss = NamedTuple(zip(model.varnames, exp.(SS[1:model.nvar])))
+
+    # @btime sol_mat = solve_model(model, deriv, eta)
+    sol_mat = solve_model(model, deriv, eta)
+    println("Model solved")
+    out = (SS=SS, ss=ss, eta=eta, deriv=deriv, sol_mat=sol_mat)
+    return out
+end
+
 function gen_irf(irf::DataFrame)
     fig, ax = plt.subplots(ncols=2, nrows=2, figsize=(16, 12))
     ax[1,1].plot(irf_df.u, label=:u, alpha=0.6)
@@ -41,6 +60,52 @@ function gen_irf(irf::DataFrame)
     ax[2,2].plot(irf_df.Y, label=:Y, alpha=0.6)
     ax[2,2].yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter())
     ax[2,2].legend()
+    display(fig)
+end
+
+"""
+Comparison of irfs to highlight model transmission mechanism
+
+"""
+function gen_irf_comp(irf_bas::DataFrame, irf_alt::DataFrame, labels)
+    fig, ax = plt.subplots(ncols=2, nrows=3, figsize=(16, 16))
+
+    ax[1,1].plot(irf_bas.u, alpha=0.6, label=labels[1])
+    ax[1,1].plot(irf_alt.u, alpha=0.6, label=labels[2])
+    ax[1,1].set_title("u")
+    ax[1,1].yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter())
+    ax[1,1].legend()
+
+    ax[1,2].plot(irf_bas.v, alpha=0.6, label=labels[1])
+    ax[1,2].plot(irf_alt.v, alpha=0.6, label=labels[2])
+    ax[1,2].set_title("v")
+    ax[1,2].yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter())
+    ax[1,2].legend()
+
+    ax[2,1].plot(irf_bas.N, alpha=0.6, label=labels[1])
+    ax[2,1].plot(irf_alt.N, alpha=0.6, label=labels[2])
+    ax[2,1].set_title("N")
+    ax[2,1].yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter())
+    ax[2,1].legend()
+
+    ax[2,2].plot(irf_bas.N_e, alpha=0.6, label=labels[1])
+    ax[2,2].plot(irf_alt.N_e, alpha=0.6, label=labels[2])
+    ax[2,2].set_title("N_e")
+    ax[2,2].yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter())
+    ax[2,2].legend()
+
+    ax[3,1].plot(irf_bas.C, alpha=0.6, label=labels[1])
+    ax[3,1].plot(irf_alt.C, alpha=0.6, label=labels[2])
+    ax[3,1].set_title("C")
+    ax[3,1].yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter())
+    ax[3,1].legend()
+
+    ax[3,2].plot(irf_bas.Y_c, alpha=0.6, label=labels[1])
+    ax[3,2].plot(irf_alt.Y_c, alpha=0.6, label=labels[2])
+    ax[3,2].set_title("Y_c")
+    ax[3,2].yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter())
+    ax[3,2].legend()
+
     display(fig)
 end
 
@@ -195,6 +260,7 @@ end
                 npar = length(parameters), ns = length(estimate), 
                 priors = priors,
                 x = x, y = y, xp = xp, yp = yp, variables = variables,
+                varnames=varnames, #store symbols of variable names
                 nx = nx, ny = ny, nvar = nvar,
                 e = ex, eta = eta,
                 ne = ne,
@@ -226,20 +292,8 @@ end
     PAR     =   [f_e; s; zbar; δbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; σ_z; ρ_δ; σ_δ ]
 
 
-    # Solution functions (no adjustment needed)
-        eta     =   eval_ShockVAR(PAR)
-        PAR_SS  =   eval_PAR_SS(PAR)
-        SS      =   eval_SS(PAR_SS)
-        SS_err  =   eval_SS_error(PAR_SS, SS)
-        deriv   =   eval_deriv(PAR_SS, SS)
-        SS_max = maximum(abs.(SS_err))
-        println("Residuals: $SS_max")
-
-        ss = NamedTuple(zip(varnames, exp.(SS[1:nvar])))
-
-        # @btime sol_mat = solve_model(model, deriv, eta)
-        sol_mat = solve_model(model, deriv, eta)
-        println("Model solved")
+    sol = solution_interface(model, PAR)
+    @unpack ss, SS, sol_mat, eta = sol
 
 
 ## Simulation
@@ -278,3 +332,23 @@ end
         sim_SM = simulate_model(model, sol_mat, T_SM, eta, SS, flag_IR, flag_logdev)
         using Plots
         Plots.plot(sim_SM)
+
+
+# Comparison to low epsi calibration 
+    targets2 = (labor_share=labor_share, dest_ann=0.06, r_ann=0.04, f =fbar, η_L=0.6, q=qbar, sep=0.031, b_ratio=0.71, 
+    x_v=0.20, ξ_inv=1, ε=100, σ=1.5, N=N_s, w=w_s)
+    cal2 = calibrate_labor_share(targets2)
+
+    @unpack  f_e, δ, s, z, b, ϕ, ρ, σ, ε, A, η_L, F, κ, ξ_inv = cal2
+
+    zbar = z 
+    δbar = δ
+    PAR2     =   [f_e; s; zbar; δbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; σ_z; ρ_δ; σ_δ ]
+    sol2 = solution_interface(model, PAR2)
+    sol_mat2 = sol2.sol_mat
+    SS2 = sol2.SS
+
+    sim_IR2 = simulate_model(model, sol_mat2, T_IR, eta_z, SS2, flag_IR, flag_logdev)
+    irf_df2 = 100 .*DataFrame(sim_IR2, varnames)
+
+    gen_irf_comp(irf_df, irf_df2, ["Baseline", " ε=100"])

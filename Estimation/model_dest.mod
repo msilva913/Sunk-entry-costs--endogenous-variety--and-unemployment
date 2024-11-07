@@ -109,8 +109,8 @@ x_v = 0.2;
 N_ss = 1.0;
 w_ss = 1.0;
 
-mu_net = 0.30;
-//mu_net = 0.01;
+//mu_net = 0.30;
+mu_net = 0.01;
 sigma = 1.5;
 b_ratio = 0.71;
 eta_L = 0.6;
