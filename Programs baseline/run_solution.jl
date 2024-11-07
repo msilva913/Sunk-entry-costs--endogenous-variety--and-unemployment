@@ -14,7 +14,7 @@ using DataFrames
 
 include("solution_functions.jl")
 include("steady_state.jl")
-
+include("impulse_response_plots.jl")
 
 function solution_interface(model, PAR)
     eta     =   eval_ShockVAR(PAR)
@@ -34,80 +34,7 @@ function solution_interface(model, PAR)
     return out
 end
 
-function gen_irf(irf::DataFrame)
-    fig, ax = plt.subplots(ncols=2, nrows=2, figsize=(16, 12))
-    ax[1,1].plot(irf_df.u, label=:u, alpha=0.6)
-    ax[1,1].plot(irf_df.v, label=:v, alpha=0.6)
-    ax[1,1].plot(irf_df.θ, label=:θ, alpha=0.6)
-    ax[1,1].plot(irf_df.e, label=:e, alpha=0.6)
-    ax[1,1].yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter())
-    ax[1,1].legend()
 
-    ax[1,2].plot(irf_df.C, label=:C, alpha=0.6)
-    ax[1,2].plot(irf_df.Y_c, label=:Y_c, alpha=0.6)
-    ax[1,2].plot(irf_df.Y, label=:Y, alpha=0.6)
-    ax[1,2].yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter())
-    ax[1,2].legend()
-
-    ax[2,1].plot(irf_df.N_e, label=:N_e, alpha=0.6)
-    ax[2,1].plot(irf_df.N, label=:N, alpha=0.6)
-    ax[2,1].yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter())
-    ax[2,1].legend()
-
-    ax[2,2].plot(irf_df.z, label=:z, alpha=0.6)
-    #ax[2,2].plot(irf_df.w, label=:w, alpha=0.6)
-    #ax[2,2].plot(irf_df.w_R,label=:w_R, alpha=0.6)
-    ax[2,2].plot(irf_df.Y, label=:Y, alpha=0.6)
-    ax[2,2].yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter())
-    ax[2,2].legend()
-    display(fig)
-end
-
-"""
-Comparison of irfs to highlight model transmission mechanism
-
-"""
-function gen_irf_comp(irf_bas::DataFrame, irf_alt::DataFrame, labels)
-    fig, ax = plt.subplots(ncols=2, nrows=3, figsize=(16, 16))
-
-    ax[1,1].plot(irf_bas.u, alpha=0.6, label=labels[1])
-    ax[1,1].plot(irf_alt.u, alpha=0.6, label=labels[2])
-    ax[1,1].set_title("u")
-    ax[1,1].yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter())
-    ax[1,1].legend()
-
-    ax[1,2].plot(irf_bas.v, alpha=0.6, label=labels[1])
-    ax[1,2].plot(irf_alt.v, alpha=0.6, label=labels[2])
-    ax[1,2].set_title("v")
-    ax[1,2].yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter())
-    ax[1,2].legend()
-
-    ax[2,1].plot(irf_bas.N, alpha=0.6, label=labels[1])
-    ax[2,1].plot(irf_alt.N, alpha=0.6, label=labels[2])
-    ax[2,1].set_title("N")
-    ax[2,1].yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter())
-    ax[2,1].legend()
-
-    ax[2,2].plot(irf_bas.N_e, alpha=0.6, label=labels[1])
-    ax[2,2].plot(irf_alt.N_e, alpha=0.6, label=labels[2])
-    ax[2,2].set_title("N_e")
-    ax[2,2].yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter())
-    ax[2,2].legend()
-
-    ax[3,1].plot(irf_bas.C, alpha=0.6, label=labels[1])
-    ax[3,1].plot(irf_alt.C, alpha=0.6, label=labels[2])
-    ax[3,1].set_title("C")
-    ax[3,1].yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter())
-    ax[3,1].legend()
-
-    ax[3,2].plot(irf_bas.Y_c, alpha=0.6, label=labels[1])
-    ax[3,2].plot(irf_alt.Y_c, alpha=0.6, label=labels[2])
-    ax[3,2].set_title("Y_c")
-    ax[3,2].yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter())
-    ax[3,2].legend()
-
-    display(fig)
-end
 
 ## Model
     # Adjustments
@@ -334,7 +261,7 @@ end
         Plots.plot(sim_SM)
 
 
-# Comparison to low epsi calibration 
+# Comparison to high epsi calibration 
     targets2 = (labor_share=labor_share, dest_ann=0.06, r_ann=0.04, f =fbar, η_L=0.6, q=qbar, sep=0.031, b_ratio=0.71, 
     x_v=0.20, ξ_inv=1, ε=100, σ=1.5, N=N_s, w=w_s)
     cal2 = calibrate_labor_share(targets2)
@@ -352,3 +279,28 @@ end
     irf_df2 = 100 .*DataFrame(sim_IR2, varnames)
 
     gen_irf_comp(irf_df, irf_df2, ["Baseline", " ε=100"])
+
+# Comparison to high δ calibration: we maintain aggregate worker separations at 3.1%
+targets3 = (labor_share=labor_share, dest_ann=0.2, r_ann=0.04, f =fbar, η_L=0.6, q=qbar, sep=0.031, b_ratio=0.71, 
+x_v=0.20, ξ_inv=1, ε=4.3, σ=1.5, N=N_s, w=w_s)
+cal3 = calibrate_labor_share(targets3)
+
+@unpack  f_e, δ, s, z, b, ϕ, ρ, σ, ε, A, η_L, F, κ, ξ_inv = cal3
+
+zbar = z 
+δbar = δ
+PAR3     =   [f_e; s; zbar; δbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; σ_z; ρ_δ; σ_δ ]
+sol3 = solution_interface(model, PAR3)
+sol_mat3 = sol3.sol_mat
+SS3 = sol3.SS
+sim_IR3 = simulate_model(model, sol_mat3, T_IR, eta_z, SS3, flag_IR, flag_logdev)
+irf_df3 = 100 .*DataFrame(sim_IR3, varnames)
+
+gen_irf_comp(irf_df, irf_df3, ["Baseline", "High δ"])
+# Compare irf's for different δ
+# Compare irf's for s vs. δ
+# Compare irf's for different ξ_inv
+# How to decompose aggregate separations--which can be computed using Shimer's approach on unemployment flows--into series for s and δ
+# Compute moments for filtered data (HP and Hamilton)
+    # function to compute moments 
+    # filter

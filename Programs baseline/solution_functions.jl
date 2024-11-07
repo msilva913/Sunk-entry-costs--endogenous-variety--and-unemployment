@@ -790,10 +790,10 @@ function simulate_model(model::NamedTuple, sol_mat::NamedTuple, TS::Int, eta::Ar
         sim_x = zeros(TS, nx)
         sim_y = zeros(TS, ny)
         @inbounds for t in 1:TS
-            @inbounds for i in 1:ny
+            @inbounds for i in 1:ny #mapping from states to jumpers
                 sim_y[t, i] = sol_mat.gx[i, :]' * sim_x[t, :]
             end
-            if t < TS
+            if t < TS # for state variables
                 @inbounds for i in 1:nx
                     sim_x[t+1,i] = sol_mat.hx[i,:]' * sim_x[t,:] + eta[i,:]'*sim_shocks[t,:]
                 end
