@@ -11,7 +11,6 @@ using MKL
 using PyPlot
 using DataFrames
 
-
 include("solution_functions.jl")
 include("steady_state.jl")
 include("impulse_response_plots.jl")
@@ -33,7 +32,6 @@ function solution_interface(model, PAR)
     out = (SS=SS, ss=ss, eta=eta, deriv=deriv, sol_mat=sol_mat)
     return out
 end
-
 
 
 ## Model
@@ -176,131 +174,85 @@ end
         PAR_SS = parameters[:]
 
 
-    nx = length(x) 
-    ny = length(y)
-    nvar = nx + ny 
-    ne = length(ex)
-    nf = length(f) 
+nx = length(x) 
+ny = length(y)
+nvar = nx + ny 
+ne = length(ex)
+nf = length(f) 
 
-    # Procesing the model (no adjustment needed)                
-        model = (parameters = parameters, estimate = estimate, estimation = position,
-                npar = length(parameters), ns = length(estimate), 
-                priors = priors,
-                x = x, y = y, xp = xp, yp = yp, variables = variables,
-                varnames=varnames, #store symbols of variable names
-                nx = nx, ny = ny, nvar = nvar,
-                e = ex, eta = eta,
-                ne = ne,
-                f = f,
-                nf = nf,
-                SS = SS, PAR_SS = PAR_SS,
-                flag_order = flag_order, flag_deviation = flag_deviation, flag_SSsolver = flag_SSsolver)
-        process_model(model)
+# Procesing the model (no adjustment needed)                
+    model = (parameters = parameters, estimate = estimate, estimation = position,
+            npar = length(parameters), ns = length(estimate), 
+            priors = priors,
+            x = x, y = y, xp = xp, yp = yp, variables = variables,
+            varnames=varnames, #store symbols of variable names
+            nx = nx, ny = ny, nvar = nvar,
+            e = ex, eta = eta,
+            ne = ne,
+            f = f,
+            nf = nf,
+            SS = SS, PAR_SS = PAR_SS,
+            flag_order = flag_order, flag_deviation = flag_deviation, flag_SSsolver = flag_SSsolver)
+    process_model(model)
 
 
 ## Solution
-    # Parametrization: need to handle dependent parameters 
-    #parameters      = [f_e; δ; s; zbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; μ_z]
-    targets = (labor_share=labor_share, dest_ann=0.06, r_ann=0.04, f =fbar, η_L=0.6, q=qbar, sep=0.031, b_ratio=0.71, 
-            x_v=0.20, ξ_inv=1, ε=4.3, σ=1.5, N=N_s, w=w_s)
-    cal = calibrate_labor_share(targets)
-    
-    
-    # Shock values
-    ρ_z = 0.975
-    σ_z = 0.007
-    ρ_δ = 0.975
-    σ_δ = 0.0044
-
-    @unpack  f_e, δ, s, z, b, ϕ, ρ, σ, ε, A, η_L, F, κ, ξ_inv = cal
-
-    zbar = z 
-    δbar = δ
-    PAR     =   [f_e; s; zbar; δbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; σ_z; ρ_δ; σ_δ ]
+# Parametrization: need to handle dependent parameters 
+#parameters      = [f_e; δ; s; zbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; μ_z]
+targets = (labor_share=labor_share, dest_ann=0.06, r_ann=0.04, f =fbar, η_L=0.6, q=qbar, sep=0.031, b_ratio=0.71, 
+        x_v=0.20, ξ_inv=1, ε=4.3, σ=1.5, N=N_s, w=w_s)
+cal = calibrate_labor_share(targets)
 
 
-    sol = solution_interface(model, PAR)
-    @unpack ss, SS, sol_mat, eta = sol
+# Shock values
+ρ_z = 0.975
+σ_z = 0.007
+ρ_δ = 0.975
+σ_δ = 0.0044
+
+@unpack  f_e, δ, s, z, b, ϕ, ρ, σ, ε, A, η_L, F, κ, ξ_inv = cal
+
+zbar = z 
+δbar = δ
+PAR     =   [f_e; s; zbar; δbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; σ_z; ρ_δ; σ_δ ]
 
 
-## Simulation
-    # Impulse-Response functions
-        flag_IR = true
-        flag_logdev = true
-        T_IR = 100
-        # eta array considers all shocks simultaneously
-        # For impulse responses, we can modify arrays to consider one shock at a time 
-        eta_z = zero(eta)
-        eta_z[4] = eta[4]
+sol = solution_interface(model, PAR)
+@unpack ss, SS, sol_mat, eta = sol
 
-        eta_δ = zero(eta) 
-        eta_δ[5] = eta[5]
 
-        # Technology shock
-        sim_IR = simulate_model(model, sol_mat, T_IR, eta_z, SS, flag_IR, flag_logdev)
-        irf_df = 100 .*DataFrame(sim_IR, varnames)
-        gen_irf(irf_df)
-
-        # Destruction rate shock 
-        sim_IR = simulate_model(model, sol_mat, T_IR, eta_δ, SS, flag_IR, flag_logdev)
-        irf_df = 100 .*DataFrame(sim_IR, varnames)
-        gen_irf(irf_df)
-
-        #using Plots
-        #Plots.plot(sim_IR,xlabel="Periods", ylabel= "%", yformatter=:percent)
-
+eta_z = zero(eta)
+eta_z[4] = eta[4]
 
 
 
 ## Simulation    
-        flag_IR = false
-        flag_logdev = false
-        T_SM = 100
-        sim_SM = simulate_model(model, sol_mat, T_SM, eta, SS, flag_IR, flag_logdev)
-        using Plots
-        Plots.plot(sim_SM)
+flag_IR = false
+flag_logdev = true
+T_SM = 100_000
+sim_SM = simulate_model(model, sol_mat, T_SM, eta, SS, flag_IR, flag_logdev)
+sim_data = 100 .*DataFrame(sim_SM, varnames)
+moments_vars = [:u, :v, :θ, :z]
+
+sim_data = sim_data[!, moments_vars]
 
 
-# Comparison to high epsi calibration 
-    targets2 = (labor_share=labor_share, dest_ann=0.06, r_ann=0.04, f =fbar, η_L=0.6, q=qbar, sep=0.031, b_ratio=0.71, 
-    x_v=0.20, ξ_inv=1, ε=100, σ=1.5, N=N_s, w=w_s)
-    cal2 = calibrate_labor_share(targets2)
+# Convert monthly data to quarterly 
+sim_data_q = monthly_to_quarterly(sim_data)
 
-    @unpack  f_e, δ, s, z, b, ϕ, ρ, σ, ε, A, η_L, F, κ, ξ_inv = cal2
+sim_data_hp = copy(sim_data_q)
+for x in moments_vars
+    sim_data_hp[!, x] .= hp_filter(sim_data_q[!, x], 100_000)
+end
 
-    zbar = z 
-    δbar = δ
-    PAR2     =   [f_e; s; zbar; δbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; σ_z; ρ_δ; σ_δ ]
-    sol2 = solution_interface(model, PAR2)
-    sol_mat2 = sol2.sol_mat
-    SS2 = sol2.SS
+# Calculate moments 
+moments(sim_data_hp, :z, [:z]; lags =2, verbose=true)
 
-    sim_IR2 = simulate_model(model, sol_mat2, T_IR, eta_z, SS2, flag_IR, flag_logdev)
-    irf_df2 = 100 .*DataFrame(sim_IR2, varnames)
+# Calculate moments 
 
-    gen_irf_comp(irf_df, irf_df2, ["Baseline", " ε=100"])
+sim_dat
+using Plots
+Plots.plot(sim_SM)
 
-# Comparison to high δ calibration: we maintain aggregate worker separations at 3.1%
-targets3 = (labor_share=labor_share, dest_ann=0.2, r_ann=0.04, f =fbar, η_L=0.6, q=qbar, sep=0.031, b_ratio=0.71, 
-x_v=0.20, ξ_inv=1, ε=4.3, σ=1.5, N=N_s, w=w_s)
-cal3 = calibrate_labor_share(targets3)
 
-@unpack  f_e, δ, s, z, b, ϕ, ρ, σ, ε, A, η_L, F, κ, ξ_inv = cal3
 
-zbar = z 
-δbar = δ
-PAR3     =   [f_e; s; zbar; δbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; σ_z; ρ_δ; σ_δ ]
-sol3 = solution_interface(model, PAR3)
-sol_mat3 = sol3.sol_mat
-SS3 = sol3.SS
-sim_IR3 = simulate_model(model, sol_mat3, T_IR, eta_z, SS3, flag_IR, flag_logdev)
-irf_df3 = 100 .*DataFrame(sim_IR3, varnames)
-
-gen_irf_comp(irf_df, irf_df3, ["Baseline", "High δ"])
-# Compare irf's for different δ
-# Compare irf's for s vs. δ
-# Compare irf's for different ξ_inv
-# How to decompose aggregate separations--which can be computed using Shimer's approach on unemployment flows--into series for s and δ
-# Compute moments for filtered data (HP and Hamilton)
-    # function to compute moments 
-    # filter

@@ -228,29 +228,29 @@ end
 
 
 function hp_filters(y::Vector{T}, λ::Real) where T<:Real
-        ### Arguments
-        #y: data to be filtered
-        #λ: smoothing parameter (6.25 for annual, 1600 for quarterly, 129600 for monthly)
+     ### Arguments
+     #y: data to be filtered
+      #λ: smoothing parameter (6.25 for annual, 1600 for quarterly, 129600 for monthly)
     
-        # Returns
-        #cycle: cyclical component
-        #trend: trend component
-        
-        n = length(y)
-        if n <= 3
-            return zeros(n), y
-        end
+      # Returns
+      #cycle: cyclical component
+      #trend: trend component
+
+    n = length(y)
+    if n <= 3
+     return zeros(n), y
+    end
     
-        # Setting up the matrix equation
-        A = zeros(n-2, n)
-        for i in 1:(n-2)
-            A[i, i:i+2] .= [1.0, -2.0, 1.0]
-        end
+    # Setting up the matrix equation
+    A = zeros(n-2, n)
+    for i in 1:(n-2)
+         A[i, i:i+2] .= [1.0, -2.0, 1.0]
+     end
     
-        # Create sparse array and solve
-        D = sparse(A)
-        B = sparse(I(n)) + λ * (D' * D)
-        τ = B \ y
+    # Create sparse array and solve
+    D = sparse(A)
+    B = sparse(I(n)) + λ * (D' * D)
+    τ = B \ y
     
-        return y - τ, τ
+    return y - τ, τ
     end

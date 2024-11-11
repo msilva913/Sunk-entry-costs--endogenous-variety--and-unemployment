@@ -1,5 +1,3 @@
-
-
 using PyPlot
 using LaTeXStrings, KernelDensity
 using Parameters, CSV, StatsBase, Statistics, Random
@@ -10,11 +8,11 @@ using MappedArrays
 using TexTables
 using TypedTables
 using GLM
+using SparseArrays, LinearAlgebra
 
 columns(M) = (view(M, :, i) for i in 1:size(M, 2))
 
-function moments(dat, var_RSD, var_corr; lags =2, 
-    var_names=[:SR, :Y, :L, :C, :TI], verbose=true)
+function moments(dat, var_RSD, var_corr; lags =2, verbose=true)
     #sd = DataFrames.colwise(std, dat)
     sd = map(std, eachcol(dat))
     RSD = sd./std(dat[!, var_RSD])
@@ -32,7 +30,7 @@ function moments(dat, var_RSD, var_corr; lags =2,
     ac = zeros(ncol(dat), lags)
 
     for k in 2:(lags+1)
-        ac[:, k-1] = [autocor(of_eltype(Float64, dat[:, i]))[k] for i in 1:ncol(dat)]
+        ac[:, k-1] .= [autocor(Float64.(dat[:, i]))[k] for i in 1:size(dat, 2)]
     end
 
     mom = [names(dat) sd RSD corrs ac]
@@ -44,23 +42,21 @@ function moments(dat, var_RSD, var_corr; lags =2,
     if verbose
         mom[!, 2:end] = round.(mom[!, 2:end], sigdigits=3)
     end
-    mom[!, :Variable] = var_names
+    mom[!, :Variable] = names(dat)
     return mom
 end
 
 
-
 function hamilton_filter(x; h=8)
-    ones_col = ones(size(x))
     x_h = ShiftedArrays.lag(x, h)
     x_h1 = ShiftedArrays.lag(x_h, 1)
     x_h2 = ShiftedArrays.lag(x_h, 2)
     x_h3 = ShiftedArrays.lag(x_h, 3)
-    X = [ones_col x x_h x_h1 x_h2 x_h3]
+    X = [x x_h x_h1 x_h2 x_h3]
     X = DataFrame(X, :auto)
     # rename
-    DataFrames.rename!(X, [:ones_col, :x, :x_h, :x_h1, :x_h2, :x_h3])
-    ols = lm(@formula(x ~ ones_col + x_h + x_h1 + x_h2 + x_h3), X)
+    DataFrames.rename!(X, [:x, :x_h, :x_h1, :x_h2, :x_h3])
+    ols = lm(@formula(x ~ x_h + x_h1 + x_h2 + x_h3), X)
     return residuals(ols)
 end
 
@@ -177,6 +173,33 @@ function bkfilter(y; wl=6, wu=32, K=12)
     return filter!(!ismissing, cycle)
 end
 
+function hp_filter(y, λ) where T<:Real
+    ### Arguments
+    #y: data to be filtered
+     #λ: smoothing parameter (6.25 for annual, 1600 for quarterly, 129600 for monthly)
+   
+     # Returns
+     #cycle: cyclical component
+
+   n = length(y)
+   if n <= 3
+    return zeros(n), y
+   end
+   
+   # Setting up the matrix equation
+   A = zeros(n-2, n)
+   for i in 1:(n-2)
+        A[i, i:i+2] .= [1.0, -2.0, 1.0]
+    end
+   
+   # Create sparse array and solve
+   D = sparse(A)
+   B = sparse(I(n)) + λ * (D' * D)
+   τ = B \ y
+   
+   return y - τ
+end
+
 function time_series_object(out::Matrix, fields::Vector{Symbol})
     sim_length = size(out)[1]
     initial = Date(1800, 1, 1)
@@ -228,3 +251,23 @@ function estimate_markov(X::Vector, nstates::Int64)
 end
 
 
+
+"""
+Monthly-to-quarterly averages by time means
+"""
+function monthly_to_quarterly(df)
+    quarterly_values = []
+    num_cols = ncol(df)
+    
+    for col in names(df)
+        quarterly_col_values = []
+        for i in 1:3:size(df, 1)-2
+            quarterly_value = mean(df[i:i+2, col])
+            push!(quarterly_col_values, quarterly_value)
+        end
+        push!(quarterly_values, quarterly_col_values)
+    end
+    
+    df_quarterly = DataFrame([Symbol(string(col)) => quarterly_values[idx] for (idx, col) in enumerate(names(df))])
+    return df_quarterly
+end
