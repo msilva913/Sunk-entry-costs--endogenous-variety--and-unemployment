@@ -52,10 +52,8 @@ function hamilton_filter(x; h=8)
     x_h1 = ShiftedArrays.lag(x_h, 1)
     x_h2 = ShiftedArrays.lag(x_h, 2)
     x_h3 = ShiftedArrays.lag(x_h, 3)
-    X = [x x_h x_h1 x_h2 x_h3]
-    X = DataFrame(X, :auto)
+    X = DataFrame(x=x, x_h=x_h, x_h1=x_h1, x_h2=x_h2, x_h3=x_h3)  # Construct DataFrame directly
     # rename
-    DataFrames.rename!(X, [:x, :x_h, :x_h1, :x_h2, :x_h3])
     ols = lm(@formula(x ~ x_h + x_h1 + x_h2 + x_h3), X)
     return residuals(ols)
 end

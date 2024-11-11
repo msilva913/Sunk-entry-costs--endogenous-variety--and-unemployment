@@ -14,6 +14,7 @@ using DataFrames
 include("solution_functions.jl")
 include("steady_state.jl")
 include("impulse_response_plots.jl")
+include("time_series_fun.jl")
 
 function solution_interface(model, PAR)
     eta     =   eval_ShockVAR(PAR)
@@ -241,8 +242,10 @@ sim_data = sim_data[!, moments_vars]
 sim_data_q = monthly_to_quarterly(sim_data)
 
 sim_data_hp = copy(sim_data_q)
+sim_data_ham = copy(sim_data_q)
 for x in moments_vars
     sim_data_hp[!, x] .= hp_filter(sim_data_q[!, x], 100_000)
+    sim_data_ham[!, x] .= hamilton_filter(sim_data_q[!, x])
 end
 
 # Calculate moments 
