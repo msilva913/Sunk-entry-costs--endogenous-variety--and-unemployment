@@ -14,6 +14,8 @@ columns(M) = (view(M, :, i) for i in 1:size(M, 2))
 
 function moments(dat, var_RSD, var_corr; lags =2, verbose=true)
     #sd = DataFrames.colwise(std, dat)
+    # Drop missing values
+    dat = dropmissing(dat)
     sd = map(std, eachcol(dat))
     RSD = sd./std(dat[!, var_RSD])
 
@@ -47,7 +49,7 @@ function moments(dat, var_RSD, var_corr; lags =2, verbose=true)
 end
 
 
-function hamilton_filter(x; h=8)
+function hamilton_filter(x::Vector; h=8)
     x_h = ShiftedArrays.lag(x, h)
     x_h1 = ShiftedArrays.lag(x_h, 1)
     x_h2 = ShiftedArrays.lag(x_h, 2)
@@ -55,7 +57,9 @@ function hamilton_filter(x; h=8)
     X = DataFrame(x=x, x_h=x_h, x_h1=x_h1, x_h2=x_h2, x_h3=x_h3)  # Construct DataFrame directly
     # rename
     ols = lm(@formula(x ~ x_h + x_h1 + x_h2 + x_h3), X)
-    return residuals(ols)
+    missing_values = Vector(undef, h+3)
+    missing_values .= missing
+    return vcat(missing_values, residuals(ols))
 end
 
 
@@ -171,31 +175,47 @@ function bkfilter(y; wl=6, wu=32, K=12)
     return filter!(!ismissing, cycle)
 end
 
-function hp_filter(y, λ) where T<:Real
-    ### Arguments
-    #y: data to be filtered
-     #λ: smoothing parameter (6.25 for annual, 1600 for quarterly, 129600 for monthly)
+# function hp_filter(y, λ) where T<:Real
+#     ### Arguments
+#     #y: data to be filtered
+#      #λ: smoothing parameter (6.25 for annual, 1600 for quarterly, 129600 for monthly)
    
-     # Returns
-     #cycle: cyclical component
+#      # Returns
+#      #cycle: cyclical component
 
-   n = length(y)
-   if n <= 3
-    return zeros(n), y
-   end
+#    n = length(y)
+#    if n <= 3
+#     return zeros(n), y
+#    end
    
-   # Setting up the matrix equation
-   A = zeros(n-2, n)
-   for i in 1:(n-2)
-        A[i, i:i+2] .= [1.0, -2.0, 1.0]
-    end
+#    # Setting up the matrix equation
+#    A = zeros(n-2, n)
+#    for i in 1:(n-2)
+#         A[i, i:i+2] .= [1.0, -2.0, 1.0]
+#     end
    
-   # Create sparse array and solve
-   D = sparse(A)
-   B = sparse(I(n)) + λ * (D' * D)
-   τ = B \ y
+#    # Create sparse array and solve
+#    D = sparse(A)
+#    B = sparse(I(n)) + λ * (D' * D)
+#    τ = B \ y
    
-   return y - τ
+#    return y - τ
+# end
+
+function hp_filter(y, lambda::Real)
+    n = length(y)
+    
+    # Create the tridiagonal matrix manually
+    d = fill(1 + 2lambda, n)
+    dl = fill(-lambda, n-1)
+    du = fill(-lambda, n-1)
+    
+    A = Tridiagonal(dl, d, du)
+    
+    trend = A \ y
+    
+    cycle = y - trend
+    return cycle
 end
 
 function time_series_object(out::Matrix, fields::Vector{Symbol})
@@ -261,11 +281,11 @@ function monthly_to_quarterly(df)
         quarterly_col_values = []
         for i in 1:3:size(df, 1)-2
             quarterly_value = mean(df[i:i+2, col])
-            push!(quarterly_col_values, quarterly_value)
+            push!(quarterly_col_values, float(quarterly_value))
         end
         push!(quarterly_values, quarterly_col_values)
     end
-    
-    df_quarterly = DataFrame([Symbol(string(col)) => quarterly_values[idx] for (idx, col) in enumerate(names(df))])
+    df_quarterly = hcat([quarterly_values[idx] for idx in 1:num_cols]...)
+    df_quarterly = DataFrame(df_quarterly, names(df))
     return df_quarterly
 end

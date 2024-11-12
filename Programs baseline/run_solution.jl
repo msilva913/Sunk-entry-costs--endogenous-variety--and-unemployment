@@ -10,6 +10,7 @@ cd(@__DIR__)
 using MKL
 using PyPlot
 using DataFrames
+using LinearAlgebra
 
 include("solution_functions.jl")
 include("steady_state.jl")
@@ -136,7 +137,7 @@ end
 
         fbar = 0.41
         qbar = 0.8
-        x_v = 0.20 
+        x_v = 0.1
         labor_share = 0.66
 
         p_s = N_s^(1/(ε-1))
@@ -200,16 +201,16 @@ nf = length(f)
 ## Solution
 # Parametrization: need to handle dependent parameters 
 #parameters      = [f_e; δ; s; zbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; μ_z]
-targets = (labor_share=labor_share, dest_ann=0.06, r_ann=0.04, f =fbar, η_L=0.6, q=qbar, sep=0.031, b_ratio=0.71, 
-        x_v=0.20, ξ_inv=1, ε=4.3, σ=1.5, N=N_s, w=w_s)
+targets = (labor_share=labor_share, dest_ann=0.1, r_ann=0.04, f =fbar, η_L=0.6, q=qbar, sep=0.031, b_ratio=0.71, 
+        x_v=x_v, ξ_inv=1/0.265, ε=4.3, σ=1.0, N=N_s, w=w_s)
 cal = calibrate_labor_share(targets)
 
 
-# Shock values
-ρ_z = 0.975
+# Shock values (from Coles and Kelishomi)
+ρ_z = 0.965
 σ_z = 0.007
-ρ_δ = 0.975
-σ_δ = 0.0044
+ρ_δ = 0.875
+σ_δ = 0.042
 
 @unpack  f_e, δ, s, z, b, ϕ, ρ, σ, ε, A, η_L, F, κ, ξ_inv = cal
 
@@ -217,45 +218,42 @@ zbar = z
 δbar = δ
 PAR     =   [f_e; s; zbar; δbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; σ_z; ρ_δ; σ_δ ]
 
-
 sol = solution_interface(model, PAR)
 @unpack ss, SS, sol_mat, eta = sol
 
-
-eta_z = zero(eta)
-eta_z[4] = eta[4]
-
-
-
 ## Simulation    
 flag_IR = false
-flag_logdev = true
+flag_logdev = true #express results in log deviations
 T_SM = 100_000
 sim_SM = simulate_model(model, sol_mat, T_SM, eta, SS, flag_IR, flag_logdev)
+# Multiply by 100 to express results in percentage deviations
 sim_data = 100 .*DataFrame(sim_SM, varnames)
+# Extract variable symbols to be used for calculating moments
 moments_vars = [:u, :v, :θ, :z]
 
 sim_data = sim_data[!, moments_vars]
-
+#moments(sim_data, :z, [:z]; lags =2, verbose=true)
 
 # Convert monthly data to quarterly 
 sim_data_q = monthly_to_quarterly(sim_data)
 
+# HP and Hamilto filters
 sim_data_hp = copy(sim_data_q)
-sim_data_ham = copy(sim_data_q)
+sim_data_ham = copy(sim_data_ham)
 for x in moments_vars
     sim_data_hp[!, x] .= hp_filter(sim_data_q[!, x], 100_000)
     sim_data_ham[!, x] .= hamilton_filter(sim_data_q[!, x])
 end
 
 # Calculate moments 
-moments(sim_data_hp, :z, [:z]; lags =2, verbose=true)
+moments(sim_data_hp, :z, [:z, :v]; lags=2)
+#moments(sim_data_ham, :z, [:z, :v]; lags =2, verbose=true)
 
 # Calculate moments 
 
-sim_dat
-using Plots
-Plots.plot(sim_SM)
+#sim_dat
+#using Plots
+#Plots.plot(sim_SM)
 
 
 
