@@ -221,7 +221,18 @@ PAR     =   [f_e; s; zbar; δbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_
 sol = solution_interface(model, PAR)
 @unpack ss, SS, sol_mat, eta = sol
 
-## Simulation    
+## Simulation  and calculation of moments
+#=
+Here we follow standard practice and Coles and Kelishomi 2018 by
+1) Generating monthly series
+2) Converting to quarterly
+3) Applying HP filter (lam=100,000)
+-> can consider other filters/growth rates, HP filter induces spurious autocorrelations
+=#
+
+
+
+
 flag_IR = false
 flag_logdev = true #express results in log deviations
 T_SM = 100_000
