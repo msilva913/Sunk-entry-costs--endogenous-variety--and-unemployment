@@ -9,7 +9,6 @@ using TexTables
 using TypedTables
 using GLM
 using SparseArrays, LinearAlgebra
-using Pandas
 
 columns(M) = (view(M, :, i) for i in 1:size(M, 2))
 

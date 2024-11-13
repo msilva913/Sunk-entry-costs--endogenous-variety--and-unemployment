@@ -179,8 +179,8 @@ end
 
 targets = (labor_share=0.66, dest_ann=0.06, r_ann=0.04, f =0.41, η_L=0.6, q=0.8, sep=0.031, b_ratio=0.71, 
             x_v=0.20, ξ_inv=1, ε=4, σ=1.5, N=1, w=1.0)
-cal = calibrate_labor_share(targets)
-ss = steady_state(cal)
+#cal = calibrate_labor_share(targets)
+#ss = steady_state(cal)
 
 function calibrate_labor_share(targets)
     @unpack labor_share, dest_ann, r_ann, f, η_L, q, sep, b_ratio, x_v, ξ_inv, ε, σ, N, w = targets
