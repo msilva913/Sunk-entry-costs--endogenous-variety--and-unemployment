@@ -45,7 +45,7 @@ function process_model(model::NamedTuple)
             end
         end
     end
-    ShockVAR_string = Meta.parse("function eval_ShockVAR(PAR); VAR = Array{Float64}(zeros("*string(neta)*","*string(neta)*")); VAR = "*string(eta_aux)[4:end]*"; return VAR; end")
+    ShockVAR_string = Meta.parse("function eval_ShockVAR(PAR); VAR = Array{Float64}(zeros("*string(neta)*","*string(neta)*")); VAR = "*repr(eta_aux)[4:end]*"; return VAR; end")
     eval(ShockVAR_string)
     
     @inbounds for ip in npar

@@ -244,7 +244,7 @@ sim_SM = simulate_model(model, sol_mat, T_SM, eta, SS, flag_IR, flag_logdev)
 # Multiply by 100 to 
 sim_data = 100 .*DataFrame(sim_SM, varnames)
 # Extract variable symbols to be used for calculating moments
-moments_vars = [:u, :v, :θ, :z, :δ ]
+moments_vars = [:u, :v, :θ, :labor_prod, :z, :δ ]
 
 sim_data = sim_data[!, moments_vars]
 
