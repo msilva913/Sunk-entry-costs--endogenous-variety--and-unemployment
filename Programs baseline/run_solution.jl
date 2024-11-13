@@ -19,43 +19,49 @@ include("steady_state.jl")
 
 
 ## Model
-    # Adjustments
-        flag_order      = 1
-        flag_deviation  = true
-        flag_SSsolver   = false
+# Adjustments
+    flag_order      = 1
+    flag_deviation  = true
+    flag_SSsolver   = false
 
-    # Parameters
-        @syms f_e δ s zbar b ϕ ρ σ ε A η_L F κ ξ_inv ρ_z  σ_z
-        parameters      = [f_e; δ; s; zbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z;  σ_z]
-        estimate        = []
-        position        = []
-        priors          = (;)
+# Parameters
+    @syms f_e s zbar δbar b ϕ ρ σ ε A η_L F κ ξ_inv ρ_z σ_z ρ_δ σ_δ
+    parameters      = [f_e; s; zbar; δbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; σ_z; ρ_δ; σ_δ]
+    estimate        = []
+    position        = []
+    priors          = (;)
 
         # Transformations
         β = 1/(1+ρ)
         ξ = 1/ξ_inv
-        τ = 1 - (1-δ)*(1-s)
+        τbar = 1 - (1-δbar)*(1-s)
         μ = ε/(ε-1)
 
-    # Variables
-        @syms  z u θ q K L u v v_pret e K Q  N p N_e ν_f d_f w_R w L_e L_c Y_c C λ Y 
-        @syms zp θp qp Kp Lp up vp v_pretp ep Kp Qp Np pp N_ep ν_fp d_fp w_Rp wp L_ep L_cp Y_cp Cp λp Yp 
-       
-        
-        x               = [u; N; v_pret; z] # predetermined
-        y               = [θ; q; L; v; e; K; Q; p; N_e; ν_f; d_f; w_R; w; L_e; L_c; Y_c; C; λ; Y]
-        xp              = [up; Np; v_pretp; zp]
-        yp              = [θp; qp; Lp; vp; ep; Kp; Qp; pp; N_ep; ν_fp; d_fp; w_Rp; wp; L_ep; L_cp; Y_cp; Cp; λp; Yp]
-        variables       = [x; y; xp; yp]
-        varnames = vcat(Symbol.(x), Symbol.(y))
+# Variables
+    @syms  z δ u θ q K L u v v_pret e K Q  N p N_e ν_f d_f w_R w L_e L_c Y_c C λ Y labor_prod
+    @syms zp  δp θp qp Kp Lp up vp v_pretp ep Kp Qp Np pp N_ep ν_fp d_fp w_Rp wp L_ep L_cp Y_cp Cp λp Yp labor_prod_p
+    
+    
+    x               = [u; N; v_pret; z; δ] # predetermined
+    y               = [θ; q; L; v; e; K; Q; p; N_e; ν_f; d_f; w_R; w; L_e; L_c; Y_c; C; λ; Y; labor_prod]
+    xp              = [up; Np; v_pretp; zp; δp]
+    yp              = [θp; qp; Lp; vp; ep; Kp; Qp; pp; N_ep; ν_fp; d_fp; w_Rp; wp; L_ep; L_cp; Y_cp; Cp; λp; Yp; labor_prod_p]
+    variables       = [x; y; xp; yp]
+    varnames = vcat(Symbol.(x), Symbol.(y))
 
-    # Shock
-        @syms epsilon
-        ex               = [epsilon]
-        eta = Array([0.0; 0.0; 0.0; -σ_z]) # size of state space
+# Shock
+    @syms epsilon
+    ex               = [epsilon]
+    eta = Array([0.0; 0.0; 0.0; -σ_z; σ_δ]) # size of state space
+
+        
+    nx = length(x) 
+    ny = length(y)
+    nvar = nx + ny 
+    ne = length(ex) 
 
     # Array of symbolics storing model equtions 
-    f = fill(Sym("x"), 23)
+    f = fill(Sym("x"), nvar)
     # Equilibrium conditions
         # Job creation condition -> θ
         f[1]  =  κ + K/q - β*λp/λ*(1-δ)*(w_Rp-wp-Kp+(1-s)*(κ+Kp/qp))
@@ -103,9 +109,12 @@ include("steady_state.jl")
         f[22] = Np - (1-δ)*(N+N_e)
         # Profits 
         #f[23] = d_f - Y_c/(N*ε)
+        # Data-consistent labor productivity
+        f[23] = labor_prod - Y/(p*L)
 
         # Exogenous processes
-        f[23]  =   log(zp) - ρ_z * log(z)
+        f[24]  =   log(zp) - ρ_z * log(z)
+        f[25] =    log(δp) -  ρ_δ * log(δ)
 
     # Steady state     
         # Values 
@@ -144,10 +153,11 @@ include("steady_state.jl")
         C_s = Y_cs -  F/(1+ξ_inv)*(e_s/F)^(1+ξ_inv) -  κ*v_s*q_s 
         λ_s = C_s^(-σ)
         Y_s = Y_cs + ν_fs*N_es
+        labor_prod_s = Y_s/(p_s*L_s)
         #x               = [u; N; v_pret; z] # predetermined
-        #y               = [θ; q; L; v; e; K; Q; p; N_e; ν_f; d_f; w_R; w; L_e; L_c; Y_c; C; λ; Y]
+        #y               = [θ; q; L; v; e; K; Q; p; N_e; ν_f; d_f; w_R; w; L_e; L_c; Y_c; C; λ; Y; labor_prod]
         # Vector
-        SS_block  = [log(x) for x in [u_s, N_s, v_prets, z_s, θ_s, q_s, L_s, v_s, e_s, K_s, Q_s, p_s, N_es, ν_fs, d_fs, w_Rs, w_s, L_es, L_cs, Y_cs, C_s, λ_s, Y_s]]
+        SS_block  = [log(x) for x in [u_s, N_s, v_prets, z_s, δ_s, θ_s, q_s, L_s, v_s, e_s, K_s, Q_s, p_s, N_es, ν_fs, d_fs, w_Rs, w_s, L_es, L_cs, Y_cs, C_s, λ_s, Y_s, labor_prod_s]]
         # vertical concatenate: represent both current and future variables
         SS = vcat(SS_block, SS_block)
 
@@ -155,20 +165,20 @@ include("steady_state.jl")
         PAR_SS = parameters[:]
 
 
-
-    # Procesing the model (no adjustment needed)                
-        model = (parameters = parameters, estimate = estimate, estimation = position,
-                npar = length(parameters), ns = length(estimate), 
-                priors = priors,
-                x = x, y = y, xp = xp, yp = yp, variables = variables,
-                nx = length(x), ny = length(y), nvar = length(x) + length(y),
-                e = ex, eta = eta,
-                ne = length(ex),
-                f = f,
-                nf = length(f),
-                SS = SS, PAR_SS = PAR_SS,
-                flag_order = flag_order, flag_deviation = flag_deviation, flag_SSsolver = flag_SSsolver)
-        process_model(model)
+# Procesing the model (no adjustment needed)                
+    model = (parameters = parameters, estimate = estimate, estimation = position,
+            npar = length(parameters), ns = length(estimate), 
+            priors = priors,
+            x = x, y = y, xp = xp, yp = yp, variables = variables,
+            varnames=varnames, #store symbols of variable names
+            nx = nx, ny = ny, nvar = nvar,
+            e = ex, eta = eta,
+            ne = ne,
+            f = f,
+            nf = nvar,
+            SS = SS, PAR_SS = PAR_SS,
+            flag_order = flag_order, flag_deviation = flag_deviation, flag_SSsolver = flag_SSsolver)
+    process_model(model)
 
 
 ## Solution
@@ -183,72 +193,64 @@ include("steady_state.jl")
     ρ_z = 0.975
     σ_z = 0.007
 
-    @unpack  f_e, δ, s, z, b, ϕ, ρ, σ, ε, A, η_L, F, κ, ξ_inv = cal
-    zbar = z
+@unpack  f_e, δ, s, z, b, ϕ, ρ, σ, ε, A, η_L, F, κ, ξ_inv = cal
 
-    PAR     =   [f_e; δ; s; zbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; σ_z ]
+zbar = z 
+δbar = δ
+PAR     =   [f_e; s; zbar; δbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; σ_z; ρ_δ; σ_δ ]
 
+sol = solution_interface(model, PAR)
+@unpack ss, SS, sol_mat, eta = sol
 
-    # Solution functions (no adjustment needed)
-        eta     =   eval_ShockVAR(PAR)
-        PAR_SS  =   eval_PAR_SS(PAR)
-        SS      =   eval_SS(PAR_SS)
-        SS_err  =   eval_SS_error(PAR_SS, SS)
-        deriv   =   eval_deriv(PAR_SS, SS)
-        SS_max = maximum(abs.(SS_err))
-        println("Residuals: $SS_max")
-
-        ss = NamedTuple(zip(varnames, exp.(SS[1:23])))
-
-        # @btime sol_mat = solve_model(model, deriv, eta)
-        sol_mat = solve_model(model, deriv, eta)
-        println("Model solved")
-
-
-## Simulation
-    # Impulse-Response functions
-        flag_IR = true
-        flag_logdev = true
-        T_IR = 100
-        sim_IR = simulate_model(model, sol_mat, T_IR, eta, SS, flag_IR, flag_logdev)
-        irf_df = 100 .*DataFrame(sim_IR, varnames)
-
-        #using Plots
-        #Plots.plot(sim_IR,xlabel="Periods", ylabel= "%", yformatter=:percent)
-
-        fig, ax = plt.subplots(ncols=2, nrows=2, figsize=(16, 12))
-        ax[1,1].plot(irf_df.u, label=:u, alpha=0.6)
-        ax[1,1].plot(irf_df.v, label=:v, alpha=0.6)
-        ax[1,1].plot(irf_df.θ, label=:θ, alpha=0.6)
-        ax[1,1].plot(irf_df.e, label=:e, alpha=0.6)
-        ax[1,1].yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter())
-        ax[1,1].legend()
-
-        ax[1,2].plot(irf_df.C, label=:C, alpha=0.6)
-        ax[1,2].plot(irf_df.Y_c, label=:Y_c, alpha=0.6)
-        ax[1,2].plot(irf_df.Y, label=:Y, alpha=0.6)
-        ax[1,2].yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter())
-        ax[1,2].legend()
-
-        ax[2,1].plot(irf_df.N_e, label=:N_e, alpha=0.6)
-        ax[2,1].plot(irf_df.N, label=:N, alpha=0.6)
-        ax[2,1].yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter())
-        ax[2,1].legend()
-
-        ax[2,2].plot(irf_df.z, label=:z, alpha=0.6)
-        #ax[2,2].plot(irf_df.w, label=:w, alpha=0.6)
-        #ax[2,2].plot(irf_df.w_R,label=:w_R, alpha=0.6)
-        ax[2,2].plot(irf_df.Y, label=:Y, alpha=0.6)
-        ax[2,2].yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter())
-        ax[2,2].legend()
-        display(fig)
+## Simulation  and calculation of moments
+#=
+Here we follow standard practice and Coles and Kelishomi 2018 by
+1) Generating monthly series
+2) Converting to quarterly
+3) Applying HP filter (lam=100,000)
+-> can consider other filters/growth rates, HP filter induces spurious autocorrelations
+=#
 
 
 
-## Simulation    
-        flag_IR = false
-        flag_logdev = false
-        T_SM = 100
-        sim_SM = simulate_model(model, sol_mat, T_SM, eta, SS, flag_IR, flag_logdev)
-        using Plots
-        Plots.plot(sim_SM)
+
+flag_IR = false
+flag_logdev = true #express results in log deviations
+T_SM = 100_000
+sim_SM = simulate_model(model, sol_mat, T_SM, eta, SS, flag_IR, flag_logdev)
+# Multiply by 100 to express results in percentage deviations
+sim_data = 100 .*DataFrame(sim_SM, varnames)
+# Extract variable symbols to be used for calculating moments
+moments_vars = [:u, :v, :θ, :z, :δ ]
+
+sim_data = sim_data[!, moments_vars]
+#moments(sim_data, :z, [:z]; lags =2, verbose=true)
+
+# Convert monthly data to quarterly 
+sim_data_q = monthly_to_quarterly(sim_data)
+
+# HP and Hamilton filters
+
+function filter_data(data, type=:hp, λ=100_000)
+sim_data_hp = copy(sim_data)
+sim_data_ham = copy(sim_data)
+sim_data_growth = copy(sim_data)
+for x in moments_vars
+    sim_data_hp[!, x] .= hp_filter(sim_data[!, x], 1600)
+    sim_data_ham[!, x] .= hamilton_filter(sim_data[!, x])
+    sim_data_growth[!, x] .= growth_filter(sim_data[!, x])
+end
+
+# Calculate moments
+    # Set up correlations as Shimer 2005 (w/o job finding rate): 
+@show mom = moments(sim_data_growth, :z, [:v, :θ, :δ, :z]; lags=2)
+#moments(sim_data_ham, :z, [:z, :v]; lags =2, verbose=true)
+
+# Calculate moments 
+
+#sim_dat
+#using Plots
+#Plots.plot(sim_SM)
+
+
+
