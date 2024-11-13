@@ -793,9 +793,9 @@ M_.static_g1_sparse_colval = int32([1 1 2 2 2 3 3 3 4 4 4 4 5 5 5 5 6 6 6 6 6 7 
 M_.static_g1_sparse_colptr = int32([1 3 6 9 13 17 22 27 29 34 38 42 46 50 53 55 58 61 63 64 68 72 74 76 77 79 83 92 95 96 97 98 99 100 101 102 103 104 105 106 108 ]);
 M_.params(1) = 0.99673;
 beta = M_.params(1);
-M_.params(9) = 1.0;
+M_.params(9) = 3.773584905660377;
 xi_inv = M_.params(9);
-M_.params(2) = 0.00514;
+M_.params(2) = 0.00874;
 delta = M_.params(2);
 M_.params(5) = 0.031;
 tau = M_.params(5);
@@ -805,7 +805,7 @@ M_.params(7) = 0.8;
 qbar = M_.params(7);
 M_.params(12) = 0.66;
 labor_share = M_.params(12);
-M_.params(8) = 0.2;
+M_.params(8) = 0.1;
 x_v = M_.params(8);
 M_.params(13) = 1.0;
 N_ss = M_.params(13);
@@ -813,22 +813,22 @@ M_.params(14) = 1.0;
 w_ss = M_.params(14);
 M_.params(3) = 0.30;
 mu_net = M_.params(3);
-M_.params(4) = 1.5;
+M_.params(4) = 1.0;
 sigma = M_.params(4);
 M_.params(10) = 0.71;
 b_ratio = M_.params(10);
 M_.params(11) = 0.6;
 eta_L = M_.params(11);
-M_.params(15) = 0.975;
+M_.params(15) = 0.965;
 rho_z = M_.params(15);
-M_.params(16) = 0.975;
+M_.params(16) = 0.875;
 rho_delta = M_.params(16);
 %
 % SHOCKS instructions
 %
 M_.exo_det_length = 0;
 M_.Sigma_e(1, 1) = 4.900000000000001e-05;
-M_.Sigma_e(2, 2) = 1.936e-05;
+M_.Sigma_e(2, 2) = 0.001764;
 options_resid_ = struct();
 display_static_residuals(M_, options_, oo_, options_resid_);
 steady;

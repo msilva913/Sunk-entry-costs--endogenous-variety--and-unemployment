@@ -58,7 +58,7 @@ end
 @syms zp  δp θp qp Kp Lp up vp v_pretp ep Kp Qp Np pp N_ep ν_fp d_fp w_Rp wp L_ep L_cp Y_cp Cp λp Yp labor_prod_p
 
 
-x               = [u; N; v_pret; z; δ] # predetermined
+x               = [u; N; v_pret; z; δ; s] # predetermined
 y               = [θ; q; L; v; e; K; Q; p; N_e; ν_f; d_f; w_R; w; L_e; L_c; Y_c; C; λ; Y; labor_prod]
 xp              = [up; Np; v_pretp; zp; δp]
 yp              = [θp; qp; Lp; vp; ep; Kp; Qp; pp; N_ep; ν_fp; d_fp; w_Rp; wp; L_ep; L_cp; Y_cp; Cp; λp; Yp; labor_prod_p]
@@ -68,7 +68,7 @@ varnames = vcat(Symbol.(x), Symbol.(y))
 # Shock
 @syms epsilon
 ex               = [epsilon]
-eta = Array([0.0; 0.0; 0.0; -σ_z; σ_δ]) # size of state space
+eta = Array([0.0; 0.0; 0.0; -σ_z; σ_δ; σ_s]) # size of state space
 
     
 nx = length(x) 

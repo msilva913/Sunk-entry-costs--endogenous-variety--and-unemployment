@@ -92,12 +92,12 @@ parameters
 %----------------------------------------------------------------
 //z = 1.0;
 beta = 0.99673; % monthly discount factor
-xi_inv = 1.0; % 0 corresponds to infinitely elastic vacancy creation--standard DMP free entry
+xi_inv = 1/0.265; % 0 corresponds to infinitely elastic vacancy creation--standard DMP free entry
 //xi_inv = 0.1;
 
 //r_ann = 0.04; % annual interest rate 
 
-delta = 0.00514;
+delta = 0.00874;
 //delta = 0.021;
 tau = 0.031;
 //fbar = 0.41;
@@ -105,19 +105,19 @@ fbar = 0.41;
 qbar = 0.8;
 
 labor_share = 0.66;
-x_v = 0.2;
+x_v = 0.1;
 N_ss = 1.0;
 w_ss = 1.0;
 
 mu_net = 0.30;
 //mu_net = 0.01;
-sigma = 1.5;
+sigma = 1.0;
 b_ratio = 0.71;
 eta_L = 0.6;
 
 
-rho_z = 0.975;
-rho_delta = 0.975;
+rho_z = 0.965;
+rho_delta = 0.875;
 %----------------------------------------------------------------
 % enter model equations
 %----------------------------------------------------------------
@@ -362,7 +362,7 @@ end;
 //set shock variances
 shocks;
     var e_z=0.007^2;
-    var e_delta = 0.0044^2;
+    var e_delta = 0.042^2;
     //var e_b = 0.0072^2;
     //var e_alphaL=0.0072^2;
 end;
