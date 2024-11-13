@@ -101,6 +101,7 @@ function gen_irf(irf_df::DataFrame)
     
     # Bottom right plot
     plot!(p[4], irf_df.z, label="z")
+    plot!(p[4], irf_df.δ, label="δ")
     plot!(p[4], irf_df.Y, label="Y")
     yticks!(p[4], :auto, fmt=x->string(round(x*100,digits=1),"%"))
     

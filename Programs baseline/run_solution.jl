@@ -135,7 +135,7 @@ f = fill(Sym("x"), nvar)
 # Steady state     
 # Values 
 
-# Initial parameters: targets and normalizations
+# Initial parameters: targets and normalizations/ leave parameters as symbolic to be populated with calibration
 N_s = 1.0
 w_s = 1.0
 z_s = 1.0
@@ -272,13 +272,13 @@ sim_data_q = monthly_to_quarterly(sim_data)
 
 # HP and Hamilton filters
 
-sim_data_hp = copy(sim_data)
-sim_data_ham = copy(sim_data)
-sim_data_growth = copy(sim_data)
+sim_data_hp = copy(sim_data_q)
+sim_data_ham = copy(sim_data_q)
+sim_data_growth = copy(sim_data_q)
 for x in moments_vars
-    sim_data_hp[!, x] .= hp_filter(sim_data[!, x], 100_000)
-    sim_data_ham[!, x] .= hamilton_filter(sim_data[!, x])
-    sim_data_growth[!, x] .= growth_filter(sim_data[!, x])
+    sim_data_hp[!, x] .= hp_filter(sim_data_q[!, x], 100_000)
+    sim_data_ham[!, x] .= hamilton_filter(sim_data_q[!, x])
+    sim_data_growth[!, x] .= growth_filter(sim_data_q[!, x])
 end
 
 # Calculate moments
