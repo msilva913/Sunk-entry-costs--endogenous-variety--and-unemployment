@@ -207,7 +207,7 @@ targets = (labor_share=labor_share, dest_ann=0.1, r_ann=0.04, f =fbar, η_L=0.6,
 cal = calibrate_labor_share(targets)
 
 
-# Shock values (from Coles and Kelishomi)
+# Shock values (from Coles and Kelishomi), monthly frequency
 ρ_z = 0.965
 σ_z = 0.007
 ρ_δ = 0.875
