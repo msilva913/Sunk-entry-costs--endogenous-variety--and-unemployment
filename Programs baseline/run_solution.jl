@@ -233,10 +233,10 @@ Here we follow standard practice and Coles and Kelishomi 2018 by
 
 
 flag_IR = false
-flag_logdev = false #express results in log deviations
+flag_logdev = false #express results in LEVELS
 T_SM = 100_000
 sim_SM = simulate_model(model, sol_mat, T_SM, eta, SS, flag_IR, flag_logdev)
-# Multiply by 100 to express results in percentage deviations
+# Multiply by 100 to 
 sim_data = 100 .*DataFrame(sim_SM, varnames)
 # Extract variable symbols to be used for calculating moments
 moments_vars = [:u, :v, :θ, :z, :δ ]
@@ -254,6 +254,15 @@ plot!(p[4], sim_data.z, label="z")
 plot!(p[5], sim_data.δ, label="δ")
 display(p)
 
+#######################################################
+# Expresss results in log deviations
+flag_logdev = true 
+sim_SM = simulate_model(model, sol_mat, T_SM, eta, SS, flag_IR, flag_logdev)
+sim_data = DataFrame(sim_SM, varnames)
+sim_data = sim_data[!, moments_vars]
+# Levels @. exp(sim_data.u)*ss.u
+
+
 
 
 #moments(sim_data, :z, [:z]; lags =2, verbose=true)
@@ -267,7 +276,7 @@ sim_data_hp = copy(sim_data)
 sim_data_ham = copy(sim_data)
 sim_data_growth = copy(sim_data)
 for x in moments_vars
-    sim_data_hp[!, x] .= hp_filter(sim_data[!, x], 1600)
+    sim_data_hp[!, x] .= hp_filter(sim_data[!, x], 100_000)
     sim_data_ham[!, x] .= hamilton_filter(sim_data[!, x])
     sim_data_growth[!, x] .= growth_filter(sim_data[!, x])
 end
@@ -283,5 +292,23 @@ end
 #using Plots
 #Plots.plot(sim_SM)
 
+## Impulse responses ##
+eta_z = zero(eta)
+eta_δ = zero(eta)
+eta_z[4] = eta[4]
+eta_δ[5] = eta[5]
 
+flag_IR = true
+flag_logdev = true
+T_IR = 120 # 10 years
+
+# Technology shock
+irf_z= simulate_model(model, sol_mat, T_IR, eta_z, SS, flag_IR, flag_logdev)
+irf_z = 100 .*DataFrame(irf_z, varnames)
+gen_irf(irf_z)
+
+# Destruction rate shock: consistent with Beveridge curve
+irf_δ= simulate_model(model, sol_mat, T_IR, eta_δ, SS, flag_IR, flag_logdev) 
+irf_δ = 100 .*DataFrame(irf_δ, varnames)
+gen_irf(irf_δ)
 
