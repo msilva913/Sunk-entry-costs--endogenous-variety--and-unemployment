@@ -41,8 +41,8 @@ end
     flag_SSsolver   = false
 
 # Parameters
-    @syms f_e s zbar δbar b ϕ ρ σ ε A η_L F κ ξ_inv ρ_z σ_z ρ_δ σ_δ
-    parameters      = [f_e; s; zbar; δbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; σ_z; ρ_δ; σ_δ]
+    @syms f_e s zbar δbar sbar b ϕ ρ σ ε A η_L F κ ξ_inv ρ_z σ_z ρ_δ σ_δ ρ_s σ_s
+    parameters      = [f_e; s; zbar; δbar; sbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; σ_z; ρ_δ; σ_δ; ρ_s; σ_s ]
     estimate        = []
     position        = []
     priors          = (;)
@@ -50,17 +50,17 @@ end
         # Transformations
         β = 1/(1+ρ)
         ξ = 1/ξ_inv
-        τbar = 1 - (1-δbar)*(1-s)
+        τbar = 1 - (1-δbar)*(1-sbar)
         μ = ε/(ε-1)
 
 # Variables
-@syms  z δ u θ q K L u v v_pret e K Q  N p N_e ν_f d_f w_R w L_e L_c Y_c C λ Y labor_prod
-@syms zp  δp θp qp Kp Lp up vp v_pretp ep Kp Qp Np pp N_ep ν_fp d_fp w_Rp wp L_ep L_cp Y_cp Cp λp Yp labor_prod_p
+@syms  z δ s u θ q K L u v v_pret e K Q  N p N_e ν_f d_f w_R w L_e L_c Y_c C λ Y labor_prod
+@syms zp  δp sp θp qp Kp Lp up vp v_pretp ep Kp Qp Np pp N_ep ν_fp d_fp w_Rp wp L_ep L_cp Y_cp Cp λp Yp labor_prod_p
 
 
 x               = [u; N; v_pret; z; δ; s] # predetermined
 y               = [θ; q; L; v; e; K; Q; p; N_e; ν_f; d_f; w_R; w; L_e; L_c; Y_c; C; λ; Y; labor_prod]
-xp              = [up; Np; v_pretp; zp; δp]
+xp              = [up; Np; v_pretp; zp; δp; sp]
 yp              = [θp; qp; Lp; vp; ep; Kp; Qp; pp; N_ep; ν_fp; d_fp; w_Rp; wp; L_ep; L_cp; Y_cp; Cp; λp; Yp; labor_prod_p]
 variables       = [x; y; xp; yp]
 varnames = vcat(Symbol.(x), Symbol.(y))
@@ -118,9 +118,9 @@ f = fill(Sym("x"), nvar)
     # LOM of vacancies 
     f[19] = v - (v_pret + e)
     # Predetermined vacancies 
-    f[20] = v_pretp - (1-δbar*δ)*((1-q)*v+s*(1-u))
+    f[20] = v_pretp - (1-δbar*δ)*((1-q)*v+sbar*s*(1-u))
     # LOM of unemployment
-    f[21] = up - ((1-(1-δbar*δ)*(θ*q))*u + (1-(1-δ*δbar)*(1-s))*(1-u))
+    f[21] = up - ((1-(1-δbar*δ)*(θ*q))*u + (1-(1-δ*δbar)*(1-sbar*s))*(1-u))
     # LOM of firms 
     f[22] = Np - (1-δbar*δ)*(N+N_e)
     # Profits 
@@ -131,6 +131,7 @@ f = fill(Sym("x"), nvar)
     # Exogenous processes
     f[24]  =   log(zp) - ρ_z * log(z)
     f[25] =    log(δp) -  ρ_δ * log(δ)
+    f[26] = log(sp) - ρ_s*log(s)
 
 # Steady state     
 # Values 
@@ -140,6 +141,7 @@ N_s = 1.0
 w_s = 1.0
 z_s = 1.0
 δ_s = 1.0
+s_s = 1.0
 
 fbar = 0.41
 qbar = 0.8
@@ -175,7 +177,7 @@ labor_prod_s = Y_s/(p_s*L_s)
 #x               = [u; N; v_pret; z] # predetermined
 #y               = [θ; q; L; v; e; K; Q; p; N_e; ν_f; d_f; w_R; w; L_e; L_c; Y_c; C; λ; Y; labor_prod]
 # Vector
-SS_block  = [log(x) for x in [u_s, N_s, v_prets, z_s, δ_s, θ_s, q_s, L_s, v_s, e_s, K_s, Q_s, p_s, N_es, ν_fs, d_fs, w_Rs, w_s, L_es, L_cs, Y_cs, C_s, λ_s, Y_s, labor_prod_s]]
+SS_block  = [log(x) for x in [u_s, N_s, v_prets, z_s, δ_s, s_s, θ_s, q_s, L_s, v_s, e_s, K_s, Q_s, p_s, N_es, ν_fs, d_fs, w_Rs, w_s, L_es, L_cs, Y_cs, C_s, λ_s, Y_s, labor_prod_s]]
 # vertical concatenate: represent both current and future variables
 SS = vcat(SS_block, SS_block)
 
@@ -212,12 +214,15 @@ cal = calibrate_labor_share(targets)
 σ_z = 0.007
 ρ_δ = 0.875
 σ_δ = 0.042
+ρ_s = 0.875
+σ_s = 0.042
 
 @unpack  f_e, δ, s, z, b, ϕ, ρ, σ, ε, A, η_L, F, κ, ξ_inv = cal
 
 zbar = z 
 δbar = δ
-PAR     =   [f_e; s; zbar; δbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; σ_z; ρ_δ; σ_δ ]
+sbar = s
+PAR     =   [f_e; s; zbar; δbar; sbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; σ_z; ρ_δ; σ_δ; ρ_s; σ_s ]
 
 sol = solution_interface(model, PAR)
 @unpack ss, SS, sol_mat, eta = sol
@@ -293,11 +298,17 @@ end
 #Plots.plot(sim_SM)
 
 ## Impulse responses ##
-eta_z = zero(eta)
-eta_δ = zero(eta)
+eta_z = zero(eta) # Tech shock
+eta_δ = zero(eta) # Product destruction shock
+eta_s = zero(eta) # Idiosyncratic separation shock
+eta_τ = zero(eta) # Common separation shock
+
 eta_z[4] = eta[4]
 eta_δ[5] = eta[5]
+eta_s[6] = eta[6]
 
+eta_τ[5] = eta[5]
+eta_τ[6] = eta[6]
 flag_IR = true
 flag_logdev = true
 T_IR = 120 # 10 years
