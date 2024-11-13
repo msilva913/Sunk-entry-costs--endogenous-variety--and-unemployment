@@ -325,7 +325,7 @@ gen_irf(irf_δ)
 
 # Idiosyncratic job separation shock
 irf_s= simulate_model(model, sol_mat, T_IR, eta_s, SS, flag_IR, flag_logdev) 
-irf_s = 100 .*DataFrame(irf_δ, varnames)
+irf_s = 100 .*DataFrame(irf_s, varnames)
 gen_irf(irf_s)
 
 #Commmon separation shock
