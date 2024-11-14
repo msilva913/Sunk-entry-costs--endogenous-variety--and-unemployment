@@ -7,6 +7,7 @@
 using MKL
 using PyPlot
 using DataFrames
+cd(@__DIR__)
 #v1.7- 
 #BLAS.vendor() 
 #:mkl
@@ -322,6 +323,7 @@ gen_irf(irf_z)
 irf_δ= simulate_model(model, sol_mat, T_IR, eta_δ, SS, flag_IR, flag_logdev) 
 irf_δ = 100 .*DataFrame(irf_δ, varnames)
 gen_irf(irf_δ)
+Plots.savefig("dest_shock.pdf")
 
 # Idiosyncratic job separation shock
 irf_s= simulate_model(model, sol_mat, T_IR, eta_s, SS, flag_IR, flag_logdev) 
