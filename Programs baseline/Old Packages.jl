@@ -16,6 +16,7 @@ Pkg.add([
     Pkg.PackageSpec(name="Distributions", version="0.25.50"),
     Pkg.PackageSpec(name="StatsBase", version="0.33.15"),
     Pkg.PackageSpec(name="MKL", version="0.5.0"),
+    Pkg.PackageSpec(name="Plots", version="1.38.0"),
     Pkg.PackageSpec(name="PyPlot", version="2.11.0"),
     Pkg.PackageSpec(name="CSV", version="0.10.5"),
     Pkg.PackageSpec(name="Roots", version="1.4.0"),
