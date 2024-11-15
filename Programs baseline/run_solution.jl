@@ -178,6 +178,7 @@ Q_s = K_s*(1+ρ)/(ρ+δbar)
 C_s = Y_cs -  F/(1+ξ_inv)*(e_s/F)^(1+ξ_inv) -  κ*v_s*q_s 
 λ_s = C_s^(-σ)
 Y_s = Y_cs + ν_fs*N_es
+
 # data consistent
 labor_prod_s = Y_s/(p_s*L_s)
 C_Rs = C_s/p_s

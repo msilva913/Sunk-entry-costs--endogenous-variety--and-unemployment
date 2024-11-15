@@ -8,7 +8,7 @@
 
 #v1.7+
 using MKL
-
+cd(@__DIR__)
 #v1.7- 
 #BLAS.vendor() 
 #:mkl

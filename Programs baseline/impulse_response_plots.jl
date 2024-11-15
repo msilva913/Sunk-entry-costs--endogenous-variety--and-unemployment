@@ -77,7 +77,7 @@ Comparison of irfs to highlight model transmission mechanism
 
 function gen_irf(irf_df::DataFrame)
     # Set up a 3x2 layout with specified size
-    p = Plots.plot(layout=(3,2), size=(800, 600), 
+    p = Plots.plot(layout=(2, 3), size=(600, 600), 
             legend=true, alpha=0.6)
     
     # Top left plot: labor market variables
