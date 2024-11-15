@@ -328,6 +328,7 @@ T_IR = 120 # 10 years
 irf_z= simulate_model(model, sol_mat, T_IR, eta_z, SS, flag_IR, flag_logdev)
 irf_z = 100 .*DataFrame(irf_z, varnames)
 gen_irf(irf_z)
+Plots.savefig("z_shock.pdf")
 
 # Destruction rate shock: consistent with Beveridge curve
 irf_δ= simulate_model(model, sol_mat, T_IR, eta_δ, SS, flag_IR, flag_logdev) 
@@ -339,9 +340,10 @@ Plots.savefig("dest_shock.pdf")
 irf_s= simulate_model(model, sol_mat, T_IR, eta_s, SS, flag_IR, flag_logdev) 
 irf_s = 100 .*DataFrame(irf_s, varnames)
 gen_irf(irf_s)
+Plots.savefig("s_shock.pdf")
 
 #Commmon separation shock
 irf_τ= simulate_model(model, sol_mat, T_IR, eta_τ, SS, flag_IR, flag_logdev) 
 irf_τ = 100 .*DataFrame(irf_τ, varnames)
 gen_irf(irf_τ)
-
+Plots.savefig("common_shock.pdf")
