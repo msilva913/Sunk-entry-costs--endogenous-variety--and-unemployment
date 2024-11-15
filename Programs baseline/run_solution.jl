@@ -55,14 +55,14 @@ end
         μ = ε/(ε-1)
 
 # Variables
-@syms  z δ s u θ q K L u v v_pret e K Q  N p N_e ν_f d_f w_R w L_e L_c Y_c C λ Y labor_prod
-@syms zp  δp sp θp qp Kp Lp up vp v_pretp ep Kp Qp Np pp N_ep ν_fp d_fp w_Rp wp L_ep L_cp Y_cp Cp λp Yp labor_prod_p
+@syms  z δ s u θ q K L u v v_pret e K Q  N p N_e ν_f d_f w_R w L_e L_c Y_c C λ Y labor_prod C_R Y_R Y_cR
+@syms zp  δp sp θp qp Kp Lp up vp v_pretp ep Kp Qp Np pp N_ep ν_fp d_fp w_Rp wp L_ep L_cp Y_cp Cp λp Yp labor_prod_p C_Rp Y_Rp Y_cRp
 
 
 x               = [u; N; v_pret; z; δ; s] # predetermined
-y               = [θ; q; L; v; e; K; Q; p; N_e; ν_f; d_f; w_R; w; L_e; L_c; Y_c; C; λ; Y; labor_prod]
+y               = [θ; q; L; v; e; K; Q; p; N_e; ν_f; d_f; w_R; w; L_e; L_c; Y_c; C; λ; Y; labor_prod; C_R; Y_R; Y_cR]
 xp              = [up; Np; v_pretp; zp; δp; sp]
-yp              = [θp; qp; Lp; vp; ep; Kp; Qp; pp; N_ep; ν_fp; d_fp; w_Rp; wp; L_ep; L_cp; Y_cp; Cp; λp; Yp; labor_prod_p]
+yp              = [θp; qp; Lp; vp; ep; Kp; Qp; pp; N_ep; ν_fp; d_fp; w_Rp; wp; L_ep; L_cp; Y_cp; Cp; λp; Yp; labor_prod_p; C_Rp; Y_Rp; Y_cRp]
 variables       = [x; y; xp; yp]
 varnames = vcat(Symbol.(x), Symbol.(y))
 
@@ -126,13 +126,17 @@ f = fill(Sym("x"), nvar)
     f[22] = Np - (1-δbar*δ)*(N+N_e)
     # Profits 
     #f[23] = d_f - Y_c/(N*ε)
-    # Data-consistent labor productivity
-    f[23] = labor_prod - Y/(p*L)
+
+    # Data-consistent variables
+    f[23] = labor_prod - Y/(p*L) # labor productivity
+    f[24] = C_R - C/p 
+    f[25] = Y_R - Y/p 
+    f[26] = Y_cR - Y_c/p
 
     # Exogenous processes
-    f[24]  =   log(zp) - ρ_z * log(z)
-    f[25] =    log(δp) -  ρ_δ * log(δ)
-    f[26] = log(sp) - ρ_s*log(s)
+    f[27]  =   log(zp) - ρ_z * log(z)
+    f[28] =    log(δp) -  ρ_δ * log(δ)
+    f[29] = log(sp) - ρ_s*log(s)
 
 # Steady state     
 # Values 
@@ -174,11 +178,15 @@ Q_s = K_s*(1+ρ)/(ρ+δbar)
 C_s = Y_cs -  F/(1+ξ_inv)*(e_s/F)^(1+ξ_inv) -  κ*v_s*q_s 
 λ_s = C_s^(-σ)
 Y_s = Y_cs + ν_fs*N_es
+# data consistent
 labor_prod_s = Y_s/(p_s*L_s)
+C_Rs = C_s/p_s
+Y_Rs = Y_R/p_s
+Y_cRs = Y_cs/p_s
 #x               = [u; N; v_pret; z] # predetermined
 #y               = [θ; q; L; v; e; K; Q; p; N_e; ν_f; d_f; w_R; w; L_e; L_c; Y_c; C; λ; Y; labor_prod]
 # Vector
-SS_block  = [log(x) for x in [u_s, N_s, v_prets, z_s, δ_s, s_s, θ_s, q_s, L_s, v_s, e_s, K_s, Q_s, p_s, N_es, ν_fs, d_fs, w_Rs, w_s, L_es, L_cs, Y_cs, C_s, λ_s, Y_s, labor_prod_s]]
+SS_block  = [log(x) for x in [u_s, N_s, v_prets, z_s, δ_s, s_s, θ_s, q_s, L_s, v_s, e_s, K_s, Q_s, p_s, N_es, ν_fs, d_fs, w_Rs, w_s, L_es, L_cs, Y_cs, C_s, λ_s, Y_s, labor_prod_s, C_Rs, Y_Rs, Y_cRS]]
 # vertical concatenate: represent both current and future variables
 SS = vcat(SS_block, SS_block)
 

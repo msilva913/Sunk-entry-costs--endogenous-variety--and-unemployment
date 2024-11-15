@@ -77,34 +77,43 @@ Comparison of irfs to highlight model transmission mechanism
 
 function gen_irf(irf_df::DataFrame)
     # Set up a 2x2 layout with specified size
-    p = Plots.plot(layout=(2,2), size=(800, 600), 
+    p = Plots.plot(layout=(3,2), size=(800, 600), 
             legend=true, alpha=0.6)
     
-    # Top left plot
+    # Top left plot: labor market variables
     plot!(p[1], irf_df.u, label="u", subplot=1)
     plot!(p[1], irf_df.v, label="v")
     plot!(p[1], irf_df.θ, label="θ")
     plot!(p[1], irf_df.e, label="e")
     # Format y-axis as percentage
     yticks!(p[1], :auto, fmt=x->string(round(x*100,digits=1),"%"))
-    
-    # Top right plot
-    plot!(p[2], irf_df.C, label="C")
-    plot!(p[2], irf_df.Y_c, label="Y_c")
-    plot!(p[2], irf_df.Y, label="Y")
+
+    # Top middle plot: product line variables
+    plot!(p[2], irf_df.N_e, label="N_e")
+    plot!(p[2], irf_df.N, label="N")
     yticks!(p[2], :auto, fmt=x->string(round(x*100,digits=1),"%"))
     
-    # Bottom left plot
-    plot!(p[3], irf_df.N_e, label="N_e")
-    plot!(p[3], irf_df.N, label="N")
+    # Top right plot: vacancy value variables
+    plot!(p[3], irf_df.Q, label="Q")
+    plot!(p[3], irf_df.K, label="K")
     yticks!(p[3], :auto, fmt=x->string(round(x*100,digits=1),"%"))
-    
-    # Bottom right plot
-    plot!(p[4], irf_df.z, label="z")
-    plot!(p[4], irf_df.labor_prod, label="labor productivity")
-    plot!(p[4], irf_df.δ, label="δ")
-    plot!(p[4], irf_df.Y, label="Y")
+
+    # Bottom left plot: consumption and data-consistent counterpart
+    plot!(p[4], irf_df.C, label="C")
+    plot!(p[4], irf_df.C_R, label="C_R")
     yticks!(p[4], :auto, fmt=x->string(round(x*100,digits=1),"%"))
+
+    # Bottom middle plot: output and data-consistent counterpart
+    plot!(p[5], irf_df.Y, label="Y")
+    plot!(p[5], irf_df.Y_R, label="Y_R")
+    yticks!(p[5], :auto, fmt=x->string(round(x*100,digits=1),"%"))
+
+    # Bottom right plot
+    plot!(p[6], irf_df.z, label="z")
+    plot!(p[6], irf_df.labor_prod, label="labor productivity")
+    plot!(p[6], irf_df.δ, label="δ")
+    plot!(p[6], irf_df.Y, label="Y")
+    yticks!(p[6], :auto, fmt=x->string(round(x*100,digits=1),"%"))
     
     # Display the plot
     display(p)
