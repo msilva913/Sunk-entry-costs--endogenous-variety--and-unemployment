@@ -76,7 +76,7 @@ Comparison of irfs to highlight model transmission mechanism
 # end
 
 function gen_irf(irf_df::DataFrame)
-    # Set up a 2x2 layout with specified size
+    # Set up a 3x2 layout with specified size
     p = Plots.plot(layout=(3,2), size=(800, 600), 
             legend=true, alpha=0.6)
     

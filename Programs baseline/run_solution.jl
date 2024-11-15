@@ -48,11 +48,11 @@ end
     position        = []
     priors          = (;)
 
-        # Transformations
-        β = 1/(1+ρ)
-        ξ = 1/ξ_inv
-        τbar = 1 - (1-δbar)*(1-sbar)
-        μ = ε/(ε-1)
+    # Transformations
+    β = 1/(1+ρ)
+    ξ = 1/ξ_inv
+    τbar = 1 - (1-δbar)*(1-sbar)
+    μ = ε/(ε-1)
 
 # Variables
 @syms  z δ s u θ q K L u v v_pret e K Q  N p N_e ν_f d_f w_R w L_e L_c Y_c C λ Y labor_prod C_R Y_R Y_cR
@@ -181,12 +181,13 @@ Y_s = Y_cs + ν_fs*N_es
 # data consistent
 labor_prod_s = Y_s/(p_s*L_s)
 C_Rs = C_s/p_s
-Y_Rs = Y_R/p_s
+Y_Rs = Y_s/p_s
 Y_cRs = Y_cs/p_s
 #x               = [u; N; v_pret; z] # predetermined
 #y               = [θ; q; L; v; e; K; Q; p; N_e; ν_f; d_f; w_R; w; L_e; L_c; Y_c; C; λ; Y; labor_prod]
 # Vector
-SS_block  = [log(x) for x in [u_s, N_s, v_prets, z_s, δ_s, s_s, θ_s, q_s, L_s, v_s, e_s, K_s, Q_s, p_s, N_es, ν_fs, d_fs, w_Rs, w_s, L_es, L_cs, Y_cs, C_s, λ_s, Y_s, labor_prod_s, C_Rs, Y_Rs, Y_cRS]]
+SS_block  = [log(x) for x in [u_s, N_s, v_prets, z_s, δ_s, s_s, θ_s, q_s, L_s, v_s, e_s, K_s, Q_s, p_s, N_es, ν_fs, d_fs, w_Rs, w_s, L_es, L_cs, Y_cs, C_s, λ_s, Y_s, 
+        labor_prod_s, C_Rs, Y_Rs, Y_cRs]]
 # vertical concatenate: represent both current and future variables
 SS = vcat(SS_block, SS_block)
 
