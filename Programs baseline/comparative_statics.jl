@@ -6,14 +6,14 @@ using PrettyPrinting
 using Distributions
 cd(@__DIR__)
 include("steady_state.jl")
-
+default(linewidth=2, grid=true, fontfamily="Computer Modern")
 
 targets = (labor_share=0.66, dest_ann=0.06, r_ann=0.04, f =0.41, η_L=0.6, q=0.8, sep=0.031, b_ratio=0.71, x_v=0.2, ξ_inv=1, ε=4, σ=1.5, N=1, w=1)
 cal = calibrate_labor_share(targets)
 steady = steady_state(cal)
 
 T = 100
-θ_grid = range(1e-10, stop=1.5, length=T)
+θ_grid = range(1e-10, stop=1.0, length=T)
 
 N_jcc_grid = N_jcc.(θ_grid, Ref(cal))
 N_res_grid = N_res.(θ_grid, Ref(cal))
@@ -36,14 +36,19 @@ display(plt)
 #N_res is increasing with markup (decreasing with ε)-> incentive to place more resources in business formation
 para = (cal..., ε=cal.ε*0.9)
 N_res_grid2 = N_res.(θ_grid, Ref(para))
+N_jcc_grid2 = N_jcc.(θ_grid, Ref(para))
+p = plot(layout=(1, 2), size=(800, 400), legend=:right)
+plot!(p[1], θ_grid, N_res_grid, label="N: resource constraint curve: ε=$(cal.ε)")
+plot!(p[1], θ_grid, N_res_grid2, label="N: resource constraint curve: ε=$(para.ε)")
+xlabel!(p[1], L"θ")
+ylabel!(p[1], L"N")
 
-fig, ax = plt.subplots()
-ax.plot(θ_grid, N_res_grid, label="N: aggregate resource constraint")
-ax.plot(θ_grid, N_res_grid2, label="N: aggregate resource constraint, higher markup μ")
-ax.set_xlabel("θ")
-ax.set_ylabel("N")
-ax.legend()
-display(fig)
+plot!(p[2], θ_grid, N_jcc_grid, label="N: job creation curve: ε=$(cal.ε)")
+plot!(p[2], θ_grid, N_jcc_grid2, label="N: job creation curve: ε=$(para.ε)")
+xlabel!(p[2], L"θ")
+ylabel!(p[2], L"N")
+savefig("curves_epsi_shift.pdf")
+display(p)
 
 #N_res decreasing with δ (reduces labor resources, increases effective discounting, decreases ratio of N to N_e)
 
