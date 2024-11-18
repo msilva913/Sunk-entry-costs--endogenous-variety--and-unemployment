@@ -296,7 +296,7 @@ end
 
 # Calculate moments
     # Set up correlations as Shimer 2005 (w/o job finding rate): 
-@show mom = moments(sim_data_hp, :z, [:v, :θ, :δ, :z]; lags=2)
+@show mom = moments(sim_data_hp, :labor_prod, [:v, :θ, :δ, :labor_prod]; lags=2)
 #moments(sim_data_ham, :z, [:z, :v]; lags =2, verbose=true)
 
 # Calculate moments 

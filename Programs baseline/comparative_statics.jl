@@ -1,4 +1,4 @@
-using PyPlot
+using Plots
 using Parameters, CSV, StatsBase, Statistics, Random
 using NLsolve
 using Roots, Optim, LeastSquaresOptim
@@ -20,17 +20,15 @@ N_res_grid = N_res.(θ_grid, Ref(cal))
    
 # Initial plot of $\theta$ and $N$
 # Initial plot
-fig, ax = plt.subplots()
-ax.plot(θ_grid, N_jcc_grid, label="N: job creation condition")
-ax.plot(θ_grid, N_res_grid, label="N: aggregate resource constraint")
-ax.set_xlabel("θ")
-ax.set_ylabel("N")
-x_values = (steady.θ, 0.0)
-ax.axvline(steady.θ, linestyle="--", color="black", linewidth=0.5)
-ax.axhline(steady.N, linestyle="--", color="black", linewidth=0.5)
-ax.legend()
-plt.savefig("equilibrium_curves.pdf")
-display(fig)
+plt = plot(θ_grid, N_jcc_grid, label="N: job creation condition", linewidth=2)  # Adjust the alpha value here
+plot!(θ_grid, N_res_grid, label="N: aggregate resource constraint", linewidth=2)  # Adjust the alpha value here
+xlabel!(L"θ")
+ylabel!(L"N")
+vline!([steady.θ], line=:dash, color=:black, label="Steady "* L"θ", linewidth=0.5)  # Adjust the alpha value here
+hline!([steady.N], line=:dash, color=:black, label="Steady "*"N", linewidth=0.5)  # Adjust the alpha value here
+plot!(legend=true)
+savefig("equilibrium_curves.pdf")
+display(plt)
 
 # Check for second Equilibrium
 #steady = steady_state(cal, init=0.01)
