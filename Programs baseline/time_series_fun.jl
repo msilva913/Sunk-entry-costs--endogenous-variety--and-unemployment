@@ -1,14 +1,13 @@
-using PyPlot
+
 using LaTeXStrings, KernelDensity
 using Parameters, CSV, StatsBase, Statistics, Random
 using DataFrames
 using ShiftedArrays
-using QuantEcon
 using MappedArrays
 using TexTables
 using TypedTables
 using GLM
-using SparseArrays, LinearAlgebra
+using LinearAlgebra
 
 columns(M) = (view(M, :, i) for i in 1:size(M, 2))
 

@@ -5,7 +5,6 @@
 
 #v1.7+
 using MKL
-using PyPlot
 using DataFrames
 cd(@__DIR__)
 #v1.7- 
@@ -277,8 +276,6 @@ sim_SM = simulate_model(model, sol_mat, T_SM, eta, SS, flag_IR, flag_logdev)
 sim_data = DataFrame(sim_SM, varnames)
 sim_data = sim_data[!, moments_vars]
 # Levels @. exp(sim_data.u)*ss.u
-
-
 
 
 #moments(sim_data, :z, [:z]; lags =2, verbose=true)

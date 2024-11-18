@@ -1,4 +1,4 @@
-using PyPlot
+
 using Parameters, CSV, StatsBase, Statistics, Random
 using NLsolve
 using Roots, Optim, LeastSquaresOptim

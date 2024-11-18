@@ -1,4 +1,6 @@
 using Plots
+using LaTeXStrings
+
 default(linewidth=2, grid=true, fontfamily="Computer Modern")
 # function gen_irf(irf::DataFrame)
 #     fig, ax = plt.subplots(ncols=2, nrows=2, figsize=(16, 12))
