@@ -54,14 +54,14 @@ end
     μ = ε/(ε-1)
 
 # Variables
-@syms  z δ s u θ q K L u v v_pret e K Q  N p N_e ν_f d_f w_R w L_e L_c Y_c C λ Y labor_prod C_R Y_R Y_cR
-@syms zp  δp sp θp qp Kp Lp up vp v_pretp ep Kp Qp Np pp N_ep ν_fp d_fp w_Rp wp L_ep L_cp Y_cp Cp λp Yp labor_prod_p C_Rp Y_Rp Y_cRp
+@syms  z δ s u θ q K L u v v_pret e K Q  N p N_e ν_f d_f w_R w L_e L_c Y_c C λ Y labor_prod C_R Y_R Y_cR ls
+@syms zp  δp sp θp qp Kp Lp up vp v_pretp ep Kp Qp Np pp N_ep ν_fp d_fp w_Rp wp L_ep L_cp Y_cp Cp λp Yp labor_prod_p C_Rp Y_Rp Y_cRp lsp
 
 
 x               = [u; N; v_pret; z; δ; s] # predetermined
-y               = [θ; q; L; v; e; K; Q; p; N_e; ν_f; d_f; w_R; w; L_e; L_c; Y_c; C; λ; Y; labor_prod; C_R; Y_R; Y_cR]
+y               = [θ; q; L; v; e; K; Q; p; N_e; ν_f; d_f; w_R; w; L_e; L_c; Y_c; C; λ; Y; labor_prod; C_R; Y_R; Y_cR; ls]
 xp              = [up; Np; v_pretp; zp; δp; sp]
-yp              = [θp; qp; Lp; vp; ep; Kp; Qp; pp; N_ep; ν_fp; d_fp; w_Rp; wp; L_ep; L_cp; Y_cp; Cp; λp; Yp; labor_prod_p; C_Rp; Y_Rp; Y_cRp]
+yp              = [θp; qp; Lp; vp; ep; Kp; Qp; pp; N_ep; ν_fp; d_fp; w_Rp; wp; L_ep; L_cp; Y_cp; Cp; λp; Yp; labor_prod_p; C_Rp; Y_Rp; Y_cRp; lsp]
 variables       = [x; y; xp; yp]
 varnames = vcat(Symbol.(x), Symbol.(y))
 
@@ -125,17 +125,19 @@ f = fill(Sym("x"), nvar)
     f[22] = Np - (1-δbar*δ)*(N+N_e)
     # Profits 
     #f[23] = d_f - Y_c/(N*ε)
+    # Labor share of income
+    f[23] = ls - w*L/Y
 
     # Data-consistent variables
-    f[23] = labor_prod - Y/(p*L) # labor productivity
-    f[24] = C_R - C/p 
-    f[25] = Y_R - Y/p 
-    f[26] = Y_cR - Y_c/p
+    f[24] = labor_prod - Y/(p*L) # labor productivity
+    f[25] = C_R - C/p 
+    f[26] = Y_R - Y/p 
+    f[27] = Y_cR - Y_c/p
 
     # Exogenous processes
-    f[27]  =   log(zp) - ρ_z * log(z)
-    f[28] =    log(δp) -  ρ_δ * log(δ)
-    f[29] = log(sp) - ρ_s*log(s)
+    f[28]  =   log(zp) - ρ_z * log(z)
+    f[29] =    log(δp) -  ρ_δ * log(δ)
+    f[30] = log(sp) - ρ_s*log(s)
 
 # Steady state     
 # Values 
@@ -152,6 +154,7 @@ qbar = 0.8
 x_v = 0.1
 labor_share = 0.66
 
+ls_s = labor_share
 p_s = N_s^(1/(ε-1))
 N_es = δbar/(1-δbar)*N_s
 q_s = qbar/(1-δbar)
@@ -187,7 +190,7 @@ Y_cRs = Y_cs/p_s
 #y               = [θ; q; L; v; e; K; Q; p; N_e; ν_f; d_f; w_R; w; L_e; L_c; Y_c; C; λ; Y; labor_prod]
 # Vector
 SS_block  = [log(x) for x in [u_s, N_s, v_prets, z_s, δ_s, s_s, θ_s, q_s, L_s, v_s, e_s, K_s, Q_s, p_s, N_es, ν_fs, d_fs, w_Rs, w_s, L_es, L_cs, Y_cs, C_s, λ_s, Y_s, 
-        labor_prod_s, C_Rs, Y_Rs, Y_cRs]]
+        labor_prod_s, C_Rs, Y_Rs, Y_cRs, ls_s]]
 # vertical concatenate: represent both current and future variables
 SS = vcat(SS_block, SS_block)
 
@@ -225,7 +228,7 @@ cal = calibrate_labor_share(targets)
 ρ_δ = 0.875
 σ_δ = 0.042
 ρ_s = 0.875
-σ_s = 0.042
+σ_s = 0.0042
 
 @unpack  f_e, δ, s, z, b, ϕ, ρ, σ, ε, A, η_L, F, κ, ξ_inv = cal
 
@@ -254,7 +257,7 @@ sim_SM = simulate_model(model, sol_mat, T_SM, eta, SS, flag_IR, flag_logdev)
 # Multiply by 100 to 
 sim_data = 100 .*DataFrame(sim_SM, varnames)
 # Extract variable symbols to be used for calculating moments
-moments_vars = [:u, :v, :θ, :labor_prod, :z, :δ ]
+moments_vars = [:u, :v, :θ, :labor_prod, :ls, :z, :δ ]
 
 sim_data = sim_data[!, moments_vars]
 
@@ -262,15 +265,16 @@ sim_data = sim_data[!, moments_vars]
 p = Plots.plot(layout=(2, 3), size=(800,600), 
 legend=true, alpha=0.6)
 # Top left plot
-plot!(p[1], sim_data.u, label="u", subplot=1)
-plot!(p[2], sim_data.v, label="v")
-plot!(p[3], sim_data.θ, label="θ")
-plot!(p[4], sim_data.z, label="z")
-plot!(p[5], sim_data.δ, label="δ")
+plot!(p[1], sim_data.u, label=L"u", subplot=1)
+plot!(p[2], sim_data.v, label=L"v")
+plot!(p[3], sim_data.θ, label=L"θ")
+plot!(p[4], sim_data.z, label=L"z")
+plot!(p[5], sim_data.δ, label=L"δ")
+plot!(p[6], sim_data.ls, label="labor share")
 display(p)
 
 #######################################################
-# Expresss results in log deviations
+# Express results in log deviations
 flag_logdev = true 
 sim_SM = simulate_model(model, sol_mat, T_SM, eta, SS, flag_IR, flag_logdev)
 sim_data = DataFrame(sim_SM, varnames)
@@ -296,7 +300,7 @@ end
 
 # Calculate moments
     # Set up correlations as Shimer 2005 (w/o job finding rate): 
-@show mom = moments(sim_data_hp, :labor_prod, [:v, :θ, :δ, :labor_prod]; lags=2)
+@show mom = moments(sim_data_ham, :labor_prod, [:v, :θ, :δ, :labor_prod, :ls]; lags=2)
 #moments(sim_data_ham, :z, [:z, :v]; lags =2, verbose=true)
 
 # Calculate moments 

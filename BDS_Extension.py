@@ -3,6 +3,8 @@ script_dir = "C:/Users/msilva913/Documents/GitHub/Sunk_entry_costs_endogenous_va
 os.chdir(script_dir)
 import pandas as pd
 import numpy as np
+from fredapi import Fred
+fred = Fred(api_key = 'd35aabd7dc07cd94481af3d1e2f0ecf3	')
 from statsmodels.tsa.stattools import adfuller
 import matplotlib.pyplot as plt
 from IPython.display import display
@@ -12,7 +14,10 @@ from time_series_functions import crosscorr, dynamic_correlations
 
 df = pd.read_csv('BDS_Extension.csv')
 df_adf = df[df['year'] >= 1979].reset_index(drop=True)
-
+#u = fred.get_series('UNRATE').resample('YS').mean().dropna()
+#index = pd.DatetimeIndex(start="1978-01-01", end="2021", freq="Y")
+#df.set_index('year', inplace=True)
+#df["u"] = u
 # Episodes
 
 periods = {
@@ -34,9 +39,11 @@ plot_variable_names = ['Establishment Entry Rate', 'Establishment Exit Rate', 'F
 fig, ax = plt.subplots(figsize=(12, 8), nrows=2)
 ax[0].plot(df.year, df['estabs_entry_rate'], label='Establishments')
 ax[0].plot(df.year, df['firms_entry_rate'], label='Firms')
+#ax[0].plot(df.year, df['u'], label='Unemployment rate')
 ax[0].set_title("Entry rates")
 ax[1].plot(df.year, df['estabs_exit_rate'], label='Establishments')
 ax[1].plot(df.year, df['firms_exit_rate'], label='Firms')
+#ax[0].plot(df.year, df['u'], label='Unemployment rate')
 ax[1].set_title("Exit rates")
 
 for j in range(2):

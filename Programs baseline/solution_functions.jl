@@ -849,10 +849,12 @@ function simulate_model(model::NamedTuple, sol_mat::NamedTuple, TS::Int, eta::Ar
         sim_y = sim_y_f + sim_y_s + sim_y_t
     end
 
+
+
     if flag_logdev
         return [sim_x sim_y]
     else
-        if flag_deviation
+        if flag_deviation #xe^{\tilde{x}_t}
             return exp.([sim_x sim_y]).*repeat(exp.(SS[1:nvar]'), TS, 1)
         else
             return SS[1:nvar]' .+ [sim_x sim_y]

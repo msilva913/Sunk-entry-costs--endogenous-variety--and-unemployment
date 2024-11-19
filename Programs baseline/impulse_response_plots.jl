@@ -112,6 +112,7 @@ function gen_irf(irf_df::DataFrame)
 
     plot!(p[6], irf_df.w, label=L"w")
     plot!(p[6], irf_df.w_R, label=L"w_R")
+    plot!(p[6], irf_df.ls, label="labor share")
     yticks!(p[6], :auto, fmt=x->string(round(x*100,digits=1),"%"))
 
     plot!(p[7], irf_df.d_f, label=L"d_f")
