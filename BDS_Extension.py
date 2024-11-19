@@ -1,9 +1,12 @@
+import os
+script_dir = "C:/Users/msilva913/Documents/GitHub/Sunk_entry_costs_endogenous_variety_unemployment"
+os.chdir(script_dir)
 import pandas as pd
 import numpy as np
 from statsmodels.tsa.stattools import adfuller
 import matplotlib.pyplot as plt
 from IPython.display import display
-from time_series_functions import crosscorr
+from time_series_functions import crosscorr, dynamic_correlations
 
 # Data
 
@@ -53,7 +56,7 @@ plt.show()
 def create_summary_table(variable):
     summary = df[variable].describe()
     summary.loc['mean'] = df[variable].mean()
-    return summary.to_frame(name)
+    return summary.to_frame()
 
 summary_tables = pd.concat([create_summary_table(var) for var in variables], axis=1)
 summary_tables.columns = variable_names
@@ -73,22 +76,6 @@ for var1, var2 in comovement_pairs:
     correlation = df[[var1, var2]].corr().iloc[0, 1]
     print(f"\nCorrelation between {variable_names[variables.index(var1)]} and {variable_names[variables.index(var2)]}: {correlation:.2f}")
     
-def dynamic_correlations(data, var1, var2, ylabel, nleads=12, nlags=12, title=None):
-    fig, ax = plt.subplots(figsize=(14, 5))
-    x = data[var1]
-    y = data[var2]
-    rs = pd.Series([crosscorr(data[var1], data[var2], -lag) for lag in range(-nlags, nleads)])
-    ax.axhline(y=0.0, color="black", linestyle="--")
-    ax.plot(rs, '-', alpha=0.7, linewidth=2.0)
-    ax.axvline(np.argmax(abs(rs)), linestyle='--', color='red')
-    ax.set_xlabel(r'$\Delta$ (years)', fontsize=14)
-    ax.set_ylabel(ylabel, fontsize=14)
-    ax.set_xticks(range(0, len(rs)))
-    ax.set_xticklabels(range(-nlags, nleads))
-    if title is not None:
-        ax.set_title(title, fontsize=14)
-    plt.tight_layout()
-    plt.show()
 
 for var1, var2 in comovement_pairs:
     name1 = variable_names[variables.index(var1)]
