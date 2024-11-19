@@ -2,6 +2,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from IPython.display import display
 from fredapi import Fred
+import numpy as np
+import statsmodels.api as sm
 fred = Fred(api_key = 'd35aabd7dc07cd94481af3d1e2f0ecf3	')
 #df1 = pd.read_excel('SBF4.xlsx')
 #df2 = pd.read_excel('SBF8.xlsx')
@@ -17,6 +19,16 @@ episodes = {
 
 df1 = fred.get_series('BFBF4QTOTALSAUS').resample('MS').mean().dropna()
 df2 = fred.get_series("BFBF8QTOTALSAUS").resample("MS").mean().dropna()
+
+pop = fred.get_series('CNP16OV').resample('MS').mean().dropna()
+# Use HP-filtered trend for population to avoid discrete jumps around census dates
+pop = sm.tsa.filters.hpfilter(pop, lamb=10_000)[1]
+df1 = df1/pop
+df2 = df2/pop
+df1.dropna(inplace=True)
+df2.dropna(inplace=True)
+# Divide business formation by population
+
 #mapping
 #month_map = {
 #    'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6,
@@ -41,8 +53,8 @@ df2 = fred.get_series("BFBF8QTOTALSAUS").resample("MS").mean().dropna()
 
 #plot
 plt.figure(figsize=(12, 6))
-plt.plot(df1.index, df1.values, label='SBF4', color='blue')
-plt.plot(df2.index, df2.values, label='SBF8', color='red')
+plt.plot(df1.index, np.log(df1.values), label='SBF4', color='blue')
+plt.plot(df2.index, np.log(df2.values), label='SBF8', color='red')
 #plt.legend()
 
 for start, end in episodes.values():
@@ -50,7 +62,7 @@ for start, end in episodes.values():
 
 plt.title('Data Overview with Key Episodes')
 plt.xlabel('Year')
-plt.ylabel(' Spliced Business Formations')
+plt.ylabel(' Log Per Capita Business Formations')
 plt.legend(loc='upper left')
 plt.grid(True)
 plt.show()
