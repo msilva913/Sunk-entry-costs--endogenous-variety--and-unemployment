@@ -169,13 +169,16 @@ function steady_state(para; init=0.51)
     labor_prod = Y/(p*L)
 
     labor_share = w*L/Y
-    sunk_entry_cost_share = ν_f*N_e/Y
+    cons_share = C/Y
+    inv_new_firm_share = ν_f*N_e/Y
+    vacancy_share = X/Y
     sunk_vac_cost_share = X_v/Y
+    entrant_share = e/v
     x_v = (K/q)/(κ+K/q)
 
     out = (θ=θ, N=N, f=f, q=q, u=u, v=v, v_pret=v_pret, e=e, K=K, p=p, N_e=N_e, ν_f=ν_f, d_f=d_f, w_R=w_R, w=w, L=L, L_e=L_e, L_c=L_c, Y_c=Y_c, Q=Q, X_v=X_v,
-     X=X, C=C, Y=Y, labor_share=labor_share, labor_prod=labor_prod, sunk_entry_cost_share=sunk_entry_cost_share, sunk_vac_cost_share=sunk_vac_cost_share, M=M,
-     x_v=x_v)
+     X=X, C=C, Y=Y, labor_share=labor_share, labor_prod=labor_prod, cons_share=cons_share, inv_new_firm_share=inv_new_firm_share, vacancy_share=vacancy_share, sunk_vac_cost_share=sunk_vac_cost_share, M=M,
+     entrant_share=entrant_share, x_v=x_v)
     return out
 end
 
@@ -339,14 +342,7 @@ function N_res(θ, para)
     return N
 end
 
-targets = (labor_share=0.66, dest_ann=0.10, r_ann=0.04, f =0.41, η_L=0.6, q=0.8, sep=0.031, b_ratio=0.71, 
-            x_v=0.20, ξ_inv=1, ε=4.3, σ=1.0, N=1, w=1.0)
-cal = calibrate_labor_share(targets)
-ss = steady_state(cal)
-
-
-
-function table(cal, targets)
+function calibration_table(cal, targets)
     @unpack f_e, τ, δ, z, b, ϕ, ρ, σ, ε, A, η_L, ξ_inv, A, F, κ, s = cal
     @unpack labor_share, dest_ann, r_ann, f, η_L, q, sep, b_ratio, x_v, ξ_inv, ε, σ, N, w = targets
 
@@ -369,12 +365,12 @@ function table(cal, targets)
             "Steady-state wage",
             "Steady-state mass of firms",
             "Aggregate separation rate",
-            "Labor share = 66%",
-            "Job finding rate = 41%",
-            "Vacancy filling rate = 80%"
+            "Labor share",
+            "Job finding rate",
+            "Vacancy filling rate"
         ],
         Value = round.([r_ann, η_L, b, δ, ξ_inv, μ-1, σ, x_v, w, N, τ, labor_share, 0.41, 0.80], sigdigits=2),
-        Parameter = [L"\rho", L"\eta_L", L"b", L"\delta", L"\xi^{-1}", L"\varepsilon", L"\sigma", L"\kappa", L"z", L"f_e", L"s", L"\phi", A, F],
+        Parameter = [L"\rho", L"\eta_L", L"b", L"\delta", L"\xi^{-1}", L"\varepsilon", L"\sigma", L"\kappa", L"z", L"f_e", L"s", L"\phi", L"A", L"F"],
         Calibration = round.([ρ, η_L, b, δ, ξ_inv, ε, σ, κ, z, f_e, s, ϕ, A, F], sigdigits=3)
     )
 
@@ -382,10 +378,49 @@ function table(cal, targets)
     return df
 end
 
-df = table(cal, targets)
+targets = (labor_share=0.66, dest_ann=0.10, r_ann=0.04, f =0.41, η_L=0.6, q=0.8, sep=0.031, b_ratio=0.71, 
+            x_v=0.20, ξ_inv=1, ε=4.3, σ=1.0, N=1, w=1.0)
+cal = calibrate_labor_share(targets)
+ss = steady_state(cal)
+
+
+df = calibration_table(cal, targets)
 
 # Generate latex output
 output = IOBuffer()
 show(output, MIME("text/latex"),df)
 df_table = String(take!(output))
 print(df_table)
+
+@show ss.cons_share
+@show ss.vacancy_share
+@show ss.inv_new_firm_share
+@show ss.sunk_vac_cost_share
+@show ss.entrant_share
+
+function shares_table(ss::NamedTuple)
+df = DataFrame(
+    Share = [
+        "Consumption share",
+        "Vacancy share",
+        "Investment in new product lines",
+        "Sunk vacancy cost share",
+        "Entrant share"
+    ],
+    Symbol = [L"C/Y", L"X/Y", L"\nu N_e/Y", L"X_v/Y", L"e/v"],
+    Value = round.([ss.cons_share, ss.vacancy_share, ss.inv_new_firm_share, ss.sunk_vac_cost_share, ss.entrant_share], sigdigits=2),
+
+)
+    return df
+end
+
+df_shares = shares_table(ss)
+
+output = IOBuffer()
+show(output, MIME("text/latex"),df_shares)
+df_shares_table = String(take!(output))
+print(df_shares_table)
+
+
+
+
