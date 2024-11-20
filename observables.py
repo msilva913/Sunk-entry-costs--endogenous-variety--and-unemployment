@@ -35,89 +35,21 @@ def save_object(obj, filename):
 
 def construct_data(init, final, freq):
     """
-    Nominal GDP: BEA 191RC
-		- Nominal C: BEA DNDGRC + DDURRC + DSERRC
-		- Nominal I: BEA A006RC
-		- Nominal H: BLS PRS85006023
-		- Capacity utilization: Fed Board G.17, CAPUTL.B00004.S
-		- Relative price of investment: BEA B006RG
-		- Nonfarm Nominal Hourly Wage: BLS PRS85006103
-		- GDP Deflator: A191RD
-		- 
-    
-    Sectoral data Tables B6 and B7
-    B6: number of nonsupervisory employees
-    B7: average weekly hours
-    https://www.bls.gov/ces/data/employment-situation-table-download.htm
-
-    Table B6
-    https://data.bls.gov/pdq/SurveyOutputServlet
-    Employment
-    CES2000000006
-    CES3100000006
-    CES3200000006
-    CES0800000006
-    
-    Average weekly hours
-    CES2000000007
-    CES3100000007
-    CES3200000007
-    CES0800000007
-    
-     Unemployment rate by industry 
-    https://www.bls.gov/webapps/legacy/cpsatab14.htm
-    
-    Only available by industry back to 2000 because of major change in industry classification system
-    https://www.bls.gov/cps/cpsoccind.htm
-    Documentation on changes: https://www.bls.gov/cps/rvcps03.pdf
-    
-    Construction of Beveridge curve data by Brian Jenkins following Petrosky-Nadeau and Zhang (2013)
-    https://github.com/letsgoexploring/economic-data/blob/master/dmp/python/us_beveridge_curve_data.py
-    Results saved in file "https://raw.githubusercontent.com/letsgoexploring/economic-data/master/"
-                      "dmp/csv/beveridge_curve_data.csv"
+    Variables for estimation
+    c: real per capita consumption 
+    cons_share: consumption share of output
+    u: unemployment rate (UNRATE)
+    v: vacancy rate
+    theta: market tightness 
+    lp: labor productivity
+    s: aggregate separation rate
+    w: real hourly compensation for all workers
     """
-    
-    sectoral = pd.read_csv("sectoral_labor.csv", sep= ",", header=0)
-    date = pd.date_range(start='1/1947', periods=sectoral.shape[0], freq='MS')
-    sectoral.index = date
-    
-    # Construct total hours
-    sectoral["Durable_TH"] = sectoral["Durable Emp"]*sectoral["Durable Hours"]
-    sectoral["Construction_TH"] = sectoral["Construction Emp"]*sectoral["Construction Hours"]
-    sectoral["Nondurable_TH"] = sectoral["Nondurable goods Emp"]*sectoral["Nondurable Hours"]
-    sectoral["Services_TH"] = sectoral["Services Emp"]*sectoral["Services Hours"]
-    
-    sectoral = sectoral[['Durable_TH', 'Construction_TH', 'Nondurable_TH', 'Services_TH']]
-    
-    " Consumption: nondurable plus services "
-    sectoral["L_C"] = sectoral["Nondurable_TH"] + sectoral["Services_TH"]
-    
-    " Investment: construction plus durables "
-    sectoral["L_I"] = sectoral["Construction_TH"] + sectoral["Durable_TH"]
-    
-    # Total hours
-    " Aggregate to quarterly "
-    sectoral = sectoral.resample(freq).mean().dropna()
-    " Data limited to only after 1964 (services only available since then) "
-    LC = sectoral.L_C
-    LI = sectoral.L_I
-    L = LC + LI
-    
+
     " GDP Deflator BEA code A191RD"
     deflator =  fred.get_series('GDPDEF').resample(freq).mean()
     #Y = fred.get_series('GDPC1').resample(freq).mean().dropna() #real, quarterly
     
-    " Investment goods deflator "
-    #inv_deflator = fred.get_series("INVDEF").resample(freq).mean()
-    #cons_deflator = fred.get_series("CONSDEF").resample(freq).mean()           
-    
-    
-    " Nominal consumption (BEA codes DNDGRC + DDURRC + DSERRC) "
-    # Personal consumption non-durables: BEA DNDGRC
-    #C_ND = fred.get_series('PCND').resample(freq).mean().dropna()# monthly, nominal
-    # Personal consumption expenditure services: BEA DSERRC
-    #C_S = fred.get_series('PCESV').resample(freq).mean().dropna()
-    #C = C_ND + C_S
     C = fred.get_series('PCE').resample(freq).mean()
     #omega_SC = np.mean(C_S/(C))
     #print(rf'$\omega_{{SC}} =$ {omega_SC:.2f}')
@@ -146,97 +78,23 @@ def construct_data(init, final, freq):
     # Use HP-filtered trend for population to avoid discrete jumps around census dates
     pop = sm.tsa.filters.hpfilter(pop, lamb=10_000)[1]
     
-    " Unemployment rate by sector "
-    u_sectoral = pd.read_csv("unemployment_industry.csv", sep= ",", header=0)
-    date = pd.date_range(start='1/2000', periods=u_sectoral.shape[0], freq='MS')
-    u_sectoral.index = date
-    u_sectoral.drop('Date', axis=1, inplace=True)
-    
-    # Remove white space
-    u_sectoral.columns = [s.strip() for s in u_sectoral.columns]
-    
-    # Unemployment rates for durables and non-durables
-    u_D = u_sectoral["Durable-U rate"]/100
-    u_ND = u_sectoral["Nondurable-U rate"]/100
-    
-    # Remove seasonal effects
-    u_D_seas = seasonal_decompose(u_D, model='additive', period=12).seasonal
-    u_ND_seas = seasonal_decompose(u_ND, model='additive', period=12).seasonal
-    u_D = u_D - u_D_seas
-    u_ND = u_ND - u_ND_seas
-    
-    u_D = u_D.resample(freq).mean().dropna()
-    u_ND = u_ND.resample(freq).mean().dropna()
-    
-    " Unemployment levels in consumption and investment "
-    # Investment: construction + durables
-    u_level_I = u_sectoral["Construction-U"] + u_sectoral["Durable-U"]
-    # Consumption: non-durables + services
-    service_labels = ["Retail-U", "Transportation-U", "Information-U", "Financial-U", 
-                      "Professional-U", "Eductation-Health-U", "Leisure-U", "Other-U"]
-    u_level_services = sum(u_sectoral[x] for x in service_labels)
-    u_level_ND = u_sectoral["Nondurable-U"]
-    u_level_C = u_level_services + u_level_ND 
-    
-    " Employment levels in consumption and investment, based on B1 table "
-    e_sectoral = pd.read_csv("employment_industry.csv", sep= ",", header=0)
-    date = pd.date_range(start='1/1964', periods=e_sectoral.shape[0], freq='MS')
-    e_sectoral.index = date
-    e_sectoral.drop('Date', axis=1, inplace=True)
-    e_sectoral = e_sectoral.dropna()
-    
-    e_C = e_sectoral["Nondurable goods-E"] + e_sectoral["Services-E"]
-    e_I = e_sectoral["Construction-E"] + e_sectoral["Durable goods-E"]
-    
-    
-    # Construct unemployment rates in consumption and investment using levels
-    u_C = u_level_C/(u_level_C + e_C)
-    u_I = u_level_I/(u_level_I + e_I)
-    u_C.dropna(inplace=True)
-    u_I.dropna(inplace=True)
-    
-    u_C_seas = seasonal_decompose(u_C, model='additive', period=12).seasonal
-    u_C_adj = u_C - u_C_seas
-    u_I_seas = seasonal_decompose(u_I, model='additive', period=12).seasonal
-    u_I_adj = u_I - u_I_seas
-   
-    
-    "Implied aggregate unemployment rate "
-    u = u_level_C + u_level_I
-    e = e_C + e_I
-    LF = u + e
-    C_weight = (u_level_C + e_C)/LF
-    I_weight = (u_level_I + e_I)/LF
-    u_agg = C_weight*u_C_adj + I_weight*u_I_adj
-    
-    u_C = u_C_adj.resample(freq).mean()
-    u_I = u_I_adj.resample(freq).mean()
+ 
     
     c = C/(pop*p_C)
-    i = I/(pop*p_I)
+    #i = I/(pop*p_I)
     
-    Y = C + I
-    y = Y/(pop*deflator)
+    #Y = C + I
+    #y = Y/(pop*deflator)
     #lab_prod = Y/(deflator*L)
     
     " Define labor productivity as real output per worker "
     #PRS85006163
     # seasonally adjusted real output per person in the non-farm business sector
-    lab_prod = fred.get_series("PRS85006163").resample(freq).mean().dropna()
+    lp = fred.get_series("PRS85006163").resample(freq).mean().dropna()
     " Construct output from consumption and investment "
     #y = c + i
-    lc = LC/pop
-    li = LI/pop
-    l = L/pop
     " Relative price of investment: divide price indices"
-    p_I = p_I/p_C
-    
-    " Capacity utilization "
-    util = fred.get_series('TCU').resample(freq).mean().dropna()/100
-    # Durable manufacturing
-    util_D = fred.get_series('CAPUTLGMFDS').resample(freq).mean().dropna()/100
-    # nondurable manufacturing
-    util_ND = fred.get_series('CAPUTLGMFNS').resample(freq).mean().dropna()/100
+    #p_I = p_I/p_C
     
     u = fred.get_series('UNRATE').resample(freq).mean().dropna()/100
     #fig, ax = plt.subplots()
@@ -245,9 +103,6 @@ def construct_data(init, final, freq):
     #ax.legend()
     " Construct idleness measures "
     
-    idle = 1.0 - util
-    idle_D = 1.0 - util_D
-    idle_ND = 1.0 - util_ND
     
     " Vacancies "
     # Vacancies
@@ -290,21 +145,12 @@ def construct_data(init, final, freq):
     u_level = fred.get_series('UNEMPLOY').loc[init:final] #number unemployed in thousands
     e_level = fred.get_series('CE16OV').loc[init:final] #number employed in thousands
     u_new = fred.get_series('UEMPLT5').loc[init:final] #unemployed for less than 5 weeks
+    
     jf = 1-(u_level[1:len(u_level)-1]-u_new)/u_level# job finding rate series
     s = u_new/(e_level*(1-(1/2)*jf)) #separation rate series
     
     s = s.resample(freq).mean().dropna()
-    f = jf.resample(freq).mean().dropna()
-    
-   #  u_short = fred.get_series('UEMPLT5').dropna()
-   # #e = fred.get_series('PAYEMS').dropna()
-   #  e_level = lf - u_level
-   #  f = 1 - (u_level - u_short.shift(-1))/u_level
-   #  print(f["1951":"2003"].mean())
-   #  s = u_short.shift(-1)/(e_level*(1-(1/2)*f))
-    
-   #  s = s.resample(freq).mean().dropna()
-   #  f = f.resample(freq).mean().dropna()
+    #f = jf.resample(freq).mean().dropna()
     
     " Wages "
     # Nonfarm Business Sector: Real Hourly Compensation for All Workers, index 2017=100
@@ -313,8 +159,7 @@ def construct_data(init, final, freq):
 
     " Note: these series imply labor productivity in each sector "
     " List of data series "
-    var_load_list = [y, c, i, cons_share, lc, li, l, lab_prod, p_I, idle, idle_D, idle_ND,
-                     u_D, u_ND, u_C, u_I, u, v, theta, s, f, w] 
+    var_load_list = [c, cons_share, u, v, theta, jf, lp, s, w] 
     return var_load_list
         
 if __name__ == "__main__":       
@@ -324,9 +169,9 @@ if __name__ == "__main__":
     final='2020-02-01' # Just before pandemic shock
     # Comparison to earlier BRS
     #init = '1967-01-01'
-    load = True
+    load = False
     #filter_type = 'hamilton'
-    freq = 'Q'
+    freq = 'QS'
     save_observables = False
     
     if load:
@@ -336,7 +181,7 @@ if __name__ == "__main__":
         save_object(var_load_list, 'var_load_list')
     
     dat = pd.concat(var_load_list, axis=1)
-    lab = ['Y', 'C', 'I', 'cons_share', 'NC', 'NI', 'N', "lab_prod", 'p_I', 'idle', 'idle_D', 'idle_ND', 'u_D', 'u_ND', 'u_C', 'u_I', 'u', 'v', 'theta', 's','f', 'w']
+    lab = ['c', 'cons_share', 'u', 'v', 'theta', 'jf', 'lp', 's', 'w']
     dat.columns = lab
     dat = dat.loc[init:final]
     
@@ -353,60 +198,13 @@ if __name__ == "__main__":
         " Save output for estimation using growth filter"
         lab_obs = [x +'_obs' for x in lab]
         dic_data = dict(zip(lab_obs, [np.asarray(cycle_growth[x]) for x in cycle_growth.columns]))
-        sio.savemat('observables_un.mat', dic_data)
+        sio.savemat('observables.mat', dic_data)
     
     " Analysis on raw data "
     
-    lab_idle = ['idle_D', 'idle_ND', 'u_D', 'u_ND', 'u_C', 'u_I', 'u', 'v']
-    dat_idle = dat[lab_idle]
     
-    
-    
-    "1) Aggregate unemployment rate and idleness rate "
-    fig, ax = plt.subplots(figsize=(12, 4))
-    ax.set_title("Rates of slack")
-    ax.plot(dat.u, label='Unemployment rate')
-    ax.plot(dat.idle, label='Idleness rate')
-    ax.yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
-    ax.legend()
-    plt.savefig("unemployment_idleness_aggregate.pdf")
-    plt.show()
-    dat[["u", "idle"]].corr()
-    dat[["u", "idle"]].mean()
-    
-    "2) Unemployment rates and idleness (comovement)"
-    fig, ax = plt.subplots(nrows=2, figsize=(12, 8))
-    ax[0].set_title("Unemployment rates")
-    ax[0].plot(dat_idle.u_C, label='Consumption')
-    ax[0].plot(dat_idle.u_I, label='Investment')
-    ax[0].plot(dat_idle.u, label="Aggregate")
-    ax[1].set_title("Idleness rates")
-    ax[1].plot(dat_idle.idle_ND, label='Nondurables')
-    ax[1].plot(dat_idle.idle_D, label='Durables')
-    ax[1].plot(dat.idle, label='Aggregate')
-    for i in range(2):
-        ax[i].xaxis.set_major_locator(years)
-        ax[i].xaxis.set_major_formatter(years_fmt)
-        ax[i].legend()
-    plt.savefig("unemployment_idleness_comovement.pdf")
-    plt.show()
-    
-    
-    "3) Idleness and unemployment rate (within-sector)"
-    fig, ax = plt.subplots(nrows=2, figsize=(12, 10))
-    ax[0].plot(dat_idle.idle_D, lw=2, label="idle_D")
-    ax[0].plot(dat_idle.u_D, lw=2, label="u_D")
-    ax[1].plot(dat_idle.idle_ND, lw=2, label="idle_ND")
-    ax[1].plot(dat_idle.u_ND, lw=2, label="u_ND")
-    for i in range(2):
-        ax[i].xaxis.set_major_locator(years)
-        ax[i].xaxis.set_major_formatter(years_fmt)
-        ax[i].legend()
-        ax[1].legend()
-    plt.savefig("idleness_u.pdf")
-    plt.show()
-    
-    "4) Beveridge curve "
+
+    "1) Beveridge curve "
     fig, ax = plt.subplots()
     ax.scatter(dat.u, dat.v, alpha=0.5)
     ax.set_xlabel("Unemployment rate")
@@ -414,7 +212,7 @@ if __name__ == "__main__":
     plt.show()
     dat[['u','v']].corr()
     
-    "5) Unemployment, Vacancies, and ustar "
+    "2) Unemployment, Vacancies, and ustar "
     ustar = np.sqrt(dat.u*dat.v) # efficient unemployment rate (FERU) using approxiximation by Michaillat and Saez (2024)
     fig, ax = plt.subplots(figsize=(10, 4))
     ax.plot(dat.u["1951":], alpha=0.7, label="Unemployment rate")
@@ -426,7 +224,7 @@ if __name__ == "__main__":
     plt.savefig("u_vac_series")
     plt.show()
     
-    "6) Estimate elasticity of Beveridge curve "
+    "3) Estimate elasticity of Beveridge curve "
     log_u = np.log(dat.u)
     log_v = np.log(dat.v)
     #X = log_u
@@ -446,7 +244,7 @@ if __name__ == "__main__":
     plt.savefig("Beveridge_logs.pdf")
     plt.show()
     
-    "7) Estimate matching function "
+    "4) Estimate matching function "
     # Impose m = Au^alpha v^(1-alpha)
     # Implies f = Atheta^(1-alpha)
     # In logs: log f = log A + (1-alpha)log theta
