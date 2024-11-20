@@ -60,11 +60,12 @@ plt.plot(df2.index, np.log(df2.values), label='SBF8', color='red')
 for start, end in episodes.values():
     plt.axvspan(start, end, color='gray', alpha=0.3)
 
-plt.title('Data Overview with Key Episodes')
+plt.title('Business Formation')
 plt.xlabel('Year')
 plt.ylabel(' Log Per Capita Business Formations')
 plt.legend(loc='upper left')
 plt.grid(True)
+plt.savefig('BFS_plot.pdf')
 plt.show()
 
 #summary
