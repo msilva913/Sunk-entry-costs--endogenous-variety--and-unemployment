@@ -175,10 +175,12 @@ function steady_state(para; init=0.51)
     sunk_vac_cost_share = X_v/Y
     entrant_share = e/v
     x_v = (K/q)/(κ+K/q)
+    search_wedge = w/w_R 
+    recruiter_share = w_R*L/Y
 
     out = (θ=θ, N=N, f=f, q=q, u=u, v=v, v_pret=v_pret, e=e, K=K, p=p, N_e=N_e, ν_f=ν_f, d_f=d_f, w_R=w_R, w=w, L=L, L_e=L_e, L_c=L_c, Y_c=Y_c, Q=Q, X_v=X_v,
      X=X, C=C, Y=Y, labor_share=labor_share, labor_prod=labor_prod, cons_share=cons_share, inv_new_firm_share=inv_new_firm_share, vacancy_share=vacancy_share, sunk_vac_cost_share=sunk_vac_cost_share, M=M,
-     entrant_share=entrant_share, x_v=x_v)
+     entrant_share=entrant_share, x_v=x_v, search_wedge=search_wedge, recruiter_share=recruiter_share)
     return out
 end
 
@@ -378,48 +380,7 @@ function calibration_table(cal, targets)
     return df
 end
 
-targets = (labor_share=0.66, dest_ann=0.10, r_ann=0.04, f =0.41, η_L=0.6, q=0.8, sep=0.031, b_ratio=0.71, 
-            x_v=0.20, ξ_inv=1, ε=4.3, σ=1.0, N=1, w=1.0)
-cal = calibrate_labor_share(targets)
-ss = steady_state(cal)
 
-
-df = calibration_table(cal, targets)
-
-# Generate latex output
-output = IOBuffer()
-show(output, MIME("text/latex"),df)
-df_table = String(take!(output))
-print(df_table)
-
-@show ss.cons_share
-@show ss.vacancy_share
-@show ss.inv_new_firm_share
-@show ss.sunk_vac_cost_share
-@show ss.entrant_share
-
-function shares_table(ss::NamedTuple)
-df = DataFrame(
-    Share = [
-        "Consumption share",
-        "Vacancy share",
-        "Investment in new product lines",
-        "Sunk vacancy cost share",
-        "Entrant share"
-    ],
-    Symbol = [L"C/Y", L"X/Y", L"\nu N_e/Y", L"X_v/Y", L"e/v"],
-    Value = round.([ss.cons_share, ss.vacancy_share, ss.inv_new_firm_share, ss.sunk_vac_cost_share, ss.entrant_share], sigdigits=2),
-
-)
-    return df
-end
-
-df_shares = shares_table(ss)
-
-output = IOBuffer()
-show(output, MIME("text/latex"),df_shares)
-df_shares_table = String(take!(output))
-print(df_shares_table)
 
 
 
