@@ -1,4 +1,5 @@
 import pandas as pd
+pd.set_option('display.max_columns', 10) 
 import numpy as np
 from statsmodels.tsa.stattools import adfuller
 import matplotlib.pyplot as plt
@@ -47,12 +48,14 @@ plot_variable_names = ['Establishment Entry Rate', 'Establishment Exit Rate', 'F
 fig, ax = plt.subplots(figsize=(12, 8), nrows=2)
 ax[0].plot(df.year, df['estabs_entry_rate'], label='Establishments', linewidth=2)
 ax[0].plot(df.year, df['firms_entry_rate'], label='Firms', linewidth=2)
-ax[0].plot(df.year, df['unemployment_rate'], label='Unemployment Rate', linestyle='--', color='red')
+ax[0].plot(df.year, df['job_creation_rate'], label='Job creation', linewidth=2)
+ax[0].plot(df.year, df['unemployment_rate'], label='Unemployment', linestyle='--', color='red')
 ax[0].set_title("Entry rates and Unemployment", fontsize=12, pad=10)
 
 ax[1].plot(df.year, df['estabs_exit_rate'], label='Establishments', linewidth=2)
 ax[1].plot(df.year, df['firms_exit_rate'], label='Firms', linewidth=2)
-ax[1].plot(df.year, df['unemployment_rate'], label='Unemployment Rate', linestyle='--', color='red')
+ax[1].plot(df.year, df['job_destruction_rate'], label='Job destruction', linewidth=2)
+ax[1].plot(df.year, df['unemployment_rate'], label='Unemployment', linestyle='--', color='red')
 ax[1].set_title("Exit rates and Unemployment", fontsize=12, pad=10)
 
 
@@ -82,6 +85,9 @@ summary_tables.columns = variable_names
 print("\nSummary Statistics:")
 display(summary_tables)
 
+df_red = df [['estabs_exit_rate', 'firms_exit_rate', 'job_creation_rate', 'job_destruction_rate']]
+df_red.mean()
+df_red.corr()
 # Comovement
 
 comovement_pairs = [
