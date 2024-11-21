@@ -80,7 +80,7 @@ ne = length(ex)
 f = fill(Sym("x"), nvar)
 # Equilibrium conditions
     # Job creation condition -> θ
-    f[1]  =  κ + K/q - β*λp/λ*(1-δbar*δ)*(w_Rp-wp-Kp+(1-s)*(κ+Kp/qp))
+    f[1]  =  κ + K/q - β*λp/λ*(1-δbar*δ)*(w_Rp-wp-Kp+(1-sbar*sp)*(κ+Kp/qp))
     # Marginal revenue product -> w_R
     f[2] = w_R - p*z*zbar/μ
     # Wage equation -> w
@@ -269,7 +269,7 @@ plot!(p[1], sim_data.u, label=L"u", subplot=1)
 plot!(p[2], sim_data.v, label=L"v")
 plot!(p[3], sim_data.θ, label=L"θ")
 plot!(p[4], sim_data.z, label=L"z")
-plot!(p[5], sim_data.δ, label=L"δ")
+plot!(p[5], sim_data.δ, label = L" δ")
 plot!(p[6], sim_data.ls, label="labor share")
 display(p)
 
