@@ -75,19 +75,65 @@ plt.show()
 
 # Sum
 
-def create_summary_table(variable, var_name): 
-    summary = df[variable].describe()
-    summary.loc['mean'] = df[variable].mean()
-    return summary.to_frame(var_name)  
+# def create_summary_table(variable, var_name): 
+#     summary = df[variable].describe()
+#     summary.loc['mean'] = df[variable].mean()
+#     return summary.to_frame(var_name)  
 
-summary_tables = pd.concat([create_summary_table(var, name) for var, name in zip(variables, variable_names)], axis=1)
-summary_tables.columns = variable_names
-print("\nSummary Statistics:")
-display(summary_tables)
+# summary_tables = pd.concat([create_summary_table(var, name) for var, name in zip(variables, variable_names)], axis=1)
+# summary_tables.columns = variable_names
+# print("\nSummary Statistics:")
+# display(summary_tables)
 
 df_red = df [['estabs_exit_rate', 'firms_exit_rate', 'job_creation_rate', 'job_destruction_rate']]
 df_red.mean()
 df_red.corr()
+
+def create_latex_summary_table(df, caption="Summary Statistics", label="tab:summary"):
+    """
+    Create a LaTeX table with means and correlations of a dataframe.
+    
+    Parameters:
+    -----------
+    df : pandas.DataFrame
+        Input dataframe with numerical columns
+    caption : str
+        Caption for the LaTeX table
+    label : str
+        Label for referencing the table in LaTeX
+        
+    Returns:
+    --------
+    str
+        LaTeX formatted table string
+    """
+    # Calculate means
+    means = df.mean().round(3)
+    
+    # Calculate correlation matrix
+    corr_matrix = df.corr().round(3)
+    
+    # Create the LaTeX table string
+    latex_str = "\\begin{table}[htbp]\n"
+    latex_str += "\\centering\n"
+    latex_str += "\\caption{" + caption + "}\n"
+    latex_str += "\\label{" + label + "}\n"
+    
+    # Panel A: Means
+    latex_str += "\\textbf{Panel A: Means}\\\\\n"
+    latex_str += means.to_frame().to_latex(header=False)
+    latex_str += "\\\\\n"
+    
+    # Panel B: Correlations
+    latex_str += "\\textbf{Panel B: Correlation Matrix}\\\\\n"
+    latex_str += corr_matrix.to_latex()
+    
+    latex_str += "\\end{table}"
+    
+    return latex_str
+
+sum_table = create_latex_summary_table(df_red)
+print(sum_table)
 # Comovement
 
 comovement_pairs = [
