@@ -13,7 +13,6 @@ pd.set_option('display.precision', 3)
 np.set_printoptions(precision=3)
 #pd.options.display.float_format = '{:5,.4g}'.format
 
-from time_series_functions import (moments, filter_transform, crosscorr, dynamic_correlations)
 from time_series_functions import (moments, stacked_moments, filter_transform, crosscorr, dynamic_correlations)
 from statsmodels.tsa.seasonal import seasonal_decompose
 import statsmodels.api as sm
