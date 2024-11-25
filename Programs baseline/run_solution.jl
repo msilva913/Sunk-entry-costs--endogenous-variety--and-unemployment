@@ -6,6 +6,7 @@
 #v1.7+
 using MKL
 using DataFrames
+using NaNStatistics
 cd(@__DIR__)
 #v1.7- 
 #BLAS.vendor() 
@@ -217,8 +218,18 @@ process_model(model)
 ## Solution
 # Parametrization: need to handle dependent parameters 
 #parameters      = [f_e; δ; s; zbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; μ_z]
-targets = (labor_share=labor_share, dest_ann=0.1, r_ann=0.04, f =fbar, η_L=0.6, q=qbar, sep=0.031, b_ratio=0.71, 
-        x_v=x_v, ξ_inv=1/0.265, ε=4.3, σ=1.0, N=N_s, w=w_s)
+targets = (labor_share=labor_share, 
+           dest_ann=0.1, 
+           r_ann=0.04, 
+           f =fbar, 
+           η_L=0.6, 
+           q=qbar, 
+           sep=0.031, 
+           b_ratio=0.71, 
+           x_v=x_v, 
+           ξ_inv=1/0.265, 
+           ε=4.3, σ=1.0, 
+           N=N_s, w=w_s)
 cal = calibrate_labor_share(targets)
 
 
@@ -262,8 +273,9 @@ moments_vars = [:u, :v, :θ, :labor_prod, :ls, :z, :δ ]
 sim_data = sim_data[!, moments_vars]
 
 # Plot in levels 
-p = Plots.plot(layout=(2, 3), size=(800,600), 
+p = Plots.plot(layout=(2, 3), size=(1000,600), 
 legend=true, alpha=0.6)
+
 # Top left plot
 plot!(p[1], sim_data.u, label=L"u", subplot=1)
 plot!(p[2], sim_data.v, label=L"v")
@@ -271,6 +283,7 @@ plot!(p[3], sim_data.θ, label=L"θ")
 plot!(p[4], sim_data.z, label=L"z")
 plot!(p[5], sim_data.δ, label = L" δ")
 plot!(p[6], sim_data.ls, label="labor share")
+Plots.savefig("simulated_data_levels.pdf")
 display(p)
 
 #######################################################
@@ -290,12 +303,12 @@ sim_data_q = monthly_to_quarterly(sim_data)
 # HP and Hamilton filters
 
 sim_data_hp = copy(sim_data_q)
-sim_data_ham = copy(sim_data_q)
-sim_data_growth = copy(sim_data_q)
+#sim_data_ham = copy(sim_data_q)
+#sim_data_growth = copy(sim_data_q)
 for x in moments_vars
     sim_data_hp[!, x] .= hp_filter(sim_data_q[!, x], 100_000)
-    sim_data_ham[!, x] .= hamilton_filter(sim_data_q[!, x])
-    sim_data_growth[!, x] .= growth_filter(sim_data_q[!, x])
+    #sim_data_ham[!, x] .= hamilton_filter(sim_data_q[!, x])
+    #sim_data_growth[!, x] .= growth_filter(sim_data_q[!, x])
 end
 
 # Calculate moments

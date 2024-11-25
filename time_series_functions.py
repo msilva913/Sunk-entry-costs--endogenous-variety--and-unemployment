@@ -90,7 +90,7 @@ def fit_AR(x, p):
     return rho, sigma
 
 
-def moments(dat, lab=['Y'], lags=[1,2]):
+def moments(dat, relative_std='Y', lab=['Y'], lags=[1,2]):
     
     def df_autocorr(df, lag, axis=0):
         """Compute full-sample column-wise autocorrelation for series"""
@@ -110,7 +110,7 @@ def moments(dat, lab=['Y'], lags=[1,2]):
         
     moments = np.zeros((len(dat.columns), 2+len(lab)+len(lags)))
     moments[:, 0] = dat.std()
-    moments[:, 1] = dat.std()/dat.std()[0]
+    moments[:, 1] = dat.std()/dat.std()[relative_std]
     moments[:, 2:(2+len(lab))] = dat.corr()[lab]
     k = 2+len(lab)
     for lag in lags:

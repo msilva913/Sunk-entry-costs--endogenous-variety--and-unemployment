@@ -184,7 +184,7 @@ if __name__ == "__main__":
     
     # Stacked moments 
     
-    mom = moments(cycle_hp, lab=["u"])
+    mom = moments(cycle_hp, relative_std="lp", lab=["u"])
     mom_stacked = stacked_moments(cycle_hp)
     " Summarize moments in one column "
  
@@ -209,7 +209,7 @@ if __name__ == "__main__":
             "\\centering",
             f"\\caption{{{caption}}}",
             f"\\label{{{label}}}",
-            "\\begin{threeparttable}",
+        #    "\\begin{threeparttable}",
             # Create dynamic column format based on number of columns
             f"\\begin{{tabular}}{{l{''.join(['r'] * len(columns))}}}",
             "\\toprule"
@@ -240,7 +240,7 @@ if __name__ == "__main__":
         latex_str.extend([
             "\\bottomrule",
             "\\end{tabular}",
-            "\\end{threeparttable}",
+          #  "\\end{threeparttable}",
             "\\end{table}"
             ])
     
