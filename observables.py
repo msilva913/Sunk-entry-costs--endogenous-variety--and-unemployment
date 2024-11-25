@@ -139,14 +139,18 @@ def construct_data(init, final, freq):
     s = s.resample(freq).mean().dropna()
     f = jf.resample(freq).mean().dropna()
     
+    " Labor share "
+    ls = fred.get_series('PRS85006173').resample(freq).mean()
+    
     " Wages "
     # Nonfarm Business Sector: Real Hourly Compensation for All Workers, index 2017=100
-    w = fred.get_series('COMPRNFB').resample(freq).mean()
+    #w = fred.get_series('COMPRNFB').resample(freq).mean()
+    w = ls*lp
     
 
     " Note: these series imply labor productivity in each sector "
     " List of data series "
-    var_load_list = [c, cons_share, u, v, theta, f, lp, s, w] 
+    var_load_list = [c, cons_share, u, v, theta, f, lp, ls, s, w] 
     return var_load_list
         
 if __name__ == "__main__":       
@@ -168,9 +172,9 @@ if __name__ == "__main__":
         save_object(var_load_list, 'var_load_list')
     
     dat = pd.concat(var_load_list, axis=1)
-    lab = ['c', 'cons_share', 'u', 'v', 'theta', 'jf', 'lp', 's', 'w']
+    lab = ['c', 'cons_share', 'u', 'v', 'theta', 'jf', 'lp', 'ls', 's', 'w']
     dat.columns = lab
-    dat = dat.loc[init:final].dropna()
+    dat = dat.loc[init:final]
     
     " Data series in growth rates "
     #cycle_growth = pd.concat([filter_transform(dat[x], init=init, final=final, transform_type='log',
