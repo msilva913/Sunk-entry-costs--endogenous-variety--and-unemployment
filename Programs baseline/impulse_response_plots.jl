@@ -123,7 +123,8 @@ function gen_irf(irf_df::DataFrame)
     plot!(p[8], irf_df.z, label=L"z")
     plot!(p[8], irf_df.labor_prod, label="labor productivity")
     plot!(p[8], irf_df.δ, label=L"δ")
-    plot!(p[8], irf_df.Y, label=L"Y")
+    #plot!(p[8], irf_df.Y, label=L"Y")
+    plot!(p[8], irf_df.w, label=L"w")
     yticks!(p[8], :auto, fmt=x->string(round(x*100,digits=1),"%"))
     
     # Display the plot

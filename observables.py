@@ -184,7 +184,7 @@ if __name__ == "__main__":
     
     # Stacked moments 
     
-    mom = moments(cycle_hp, relative_std="lp", lab=["u"])
+    mom = moments(cycle_hp, relative_std="lp", lab=["u", "lp"])
     mom_stacked = stacked_moments(cycle_hp)
     " Summarize moments in one column "
  

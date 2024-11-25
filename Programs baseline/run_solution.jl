@@ -268,7 +268,7 @@ sim_SM = simulate_model(model, sol_mat, T_SM, eta, SS, flag_IR, flag_logdev)
 # Multiply by 100 to 
 sim_data = 100 .*DataFrame(sim_SM, varnames)
 # Extract variable symbols to be used for calculating moments
-moments_vars = [:u, :v, :θ, :labor_prod, :ls, :z, :δ ]
+moments_vars = [:u, :v, :θ, :labor_prod, :ls, :z, :δ, :w ]
 
 sim_data = sim_data[!, moments_vars]
 
@@ -313,7 +313,10 @@ end
 
 # Calculate moments
     # Set up correlations as Shimer 2005 (w/o job finding rate): 
-@show mom = moments(sim_data_hp, :labor_prod, [:v, :θ, :δ, :labor_prod, :ls]; lags=2)
+@show mom = moments(sim_data_hp, :labor_prod, [:u, :labor_prod]; lags=2)
+using PrettyTables
+pretty_table(mom, backend = Val(:latex))
+
 #moments(sim_data_ham, :z, [:z, :v]; lags =2, verbose=true)
 
 # Calculate moments 
