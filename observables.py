@@ -248,6 +248,8 @@ if __name__ == "__main__":
     
     mom_tex = create_stats_table(mom)
     print(mom_tex)
+    
+    
     # if save_observables:
     #     " Save relevant objects "
     #     #save_object(cycle, 'cycle')
@@ -308,7 +310,7 @@ if __name__ == "__main__":
     plt.savefig("Beveridge_logs.pdf")
     plt.show()
     
-    "4) Estimate matching function "
+    "5) Estimate matching function "
     # Impose m = Au^alpha v^(1-alpha)
     # Implies f = Atheta^(1-alpha)
     # In logs: log f = log A + (1-alpha)log theta
@@ -343,7 +345,7 @@ if __name__ == "__main__":
     
     
     
-    "4) Unemployment and labor productivity "
+    "6) Unemployment and labor productivity "
     
     # fig = plt.figure(figsize=(12, 10))
     # ax1 = fig.add_subplot(2, 1,1)
@@ -367,26 +369,50 @@ if __name__ == "__main__":
     2) Within-sector comovement of unemployment and idleness
     """
     
-    "5) Separation and job finding rates "
+    "7) Separation and job finding rates "
     # Not in current data: but separation rates spike dramatically in March 2023
-    fig, ax = plt.subplots(figsize=(10, 4))
+    fig, ax = plt.subplots(figsize=(11, 5))
     ax.plot(cycle_hp.s, label="Separation rate", alpha=0.7, color="red", linestyle="--")
-    ax.plot(cycle_hp.jf, label="Job finding rate", alpha=0.7, color="blue")
+    ax.plot(cycle_hp.jf, label="Job finding rate", alpha=0.7, color="blue", linestyle=":")
+    #ax.plot(cycle_hp.lp, label="Labor productivity", alpha=0.7, color="black")
     ax.xaxis.set_major_locator(years)
     ax.xaxis.set_major_formatter(years_fmt)
     ax.legend()
     plt.show()
     
-    " Summary statistics (in levels)"
-    print("Mean consumption share:", dat.cons_share.mean())
-    print("Mean Unemployment rate:", dat.u.mean())
-    print("Mean vacancy rate:", dat.v.mean())
-    print("Mean separation rate:", dat.s.mean())
-    print("Mean job finding rate:", dat.jf.mean())
-    print("Estimated matching function elasticity:", alpha_hat)
+    "8) Elasticity of wages to productivity"
+    X = sm.add_constant(cycle_hp.lp)
+    Y = cycle_hp.w
+    model = sm.OLS(Y,X).fit(cov_type='HAC', cov_kwds={'maxlags':None})
+    print(model.summary())
+    summ = model.summary()
+    elast_w_lp = model.params.lp
+
     
     
+    def first_moments(dat, alpha_hat):
     
+        # Create dictionary of statistics
+        stats_dict = {
+            'Consumption share': dat.cons_share.mean(),
+            'Unemployment rate': dat.u.mean(),
+            'Vacancy rate': dat.v.mean(),
+            'Separation rate': dat.s.mean(),
+            'Job finding rate': dat.jf.mean(),
+            'Matching function elasticity': alpha_hat
+        }
+        
+        # Convert to DataFrame with descriptive index
+        stats_df = pd.DataFrame({
+            'Value': stats_dict
+        })
+        
+        stats_df['Value'] = np.around(stats_df['Value'], decimals=3)
+        
+        return stats_df
+        
+    data_means = first_moments(dat, alpha_hat)
+    print(data_means.to_latex())
     # Comovement of unemployment, labor productivity, N
     # cycle_growth_labor = cycle_growth[['u', 'v','lab_prod', 'N']]
     # mom_growth_labor = moments(100*cycle_growth_labor, lab=['u','lab_prod'], lags=[1])
