@@ -182,7 +182,14 @@ if __name__ == "__main__":
                                         filter_type="hp_filter", lamb=10_000) for x in lab], axis=1)
     cycle_hp.columns = lab
     
+    # Stacked moments 
+    
     mom = moments(cycle_hp, lab=["u"])
+    
+    " Summarize moments in one column "
+   
+    # # Stacked moments
+   
     
     # if save_observables:
     #     " Save relevant objects "

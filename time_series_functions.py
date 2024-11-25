@@ -162,6 +162,28 @@ def moments_dynamic(dat, dyn_lag=[4, -4]):
     print(moments.to_latex())
     return moments
 
+def stacked_moments(cycle):
+    var_labels = ["u", "v", "theta", "lp", "s"]
+    cycle = cycle[var_labels]
+    stds = cycle.std(axis=0)
+    stds = pd.DataFrame(stds)
+    stds.index = ["std(u)", "std(v)", "std(theta)", "std(lp)", "std(s)"]
+    # unique correlation values in array
+    corr_array = cycle.corr().values[np.triu_indices_from(cycle.corr().values, k=1)]
+    " Summarize correlations"
+    # Sectoral comovement
+    
+    cor_dat = pd.DataFrame(corr_array)
+    cor_dat.index = ["Cor(u, v)", "Cor(u, theta)", "Corr(u, lp)",  "Cor(u, s)", "Cor(v, theta)",
+                      "Cor(v, lp)" , "Corr(v, s)", "Cor(theta, lp)", "Corr(theta, s)", "Corr(lp, s)"]
+    
+    autocorr_dat = pd.DataFrame([cycle[x].autocorr() for x in var_labels])
+    autocorr_dat.index = ["Cor(u, u_{-1})", "Cor(v, v_{-1})", "Corr(theta, thet_{-1})",
+                          "Corr(lp, lp_{-1})", "Corr(s, s_{-1})"]
+    summ = pd.concat([stds, cor_dat, autocorr_dat])
+    print(summ.style.format(precision=3).to_latex())
+    return summ
+
 
 def hamilton_filter(x, h=8):
     """
