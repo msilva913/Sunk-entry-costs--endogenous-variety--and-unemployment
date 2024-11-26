@@ -142,7 +142,7 @@ def construct_data(init, final, freq):
     " Labor share "
     ls = fred.get_series('PRS85006173').resample(freq).mean()
     
-    " Wages "
+    " Wages: measure as product of labor share and labor productivity "
     # Nonfarm Business Sector: Real Hourly Compensation for All Workers, index 2017=100
     #w = fred.get_series('COMPRNFB').resample(freq).mean()
     w = ls*lp
