@@ -398,3 +398,17 @@ sim_IR3 = simulate_model(model, sol_mat3, T_IR, eta_z, SS2, flag_IR, flag_logdev
 irf_z3 = 100 .*DataFrame(sim_IR3, varnames)
 gen_irf_comp(irf_z, irf_z3, ["Baseline", " 20% annual destruction rate"])
 Plots.savefig("irf_comp_delta.pdf")
+
+# High sunk vacancy posting costs
+targets4 = (targets..., x_v=0.4)
+cal4 = calibrate_labor_share(targets4)
+@unpack  f_e, δ, s, z, b, ϕ, ρ, σ, ε, A, η_L, F, κ, ξ_inv = cal4
+PAR4     =   [f_e; s; zbar; δbar; sbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; σ_z; ρ_δ; σ_δ; ρ_s; σ_s ]
+sol4 = solution_interface(model, PAR4)
+sol_mat4 = sol4.sol_mat
+SS4 = sol4.SS
+
+sim_IR4 = simulate_model(model, sol_mat4, T_IR, eta_z, SS2, flag_IR, flag_logdev)
+irf_z4 = 100 .*DataFrame(sim_IR4, varnames)
+gen_irf_comp(irf_z, irf_z3, ["Baseline", " 20% annual destruction rate"])
+Plots.savefig("irf_comp_delta.pdf")

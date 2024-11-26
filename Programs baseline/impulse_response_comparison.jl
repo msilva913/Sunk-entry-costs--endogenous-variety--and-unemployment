@@ -27,8 +27,7 @@ irf_df2 = 100 .*DataFrame(sim_IR2, varnames)
 gen_irf_comp(irf_df, irf_df2, ["Baseline", " ε=100"])
 
 # Comparison to high δ calibration: we maintain aggregate worker separations at 3.1%
-targets3 = (labor_share=labor_share, dest_ann=0.2, r_ann=0.04, f =fbar, η_L=0.6, q=qbar, sep=0.031, b_ratio=0.71, 
-x_v=0.20, ξ_inv=1, ε=4.3, σ=1.5, N=N_s, w=w_s)
+targets3 = (targets..., dest_ann=0.2)
 cal3 = calibrate_labor_share(targets3)
 
 @unpack  f_e, δ, s, z, b, ϕ, ρ, σ, ε, A, η_L, F, κ, ξ_inv = cal3
