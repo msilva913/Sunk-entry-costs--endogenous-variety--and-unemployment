@@ -250,6 +250,10 @@ PAR     =   [f_e; s; zbar; δbar; sbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_in
 
 sol = solution_interface(model, PAR)
 @unpack ss, SS, sol_mat, eta = sol
+# Export: model, targets, PAR, sol
+model_output = (model, targets, PAR)
+using serialize
+serialize("model_output.jls", model_output)
 
 ## Simulation  and calculation of moments
 #=
@@ -365,3 +369,32 @@ irf_τ= simulate_model(model, sol_mat, T_IR, eta_τ, SS, flag_IR, flag_logdev)
 irf_τ = 100 .*DataFrame(irf_τ, varnames)
 gen_irf(irf_τ)
 Plots.savefig("common_shock.pdf")
+
+### Impulse response comparison ###
+# ε
+targets2 = (targets..., ε=100.0 )
+cal2 = calibrate_labor_share(targets2)
+@unpack  f_e, δ, s, z, b, ϕ, ρ, σ, ε, A, η_L, F, κ, ξ_inv = cal2
+PAR2     =   [f_e; s; zbar; δbar; sbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; σ_z; ρ_δ; σ_δ; ρ_s; σ_s ]
+sol2 = solution_interface(model, PAR2)
+sol_mat2 = sol2.sol_mat
+SS2 = sol2.SS
+
+sim_IR2 = simulate_model(model, sol_mat2, T_IR, eta_z, SS2, flag_IR, flag_logdev)
+irf_z2 = 100 .*DataFrame(sim_IR2, varnames)
+gen_irf_comp(irf_z, irf_z2, ["Baseline", " ε=100"])
+Plots.savefig("irf_comp_epsi.pdf")
+
+# High δ calibration 
+targets3 = (targets..., dest_ann=0.2)
+cal3 = calibrate_labor_share(targets3)
+@unpack  f_e, δ, s, z, b, ϕ, ρ, σ, ε, A, η_L, F, κ, ξ_inv = cal3
+PAR3     =   [f_e; s; zbar; δbar; sbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; σ_z; ρ_δ; σ_δ; ρ_s; σ_s ]
+sol3 = solution_interface(model, PAR3)
+sol_mat3 = sol3.sol_mat
+SS3 = sol3.SS
+
+sim_IR3 = simulate_model(model, sol_mat3, T_IR, eta_z, SS2, flag_IR, flag_logdev)
+irf_z3 = 100 .*DataFrame(sim_IR3, varnames)
+gen_irf_comp(irf_z, irf_z3, ["Baseline", " 20% annual destruction rate"])
+Plots.savefig("irf_comp_delta.pdf")

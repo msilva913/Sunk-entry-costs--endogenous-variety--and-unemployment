@@ -135,66 +135,82 @@ end
 function gen_irf_comp(irf_bas::DataFrame, irf_alt::DataFrame, labels)
     # Create a 3x2 subplot layout
     p = Plots.plot(
-        layout=(3,2), 
-        size=(800,800), 
+        layout=(2, 4), 
+        size=(1200, 500), 
         legend=:topright,
         fmt=:png
     )
 
     # Plot for u
-    plot!(p[1,1], 
+    plot!(p[1], 
         [irf_bas.u irf_alt.u],
         label=[labels[1] labels[2]],
         alpha=0.6,
-        title="u",
+        title=L"u",
         ylabel="%"
     )
 
     # Plot for v
-    plot!(p[1,2], 
+    plot!(p[2], 
         [irf_bas.v irf_alt.v],
         label=[labels[1] labels[2]],
         alpha=0.6,
-        title="v",
+        title=L"v",
         ylabel="%"
     )
 
-    # Plot for N
-    plot!(p[2,1], 
-        [irf_bas.N irf_alt.N],
+    # Plot for e
+    plot!(p[3], 
+        [irf_bas.e irf_alt.e],
         label=[labels[1] labels[2]],
         alpha=0.6,
-        title="N",
+        title=L"e",
         ylabel="%"
     )
 
     # Plot for N_e
-    plot!(p[2,2], 
+    plot!(p[4], 
         [irf_bas.N_e irf_alt.N_e],
         label=[labels[1] labels[2]],
         alpha=0.6,
-        title="N_e",
+        title=L"N_e",
         ylabel="%"
     )
 
-    # Plot for C
-    plot!(p[3,1], 
-        [irf_bas.C irf_alt.C],
+    # Plot for C_R
+    plot!(p[5], 
+        [irf_bas.C_R irf_alt.C_R],
         label=[labels[1] labels[2]],
         alpha=0.6,
-        title="C",
-        ylabel="%"
+        title=L"C_R",
+        ylabel="%"   
     )
 
-    # Plot for K
-    plot!(p[3,2], 
-        [irf_bas.K irf_alt.K],
+    # Plot for Y_R
+    plot!(p[6], 
+        [irf_bas.Y_R irf_alt.Y_R],
         label=[labels[1] labels[2]],
         alpha=0.6,
-        title="K",
+        title=L"Y_R",
         ylabel="%"
     )
 
+    plot!(p[7], 
+        [irf_bas.d_f irf_alt.d_f],
+        label=[labels[1] labels[2]],
+        alpha=0.6,
+        title=L"d_f",
+        ylabel="%"
+    )
+
+    plot!(p[8], 
+    [irf_bas.ls irf_alt.ls],
+    label=[labels[1] labels[2]],
+    alpha=0.6,
+    title=L"ls",
+    ylabel="%"
+)
+    
     # Display the plot
     display(p)
     png("clipboard")

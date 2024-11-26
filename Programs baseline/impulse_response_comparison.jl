@@ -1,19 +1,26 @@
 
 
-# Comparison to high epsi calibration 
-targets2 = (labor_share=labor_share, dest_ann=0.06, r_ann=0.04, f =fbar, η_L=0.6, q=qbar, sep=0.031, b_ratio=0.71, 
-x_v=0.20, ξ_inv=1, ε=100, σ=1.5, N=N_s, w=w_s)
+out = deserialize("model_output.jls")
+model, targets, PAR = out
+
+sol = solution_interface(model, PAR)
+@unpack ss, SS, sol_mat, eta = sol
+
+# Focus on technology shocks
+eta_z = zero(eta) # Tech shock
+eta_z[4] = eta[4]
+
+
+targets2 = (targets..., ε=100.0 )
 cal2 = calibrate_labor_share(targets2)
-
 @unpack  f_e, δ, s, z, b, ϕ, ρ, σ, ε, A, η_L, F, κ, ξ_inv = cal2
-
-zbar = z 
-δbar = δ
-PAR2     =   [f_e; s; zbar; δbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; σ_z; ρ_δ; σ_δ ]
+PAR2     =   [f_e; s; zbar; δbar; sbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; σ_z; ρ_δ; σ_δ; ρ_s; σ_s ]
 sol2 = solution_interface(model, PAR2)
 sol_mat2 = sol2.sol_mat
 SS2 = sol2.SS
 
+flag_IR = true
+flag_logdev = true
 sim_IR2 = simulate_model(model, sol_mat2, T_IR, eta_z, SS2, flag_IR, flag_logdev)
 irf_df2 = 100 .*DataFrame(sim_IR2, varnames)
 
