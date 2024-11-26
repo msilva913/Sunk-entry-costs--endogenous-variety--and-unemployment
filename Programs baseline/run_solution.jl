@@ -1,12 +1,10 @@
-# (c) Alvaro Salazar-Perez and Hernán D. Seoane
-# "Perturbating and Estimating DSGE models in Julia
-# This version 2023
+# Based on original code by Alvaro Salazar-Perez and Hernán D. Seoane
+# Modified by Mario Silva
 
-
-#v1.7+
 using MKL
 using DataFrames
 using NaNStatistics
+using Serialization
 cd(@__DIR__)
 #v1.7- 
 #BLAS.vendor() 
@@ -55,14 +53,14 @@ end
     μ = ε/(ε-1)
 
 # Variables
-@syms  z δ s u θ q K L u v v_pret e K Q  N p N_e ν_f d_f w_R w L_e L_c Y_c C λ Y labor_prod C_R Y_R Y_cR ls
-@syms zp  δp sp θp qp Kp Lp up vp v_pretp ep Kp Qp Np pp N_ep ν_fp d_fp w_Rp wp L_ep L_cp Y_cp Cp λp Yp labor_prod_p C_Rp Y_Rp Y_cRp lsp
+@syms  z δ s u θ q K L u v v_pret e K Q  N p N_e ν_f d_f w_int w L_e L_c Y_c C λ Y labor_prod C_R Y_R Y_cR w_R ls
+@syms zp  δp sp θp qp Kp Lp up vp v_pretp ep Kp Qp Np pp N_ep ν_fp d_fp w_intp wp L_ep L_cp Y_cp Cp λp Yp labor_prod_p C_Rp Y_Rp Y_cRp w_Rp lsp
 
 
 x               = [u; N; v_pret; z; δ; s] # predetermined
-y               = [θ; q; L; v; e; K; Q; p; N_e; ν_f; d_f; w_R; w; L_e; L_c; Y_c; C; λ; Y; labor_prod; C_R; Y_R; Y_cR; ls]
+y               = [θ; q; L; v; e; K; Q; p; N_e; ν_f; d_f; w_int; w; L_e; L_c; Y_c; C; λ; Y; labor_prod; C_R; Y_R; Y_cR; w_R; ls]
 xp              = [up; Np; v_pretp; zp; δp; sp]
-yp              = [θp; qp; Lp; vp; ep; Kp; Qp; pp; N_ep; ν_fp; d_fp; w_Rp; wp; L_ep; L_cp; Y_cp; Cp; λp; Yp; labor_prod_p; C_Rp; Y_Rp; Y_cRp; lsp]
+yp              = [θp; qp; Lp; vp; ep; Kp; Qp; pp; N_ep; ν_fp; d_fp; w_intp; wp; L_ep; L_cp; Y_cp; Cp; λp; Yp; labor_prod_p; C_Rp; Y_Rp; Y_cRp; w_Rp; lsp]
 variables       = [x; y; xp; yp]
 varnames = vcat(Symbol.(x), Symbol.(y))
 
@@ -81,11 +79,11 @@ ne = length(ex)
 f = fill(Sym("x"), nvar)
 # Equilibrium conditions
     # Job creation condition -> θ
-    f[1]  =  κ + K/q - β*λp/λ*(1-δbar*δ)*(w_Rp-wp-Kp+(1-sbar*sp)*(κ+Kp/qp))
-    # Marginal revenue product -> w_R
-    f[2] = w_R - p*z*zbar/μ
+    f[1]  =  κ + K/q - β*λp/λ*(1-δbar*δ)*(w_intp-wp-Kp+(1-sbar*sp)*(κ+Kp/qp))
+    # Marginal revenue product -> w_int
+    f[2] = w_int - p*z*zbar/μ
     # Wage equation -> w
-    f[3] = w - (ϕ*(w_R-K+θ/(1-δbar*δ)*(K+q*κ)) +(1-ϕ)*b)
+    f[3] = w - (ϕ*(w_int-K+θ/(1-δbar*δ)*(K+q*κ)) +(1-ϕ)*b)
     # Value of a vacancy -> Q
     f[4] = Q - (e/F)^(ξ_inv)
     # Expected discounted difference in vacancy value -> K
@@ -115,7 +113,7 @@ f = fill(Sym("x"), nvar)
     # Output = expenditure
     f[17] = Y - (Y_c+ν_f*N_e)
     # Output = income 
-    f[18] = Y - (w_R*L+N*d_f)
+    f[18] = Y - (w_int*L+N*d_f)
     # LOM of vacancies 
     f[19] = v - (v_pret + e)
     # Predetermined vacancies 
@@ -134,11 +132,12 @@ f = fill(Sym("x"), nvar)
     f[25] = C_R - C/p 
     f[26] = Y_R - Y/p 
     f[27] = Y_cR - Y_c/p
+    f[28] = w_R - w/p
 
     # Exogenous processes
-    f[28]  =   log(zp) - ρ_z * log(z)
-    f[29] =    log(δp) -  ρ_δ * log(δ)
-    f[30] = log(sp) - ρ_s*log(s)
+    f[29]  =   log(zp) - ρ_z * log(z)
+    f[30] =    log(δp) -  ρ_δ * log(δ)
+    f[31] = log(sp) - ρ_s*log(s)
 
 # Steady state     
 # Values 
@@ -166,10 +165,10 @@ v_s = θ_s*u_s
 e_s = δbar*(v_s+1-u_s)
 v_prets = v_s - e_s 
 recruiter_share= (δbar+(ρ+δbar)*(ε-1))/(δbar+(ρ+δbar)*ε)
-w_wR = labor_share/recruiter_share
-w_Rs = w_s/(w_wR)
+w_wint = labor_share/recruiter_share
+w_ints = w_s/(w_wint)
 surplus_ratio = (ρ+τbar)/(1-δbar)*(1/(q_s*x_v))
-K_s = (w_Rs-w_s)/(1+surplus_ratio) 
+K_s = (w_ints-w_s)/(1+surplus_ratio) 
 κ   = (1-x_v)/x_v*K_s/q_s
 f_e = (μ-1)*zbar*(L_s/N_s)*(1-δbar)/(δbar*μ+ρ)
 ν_fs =p_s*f_e/μ
@@ -187,11 +186,12 @@ labor_prod_s = Y_s/(p_s*L_s)
 C_Rs = C_s/p_s
 Y_Rs = Y_s/p_s
 Y_cRs = Y_cs/p_s
+w_Rs = w_s/p_s
 #x               = [u; N; v_pret; z] # predetermined
-#y               = [θ; q; L; v; e; K; Q; p; N_e; ν_f; d_f; w_R; w; L_e; L_c; Y_c; C; λ; Y; labor_prod]
+#y               = [θ; q; L; v; e; K; Q; p; N_e; ν_f; d_f; w_int; w; L_e; L_c; Y_c; C; λ; Y; labor_prod]
 # Vector
-SS_block  = [log(x) for x in [u_s, N_s, v_prets, z_s, δ_s, s_s, θ_s, q_s, L_s, v_s, e_s, K_s, Q_s, p_s, N_es, ν_fs, d_fs, w_Rs, w_s, L_es, L_cs, Y_cs, C_s, λ_s, Y_s, 
-        labor_prod_s, C_Rs, Y_Rs, Y_cRs, ls_s]]
+SS_block  = [log(x) for x in [u_s, N_s, v_prets, z_s, δ_s, s_s, θ_s, q_s, L_s, v_s, e_s, K_s, Q_s, p_s, N_es, ν_fs, d_fs, w_ints, w_s, L_es, L_cs, Y_cs, C_s, λ_s, Y_s, 
+        labor_prod_s, C_Rs, Y_Rs, Y_cRs, w_Rs, ls_s]]
 # vertical concatenate: represent both current and future variables
 SS = vcat(SS_block, SS_block)
 
@@ -251,9 +251,8 @@ PAR     =   [f_e; s; zbar; δbar; sbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_in
 sol = solution_interface(model, PAR)
 @unpack ss, SS, sol_mat, eta = sol
 # Export: model, targets, PAR, sol
-model_output = (model, targets, PAR)
-using serialize
-serialize("model_output.jls", model_output)
+#model_output = (model, targets, PAR)
+#serialize("model_output.jls", model_output)
 
 ## Simulation  and calculation of moments
 #=
@@ -269,10 +268,11 @@ flag_IR = false
 flag_logdev = false #express results in LEVELS
 T_SM = 100_000
 sim_SM = simulate_model(model, sol_mat, T_SM, eta, SS, flag_IR, flag_logdev)
+
 # Multiply by 100 to 
 sim_data = 100 .*DataFrame(sim_SM, varnames)
 # Extract variable symbols to be used for calculating moments
-moments_vars = [:u, :v, :θ, :labor_prod, :ls, :z, :δ, :w ]
+moments_vars = [:u, :v, :θ, :labor_prod, :ls, :z, :δ, :w_R ]
 
 sim_data = sim_data[!, moments_vars]
 

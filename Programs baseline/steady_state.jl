@@ -67,9 +67,9 @@ function w_fun(θ, N, para)
     @unpack ϕ, b, z, ε, δ, A, η_L = para
     q = vf(θ, A, η_L)
     μ = ε/(ε-1)
-    w_R = N^(1/(ε-1))*z/μ
+    w_int = N^(1/(ε-1))*z/μ
     K = K_fun(θ, para)
-    w = (1-ϕ)*b + ϕ*(w_R-K+θ/(1-δ)*(K+q*κ))
+    w = (1-ϕ)*b + ϕ*(w_int-K+θ/(1-δ)*(K+q*κ))
     return w
 end
 
@@ -97,8 +97,8 @@ function θ_fun(para; init_value=0.51)
         lhs = (κ+K/q)*((ρ+τ)+ϕ*q*θ)
         N = (μ-1)*z*L*(1-δ)/(f_e*(δ*μ+ρ))
         p = N^(1/(ε-1))
-        w_R = p*z/μ
-        rhs = (1-δ)*(1-ϕ)*(w_R-K-b)
+        w_int = p*z/μ
+        rhs = (1-δ)*(1-ϕ)*(w_int-K-b)
         return [(lhs-rhs)/(lhs+rhs)]
     end
 
@@ -146,8 +146,8 @@ function steady_state(para; init=0.51)
     d_f = (ρ+δ)/(1-δ)*ν_f
 
     # Wages
-    w_R = p*z/μ
-    w = ϕ*(w_R-K+θ/(1-δ)*(K+q*κ))+(1-ϕ)*(b)
+    w_int = p*z/μ
+    w = ϕ*(w_int-K+θ/(1-δ)*(K+q*κ))+(1-ϕ)*(b)
 
     # Sectoral labor 
     L_e = (δ/(1-δ))*N*f_e/z
@@ -175,10 +175,10 @@ function steady_state(para; init=0.51)
     sunk_vac_cost_share = X_v/Y
     entrant_share = e/v
     x_v = (K/q)/(κ+K/q)
-    search_wedge = w/w_R 
-    recruiter_share = w_R*L/Y
+    search_wedge = w/w_int
+    recruiter_share = w_int*L/Y
 
-    out = (θ=θ, N=N, f=f, q=q, u=u, v=v, v_pret=v_pret, e=e, K=K, p=p, N_e=N_e, ν_f=ν_f, d_f=d_f, w_R=w_R, w=w, L=L, L_e=L_e, L_c=L_c, Y_c=Y_c, Q=Q, X_v=X_v,
+    out = (θ=θ, N=N, f=f, q=q, u=u, v=v, v_pret=v_pret, e=e, K=K, p=p, N_e=N_e, ν_f=ν_f, d_f=d_f, w_int=w_int, w=w, L=L, L_e=L_e, L_c=L_c, Y_c=Y_c, Q=Q, X_v=X_v,
      X=X, C=C, Y=Y, labor_share=labor_share, labor_prod=labor_prod, cons_share=cons_share, inv_new_firm_share=inv_new_firm_share, vacancy_share=vacancy_share, sunk_vac_cost_share=sunk_vac_cost_share, M=M,
      entrant_share=entrant_share, x_v=x_v, search_wedge=search_wedge, recruiter_share=recruiter_share)
     return out
@@ -211,22 +211,21 @@ function calibrate_labor_share(targets)
     p = N^(1/(ε-1))
     N_e = δ/(1-δ)*N
     b = b_ratio*w
-    #w_R = p*z/μ
+    #w_int = p*z/μ
     recruiter_share = (δ+(ρ+δ)*(ε-1))/(δ+(ρ+δ)*ε) # w_R*L/Y similar to BGM
-    w_wR = labor_share/recruiter_share
-    w_R = w/(w_wR)
-    z = (μ/p)*w_R
+    w_wint = labor_share/recruiter_share
+    w_int = w/(w_wint)
+    z = (μ/p)*w_int
 
     # surplus_ratio = (w_R - w - K)/K 
     surplus_ratio = (ρ+τ)/(1-δ)*(1/(q*x_v))
-    K = (w_R-w)/(1+surplus_ratio)
+    K = (w_int-w)/(1+surplus_ratio)
 
     # Find κ given K 
     κ = (1-x_v)/x_v*K/q
 
     # From wage equation find ϕ
-    ϕ = (w-b)/(w_R-K+θ/(1-δ)*(K+q*κ)-b)
-    #@assert abs(w-(ϕ*(w_R-K+θ/(1-δ)*(K+q*κ))+(1-ϕ)*(b))) < 1e-6
+    ϕ = (w-b)/(w_int-K+θ/(1-δ)*(K+q*κ)-b)
 
     # Find F from free entry condition
     #K = (ρ+δ)/(1+ρ)*(e/F)^(1/ξ)
@@ -237,9 +236,6 @@ function calibrate_labor_share(targets)
     # Given N, solve for f_e
     # N = (μ-1)*zL*(1-δ)/(f_e(δμ+\rho))
     f_e = (μ-1)*z*(L/N)*(1-δ)/(δ*μ+ρ)
-    
-    #@assert abs(κ+K/q - (1-δ)/(ρ+τ)*(w_R-w-K)) < 1e-6
-    #@assert abs((κ+K/q)*(ρ+τ+ϕ*θ*q)-(1-δ)*(1-ϕ)*(w_R-K-b)) < 1e-6
 
     cal = (f_e=f_e, τ=τ, δ=δ, z=z, b=b, ϕ=ϕ, ρ=ρ, σ=σ, ε=ε, A=A, η_L=η_L,κ=κ, ξ_inv=ξ_inv, F=F, s=s)
     return cal
@@ -278,26 +274,26 @@ function calibrate(targets)
     N_e = δ/(1-δ)*N
     b = b_ratio*w
 
-    #w_R = p*z/μ
-    recruiter_share = (δ+(ρ+δ)*(ε-1))/(δ+(ρ+δ)*ε) # w_R*L/Y similar to BGM
-    surplus_ratio = (ρ+τ)/(1-δ)*(1/q) #(w_R-w-K)/K
+    #w_int = p*z/μ
+    recruiter_share = (δ+(ρ+δ)*(ε-1))/(δ+(ρ+δ)*ε) # w_int*L/Y similar to BGM
+    surplus_ratio = (ρ+τ)/(1-δ)*(1/q) #(w_int-w-K)/K
     
-    surplus_ratio_2 = ((ρ+τ)/q+ϕ*θ)/((1-δ)*(1-ϕ)) #(w_R-K-b)/K 
+    surplus_ratio_2 = ((ρ+τ)/q+ϕ*θ)/((1-δ)*(1-ϕ)) #(w_int-K-b)/K 
 
     sr = surplus_ratio/surplus_ratio_2 
-    #w_R-w-K = sr*(w_R-K-b)
-    w_R_net_K = (w-sr*b)/(1-sr) #w_R-K
-    K = (w_R_net_K - b)/surplus_ratio_2
-    w_R = w_R_net_K + K
+    #w_int-w-K = sr*(w_int-K-b)
+    w_int_net_K = (w-sr*b)/(1-sr) #w_int-K
+    K = (w_int_net_K - b)/surplus_ratio_2
+    w_int = w_int_net_K + K
 
-    z = (μ/p)*w_R
+    z = (μ/p)*w_int
 
-    # surplus_ratio = (w_R - w - K)/K 
+    # surplus_ratio = (w_int - w - K)/K 
   
-    @assert K ≈ (w_R-w)/(1+surplus_ratio)
+    @assert K ≈ (w_int-w)/(1+surplus_ratio)
 
     # From wage equation find ϕ
-    ϕ = (w-b)/(w_R-K+θ*K/(1-δ)-b)
+    ϕ = (w-b)/(w_int-K+θ*K/(1-δ)-b)
 
     # Find F from free entry condition
     #K = (ρ+δ)/(1+ρ)*(e/F)^(1/ξ)
@@ -317,13 +313,13 @@ Job creation curve:
 N as a function of θ
 """
 function N_jcc(θ, para)
-    @unpack ρ, τ, A, η_L, δ, ϕ, z, ε, b = para
+    @unpack ρ, τ, A, η_L, δ, ϕ, z, ε, b, κ = para
     q = vf(θ, A, η_L)
     K = K_fun(θ, para)
     μ = ε/(ε-1)
 
-    w_R = 1/((1-δ)*(1-ϕ))*(κ*q+K)*((ρ+τ)/q+ϕ*θ) + K + b
-    p = w_R*(μ/z)
+    w_int = 1/((1-δ)*(1-ϕ))*(κ*q+K)*((ρ+τ)/q+ϕ*θ) + K + b
+    p = w_int*(μ/z)
     N = p^(ε-1)
     return N
 end
