@@ -60,8 +60,8 @@ end
 function gen_irf_comp(irf_bas::DataFrame, irf_alt::DataFrame, labels)
     # Create a 3x2 subplot layout
     p = Plots.plot(
-        layout=(2, 4), 
-        size=(1200, 500), 
+        layout=(3, 3), 
+        size=(1100, 700), 
         legend=:topright,
         fmt=:png
     )
@@ -102,8 +102,17 @@ function gen_irf_comp(irf_bas::DataFrame, irf_alt::DataFrame, labels)
         ylabel="%"
     )
 
+      # Plot for p
+      plot!(p[5], 
+      [irf_bas.p irf_alt.p],
+      label=[labels[1] labels[2]],
+      alpha=0.6,
+      title=L"p",
+      ylabel="%"
+  )
+
     # Plot for C_R
-    plot!(p[5], 
+    plot!(p[6], 
         [irf_bas.C_R irf_alt.C_R],
         label=[labels[1] labels[2]],
         alpha=0.6,
@@ -112,7 +121,7 @@ function gen_irf_comp(irf_bas::DataFrame, irf_alt::DataFrame, labels)
     )
 
     # Plot for Y_R
-    plot!(p[6], 
+    plot!(p[7], 
         [irf_bas.Y_R irf_alt.Y_R],
         label=[labels[1] labels[2]],
         alpha=0.6,
@@ -120,7 +129,7 @@ function gen_irf_comp(irf_bas::DataFrame, irf_alt::DataFrame, labels)
         ylabel="%"
     )
 
-    plot!(p[7], 
+    plot!(p[8], 
         [irf_bas.d_f irf_alt.d_f],
         label=[labels[1] labels[2]],
         alpha=0.6,
@@ -128,7 +137,7 @@ function gen_irf_comp(irf_bas::DataFrame, irf_alt::DataFrame, labels)
         ylabel="%"
     )
 
-    plot!(p[8], 
+    plot!(p[9], 
     [irf_bas.ls irf_alt.ls],
     label=[labels[1] labels[2]],
     alpha=0.6,

@@ -22,7 +22,7 @@ assert(length(T) >= 19);
 
 T(1) = (1-params(1))/params(1);
 T(2) = 1-params(2)*exp(y(37));
-T(3) = params(1)*y(58)/y(29)*T(2);
+T(3) = params(1)*y(59)/y(29)*T(2);
 T(4) = y(17)/T(2);
 T(5) = 1-(params(5)-params(2))/(1-params(2));
 T(6) = 1/((1+params(3))/params(3)-1);
@@ -36,7 +36,7 @@ T(13) = (1-params(8))/params(8)*T(12)/(params(7)/(1-params(2)));
 T(14) = (params(14)-params(14)*params(10))/(T(10)-T(12)+T(7)/(1-params(2))*(T(12)+(1-params(8))/params(8)*T(12))-params(14)*params(10));
 T(15) = params(2)*(1+T(7)*params(5)/(params(6)+params(5))-params(5)/(params(6)+params(5)))/(T(12)*(1+T(1))/(T(1)+params(2)))^(1/params(9));
 T(16) = (1-params(2))*T(11)*(T(9)-1)*(1-params(5)/(params(6)+params(5)))/params(13)/(T(1)+params(2)*T(9));
-T(17) = y(55)-y(53)-y(52)+T(5)*(y(52)/y(54)+T(13));
+T(17) = y(56)-y(54)-y(53)+T(5)*(y(53)/y(55)+T(13));
 T(18) = exp(y(36))*y(22)*T(11);
 T(19) = y(14)/T(15);
 

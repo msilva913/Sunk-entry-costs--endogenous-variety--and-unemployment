@@ -92,32 +92,32 @@ parameters
 %----------------------------------------------------------------
 //z = 1.0;
 beta = 0.99673; % monthly discount factor
-xi_inv = 1.0; % 0 corresponds to infinitely elastic vacancy creation--standard DMP free entry
+xi_inv = 1/0.265; % 0 corresponds to infinitely elastic vacancy creation--standard DMP free entry
 //xi_inv = 0.1;
 
 //r_ann = 0.04; % annual interest rate 
 
-//delta = 0.00514;
-delta = 0.021;
+delta = 0.00874;
+//delta = 0.021;
 tau = 0.031;
 //fbar = 0.41;
 fbar = 0.41;
 qbar = 0.8;
 
 labor_share = 0.66;
-x_v = 0.2;
+x_v = 0.1;
 N_ss = 1.0;
 w_ss = 1.0;
 
-mu_net = 0.333;
-//mu_net = 0.01;
-sigma = 1.5;
+//mu_net = 0.30;
+mu_net = 0.01;
+sigma = 1.0;
 b_ratio = 0.71;
 eta_L = 0.6;
 
 
-rho_z = 0.975;
-rho_delta = 0.975;
+rho_z = 0.965;
+rho_delta = 0.875;
 %----------------------------------------------------------------
 % enter model equations
 %----------------------------------------------------------------
@@ -163,7 +163,7 @@ model;
 #kappa = (1-x_v)/x_v*K_ss/q_ss;
 
 // From wage equation find ϕ
-#phi = (w_ss-b)/(w_R_ss-K_ss+theta_ss/(1-delta)*(K_ss+q*kappa)-b);
+#phi = (w_ss-b)/(w_R_ss-K_ss+theta_ss/(1-delta)*(K_ss+q_ss*kappa)-b);
 
 #Q_ss = K_ss*(1+rho)/(rho+delta);
 #F = e_ss/(Q_ss^(1/xi_inv));
@@ -230,6 +230,8 @@ Y = Y_c + nu_f*N_e;
 [Name = 'Output: income']
 Y = w_R*L + N*d_f;
 
+//d_f = Y_c/(N*epsi);
+
 [name = 'LOM of vacancies']
 v = (1-delta*exp(theta_delta))*((1-q(-1))*v(-1) + s*(1-u(-1))) + e;
 
@@ -268,6 +270,7 @@ N_imp = 100*log(N);
 N_e_imp = 100*log(N_e);
 C_imp   = 100*log(C);
 Y_imp = 100*log(Y);
+p_imp = 100*log(p);
 //Equivalent of x_imp is theta_x
 
 % Exogenous processes
@@ -316,7 +319,7 @@ steady_state_model;
     //b = b_ratio*w;
     //w = phi*(w_R-K+theta/(1-delta)*K) + (1-phi)*b;
 
-    f_e_ss = (mu_ss-1)*(L/N)*(1-delta)/(delta*mu_ss+rho_ss);
+    f_e_ss = (mu_ss-1)*z_ss*(L/N)*(1-delta)/(delta*mu_ss+rho_ss);
 
     nu_f = p*f_e_ss/mu_ss;
     d_f = (rho_ss+delta)/(1-delta)*nu_f;
@@ -359,8 +362,8 @@ end;
 
 //set shock variances
 shocks;
-    var e_z=0.0044^2;
-    var e_delta = 0.0044^2;
+    var e_z=0.007^2;
+    var e_delta = 0.042^2;
     //var e_b = 0.0072^2;
     //var e_alphaL=0.0072^2;
 end;
@@ -380,5 +383,5 @@ check;
 stoch_simul (order=1, nofunctions, irf=80, periods=0)
 //conditional_variance_decomposition=[1 4 8 40])
 theta_z, theta_delta, Y_imp,
-u_imp, v_imp, theta_imp, e_imp, N_imp, N_e_imp, C_imp;
+u_imp, v_imp, theta_imp, e_imp, N_imp, N_e_imp, p_imp, C_imp;
 

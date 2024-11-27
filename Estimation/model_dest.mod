@@ -50,6 +50,7 @@ var //x           ${x}$ (long_name='technology')
     e_imp
     N_imp
     N_e_imp
+    p_imp
     C_imp
     Y_imp;
     
@@ -109,8 +110,8 @@ x_v = 0.1;
 N_ss = 1.0;
 w_ss = 1.0;
 
-//mu_net = 0.30;
-mu_net = 0.01;
+mu_net = 0.30;
+//mu_net = 0.01;
 sigma = 1.0;
 b_ratio = 0.71;
 eta_L = 0.6;
@@ -270,6 +271,7 @@ N_imp = 100*log(N);
 N_e_imp = 100*log(N_e);
 C_imp   = 100*log(C);
 Y_imp = 100*log(Y);
+p_imp = 100*log(p);
 //Equivalent of x_imp is theta_x
 
 % Exogenous processes
@@ -354,6 +356,7 @@ steady_state_model;
     e_imp = 100*(log(e));
     N_imp = 100*(log(N));
     N_e_imp = 100*(log(N_e));
+    p_imp = 100*(log(p));
     C_imp   = 100*(log(C));
     Y_imp = 100*(log(Y));
 
@@ -382,5 +385,5 @@ check;
 stoch_simul (order=1, nofunctions, irf=80, periods=0)
 //conditional_variance_decomposition=[1 4 8 40])
 theta_z, theta_delta, Y_imp,
-u_imp, v_imp, theta_imp, e_imp, N_imp, N_e_imp, C_imp;
+u_imp, v_imp, theta_imp, e_imp, N_imp, N_e_imp, p_imp, C_imp;
 
