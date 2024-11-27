@@ -314,7 +314,7 @@ if __name__ == "__main__":
     plt.savefig("Beveridge_logs.pdf")
     plt.show()
     
-    "5) Estimate matching function "
+    "4) Estimate matching function "
     # Impose m = Au^alpha v^(1-alpha)
     # Implies f = Atheta^(1-alpha)
     # In logs: log f = log A + (1-alpha)log theta
@@ -349,7 +349,7 @@ if __name__ == "__main__":
     
     
     
-    "6) Unemployment and labor productivity "
+    "5) Unemployment and labor productivity "
     
     # fig = plt.figure(figsize=(12, 10))
     # ax1 = fig.add_subplot(2, 1,1)

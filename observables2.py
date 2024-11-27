@@ -151,11 +151,11 @@ def construct_data(init, final, freq):
     
     " BFS "
     sbf4 = fred.get_series('BFBF4QTOTALSAUS').resample(freq).mean().dropna() / pop
-    sbf8 = fred.get_series('BFBF8QTOTALSAUS').resample(freq).mean().dropna() / pop
+    #sbf8 = fred.get_series('BFBF8QTOTALSAUS').resample(freq).mean().dropna() / pop
 
     " Note: these series imply labor productivity in each sector "
     " List of data series "
-    var_load_list = [c, cons_share, u, v, theta, f, lp, ls, s, w, sbf4, sbf8] 
+    var_load_list = [c, cons_share, u, v, theta, f, lp, ls, s, w, sbf4] 
     return var_load_list
         
 if __name__ == "__main__":       
@@ -178,7 +178,7 @@ if __name__ == "__main__":
         save_object(var_load_list, 'var_load_list')
     
     dat = pd.concat(var_load_list, axis=1)
-    lab = ['c', 'cons_share', 'u', 'v', 'theta', 'jf', 'lp', 'ls', 's', 'w', 'sbf4', 'sbf8']
+    lab = ['c', 'cons_share', 'u', 'v', 'theta', 'jf', 'lp', 'ls', 's', 'w', 'N_e']
     dat.columns = lab
     dat = dat.loc[init:final]
     
