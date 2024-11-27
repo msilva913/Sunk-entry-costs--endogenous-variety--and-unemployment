@@ -54,7 +54,7 @@ function process_model(model::NamedTuple)
         copyto!(SS, SS.subs(parameters[ip],Sym("PAR["*string(ip)*"]")))
     end
     
-    SS_string = Meta.parse("function eval_SS(PAR); return " * string(SS)[4:end] * "; end;")
+    #SS_string = Meta.parse("function eval_SS(PAR); return " * string(SS)[4:end] * "; end;")
     SS_string = Meta.parse("function eval_SS(PAR); return " *SubString(repr(SS))*"; end;")
     eval(SS_string)
     

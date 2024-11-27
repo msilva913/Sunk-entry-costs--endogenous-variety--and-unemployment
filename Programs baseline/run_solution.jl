@@ -22,10 +22,16 @@ function solution_interface(model, PAR)
     SS_err  =   eval_SS_error(PAR_SS, SS)
     deriv   =   eval_deriv(PAR_SS, SS)
     SS_max = maximum(abs.(SS_err))
+    argmax(abs.(SS_err))
     println("Residuals: $SS_max")
 
     ss = NamedTuple(zip(model.varnames, exp.(SS[1:model.nvar])))
-
+    # dev = zeros(model.nvar)
+    # common_keys = intersect(keys(ss), keys(steady))
+    # for (i, field) in enumerate(common_keys)
+    #     dev[i] = ss[field] -steady[field]
+    # end
+    # print(maximum(abs.(dev)))
     # @btime sol_mat = solve_model(model, deriv, eta)
     sol_mat = solve_model(model, deriv, eta)
     println("Model solved")
@@ -40,8 +46,8 @@ end
     flag_SSsolver   = false
 
 # Parameters
-    @syms f_e s zbar δbar sbar b ϕ ρ σ ε A η_L F κ ξ_inv ρ_z σ_z ρ_δ σ_δ ρ_s σ_s
-    parameters      = [f_e; s; zbar; δbar; sbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; σ_z; ρ_δ; σ_δ; ρ_s; σ_s ]
+    @syms f_e zbar δbar sbar b ϕ ρ σ ε A η_L F κ ξ_inv ρ_z σ_z ρ_δ σ_δ ρ_s σ_s
+    parameters      = [f_e; zbar; δbar; sbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; σ_z; ρ_δ; σ_δ; ρ_s; σ_s ]
     estimate        = []
     position        = []
     priors          = (;)
@@ -167,6 +173,9 @@ v_prets = v_s - e_s
 recruiter_share= (δbar+(ρ+δbar)*(ε-1))/(δbar+(ρ+δbar)*ε)
 w_wint = labor_share/recruiter_share
 w_ints = w_s/(w_wint)
+
+# Rescale zbar to be consistent with wage=1
+zbar = (μ/p_s)*w_ints
 surplus_ratio = (ρ+τbar)/(1-δbar)*(1/(q_s*x_v))
 K_s = (w_ints-w_s)/(1+surplus_ratio) 
 κ   = (1-x_v)/x_v*K_s/q_s
@@ -246,88 +255,14 @@ cal = calibrate_labor_share(targets)
 zbar = z 
 δbar = δ
 sbar = s
-PAR     =   [f_e; s; zbar; δbar; sbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; σ_z; ρ_δ; σ_δ; ρ_s; σ_s ]
+PAR     =   [f_e; zbar; δbar; sbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; σ_z; ρ_δ; σ_δ; ρ_s; σ_s ]
 
 sol = solution_interface(model, PAR)
 @unpack ss, SS, sol_mat, eta = sol
 # Export: model, targets, PAR, sol
-#model_output = (model, targets, PAR)
-#serialize("model_output.jls", model_output)
+model_output = (model, targets, PAR, sol)
+serialize("model_output.jls", model_output)
 
-## Simulation  and calculation of moments
-#=
-Here we follow standard practice and Coles and Kelishomi 2018 by
-1) Generating monthly series
-2) Converting to quarterly
-3) Applying HP filter (lam=100,000)
--> can consider other filters/growth rates, HP filter induces spurious autocorrelations
-=#
-
-
-flag_IR = false
-flag_logdev = false #express results in LEVELS
-T_SM = 100_000
-sim_SM = simulate_model(model, sol_mat, T_SM, eta, SS, flag_IR, flag_logdev)
-
-# Multiply by 100 to 
-sim_data = 100 .*DataFrame(sim_SM, varnames)
-# Extract variable symbols to be used for calculating moments
-moments_vars = [:u, :v, :θ, :labor_prod, :ls, :z, :δ, :w_R ]
-
-sim_data = sim_data[!, moments_vars]
-
-# Plot in levels 
-p = Plots.plot(layout=(2, 3), size=(1000,600), 
-legend=true, alpha=0.6)
-
-# Top left plot
-plot!(p[1], sim_data.u, label=L"u", subplot=1)
-plot!(p[2], sim_data.v, label=L"v")
-plot!(p[3], sim_data.θ, label=L"θ")
-plot!(p[4], sim_data.z, label=L"z")
-plot!(p[5], sim_data.δ, label = L" δ")
-plot!(p[6], sim_data.ls, label="labor share")
-Plots.savefig("simulated_data_levels.pdf")
-display(p)
-
-#######################################################
-# Express results in log deviations
-flag_logdev = true 
-sim_SM = simulate_model(model, sol_mat, T_SM, eta, SS, flag_IR, flag_logdev)
-sim_data = DataFrame(sim_SM, varnames)
-sim_data = sim_data[!, moments_vars]
-# Levels @. exp(sim_data.u)*ss.u
-
-
-#moments(sim_data, :z, [:z]; lags =2, verbose=true)
-
-# Convert monthly data to quarterly 
-sim_data_q = monthly_to_quarterly(sim_data)
-
-# HP and Hamilton filters
-
-sim_data_hp = copy(sim_data_q)
-#sim_data_ham = copy(sim_data_q)
-#sim_data_growth = copy(sim_data_q)
-for x in moments_vars
-    sim_data_hp[!, x] .= hp_filter(sim_data_q[!, x], 100_000)
-    #sim_data_ham[!, x] .= hamilton_filter(sim_data_q[!, x])
-    #sim_data_growth[!, x] .= growth_filter(sim_data_q[!, x])
-end
-
-# Calculate moments
-    # Set up correlations as Shimer 2005 (w/o job finding rate): 
-@show mom = moments(sim_data_hp, :labor_prod, [:u, :labor_prod]; lags=2)
-using PrettyTables
-pretty_table(mom, backend = Val(:latex))
-
-#moments(sim_data_ham, :z, [:z, :v]; lags =2, verbose=true)
-
-# Calculate moments 
-
-#sim_dat
-#using Plots
-#Plots.plot(sim_SM)
 
 ## Impulse responses ##
 eta_z = zero(eta) # Tech shock
@@ -375,7 +310,8 @@ Plots.savefig("common_shock.pdf")
 targets2 = (targets..., ε=100.0 )
 cal2 = calibrate_labor_share(targets2)
 @unpack  f_e, δ, s, z, b, ϕ, ρ, σ, ε, A, η_L, F, κ, ξ_inv = cal2
-PAR2     =   [f_e; s; zbar; δbar; sbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; σ_z; ρ_δ; σ_δ; ρ_s; σ_s ]
+PAR2     =   [f_e; z; δ; s; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; σ_z; ρ_δ;
+ σ_δ; ρ_s; σ_s ]
 sol2 = solution_interface(model, PAR2)
 sol_mat2 = sol2.sol_mat
 SS2 = sol2.SS
