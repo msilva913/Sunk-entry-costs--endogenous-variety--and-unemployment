@@ -19,42 +19,26 @@ episodes = {
 
 df1 = fred.get_series('BFBF4QTOTALSAUS').resample('MS').mean().dropna()
 df2 = fred.get_series("BFBF8QTOTALSAUS").resample("MS").mean().dropna()
-
+bawba = fred.get_series("BAWBATOTALSAUS").resample("MS").mean().dropna()
 pop = fred.get_series('CNP16OV').resample('MS').mean().dropna()
 # Use HP-filtered trend for population to avoid discrete jumps around census dates
 pop = sm.tsa.filters.hpfilter(pop, lamb=10_000)[1]
-df1 = df1/pop
-df2 = df2/pop
-df1.dropna(inplace=True)
-df2.dropna(inplace=True)
+BF4 = df1/pop
+BF8 = df2/pop
+bawba = bawba/pop
+df = pd.concat([BF4, BF8, bawba], axis=1)
+df.columns = ["BF4", "BF8", "bawba"]
+df.dropna(inplace=True)
 # Divide business formation by population
 
-#mapping
-#month_map = {
-#    'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6,
-#    'Jul': 7, 'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12
-#}
-
-#define df
-# df_melted1['Month'] = df_melted1['Month'].map(month_map)
-# df_melted2['Month'] = df_melted2['Month'].map(month_map)
-
-# df_melted1['Year-Month'] = pd.to_datetime(df_melted1['Year'].astype(str) + '-' + df_melted1['Month'].astype(str))
-# df_melted2['Year-Month'] = pd.to_datetime(df_melted2['Year'].astype(str) + '-' + df_melted2['Month'].astype(str))
-
-# df_melted1.sort_values('Year-Month', inplace=True)
-# df_melted2.sort_values('Year-Month', inplace=True)
-
-# df_melted1.set_index('Year-Month', inplace=True)
-# df_melted2.set_index('Year-Month', inplace=True)
-
-# df_melted1.drop(['Year', 'Month'], axis=1, inplace=True)
-# df_melted2.drop(['Year', 'Month'], axis=1, inplace=True)
-
 #plot
+df = np.log(df)
+df = df - df.iloc[0, :]
+
 plt.figure(figsize=(12, 6))
-plt.plot(df1.index, np.log(df1.values), label='SBF4', color='blue')
-plt.plot(df2.index, np.log(df2.values), label='SBF8', color='red')
+plt.plot(df.BF4, label='SBF4', color='blue')
+plt.plot(df.BF8, label='SBF8', color='red')
+plt.plot(df.bawba, label='Business applications: planned wages', color='magenta')
 #plt.legend()
 
 for start, end in episodes.values():
@@ -62,8 +46,8 @@ for start, end in episodes.values():
 
 plt.title('Business Formation')
 plt.xlabel('Year')
-plt.ylabel(' Log Per Capita Business Formations')
-plt.legend(loc='upper left')
+plt.ylabel(' Log Per Capita Business application and formation')
+plt.legend(loc='best')
 plt.grid(True)
 plt.savefig('BFS_plot.pdf')
 plt.show()
