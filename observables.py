@@ -195,18 +195,18 @@ if __name__ == "__main__":
     cycle_hp = pd.concat([filter_transform(dat[x], init=init, final=final, transform_type='log',
                                         filter_type="hp_filter", lamb=10_000) for x in lab], axis=1)
     cycle_hp.columns = lab
-    cycle_hp.drop(['jf', 'cons_share'], axis=1, inplace=True)
+    cycle_hp.drop(['cons_share'], axis=1, inplace=True)
     
-    cycle_ham = pd.concat([filter_transform(dat[x], init=init, final=final, transform_type='log',
-                                        filter_type="hamilton") for x in lab], axis=1)
-    cycle_ham.columns = lab
-    cycle_ham.drop(['jf', 'cons_share'], axis=1, inplace=True)
+    # cycle_ham = pd.concat([filter_transform(dat[x], init=init, final=final, transform_type='log',
+    #                                     filter_type="hamilton") for x in lab], axis=1)
+    # cycle_ham.columns = lab
+    # cycle_ham.drop(['jf', 'cons_share'], axis=1, inplace=True)
     
-    cycle_ham[["bf", "ba"]].corr()
+    #cycle_ham[["bf", "ba"]].corr()
     
     # Stacked moments 
     
-    mom = moments(cycle_ham, relative_std="lp", lab=["u", "lp"])
+    mom = moments(cycle_hp, relative_std="lp", lab=["u", "lp"])
     mom_stacked = stacked_moments(cycle_hp)
     " Summarize moments in one column "
  
