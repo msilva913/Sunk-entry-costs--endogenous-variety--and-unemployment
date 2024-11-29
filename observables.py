@@ -44,6 +44,11 @@ def construct_data(init, final, freq):
     lp: labor productivity
     s: aggregate separation rate
     w: real hourly compensation for all workers
+    SBF4: Business Formations Within FOUR Quarters
+    SBF8: Business Formations Within Eight Quarters
+    WBA: business applications with planned wages.
+    High-Propensity Business Applications (HBA) that indicate a first wages-paid date on the IRS Form SS-4. 
+    The indication of a wages-paid date is associated with a high likelihood of transitioning into a business with a payroll.
     """
 
     " GDP Deflator BEA code A191RD"
@@ -142,21 +147,25 @@ def construct_data(init, final, freq):
     " Labor share "
     ls = fred.get_series('PRS85006173').resample(freq).mean()
     
-    " Wages: measure as product of labor share and labor productivity "
+    " Wages "
     # Nonfarm Business Sector: Real Hourly Compensation for All Workers, index 2017=100
     #w = fred.get_series('COMPRNFB').resample(freq).mean()
     w = ls*lp
     
+    " BFS "
+    sbf4 = fred.get_series('BFBF4QTOTALSAUS').resample(freq).mean().dropna() / pop
+    bawba = fred.get_series("BAWBATOTALSAUS").resample(freq).mean().dropna()/ pop
+    #sbf8 = fred.get_series('BFBF8QTOTALSAUS').resample(freq).mean().dropna() / pop
 
     " Note: these series imply labor productivity in each sector "
     " List of data series "
-    var_load_list = [c, cons_share, u, v, theta, f, lp, ls, s, w] 
+    var_load_list = [c, cons_share, u, v, theta, f, lp, ls, s, w, sbf4, bawba] 
     return var_load_list
         
 if __name__ == "__main__":       
         # Baseline
     init= '1951-01-01'
-    #final = '2024-05-30'
+    #final = '2024-10-30'
     final='2020-01-01' # Just before pandemic shock
     # Comparison to earlier BRS
     #init = '1967-01-01'
@@ -164,6 +173,7 @@ if __name__ == "__main__":
     #filter_type = 'hamilton'
     freq = 'QS'
     save_observables = False
+    #load the BFS data, and convert the BFS data to quarterly frequency
     
     if load:
         var_load_list = pickle.load(open("var_load_list", "rb"))
@@ -172,7 +182,7 @@ if __name__ == "__main__":
         save_object(var_load_list, 'var_load_list')
     
     dat = pd.concat(var_load_list, axis=1)
-    lab = ['c', 'cons_share', 'u', 'v', 'theta', 'jf', 'lp', 'ls', 's', 'w']
+    lab = ['c', 'cons_share', 'u', 'v', 'theta', 'jf', 'lp', 'ls', 's', 'w', 'bf', 'ba']
     dat.columns = lab
     dat = dat.loc[init:final]
     
@@ -185,10 +195,18 @@ if __name__ == "__main__":
     cycle_hp = pd.concat([filter_transform(dat[x], init=init, final=final, transform_type='log',
                                         filter_type="hp_filter", lamb=10_000) for x in lab], axis=1)
     cycle_hp.columns = lab
+    cycle_hp.drop(['jf', 'cons_share'], axis=1, inplace=True)
+    
+    cycle_ham = pd.concat([filter_transform(dat[x], init=init, final=final, transform_type='log',
+                                        filter_type="hamilton") for x in lab], axis=1)
+    cycle_ham.columns = lab
+    cycle_ham.drop(['jf', 'cons_share'], axis=1, inplace=True)
+    
+    cycle_ham[["bf", "ba"]].corr()
     
     # Stacked moments 
     
-    mom = moments(cycle_hp, relative_std="lp", lab=["u", "lp"])
+    mom = moments(cycle_ham, relative_std="lp", lab=["u", "lp"])
     mom_stacked = stacked_moments(cycle_hp)
     " Summarize moments in one column "
  
@@ -314,7 +332,7 @@ if __name__ == "__main__":
     plt.savefig("Beveridge_logs.pdf")
     plt.show()
     
-    "4) Estimate matching function "
+    "5) Estimate matching function "
     # Impose m = Au^alpha v^(1-alpha)
     # Implies f = Atheta^(1-alpha)
     # In logs: log f = log A + (1-alpha)log theta
@@ -349,7 +367,7 @@ if __name__ == "__main__":
     
     
     
-    "5) Unemployment and labor productivity "
+    "6) Unemployment and labor productivity "
     
     # fig = plt.figure(figsize=(12, 10))
     # ax1 = fig.add_subplot(2, 1,1)
@@ -403,7 +421,9 @@ if __name__ == "__main__":
             'Vacancy rate': dat.v.mean(),
             'Separation rate': dat.s.mean(),
             'Job finding rate': dat.jf.mean(),
-            'Matching function elasticity': alpha_hat
+            'Matching function elasticity': alpha_hat,
+           # 'SBF4': dat.sbf4.mean(),
+           # 'SBF8': dat.sbf8.mean(),
         }
         
         # Convert to DataFrame with descriptive index

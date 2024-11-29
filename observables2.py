@@ -196,11 +196,17 @@ if __name__ == "__main__":
                                         filter_type="hp_filter", lamb=10_000) for x in lab], axis=1)
     cycle_hp.columns = lab
     cycle_hp.drop(['jf', 'cons_share'], axis=1, inplace=True)
-    cycle_hp[["bf", "ba"]].corr()
+    
+    cycle_ham = pd.concat([filter_transform(dat[x], init=init, final=final, transform_type='log',
+                                        filter_type="hamilton") for x in lab], axis=1)
+    cycle_ham.columns = lab
+    cycle_ham.drop(['jf', 'cons_share'], axis=1, inplace=True)
+    
+    cycle_ham[["bf", "ba"]].corr()
     
     # Stacked moments 
     
-    mom = moments(cycle_hp, relative_std="lp", lab=["u", "lp"])
+    mom = moments(cycle_ham, relative_std="lp", lab=["u", "lp"])
     mom_stacked = stacked_moments(cycle_hp)
     " Summarize moments in one column "
  
@@ -416,8 +422,8 @@ if __name__ == "__main__":
             'Separation rate': dat.s.mean(),
             'Job finding rate': dat.jf.mean(),
             'Matching function elasticity': alpha_hat,
-            'SBF4': dat.sbf4.mean(),
-            'SBF8': dat.sbf8.mean(),
+           # 'SBF4': dat.sbf4.mean(),
+           # 'SBF8': dat.sbf8.mean(),
         }
         
         # Convert to DataFrame with descriptive index
