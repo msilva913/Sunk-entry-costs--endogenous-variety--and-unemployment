@@ -46,6 +46,9 @@ def construct_data(init, final, freq):
     w: real hourly compensation for all workers
     SBF4: Business Formations Within FOUR Quarters
     SBF8: Business Formations Within Eight Quarters
+    WBA: business applications with planned wages.
+    High-Propensity Business Applications (HBA) that indicate a first wages-paid date on the IRS Form SS-4. 
+    The indication of a wages-paid date is associated with a high likelihood of transitioning into a business with a payroll.
     """
 
     " GDP Deflator BEA code A191RD"
@@ -151,17 +154,18 @@ def construct_data(init, final, freq):
     
     " BFS "
     sbf4 = fred.get_series('BFBF4QTOTALSAUS').resample(freq).mean().dropna() / pop
+    bawba = fred.get_series("BAWBATOTALSAUS").resample(freq).mean().dropna()/ pop
     #sbf8 = fred.get_series('BFBF8QTOTALSAUS').resample(freq).mean().dropna() / pop
 
     " Note: these series imply labor productivity in each sector "
     " List of data series "
-    var_load_list = [c, cons_share, u, v, theta, f, lp, ls, s, w, sbf4] 
+    var_load_list = [c, cons_share, u, v, theta, f, lp, ls, s, w, sbf4, bawba] 
     return var_load_list
         
 if __name__ == "__main__":       
         # Baseline
     init= '1951-01-01'
-    #final = '2024-05-30'
+    #final = '2024-10-30'
     final='2020-01-01' # Just before pandemic shock
     # Comparison to earlier BRS
     #init = '1967-01-01'
@@ -178,7 +182,7 @@ if __name__ == "__main__":
         save_object(var_load_list, 'var_load_list')
     
     dat = pd.concat(var_load_list, axis=1)
-    lab = ['c', 'cons_share', 'u', 'v', 'theta', 'jf', 'lp', 'ls', 's', 'w', 'N_e']
+    lab = ['c', 'cons_share', 'u', 'v', 'theta', 'jf', 'lp', 'ls', 's', 'w', 'bf', 'ba']
     dat.columns = lab
     dat = dat.loc[init:final]
     
@@ -191,6 +195,8 @@ if __name__ == "__main__":
     cycle_hp = pd.concat([filter_transform(dat[x], init=init, final=final, transform_type='log',
                                         filter_type="hp_filter", lamb=10_000) for x in lab], axis=1)
     cycle_hp.columns = lab
+    cycle_hp.drop(['jf', 'cons_share'], axis=1, inplace=True)
+    cycle_hp[["bf", "ba"]].corr()
     
     # Stacked moments 
     
