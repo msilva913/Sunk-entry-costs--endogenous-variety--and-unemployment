@@ -36,7 +36,7 @@ function gen_irf(irf_df::DataFrame)
     yticks!(p[5], :auto, fmt=x->string(round(x*100,digits=1),"%"))
 
     plot!(p[6], irf_df.w, label=L"w")
-    plot!(p[6], irf_df.w_int, label=L"w_{int}")
+    plot!(p[6], irf_df.w_R, label=L"w_{R}")
     plot!(p[6], irf_df.ls, label="labor share")
     yticks!(p[6], :auto, fmt=x->string(round(x*100,digits=1),"%"))
 
@@ -49,7 +49,7 @@ function gen_irf(irf_df::DataFrame)
     plot!(p[8], irf_df.labor_prod, label="labor productivity")
     plot!(p[8], irf_df.δ, label=L"δ")
     #plot!(p[8], irf_df.Y, label=L"Y")
-    plot!(p[8], irf_df.w_R, label=L"w_R")
+    plot!(p[8], irf_df.w_int, label=L"w_{int}")
     yticks!(p[8], :auto, fmt=x->string(round(x*100,digits=1),"%"))
     
     # Display the plot

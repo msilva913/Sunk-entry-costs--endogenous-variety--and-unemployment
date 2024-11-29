@@ -86,7 +86,7 @@ f = fill(Sym("x"), nvar)
 # Equilibrium conditions
     # Job creation condition -> θ
     f[1]  =  κ + K/q - β*λp/λ*(1-δbar*δ)*(w_intp-wp-Kp+(1-sbar*sp)*(κ+Kp/qp))
-    # Marginal revenue product -> w_int
+    # Marginal revenue product (welfare-based labor prod. measure) -> w_int
     f[2] = w_int - p*z*zbar/μ
     # Wage equation -> w
     f[3] = w - (ϕ*(w_int-K+θ/(1-δbar*δ)*(K+q*κ)) +(1-ϕ)*b)
@@ -133,7 +133,7 @@ f = fill(Sym("x"), nvar)
     # Labor share of income
     f[23] = ls - w*L/Y
 
-    # Data-consistent variables
+    # Data-consistent variables (_R)
     f[24] = labor_prod - Y/(p*L) # labor productivity
     f[25] = C_R - C/p 
     f[26] = Y_R - Y/p 
