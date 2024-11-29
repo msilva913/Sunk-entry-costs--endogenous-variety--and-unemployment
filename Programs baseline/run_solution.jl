@@ -286,6 +286,7 @@ irf_z= simulate_model(model, sol_mat, T_IR, eta_z, SS, flag_IR, flag_logdev)
 irf_z = 100 .*DataFrame(irf_z, varnames)
 gen_irf(irf_z)
 Plots.savefig("z_shock.pdf")
+savefig("z_shock.png")
 
 # Destruction rate shock: consistent with Beveridge curve
 irf_δ= simulate_model(model, sol_mat, T_IR, eta_δ, SS, flag_IR, flag_logdev) 

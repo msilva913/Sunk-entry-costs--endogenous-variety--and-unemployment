@@ -1,4 +1,5 @@
 using Plots
+gr()
 import Plots:default
 default(linewidth=2, grid=true, fontfamily="Computer Modern")
 

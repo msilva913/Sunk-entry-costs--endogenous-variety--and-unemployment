@@ -32,10 +32,11 @@ function shares_table(ss::NamedTuple)
             "Sunk vacancy cost share",
             "Entrant share",
             "Search wedge",
-            "Market power wedge"
+            "Market power wedge",
+            "Stock market cap to GDP"
         ],
-        Symbol = [L"C/Y", L"X/Y", L"\nu N_e/Y", L"X_v/Y", L"e/v", L"w/w^R", L"w^RL/Y"],
-        Value = round.([ss.cons_share, ss.vacancy_share, ss.inv_new_firm_share, ss.sunk_vac_cost_share, ss.entrant_share, ss.search_wedge, ss.recruiter_share], sigdigits=2),
+        Symbol = [L"C/Y", L"X/Y", L"\nu N_e/Y", L"X_v/Y", L"e/v", L"w/w^R", L"w^RL/Y", L"M/(12*Y)"],
+        Value = round.([ss.cons_share, ss.vacancy_share, ss.inv_new_firm_share, ss.sunk_vac_cost_share, ss.entrant_share, ss.search_wedge, ss.recruiter_share, ss.M/(12*ss.Y)], sigdigits=2),
 
     )
     return df
