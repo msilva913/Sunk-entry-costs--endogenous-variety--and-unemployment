@@ -4,8 +4,7 @@ using NLsolve
 using DataFrames
 using Roots, Optim, LeastSquaresOptim
 using PrettyPrinting
-using Distributions
-using PlotlyJS
+using LaTeXStrings
 cd(@__DIR__)
 # Matching probabilities
 function jf(θ, A, η_L)
@@ -246,8 +245,8 @@ Calibrate parameters to targets
 Targets of N and w reflect choice of units.
 N is associated with f_e, and w is associated with z. Normalizing N=1 also implies p=1
 """
-function calibrate(targets)
-    @unpack ϕ, dest_ann, r_ann, f, η_L, q, sep, b_ratio, ξ_inv, ε, σ, N, w = targets
+function (targets)
+    @unpack ϕ, dest_ann, r_ann, f, η_L, q, sep, b_ratio, x_v, ξ_inv, ε, σ, N, w = targets
 
     μ = ε/(ε-1)
     τ = sep
@@ -273,39 +272,44 @@ function calibrate(targets)
     p = N^(1/(ε-1))
     N_e = δ/(1-δ)*N
     b = b_ratio*w
-
     #w_int = p*z/μ
-    recruiter_share = (δ+(ρ+δ)*(ε-1))/(δ+(ρ+δ)*ε) # w_int*L/Y similar to BGM
-    surplus_ratio = (ρ+τ)/(1-δ)*(1/q) #(w_int-w-K)/K
-    
-    surplus_ratio_2 = ((ρ+τ)/q+ϕ*θ)/((1-δ)*(1-ϕ)) #(w_int-K-b)/K 
+    recruiter_share = (δ+(ρ+δ)*(ε-1))/(δ+(ρ+δ)*ε) # w_R*L/Y similar to BGM
 
-    sr = surplus_ratio/surplus_ratio_2 
-    #w_int-w-K = sr*(w_int-K-b)
-    w_int_net_K = (w-sr*b)/(1-sr) #w_int-K
-    K = (w_int_net_K - b)/surplus_ratio_2
-    w_int = w_int_net_K + K
+    function loss(labor_share)
+        w_wint = labor_share/recruiter_share
+        w_int = w/(w_wint)
+        z = (μ/p)*w_int
 
-    z = (μ/p)*w_int
+        # surplus_ratio = (w_R - w - K)/K 
+        surplus_ratio = (ρ+τ)/(1-δ)*(1/(q*x_v))
+        K = (w_int-w)/(1+surplus_ratio)
 
-    # surplus_ratio = (w_int - w - K)/K 
-  
-    @assert K ≈ (w_int-w)/(1+surplus_ratio)
+        # Find κ given K 
+        κ = (1-x_v)/x_v*K/q
 
-    # From wage equation find ϕ
-    ϕ = (w-b)/(w_int-K+θ*K/(1-δ)-b)
+        # From wage equation find ϕ
+        ϕ_new = (w-b)/(w_int-K+θ/(1-δ)*(K+q*κ)-b)
+        out = (ϕ_new-ϕ)/ϕ
+        return out, w_int, z, K, κ
+    end 
+    labor_share = fzero(x-> loss(x)[1], 0.66)
+    out, w_int, z, K,  κ = loss(labor_share)
+
 
     # Find F from free entry condition
     #K = (ρ+δ)/(1+ρ)*(e/F)^(1/ξ)
-    Q = K*(1+ρ)/(ρ+δ) 
-    F = e/Q^(1/ξ_inv)
-
+    if ξ_inv > 0
+        Q = K*(1+ρ)/(ρ+δ) 
+        F = e/Q^(1/ξ_inv)
+    end 
+    # Given N, solve for f_e
     # N = (μ-1)*zL*(1-δ)/(f_e(δμ+\rho))
     f_e = (μ-1)*z*(L/N)*(1-δ)/(δ*μ+ρ)
 
-    cal = (f_e=f_e, τ=τ, δ=δ, z=z, b=b, ϕ=ϕ, ρ=ρ, σ=σ, ε=ε, A=A, η_L=η_L, ξ_inv=ξ_inv, F=F, s=s)
+    cal = (f_e=f_e, τ=τ, δ=δ, z=z, b=b, ϕ=ϕ, ρ=ρ, σ=σ, ε=ε, A=A, η_L=η_L,κ=κ, ξ_inv=ξ_inv, F=F, s=s)
     return cal
 end
+
 
 
 """

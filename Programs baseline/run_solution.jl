@@ -3,7 +3,6 @@
 
 using MKL
 using DataFrames
-using NaNStatistics
 using Serialization
 cd(@__DIR__)
 #v1.7- 
@@ -309,13 +308,25 @@ Plots.savefig("common_shock.pdf")
 ### Impulse response comparison ###
 # ε
 targets2 = (targets..., ε=100.0 )
-cal2 = calibrate_labor_share(targets2)
+
+# Baseline calibration: recalibrate phi to match labor share
+type = "baseline"
+type = "alt"
+if type is "baseline"
+    cal2 = calibrate_labor_share(targets2)
+elseif type is "alt"
+    targets2 = (targets2...,ϕ=cal.ϕ )
+    cal2 = calibrate(targets2)
+
 @unpack  f_e, δ, s, z, b, ϕ, ρ, σ, ε, A, η_L, F, κ, ξ_inv = cal2
 PAR2     =   [f_e; z; δ; s; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; σ_z; ρ_δ;
  σ_δ; ρ_s; σ_s ]
 sol2 = solution_interface(model, PAR2)
 sol_mat2 = sol2.sol_mat
 SS2 = sol2.SS
+
+
+# Keep phi at original value 
 
 sim_IR2 = simulate_model(model, sol_mat2, T_IR, eta_z, SS2, flag_IR, flag_logdev)
 irf_z2 = 100 .*DataFrame(sim_IR2, varnames)
