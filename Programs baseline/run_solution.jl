@@ -144,7 +144,15 @@ f = fill(Sym("x"), nvar)
     f[30] =    log(δp) -  ρ_δ * log(δ)
     f[31] = log(sp) - ρ_s*log(s)
 
-# Steady state     
+# Steady state   
+"""
+If known, provide the symbolic expresion of the steady state in 
+terms of the parameters.
+It must be provided as a column vector, in which the variables 
+should be ordered in the following way: [x; y; xp; yp].
+If the steady state is unknown leave it as an empty vector (SS=[]), 
+so that the program tries to estimate it.
+"""  
 # Values 
 
 # Initial parameters: targets and normalizations/ leave parameters as symbolic to be populated with calibration
@@ -312,9 +320,9 @@ targets2 = (targets..., ε=100.0 )
 # Baseline calibration: recalibrate phi to match labor share
 type = "baseline"
 type = "alt"
-if type is "baseline"
+if type == "baseline"
     cal2 = calibrate_labor_share(targets2)
-elseif type is "alt"
+elseif type == "alt"
     targets2 = (targets2...,ϕ=cal.ϕ )
     cal2 = calibrate(targets2)
     model = (parameters = parameters, estimate = estimate, estimation = position,
@@ -328,8 +336,9 @@ elseif type is "alt"
         f = f,
         nf = nvar,
         SS = SS, PAR_SS = PAR_SS,
-        flag_order = flag_order, flag_deviation = flag_deviation, flag_SSsolver = flag_SSsolver)
+        flag_order = flag_order, flag_deviation = flag_deviation, flag_SSsolver = true)
         process_model(model)
+end
 
 @unpack  f_e, δ, s, z, b, ϕ, ρ, σ, ε, A, η_L, F, κ, ξ_inv = cal2
 PAR2     =   [f_e; z; δ; s; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; σ_z; ρ_δ;

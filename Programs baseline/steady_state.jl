@@ -275,25 +275,31 @@ function calibrate(targets)
     #w_int = p*z/μ
     recruiter_share = (δ+(ρ+δ)*(ε-1))/(δ+(ρ+δ)*ε) # w_R*L/Y similar to BGM
 
-    function loss(labor_share)
-        w_wint = labor_share/recruiter_share
-        w_int = w/(w_wint)
-        z = (μ/p)*w_int
+    # surplus_ratio = (w_int - w - K)/K 
+    surplus_ratio = (ρ+τ)/(1-δ)*(1/(q*x_v))
+    K = (1-ϕ)/ϕ*(w-b)/(surplus_ratio +  θ/(1-δ)*(1/x_v))
+    κ = (1-x_v)/x_v*K/q
+    w_int = surplus_ratio*K + w + K
+    z = (μ/p)*w_int
 
-        # surplus_ratio = (w_R - w - K)/K 
-        surplus_ratio = (ρ+τ)/(1-δ)*(1/(q*x_v))
-        K = (w_int-w)/(1+surplus_ratio)
+    # function loss(labor_share)
+    #     w_wint = labor_share/recruiter_share
+    #     w_int = w/(w_wint)
+    #     z = (μ/p)*w_int
 
-        # Find κ given K 
-        κ = (1-x_v)/x_v*K/q
+    
+    #     K = (w_int-w)/(1+surplus_ratio)
 
-        # From wage equation find ϕ
-        ϕ_new = (w-b)/(w_int-K+θ/(1-δ)*(K+q*κ)-b)
-        out = (ϕ_new-ϕ)/ϕ
-        return out, w_int, z, K, κ
-    end 
-    labor_share = fzero(x-> loss(x)[1], 0.66)
-    out, w_int, z, K,  κ = loss(labor_share)
+    #     # Find κ given K 
+    #     κ = (1-x_v)/x_v*K/q
+
+    #     # From wage equation find ϕ
+    #     ϕ_new = (w-b)/(w_int-K+θ/(1-δ)*(K+q*κ)-b)
+    #     out = (ϕ_new-ϕ)/ϕ
+    #     return out, w_int, z, K, κ
+    # end 
+    #labor_share = fzero(x-> loss(x)[1], 0.66)
+    #out, w_int, z, K,  κ = loss(labor_share)
 
 
     # Find F from free entry condition
