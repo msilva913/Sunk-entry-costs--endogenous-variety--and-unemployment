@@ -167,49 +167,76 @@ qbar = 0.8
 x_v = 0.1
 #labor_share = 0.66
 
+targets = (#labor_share=labor_share, 
+            ϕ=0.2571, #matches labor share = 0.66 in baseline calibration
+           dest_ann=0.1, 
+           r_ann=0.04, 
+           f =0.41, 
+           η_L=0.6, 
+           q=0.8, 
+           sep=0.031, 
+           b_ratio=0.71, 
+           x_v=0.1, 
+           ξ_inv=1/0.265, 
+           ε=4.3, σ=1.0, 
+           N=1.0, w=1.0)
+cal = calibrate(targets)
 
-p_s = N_s^(1/(ε-1))
-N_es = δbar/(1-δbar)*N_s
-q_s = qbar/(1-δbar)
-θ_s = fbar/qbar
-u_s = τbar/(τbar+(1-δbar)*(θ_s*q_s))
-L_s = 1 - u_s 
-v_s = θ_s*u_s
-e_s = δbar*(v_s+1-u_s)
-v_prets = v_s - e_s 
-recruiter_share= (δbar+(ρ+δbar)*(ε-1))/(δbar+(ρ+δbar)*ε)
-surplus_ratio = (ρ+τbar)/(1-δbar)*(1/(q_s*x_v))
+function SS_symbolics(parameters::Vector{Sym{PyObject}}, targets)
+    f_e, zbar, δbar, sbar, b, ϕ, ρ, σ, ε, A, η_L, F, κ, ξ_inv, ρ_z, σ_z, ρ_δ, σ_δ, ρ_s, σ_s = parameters
 
-K_s = (1-ϕ)/ϕ*(w_s-b)/(surplus_ratio +  θ_s/(1-δ)*(1/x_v))
-κ = (1-x_v)/x_v*K_s/q_s
-w_ints = surplus_ratio*K_s + w_s + K_s
-zbar = (μ/p_s)*w_ints
-# Rescale zbar to be consistent with wage=1
-f_e = (μ-1)*zbar*(L_s/N_s)*(1-δbar)/(δbar*μ+ρ)
-ν_fs =p_s*f_e/μ
-d_fs = (ρ+δbar)/(1-δbar)*ν_fs
-L_es = N_es*f_e/zbar
-L_cs = L_s - L_es 
-Y_cs = p_s*zbar*L_cs
-Q_s = K_s*(1+ρ)/(ρ+δbar)
-C_s = Y_cs -  F/(1+ξ_inv)*(e_s/F)^(1+ξ_inv) -  κ*v_s*q_s 
-λ_s = C_s^(-σ)
-Y_s = Y_cs + ν_fs*N_es
-ls_s = w_s*L_s/Y_s
+    @unpack N, w, f, q, x_v = targets
 
-# data consistent
-labor_prod_s = Y_s/(p_s*L_s)
-C_Rs = C_s/p_s
-Y_Rs = Y_s/p_s
-Y_cRs = Y_cs/p_s
-w_Rs = w_s/p_s
-#x               = [u; N; v_pret; z] # predetermined
-#y               = [θ; q; L; v; e; K; Q; p; N_e; ν_f; d_f; w_int; w; L_e; L_c; Y_c; C; λ; Y; labor_prod]
-# Vector
-SS_block  = [log(x) for x in [u_s, N_s, v_prets, z_s, δ_s, s_s, θ_s, q_s, L_s, v_s, e_s, K_s, Q_s, p_s, N_es, ν_fs, d_fs, w_ints, w_s, L_es, L_cs, Y_cs, C_s, λ_s, Y_s, 
-        labor_prod_s, C_Rs, Y_Rs, Y_cRs, w_Rs, ls_s]]
-# vertical concatenate: represent both current and future variables
-SS = vcat(SS_block, SS_block)
+    p_s = N_s^(1/(ε-1))
+    N_es = δbar/(1-δbar)*N_s
+    q_s = qbar/(1-δbar)
+    θ_s = fbar/qbar
+    u_s = τbar/(τbar+(1-δbar)*(θ_s*q_s))
+    L_s = 1 - u_s 
+    v_s = θ_s*u_s
+    e_s = δbar*(v_s+1-u_s)
+    v_prets = v_s - e_s 
+    recruiter_share= (δbar+(ρ+δbar)*(ε-1))/(δbar+(ρ+δbar)*ε)
+    surplus_ratio = (ρ+τbar)/(1-δbar)*(1/(q_s*x_v))
+
+    K_s = (1-ϕ)/ϕ*(w_s-b)/(surplus_ratio +  θ_s/(1-δ)*(1/x_v))
+    κ = (1-x_v)/x_v*K_s/q_s
+    w_ints = surplus_ratio*K_s + w_s + K_s
+    zbar = (μ/p_s)*w_ints
+    # Rescale zbar to be consistent with wage=1
+    f_e = (μ-1)*zbar*(L_s/N_s)*(1-δbar)/(δbar*μ+ρ)
+    ν_fs =p_s*f_e/μ
+    d_fs = (ρ+δbar)/(1-δbar)*ν_fs
+    L_es = N_es*f_e/zbar
+    L_cs = L_s - L_es 
+    Y_cs = p_s*zbar*L_cs
+    Q_s = K_s*(1+ρ)/(ρ+δbar)
+    C_s = Y_cs -  F/(1+ξ_inv)*(e_s/F)^(1+ξ_inv) -  κ*v_s*q_s 
+    λ_s = C_s^(-σ)
+    Y_s = Y_cs + ν_fs*N_es
+    ls_s = w_s*L_s/Y_s
+
+    # data consistent
+    labor_prod_s = Y_s/(p_s*L_s)
+    C_Rs = C_s/p_s
+    Y_Rs = Y_s/p_s
+    Y_cRs = Y_cs/p_s
+    w_Rs = w_s/p_s
+
+    z_s=1.0
+    δ_s=1.0
+    s_s=1.0
+    #x               = [u; N; v_pret; z] # predetermined
+    #y               = [θ; q; L; v; e; K; Q; p; N_e; ν_f; d_f; w_int; w; L_e; L_c; Y_c; C; λ; Y; labor_prod]
+    # Vector
+    SS_block  = [log(x) for x in [u_s, N_s, v_prets, z_s, δ_s, s_s, θ_s, q_s, L_s, v_s, e_s, K_s, Q_s, p_s, N_es, ν_fs, d_fs, w_ints, w_s, L_es, L_cs, Y_cs, C_s, λ_s, Y_s, 
+            labor_prod_s, C_Rs, Y_Rs, Y_cRs, w_Rs, ls_s]]
+    # vertical concatenate: represent both current and future variables
+    SS = vcat(SS_block, SS_block)
+    return SS
+end
+
+SS = SS_symbolics(parameters)
 
 #PAR_SS = [ALPHA; BETA; DELTA; RHO; SIGMA; MUU; AA]
 PAR_SS = parameters[:]
@@ -234,21 +261,6 @@ process_model(model)
 ## Solution
 # Parametrization: need to handle dependent parameters 
 #parameters      = [f_e; δ; s; zbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; μ_z]
-targets = (#labor_share=labor_share, 
-            ϕ=0.2571, #matches labor share = 0.66 in baseline calibration
-           dest_ann=0.1, 
-           r_ann=0.04, 
-           f =fbar, 
-           η_L=0.6, 
-           q=qbar, 
-           sep=0.031, 
-           b_ratio=0.71, 
-           x_v=x_v, 
-           ξ_inv=1/0.265, 
-           ε=4.3, σ=1.0, 
-           N=N_s, w=w_s)
-cal = calibrate(targets)
-
 
 # Shock values (from Coles and Kelishomi), monthly frequency
 ρ_z = 0.965
@@ -303,6 +315,7 @@ sol2 = solution_interface(model, PAR2)
 sol_mat2 = sol2.sol_mat
 SS2 = sol2.SS
 ss2 = sol2.ss
+@show ss2.C/ss2.y
 @show ss2.ls
 
 sim_IR2 = simulate_model(model, sol_mat2, T_IR, eta_z, SS2, flag_IR, flag_logdev)

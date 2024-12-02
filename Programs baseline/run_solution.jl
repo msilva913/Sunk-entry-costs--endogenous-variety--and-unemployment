@@ -154,66 +154,84 @@ If the steady state is unknown leave it as an empty vector (SS=[]),
 so that the program tries to estimate it.
 """  
 # Values 
+targets = (labor_share=0.66, 
+           dest_ann=0.1, 
+           r_ann=0.04, 
+           f =0.41, 
+           η_L=0.6, 
+           q=0.8, 
+           sep=0.031, 
+           b_ratio=0.71, 
+           x_v=0.1, 
+           ξ_inv=1/0.265, 
+           ε=4.3, σ=1.0, 
+           N=1.0, w=1.0)
+cal = calibrate_labor_share(targets)
 
-# Initial parameters: targets and normalizations/ leave parameters as symbolic to be populated with calibration
-N_s = 1.0
-w_s = 1.0
-z_s = 1.0
-δ_s = 1.0
-s_s = 1.0
+function SS_symbolics(parameters::Vector{Sym{PyObject}}, targets)
 
-fbar = 0.41
-qbar = 0.8
-x_v = 0.1
-labor_share = 0.66
+    f_e, zbar, δbar, sbar, b, ϕ, ρ, σ, ε, A, η_L, F, κ, ξ_inv, ρ_z, σ_z, ρ_δ, σ_δ, ρ_s, σ_s = parameters
+    # Initial parameters: targets and normalizations/ leave parameters as symbolic to be populated with calibration
+    @unpack N, w, f, q, x_v, labor_share = targets
+    N_s = N 
+    w_s = w 
+    fbar = f 
+    qbar = q 
 
-ls_s = labor_share
-p_s = N_s^(1/(ε-1))
-N_es = δbar/(1-δbar)*N_s
-q_s = qbar/(1-δbar)
-θ_s = fbar/qbar
-u_s = τbar/(τbar+(1-δbar)*(θ_s*q_s))
-L_s = 1 - u_s 
-v_s = θ_s*u_s
-e_s = δbar*(v_s+1-u_s)
-v_prets = v_s - e_s 
-recruiter_share= (δbar+(ρ+δbar)*(ε-1))/(δbar+(ρ+δbar)*ε)
-w_wint = labor_share/recruiter_share
-w_ints = w_s/(w_wint)
 
-# Rescale zbar to be consistent with wage=1
-zbar = (μ/p_s)*w_ints
-surplus_ratio = (ρ+τbar)/(1-δbar)*(1/(q_s*x_v))
-K_s = (w_ints-w_s)/(1+surplus_ratio) 
-κ   = (1-x_v)/x_v*K_s/q_s
-f_e = (μ-1)*zbar*(L_s/N_s)*(1-δbar)/(δbar*μ+ρ)
-ν_fs =p_s*f_e/μ
-d_fs = (ρ+δbar)/(1-δbar)*ν_fs
-L_es = N_es*f_e/zbar
-L_cs = L_s - L_es 
-Y_cs = p_s*zbar*L_cs
-Q_s = K_s*(1+ρ)/(ρ+δbar)
-C_s = Y_cs -  F/(1+ξ_inv)*(e_s/F)^(1+ξ_inv) -  κ*v_s*q_s 
-λ_s = C_s^(-σ)
-Y_s = Y_cs + ν_fs*N_es
+    ls_s = labor_share
+    p_s = N_s^(1/(ε-1))
+    N_es = δbar/(1-δbar)*N_s
+    q_s = qbar/(1-δbar)
+    θ_s = fbar/qbar
+    u_s = τbar/(τbar+(1-δbar)*(θ_s*q_s))
+    L_s = 1 - u_s 
+    v_s = θ_s*u_s
+    e_s = δbar*(v_s+1-u_s)
+    v_prets = v_s - e_s 
+    recruiter_share= (δbar+(ρ+δbar)*(ε-1))/(δbar+(ρ+δbar)*ε)
+    w_wint = labor_share/recruiter_share
+    w_ints = w_s/(w_wint)
 
-# data consistent
-labor_prod_s = Y_s/(p_s*L_s)
-C_Rs = C_s/p_s
-Y_Rs = Y_s/p_s
-Y_cRs = Y_cs/p_s
-w_Rs = w_s/p_s
-#x               = [u; N; v_pret; z] # predetermined
-#y               = [θ; q; L; v; e; K; Q; p; N_e; ν_f; d_f; w_int; w; L_e; L_c; Y_c; C; λ; Y; labor_prod]
-# Vector
-SS_block  = [log(x) for x in [u_s, N_s, v_prets, z_s, δ_s, s_s, θ_s, q_s, L_s, v_s, e_s, K_s, Q_s, p_s, N_es, ν_fs, d_fs, w_ints, w_s, L_es, L_cs, Y_cs, C_s, λ_s, Y_s, 
-        labor_prod_s, C_Rs, Y_Rs, Y_cRs, w_Rs, ls_s]]
-# vertical concatenate: represent both current and future variables
-SS = vcat(SS_block, SS_block)
+    # Rescale zbar to be consistent with wage=1
+    zbar = (μ/p_s)*w_ints
+    surplus_ratio = (ρ+τbar)/(1-δbar)*(1/(q_s*x_v))
+    K_s = (w_ints-w_s)/(1+surplus_ratio) 
+    κ   = (1-x_v)/x_v*K_s/q_s
+    f_e = (μ-1)*zbar*(L_s/N_s)*(1-δbar)/(δbar*μ+ρ)
+    ν_fs =p_s*f_e/μ
+    d_fs = (ρ+δbar)/(1-δbar)*ν_fs
+    L_es = N_es*f_e/zbar
+    L_cs = L_s - L_es 
+    Y_cs = p_s*zbar*L_cs
+    Q_s = K_s*(1+ρ)/(ρ+δbar)
+    C_s = Y_cs -  F/(1+ξ_inv)*(e_s/F)^(1+ξ_inv) -  κ*v_s*q_s 
+    λ_s = C_s^(-σ)
+    Y_s = Y_cs + ν_fs*N_es
+
+    # data consistent
+    labor_prod_s = Y_s/(p_s*L_s)
+    C_Rs = C_s/p_s
+    Y_Rs = Y_s/p_s
+    Y_cRs = Y_cs/p_s
+    w_Rs = w_s/p_s
+
+    z_s = 1.0 
+    δ_s = 1.0
+    s_s = 1.0
+    #x               = [u; N; v_pret; z] # predetermined
+    #y               = [θ; q; L; v; e; K; Q; p; N_e; ν_f; d_f; w_int; w; L_e; L_c; Y_c; C; λ; Y; labor_prod]
+    # Vector
+    SS_block  = [log(x) for x in [u_s, N_s, v_prets, z_s, δ_s, s_s, θ_s, q_s, L_s, v_s, e_s, K_s, Q_s, p_s, N_es, ν_fs, d_fs, w_ints, w_s, L_es, L_cs, Y_cs, C_s, λ_s, Y_s, 
+            labor_prod_s, C_Rs, Y_Rs, Y_cRs, w_Rs, ls_s]]
+    # vertical concatenate: represent both current and future variables
+    SS = vcat(SS_block, SS_block)
+    return SS
+end
 
 #PAR_SS = [ALPHA; BETA; DELTA; RHO; SIGMA; MUU; AA]
 PAR_SS = parameters[:]
-
+SS = SS_symbolics(parameters, targets)
 
 # Procesing the model (no adjustment needed)                
 model = (parameters = parameters, estimate = estimate, estimation = position,
@@ -234,19 +252,6 @@ process_model(model)
 ## Solution
 # Parametrization: need to handle dependent parameters 
 #parameters      = [f_e; δ; s; zbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; μ_z]
-targets = (labor_share=labor_share, 
-           dest_ann=0.1, 
-           r_ann=0.04, 
-           f =fbar, 
-           η_L=0.6, 
-           q=qbar, 
-           sep=0.031, 
-           b_ratio=0.71, 
-           x_v=x_v, 
-           ξ_inv=1/0.265, 
-           ε=4.3, σ=1.0, 
-           N=N_s, w=w_s)
-cal = calibrate_labor_share(targets)
 
 
 # Shock values (from Coles and Kelishomi), monthly frequency
@@ -316,29 +321,7 @@ Plots.savefig("common_shock.pdf")
 ### Impulse response comparison ###
 # ε
 targets2 = (targets..., ε=100.0 )
-
-# Baseline calibration: recalibrate phi to match labor share
-type = "baseline"
-type = "alt"
-if type == "baseline"
-    cal2 = calibrate_labor_share(targets2)
-elseif type == "alt"
-    targets2 = (targets2...,ϕ=cal.ϕ )
-    cal2 = calibrate(targets2)
-    model = (parameters = parameters, estimate = estimate, estimation = position,
-        npar = length(parameters), ns = length(estimate), 
-        priors = priors,
-        x = x, y = y, xp = xp, yp = yp, variables = variables,
-        varnames=varnames, #store symbols of variable names
-        nx = nx, ny = ny, nvar = nvar,
-        e = ex, eta = eta,
-        ne = ne,
-        f = f,
-        nf = nvar,
-        SS = SS, PAR_SS = PAR_SS,
-        flag_order = flag_order, flag_deviation = flag_deviation, flag_SSsolver = true)
-        process_model(model)
-end
+cal2 = calibrate_labor_share(targets2)
 
 @unpack  f_e, δ, s, z, b, ϕ, ρ, σ, ε, A, η_L, F, κ, ξ_inv = cal2
 PAR2     =   [f_e; z; δ; s; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; σ_z; ρ_δ;
