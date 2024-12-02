@@ -317,6 +317,19 @@ if type is "baseline"
 elseif type is "alt"
     targets2 = (targets2...,ϕ=cal.ϕ )
     cal2 = calibrate(targets2)
+    model = (parameters = parameters, estimate = estimate, estimation = position,
+        npar = length(parameters), ns = length(estimate), 
+        priors = priors,
+        x = x, y = y, xp = xp, yp = yp, variables = variables,
+        varnames=varnames, #store symbols of variable names
+        nx = nx, ny = ny, nvar = nvar,
+        e = ex, eta = eta,
+        ne = ne,
+        f = f,
+        nf = nvar,
+        SS = SS, PAR_SS = PAR_SS,
+        flag_order = flag_order, flag_deviation = flag_deviation, flag_SSsolver = flag_SSsolver)
+        process_model(model)
 
 @unpack  f_e, δ, s, z, b, ϕ, ρ, σ, ε, A, η_L, F, κ, ξ_inv = cal2
 PAR2     =   [f_e; z; δ; s; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; σ_z; ρ_δ;

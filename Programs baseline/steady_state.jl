@@ -245,7 +245,7 @@ Calibrate parameters to targets
 Targets of N and w reflect choice of units.
 N is associated with f_e, and w is associated with z. Normalizing N=1 also implies p=1
 """
-function (targets)
+function calibrate(targets)
     @unpack ϕ, dest_ann, r_ann, f, η_L, q, sep, b_ratio, x_v, ξ_inv, ε, σ, N, w = targets
 
     μ = ε/(ε-1)
