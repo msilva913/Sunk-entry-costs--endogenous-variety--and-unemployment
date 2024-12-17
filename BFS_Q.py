@@ -11,8 +11,8 @@ fred = Fred(api_key = 'd35aabd7dc07cd94481af3d1e2f0ecf3	')
 
 # Define episodes
 episodes = {
-    'Great Recession': ('2007-01-01', '2009-12-31'),
-    'Pandemic Covid': ('2020-01-01', '2023-12-31')
+    'Great Recession': ('2007-12-01', '2009-07-01'),
+    'Pandemic Covid': ('2020-03-01', '2022-02-01')
 }
 
 
