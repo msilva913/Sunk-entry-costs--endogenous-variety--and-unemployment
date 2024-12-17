@@ -8,7 +8,7 @@ fred = Fred(api_key='d35aabd7dc07cd94481af3d1e2f0ecf3')
 df3 = fred.get_series("BFDUR4QTOTALNSAUS").resample("MS").mean().dropna()
 
 # Path to X-13 (folder) executable
-x13_path = r"E:\文档\x13as"
+x13_path = r"E:\文档\Github\Sunk-entry-costs--endogenous-variety--and-unemployment\x13as"
 
 result1 = x13_arima_analysis(df3, freq='M', x12path=x13_path, outlier=True, print_stdout=True)
 result2 = seasonal_decompose(df3, model="additive", period=12)
