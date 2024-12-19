@@ -18,7 +18,7 @@ include("solution_functions_7_0.jl")
 
 ## Model
         # Adjustments
-                flag_order      = 1
+                flag_order      = 
                 flag_deviation  = true
                 flag_SSsolver   = false
 

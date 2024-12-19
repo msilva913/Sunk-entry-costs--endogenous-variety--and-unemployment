@@ -16,6 +16,7 @@ using Parameters
 using Distributions
 using StatsBase
 using Random
+using PyCall
 # using Plots
 
 #v1.7+
@@ -45,14 +46,16 @@ function process_model(model::NamedTuple)
             end
         end
     end
-    ShockVAR_string = Meta.parse("function eval_ShockVAR(PAR); VAR = Array{Float64}(zeros("*string(neta)*","*string(neta)*")); VAR = "*string(eta_aux)[4:end]*"; return VAR; end")
+    #ShockVAR_string = Meta.parse("function eval_ShockVAR(PAR); VAR = Array{Float64}(zeros("*string(neta)*","*string(neta)*")); VAR = "*repr(eta_aux)[4:end]*"; return VAR; end")
+    ShockVAR_string = Meta.parse("function eval_ShockVAR(PAR); VAR = Array{Float64}(zeros("*string(neta)*","*string(neta)*")); VAR = "*SubString(repr(eta_aux))*"; return VAR; end")
     eval(ShockVAR_string)
     
     @inbounds for ip in npar
         copyto!(SS, SS.subs(parameters[ip],Sym("PAR["*string(ip)*"]")))
     end
     
-    SS_string = Meta.parse("function eval_SS(PAR); return " * string(SS)[4:end] * "; end;")
+    #SS_string = Meta.parse("function eval_SS(PAR); return " * string(SS)[4:end] * "; end;")
+    SS_string = Meta.parse("function eval_SS(PAR); return " *SubString(repr(SS))*"; end;")
     eval(SS_string)
     
     @inbounds for ip in 1:npar
@@ -61,7 +64,8 @@ function process_model(model::NamedTuple)
         end
     end
     
-    PAR_SS_string = Meta.parse("function eval_PAR_SS(PAR); return " * string(PAR_SS)[4:end] * "; end;")
+    #PAR_SS_string = Meta.parse("function eval_PAR_SS(PAR); return " * string(PAR_SS)[4:end] * "; end;")
+    PAR_SS_string = Meta.parse("function eval_PAR_SS(PAR); return " * SubString(repr(PAR_SS)) * "; end;")
     eval(PAR_SS_string)
     
     f_aux = similar(f)
@@ -78,7 +82,9 @@ function process_model(model::NamedTuple)
         copyto!(f_aux, f_aux.subs(parameters[ip],Sym("PAR["*string(ip)*"]")))
     end
     
-    SS_error_string = Meta.parse("function eval_SS_error(PAR, SS); return " * string(f_aux)[4:end] * "; end;")
+    #SS_error_string = Meta.parse("function eval_SS_error(PAR, SS); return " * string(f_aux)[4:end] * "; end;")
+    SS_error_string = Meta.parse("function eval_SS_error(PAR, SS); return " * SubString(repr(f_aux)) * "; end;")
+
     eval(SS_error_string)            
 
     if flag_deviation
@@ -843,10 +849,12 @@ function simulate_model(model::NamedTuple, sol_mat::NamedTuple, TS::Int, eta::Ar
         sim_y = sim_y_f + sim_y_s + sim_y_t
     end
 
+
+
     if flag_logdev
         return [sim_x sim_y]
     else
-        if flag_deviation
+        if flag_deviation #xe^{\tilde{x}_t}
             return exp.([sim_x sim_y]).*repeat(exp.(SS[1:nvar]'), TS, 1)
         else
             return SS[1:nvar]' .+ [sim_x sim_y]
