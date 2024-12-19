@@ -20,8 +20,9 @@ episodes = {
 
 # Total Business Formations within 4 Quarters
 df1 = fred.get_series('BFBF4QTOTALSAUS').resample('QE').sum().dropna()/1000
-# Total Business Formations within 8 Quarters
-df2 = fred.get_series("BFBF8QTOTALSAUS").resample("QE").sum().dropna()/1000
+# Business applications with planned wages
+#df2 = fred.get_series("BFBF8QTOTALSAUS").resample("QE").sum().dropna()/1000
+df2 = fred.get_series("BAWBATOTALSAUS").resample("QE").sum().dropna()/1000
 # Establishment Births (Business Employment Dynamics)
 df3 = bls.get_series("BDS0000000000000000120007LQ5").resample("QE").mean().dropna() #(Because raw levels in thousands)
 pop = fred.get_series('CNP16OV').resample('QE').mean().dropna()
@@ -33,7 +34,7 @@ df2 = df2/pop
 df3 = df3/pop
 
 df = pd.concat([df1, df2, df3], axis=1)
-df.columns = ["BF4", "BF8", "EB"]
+df.columns = ["BF4", "BA", "EB"]
 
 # Plot in levels (establishment per person)
 
@@ -42,24 +43,14 @@ ax.set_title("Business Formation")
 ax.set_xlabel("Year")
 ax.set_ylabel('Per Capita Business Formations/ Number of Establishments Birth')
 ax.plot(df.index, df.BF4, label='BF4', color='blue')
-ax.plot(df.index, df.BF8, label='BF8', color='red')
+ax.plot(df.index, df.BA, label='BA', color='red')
 ax.plot(df.index, df.EB, label='EB', color='Purple')
 ax.legend()
 ax.grid(True)
 plt.show()
 # Plt.legend()
 
-df_log = np.log(df)
-fig, ax = plt.subplots(figsize=(12, 6))
-ax.set_title("Business Formation")
-ax.set_xlabel("Year")
-ax.set_ylabel(' Log Per Capita Business Formations/ Number of Establishments Birth')
-ax.plot(df.index, df_log.BF4, label='BF4', color='blue')
-ax.plot(df.index, df_log.BF8, label='BF8', color='red')
-ax.plot(df.index, df_log.EB, label='EB', color='Purple')
-ax.legend()
-ax.grid(True)
-plt.show()
+
 #plt.savefig('BFS_plot.pdf')
 
 for start, end in episodes.values():
@@ -74,6 +65,18 @@ cycle_ham = df.apply(lambda x: filter_transform(x, init=init, final=final, trans
                                       filter_type="hamilton"))
 mom_hp = moments(cycle_hp, relative_std="BF4", lab=["BF4", "EB"])
 mom_ham = moments(cycle_ham, relative_std="BF4", lab=["BF4", "EB"])
+
+df_log = np.log(df)
+fig, ax = plt.subplots(figsize=(12, 6))
+ax.set_title("Business application and formation")
+ax.set_xlabel("Year")
+ax.set_ylabel(' Cyclical component of log per Capita business formations/ number of establishments birth/application')
+ax.plot(cycle_hp.index, cycle_hp.BF4, label='Business formation within 4 quarters', color='blue')
+ax.plot(cycle_hp.index, cycle_hp.BA, label='Business applications with planned wages', color='red')
+ax.plot(cycle_hp.index, cycle_hp.EB, label='Establishment births', color='Purple')
+ax.legend()
+ax.grid(True)
+plt.show()
 
 # For short
 # df3_shorter = df3.loc[df1.index]

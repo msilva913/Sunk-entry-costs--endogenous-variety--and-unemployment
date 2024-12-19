@@ -193,7 +193,7 @@ if __name__ == "__main__":
     #print(cycle_growth.mean())
     #cycle_growth = cycle_growth - cycle_growth.mean()
     cycle_hp = pd.concat([filter_transform(dat[x], init=init, final=final, transform_type='log',
-                                        filter_type="hp_filter", lamb=10_000) for x in lab], axis=1)
+                                        filter_type="hp_filter", lamb=100_000) for x in lab], axis=1)
     cycle_hp.columns = lab
     cycle_hp.drop(['cons_share'], axis=1, inplace=True)
     
