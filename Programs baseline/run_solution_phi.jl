@@ -186,7 +186,11 @@ function SS_symbolics(parameters::Vector{Sym{PyObject}}, targets)
     f_e, zbar, δbar, sbar, b, ϕ, ρ, σ, ε, A, η_L, F, κ, ξ_inv, ρ_z, σ_z, ρ_δ, σ_δ, ρ_s, σ_s = parameters
 
     @unpack N, w, f, q, x_v = targets
-
+    N_s = N 
+    w_s = w 
+    fbar = f 
+    qbar = q 
+    
     p_s = N_s^(1/(ε-1))
     N_es = δbar/(1-δbar)*N_s
     q_s = qbar/(1-δbar)
@@ -236,7 +240,7 @@ function SS_symbolics(parameters::Vector{Sym{PyObject}}, targets)
     return SS
 end
 
-SS = SS_symbolics(parameters)
+SS = SS_symbolics(parameters, targets)
 
 #PAR_SS = [ALPHA; BETA; DELTA; RHO; SIGMA; MUU; AA]
 PAR_SS = parameters[:]
@@ -315,13 +319,17 @@ sol2 = solution_interface(model, PAR2)
 sol_mat2 = sol2.sol_mat
 SS2 = sol2.SS
 ss2 = sol2.ss
-@show ss2.C/ss2.y
+@show ss2.C/ss2.Y
 @show ss2.ls
 
 sim_IR2 = simulate_model(model, sol_mat2, T_IR, eta_z, SS2, flag_IR, flag_logdev)
 irf_z2 = 100 .*DataFrame(sim_IR2, varnames)
 gen_irf_comp(irf_z, irf_z2, ["Baseline", " ε=100"])
 Plots.savefig("irf_comp_epsi_phi_fixed.pdf")
+
+
+
+
 
 # High δ calibration 
 targets3 = (targets..., dest_ann=0.2)
