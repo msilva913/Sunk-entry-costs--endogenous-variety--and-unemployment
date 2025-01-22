@@ -49,14 +49,14 @@ fig, ax = plt.subplots(figsize=(12, 8), nrows=2)
 ax[0].plot(df.year, df['estabs_entry_rate'], label='Establishments', linewidth=2)
 ax[0].plot(df.year, df['firms_entry_rate'], label='Firms', linewidth=2)
 ax[0].plot(df.year, df['job_creation_rate'], label='Job creation', linewidth=2)
-ax[0].plot(df.year, df['unemployment_rate'], label='Unemployment', linestyle='--', color='red')
-ax[0].set_title("Entry rates and Unemployment", fontsize=12, pad=10)
+# ax[0].plot(df.year, df['unemployment_rate'], label='Unemployment', linestyle='--', color='red')
+# ax[0].set_title("Entry rates and Unemployment", fontsize=12, pad=10)
 
 ax[1].plot(df.year, df['estabs_exit_rate'], label='Establishments', linewidth=2)
 ax[1].plot(df.year, df['firms_exit_rate'], label='Firms', linewidth=2)
 ax[1].plot(df.year, df['job_destruction_rate'], label='Job destruction', linewidth=2)
 ax[1].plot(df.year, df['unemployment_rate'], label='Unemployment', linestyle='--', color='red')
-ax[1].set_title("Exit rates and Unemployment", fontsize=12, pad=10)
+#ax[1].set_title("Exit rates and Unemployment", fontsize=12, pad=10)
 
 
 for j in range(2):
@@ -187,27 +187,27 @@ def dynamic_correlations(data, var1, var2, ylabel, nleads=12, nlags=12, title=No
     plt.tight_layout()
     plt.show()
 
-for var1, var2 in comovement_pairs:
-    name1 = variable_names[variables.index(var1)]
-    name2 = variable_names[variables.index(var2)]
-    ylabel = f'Corr({name1}, {name2})'
-    title = f'Dynamic Correlations between {name1} and {name2}'
-    dynamic_correlations(df, var1, var2, ylabel, nleads=5, nlags=5, title=title)
+# for var1, var2 in comovement_pairs:
+#     name1 = variable_names[variables.index(var1)]
+#     name2 = variable_names[variables.index(var2)]
+#     ylabel = f'Corr({name1}, {name2})'
+#     title = f'Dynamic Correlations between {name1} and {name2}'
+#     dynamic_correlations(df, var1, var2, ylabel, nleads=5, nlags=5, title=title)
 
-# Stationary Test
-def adf_test(series, name):
-    result = adfuller(series)
-    print(f'ADF Statistic for {name}: {result[0]:.4f}')
-    print(f'p-value: {result[1]:.4f}')
-    print(f'Critical Values:')
-    for key, value in result[4].items():
-        print(f'   {key}: {value:.4f}')
-    if result[1] <= 0.05:
-        print(f'{name} is stationary.\n')
-    else:
-        print(f'{name} is non-stationary.\n')
+# # Stationary Test
+# def adf_test(series, name):
+#     result = adfuller(series)
+#     print(f'ADF Statistic for {name}: {result[0]:.4f}')
+#     print(f'p-value: {result[1]:.4f}')
+#     print(f'Critical Values:')
+#     for key, value in result[4].items():
+#         print(f'   {key}: {value:.4f}')
+#     if result[1] <= 0.05:
+#         print(f'{name} is stationary.\n')
+#     else:
+#         print(f'{name} is non-stationary.\n')
 
-print("Stationarity Tests:")
-for var, name in zip(variables, variable_names):
-    adf_test(df_adf[var], name)
+# print("Stationarity Tests:")
+# for var, name in zip(variables, variable_names):
+#     adf_test(df_adf[var], name)
     
