@@ -47,7 +47,6 @@ savefig("curves_epsi_shift_general_CES.pdf")
 display(p)
 
 #N_res decreasing with δ (reduces labor resources, increases effective discounting, decreases ratio of N to N_e)
-
 para = (cal..., δ=cal.δ*1.1)
 N_res_grid2 = N_res.(θ_grid, Ref(para))
 
@@ -94,6 +93,4 @@ hline!(plt, [steady.N], linestyle=:dash, linecolor=:black, linewidth=0.5, label=
 vline!(plt, [steady2.θ], linestyle=:dash, linecolor=:red, linewidth=0.5, label=false)
 hline!(plt, [steady2.N], linestyle=:dash, linecolor=:red, linewidth=0.5, label=false)
 plot!(plt, legend=true)
-
-
 
