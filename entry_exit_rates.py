@@ -7,6 +7,7 @@ from IPython.display import display
 from time_series_functions import crosscorr
 from fredapi import Fred
 from datetime import datetime
+import matplotlib.dates as mdates
 
 # Data
 
@@ -21,15 +22,20 @@ unemployment_df = pd.DataFrame({
 })
 
 df = pd.merge(df, unemployment_df, on='year', how='left')
-df_adf = df[df['year'] >= 1979].reset_index(drop=True)
-
+#df_adf = df[df['year'] >= 1979].reset_index(drop=True)
+df['year'] = pd.to_datetime(df['year'], format='%Y')
+df.set_index("year", inplace=True)
 # Episodes
 
-periods = {
-    'Volcker Rate Rise': (1979, 1987),
-    'Great Recession': (2007, 2009),
-    'Pandemic Covid': (2020, 2023)
-}
+recessions = [
+    (pd.Timestamp('1980-01-01'), pd.Timestamp('1980-07-31')),
+    (pd.Timestamp('1981-07-01'), pd.Timestamp('1982-11-30')),
+    (pd.Timestamp('1990-07-01'), pd.Timestamp('1991-03-31')),
+    (pd.Timestamp('2001-03-01'), pd.Timestamp('2001-11-30')),
+    (pd.Timestamp('2007-12-01'), pd.Timestamp('2009-06-30')),
+    (pd.Timestamp('2020-02-01'), pd.Timestamp('2020-04-30')),
+]
+
 
 # Define
 
@@ -46,31 +52,32 @@ plot_variable_names = ['Establishment Entry Rate', 'Establishment Exit Rate', 'F
 # Plot
 
 fig, ax = plt.subplots(figsize=(12, 8), nrows=2)
-ax[0].plot(df.year, df['estabs_entry_rate'], label='Establishments', linewidth=2)
-ax[0].plot(df.year, df['firms_entry_rate'], label='Firms', linewidth=2)
-ax[0].plot(df.year, df['job_creation_rate'], label='Job creation', linewidth=2)
+ax[0].plot(df.index, df['estabs_entry_rate'], label='Establishments', linewidth=2)
+ax[0].plot(df.index, df['firms_entry_rate'], label='Firms', linewidth=2)
+ax[0].plot(df.index, df['job_creation_rate'], label='Job creation', linewidth=2)
 # ax[0].plot(df.year, df['unemployment_rate'], label='Unemployment', linestyle='--', color='red')
-# ax[0].set_title("Entry rates and Unemployment", fontsize=12, pad=10)
+ax[0].set_title("Entry rates", fontsize=12, pad=10)
 
-ax[1].plot(df.year, df['estabs_exit_rate'], label='Establishments', linewidth=2)
-ax[1].plot(df.year, df['firms_exit_rate'], label='Firms', linewidth=2)
-ax[1].plot(df.year, df['job_destruction_rate'], label='Job destruction', linewidth=2)
+ax[1].plot(df.index, df['estabs_exit_rate'], label='Establishments', linewidth=2)
+ax[1].plot(df.index, df['firms_exit_rate'], label='Firms', linewidth=2)
+ax[1].plot(df.index, df['job_destruction_rate'], label='Job destruction', linewidth=2)
 #ax[1].plot(df.year, df['unemployment_rate'], label='Unemployment', linestyle='--', color='red')
-ax[1].set_title("Exit rates and Unemployment", fontsize=12, pad=10)
+ax[1].set_title("Exit rates", fontsize=12, pad=10)
 
-
+       
 for j in range(2):
     ax[j].set_xlabel('Year', fontsize=10)
     ax[j].set_ylabel('Rate (%)', fontsize=10)
     ax[j].set_xticks(range(1978, 2022, 5))
-    for start, end in periods.values():
-        ax[j].axvspan(start, end, color='gray', alpha=0.2)
+    for start, end in recessions:
+        ax[j].axvspan(start, end, color='gray', alpha=0.3)
     ax[j].legend(loc='upper right', fontsize=10)
     ax[j].grid(True, alpha=0.3)
-    ax[j].tick_params(axis='both', which='major', labelsize=9)
+    #ax[j].tick_params(axis='both', which='major', labelsize=9)
 
 plt.tight_layout()
-plt.savefig("entry_exit_unemployment_rates.pdf", bbox_inches='tight', dpi=300)
+#plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
+plt.savefig("entry_exit_rates.pdf", bbox_inches='tight', dpi=300)
 plt.show()
 
 # Sum
@@ -147,9 +154,9 @@ comovement_pairs = [
     ('unemployment_rate', 'firms_exit_rate')
 ]
 
-for var1, var2 in comovement_pairs:
-    correlation = df[[var1, var2]].corr().iloc[0, 1]
-    print(f"\nCorrelation between {variable_names[variables.index(var1)]} and {variable_names[variables.index(var2)]}: {correlation:.2f}")
+# for var1, var2 in comovement_pairs:
+#     correlation = df[[var1, var2]].corr().iloc[0, 1]
+#     print(f"\nCorrelation between {variable_names[variables.index(var1)]} and {variable_names[variables.index(var2)]}: {correlation:.2f}")
     
 def dynamic_correlations(data, var1, var2, ylabel, nleads=12, nlags=12, title=None):
     fig, ax = plt.subplots(figsize=(14, 5))
