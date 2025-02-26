@@ -88,7 +88,7 @@ f = fill(Sym("x"), nvar)
     # Marginal revenue product (welfare-based labor prod. measure) -> w_int
     f[2] = w_int - p*z*zbar/μ
     # Wage equation -> w
-    f[3] = w - (ϕ*(w_int-K+θ/(1-δbar*δ)*(K+q*κ)) +(1-ϕ)*b)
+    f[3] = w - (ϕ*(w_int-K+θ*(K+q*κ)) +(1-ϕ)*b)
     # Value of a vacancy -> Q
     f[4] = Q - (e/F)^(ξ_inv)
     # Expected discounted difference in vacancy value -> K

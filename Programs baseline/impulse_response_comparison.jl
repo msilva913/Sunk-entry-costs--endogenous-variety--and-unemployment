@@ -11,7 +11,6 @@ sol = solution_interface(model, PAR)
 eta_z = zero(eta) # Tech shock
 eta_z[4] = eta[4]
 
-
 targets2 = (targets..., ε=100.0 )
 cal2 = calibrate_labor_share(targets2)
 @unpack  f_e, δ, s, z, b, ϕ, ρ, σ, ε, A, η_L, F, κ, ξ_inv = cal2
@@ -27,7 +26,6 @@ sim_IR2 = simulate_model(model, sol_mat2, T_IR, eta_z, SS2, flag_IR, flag_logdev
 irf_df2 = 100 .*DataFrame(sim_IR2, varnames)
 gen_irf_comp(irf_df, irf_df2, ["Baseline", " ε=100"])
 Plots.savefig("irf_comp_epsi.pdf")
-
 
 
 # High δ calibration: we maintain aggregate worker separations at 3.1%

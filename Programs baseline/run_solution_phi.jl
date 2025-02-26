@@ -88,7 +88,7 @@ f = fill(Sym("x"), nvar)
     # Marginal revenue product (welfare-based labor prod. measure) -> w_int
     f[2] = w_int - p*z*zbar/μ
     # Wage equation -> w
-    f[3] = w - (ϕ*(w_int-K+θ/(1-δbar*δ)*(K+q*κ)) +(1-ϕ)*b)
+    f[3] = w - (ϕ*(w_int-K+θ*(K+q*κ)) +(1-ϕ)*b)
     # Value of a vacancy -> Q
     f[4] = Q - (e/F)^(ξ_inv)
     # Expected discounted difference in vacancy value -> K
@@ -203,7 +203,7 @@ function SS_symbolics(parameters::Vector{Sym{PyObject}}, targets)
     recruiter_share= (δbar+(ρ+δbar)*(ε-1))/(δbar+(ρ+δbar)*ε)
     surplus_ratio = (ρ+τbar)/(1-δbar)*(1/(q_s*x_v))
 
-    K_s = (1-ϕ)/ϕ*(w_s-b)/(surplus_ratio +  θ_s/(1-δ)*(1/x_v))
+    K_s = (1-ϕ)/ϕ*(w_s-b)/(surplus_ratio +  θ_s*(1/x_v))
     κ = (1-x_v)/x_v*K_s/q_s
     w_ints = surplus_ratio*K_s + w_s + K_s
     zbar = (μ/p_s)*w_ints
@@ -328,12 +328,9 @@ gen_irf_comp(irf_z, irf_z2, ["Baseline", " ε=100"])
 Plots.savefig("irf_comp_epsi_phi_fixed.pdf")
 
 
-
-
-
 # High δ calibration 
 targets3 = (targets..., dest_ann=0.2)
-cal3 = calibrate_labor_share(targets3)
+cal3 = calibrate(targets3)
 @unpack  f_e, δ, s, z, b, ϕ, ρ, σ, ε, A, η_L, F, κ, ξ_inv = cal3
 PAR3     =   [f_e; s; zbar; δbar; sbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; σ_z; ρ_δ; σ_δ; ρ_s; σ_s ]
 sol3 = solution_interface(model, PAR3)
