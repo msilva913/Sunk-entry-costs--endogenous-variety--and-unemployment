@@ -68,7 +68,7 @@ function w_fun(θ, N, para)
     μ = ε/(ε-1)
     w_int = N^(1/(ε-1))*z/μ
     K = K_fun(θ, para)
-    w = (1-ϕ)*b + ϕ*(w_int-K+θ/(1-δ)*(K+q*κ))
+    w = (1-ϕ)*b + ϕ*(w_int-K+θ*(K+q*κ))
     return w
 end
 
@@ -93,7 +93,8 @@ function θ_fun(para; init_value=0.51)
         K = K_fun(θ, para)
         L = L_fun(θ, para) 
         u = 1 - L
-        lhs = (κ+K/q)*((ρ+τ)+ϕ*q*θ)
+        lhs = (κ+K/q)*(ρ+τ+(1-δ)ϕ*q*θ)
+        # get N from resource constraint curve
         N = (μ-1)*z*L*(1-δ)/(f_e*(δ*μ+ρ))
         p = N^(1/(ε-1))
         w_int = p*z/μ
@@ -146,7 +147,7 @@ function steady_state(para; init=0.51)
 
     # Wages
     w_int = p*z/μ
-    w = ϕ*(w_int-K+θ/(1-δ)*(K+q*κ))+(1-ϕ)*(b)
+    w = ϕ*(w_int-K+θ*(K+q*κ))+(1-ϕ)*(b)
 
     # Sectoral labor 
     L_e = (δ/(1-δ))*N*f_e/z
@@ -224,7 +225,7 @@ function calibrate_labor_share(targets)
     κ = (1-x_v)/x_v*K/q
 
     # From wage equation find ϕ
-    ϕ = (w-b)/(w_int-K+θ/(1-δ)*(K+q*κ)-b)
+    ϕ = (w-b)/(w_int-K+θ*(K+q*κ)-b)
 
     # Find F from free entry condition
     #K = (ρ+δ)/(1+ρ)*(e/F)^(1/ξ)
@@ -277,7 +278,7 @@ function calibrate(targets)
 
     # surplus_ratio = (w_int - w - K)/K 
     surplus_ratio = (ρ+τ)/(1-δ)*(1/(q*x_v))
-    K = (1-ϕ)/ϕ*(w-b)/(surplus_ratio +  θ/(1-δ)*(1/x_v))
+    K = (1-ϕ)/ϕ*(w-b)/(surplus_ratio +  θ*(1/x_v))
     κ = (1-x_v)/x_v*K/q
     w_int = surplus_ratio*K + w + K
     z = (μ/p)*w_int
@@ -328,7 +329,7 @@ function N_jcc(θ, para)
     K = K_fun(θ, para)
     μ = ε/(ε-1)
 
-    w_int = 1/((1-δ)*(1-ϕ))*(κ*q+K)*((ρ+τ)/q+ϕ*θ) + K + b
+    w_int = 1/((1-δ)*(1-ϕ))*(κ*q+K)*((ρ+τ)/q+(1-δ)*ϕ*θ) + K + b
     p = w_int*(μ/z)
     N = p^(ε-1)
     return N

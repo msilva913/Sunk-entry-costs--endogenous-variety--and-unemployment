@@ -25,7 +25,7 @@ X_v/X
 
 @assert abs(N_e - L_e*z/f_e) < 1e-12
 surplus_ratio = (ρ+τ)/(1-δ)*(1/(q*x_v))
-@assert abs(K - (1-ϕ)/ϕ*(w-b)/(surplus_ratio +  θ/(1-δ)*(1/x_v))) < 1e-12
+@assert abs(K - (1-ϕ)/ϕ*(w-b)/(surplus_ratio +  θ*(1/x_v))) < 1e-12
 
 # Steady-state ratios
 @show labor_share
@@ -68,7 +68,7 @@ steady = steady_state(para)
 # steady = steady_state(cal)
 
 # Examination of very high elasticity of substitution
-para = (cal...,  ε=1e12)
+para = (para...,  ε=1e12)
 steady = steady_state(para)
 @assert abs(steady.Q-1.0) < 1e-12
 @assert abs(steady.X_v-steady.e) < 1e-12
