@@ -17,9 +17,9 @@ function gen_irf(irf_df::DataFrame)
 
     
     # Top right plot: vacancy value variables
-    plot!(p[3], irf_df.v, label=L"v")
-    plot!(p[3], irf_df.e, label=L"e")
-    yticks!(p[3], :auto, fmt=x->string(round(x*100,digits=1),"%"))
+    plot!(p[2], irf_df.v, label=L"v")
+    plot!(p[2], irf_df.e, label=L"e")
+    yticks!(p[2], :auto, fmt=x->string(round(x*100,digits=1),"%"))
 
     # Display the plot
     display(p)
