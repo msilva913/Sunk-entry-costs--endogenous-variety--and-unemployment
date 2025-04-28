@@ -5,7 +5,7 @@ default(linewidth=2, grid=true, fontfamily="Computer Modern")
 
 function gen_irf(irf_df::DataFrame)
     # Set up a 3x2 layout with specified size
-    p = Plots.plot(layout=(1, 2), size=(1200, 500), 
+    p = Plots.plot(layout=(1, 2), size=(1000, 400), 
             legend=:right, alpha=0.6)
     
     # Left plot: labor market variables

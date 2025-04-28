@@ -65,6 +65,7 @@ function solution_interface(model, PAR)
     # end
     # print(maximum(abs.(dev)))
     # @btime sol_mat = solve_model(model, deriv, eta)
+    eta = map(float, eta)
     sol_mat = solve_model(model, deriv, eta)
     println("Model solved")
     out = (SS=SS, ss=ss, eta=eta, deriv=deriv, sol_mat=sol_mat)
@@ -73,7 +74,7 @@ end
 
 ## Model
 # Adjustments
-    flag_order      = 1
+    flag_order      = 2
     flag_deviation  = true
     flag_SSsolver   = false
 
@@ -149,19 +150,6 @@ so that the program tries to estimate it.
 # Values 
 #zbar δbar sbar b ϕ ρ A η_L F ξ_inv ρ_z σ_z
 
-
-targets = (zbar=1.0,
-           dest_ann=0.06,
-            r_ann=0.04, 
-            f=1/2.2, 
-            q=1-(1-1/3)^4,
-            ϕ=0.566, 
-            τ=0.034, 
-            b=0.9, 
-            ξ_inv=1.0,
-            η_L=0.5)       
-cal = calibrate_GS(targets)
-
 function SS_symbolics(parameters::Vector{Sym{PyObject}}, targets)
 
     zbar, δbar, sbar, b, ϕ, ρ, A, η_L, F, ξ_inv, ρ_z, σ_z = parameters
@@ -194,7 +182,22 @@ end
 
 #PAR_SS = [ALPHA; BETA; DELTA; RHO; SIGMA; MUU; AA]
 PAR_SS = parameters[:]
+
+targets = (zbar=1.0,
+           dest_ann=0.10,
+            r_ann=0.04, 
+            f=1/2.2, 
+            q=1-(1-1/3)^4,
+            ϕ=0.566, 
+            τ=0.034, 
+            b=0.9, 
+            ξ_inv=1.0,
+            η_L=0.5)   
+
 SS = SS_symbolics(parameters, targets)
+cal = calibrate_GS(targets)
+
+
 
 # Procesing the model (no adjustment needed)                
 model = (parameters = parameters, estimate = estimate, estimation = position,
@@ -210,6 +213,7 @@ model = (parameters = parameters, estimate = estimate, estimation = position,
         SS = SS, PAR_SS = PAR_SS,
         flag_order = flag_order, flag_deviation = flag_deviation, flag_SSsolver = flag_SSsolver)
 process_model(model)
+
 
 
 ## Solution
@@ -228,7 +232,8 @@ PAR     =   [zbar; δbar; sbar; b; ϕ; ρ; A; η_L; F; ξ_inv; ρ_z; σ_z ]
 sol = solution_interface(model, PAR)
 @unpack ss, SS, sol_mat, eta = sol
 # Export: model, targets, PAR, sol (save output using serialization)
-
+model_output = (model, targets, PAR, sol)
+serialize("model_output_GS.jls", model_output)
 
 
 ## Impulse responses ##
@@ -243,36 +248,5 @@ irf_z = 100 .*DataFrame(irf_z, varnames)
 gen_irf(irf_z)
 
 
-# Destruction rate shock: consistent with Beveridge curve
-irf_δ= simulate_model(model, sol_mat, T_IR, eta_δ, SS, flag_IR, flag_logdev) 
-irf_δ = 100 .*DataFrame(irf_δ, varnames)
-gen_irf(irf_δ)
-Plots.savefig("dest_shock.pdf")
-
-# Idiosyncratic job separation shock
-irf_s= simulate_model(model, sol_mat, T_IR, eta_s, SS, flag_IR, flag_logdev) 
-irf_s = 100 .*DataFrame(irf_s, varnames)
-gen_irf(irf_s)
-Plots.savefig("s_shock.pdf")
-
-#Commmon separation shock
-irf_τ= simulate_model(model, sol_mat, T_IR, eta_τ, SS, flag_IR, flag_logdev) 
-irf_τ = 100 .*DataFrame(irf_τ, varnames)
-gen_irf(irf_τ)
-Plots.savefig("common_shock.pdf")
 
 
-
-# # High sunk vacancy posting costs
-# targets4 = (targets..., x_v=0.4)
-# cal4 = calibrate_labor_share(targets4)
-# @unpack  f_e, δ, s, z, b, ϕ, ρ, σ, ε, A, η_L, F, κ, ξ_inv = cal4
-# PAR4     =   [f_e; s; zbar; δbar; sbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; σ_z; ρ_δ; σ_δ; ρ_s; σ_s ]
-# sol4 = solution_interface(model, PAR4)
-# sol_mat4 = sol4.sol_mat
-# SS4 = sol4.SS
-
-# sim_IR4 = simulate_model(model, sol_mat4, T_IR, eta_z, SS2, flag_IR, flag_logdev)
-# irf_z4 = 100 .*DataFrame(sim_IR4, varnames)
-# gen_irf_comp(irf_z, irf_z3, ["Baseline", " 20% annual destruction rate"])
-# Plots.savefig("irf_comp_delta.pdf")
