@@ -1,9 +1,10 @@
-using PyPlot
+
 using Parameters, CSV, StatsBase, Statistics, Random
 using NLsolve
+using DataFrames
 using Roots, Optim, LeastSquaresOptim
 using PrettyPrinting
-using Distributions
+using LaTeXStrings
 cd(@__DIR__)
 # Matching probabilities
 function jf(θ, A, η_L)
@@ -65,9 +66,9 @@ function w_fun(θ, N, para)
     @unpack ϕ, b, z, ε, δ, A, η_L = para
     q = vf(θ, A, η_L)
     μ = ε/(ε-1)
-    w_R = N^(1/(ε-1))*z/μ
+    w_int = N^(1/(ε-1))*z/μ
     K = K_fun(θ, para)
-    w = (1-ϕ)*b + ϕ*(w_R-K+θ/(1-δ)*(K+q*κ))
+    w = (1-ϕ)*b + ϕ*(w_int-K+θ*(K+q*κ))
     return w
 end
 
@@ -92,11 +93,12 @@ function θ_fun(para; init_value=0.51)
         K = K_fun(θ, para)
         L = L_fun(θ, para) 
         u = 1 - L
-        lhs = (κ+K/q)*((ρ+τ)+ϕ*q*θ)
+        lhs = (κ+K/q)*(ρ+τ+(1-δ)ϕ*q*θ)
+        # get N from resource constraint curve
         N = (μ-1)*z*L*(1-δ)/(f_e*(δ*μ+ρ))
         p = N^(1/(ε-1))
-        w_R = p*z/μ
-        rhs = (1-δ)*(1-ϕ)*(w_R-K-b)
+        w_int = p*z/μ
+        rhs = (1-δ)*(1-ϕ)*(w_int-K-b)
         return [(lhs-rhs)/(lhs+rhs)]
     end
 
@@ -144,8 +146,8 @@ function steady_state(para; init=0.51)
     d_f = (ρ+δ)/(1-δ)*ν_f
 
     # Wages
-    w_R = p*z/μ
-    w = ϕ*(w_R-K+θ/(1-δ)*(K+q*κ))+(1-ϕ)*(b)
+    w_int = p*z/μ
+    w = ϕ*(w_int-K+θ*(K+q*κ))+(1-ϕ)*(b)
 
     # Sectoral labor 
     L_e = (δ/(1-δ))*N*f_e/z
@@ -167,20 +169,20 @@ function steady_state(para; init=0.51)
     labor_prod = Y/(p*L)
 
     labor_share = w*L/Y
-    sunk_entry_cost_share = ν_f*N_e/Y
+    cons_share = C/Y
+    inv_new_firm_share = ν_f*N_e/Y
+    vacancy_share = X/Y
     sunk_vac_cost_share = X_v/Y
+    entrant_share = e/v
     x_v = (K/q)/(κ+K/q)
+    search_wedge = w/w_int
+    recruiter_share = w_int*L/Y
 
-    out = (θ=θ, N=N, f=f, q=q, u=u, v=v, v_pret=v_pret, e=e, K=K, p=p, N_e=N_e, ν_f=ν_f, d_f=d_f, w_R=w_R, w=w, L=L, L_e=L_e, L_c=L_c, Y_c=Y_c, Q=Q, X_v=X_v,
-     X=X, C=C, Y=Y, labor_share=labor_share, labor_prod=labor_prod, sunk_entry_cost_share=sunk_entry_cost_share, sunk_vac_cost_share=sunk_vac_cost_share, M=M,
-     x_v=x_v)
+    out = (θ=θ, N=N, f=f, q=q, u=u, v=v, v_pret=v_pret, e=e, K=K, p=p, N_e=N_e, ν_f=ν_f, d_f=d_f, w_int=w_int, w=w, L=L, L_e=L_e, L_c=L_c, Y_c=Y_c, Q=Q, X_v=X_v,
+     X=X, C=C, Y=Y, labor_share=labor_share, labor_prod=labor_prod, cons_share=cons_share, inv_new_firm_share=inv_new_firm_share, vacancy_share=vacancy_share, sunk_vac_cost_share=sunk_vac_cost_share, M=M,
+     entrant_share=entrant_share, x_v=x_v, search_wedge=search_wedge, recruiter_share=recruiter_share)
     return out
 end
-
-targets = (labor_share=0.66, dest_ann=0.06, r_ann=0.04, f =0.41, η_L=0.6, q=0.8, sep=0.031, b_ratio=0.71, 
-            x_v=0.20, ξ_inv=1, ε=4, σ=1.5, N=1, w=1.0)
-cal = calibrate_labor_share(targets)
-ss = steady_state(cal)
 
 function calibrate_labor_share(targets)
     @unpack labor_share, dest_ann, r_ann, f, η_L, q, sep, b_ratio, x_v, ξ_inv, ε, σ, N, w = targets
@@ -209,22 +211,21 @@ function calibrate_labor_share(targets)
     p = N^(1/(ε-1))
     N_e = δ/(1-δ)*N
     b = b_ratio*w
-    #w_R = p*z/μ
+    #w_int = p*z/μ
     recruiter_share = (δ+(ρ+δ)*(ε-1))/(δ+(ρ+δ)*ε) # w_R*L/Y similar to BGM
-    w_wR = labor_share/recruiter_share
-    w_R = w/(w_wR)
-    z = (μ/p)*w_R
+    w_wint = labor_share/recruiter_share
+    w_int = w/(w_wint)
+    z = (μ/p)*w_int
 
     # surplus_ratio = (w_R - w - K)/K 
     surplus_ratio = (ρ+τ)/(1-δ)*(1/(q*x_v))
-    K = (w_R-w)/(1+surplus_ratio)
+    K = (w_int-w)/(1+surplus_ratio)
 
     # Find κ given K 
     κ = (1-x_v)/x_v*K/q
 
     # From wage equation find ϕ
-    ϕ = (w-b)/(w_R-K+θ/(1-δ)*(K+q*κ)-b)
-    #@assert abs(w-(ϕ*(w_R-K+θ/(1-δ)*(K+q*κ))+(1-ϕ)*(b))) < 1e-6
+    ϕ = (w-b)/(w_int-K+θ*(K+q*κ)-b)
 
     # Find F from free entry condition
     #K = (ρ+δ)/(1+ρ)*(e/F)^(1/ξ)
@@ -235,9 +236,6 @@ function calibrate_labor_share(targets)
     # Given N, solve for f_e
     # N = (μ-1)*zL*(1-δ)/(f_e(δμ+\rho))
     f_e = (μ-1)*z*(L/N)*(1-δ)/(δ*μ+ρ)
-    
-    #@assert abs(κ+K/q - (1-δ)/(ρ+τ)*(w_R-w-K)) < 1e-6
-    #@assert abs((κ+K/q)*(ρ+τ+ϕ*θ*q)-(1-δ)*(1-ϕ)*(w_R-K-b)) < 1e-6
 
     cal = (f_e=f_e, τ=τ, δ=δ, z=z, b=b, ϕ=ϕ, ρ=ρ, σ=σ, ε=ε, A=A, η_L=η_L,κ=κ, ξ_inv=ξ_inv, F=F, s=s)
     return cal
@@ -249,7 +247,7 @@ Targets of N and w reflect choice of units.
 N is associated with f_e, and w is associated with z. Normalizing N=1 also implies p=1
 """
 function calibrate(targets)
-    @unpack ϕ, dest_ann, r_ann, f, η_L, q, sep, b_ratio, ξ_inv, ε, σ, N, w = targets
+    @unpack ϕ, dest_ann, r_ann, f, η_L, q, sep, b_ratio, x_v, ξ_inv, ε, σ, N, w = targets
 
     μ = ε/(ε-1)
     τ = sep
@@ -275,39 +273,50 @@ function calibrate(targets)
     p = N^(1/(ε-1))
     N_e = δ/(1-δ)*N
     b = b_ratio*w
-
-    #w_R = p*z/μ
+    #w_int = p*z/μ
     recruiter_share = (δ+(ρ+δ)*(ε-1))/(δ+(ρ+δ)*ε) # w_R*L/Y similar to BGM
-    surplus_ratio = (ρ+τ)/(1-δ)*(1/q) #(w_R-w-K)/K
+
+    # surplus_ratio = (w_int - w - K)/K 
+    surplus_ratio = (ρ+τ)/(1-δ)*(1/(q*x_v))
+    K = (1-ϕ)/ϕ*(w-b)/(surplus_ratio +  θ*(1/x_v))
+    κ = (1-x_v)/x_v*K/q
+    w_int = surplus_ratio*K + w + K
+    z = (μ/p)*w_int
+
+    # function loss(labor_share)
+    #     w_wint = labor_share/recruiter_share
+    #     w_int = w/(w_wint)
+    #     z = (μ/p)*w_int
+
     
-    surplus_ratio_2 = ((ρ+τ)/q+ϕ*θ)/((1-δ)*(1-ϕ)) #(w_R-K-b)/K 
+    #     K = (w_int-w)/(1+surplus_ratio)
 
-    sr = surplus_ratio/surplus_ratio_2 
-    #w_R-w-K = sr*(w_R-K-b)
-    w_R_net_K = (w-sr*b)/(1-sr) #w_R-K
-    K = (w_R_net_K - b)/surplus_ratio_2
-    w_R = w_R_net_K + K
+    #     # Find κ given K 
+    #     κ = (1-x_v)/x_v*K/q
 
-    z = (μ/p)*w_R
+    #     # From wage equation find ϕ
+    #     ϕ_new = (w-b)/(w_int-K+θ/(1-δ)*(K+q*κ)-b)
+    #     out = (ϕ_new-ϕ)/ϕ
+    #     return out, w_int, z, K, κ
+    # end 
+    #labor_share = fzero(x-> loss(x)[1], 0.66)
+    #out, w_int, z, K,  κ = loss(labor_share)
 
-    # surplus_ratio = (w_R - w - K)/K 
-  
-    @assert K ≈ (w_R-w)/(1+surplus_ratio)
-
-    # From wage equation find ϕ
-    ϕ = (w-b)/(w_R-K+θ*K/(1-δ)-b)
 
     # Find F from free entry condition
     #K = (ρ+δ)/(1+ρ)*(e/F)^(1/ξ)
-    Q = K*(1+ρ)/(ρ+δ) 
-    F = e/Q^(1/ξ_inv)
-
+    if ξ_inv > 0
+        Q = K*(1+ρ)/(ρ+δ) 
+        F = e/Q^(1/ξ_inv)
+    end 
+    # Given N, solve for f_e
     # N = (μ-1)*zL*(1-δ)/(f_e(δμ+\rho))
     f_e = (μ-1)*z*(L/N)*(1-δ)/(δ*μ+ρ)
 
-    cal = (f_e=f_e, τ=τ, δ=δ, z=z, b=b, ϕ=ϕ, ρ=ρ, σ=σ, ε=ε, A=A, η_L=η_L, ξ_inv=ξ_inv, F=F, s=s)
+    cal = (f_e=f_e, τ=τ, δ=δ, z=z, b=b, ϕ=ϕ, ρ=ρ, σ=σ, ε=ε, A=A, η_L=η_L,κ=κ, ξ_inv=ξ_inv, F=F, s=s)
     return cal
 end
+
 
 
 """
@@ -315,13 +324,13 @@ Job creation curve:
 N as a function of θ
 """
 function N_jcc(θ, para)
-    @unpack ρ, τ, A, η_L, δ, ϕ, z, ε, b = para
+    @unpack ρ, τ, A, η_L, δ, ϕ, z, ε, b, κ = para
     q = vf(θ, A, η_L)
     K = K_fun(θ, para)
     μ = ε/(ε-1)
 
-    w_R = 1/((1-δ)*(1-ϕ))*(κ*q+K)*((ρ+τ)/q+ϕ*θ) + K + b
-    p = w_R*(μ/z)
+    w_int = 1/((1-δ)*(1-ϕ))*(κ*q+K)*((ρ+τ)/q+(1-δ)*ϕ*θ) + K + b
+    p = w_int*(μ/z)
     N = p^(ε-1)
     return N
 end
@@ -341,3 +350,45 @@ function N_res(θ, para)
     N = (μ-1)*z*L*(1-δ)/(f_e*(δ*μ+ρ))
     return N
 end
+
+function calibration_table(cal, targets)
+    @unpack f_e, τ, δ, z, b, ϕ, ρ, σ, ε, A, η_L, ξ_inv, A, F, κ, s = cal
+    @unpack labor_share, dest_ann, r_ann, f, η_L, q, sep, b_ratio, x_v, ξ_inv, ε, σ, N, w = targets
+
+    ρ = (1+r_ann)^(1/12)-1
+    β = 1/(1+ρ)
+    δ = 1-(1-dest_ann)^(1/12)
+    μ = ε/(ε-1)
+
+    # Creating a DataFrame for the table
+    df = DataFrame(
+        Targets = [
+            "Real interest rate",
+            "Elasticity of matching function",
+            "Replacement ratio b/w",
+            "Annual establishment exit rate",
+            "Elasticity of vacancy value",
+            "Markup",
+            "Risk aversion",
+            "Share of sunk vacancy costs to overall hiring costs",
+            "Steady-state wage",
+            "Steady-state mass of firms",
+            "Aggregate separation rate",
+            "Labor share",
+            "Job finding rate",
+            "Vacancy filling rate"
+        ],
+        Value = round.([r_ann, η_L, b, δ, ξ_inv, μ-1, σ, x_v, w, N, τ, labor_share, 0.41, 0.80], sigdigits=2),
+        Parameter = [L"\rho", L"\eta_L", L"b", L"\delta", L"\xi^{-1}", L"\varepsilon", L"\sigma", L"\kappa", L"z", L"f_e", L"s", L"\phi", L"A", L"F"],
+        Calibration = round.([ρ, η_L, b, δ, ξ_inv, ε, σ, κ, z, f_e, s, ϕ, A, F], sigdigits=3)
+    )
+
+    # Save the DataFrame as a PDF table
+    return df
+end
+
+
+
+
+
+

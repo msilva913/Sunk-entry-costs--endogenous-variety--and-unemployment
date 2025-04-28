@@ -4,7 +4,7 @@ if nargin < 5
     T = NaN(18, 1);
 end
 [T_order, T] = model_dest.sparse.static_resid_tt(y, x, params, T_order, T);
-residual = NaN(40, 1);
+residual = NaN(41, 1);
     residual(1) = (T(13)) - (params(1)*T(14)*(y(13)-y(3)-y(2)+T(13)*T(15)));
     residual(2) = (y(13)) - (T(16)/T(4));
     residual(3) = (y(3)) - (T(10)*(y(13)-y(2)+T(17)*(y(2)+T(9)*y(9)))+params(14)*params(10)*(1-T(10)));
@@ -31,7 +31,7 @@ residual = NaN(40, 1);
     residual(24) = (y(24)) - (y(3)*y(21)/y(20));
     residual(25) = (y(25)) - (1-T(14)*T(15));
 residual(26) = y(28);
-    residual(27) = (y(29)) - (y(28)+y(28)+y(40));
+    residual(27) = (y(29)) - (y(28)+y(28)+y(41));
     residual(28) = (y(30)) - (y(6)-(y(6)));
     residual(29) = (y(31)) - (y(5)-(y(5)));
     residual(30) = (y(32)) - (100*log(y(6)));
@@ -40,9 +40,10 @@ residual(26) = y(28);
     residual(33) = (y(35)) - (100*log(y(4)));
     residual(34) = (y(36)) - (100*log(y(10)));
     residual(35) = (y(37)) - (100*log(y(11)));
-    residual(36) = (y(38)) - (100*log(y(17)));
-    residual(37) = (y(39)) - (100*log(y(20)));
-    residual(38) = (y(26)) - (y(26)*params(15)-x(1));
-    residual(39) = (y(27)) - (y(27)*params(16)+x(2));
-    residual(40) = (y(40)) - (y(28));
+    residual(36) = (y(39)) - (100*log(y(17)));
+    residual(37) = (y(40)) - (100*log(y(20)));
+    residual(38) = (y(38)) - (100*log(y(12)));
+    residual(39) = (y(26)) - (y(26)*params(15)-x(1));
+    residual(40) = (y(27)) - (y(27)*params(16)+x(2));
+    residual(41) = (y(41)) - (y(28));
 end

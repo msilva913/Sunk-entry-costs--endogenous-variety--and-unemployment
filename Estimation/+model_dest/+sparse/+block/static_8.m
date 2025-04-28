@@ -1,6 +1,7 @@
 function [y, T] = static_8(y, x, params, sparse_rowval, sparse_colval, sparse_colptr, T)
-  y(38)=100*log(y(17));
-  y(39)=100*log(y(20));
+  y(39)=100*log(y(17));
+  y(40)=100*log(y(20));
+  y(38)=100*log(y(12));
   y(35)=100*log(y(4));
   y(34)=100*log(y(7));
   y(33)=100*log(y(5));

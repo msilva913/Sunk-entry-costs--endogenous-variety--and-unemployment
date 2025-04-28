@@ -49,8 +49,9 @@ function [ys_, params, info] = steadystate(ys_, exo_, params)
     ys_(35)=100*log(ys_(4));
     ys_(36)=100*log(ys_(10));
     ys_(37)=100*log(ys_(11));
-    ys_(38)=100*log(ys_(17));
-    ys_(39)=100*log(ys_(20));
+    ys_(38)=100*log(ys_(12));
+    ys_(39)=100*log(ys_(17));
+    ys_(40)=100*log(ys_(20));
     % Auxiliary equations
-ys_(40)=ys_(28);
+ys_(41)=ys_(28);
 end
