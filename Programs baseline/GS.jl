@@ -3,6 +3,7 @@
 
 using MKL
 using DataFrames, Parameters
+using Roots
 using Serialization
 using LaTeXStrings
 using PyCall
@@ -12,33 +13,40 @@ cd(@__DIR__)
 #:mkl
 
 function calibrate_GS(targets)
-    @unpack zbar, dest_ann, r_ann, f, q, ϕ, τ, b, ξ_inv, η_L = targets
+    @unpack zbar, dest_ann, r_ann, f, q, wage_elast, τ, b, ξ_inv, γ = targets
 
     ρ = (1+r_ann)^(1/12)-1
     β = 1/(1+ρ)
-    δbar = 1-(1-dest_ann)^(1/12)
+    δ = 1-(1-dest_ann)^(1/12)
     
     # Correct job finding and vacancy filling probablities
-    f = f/(1-δbar)
-    q = q/(1-δbar)
+    f = f/(1-δ)
+    q = q/(1-δ)
 
     θ = f/q
-    u = τ/(τ+(1-δbar)*f)
+    u = τ/(τ+(1-δ)*f)
     v = θ*u 
 
     # Level parameter of matching function 
-    A = f/θ^(1-η_L)
-    sbar = (τ-δbar)/(1-δbar)
+    A = f/θ^(1-γ)
+    s = (τ-δ)/(1-δ)
 
-    e = δbar*(v+1-u)
+    e = δ*(v+1-u)
 
-    K = q*(1-δbar)*(1-ϕ)*(zbar-b)/(ρ+τ+ϕ*f+q*(1-δbar)*(1-ϕ))
-
-    Q = K*(1+ρ)/(ρ+δbar) 
+    function loss(ϕ)
+        K = q*(1-δ)*(1-ϕ)*(zbar-b)/(ρ+τ+ϕ*f+q*(1-δ)*(1-ϕ))
+        w = (ϕ*(zbar-K+θ/(1-δ)*K) +(1-ϕ)*b)
+        out = (ϕ*zbar/w - wage_elast)/wage_elast
+        return out, K
+    end
+    
+    ϕ = find_zero(x -> loss(x)[1], (0.01, 0.99))
+    out, K = loss(ϕ)
+    Q = K*(1+ρ)/(ρ+δ) 
     F = e/Q^(1/ξ_inv)
 
-    #zbar δbar sbar b ϕ ρ A η_L F ξ_inv
-    cal = (zbar=zbar, δbar=δbar, sbar=sbar, b=b, ϕ=ϕ, ρ=ρ,  A=A,  η_L=η_L, F=F, ξ_inv=ξ_inv)
+    #zbar δ s b ϕ ρ A γ F ξ_inv
+    cal = (zbar=zbar, δ=δ, s=s, b=b, ϕ=ϕ, ρ=ρ,  A=A,  γ=γ, F=F, ξ_inv=ξ_inv)
     return cal
 end
 
@@ -79,8 +87,8 @@ end
     flag_SSsolver   = false
 
 # Parameters
-    @syms zbar δbar sbar b ϕ ρ A η_L F ξ_inv ρ_z σ_z
-    parameters      = [zbar; δbar; sbar; b; ϕ; ρ; A; η_L; F; ξ_inv; ρ_z; σ_z]
+    @syms zbar δ s b ϕ ρ A γ F ξ_inv ρ_z σ_z
+    parameters      = [zbar; δ; s; b; ϕ; ρ; A; γ; F; ξ_inv; ρ_z; σ_z]
     estimate        = []
     position        = []
     priors          = (;)
@@ -88,7 +96,7 @@ end
     # Transformations
     β = 1/(1+ρ)
     ξ = 1/ξ_inv
-    τbar = 1 - (1-δbar)*(1-sbar)
+    τbar = 1 - (1-δ)*(1-s)
 
 # Variables
 @syms  u v_pret z θ q v e K Q w
@@ -117,23 +125,23 @@ ne = length(ex)
 f = fill(Sym("x"), nvar)
 # Equilibrium conditions
     # Job creation condition -> θ
-    f[1]  =  K/q - β*(1-δbar)*(zp-wp-Kp+(1-sbar)*Kp/qp)
+    f[1]  =  K/q - β*(1-δ)*(zp-wp-Kp+(1-s)*Kp/qp)
     # Wage equation -> w
-    f[2] = w - (ϕ*(z-K+θ/(1-δbar)*K) +(1-ϕ)*b)
+    f[2] = w - (ϕ*(z-K+θ/(1-δ)*K) +(1-ϕ)*b)
     # Value of a vacancy -> Q
     f[3] = Q - (e/F)^(ξ_inv)
     # Expected discounted difference in vacancy value -> K
-    f[4] = K - (Q-β*(1-δbar)*Qp)
+    f[4] = K - (Q-β*(1-δ)*Qp)
     # Market tightness -> v
     f[5] = θ - v/u 
     # Vacancy filling probability -> q
-    f[6] = q - A*θ^(-η_L) 
+    f[6] = q - A*θ^(-γ) 
     # LOM of vacancies 
     f[7] = v - (v_pret + e)
     # Predetermined vacancies 
-    f[8] = v_pretp - (1-δbar)*((1-q)*v+sbar*(1-u))
+    f[8] = v_pretp - (1-δ)*((1-q)*v+s*(1-u))
     # LOM of unemployment
-    f[9] = up - ((1-(1-δbar)*(θ*q))*u + τbar*(1-u))
+    f[9] = up - ((1-(1-δ)*(θ*q))*u + τbar*(1-u))
 
     # Exogenous processes
     f[10]  =   log(zp) - ρ_z * log(z)
@@ -148,29 +156,29 @@ If the steady state is unknown leave it as an empty vector (SS=[]),
 so that the program tries to estimate it.
 """  
 # Values 
-#zbar δbar sbar b ϕ ρ A η_L F ξ_inv ρ_z σ_z
+#zbar δ s b ϕ ρ A γ F ξ_inv ρ_z σ_z
 
 function SS_symbolics(parameters::Vector{Sym{PyObject}}, targets)
 
-    zbar, δbar, sbar, b, ϕ, ρ, A, η_L, F, ξ_inv, ρ_z, σ_z = parameters
+    zbar, δ, s, b, ϕ, ρ, A, γ, F, ξ_inv, ρ_z, σ_z = parameters
     # Initial parameters: targets and normalizations/ leave parameters as symbolic to be populated with calibration
     @unpack f, q  = targets
     fbar = f 
     qbar = q 
-    τbar = 1 - (1-δbar)*(1-sbar)
+    τbar = 1 - (1-δ)*(1-s)
 
     z_s = zbar;
-    q_s = qbar/(1-δbar)
-    f_s = fbar/(1-δbar)
+    q_s = qbar/(1-δ)
+    f_s = fbar/(1-δ)
     θ_s = fbar/qbar
-    u_s = τbar/(τbar+(1-δbar)*(θ_s*q_s))
+    u_s = τbar/(τbar+(1-δ)*(θ_s*q_s))
     v_s = θ_s*u_s
-    e_s = δbar*(v_s+1-u_s)
+    e_s = δ*(v_s+1-u_s)
     v_pret_s = v_s - e_s 
     Q_s = (e_s/F)^(ξ_inv)
 
-    K_s = q_s*(1-δbar)*(1-ϕ)*(z_s-b)/(ρ+τbar+ϕ*f_s+q_s*(1-δbar)*(1-ϕ))
-    w_s = ϕ*(z_s-K_s+θ_s/(1-δbar)*K_s) +(1-ϕ)*b
+    K_s = q_s*(1-δ)*(1-ϕ)*(z_s-b)/(ρ+τbar+ϕ*f_s+q_s*(1-δ)*(1-ϕ))
+    w_s = ϕ*(z_s-K_s+θ_s/(1-δ)*K_s) +(1-ϕ)*b
     #x  = [u; v_pret; z] # predetermined
     #y  = [θ; q; v; e; K; Q; w]
     # Vector
@@ -188,11 +196,13 @@ targets = (zbar=1.0,
             r_ann=0.04, 
             f=1/2.2, 
             q=1-(1-1/3)^4,
-            ϕ=0.566, 
+            #ϕ=0.566, 
+            wage_elast=0.6,
             τ=0.034, 
-            b=0.9, 
+            b=0.81, 
             ξ_inv=1.0,
-            η_L=0.5)   
+            #ξ_inv=1.0/0.265,
+            γ=0.6)   
 
 SS = SS_symbolics(parameters, targets)
 cal = calibrate_GS(targets)
@@ -218,16 +228,16 @@ process_model(model)
 
 ## Solution
 # Parametrization: need to handle dependent parameters 
-#parameters      = [f_e; δ; s; zbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; μ_z]
+#parameters      = [f_e; δ; s; zbar; b; ϕ; ρ; σ; ε; A; γ; F; κ; ξ_inv; ρ_z; μ_z]
 
 # Shock values (from Coles and Kelishomi), monthly frequency
 ρ_z = 0.979
 σ_z = 0.007
 
 
-@unpack zbar, δbar, sbar, b, ϕ, ρ, A, η_L,F, ξ_inv = cal
+@unpack zbar, δ, s, b, ϕ, ρ, A, γ,F, ξ_inv = cal
 
-PAR     =   [zbar; δbar; sbar; b; ϕ; ρ; A; η_L; F; ξ_inv; ρ_z; σ_z ]
+PAR     =   [zbar; δ; s; b; ϕ; ρ; A; γ; F; ξ_inv; ρ_z; σ_z ]
 
 sol = solution_interface(model, PAR)
 @unpack ss, SS, sol_mat, eta = sol

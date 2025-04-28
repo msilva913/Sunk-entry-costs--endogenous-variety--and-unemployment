@@ -12,6 +12,7 @@ function gen_irf(irf_df::DataFrame)
     plot!(p[1], irf_df.u, label=L"u", subplot=1, legend=:right)
     plot!(p[1], irf_df.z, label=L"z")
     plot!(p[1], irf_df.θ, label=L"θ")
+    plot!(p[1], irf_df.w, label=L"w")
     # Format y-axis as percentage
     yticks!(p[1], :auto, fmt=x->string(round(x*100,digits=1),"%"))
 
