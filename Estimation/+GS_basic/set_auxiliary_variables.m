@@ -1,10 +1,7 @@
 function y = set_auxiliary_variables(y, x, params)
 %
-% Status : Computes static model for Dynare
+% Computes auxiliary variables of the static model
 %
-% Warning : this file is generated automatically by Dynare
-%           from model file (.mod)
-
 y(22)=y(12);
 y(23)=y(14);
 end

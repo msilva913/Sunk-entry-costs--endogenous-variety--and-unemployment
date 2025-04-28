@@ -5,6 +5,7 @@ using MKL
 using DataFrames, Parameters
 using Serialization
 using LaTeXStrings
+using PyCall
 cd(@__DIR__)
 #v1.7- 
 #BLAS.vendor() 
@@ -240,9 +241,7 @@ T_IR = 120 # 10 years
 irf_z= simulate_model(model, sol_mat, T_IR, eta, SS, flag_IR, flag_logdev)
 irf_z = 100 .*DataFrame(irf_z, varnames)
 gen_irf(irf_z)
-Plots.savefig("z_shock.pdf")
-savefig("z_shock.png")
-serialize("irf_z.jls", irf_z)
+
 
 # Destruction rate shock: consistent with Beveridge curve
 irf_δ= simulate_model(model, sol_mat, T_IR, eta_δ, SS, flag_IR, flag_logdev) 

@@ -1,44 +1,51 @@
-Starting Dynare (version 5.4).
+Starting Dynare (version 6.2).
 Calling Dynare with arguments: none
-Starting preprocessing of the model file ...
-WARNING: in the 'steady_state_model' block, variable 'u_imp' is not assigned a value
-WARNING: in the 'steady_state_model' block, variable 'e_imp' is not assigned a value
-Substitution of endo lags >= 2: added 2 auxiliary variables and equations.
-Found 23 equation(s).
-Evaluating expressions...done
-Computing static model derivatives (order 1).
-Computing dynamic model derivatives (order 1).
-Processing outputs ...
-done
-Preprocessing completed.
-
-
-
+Starting preprocessing of the model file ... 
+WARNING: in the 'steady_state_model' block, variable 'u_imp' is not assigned a value 
+WARNING: in the 'steady_state_model' block, variable 'e_imp' is not assigned a value 
+Substitution of endo lags >= 2: added 2 auxiliary variables and equations. 
+Found 23 equation(s). 
+Evaluating expressions... 
+Computing static model derivatives (order 1). 
+Normalizing the static model... 
+Finding the optimal block decomposition of the static model... 
+7 block(s) found: 
+  6 recursive block(s) and 1 simultaneous block(s). 
+  the largest simultaneous block has 8 equation(s) 
+                                 and 8 feedback variable(s). 
+Computing dynamic model derivatives (order 1). 
+Normalizing the dynamic model... 
+Finding the optimal block decomposition of the dynamic model... 
+3 block(s) found: 
+  2 recursive block(s) and 1 simultaneous block(s). 
+  the largest simultaneous block has 8 equation(s) 
+                                 and 7 feedback variable(s). 
+Preprocessing completed. 
+Preprocessing time: 0h00m00s.
 
 
 Residuals of the static equations:
-
-Equation number 1 : 0 : Job creation condition
-Equation number 2 : 0 : Expected discounted difference in vacancy value
-Equation number 3 : 0 : Wage equation
-Equation number 4 : 0 : LOM of vacancies
-Equation number 5 : 0 : LOM of unemployment
-Equation number 6 : 0 : Market tightness
-Equation number 7 : 0 : Job finding probability
-Equation number 8 : 0 : Vacancy filling probability
-Equation number 9 : 0 : x_obs_m
-Equation number 10 : 0 : x_obs
-Equation number 11 : 0 : w_obs_m
-Equation number 12 : 0 : w_obs
-Equation number 13 : 0 : u_obs
-Equation number 14 : 0 : v_obs
-Equation number 15 : 0 : u_imp
-Equation number 16 : 0 : v_imp
-Equation number 17 : 0 : theta_imp
-Equation number 18 : 0 : e_imp
-Equation number 19 : 0 : Labor productivity process
-Equation number 20 : 0 : Discount factor process
-Equation number 21 : 0 : Bargaining power process
+Equation number  1: Job creation condition                          :       0.000000
+Equation number  2: Expected discounted difference in vacancy value :       0.000000
+Equation number  3: Wage equation                                   :       0.000000
+Equation number  4: LOM of vacancies                                :       0.000000
+Equation number  5: LOM of unemployment                             :       0.000000
+Equation number  6: Market tightness                                :       0.000000
+Equation number  7: Job finding probability                         :       0.000000
+Equation number  8: Vacancy filling probability                     :       0.000000
+Equation number  9: x_obs_m                                         :       0.000000
+Equation number 10: x_obs                                           :       0.000000
+Equation number 11: w_obs_m                                         :       0.000000
+Equation number 12: w_obs                                           :       0.000000
+Equation number 13: u_obs                                           :       0.000000
+Equation number 14: v_obs                                           :       0.000000
+Equation number 15: u_imp                                           :       0.000000
+Equation number 16: v_imp                                           :       0.000000
+Equation number 17: theta_imp                                       :       0.000000
+Equation number 18: e_imp                                           :       0.000000
+Equation number 19: Labor productivity process                      :       0.000000
+Equation number 20: Discount factor process                         :       0.000000
+Equation number 21: Bargaining power process                        :       0.000000
 
 
 
@@ -68,7 +75,6 @@ e_imp             		 0
 
 EIGENVALUES:
          Modulus             Real        Imaginary
-
                0                0                0
                0                0                0
                0                0                0
@@ -87,10 +93,7 @@ EIGENVALUES:
         9.71e+18        -9.71e+18                0
        1.005e+20        1.005e+20                0
 
-
-There are 5 eigenvalue(s) larger than 1 in modulus 
-for 5 forward-looking variable(s)
-
+There are 5 eigenvalue(s) larger than 1 in modulus for 5 forward-looking variable(s)
 The rank condition is verified.
 
 
@@ -164,5 +167,5 @@ u_imp         0.9998   0.9992   0.9983   0.9970   0.9954
 v_imp         0.9997   0.9990   0.9979   0.9965   0.9947
 theta_imp     0.9998   0.9992   0.9982   0.9969   0.9952
 e_imp         0.9629   0.9270   0.8920   0.8581   0.8252
-Total computing time : 0h00m01s
+Total computing time : 0h00m03s
 Note: 2 warning(s) encountered in the preprocessor
