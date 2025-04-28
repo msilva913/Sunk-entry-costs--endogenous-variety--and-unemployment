@@ -4,6 +4,7 @@
 using MKL
 using DataFrames, Parameters
 using Serialization
+using LaTeXStrings
 cd(@__DIR__)
 #v1.7- 
 #BLAS.vendor() 
@@ -43,7 +44,7 @@ end
 include("solution_functions.jl")
 #include("steady_state.jl")
 include("impulse_response_plots_GS.jl")
-include("time_series_fun.jl")
+#include("time_series_fun.jl")
 
 function solution_interface(model, PAR)
     eta     =   eval_ShockVAR(PAR)
