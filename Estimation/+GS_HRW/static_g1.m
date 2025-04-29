@@ -16,34 +16,35 @@ function g1 = static_g1(T, y, x, params, T_flag)
 %
 
 if T_flag
-    T = GS_basic.static_g1_tt(T, y, x, params);
+    T = GS_HRW.static_g1_tt(T, y, x, params);
 end
 g1 = zeros(23, 23);
-g1(1,1)=1/y(8)-(1-params(3))*params(2)*exp(y(10))*((1-T(4))/y(8)-1);
+g1(1,1)=1/y(8)-(1-params(3))*params(2)*exp(y(10))*((1-T(2))/y(8)-1);
 g1(1,2)=(1-params(3))*params(2)*exp(y(10));
-g1(1,8)=(-y(1))/(y(8)*y(8))-(1-params(3))*params(2)*exp(y(10))*(-(y(1)*(1-T(4))))/(y(8)*y(8));
+g1(1,8)=(-y(1))/(y(8)*y(8))-(1-params(3))*params(2)*exp(y(10))*(-(y(1)*(1-T(2))))/(y(8)*y(8));
 g1(1,9)=(-((1-params(3))*params(2)*exp(y(10))*exp(y(9))));
-g1(1,10)=(-T(5));
+g1(1,10)=(-T(3));
 g1(2,1)=1;
-g1(2,3)=(-((T(9)-(1-params(3))*params(2)*exp(y(10))*T(9))/T(7)));
-g1(2,10)=(-((-((1-params(3))*params(2)*exp(y(10))*T(6)))/T(7)));
+g1(2,3)=(-((T(8)-(1-params(3))*params(2)*exp(y(10))*T(8))/T(5)));
+g1(2,10)=(-((-((1-params(3))*params(2)*exp(y(10))*T(4)))/T(5)));
 g1(3,1)=(-(params(8)*exp(y(11))*(y(6)/(1-params(3))-1)));
 g1(3,2)=1;
 g1(3,6)=(-(params(8)*exp(y(11))*y(1)*1/(1-params(3))));
 g1(3,9)=(-(exp(y(9))*params(8)*exp(y(11))));
-g1(3,11)=(-(T(8)+params(9)*(-(params(8)*exp(y(11))))));
+g1(3,11)=(-(T(6)+params(9)*(-(params(8)*exp(y(11))))));
 g1(4,3)=(-1);
 g1(4,4)=1-(1-params(3))*(1-y(8));
-g1(4,5)=(-((1-params(3))*(-T(4))));
+g1(4,5)=(-((1-params(3))*(-T(2))));
 g1(4,8)=(-((1-params(3))*(-y(4))));
 g1(5,5)=1-(1-(1-params(3))*y(7)-params(4));
 g1(5,7)=(-(y(5)*(-(1-params(3)))));
 g1(6,4)=(-(1/y(5)));
 g1(6,5)=(-((-y(4))/(y(5)*y(5))));
 g1(6,6)=1;
-g1(7,6)=(-(T(3)*getPowerDeriv(y(6),1-params(10),1)));
+g1(7,6)=(-y(8));
 g1(7,7)=1;
-g1(8,6)=(-(T(3)*getPowerDeriv(y(6),(-params(10)),1)));
+g1(7,8)=(-y(6));
+g1(8,6)=(-(getPowerDeriv(y(6),params(10),1)*getPowerDeriv(T(7),(-1)/params(10),1)));
 g1(8,8)=1;
 g1(9,12)=1;
 g1(10,12)=(-3);

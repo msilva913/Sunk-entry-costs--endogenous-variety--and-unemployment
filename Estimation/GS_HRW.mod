@@ -54,7 +54,7 @@ parameters
     alpha_L $\alpha_L$ (long_name = 'Worker bargaining power')
     b $b$              (long_name = 'Unemployment value')
     //A $A$              (long_name='Matching function level parameter')
-    phi $\phi$         (long_name='Elasticity of matching function with respect to unemployment')
+    nu_L $\phi$         (long_name='Elasticity parameter of HRW')
 
 
 
@@ -72,7 +72,7 @@ xi_inv = 1.0; % 0 corresponds to infinitely elastic vacancy creation--standard D
 //r_ann = 0.04; % annual interest rate 
 alpha_L = 0.566;
 b=0.9;
-phi=0.6;
+nu_L = 1.5857;
 delta = 0.00514;
 tau = 0.034;
 //fbar = 0.41;
@@ -103,7 +103,7 @@ model;
 % Vacancies
 #v_ss = theta_ss*u_ss;
 %
-#A = f_ss/(theta_ss^(1-phi));
+//#A = f_ss/(theta_ss^(1-phi));
 % Separation rate
 #s = (tau-delta)/(1-delta);
 
@@ -133,10 +133,11 @@ u = (1-(1-delta)*f(-1))*u(-1) + tau*(1-u(-1));
 theta = v/u;
 
 [name = 'Job finding probability']
-f = A*theta^(1-phi);
+f = theta*q;
 
 [name = 'Vacancy filling probability']
-q = A*theta^(-phi);
+//q = A*theta^(-phi);
+q = (1+theta^(nu_L))^(-1/nu_L);
 
 % Observation variables: first differences (demeaned) -> link to data in first differences (p. 58 of Pfeifer's Observation Equations)
 x_obs_m = theta_x - theta_x(-1); % Monthly growth rate of productivity (Delta \log x_t = theta_xt - theta_{x,t-1})
@@ -284,7 +285,7 @@ mh_nblocks=2,
 mh_drop=0.3, 
 //moments_varendo,
 prior_trunc=0)
-u_obs, v_obs, x_obs, w_obs, theta_x, u_imp, v_imp, theta_imp, e_imp;
+theta_x, u_imp, v_imp, theta_imp, e_imp;
 
 
 
@@ -304,7 +305,7 @@ collect_latex_files;
 */
 
 % Stochastic simulation -> for conditional FEVD and IRF
-stoch_simul (order=2, pruning, nofunctions, irf=80, periods=0)
+stoch_simul (order=1, pruning, nofunctions, irf=80, periods=0)
 //conditional_variance_decomposition=[1 4 8 40])
-u_obs, v_obs, x_obs, w_obs, theta_x, u_imp, v_imp, theta_imp, e_imp;
+ theta_x, u_imp, v_imp, theta_imp, e_imp;
 

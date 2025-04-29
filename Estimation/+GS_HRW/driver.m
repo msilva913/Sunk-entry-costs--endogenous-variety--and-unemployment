@@ -14,7 +14,7 @@ tic0 = tic;
 % Define global variables.
 global M_ options_ oo_ estim_params_ bayestopt_ dataset_ dataset_info estimation_info ys0_ ex0_
 options_ = [];
-M_.fname = 'GS_basic';
+M_.fname = 'GS_HRW';
 M_.dynare_version = '5.4';
 oo_.dynare_version = '5.4';
 options_.dynare_version = '5.4';
@@ -137,9 +137,9 @@ M_.param_names_long(8) = {'Worker bargaining power'};
 M_.param_names(9) = {'b'};
 M_.param_names_tex(9) = {'b'};
 M_.param_names_long(9) = {'Unemployment value'};
-M_.param_names(10) = {'phi'};
+M_.param_names(10) = {'nu_L'};
 M_.param_names_tex(10) = {'\phi'};
-M_.param_names_long(10) = {'Elasticity of matching function with respect to unemployment'};
+M_.param_names_long(10) = {'Elasticity parameter of HRW'};
 M_.param_names(11) = {'rho_x'};
 M_.param_names_tex(11) = {'{\rho_x}'};
 M_.param_names_long(11) = {'persistence technology shock'};
@@ -179,8 +179,6 @@ options_.linear = false;
 options_.block = false;
 options_.bytecode = false;
 options_.use_dll = false;
-M_.nonzero_hessian_eqs = [1 2 3 4 5 6 7 8 11 15 16 17 18];
-M_.hessian_eq_zero = isempty(M_.nonzero_hessian_eqs);
 M_.orig_eq_nbr = 21;
 M_.eq_nbr = 23;
 M_.ramsey_eq_nbr = 0;
@@ -227,7 +225,7 @@ M_.nboth   = 3;
 M_.nsfwrd   = 5;
 M_.nspred   = 12;
 M_.ndynamic   = 14;
-M_.dynamic_tmp_nbr = [14; 3; 0; 0; ];
+M_.dynamic_tmp_nbr = [7; 0; 0; 0; ];
 M_.model_local_variables_dynamic_tt_idxs = {
 };
 M_.equations_tags = {
@@ -260,7 +258,7 @@ M_.mapping.v.eqidx = [4 6 14 16 ];
 M_.mapping.u.eqidx = [4 5 6 13 15 ];
 M_.mapping.theta.eqidx = [3 6 7 8 17 ];
 M_.mapping.f.eqidx = [5 7 ];
-M_.mapping.q.eqidx = [1 4 8 ];
+M_.mapping.q.eqidx = [1 4 7 8 ];
 M_.mapping.theta_x.eqidx = [1 3 9 19 ];
 M_.mapping.theta_b.eqidx = [1 2 20 ];
 M_.mapping.theta_alphaL.eqidx = [3 21 ];
@@ -291,8 +289,8 @@ M_.maximum_exo_lead = 0;
 oo_.exo_steady_state = zeros(3, 1);
 M_.params = NaN(13, 1);
 M_.endo_trends = struct('deflator', cell(23, 1), 'log_deflator', cell(23, 1), 'growth_factor', cell(23, 1), 'log_growth_factor', cell(23, 1));
-M_.NNZDerivatives = [70; 48; -1; ];
-M_.static_tmp_nbr = [8; 1; 0; 0; ];
+M_.NNZDerivatives = [71; -1; -1; ];
+M_.static_tmp_nbr = [7; 1; 0; 0; ];
 M_.model_local_variables_static_tt_idxs = {
 };
 M_.params(1) = 1.0;
@@ -305,8 +303,8 @@ M_.params(8) = 0.566;
 alpha_L = M_.params(8);
 M_.params(9) = 0.9;
 b = M_.params(9);
-M_.params(10) = 0.6;
-phi = M_.params(10);
+M_.params(10) = 1.5857;
+nu_L = M_.params(10);
 M_.params(3) = 0.00514;
 delta = M_.params(3);
 M_.params(4) = 0.034;
@@ -331,10 +329,10 @@ steady;
 oo_.dr.eigval = check(M_,options_,oo_);
 options_.irf = 80;
 options_.nofunctions = true;
-options_.order = 2;
+options_.order = 1;
 options_.periods = 0;
 options_.pruning = true;
-var_list_ = {'u_obs';'v_obs';'x_obs';'w_obs';'theta_x';'u_imp';'v_imp';'theta_imp';'e_imp'};
+var_list_ = {'theta_x';'u_imp';'v_imp';'theta_imp';'e_imp'};
 [info, oo_, options_, M_] = stoch_simul(M_, options_, oo_, var_list_);
 
 
@@ -343,24 +341,24 @@ disp(['Total computing time : ' dynsec2hms(oo_.time) ]);
 if ~exist([M_.dname filesep 'Output'],'dir')
     mkdir(M_.dname,'Output');
 end
-save([M_.dname filesep 'Output' filesep 'GS_basic_results.mat'], 'oo_', 'M_', 'options_');
+save([M_.dname filesep 'Output' filesep 'GS_HRW_results.mat'], 'oo_', 'M_', 'options_');
 if exist('estim_params_', 'var') == 1
-  save([M_.dname filesep 'Output' filesep 'GS_basic_results.mat'], 'estim_params_', '-append');
+  save([M_.dname filesep 'Output' filesep 'GS_HRW_results.mat'], 'estim_params_', '-append');
 end
 if exist('bayestopt_', 'var') == 1
-  save([M_.dname filesep 'Output' filesep 'GS_basic_results.mat'], 'bayestopt_', '-append');
+  save([M_.dname filesep 'Output' filesep 'GS_HRW_results.mat'], 'bayestopt_', '-append');
 end
 if exist('dataset_', 'var') == 1
-  save([M_.dname filesep 'Output' filesep 'GS_basic_results.mat'], 'dataset_', '-append');
+  save([M_.dname filesep 'Output' filesep 'GS_HRW_results.mat'], 'dataset_', '-append');
 end
 if exist('estimation_info', 'var') == 1
-  save([M_.dname filesep 'Output' filesep 'GS_basic_results.mat'], 'estimation_info', '-append');
+  save([M_.dname filesep 'Output' filesep 'GS_HRW_results.mat'], 'estimation_info', '-append');
 end
 if exist('dataset_info', 'var') == 1
-  save([M_.dname filesep 'Output' filesep 'GS_basic_results.mat'], 'dataset_info', '-append');
+  save([M_.dname filesep 'Output' filesep 'GS_HRW_results.mat'], 'dataset_info', '-append');
 end
 if exist('oo_recursive_', 'var') == 1
-  save([M_.dname filesep 'Output' filesep 'GS_basic_results.mat'], 'oo_recursive_', '-append');
+  save([M_.dname filesep 'Output' filesep 'GS_HRW_results.mat'], 'oo_recursive_', '-append');
 end
 disp('Note: 2 warning(s) encountered in the preprocessor')
 if ~isempty(lastwarn)

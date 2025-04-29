@@ -18,9 +18,12 @@ function T = dynamic_g1_tt(T, y, x, params, steady_state, it_)
 %   T           [#temp variables by 1]       double  vector of temporary terms
 %
 
-assert(length(T) >= 8);
+assert(length(T) >= 17);
 
 T = GS_basic.dynamic_resid_tt(T, y, x, params, steady_state, it_);
 
+T(15) = (-y(14))/(y(1)*y(1));
+T(16) = 1/y(1);
+T(17) = (-((-(T(2)*getPowerDeriv(y(38),params(7),1)))/T(14)));
 
 end

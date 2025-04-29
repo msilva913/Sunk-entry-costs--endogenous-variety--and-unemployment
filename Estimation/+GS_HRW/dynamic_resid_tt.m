@@ -1,5 +1,5 @@
-function T = dynamic_g2_tt(T, y, x, params, steady_state, it_)
-% function T = dynamic_g2_tt(T, y, x, params, steady_state, it_)
+function T = dynamic_resid_tt(T, y, x, params, steady_state, it_)
+% function T = dynamic_resid_tt(T, y, x, params, steady_state, it_)
 %
 % File created by Dynare Preprocessor from .mod file
 %
@@ -18,9 +18,14 @@ function T = dynamic_g2_tt(T, y, x, params, steady_state, it_)
 %   T           [#temp variables by 1]       double  vector of temporary terms
 %
 
-assert(length(T) >= 17);
+assert(length(T) >= 7);
 
-T = GS_basic.dynamic_g1_tt(T, y, x, params, steady_state, it_);
-
+T(1) = (params(4)-params(3))/(1-params(3));
+T(2) = params(8)*exp(y(23))*(exp(y(21))-y(13)+y(13)*y(18)/(1-params(3)));
+T(3) = 1+y(18)^params(10);
+T(4) = (1-params(3))*params(2)*exp(y(22))*(exp(y(40))-y(37)-y(36)+y(36)*(1-T(1))/y(39));
+T(5) = (1-params(3))*params(2)*exp(y(22))*y(38)^params(7);
+T(6) = params(5)/(1-params(3))/(params(6)/(1-params(3)))*params(4)/(params(5)+params(4));
+T(7) = ((T(6)-(1-params(3))*(T(6)*(1-params(6)/(1-params(3)))+T(1)*(1-params(4)/(params(5)+params(4)))))*(((1-params(2))/params(2)+params(3))/((params(1)-params(9))*params(6)*(1-params(8))/(params(6)*(1-params(8))+(1-params(2))/params(2)+params(4)+params(5)/(1-params(3))*params(8))*(1+(1-params(2))/params(2))))^(1/params(7)))^params(7);
 
 end

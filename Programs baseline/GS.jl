@@ -192,14 +192,14 @@ end
 PAR_SS = parameters[:]
 
 targets = (zbar=1.0,
-           dest_ann=0.10,
+           dest_ann=0.06,
             r_ann=0.04, 
             f=1/2.2, 
             q=1-(1-1/3)^4,
             #ϕ=0.566, 
             wage_elast=0.6,
             τ=0.034, 
-            b=0.81, 
+            b=0.9, 
             ξ_inv=1.0,
             #ξ_inv=1.0/0.265,
             γ=0.6)   

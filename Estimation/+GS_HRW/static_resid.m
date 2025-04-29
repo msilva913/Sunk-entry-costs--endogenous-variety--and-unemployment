@@ -16,20 +16,20 @@ function residual = static_resid(T, y, x, params, T_flag)
 %
 
 if T_flag
-    T = GS_basic.static_resid_tt(T, y, x, params);
+    T = GS_HRW.static_resid_tt(T, y, x, params);
 end
 residual = zeros(23, 1);
 lhs = y(1)/y(8);
-rhs = T(5);
+rhs = T(3);
 residual(1) = lhs - rhs;
 lhs = y(1);
-rhs = (T(6)-(1-params(3))*params(2)*exp(y(10))*T(6))/T(7);
+rhs = (T(4)-(1-params(3))*params(2)*exp(y(10))*T(4))/T(5);
 residual(2) = lhs - rhs;
 lhs = y(2);
-rhs = T(8)+params(9)*(1-params(8)*exp(y(11)));
+rhs = T(6)+params(9)*(1-params(8)*exp(y(11)));
 residual(3) = lhs - rhs;
 lhs = y(4);
-rhs = y(3)+(1-params(3))*(y(4)*(1-y(8))+T(4)*(1-y(5)));
+rhs = y(3)+(1-params(3))*(y(4)*(1-y(8))+T(2)*(1-y(5)));
 residual(4) = lhs - rhs;
 lhs = y(5);
 rhs = y(5)*(1-(1-params(3))*y(7))+params(4)*(1-y(5));
@@ -38,10 +38,10 @@ lhs = y(6);
 rhs = y(4)/y(5);
 residual(6) = lhs - rhs;
 lhs = y(7);
-rhs = T(3)*y(6)^(1-params(10));
+rhs = y(8)*y(6);
 residual(7) = lhs - rhs;
 lhs = y(8);
-rhs = T(3)*y(6)^(-params(10));
+rhs = T(7)^((-1)/params(10));
 residual(8) = lhs - rhs;
 residual(9) = y(12);
 lhs = y(13);

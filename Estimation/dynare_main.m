@@ -29,6 +29,8 @@ irfs.u_imp_e_x
 %%
 dynare GS_basic.mod
 
+dynare GS_HRW.mod
+
 dynare GS.mod
 
 
