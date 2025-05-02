@@ -11,7 +11,8 @@ import matplotlib.dates as mdates
 
 # Data
 
-df = pd.read_csv('BDS_Extension.csv')
+#df = pd.read_csv('BDS_Extension.csv')
+df = pd.read_csv('bds2022.csv')
 fred = Fred(api_key="8d302fb5f121b2be4f7d6e795194bcde")
 
 unemployment = fred.get_series('UNRATE')
@@ -25,7 +26,13 @@ df = pd.merge(df, unemployment_df, on='year', how='left')
 #df_adf = df[df['year'] >= 1979].reset_index(drop=True)
 df['year'] = pd.to_datetime(df['year'], format='%Y')
 df.set_index("year", inplace=True)
+
+#df.rename(columns={'firms': 'Firms', 'B': 'Column2'}, inplace=True)
 # Episodes
+
+df['firms_entry'] = df.firms.diff() + df.firmdeath_firms
+df['firms_entry_rate'] = 100*df['firms_entry']/df['firms']
+df['firms_exit_rate'] = 100*df['firmdeath_firms']/df['firms']
 
 recessions = [
     (pd.Timestamp('1980-01-01'), pd.Timestamp('1980-07-31')),
@@ -39,14 +46,7 @@ recessions = [
 
 # Define
 
-variables = ['job_creation_rate', 'job_destruction_rate', 'estabs_entry_rate', 'estabs_exit_rate', 
-            'firms_entry_rate', 'firms_exit_rate', 'unemployment_rate']
-variable_names = ['Job Creation Rate', 'Job Destruction Rate', 'Establishment Entry Rate', 
-                 'Establishment Exit Rate', 'Firm Entry Rate', 'Firm Exit Rate', 'Unemployment Rate']
-plot_variables = ['estabs_entry_rate', 'estabs_exit_rate', 'firms_entry_rate', 
-                 'firms_exit_rate', 'unemployment_rate']
-plot_variable_names = ['Establishment Entry Rate', 'Establishment Exit Rate', 'Firm Entry Rate', 
-                      'Firm Exit Rate', 'Unemployment Rate']
+
 
 
 # Plot
@@ -68,7 +68,8 @@ ax[1].set_title("Exit rates", fontsize=12, pad=10)
 for j in range(2):
     ax[j].set_xlabel('Year', fontsize=10)
     ax[j].set_ylabel('Rate (%)', fontsize=10)
-    ax[j].set_xticks(range(1978, 2022, 5))
+    ax[j].set_xticks(pd.date_range(start='1978-01-01', end='2022-01-01', freq='2Y'))
+    ax[j].xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
     for start, end in recessions:
         ax[j].axvspan(start, end, color='gray', alpha=0.3)
     ax[j].legend(loc='upper right', fontsize=10)
@@ -76,7 +77,6 @@ for j in range(2):
     #ax[j].tick_params(axis='both', which='major', labelsize=9)
 
 plt.tight_layout()
-#plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
 plt.savefig("entry_exit_rates.pdf", bbox_inches='tight', dpi=300)
 plt.show()
 
@@ -143,56 +143,65 @@ sum_table = create_latex_summary_table(df_red)
 print(sum_table)
 # Comovement
 
-comovement_pairs = [
-    ('job_creation_rate', 'estabs_entry_rate'),
-    ('firms_entry_rate', 'estabs_entry_rate'),
-    ('job_destruction_rate', 'estabs_exit_rate'),
-    ('firms_exit_rate', 'estabs_exit_rate'),
-    ('unemployment_rate', 'estabs_entry_rate'),
-    ('unemployment_rate', 'firms_entry_rate'),
-    ('unemployment_rate', 'estabs_exit_rate'),
-    ('unemployment_rate', 'firms_exit_rate')
-]
+# variables = ['job_creation_rate', 'job_destruction_rate', 'estabs_entry_rate', 'estabs_exit_rate', 
+#             'firms_entry_rate', 'firms_exit_rate', 'unemployment_rate']
+# variable_names = ['Job Creation Rate', 'Job Destruction Rate', 'Establishment Entry Rate', 
+#                  'Establishment Exit Rate', 'Firm Entry Rate', 'Firm Exit Rate', 'Unemployment Rate']
+# plot_variables = ['estabs_entry_rate', 'estabs_exit_rate', 'firms_entry_rate', 
+#                  'firms_exit_rate', 'unemployment_rate']
+# plot_variable_names = ['Establishment Entry Rate', 'Establishment Exit Rate', 'Firm Entry Rate', 
+#                       'Firm Exit Rate', 'Unemployment Rate']
 
-# for var1, var2 in comovement_pairs:
-#     correlation = df[[var1, var2]].corr().iloc[0, 1]
-#     print(f"\nCorrelation between {variable_names[variables.index(var1)]} and {variable_names[variables.index(var2)]}: {correlation:.2f}")
+# comovement_pairs = [
+#     ('job_creation_rate', 'estabs_entry_rate'),
+#     ('firms_entry_rate', 'estabs_entry_rate'),
+#     ('job_destruction_rate', 'estabs_exit_rate'),
+#     ('firms_exit_rate', 'estabs_exit_rate'),
+#     ('unemployment_rate', 'estabs_entry_rate'),
+#     ('unemployment_rate', 'firms_entry_rate'),
+#     ('unemployment_rate', 'estabs_exit_rate'),
+#     ('unemployment_rate', 'firms_exit_rate')
+# ]
+
+# # for var1, var2 in comovement_pairs:
+# #     correlation = df[[var1, var2]].corr().iloc[0, 1]
+# #     print(f"\nCorrelation between {variable_names[variables.index(var1)]} and {variable_names[variables.index(var2)]}: {correlation:.2f}")
     
-def dynamic_correlations(data, var1, var2, ylabel, nleads=12, nlags=12, title=None):
-    fig, ax = plt.subplots(figsize=(14, 5))
-    rs = []
-    lags = range(-nlags, nleads+1)
+# def dynamic_correlations(data, var1, var2, ylabel, nleads=12, nlags=12, title=None):
+#     fig, ax = plt.subplots(figsize=(14, 5))
+#     rs = []
+#     lags = range(-nlags, nleads+1)
     
     
-    for lag in lags:
-        rs.append(crosscorr(data[var1], data[var2], lag))
-    rs = pd.Series(rs)
+#     for lag in lags:
+#         rs.append(crosscorr(data[var1], data[var2], lag))
+#     rs = pd.Series(rs)
     
    
-    max_corr_idx = np.argmax(abs(rs))
-    max_corr_value = rs[max_corr_idx]
-    max_corr_lag = lags[max_corr_idx]
+#     max_corr_idx = np.argmax(abs(rs))
+#     max_corr_value = rs[max_corr_idx]
+#     max_corr_lag = lags[max_corr_idx]
     
     
-    ax.axhline(y=0.0, color="black", linestyle="--")
-    ax.plot(range(len(rs)), rs, '-', alpha=0.7, linewidth=2.0)
-    ax.axvline(max_corr_idx, linestyle='--', color='red')
+#     ax.axhline(y=0.0, color="black", linestyle="--")
+#     ax.plot(range(len(rs)), rs, '-', alpha=0.7, linewidth=2.0)
+#     ax.axvline(max_corr_idx, linestyle='--', color='red')
     
     
-    ax.text(max_corr_idx, max(rs) + 0.1, 
-            f'Max corr: {max_corr_value:.2f}\nLag: {max_corr_lag}', 
-            horizontalalignment='center')
+#     ax.text(max_corr_idx, max(rs) + 0.1, 
+#             f'Max corr: {max_corr_value:.2f}\nLag: {max_corr_lag}', 
+#             horizontalalignment='center')
     
-    ax.set_xlabel(r'$\Delta$ (years)', fontsize=14)
-    ax.set_ylabel(ylabel, fontsize=14)
-    ax.set_xticks(range(0, len(rs)))
-    ax.set_xticklabels(lags)
-    ax.grid(True, alpha=0.3)
+#     ax.set_xlabel(r'$\Delta$ (years)', fontsize=14)
+#     ax.set_ylabel(ylabel, fontsize=14)
+#     ax.set_xticks(range(0, len(rs)))
+#     ax.set_xticklabels(lags)
+#     ax.grid(True, alpha=0.3)
     
-    if title is not None:
-        ax.set_title(title, fontsize=14)
-    plt.tight_layout()
-    plt.show()
+#     if title is not None:
+#         ax.set_title(title, fontsize=14)
+#     plt.tight_layout()
+#     plt.show()
 
 # for var1, var2 in comovement_pairs:
 #     name1 = variable_names[variables.index(var1)]
