@@ -1,6 +1,8 @@
 import pandas as pd
 pd.set_option('display.max_columns', 10) 
 import numpy as np
+import seaborn as sns
+import statsmodels.api as sm
 from statsmodels.tsa.stattools import adfuller
 import matplotlib.pyplot as plt
 from IPython.display import display
@@ -10,22 +12,26 @@ from datetime import datetime
 import matplotlib.dates as mdates
 
 # Data
-
+#download at https://www.census.gov/data/datasets/time-series/econ/bds/bds-datasets.html
 #df = pd.read_csv('BDS_Extension.csv')
 df = pd.read_csv('bds2022.csv')
 fred = Fred(api_key="8d302fb5f121b2be4f7d6e795194bcde")
-
-unemployment = fred.get_series('UNRATE')
-unemployment_annual = unemployment.groupby(unemployment.index.year).mean()
-unemployment_df = pd.DataFrame({
-    'year': unemployment_annual.index,
-    'unemployment_rate': unemployment_annual.values
-})
-
-df = pd.merge(df, unemployment_df, on='year', how='left')
-#df_adf = df[df['year'] >= 1979].reset_index(drop=True)
 df['year'] = pd.to_datetime(df['year'], format='%Y')
 df.set_index("year", inplace=True)
+
+y = fred.get_series('GDPC1').resample('AS').mean()
+pop = fred.get_series('CNP16OV').resample('AS').mean()
+# Use HP-filtered trend for population to avoid discrete jumps around census dates
+pop = sm.tsa.filters.hpfilter(pop, lamb=10_000)[1]
+# Population adjusted
+y = y/pop
+# Growth rate
+y = np.log(y).diff()
+y = y.to_frame()
+y.rename(columns={0: "real_gdp_growth_rate"}, inplace=True)
+
+df = pd.concat([df, y], axis=1)
+df = df.loc["1978":"2022"]
 
 #df.rename(columns={'firms': 'Firms', 'B': 'Column2'}, inplace=True)
 # Episodes
@@ -92,7 +98,7 @@ plt.show()
 # print("\nSummary Statistics:")
 # display(summary_tables)
 
-df_red = df [['estabs_entry_rate', 'firms_entry_rate', 'estabs_exit_rate', 'firms_exit_rate', 'job_creation_rate', 'job_destruction_rate']]
+df_red = df [['real_gdp_growth_rate', 'estabs_entry_rate', 'firms_entry_rate', 'estabs_exit_rate', 'firms_exit_rate', 'job_creation_rate', 'job_destruction_rate']]
 df_red.mean()
 df_red.corr()
 
@@ -141,9 +147,8 @@ def create_latex_summary_table(df, caption="Summary Statistics", label="tab:summ
 sum_table = create_latex_summary_table(df_red)
 print(sum_table)
 
-import seaborn as sns
 plt.figure(figsize=(8, 6))
-df_red2 = df [['estabs_entry_rate', 'estabs_exit_rate', 'job_creation_rate', 'job_destruction_rate']]
+df_red2 = df [['real_gdp_growth_rate', 'estabs_entry_rate', 'estabs_exit_rate', 'job_creation_rate', 'job_destruction_rate']]
 mask = np.triu(np.ones_like(df_red2.corr(), dtype=bool))
 sns.heatmap(df_red2.corr(), annot=True, cmap='coolwarm', fmt=".2f", linewidths=.5, 
             linecolor='grey', mask=mask, alpha=0.7)
