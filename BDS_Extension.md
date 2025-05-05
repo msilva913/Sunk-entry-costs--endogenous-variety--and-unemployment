@@ -43,3 +43,47 @@
    *firms_exit_rate*: 100 * (firmdeath_firms at time t divided by the average of firms at t and t-1)
    *firms_entry*: firms at time t added with firmdeath_firms at time t minus firms at time t-1. (firms t = firms t-1 + Entry t - Exit t)
    *firms_entry_rate*: 100 * (firms_entry at time t divided by the average of firms at t and t-1)
+
+**SUSB**
+
+1. Description
+   
+   *The Statistics of U.S. Businesses (SUSB)* provides detailed *annual data* for all U.S. business establishments with paid employees by *geography*, *industry*, and *enterprise size*. This program covers all NAICS industries *except* crop and animal production; rail transportation; National Postal Service; pension, health, welfare, and vacation funds; trusts, estates, and agency accounts; private households; and public administration. The SUSB also excludes most government employees. Further, SUSB data for years 1988-1997 were tabulated based on the Standard Industrial Classification *(SIC)* system. After 1997, the industry classification is based on 2017 North American Industry Classification System *(NAICS)* codes. An establishment with 0 employment is an establishment with no paid employees in the mid-March pay period but with paid employees at some time during the year.
+
+   *Firms*
+   *Establishments*
+   *Employment*
+   *Annual Payroll ($1,000)*
+   *Receipts ($1,000)*
+   
+2. Source
+   
+   [https://www.census.gov/data/tables/1997/econ/susb/1997-susb-annual.html]
+   [https://www.census.gov/data/tables/2020/econ/susb/2020-susb-annual.html]
+
+**Employment Situation**
+
+1. Description
+   
+   All Employees, Total Private (USPRIV)
+   Units: Thousands of Persons (Monthly), Seasonally Adjusted.
+   Range: 1939-2025
+
+2. Source
+   
+   U.S. Bureau of Labor Statistics; The source code is: CES0500000001
+
+**Job Openings and Labor Turnover Survey**
+
+1. Description
+   
+   The Job Openings and Labor Turnover Survey (JOLTS) program of the Bureau of Labor Statistics (BLS) produces monthly and annual estimates of job openings, hires, and separations for the nation. The JOLTS program also produces monthly state estimates for all 50 states and the District of Columbia at the total nonfarm industry level. Involved  monthly rate and level with seasonally adjusted from 2000 to 2025.
+
+   *Job Openings: Total Private (JTS1000JOR)*
+   *Hires: Total Private (JTS1000HIR)*
+   *Layoffs and Discharges: Total Private (JTS1000LDR)*
+   *Quits: Total Private (JTS1000QUR)*
+   *Total Separations: Total Private (JTS1000TSR)*
+
+2. Source
+   [https://www.bls.gov/jlt/]
