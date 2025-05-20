@@ -1,15 +1,10 @@
 import pandas as pd
 pd.set_option('display.max_columns', 10) 
 import numpy as np
-import seaborn as sns
 import statsmodels.api as sm
-from statsmodels.tsa.stattools import adfuller
 import matplotlib.pyplot as plt
-from IPython.display import display
-from time_series_functions import crosscorr
 from fredapi import Fred
-from datetime import datetime
-import matplotlib.dates as mdates
+
 
 # Data
 #download at https://www.census.gov/data/datasets/time-series/econ/bds/bds-datasets.html
@@ -40,203 +35,104 @@ df['firms_entry'] = df.firms.diff() + df.firmdeath_firms
 df['firms_entry_rate'] = 100*df['firms_entry']/df['firms']
 df['firms_exit_rate'] = 100*df['firmdeath_firms']/df['firms']
 
-recessions = [
-    (pd.Timestamp('1980-01-01'), pd.Timestamp('1980-07-31')),
-    (pd.Timestamp('1981-07-01'), pd.Timestamp('1982-11-30')),
-    (pd.Timestamp('1990-07-01'), pd.Timestamp('1991-03-31')),
-    (pd.Timestamp('2001-03-01'), pd.Timestamp('2001-11-30')),
-    (pd.Timestamp('2007-12-01'), pd.Timestamp('2009-06-30')),
-    (pd.Timestamp('2020-02-01'), pd.Timestamp('2020-04-30')),
-]
+df.to_pickle("BDS_data_adj.pkl")
+df = pd.read_pickle("BDS_data_adj.pkl")
+
+" Estimate AR(1) process "
+from statsmodels.tsa.filters.hp_filter import hpfilter
+from statsmodels.tsa.arima.model import ARIMA
 
 
-# Define
+log_exit_rate = np.log(df["estabs_exit_rate"])
+lam_ann = 100_000/256
+exit_rate_cycle, exit_rate_trend = hpfilter(log_exit_rate, lam_ann)
 
-
-
-
-# Plot
-
-fig, ax = plt.subplots(figsize=(12, 8), nrows=2)
-ax[0].plot(df.index, df['estabs_entry_rate'], label='Establishments', linewidth=2)
-ax[0].plot(df.index, df['firms_entry_rate'], label='Firms', linewidth=2)
-ax[0].plot(df.index, df['job_creation_rate'], label='Job creation', linewidth=2)
-# ax[0].plot(df.year, df['unemployment_rate'], label='Unemployment', linestyle='--', color='red')
-ax[0].set_title("Entry rates", fontsize=12, pad=10)
-
-ax[1].plot(df.index, df['estabs_exit_rate'], label='Establishments', linewidth=2)
-ax[1].plot(df.index, df['firms_exit_rate'], label='Firms', linewidth=2)
-ax[1].plot(df.index, df['job_destruction_rate'], label='Job destruction', linewidth=2)
-#ax[1].plot(df.year, df['unemployment_rate'], label='Unemployment', linestyle='--', color='red')
-ax[1].set_title("Exit rates", fontsize=12, pad=10)
-
-       
-for j in range(2):
-    ax[j].set_xlabel('Year', fontsize=10)
-    ax[j].set_ylabel('Rate (%)', fontsize=10)
-    ax[j].set_xticks(pd.date_range(start='1978-01-01', end='2022-01-01', freq='2Y'))
-    ax[j].xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
-    for start, end in recessions:
-        ax[j].axvspan(start, end, color='gray', alpha=0.3)
-    ax[j].legend(loc='upper right', fontsize=10)
-    ax[j].grid(True, alpha=0.3)
-    #ax[j].tick_params(axis='both', which='major', labelsize=9)
-
+fig, ax = plt.subplots(ncols=2, figsize=(12, 4))
+ax[0].plot(log_exit_rate, label='Logged firm exit rate')
+ax[0].plot(exit_rate_trend, label='Trend', linestyle='--')
+ax[1].plot(exit_rate_cycle, label='Cycle', linestyle='--')
+plt.legend()
 plt.tight_layout()
-plt.savefig("entry_exit_rates.pdf", bbox_inches='tight', dpi=300)
 plt.show()
 
-# Sum
+# Fit AR(1)
+model = ARIMA(exit_rate_cycle, order=(1, 0, 0)) # AR(1) process
+fit = model.fit()
+print(fit.summary())
+rho_delta_ann = fit.params["ar.L1"]
+sigma_sq_ann = fit.params["sigma2"]
 
-# def create_summary_table(variable, var_name): 
-#     summary = df[variable].describe()
-#     summary.loc['mean'] = df[variable].mean()
-#     return summary.to_frame(var_name)  
 
-# summary_tables = pd.concat([create_summary_table(var, name) for var, name in zip(variables, variable_names)], axis=1)
-# summary_tables.columns = variable_names
-# print("\nSummary Statistics:")
-# display(summary_tables)
+# Convert to monthly
+def AR1_conversion_upcast(rho, sigma_sq, n=3):
+    rho_m = rho**(1/n) # conversion of AR1 persistence parameter to higher freq
+    sigma_sq_n = (1-rho_m**(2*n))/(1-rho_m**2)*sigma_sq
+    return rho_m, sigma_sq_n
+    
 
-df_red = df [['real_gdp_growth_rate', 'estabs_entry_rate', 'firms_entry_rate', 'estabs_exit_rate', 'firms_exit_rate', 'job_creation_rate', 'job_destruction_rate']]
-df_red.mean()
-df_red.corr()
+rho_delta_mon, sigma_sq_mon = AR1_conversion_upcast(rho_delta_ann, sigma_sq_ann, n=12)
+sigma_mon = np.sqrt(sigma_sq_mon)
+print("rho_delta_mon=",rho_delta_mon)
+print("sigma_mon=", sigma_mon)
+# Test
 
-def create_latex_summary_table(df, caption="Summary Statistics", label="tab:summary"):
-    """
-    Create a LaTeX table with means and correlations of a dataframe.
-    
-    Parameters:
-    -----------
-    df : pandas.DataFrame
-        Input dataframe with numerical columns
-    caption : str
-        Caption for the LaTeX table
-    label : str
-        Label for referencing the table in LaTeX
-        
-    Returns:
-    --------
-    str
-        LaTeX formatted table string
-    """
-    # Calculate means
-    means = df.mean().round(3)
-    
-    # Calculate correlation matrix
-    corr_matrix = df.corr().round(3)
-    
-    # Create the LaTeX table string
-    latex_str = """
-    \\begin{table}[htbp]
-    \\centering
-    \\caption{%s}
-    \\label{%s}
-    
-    \\textbf{Panel A: Means} \\\\
-    %s \\\\
-    
-    \\textbf{Panel B: Correlation Matrix} \\\\
-    %s
-    
-    \\end{table}
-    """ % (caption, label, means.to_frame().to_latex(header=False), corr_matrix.to_latex())
-    
-    return latex_str
+labor_data_mon = pd.read_pickle('labor_data_monthly.pkl')
 
-sum_table = create_latex_summary_table(df_red)
-print(sum_table)
-
-plt.figure(figsize=(8, 6))
-df_red2 = df [['real_gdp_growth_rate', 'estabs_entry_rate', 'estabs_exit_rate', 'job_creation_rate', 'job_destruction_rate']]
-mask = np.triu(np.ones_like(df_red2.corr(), dtype=bool))
-sns.heatmap(df_red2.corr(), annot=True, cmap='coolwarm', fmt=".2f", linewidths=.5, 
-            linecolor='grey', mask=mask, alpha=0.7)
-plt.title('Correlation Heatmap (Lower Diagonal with Boundary)')
+s = labor_data_mon.s.dropna()
+fig, ax = plt.subplots(figsize=(8, 4))
+ax.plot(s, label="Separation rate", color="red", alpha=0.6)
+plt.tight_layout()
 plt.show()
-# Comovement
+print("Mean separation rate= ", np.mean(s))
 
-# variables = ['job_creation_rate', 'job_destruction_rate', 'estabs_entry_rate', 'estabs_exit_rate', 
-#             'firms_entry_rate', 'firms_exit_rate', 'unemployment_rate']
-# variable_names = ['Job Creation Rate', 'Job Destruction Rate', 'Establishment Entry Rate', 
-#                  'Establishment Exit Rate', 'Firm Entry Rate', 'Firm Exit Rate', 'Unemployment Rate']
-# plot_variables = ['estabs_entry_rate', 'estabs_exit_rate', 'firms_entry_rate', 
-#                  'firms_exit_rate', 'unemployment_rate']
-# plot_variable_names = ['Establishment Entry Rate', 'Establishment Exit Rate', 'Firm Entry Rate', 
-#                       'Firm Exit Rate', 'Unemployment Rate']
+log_s = np.log(s) 
+s_cycle, s_trend = hpfilter(log_s, 100_000)
+#s_cycle = s_cycle.loc["1951":"2003"]
+s_cycle = s_cycle - np.mean(s_cycle)
+fig, ax = plt.subplots(nrows=2, figsize=(10, 10))
+ax[0].plot(log_s, label='Log separation rate')
+ax[0].plot(s_trend, label='Trend', color="red", linestyle='--', alpha=0.7)
+ax[1].plot(s_cycle, label='Cycle', linestyle='--', alpha=0.7)
+plt.legend()
+plt.tight_layout()
+plt.show()
 
-# comovement_pairs = [
-#     ('job_creation_rate', 'estabs_entry_rate'),
-#     ('firms_entry_rate', 'estabs_entry_rate'),
-#     ('job_destruction_rate', 'estabs_exit_rate'),
-#     ('firms_exit_rate', 'estabs_exit_rate'),
-#     ('unemployment_rate', 'estabs_entry_rate'),
-#     ('unemployment_rate', 'firms_entry_rate'),
-#     ('unemployment_rate', 'estabs_exit_rate'),
-#     ('unemployment_rate', 'firms_exit_rate')
-# ]
+# Fit AR(1) to monthly cyclical separation rate data
+model = ARIMA(s_cycle, order=(1, 0, 0)) # AR(1) process
+fit = model.fit()
+print(fit.summary())
+rho_tau = fit.params["ar.L1"]
+sigma_tau_sq = fit.params["sigma2"]
 
-# # for var1, var2 in comovement_pairs:
-# #     correlation = df[[var1, var2]].corr().iloc[0, 1]
-# #     print(f"\nCorrelation between {variable_names[variables.index(var1)]} and {variable_names[variables.index(var2)]}: {correlation:.2f}")
-    
-# def dynamic_correlations(data, var1, var2, ylabel, nleads=12, nlags=12, title=None):
-#     fig, ax = plt.subplots(figsize=(14, 5))
-#     rs = []
-#     lags = range(-nlags, nleads+1)
-    
-    
-#     for lag in lags:
-#         rs.append(crosscorr(data[var1], data[var2], lag))
-#     rs = pd.Series(rs)
-    
-   
-#     max_corr_idx = np.argmax(abs(rs))
-#     max_corr_value = rs[max_corr_idx]
-#     max_corr_lag = lags[max_corr_idx]
-    
-    
-#     ax.axhline(y=0.0, color="black", linestyle="--")
-#     ax.plot(range(len(rs)), rs, '-', alpha=0.7, linewidth=2.0)
-#     ax.axvline(max_corr_idx, linestyle='--', color='red')
-    
-    
-#     ax.text(max_corr_idx, max(rs) + 0.1, 
-#             f'Max corr: {max_corr_value:.2f}\nLag: {max_corr_lag}', 
-#             horizontalalignment='center')
-    
-#     ax.set_xlabel(r'$\Delta$ (years)', fontsize=14)
-#     ax.set_ylabel(ylabel, fontsize=14)
-#     ax.set_xticks(range(0, len(rs)))
-#     ax.set_xticklabels(lags)
-#     ax.grid(True, alpha=0.3)
-    
-#     if title is not None:
-#         ax.set_title(title, fontsize=14)
-#     plt.tight_layout()
-#     plt.show()
+sigma_tau = np.sqrt(sigma_tau_sq)
+print("rho_tau=",rho_tau)
+print("sigma_tau", sigma_tau)
 
-# for var1, var2 in comovement_pairs:
-#     name1 = variable_names[variables.index(var1)]
-#     name2 = variable_names[variables.index(var2)]
-#     ylabel = f'Corr({name1}, {name2})'
-#     title = f'Dynamic Correlations between {name1} and {name2}'
-#     dynamic_correlations(df, var1, var2, ylabel, nleads=5, nlags=5, title=title)
+# Productivity shocks
+lab_prod = labor_data_mon.lab_prod
+lab_prod = lab_prod.resample("QE").mean()
+lab_prod_log = np.log(lab_prod)
+lp_cycle, lp_trend = hpfilter(lab_prod_log, 100_000)
 
-# # Stationary Test
-# def adf_test(series, name):
-#     result = adfuller(series)
-#     print(f'ADF Statistic for {name}: {result[0]:.4f}')
-#     print(f'p-value: {result[1]:.4f}')
-#     print(f'Critical Values:')
-#     for key, value in result[4].items():
-#         print(f'   {key}: {value:.4f}')
-#     if result[1] <= 0.05:
-#         print(f'{name} is stationary.\n')
-#     else:
-#         print(f'{name} is non-stationary.\n')
+model = ARIMA(lp_cycle, order=(1, 0, 0)) # AR(1) process
+fit = model.fit()
+print(fit.summary())
+rho_lp = fit.params["ar.L1"]
+sigma_lp_sq = fit.params["sigma2"]
 
-# print("Stationarity Tests:")
-# for var, name in zip(variables, variable_names):
-#     adf_test(df_adf[var], name)
-    
+# Convert to monthly
+rho_lp_mon, sigma_lp_sq_mon = AR1_conversion_upcast(rho_lp, sigma_lp_sq, n=3)
+sigma_lp_mon = np.sqrt(sigma_lp_sq_mon)
+
+# Make simple table
+from tabulate import tabulate
+v1 = np.array((rho_lp_mon, sigma_lp_mon))
+v2 = np.array((rho_delta_mon, sigma_mon))
+v3 = np.array((rho_tau, sigma_tau))
+comb = np.vstack([v1, v2, v3]).T
+headers = ["Productivity", "Product destruction", "Aggregate separation"]
+table = tabulate(comb, headers=headers, tablefmt = "outline")
+print(table)
+
+
+

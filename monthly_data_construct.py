@@ -9,12 +9,11 @@ from observables import construct_data
 from time_series_functions import moments
 
 init= '1951-01-01'
-final='2020-02-01' # Just before pandemic shock
+final='2019-12-31' # Just before pandemic shock
 
-dat_simp = construct_data(init, final, 'M')
+dat_simp = construct_data(init, final, 'ME')
 dat_simp = pd.concat(dat_simp, axis=1)
-lab = ['Y', 'C', 'I', 'cons_share', 'NC', 'NI', 'N', "lab_prod", 'p_I', 'idle', 'idle_D', 'idle_ND',
-       'u_D', 'u_ND', 'u_C', 'u_I', 'u', 'v', 'theta', 's','f', 'w']
+lab = ["c", "cons_share", "u", 'v', 'theta', 'f', 'lab_prod', 'ls', 's', 'w', 'sbf4', 'bawba']
 dat_simp.columns = lab
 dat_simp = dat_simp.loc[init:final]
 dat_simp = dat_simp[["u", "v", "s", "f", "lab_prod", "w", "cons_share"]]
