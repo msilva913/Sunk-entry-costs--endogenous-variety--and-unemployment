@@ -4,14 +4,14 @@ targets = (labor_share=0.66,
            dest_ann=0.10, 
            r_ann=0.04, 
            f =0.41, 
-           η_L=0.6, 
+           η_L=0.6, #elast. of matching function
            q=0.8, 
            sep=0.031, 
            b_ratio=0.71, 
             x_v=0.20, 
-            ξ_inv=1, 
-            ε=4.3, 
-            σ=1.0, 
+            ξ_inv=1, # congestion elasticity
+            ε=4.3, # elasticity of sub.
+            σ=1.0, # log utility
             N=1, w=1.0)
 cal = calibrate_labor_share(targets)
 ss = steady_state(cal)
