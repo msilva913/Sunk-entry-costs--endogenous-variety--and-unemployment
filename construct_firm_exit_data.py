@@ -2,7 +2,6 @@ import pandas as pd
 pd.set_option('display.max_columns', 10) 
 import numpy as np
 import statsmodels.api as sm
-import matplotlib.pyplot as plt
 from fredapi import Fred
 
 

@@ -21,6 +21,10 @@ We document the files into two types, those necessary for descriptive statistics
 	- Function `first_momens(dat, alpha_hat)` summarizes data means.
 	- Calls `time_series_functions.py` for calculation of moments and filtering
 	- `BFS.py` provides additional plots and descriptive stats of Business Formation Statistics
+	- `BDS_Q.py` also incorporates establishment births from Business Economic Dynamics (BED)
+    - `construct_firm_exit_data.py` constructs firm and establishment exit rate data and saves it using pickle format.
+    - `construct_AR_processes` constructs AR(1) processes for productivity, establishments, firms, and aggregate 	separations.
+    - `monthly_data_construct` constructs various series at monthly frequency. Labor productivity is written monthly with missing values.
 ### Analysis
 #### Steady state and calibration
 - `steady_state.jl` provides main functions characterizing the steady state, the calibration file, and also writes a calibration table
