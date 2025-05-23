@@ -3,7 +3,6 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import scipy.io as sio
-import statsmodels.api as sm
 
 from observables import construct_data
 from time_series_functions import moments

@@ -2,27 +2,27 @@ import pandas as pd
 pd.set_option('display.max_columns', 10) 
 import numpy as np
 import matplotlib.pyplot as plt
-
-df = pd.read_pickle("BDS_data_adj.pkl")
-
-
 from statsmodels.tsa.filters.hp_filter import hpfilter
 from statsmodels.tsa.arima.model import ARIMA
 
+# Load Business Dynamics Statistics data
+df = pd.read_pickle("BDS_data_adj.pkl")
 
-# Convert to monthly
+
+# Convert AR processes to monthly from higher frequencies
 def AR1_conversion_upcast(rho, sigma_sq, n=3):
     rho_m = rho**(1/n) # conversion of AR1 persistence parameter to higher freq
     sigma_sq_n = (1-rho_m**(2*n))/(1-rho_m**2)*sigma_sq
     return rho_m, sigma_sq_n
     
 
-" Destruction shocks: establishments "
-
+" Destruction shocks: establishments and firms "
+# Create lists
 rho_delta_mon_seq = []
 sigma_delta_mon_seq = []
 exit_rate_cycle_seq = []
 exit_rate_trend_seq = []
+
 for x in ["estabs_exit_rate", "firms_exit_rate"]:
     log_exit_rate = np.log(df[x])
     lam_ann = 100_000/256 # adj to annual frequency
