@@ -12,7 +12,7 @@ df = pd.read_pickle("BDS_data_adj.pkl")
 # Convert AR processes to monthly from higher frequencies
 def AR1_conversion_upcast(rho, sigma_sq, n=3):
     rho_m = rho**(1/n) # conversion of AR1 persistence parameter to higher freq
-    sigma_sq_n = (1-rho_m**(2*n))/(1-rho_m**2)*sigma_sq
+    sigma_sq_n = (1-rho_m**2)/(1-rho_m**(2*n))*sigma_sq
     return rho_m, sigma_sq_n
     
 
