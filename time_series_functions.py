@@ -200,7 +200,7 @@ def hamilton_filter(x, h=8):
     X = pd.concat([X, x_h, x_h.shift(1), x_h.shift(2), x_h.shift(3)], axis=1)
     reg = sm.OLS(x, exog = X, missing='drop')
     results = reg.fit()
-    return results.resid
+    return results.resid, results.predict(X)
 
 
 def growth_filter(x):
