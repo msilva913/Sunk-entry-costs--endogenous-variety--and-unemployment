@@ -5,6 +5,27 @@ import matplotlib.pyplot as plt
 from statsmodels.tsa.filters.hp_filter import hpfilter
 from time_series_functions import hamilton_filter
 from statsmodels.tsa.arima.model import ARIMA
+import matplotlib.dates as mdates
+
+def configure_date_axis(axis, interval=60, date_format='%Y', rotation=45):
+    """
+    Configures the x-axis of a plot to display date ticks at a specified interval.
+
+    Parameters:
+    axis (matplotlib.axes.Axes): The axis object to configure.
+    interval (int): The interval for the date ticks (e.g., 60 for every 60 months).
+    date_format (str): The format for the date labels (e.g., '%Y-%m').
+    rotation (int): The rotation angle for the date labels to improve readability.
+    """
+    # Set major locator to specified interval
+    axis.xaxis.set_major_locator(mdates.MonthLocator(interval=interval))
+    
+    # Set major formatter to display the date in the specified format
+    axis.xaxis.set_major_formatter(mdates.DateFormatter(date_format))
+    
+    # Rotate date labels for better readability
+    plt.setp(axis.xaxis.get_majorticklabels(), rotation=rotation, ha='right')
+
 
 # Load Business Dynamics Statistics data
 df = pd.read_pickle("BDS_data_adj.pkl")
@@ -79,6 +100,12 @@ fig, ax = plt.subplots(nrows=2, figsize=(10, 10))
 ax[0].plot(log_s, label='Log separation rate')
 ax[0].plot(s_trend, label='Trend', color="red", linestyle='--', alpha=0.7)
 ax[1].plot(s_cycle, label='Cycle', linestyle='--', alpha=0.7)
+for axis in ax:
+    configure_date_axis(axis, interval=60, date_format='%Y', rotation=45)
+
+# Add legends
+ax[0].legend()
+ax[1].legend()
 plt.legend()
 plt.tight_layout()
 plt.show()
@@ -101,10 +128,25 @@ lab_prod = lab_prod.loc[init:final]
 lab_prod_log = np.log(lab_prod)
 lp_cycle, lp_trend = hamilton_filter(lab_prod_log, h=8)
 
-fig, ax = plt.subplots(figsize=(10, 4))
-ax.plot(lp_cycle, label="Productivity shocks")
-ax.plot(s_cycle, label="Separation shocks")
-ax.legend()
+fig, ax = plt.subplots(figsize=(12, 6))
+# Plot with enhanced styling
+ax.plot(lp_cycle, label="Productivity Shocks", color='blue', linestyle='-', linewidth=2, alpha=0.8)
+ax.plot(s_cycle, label="Separation Shocks", color='orange', linestyle='-', linewidth=2, alpha=0.8)
+
+configure_date_axis(ax, interval=60, date_format='%Y', rotation=45)
+ax.legend(fontsize="medium", frameon=False)
+ax.axhline()
+ax.grid(True, which='both', linestyle='--', linewidth=0.5, alpha=0.7)
+
+# Add axis labels and title for clarity
+ax.set_xlabel('Year', fontsize=12, weight='bold')
+ax.set_ylabel('Shocks', fontsize=12, weight='bold')
+ax.set_title('Productivity and Separation Shocks Over Time', fontsize=14, weight='bold')
+
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
+
+plt.tight_layout()
 plt.show()
 print(s_cycle.corr(lp_cycle))
 

@@ -187,21 +187,35 @@ def stacked_moments(cycle):
 
 def hamilton_filter(x, h=8):
     """
-    x: dataframe (or can be coerced into dataframe)
-    h: forecast horizon (default=8)
+    Applies the Hamilton regression filter to the input data.
+
+    Parameters:
+    x: DataFrame or Series that can be coerced into a DataFrame.
+    h: Forecast horizon (default=8).
+
+    Returns:
+    residuals: Residuals of the linear projection.
+    predictions: Predicted values from the regression.
     """
-    #Returns residuals of linear projection of x_{t+h} on x_t, x_{t-1}, x_{t-2}, x_{t-3}
+    # Convert input to DataFrame if it's not already
     if not isinstance(x, pd.DataFrame):
         x = pd.Series(x)
-        x = x.to_frame() #convert to dataframe if not already
-    x_h = x.shift(h) #x lagged by h values
-    X = pd.DataFrame(np.ones(len(x)), index=x.index)# column of ones
-    #Incorproate lags h, h+1, h+2, h+3
-    X = pd.concat([X, x_h, x_h.shift(1), x_h.shift(2), x_h.shift(3)], axis=1)
-    reg = sm.OLS(x, exog = X, missing='drop')
-    results = reg.fit()
-    return results.resid, results.predict(X)
+        x = x.to_frame()
 
+    # Lagged values
+    x_h = x.shift(h)
+
+    # Prepare the design matrix with a column of ones and lagged values
+    X = pd.DataFrame(np.ones(len(x)), index=x.index, columns=['const'])  # Column of ones for intercept
+    X = pd.concat([X, x_h, x_h.shift(1), x_h.shift(2), x_h.shift(3)], axis=1)
+    X.columns = ['const', 'x_h', 'x_h-1', 'x_h-2', 'x_h-3']
+
+    # Fit the model using OLS
+    reg = sm.OLS(x, X, missing='drop')
+    results = reg.fit()
+
+    # Return residuals and predicted values
+    return results.resid, results.predict(X)
 
 def growth_filter(x):
     if not isinstance(x, pd.DataFrame):
