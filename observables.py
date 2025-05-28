@@ -2,7 +2,6 @@ import os
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import scipy.io as sio
 import statsmodels.api as sm
 #import statsmodels.api as sm
 from fredapi import Fred
@@ -11,10 +10,11 @@ fred = Fred(api_key = 'd35aabd7dc07cd94481af3d1e2f0ecf3	')
 #from statsmodels.tsa.arima_model import ARMA
 pd.set_option('display.precision', 3)
 np.set_printoptions(precision=3)
+from scipy.io import savemat
 #pd.options.display.float_format = '{:5,.4g}'.format
 
-from time_series_functions import (moments, stacked_moments, filter_transform, crosscorr, dynamic_correlations)
-from statsmodels.tsa.seasonal import seasonal_decompose
+from time_series_functions import (moments, stacked_moments, filter_transform)
+from formatting_functions import create_stats_table
 import statsmodels.api as sm
 from statsmodels.stats.diagnostic import acorr_lm
 
@@ -197,12 +197,12 @@ if __name__ == "__main__":
     cycle_hp.columns = lab
     cycle_hp.drop(['cons_share'], axis=1, inplace=True)
     
-    # cycle_ham = pd.concat([filter_transform(dat[x], init=init, final=final, transform_type='log',
-    #                                     filter_type="hamilton") for x in lab], axis=1)
-    # cycle_ham.columns = lab
-    # cycle_ham.drop(['jf', 'cons_share'], axis=1, inplace=True)
+    cycle_ham = pd.concat([filter_transform(dat[x], init=init, final=final, transform_type='log',
+                                        filter_type="hamilton") for x in lab], axis=1)
+    cycle_ham.columns = lab
+    cycle_ham.drop(['cons_share'], axis=1, inplace=True)
     
-    #cycle_ham[["bf", "ba"]].corr()
+    cycle_ham[["bf", "ba"]].corr()
     
     # Stacked moments 
     
@@ -210,67 +210,13 @@ if __name__ == "__main__":
     mom_stacked = stacked_moments(cycle_hp)
     " Summarize moments in one column "
  
-    def create_stats_table(data, caption="Statistical Summary", label="tab:stats"):
-        """
-        Create a LaTeX table with dynamic column handling
-        
-        Parameters:
-        -----------
-        data : pandas.DataFrame
-            DataFrame containing the statistical measures
-        caption : str
-            Table caption
-        label : str
-            Table reference label
-        """
-        # Get column names dynamically from the DataFrame
-        columns = data.columns
-        
-        latex_str = [
-            "\\begin{table}[htbp]",
-            "\\centering",
-            f"\\caption{{{caption}}}",
-            f"\\label{{{label}}}",
-        #    "\\begin{threeparttable}",
-            # Create dynamic column format based on number of columns
-            f"\\begin{{tabular}}{{l{''.join(['r'] * len(columns))}}}",
-            "\\toprule"
-        ]
-        
-        # Create header row dynamically
-        # Replace potentially problematic characters and add LaTeX formatting
-        header_row = ["Variable"] + [
-            col.replace("_", "\\_")  # Escape underscores
-               .replace("-", "$-$")  # Format minus signs
-               .replace("(", "\\left(").replace(")", "\\right)")  # Format parentheses
-            for col in columns
-        ]
-        latex_str.append(" & ".join(header_row) + " \\\\")
-        
-        latex_str.append("\\midrule")
-        
-        # Add data rows with proper formatting
-        for idx, row in data.iterrows():
-            formatted_row = [
-                f"{idx}"  # Variable name
-            ] + [
-                f"{val:.3f}" if isinstance(val, (int, float)) else str(val)
-                for val in row
-            ]
-            latex_str.append(" & ".join(formatted_row) + " \\\\")
-        
-        latex_str.extend([
-            "\\bottomrule",
-            "\\end{tabular}",
-          #  "\\end{threeparttable}",
-            "\\end{table}"
-            ])
-    
-        return "\n".join(latex_str)
-    
+   
+    mom_stacked.columns = ["Values"]
     mom_tex = create_stats_table(mom)
     print(mom_tex)
-    
+    # Export to mat file 
+    mom_stacked_dic = mom_stacked.to_dict('list')
+    savemat('moments_empirical.mat', mom_stacked.to_dict('list'))
     
     # if save_observables:
     #     " Save relevant objects "
@@ -340,9 +286,9 @@ if __name__ == "__main__":
     #log_f = np.log(dat.f)
     #X = sm.add_constant(log_theta)
     #Y = log_f
-    X = sm.add_constant(cycle_hp.theta)
-    Y = cycle_hp.jf
-    model = sm.OLS(Y,X).fit(cov_type='HAC', cov_kwds={'maxlags':None})
+    #X = sm.add_constant(cycle_hp.theta)
+    reg = pd.concat([cycle_hp.theta, cycle_hp.jf], axis=1).dropna()
+    model = sm.OLS(reg.jf,reg.theta).fit(cov_type='HAC', cov_kwds={'maxlags':None})
     print(model.summary())
     alpha_hat = 1-model.params.theta
     #A = np.exp(model.params.const)
@@ -419,6 +365,7 @@ if __name__ == "__main__":
             'Consumption share': dat.cons_share.mean(),
             'Unemployment rate': dat.u.mean(),
             'Vacancy rate': dat.v.mean(),
+            'Market tightness': dat.theta.mean(),
             'Separation rate': dat.s.mean(),
             'Job finding rate': dat.jf.mean(),
             'Matching function elasticity': alpha_hat,
@@ -431,8 +378,8 @@ if __name__ == "__main__":
             'Value': stats_dict
         })
         
-        stats_df['Value'] = np.around(stats_df['Value'], decimals=3)
-        
+        #stats_df['Value'] = np.around(stats_df['Value'], decimals=3)
+        stats_df['Value'] = stats_df['Value'].apply(lambda x: f"{x:.3f}")
         return stats_df
         
     data_means = first_moments(dat, alpha_hat)
