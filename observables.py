@@ -206,6 +206,10 @@ if __name__ == "__main__":
     mom_stacked_dic = mom_stacked.to_dict('list')
     savemat('moments_empirical.mat', mom_stacked.to_dict('list'))
     
+    # Extended moments
+    mom_stacked_bf = stacked_moments_aug(cycle_hp)
+    mom_stacked_bf.columns = ["Values"]
+    savemat('moments_bf_empirical.mat', mom_stacked_bf.to_dict('list'))
     # if save_observables:
     #     " Save relevant objects "
     #     #save_object(cycle, 'cycle')

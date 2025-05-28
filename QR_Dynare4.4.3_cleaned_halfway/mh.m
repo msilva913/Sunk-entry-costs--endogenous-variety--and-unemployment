@@ -63,3 +63,6 @@ hh = 1e4*eye(length(xparam1));  % Initial scaling matrix for MCMC
 % Save all relevant variables to a mat file for Metropolis-Hastings algorithm
 % This file will be loaded by the estimation routine
 save model_mh_mode.mat xparam1 hh fval parameter_names
+%%
+% 
+% 
