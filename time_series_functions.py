@@ -215,7 +215,8 @@ def hamilton_filter(x, h=8):
     results = reg.fit()
 
     # Return residuals and predicted values
-    return results.resid, results.predict(X)
+    #return results.resid, results.predict(X)
+    return results.resid
 
 def growth_filter(x):
     if not isinstance(x, pd.DataFrame):
