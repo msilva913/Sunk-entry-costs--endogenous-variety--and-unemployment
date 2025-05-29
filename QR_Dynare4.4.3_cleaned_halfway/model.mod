@@ -363,21 +363,20 @@ addpath('DynareUtilites');
 // Priors for estimation
 
 estimated_params;
-// vartheta,   gamma_pdf,  0.2,0.02;
-sigma_a,    gamma_pdf,  0.5,0.3;
-ssigma,     gamma_pdf,  1.0,0.15;
-xi,         gamma_pdf,  1.0,0.05;
-theta_w,    beta_pdf,   0.75,0.1;
-kappawt,    gamma_pdf,  0.1,0.01;
-h,          beta_pdf,   0.5,0.15;
-Spp,        gamma_pdf,  8,2;
-phi_pi,     gamma_pdf,  2.0,0.20;
-phi_y,      gamma_pdf,  0.1,0.05;
-rho_R,      beta_pdf,   0.7,0.15;
-sigma_R,    gamma_pdf,  0.65,0.05;
-sigma_n,    gamma_pdf,  0.1,0.05;
-sigma_x,    gamma_pdf,  0.1,0.05;
-rho_x,      beta_pdf,   0.75,0.1;
+delta,      beta_pdf,   0.0083, 0.005, 0, tau; % 0.0083 monthly corresponds to 10% annual
+b,          beta_pdf,   0.71, 0.2;
+epsi,       gamma_pdf,  4.2, 1.5;
+x_v,        beta_pdf,   0.5, 0.25;
+xi_inv,     gamma_pdf,  1.0, 2;
+
+rho_z,      beta_pdf,   0.8, 0.2;
+rho_delta,  beta_pdf,   0.93, 0.1;
+rho_s,      beta_pdf,    0.8, 0.2;
+
+sigma_z,      inv_gamma_pdf,  0.01, 1.0;
+sigma_delta,  inv_gamma_pdf,  0.02, 0.01; % prior can be influenced by product destruction data, not in dataset
+sigma_s,      inv_gamma_pdf,  0.01, 1.0;
+
 end;
 
 
