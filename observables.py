@@ -1,4 +1,4 @@
-import os
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -15,7 +15,6 @@ from scipy.io import savemat
 
 from time_series_functions import (moments, stacked_moments, filter_transform)
 from formatting_functions import create_stats_table
-import statsmodels.api as sm
 from statsmodels.stats.diagnostic import acorr_lm
 
 import matplotlib.dates as mdates
@@ -193,23 +192,24 @@ if __name__ == "__main__":
     cycle_ham[["bf", "ba"]].corr()
     
     # Stacked moments 
-    
+    mom_list = ["u", "v", "theta", "lp", "s"]
     mom = moments(cycle_hp, relative_std="lp", lab=["u", "lp"])
-    mom_stacked = stacked_moments(cycle_hp)
+    mom_stacked = stacked_moments(cycle_hp, mom_list)
     " Summarize moments in one column "
- 
-   
+    
     mom_stacked.columns = ["Values"]
     mom_tex = create_stats_table(mom)
     print(mom_tex)
     # Export to mat file 
     mom_stacked_dic = mom_stacked.to_dict('list')
-    savemat('moments_empirical.mat', mom_stacked.to_dict('list'))
+    #savemat('moments_empirical.mat', mom_stacked.to_dict('list'))
+    
     
     # Extended moments
-    mom_stacked_bf = stacked_moments_aug(cycle_hp)
+    mom_list_ext = mom_list + ["bf"]
+    mom_stacked_bf = stacked_moments(cycle_hp, mom_list_ext)
     mom_stacked_bf.columns = ["Values"]
-    savemat('moments_bf_empirical.mat', mom_stacked_bf.to_dict('list'))
+    #savemat('moments_bf_empirical.mat', mom_stacked_bf.to_dict('list'))
     # if save_observables:
     #     " Save relevant objects "
     #     #save_object(cycle, 'cycle')

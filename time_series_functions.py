@@ -431,49 +431,34 @@ def dynamic_correlations(cycle, var, ylabel, nleads=12, nlags=12, title=None,
     if savefig is not None:
         plt.savefig(savefig)
 
-def stacked_moments(cycle):
-    var_labels = ["u", "v", "theta", "lp", "s"]
+def stacked_moments(cycle, var_labels):
     cycle = cycle[var_labels]
+    # Calculate standard deviations
     stds = cycle.std(axis=0)
     stds = pd.DataFrame(stds)
-    stds.index = ["std(u)", "std(v)", "std(theta)", "std(lp)", "std(s)"]
-    # unique correlation values in array
-    corr_array = cycle.corr().values[np.triu_indices_from(cycle.corr().values, k=1)]
-    " Summarize correlations"
-    # Sectoral comovement
+    stds.index = [f"std({label})" for label in var_labels]
     
-    cor_dat = pd.DataFrame(corr_array)
-    cor_dat.index = ["Cor(u, v)", "Cor(u, theta)", "Corr(u, lp)",  "Cor(u, s)", "Cor(v, theta)",
-                      "Cor(v, lp)" , "Corr(v, s)", "Cor(theta, lp)", "Corr(theta, s)", "Corr(lp, s)"]
+    # Calculate correlation matrix and extract unique correlations
+    corr_matrix = cycle.corr().values
+    corr_array = corr_matrix[np.triu_indices_from(corr_matrix, k=1)]
     
+    # Generate correlation labels
+    cor_labels = []
+    for i in range(len(var_labels)):
+        for j in range(i+1, len(var_labels)):
+            cor_labels.append(f"Cor({var_labels[i]}, {var_labels[j]})")
+    
+    cor_dat = pd.DataFrame(corr_array, index=cor_labels)
+    
+    # Calculate autocorrelations
     autocorr_dat = pd.DataFrame([cycle[x].autocorr() for x in var_labels])
-    autocorr_dat.index = ["Cor(u, u_{-1})", "Cor(v, v_{-1})", "Corr(theta, thet_{-1})",
-                          "Corr(lp, lp_{-1})", "Corr(s, s_{-1})"]
-    summ = pd.concat([stds, cor_dat, autocorr_dat])
-    print(summ.style.format(precision=3).to_latex())
-    return summ
-
-def stacked_moments_aug(cycle):
-    var_labels = ["u", "v", "theta", "lp", "s", "bf"]
-    cycle = cycle[var_labels]
-    stds = cycle.std(axis=0)
-    stds = pd.DataFrame(stds)
-    stds.index = ["std(u)", "std(v)", "std(theta)", "std(lp)", "std(s)", "std(bf)"]
-    # unique correlation values in array
-    corr_array = cycle.corr().values[np.triu_indices_from(cycle.corr().values, k=1)]
-    " Summarize correlations"
-    # Sectoral comovement
+    autocorr_dat.index = [f"Cor({label}, {label}_{{-1}})" for label in var_labels]
     
-    cor_dat = pd.DataFrame(corr_array)
-    cor_dat.index = ["Cor(u, v)", "Cor(u, theta)", "Corr(u, lp)",  "Cor(u, s)", "Corr(u, bf)",
-                     "Cor(v, theta)", "Cor(v, lp)" , "Corr(v, s)", "Corr(v, bf)",
-                     "Cor(theta, lp)", "Corr(theta, s)", "Corr(theta, bf)", "Corr(lp, s)",
-                     "Corr(lp, bf)", "Corr(s, bf)"]
-    
-    autocorr_dat = pd.DataFrame([cycle[x].autocorr() for x in var_labels])
-    autocorr_dat.index = ["Cor(u, u_{-1})", "Cor(v, v_{-1})", "Corr(theta, thet_{-1})",
-                          "Corr(lp, lp_{-1})", "Corr(s, s_{-1})", "Corr(bf, bf_{-1})"]
+    # Combine all into a single DataFrame
     summ = pd.concat([stds, cor_dat, autocorr_dat])
+    
+    # Print formatted output
     print(summ.style.format(precision=3).to_latex())
+    
     return summ
 
