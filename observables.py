@@ -175,6 +175,10 @@ if __name__ == "__main__":
     dat.columns = lab
     dat = dat.loc[init:final]
     
+    dat.to_pickle("raw_data.pkl")
+    #dat = pd.read_pickle("raw.pkl")
+    
+    
     " Data series in growth rates "
     #cycle_growth = pd.concat([filter_transform(dat[x], init=init, final=final, transform_type='log',
                                       #  filter_type="growth", demean=False) for x in lab], axis=1)
@@ -217,6 +221,8 @@ if __name__ == "__main__":
     #     lab_obs = [x +'_obs' for x in lab]
     #     dic_data = dict(zip(lab_obs, [np.asarray(cycle_growth[x]) for x in cycle_growth.columns]))
     #     sio.savemat('observables.mat', dic_data)
+    
+    
     
     " Analysis on raw data "
     "1) Unemployment, Vacancies, and ustar "
