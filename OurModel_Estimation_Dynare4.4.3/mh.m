@@ -16,46 +16,35 @@
 
 % Names of estimated parameters
 parameter_names = [
-    % Structural prameters 
-    {'delta'}     % Product destruction rate
-    {'b'}         % Outside option of unemployed worker
-    {'xi'}          % inverse Frisch elasticity
-    {'epsi'}        % elasticity of substitution 
+    % Structural prameters
+    {'b_ratio'}     % Outside option of unemployed worker
     {'x_v'}         % share of sunk/non-fixed matching costs to total costs: κ = (1-x_v)/x_v*K/q
-    {'xi_inv'}     % inverse elasticity of entry to vacancy value
-
+    {'xi_inv'}      % inverse elasticity of entry to vacancy value
+    {'delta'}       % Product destruction rate
+    {'epsi'}        % elasticity of substitution 
     % Shock processes
-    {'rho_z'}     % Persistence of technology shock
-    {'rho_delta'}  % Persistence of product destruction shock
+    {'rho_z'}       % Persistence of technology shock
+    {'rho_delta'}   % Persistence of product destruction shock
     {'rho_s'}       % Persistence of idiosyncratic separation shock
-    {'sigma_z'}    % std dev of technology shock
-    {'sigma_delta'}  % std dev of destruction shock
+    {'sigma_z'}     % std dev of technology shock
+    {'sigma_delta'} % std dev of destruction shock
     {'sigma_s'}     % std dev of idiosyncratic separation shock
     ];
-
-%% Comments
-% Bargaining power phi will be obtained indirectly from labor share of
-% income=0.66
-% Given tau and delta, we obtain s
-% Normalized wage = 1 pins down ss tech level, also means that b represents
-% ratio of unemployment benefits to wage
-
 
 % Load all model parameters from the params.m file
 % The params.m file should contain definitions for all these variables
 [ ...
-    ~, ~, ~, ~, ~, ...
     ~, ~, ~, ~, ...
-    ~, ~, ~, ~, ~, ~, ~, ...
-    del, ...  % Parameters being estimated
-    phi_pi, phi_y, rho_R, sigma_R, sigma_n, sigma_x, rho_x ...
+    ~, ~, ~, ~, ~, ...
+    b_ratio, x_v, xi_inv, delta, epsi, ...  % Parameters being estimated
+    rho_z, rho_delta, rho_s, sigma_z, sigma_delta, sigma_s ...
     ] ...
     = params;
 
 % Create vector of parameters to be estimated
 % Note: The transpose operation (') is crucial for correct dimensionality
-xparam1 = [sigma_a, ssigma, xi, h, Spp, kappawt, theta_w, ...
-        phi_pi, phi_y, rho_R, sigma_R, sigma_n, sigma_x, rho_x]';
+xparam1 = [b_ratio, x_v, xi_inv, delta, epsi, ...
+         rho_z, rho_delta, rho_s, sigma_z, sigma_delta, sigma_s]';
 
 % Initialize optimization/MCMC variables
 fval = 500;                     % Initial value for the likelihood

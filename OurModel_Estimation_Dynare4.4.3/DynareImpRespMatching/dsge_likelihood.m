@@ -822,117 +822,63 @@ end
 %%
 
 %&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-%Posterior for VAR impulse response matching     &
+% Bayesian SMM posterior &
 %&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-global M_ options_ oo_ horizon logdetVhat inv_Vhat psihat mod_var_list mod_shock_list
+
+global M_ options_ oo_ logdetVhat inv_Vhat psihat
 
 %get impulse responses
 warning off;
-var_list=mod_var_list;
-[i_var,~] = varlist_indices(var_list,M_.endo_names);
+% var_list=mod_var_list;
+% [i_var,~] = varlist_indices(var_list,M_.endo_names);
 
-iter_ = max(options_.periods,1);
-if M_.exo_nbr > 0
-    oo_.exo_simul= ones(iter_ + M_.maximum_lag + M_.maximum_lead,1) * oo_.exo_steady_state';
-end
+% iter_ = max(options_.periods,1);
+% if M_.exo_nbr > 0
+%     oo_.exo_simul= ones(iter_ + M_.maximum_lag + M_.maximum_lead,1) * oo_.exo_steady_state';
+% end
 
 %check_model;
 
-SS(M_.exo_names_orig_ord,M_.exo_names_orig_ord)=M_.Sigma_e+1e-14*eye(M_.exo_nbr);
-cs = transpose(chol(SS));
-tit(M_.exo_names_orig_ord,:) = M_.exo_names;
+% SS(M_.exo_names_orig_ord,M_.exo_names_orig_ord)=M_.Sigma_e+1e-14*eye(M_.exo_nbr);
+% cs = transpose(chol(SS));
+% tit(M_.exo_names_orig_ord,:) = M_.exo_names;
 
-[i_var_exo,~] = varlist_indices(mod_shock_list,M_.exo_names);
+% [i_var_exo,~] = varlist_indices(mod_shock_list,M_.exo_names);
 
 [oo_.dr.ys,M.params,~] = evaluate_steady_state(oo_.steady_state,M_,options_,oo_,0);
 [oo_.dr,info] = stochastic_solvers(oo_.dr,0,M_,options_,oo_);
 
+oo_.var = get_variance_of_endogenous_variables(oo_.dr, oo_.dr.inv_order_var(29:40));
 
-global select_idx;
+psitheta = nan(27,1);
 
-
-%go through shocks
-for jj=i_var_exo   
-    
-    y=irf(oo_.dr,cs(M_.exo_names_orig_ord,jj), horizon, options_.drop, ...
-        options_.replic, options_.order);
-    
-    % mod_var_list=[{'Y'} {'C'} {'I'} {'L'} {'u'} {'w'} {'Pi'} {'R'} {'Ra'} {'lp'} {'ls'} {'muy'} {'mux'}];
-    % mod_shock_list=[{'epsR'} {'epsn'} {'epsx'} ]; %monetary, neutral tech, invest tech shocks
-    
-    if jj==1 %monetary shock
-        yFF=100*y(i_var,1:horizon)';
-        muilev=cumsum(yFF(:,end));
-        
-        %psitheta_mon=NaN*zeros(horizon,length(mod_var_list));
-        psitheta_mon=NaN*zeros(horizon,11);
-        psitheta_mon(2:end,1)=yFF(1:end-1,1);         %Y
-        psitheta_mon(2:end,2)=yFF(1:end-1,2);         %C
-        psitheta_mon(2:end,3)=yFF(1:end-1,3);         %I
-        psitheta_mon(2:end,4)=yFF(1:end-1,4);         %L
-        psitheta_mon(2:end,5)=yFF(1:end-1,5);         %u
-        psitheta_mon(2:end,6)=-muilev(1:end-1);       %pinv
-        psitheta_mon(2:end,7)=yFF(1:end-1,6);         %w
-        psitheta_mon(2:end,8)=4*yFF(1:end-1,7);       %Pi
-        psitheta_mon(:,9)=4*yFF(:,8);                 %R
-        psitheta_mon(2:end,10)=yFF(1:end-1,10);     %lp
-        psitheta_mon(2:end,11)=yFF(1:end-1,11);     %ls
-        
-        psitheta_mon=psitheta_mon(:,select_idx);
-        psitheta_mon=psitheta_mon(:);
-        psitheta_mon=psitheta_mon(isnan(psitheta_mon)==0);        
-    end
-    
-    if jj==2 %neutral tech shock
-        yFF=100*y(i_var,1:horizon)';
-        muylev=cumsum(yFF(:,end-1));
-        muilev=cumsum(yFF(:,end));
-        
-        %psitheta_mon=NaN*zeros(horizon,length(mod_var_list));
-        psitheta_ntech=NaN*zeros(horizon,11);
-        psitheta_ntech(:,1)=yFF(:,1)+muylev;          %Y
-        psitheta_ntech(:,2)=yFF(:,2)+muylev;          %C
-        psitheta_ntech(:,3)=yFF(:,3)+muylev+muilev;   %I
-        psitheta_ntech(:,4)=yFF(:,4);                 %L
-        psitheta_ntech(:,5)=yFF(:,5);                 %u
-        psitheta_ntech(:,6)=-muilev;                  %pinv
-        psitheta_ntech(:,7)=yFF(:,6)+muylev;          %w
-        psitheta_ntech(:,8)=4*yFF(:,7);               %Pi
-        psitheta_ntech(:,9)=4*yFF(:,9);               %Ra
-        psitheta_ntech(:,10)=yFF(:,10);             %lp
-        psitheta_ntech(:,11)=yFF(:,11);             %ls
-        
-        psitheta_ntech=psitheta_ntech(:,select_idx);
-        psitheta_ntech=psitheta_ntech(:);
-    end
-    
-    if jj==3 %invest tech shock
-        yFF=100*y(i_var,1:horizon)';
-        muylev=cumsum(yFF(:,end-1));
-        muilev=cumsum(yFF(:,end));
-        
-        %psitheta_mon=NaN*zeros(horizon,length(mod_var_list));
-        psitheta_itech=NaN*zeros(horizon,11);
-        psitheta_itech(:,1)=yFF(:,1)+muylev;          %Y
-        psitheta_itech(:,2)=yFF(:,2)+muylev;          %C
-        psitheta_itech(:,3)=yFF(:,3)+muylev+muilev;   %I
-        psitheta_itech(:,4)=yFF(:,4);                 %L
-        psitheta_itech(:,5)=yFF(:,5);                 %u
-        psitheta_itech(:,6)=-muilev;                  %pinv
-        psitheta_itech(:,7)=yFF(:,6)+muylev;          %w
-        psitheta_itech(:,8)=4*yFF(:,7);               %Pi
-        psitheta_itech(:,9)=4*yFF(:,9);               %Ra
-        psitheta_itech(:,10)=yFF(:,10);             %lp
-        psitheta_itech(:,11)=yFF(:,11);             %ls
-        
-        psitheta_itech=psitheta_itech(:,select_idx);
-        psitheta_itech=psitheta_itech(:);        
-    end
-end
-
-%model impulse respones
-psitheta=[psitheta_mon; psitheta_ntech; psitheta_itech];
-%psitheta=[psitheta_mon];
+psitheta( 1) = sqrt(oo_.var(1,1));
+psitheta( 2) = sqrt(oo_.var(2,2));
+psitheta( 3) = sqrt(oo_.var(3,3));
+psitheta( 4) = sqrt(oo_.var(4,4));
+psitheta( 5) = sqrt(oo_.var(5,5));
+psitheta( 6) = sqrt(oo_.var(6,6));
+psitheta( 7) = oo_.var(1,2)/(sqrt(oo_.var(1,1))*sqrt(oo_.var(2,2)));
+psitheta( 8) = oo_.var(1,3)/(sqrt(oo_.var(1,1))*sqrt(oo_.var(3,3)));
+psitheta( 9) = oo_.var(1,4)/(sqrt(oo_.var(1,1))*sqrt(oo_.var(4,4)));
+psitheta(10) = oo_.var(1,5)/(sqrt(oo_.var(1,1))*sqrt(oo_.var(5,5)));
+psitheta(11) = oo_.var(1,6)/(sqrt(oo_.var(1,1))*sqrt(oo_.var(6,6)));
+psitheta(12) = oo_.var(2,3)/(sqrt(oo_.var(2,2))*sqrt(oo_.var(3,3)));
+psitheta(13) = oo_.var(2,4)/(sqrt(oo_.var(2,2))*sqrt(oo_.var(4,4)));
+psitheta(14) = oo_.var(2,5)/(sqrt(oo_.var(2,2))*sqrt(oo_.var(5,5)));
+psitheta(15) = oo_.var(2,6)/(sqrt(oo_.var(2,2))*sqrt(oo_.var(6,6)));
+psitheta(16) = oo_.var(3,4)/(sqrt(oo_.var(3,3))*sqrt(oo_.var(4,4)));
+psitheta(17) = oo_.var(3,5)/(sqrt(oo_.var(3,3))*sqrt(oo_.var(5,5)));
+psitheta(18) = oo_.var(3,6)/(sqrt(oo_.var(3,3))*sqrt(oo_.var(6,6)));
+psitheta(19) = oo_.var(4,5)/(sqrt(oo_.var(4,4))*sqrt(oo_.var(5,5)));
+psitheta(20) = oo_.var(4,6)/(sqrt(oo_.var(4,4))*sqrt(oo_.var(6,6)));
+psitheta(21) = oo_.var(5,6)/(sqrt(oo_.var(5,5))*sqrt(oo_.var(6,6)));
+psitheta(22) = oo_.var(1,1+6);
+psitheta(23) = oo_.var(2,2+6);
+psitheta(24) = oo_.var(3,3+6);
+psitheta(25) = oo_.var(4,4+6);
+psitheta(26) = oo_.var(5,5+6);
+psitheta(27) = oo_.var(6,6+6);
 
 %evaluate criterion and form likelihood
 criterion=(psihat-psitheta)'*inv_Vhat*(psihat-psitheta);

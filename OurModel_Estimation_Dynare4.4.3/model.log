@@ -1,0 +1,418 @@
+Starting Dynare (version 4.4.3).
+Starting preprocessing of the model file ...
+Substitution of endo lags >= 2: added 17 auxiliary variables and equations.
+Found 57 equation(s).
+Evaluating expressions...done
+Computing static model derivatives:
+ - order 1
+Computing dynamic model derivatives:
+ - order 1
+Processing outputs ...done
+Preprocessing completed.
+Starting MATLAB/Octave computing.
+
+
+
+
+Residuals of the static equations:
+
+Equation number 1 : 0 : Market tightness
+Equation number 2 : 0 : Job finding probability
+Equation number 3 : 0 : Vacancy filling probability
+Equation number 4 : 0 : Relative price
+Equation number 5 : 0 : Lagrangian multiplier
+Equation number 6 : 0 : Firm value relative to price
+Equation number 7 : 0 : Firm value
+Equation number 8 : 0 : Business entrants
+Equation number 9 : 0 : Job creation condition
+Equation number 10 : 0 : Expected discounted difference in vacancy value
+Equation number 11 : 0 : Value of a vacancy
+Equation number 12 : 0 : Marginal revenue product
+Equation number 13 : 0 : Wage equation
+Equation number 14 : 0 : LOM of firms
+Equation number 15 : 0 : LOM of unemployment
+Equation number 16 : 0 : LOM of vacancies
+Equation number 17 : 0 : Aggregate labor
+Equation number 18 : 0 : Composition of labor
+Equation number 19 : 0 : Retail output: resources
+Equation number 20 : 0 : Sunk vacancy posting costs
+Equation number 21 : 0 : Retail output: expenditure
+Equation number 22 : 0 : Output: expenditure
+Equation number 23 : 0 : Output: income
+Equation number 24 : 0 : Labor share
+Equation number 25 : 0 : Aggregate separation rate
+Equation number 26 : 0 : Labor productivity process
+Equation number 27 : 0 : Product line destruction process
+Equation number 28 : 0 : Separation rate process
+Equation number 29 : 0 : Unemployment observation
+Equation number 30 : 0 : Vacancy observation
+Equation number 31 : 0 : Tightness observation
+Equation number 32 : 0 : Labor productivity observation
+Equation number 33 : 0 : Job separation observation
+Equation number 34 : 0 : Business formation observation
+Equation number 35 : 0 : Lag unemployment observation
+Equation number 36 : 0 : Lag vacancy observation
+Equation number 37 : 0 : Lag tightness observation
+Equation number 38 : 0 : Lag labor productivity observation
+Equation number 39 : 0 : Lag job separation observation
+Equation number 40 : 0 : Lag business formation observation
+
+
+
+STEADY-STATE RESULTS:
+
+theta             		 0.5125
+f                 		 0.413615
+q                 		 0.807054
+p                 		 1
+lam               		 0.88106
+nu_f              		 22.9547
+d_f               		 0.278366
+N_e               		 0.00881706
+K                 		 0.151024
+Q                 		 12.6048
+e                 		 0.00844049
+w_R               		 1.21574
+w                 		 1
+N                 		 1
+u                 		 0.0702948
+v                 		 0.0360261
+L                 		 0.929705
+L_e               		 0.166478
+L_c               		 0.763228
+Omega             		 0.0222874
+C                 		 1.135
+Y_c               		 1.20625
+Y                 		 1.40864
+ls                		 0.66
+s_agg             		 0.031
+log_z             		 0.457716
+log_delta         		 -4.73985
+log_s             		 -3.79619
+u_obs             		 0.0702948
+v_obs             		 0.0360261
+theta_obs         		 0.5125
+lp_obs            		 1.58046
+s_obs             		 0.0224563
+bf_obs            		 0.0264512
+u_obs_lag         		 0.0702948
+v_obs_lag         		 0.0360261
+theta_obs_lag     		 0.5125
+lp_obs_lag        		 1.58046
+s_obs_lag         		 0.0224563
+bf_obs_lag        		 0.0264512
+
+EIGENVALUES:
+         Modulus             Real        Imaginary
+
+               0               -0                0
+               0               -0                0
+               0               -0                0
+               0               -0                0
+               0               -0                0
+               0               -0                0
+               0               -0                0
+               0               -0                0
+               0               -0                0
+               0               -0                0
+               0               -0                0
+               0               -0                0
+               0               -0                0
+               0               -0                0
+               0               -0                0
+               0                0                0
+               0                0                0
+               0                0                0
+               0                0                0
+               0                0                0
+               0                0                0
+               0                0                0
+               0                0                0
+       1.749e-17        1.749e-17                0
+       1.598e-16       -1.598e-16                0
+       6.804e-16       -6.804e-16                0
+          0.4029           0.4029                0
+            0.78             0.78                0
+           0.935            0.935                0
+           0.963            0.963                0
+          0.9722           0.9722                0
+          0.9854           0.9854                0
+           1.024            1.024                0
+           1.026            1.026                0
+           3.748            3.748                0
+       1.276e+16       -1.276e+16                0
+       2.069e+16       -2.069e+16                0
+        9.38e+16         9.38e+16                0
+       1.585e+17       -1.585e+17                0
+       6.411e+18        6.411e+18                0
+
+
+There are 8 eigenvalue(s) larger than 1 in modulus 
+for 8 forward-looking variable(s)
+
+The rank condition is verified.
+
+
+You did not declare endogenous variables after the estimation/calib_smoother command.
+
+
+Loading 10 observations from dummy_data.mat
+
+[Warning: File 'mh_scale_fname' not found.] 
+[> In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('dynare_estimation_1', 'C:\Users\zhesh\Dropbox\Cowork\Sunk vacancy costs endogenous product variety labor market frictions\Towards_estimation\OurModel_Estimation_Dynare4.4.3\DynareImpRespMatching\dynare_estimation_1.m', 150)" style="font-weight:bold">dynare_estimation_1</a> (<a href="matlab: opentoline('C:\Users\zhesh\Dropbox\Cowork\Sunk vacancy costs endogenous product variety labor market frictions\Towards_estimation\OurModel_Estimation_Dynare4.4.3\DynareImpRespMatching\dynare_estimation_1.m',150,0)">line 150</a>)
+In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('dynare_estimation', 'C:\dynare\4.4.3\matlab\dynare_estimation.m', 89)" style="font-weight:bold">dynare_estimation</a> (<a href="matlab: opentoline('C:\dynare\4.4.3\matlab\dynare_estimation.m',89,0)">line 89</a>)
+In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('model', 'C:\Users\zhesh\Dropbox\Cowork\Sunk vacancy costs endogenous product variety labor market frictions\Towards_estimation\OurModel_Estimation_Dynare4.4.3\model.m', 517)" style="font-weight:bold">model</a> (<a href="matlab: opentoline('C:\Users\zhesh\Dropbox\Cowork\Sunk vacancy costs endogenous product variety labor market frictions\Towards_estimation\OurModel_Estimation_Dynare4.4.3\model.m',517,0)">line 517</a>)
+In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('dynare', 'C:\dynare\4.4.3\matlab\dynare.m', 180)" style="font-weight:bold">dynare</a> (<a href="matlab: opentoline('C:\dynare\4.4.3\matlab\dynare.m',180,0)">line 180</a>)
+In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('Main', 'C:\Users\zhesh\Dropbox\Cowork\Sunk vacancy costs endogenous product variety labor market frictions\Towards_estimation\OurModel_Estimation_Dynare4.4.3\Main.m', 15)" style="font-weight:bold">Main</a> (<a href="matlab: opentoline('C:\Users\zhesh\Dropbox\Cowork\Sunk vacancy costs endogenous product variety labor market frictions\Towards_estimation\OurModel_Estimation_Dynare4.4.3\Main.m',15,0)">line 15</a>)] 
+Initial value of the log posterior (or likelihood): -249.7322
+-----------------
+-----------------
+f at the beginning of new iteration,       249.7322444225
+Predicted improvement:   416575.653000759
+lambda =          1; f =          333.0453301
+lambda =    0.33333; f =          258.9891056
+lambda =    0.11111; f =          250.7607380
+lambda =   0.037037; f =          249.8465082
+lambda =   0.012346; f =          249.7449361
+lambda =  0.0041152; f =          249.7336532
+lambda =  0.0013717; f =          249.7324005
+lambda = 0.00045725; f =          249.7322616
+lambda = 0.00015242; f =          249.7322463
+lambda = 5.0805e-05; f =          249.7322446
+lambda = 1.6935e-05; f =          249.7322444
+lambda =  5.645e-06; f =          249.7322444
+lambda = 1.8817e-06; f =          255.3561657
+lambda = 6.2723e-07; f =          249.7956947
+lambda = 2.0908e-07; f =          249.6349403
+Norm of dx     9.1277
+----
+Improvement on iteration 1 =        0.097304143
+-----------------
+-----------------
+f at the beginning of new iteration,       249.6349402800
+Predicted improvement:       11.119472943
+lambda =          1; f =          249.6349404
+lambda =    0.33333; f =          249.6349403
+lambda =    0.11111; f =          249.6349403
+lambda =   0.037037; f =          273.9916990
+lambda =   0.012346; f =          252.8478619
+lambda =  0.0041152; f =          249.9863110
+lambda =  0.0013717; f =          249.6607985
+lambda = 0.00045725; f =          249.6329078
+lambda = 0.00015242; f =          249.6330589
+Norm of dx   0.047104
+----
+Improvement on iteration 2 =        0.002032435
+-----------------
+-----------------
+f at the beginning of new iteration,       249.6329078451
+Correct for low angle: 0.00127096
+Predicted improvement:        0.301565201
+lambda =          1; f =          253.8457049
+lambda =    0.33333; f =          249.8657860
+lambda =    0.11111; f =          249.6270368
+lambda =   0.037037; f =          249.6226209
+Norm of dx  0.0032124
+----
+Improvement on iteration 3 =        0.010286925
+-----------------
+-----------------
+f at the beginning of new iteration,       249.6226209203
+Correct for low angle: 0.00159046
+Predicted improvement:        0.177459765
+lambda =          1; f =          251.1258078
+lambda =    0.33333; f =          249.7616418
+lambda =    0.11111; f =          249.6210067
+lambda =   0.037037; f =          249.6163076
+Norm of dx  0.0031681
+----
+Improvement on iteration 4 =        0.006313326
+-----------------
+-----------------
+f at the beginning of new iteration,       249.6163075939
+Correct for low angle: 0.00275722
+Predicted improvement:        0.057951494
+lambda =          1; f =          250.0474096
+lambda =    0.33333; f =          249.6540397
+lambda =    0.11111; f =          249.6169894
+lambda =   0.037037; f =          249.6152019
+lambda =   0.012346; f =          249.6157904
+Norm of dx  0.0023841
+----
+Improvement on iteration 5 =        0.001105651
+-----------------
+-----------------
+f at the beginning of new iteration,       249.6152019425
+Predicted improvement:        0.031182267
+lambda =          1; f =          249.6521072
+lambda =    0.33333; f =          249.5949701
+lambda =    0.64439; f =          249.6045899
+lambda =     0.4339; f =          249.5949639
+lambda =    0.55011; f =          249.5986369
+Norm of dx  0.0024887
+----
+Improvement on iteration 6 =        0.020238086
+-----------------
+-----------------
+f at the beginning of new iteration,       249.5949638560
+Correct for low angle: 0.00196719
+Predicted improvement:        0.185221883
+lambda =          1; f =          250.6208486
+lambda =    0.33333; f =          250.4963417
+lambda =    0.11111; f =          249.6711681
+lambda =   0.037037; f =          249.6025607
+lambda =   0.012346; f =          249.5957111
+lambda =  0.0041152; f =          249.5950211
+lambda =  0.0013717; f =          249.5949619
+lambda = 0.00045725; f =          249.5949609
+lambda = 0.00015242; f =          249.5949626
+lambda = 5.0805e-05; f =          249.5949634
+lambda = 1.6935e-05; f =          249.5949637
+lambda =  5.645e-06; f =          249.5949638
+lambda = 1.8817e-06; f =          249.5949638
+lambda = 6.2723e-07; f =          249.5949639
+lambda = 2.0908e-07; f =          249.5949639
+lambda = 6.9692e-08; f =          249.5949639
+lambda = 2.3231e-08; f =          249.5949639
+lambda = 7.7435e-09; f =          249.5949639
+lambda = 2.5812e-09; f =          249.5949639
+Norm of dx  0.0059076
+----
+Improvement on iteration 7 =        0.000002997
+smallest step still improving too slow
+-----------------
+-----------------
+f at the beginning of new iteration,       249.5949608592
+Correct for low angle: 0.00186448
+Predicted improvement:        0.145501573
+lambda =          1; f =          260.9352854
+lambda =    0.33333; f =          250.1077479
+lambda =    0.11111; f =          249.6411345
+lambda =   0.037037; f =          249.5996316
+lambda =   0.012346; f =          249.5954186
+lambda =  0.0041152; f =          249.5949945
+lambda =  0.0013717; f =          249.5949590
+lambda = 0.00045725; f =          249.5949588
+lambda = 0.00015242; f =          249.5949600
+lambda = 5.0805e-05; f =          249.5949606
+lambda = 1.6935e-05; f =          249.5949608
+lambda =  5.645e-06; f =          249.5949608
+lambda = 1.8817e-06; f =          249.5949608
+lambda = 6.2723e-07; f =          249.5949609
+lambda = 2.0908e-07; f =          249.5949609
+lambda = 6.9692e-08; f =          249.5949609
+lambda = 2.3231e-08; f =          249.5949609
+lambda = 7.7435e-09; f =          249.5949609
+lambda = 2.5812e-09; f =          249.5949609
+Norm of dx  0.0047322
+----
+Improvement on iteration 8 =        0.000002083
+smallest step still improving too slow
+-----------------
+-----------------
+f at the beginning of new iteration,       249.5949587761
+Correct for low angle: 0.00189304
+Predicted improvement:        0.144073403
+lambda =          1; f =          260.9319025
+lambda =    0.33333; f =          250.1074800
+lambda =    0.11111; f =          249.6413332
+lambda =   0.037037; f =          249.5997269
+lambda =   0.012346; f =          249.5954523
+lambda =  0.0041152; f =          249.5950047
+lambda =  0.0013717; f =          249.5949610
+lambda = 0.00045725; f =          249.5949581
+lambda = 0.00015242; f =          249.5949584
+lambda = 5.0805e-05; f =          249.5949586
+lambda = 1.6935e-05; f =          249.5949587
+lambda =  5.645e-06; f =          249.5949588
+lambda = 1.8817e-06; f =          249.5949588
+lambda = 6.2723e-07; f =          249.5949588
+lambda = 2.0908e-07; f =          249.5949588
+lambda = 6.9692e-08; f =          249.5949588
+lambda = 2.3231e-08; f =          249.5949588
+lambda = 7.7435e-09; f =          249.5949588
+lambda = 2.5812e-09; f =          249.5949588
+Norm of dx  0.0047599
+----
+Improvement on iteration 9 =        0.000000701
+smallest step still improving too slow
+-----------------
+-----------------
+f at the beginning of new iteration,       249.5949580748
+Correct for low angle: 0.00191848
+Predicted improvement:        0.141510422
+lambda =          1; f =          260.5378870
+lambda =    0.33333; f =          250.0970698
+lambda =    0.11111; f =          249.6406866
+lambda =   0.037037; f =          249.5997322
+lambda =   0.012346; f =          249.5954757
+lambda =  0.0041152; f =          249.5950144
+lambda =  0.0013717; f =          249.5949640
+lambda = 0.00045725; f =          249.5949586
+lambda = 0.00015242; f =          249.5949581
+lambda = 5.0805e-05; f =          249.5949581
+lambda = 1.6935e-05; f =          249.5949581
+lambda =  5.645e-06; f =          249.5949581
+lambda = 1.8817e-06; f =          249.5949581
+lambda = 6.2723e-07; f =          249.5949581
+lambda = 2.0908e-07; f =          249.5949581
+lambda = 6.9692e-08; f =          249.5949581
+lambda = 2.3231e-08; f =          249.5949581
+lambda = 7.7435e-09; f =          249.5949581
+lambda = 2.5812e-09; f =          249.5949581
+Norm of dx  0.0047502
+----
+Improvement on iteration 10 =        0.000000007
+improvement < crit termination
+smallest step still improving too slow
+Objective function at mode: 249.594958
+
+POSTERIOR KERNEL OPTIMIZATION PROBLEM!
+ (minus) the hessian matrix at the "mode" is not positive definite!
+=> posterior variance of the estimated parameters are not positive.
+You should try to change the initial values of the parameters using
+the estimated_params_init block, or use another optimization routine.
+
+RESULTS FROM POSTERIOR ESTIMATION
+parameters
+          prior mean     mode    s.d. prior pstdev
+
+b_ratio       0.710   0.8590  0.0231 beta  0.2000 
+x_v           0.500   0.0000  0.0000 beta  0.2500 
+xi_inv        1.000   3.7397  0.0000 gamm  2.0000 
+delta         0.008   0.0088  0.0000 beta  0.0050 
+epsi          4.200   4.8054  0.5354 gamm  1.5000 
+rho_z         0.800   0.9847  0.0038 beta  0.2000 
+rho_delta     0.930   0.9592  0.0000 beta  0.1000 
+rho_s         0.800   0.8289  0.0378 beta  0.2000 
+sigma_z       0.010   0.0022  0.0004 invg  1.0000 
+sigma_delta   0.020   0.0141  0.0028 invg  0.0100 
+sigma_s       0.010   0.3147  0.0507 invg  1.0000 
+
+
+Log data density [Laplace approximation] is -288.337938.
+
+{Error using <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('chol')" style="font-weight:bold">chol</a>
+Matrix must be positive definite.
+
+Error in <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('metropolis_hastings_initialization', 'C:\dynare\4.4.3\matlab\metropolis_hastings_initialization.m', 68)" style="font-weight:bold">metropolis_hastings_initialization</a> (<a href="matlab: opentoline('C:\dynare\4.4.3\matlab\metropolis_hastings_initialization.m',68,0)">line 68</a>)
+d = chol(vv);
+
+Error in <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('random_walk_metropolis_hastings', 'C:\dynare\4.4.3\matlab\random_walk_metropolis_hastings.m', 63)" style="font-weight:bold">random_walk_metropolis_hastings</a> (<a href="matlab: opentoline('C:\dynare\4.4.3\matlab\random_walk_metropolis_hastings.m',63,0)">line 63</a>)
+    metropolis_hastings_initialization(TargetFun, xparam1, vv, mh_bounds,dataset_,options_,M_,estim_params_,bayestopt_,oo_);
+
+Error in <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('dynare_estimation_1', 'C:\Users\zhesh\Dropbox\Cowork\Sunk vacancy costs endogenous product variety labor market frictions\Towards_estimation\OurModel_Estimation_Dynare4.4.3\DynareImpRespMatching\dynare_estimation_1.m', 799)" style="font-weight:bold">dynare_estimation_1</a> (<a href="matlab: opentoline('C:\Users\zhesh\Dropbox\Cowork\Sunk vacancy costs endogenous product variety labor market frictions\Towards_estimation\OurModel_Estimation_Dynare4.4.3\DynareImpRespMatching\dynare_estimation_1.m',799,0)">line 799</a>)
+            feval(options_.posterior_sampling_method,objective_function,options_.proposal_distribution,xparam1,invhess,bounds,dataset_,options_,M_,estim_params_,bayestopt_,oo_);
+
+Error in <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('dynare_estimation', 'C:\dynare\4.4.3\matlab\dynare_estimation.m', 89)" style="font-weight:bold">dynare_estimation</a> (<a href="matlab: opentoline('C:\dynare\4.4.3\matlab\dynare_estimation.m',89,0)">line 89</a>)
+    dynare_estimation_1(var_list,dname);
+
+Error in <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('model', 'C:\Users\zhesh\Dropbox\Cowork\Sunk vacancy costs endogenous product variety labor market frictions\Towards_estimation\OurModel_Estimation_Dynare4.4.3\model.m', 517)" style="font-weight:bold">model</a> (<a href="matlab: opentoline('C:\Users\zhesh\Dropbox\Cowork\Sunk vacancy costs endogenous product variety labor market frictions\Towards_estimation\OurModel_Estimation_Dynare4.4.3\model.m',517,0)">line 517</a>)
+dynare_estimation(var_list_);
+
+Error in <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('dynare', 'C:\dynare\4.4.3\matlab\dynare.m', 180)" style="font-weight:bold">dynare</a> (<a href="matlab: opentoline('C:\dynare\4.4.3\matlab\dynare.m',180,0)">line 180</a>)
+evalin('base',fname) ;
+
+Error in <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('Main', 'C:\Users\zhesh\Dropbox\Cowork\Sunk vacancy costs endogenous product variety labor market frictions\Towards_estimation\OurModel_Estimation_Dynare4.4.3\Main.m', 15)" style="font-weight:bold">Main</a> (<a href="matlab: opentoline('C:\Users\zhesh\Dropbox\Cowork\Sunk vacancy costs endogenous product variety labor market frictions\Towards_estimation\OurModel_Estimation_Dynare4.4.3\Main.m',15,0)">line 15</a>)
+dynare model;
+} 
