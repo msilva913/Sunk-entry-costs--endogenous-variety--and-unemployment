@@ -343,7 +343,7 @@ estimation(first_obs=1,
            mh_replic=100000,%910000,%1500000,%720000,           
            mh_nblocks=1,%11,
            mh_init_scale=0.5,
-           mh_jscale=1.0,
+           mh_jscale=0.5,
            mh_drop=0.50);
     
 // evaluate at MCMC joint mode
