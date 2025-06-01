@@ -271,9 +271,9 @@ steady;
 check;
 
 shocks;
-var e_z = 1;
-var e_delta = 1;
-var e_s = 1;
+var e_z = 0.01;
+var e_delta = 0.01;
+var e_s = 0.01;
 end;
 
 
@@ -302,9 +302,9 @@ epsi,       gamma_pdf,      4.2, 1.5;
 rho_z,      beta_pdf,       0.8, 0.2;
 rho_delta,  beta_pdf,       0.93, 0.1;
 rho_s,      beta_pdf,       0.8, 0.2;
-sigma_z,    inv_gamma_pdf,  0.01, 1.0;
-sigma_delta,inv_gamma_pdf,  0.02, 0.01; // prior can be influenced by product destruction data, not in dataset
-sigma_s,    inv_gamma_pdf,  0.01, 1.0;
+sigma_z, 0.01, 0.000001, 0.2,    inv_gamma_pdf,  0.01, 1.0;
+sigma_delta, 0.01, 0.00001, 0.2,     inv_gamma_pdf,  0.02, 0.01; // prior can be influenced by product destruction data, not in dataset
+sigma_s, 0.01, 0.00001, 0.2,            inv_gamma_pdf,  0.01, 1.0;
 end;
 
 
@@ -338,9 +338,12 @@ estimation(first_obs=1,
            order=1,
            lik_init=1,
            prior_trunc=0,
-           mode_compute=6,
+           mode_compute=0,
            mode_file=model_mh_mode,
-           mh_replic=100000,%910000,%1500000,%720000,           
+           load_mh_file,
+           // mh_recover,
+           //mh_replic=100000,%910000,%1500000,%720000,     
+           mh_replic = 0,
            mh_nblocks=1,%11,
            mh_init_scale=0.5,
            mh_jscale=0.5,

@@ -471,9 +471,9 @@ oo_.dr.eigval = check(M_,options_,oo_);
 %
 make_ex_;
 M_.exo_det_length = 0;
-M_.Sigma_e(1, 1) = 1;
-M_.Sigma_e(2, 2) = 1;
-M_.Sigma_e(3, 3) = 1;
+M_.Sigma_e(1, 1) = 0.01;
+M_.Sigma_e(2, 2) = 0.01;
+M_.Sigma_e(3, 3) = 0.01;
 addpath('DynareUtilites');
 global estim_params_
 estim_params_.var_exo = [];
@@ -489,9 +489,9 @@ estim_params_.param_vals = [estim_params_.param_vals; 5, NaN, (-Inf), Inf, 2, 4.
 estim_params_.param_vals = [estim_params_.param_vals; 6, NaN, (-Inf), Inf, 1, 0.8, 0.2, NaN, NaN, NaN ];
 estim_params_.param_vals = [estim_params_.param_vals; 7, NaN, (-Inf), Inf, 1, 0.93, 0.1, NaN, NaN, NaN ];
 estim_params_.param_vals = [estim_params_.param_vals; 8, NaN, (-Inf), Inf, 1, 0.8, 0.2, NaN, NaN, NaN ];
-estim_params_.param_vals = [estim_params_.param_vals; 9, NaN, (-Inf), Inf, 4, 0.01, 1.0, NaN, NaN, NaN ];
-estim_params_.param_vals = [estim_params_.param_vals; 10, NaN, (-Inf), Inf, 4, 0.02, 0.01, NaN, NaN, NaN ];
-estim_params_.param_vals = [estim_params_.param_vals; 11, NaN, (-Inf), Inf, 4, 0.01, 1.0, NaN, NaN, NaN ];
+estim_params_.param_vals = [estim_params_.param_vals; 9, 0.01, 0.000001, 0.2, 4, 0.01, 1.0, NaN, NaN, NaN ];
+estim_params_.param_vals = [estim_params_.param_vals; 10, 0.01, 0.00001, 0.2, 4, 0.02, 0.01, NaN, NaN, NaN ];
+estim_params_.param_vals = [estim_params_.param_vals; 11, 0.01, 0.00001, 0.2, 4, 0.01, 1.0, NaN, NaN, NaN ];
 do_imp_resp_matching=1;                  
 if do_imp_resp_matching==1,
 addpath('DynareImpRespMatching');     
@@ -502,12 +502,13 @@ options_.prior_interval = 0.95;
 options_.conf_sig       = 0.95;
 options_.first_obs = 1;
 options_.lik_init = 1;
+options_.load_mh_file = 1;
 options_.mh_drop = 0.50;
 options_.mh_init_scale = 0.5;
 options_.mh_jscale = 0.5;
 options_.mh_nblck = 1;
-options_.mh_replic = 100000;
-options_.mode_compute = 6;
+options_.mh_replic = 0;
+options_.mode_compute = 0;
 options_.nograph = 1;
 options_.order = 1;
 options_.prior_trunc = 0;

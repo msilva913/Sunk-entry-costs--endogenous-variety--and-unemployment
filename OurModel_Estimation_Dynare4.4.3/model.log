@@ -120,14 +120,14 @@ EIGENVALUES:
                0               -0                0
                0               -0                0
                0               -0                0
-               0                0                0
-               0                0                0
-               0                0                0
-               0                0                0
-               0                0                0
-               0                0                0
-               0                0                0
-               0                0                0
+               0               -0                0
+               0               -0                0
+               0               -0                0
+               0               -0                0
+               0               -0                0
+               0               -0                0
+               0               -0                0
+               0               -0                0
        1.749e-17        1.749e-17                0
        1.598e-16       -1.598e-16                0
        6.804e-16       -6.804e-16                0
@@ -156,139 +156,406 @@ The rank condition is verified.
 You did not declare endogenous variables after the estimation/calib_smoother command.
 
 
-Loading 10 observations from dummy_data.mat
+{Error using <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('check_prior_bounds', 'C:\dynare\4.4.3\matlab\check_prior_bounds.m', 39)" style="font-weight:bold">check_prior_bounds</a> (<a href="matlab: opentoline('C:\dynare\4.4.3\matlab\check_prior_bounds.m',39,0)">line 39</a>)
+Initial value(s) of sigma_z, sigma_delta, sigma_s are outside parameter bounds. Potentially, you
+should set prior_trunc=0. If you used the mode_file-option, check whether your mode-file is
+consistent with the priors.
 
-[Warning: File 'mh_scale_fname' not found.] 
-[> In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('dynare_estimation_1', 'C:\Users\zhesh\Dropbox\Cowork\Sunk vacancy costs endogenous product variety labor market frictions\Towards_estimation\OurModel_Estimation_Dynare4.4.3_Trying\DynareImpRespMatching\dynare_estimation_1.m', 150)" style="font-weight:bold">dynare_estimation_1</a> (<a href="matlab: opentoline('C:\Users\zhesh\Dropbox\Cowork\Sunk vacancy costs endogenous product variety labor market frictions\Towards_estimation\OurModel_Estimation_Dynare4.4.3_Trying\DynareImpRespMatching\dynare_estimation_1.m',150,0)">line 150</a>)
-In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('dynare_estimation', 'C:\dynare\4.4.3\matlab\dynare_estimation.m', 89)" style="font-weight:bold">dynare_estimation</a> (<a href="matlab: opentoline('C:\dynare\4.4.3\matlab\dynare_estimation.m',89,0)">line 89</a>)
-In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('model', 'C:\Users\zhesh\Dropbox\Cowork\Sunk vacancy costs endogenous product variety labor market frictions\Towards_estimation\OurModel_Estimation_Dynare4.4.3_Trying\model.m', 517)" style="font-weight:bold">model</a> (<a href="matlab: opentoline('C:\Users\zhesh\Dropbox\Cowork\Sunk vacancy costs endogenous product variety labor market frictions\Towards_estimation\OurModel_Estimation_Dynare4.4.3_Trying\model.m',517,0)">line 517</a>)
-In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('dynare', 'C:\dynare\4.4.3\matlab\dynare.m', 180)" style="font-weight:bold">dynare</a> (<a href="matlab: opentoline('C:\dynare\4.4.3\matlab\dynare.m',180,0)">line 180</a>)
-In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('Main', 'C:\Users\zhesh\Dropbox\Cowork\Sunk vacancy costs endogenous product variety labor market frictions\Towards_estimation\OurModel_Estimation_Dynare4.4.3_Trying\Main.m', 15)" style="font-weight:bold">Main</a> (<a href="matlab: opentoline('C:\Users\zhesh\Dropbox\Cowork\Sunk vacancy costs endogenous product variety labor market frictions\Towards_estimation\OurModel_Estimation_Dynare4.4.3_Trying\Main.m',15,0)">line 15</a>)] 
-Initial value of the log posterior (or likelihood): -1253.3325
+Error in <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('dynare_estimation_init', 'C:\dynare\4.4.3\matlab\dynare_estimation_init.m', 271)" style="font-weight:bold">dynare_estimation_init</a> (<a href="matlab: opentoline('C:\dynare\4.4.3\matlab\dynare_estimation_init.m',271,0)">line 271</a>)
+    check_prior_bounds(xparam1,bounds,M_,estim_params_,options_,bayestopt_)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('dynare_estimation_1', 'C:\Users\msilv\Documents\GitHub\Sunk-entry-costs--endogenous-variety--and-unemployment\OurModel_Estimation_Dynare4.4.3\DynareImpRespMatching\dynare_estimation_1.m', 81)" style="font-weight:bold">dynare_estimation_1</a> (<a href="matlab: opentoline('C:\Users\msilv\Documents\GitHub\Sunk-entry-costs--endogenous-variety--and-unemployment\OurModel_Estimation_Dynare4.4.3\DynareImpRespMatching\dynare_estimation_1.m',81,0)">line 81</a>)
+[dataset_,xparam1, hh, M_, options_, oo_, estim_params_,bayestopt_] = dynare_estimation_init(var_list_, dname, [], M_, options_, oo_, estim_params_, bayestopt_);
+                                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('dynare_estimation', 'C:\dynare\4.4.3\matlab\dynare_estimation.m', 89)" style="font-weight:bold">dynare_estimation</a> (<a href="matlab: opentoline('C:\dynare\4.4.3\matlab\dynare_estimation.m',89,0)">line 89</a>)
+    dynare_estimation_1(var_list,dname);
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('model', 'C:\Users\msilv\Documents\GitHub\Sunk-entry-costs--endogenous-variety--and-unemployment\OurModel_Estimation_Dynare4.4.3\model.m', 518)" style="font-weight:bold">model</a> (<a href="matlab: opentoline('C:\Users\msilv\Documents\GitHub\Sunk-entry-costs--endogenous-variety--and-unemployment\OurModel_Estimation_Dynare4.4.3\model.m',518,0)">line 518</a>)
+dynare_estimation(var_list_);
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('dynare', 'C:\dynare\4.4.3\matlab\dynare.m', 180)" style="font-weight:bold">dynare</a> (<a href="matlab: opentoline('C:\dynare\4.4.3\matlab\dynare.m',180,0)">line 180</a>)
+evalin('base',fname) ;
+^^^^^^^^^^^^^^^^^^^^
+} 
+res = oo_;
+M = M_;
+save('res', 'res');
+save('M', 'M');
+posterior_density = res.posterior_density.parameters;
+{Unrecognized field name "posterior_density".
+} 
+res
 
-========================================================== 
-   Change in the covariance matrix = 0.00038773.
-   Mode improvement = 823.3783
-   New value of jscale = 0.038443
-========================================================== 
+res = 
 
-========================================================== 
-   Change in the covariance matrix = 0.00048762.
-   Mode improvement = 75.774
-   New value of jscale = 0.0014492
-========================================================== 
+  <a href="matlab:helpPopup('struct')" style="font-weight:bold">struct</a> with fields:
 
-========================================================== 
-   Change in the covariance matrix = 9.9195e-05.
-   Mode improvement = 104.0319
-   New value of jscale = 1.0047
-========================================================== 
+               exo_simul: [2×3 double]
+              endo_simul: []
+                      dr: [1×1 struct]
+        exo_steady_state: [3×1 double]
+    exo_det_steady_state: []
+           exo_det_simul: []
+            steady_state: [57×1 double]
 
-Optimal value of the scale parameter = 1.0047
+res.dr
 
-Final value of the log posterior (or likelihood): 250.1484
+ans = 
 
+  <a href="matlab:helpPopup('struct')" style="font-weight:bold">struct</a> with fields:
 
-RESULTS FROM POSTERIOR ESTIMATION
-parameters
-          prior mean     mode    s.d. prior pstdev
+    eigval: [40×1 double]
 
-b_ratio       0.710   0.8558  0.0084 beta  0.2000 
-x_v           0.500   0.0000  0.0000 beta  0.2500 
-xi_inv        1.000   3.7868  0.0045 gamm  2.0000 
-delta         0.008   0.0091  0.0005 beta  0.0050 
-epsi          4.200   4.6276  0.0044 gamm  1.5000 
-rho_z         0.800   0.9848  0.0069 beta  0.2000 
-rho_delta     0.930   0.9717  0.0031 beta  0.1000 
-rho_s         0.800   0.8260  0.0096 beta  0.2000 
-sigma_z       0.010   0.0022  0.0001 invg  1.0000 
-sigma_delta   0.020   0.0137  0.0028 invg  0.0100 
-sigma_s       0.010   0.3362  0.0100 invg  1.0000 
+res
 
+res = 
 
-Log data density [Laplace approximation] is -323.536767.
+  <a href="matlab:helpPopup('struct')" style="font-weight:bold">struct</a> with fields:
 
-Etimation::mcmc: One Chain mode.
-Estimation::mcmc: Old mh-files successfully erased!
-Estimation::mcmc: Old metropolis.log file successfully erased!
-Estimation::mcmc: Creation of a new metropolis.log file.
-Estimation::mcmc: Initialization at the posterior mode.
+               exo_simul: [2×3 double]
+              endo_simul: []
+                      dr: [1×1 struct]
+        exo_steady_state: [3×1 double]
+    exo_det_steady_state: []
+           exo_det_simul: []
+            steady_state: [57×1 double]
 
-Estimation::mcmc: Write details about the MCMC... Ok!
-Estimation::mcmc: Details about the MCMC are available in model/metropolis\model_mh_history_0.mat
+posterior_mode
+{Unrecognized function or variable 'posterior_mode'.
+} 
+posterior_mode
+{Unrecognized function or variable 'posterior_mode'.
+} 
+posterior_mode = res.posterior_mode.parameters;
+{Unrecognized field name "posterior_mode".
+} 
+M
 
+M = 
 
-Estimation::mcmc: Number of mh files: 11 per block.
-Estimation::mcmc: Total number of generated files: 11.
-Estimation::mcmc: Total number of iterations: 100000.
-Estimation::mcmc: Current acceptance ratio per chain: 
-                                                       Chain  1: 35.9626%
+  <a href="matlab:helpPopup('struct')" style="font-weight:bold">struct</a> with fields:
 
-Geweke (1992) Convergence Tests, based on means of draws 50000 to 60000 vs 75000 to 100000.
-p-values are for Chi2-test for equality of means.
-     Parameter 	   Post. Mean 	    Post. Std 	 p-val No Taper	 p-val 4% Taper	 p-val 8% Taper	 p-val 15% Taper
-   b_ratio     	        0.840 	        0.028 	        0.000	        0.001	        0.005	        0.013
-   x_v         	        0.000 	        0.000 	        0.000	        0.001	        0.008	        0.021
-   xi_inv      	        3.753 	        0.046 	        0.000	        0.083	        0.204	        0.328
-   delta       	        0.011 	        0.003 	        0.000	        0.000	        0.000	        0.000
-   epsi        	        4.788 	        0.079 	        0.000	        0.803	        0.852	        0.885
-   rho_z       	        0.980 	        0.008 	        0.000	        0.557	        0.605	        0.597
-   rho_delta   	        0.955 	        0.010 	        0.000	        0.457	        0.573	        0.643
-   rho_s       	        0.842 	        0.036 	        0.000	        0.000	        0.000	        0.000
-   sigma_z     	        0.003 	        0.000 	        0.000	        0.001	        0.007	        0.015
-   sigma_delta 	        0.017 	        0.006 	        0.000	        0.156	        0.237	        0.275
-   sigma_s     	        0.356 	        0.061 	        0.000	        0.000	        0.000	        0.000
+                               fname: 'model'
+                                bvar: []
+                              params: [20×1 double]
+                        endo_histval: []
+                  Correlation_matrix: [3×3 double]
+               Correlation_matrix_ME: 1
+                           exo_names: [3×7 char]
+                       exo_names_tex: [3×10 char]
+                      exo_names_long: [3×22 char]
+                          endo_names: [57×17 char]
+                      endo_names_tex: [57×21 char]
+                     endo_names_long: [57×47 char]
+                         param_names: [20×11 char]
+                     param_names_tex: [20×14 char]
+                    param_names_long: [20×60 char]
+                         exo_det_nbr: 0
+                             exo_nbr: 3
+                            endo_nbr: 57
+                           param_nbr: 20
+                       orig_endo_nbr: 40
+                            aux_vars: [1×17 struct]
+                             Sigma_e: [3×3 double]
+                                   H: 0
+                 sigma_e_is_diagonal: 1
+                  lead_lag_incidence: [3×57 double]
+                             nstatic: 18
+                               nfwrd: 7
+                               npred: 31
+                               nboth: 1
+                              nsfwrd: 8
+                              nspred: 32
+                            ndynamic: 39
+                      equations_tags: {40×3 cell}
+    static_and_dynamic_models_differ: 0
+                  exo_names_orig_ord: [1 2 3]
+                         maximum_lag: 1
+                        maximum_lead: 1
+                    maximum_endo_lag: 1
+                   maximum_endo_lead: 1
+                     maximum_exo_lag: 0
+                    maximum_exo_lead: 0
+                      NNZDerivatives: [3×1 double]
+                      exo_det_length: 0
+                               dname: 'model'
 
+res
 
-Estimation::mcmc: Total number of MH draws: 100000.
-Estimation::mcmc: Total number of generated MH files: 11.
-Estimation::mcmc: I'll use mh-files 6 to 11.
-Estimation::mcmc: In MH-file number 6 I'll start at line 1920.
-Estimation::mcmc: Finally I keep 50000 draws.
+res = 
 
-Estimation::marginal density: I'm computing the posterior mean and covariance...  Done!
-Estimation::marginal density: I'm computing the posterior log marginal density (modified harmonic mean)... Done!
+  <a href="matlab:helpPopup('struct')" style="font-weight:bold">struct</a> with fields:
 
+               exo_simul: [2×3 double]
+              endo_simul: []
+                      dr: [1×1 struct]
+        exo_steady_state: [3×1 double]
+    exo_det_steady_state: []
+           exo_det_simul: []
+            steady_state: [57×1 double]
 
-ESTIMATION RESULTS
+options_
 
-Log data density is -298.091595.
-posterior_moments: There are not enough draws computes to compute HPD Intervals. Skipping their computation.
-posterior_moments: There are not enough draws computes to compute deciles. Skipping their computation.
+options_ = 
 
-parameters
-              prior mean   post. mean        95% HPD interval    prior       pstdev
+  <a href="matlab:helpPopup('struct')" style="font-weight:bold">struct</a> with fields:
 
-b_ratio            0.710       0.8378      0.7797      0.8888   beta        0.2000
-x_v                0.500       0.0000      0.0000      0.0001   beta        0.2500
-xi_inv             1.000       3.7281      3.6353      3.8013   gamma       2.0000
-delta              0.008       0.0113      0.0061      0.0169   beta        0.0050
-epsi               4.200       4.7935      4.7097      4.8682   gamma       1.5000
-rho_z              0.800       0.9800      0.9646      0.9918   beta        0.2000
-rho_delta          0.930       0.9536      0.9329      0.9730   beta        0.1000
-rho_s              0.800       0.8481      0.7686      0.9143   beta        0.2000
-sigma_z            0.010       0.0025      0.0018      0.0032   invg        1.0000
-sigma_delta        0.020       0.0174      0.0078      0.0300   invg        0.0100
-sigma_s            0.010       0.3461      0.2295      0.4802   invg        1.0000
- 
-Correlations of Parameters (at Posterior Mode) > 0.7
-    {'rho_z'      }    {'b_ratio'  }    {[-0.8557]}
-    {'epsi'       }    {'xi_inv'   }    {[-0.8360]}
-    {'rho_delta'  }    {'xi_inv'   }    {[-0.7999]}
-    {'rho_s'      }    {'xi_inv'   }    {[-0.8936]}
-    {'sigma_s'    }    {'xi_inv'   }    {[-0.8709]}
-    {'rho_s'      }    {'delta'    }    {[ 0.7400]}
-    {'rho_s'      }    {'epsi'     }    {[ 0.8005]}
-    {'sigma_s'    }    {'epsi'     }    {[ 0.7884]}
-    {'rho_delta'  }    {'rho_z'    }    {[-0.7377]}
-    {'sigma_z'    }    {'rho_z'    }    {[ 0.7511]}
-    {'sigma_delta'}    {'rho_z'    }    {[ 0.8669]}
-    {'rho_s'      }    {'rho_delta'}    {[ 0.9580]}
-    {'sigma_z'    }    {'rho_delta'}    {[-0.9196]}
-    {'sigma_delta'}    {'rho_delta'}    {[-0.9395]}
-    {'sigma_z'    }    {'rho_s'    }    {[-0.7961]}
-    {'sigma_delta'}    {'rho_s'    }    {[-0.8388]}
-    {'sigma_delta'}    {'sigma_z'  }    {[ 0.9499]}
+                                               datafile: 'dummy_data'
+                                              verbosity: 1
+                                     terminal_condition: 0
+                                              rplottype: 0
+                                                   smpl: 0
+                                                dynatol: [1×1 struct]
+                                                  slowc: 1
+                                                 timing: 0
+                                                  gstep: [2×1 double]
+                                                  scalv: 1
+                                                  debug: 0
+                                           initval_file: 0
+                                          Schur_vec_tol: 1.0000e-11
+                                           qz_criterium: []
+                                      qz_zero_threshold: 1.0000e-06
+                             lyapunov_complex_threshold: 1.0000e-15
+                                             solve_tolf: 6.0555e-06
+                                             solve_tolx: 3.6669e-11
+                                                     dp: [1×1 struct]
+                                                 steady: [1×1 struct]
+                                                  simul: [1×1 struct]
+                                             mode_check: [1×1 struct]
+                                                threads: [1×1 struct]
+                                          jacobian_flag: 1
+                                       steadystate_flag: 1
+                                    steadystate_partial: []
+                                            steadystate: [1×1 struct]
+                                            ParamSubSet: 'None'
+                                               dsge_var: 0
+                                            dsge_varlag: 4
+                                            bvar_replic: 2000
+                                         bvar_prior_tau: 3
+                                       bvar_prior_decay: 0.5000
+                                      bvar_prior_lambda: 5
+                                          bvar_prior_mu: 2
+                                       bvar_prior_omega: 1
+                                        bvar_prior_flat: 0
+                                       bvar_prior_train: 0
+                                              gmhmaxlik: [1×1 struct]
+                                          nointeractive: 0
+                                               graphics: [1×1 struct]
+                                           graph_format: 'eps'
+                                              nodisplay: 0
+                                                nograph: 1
+                                                  XTick: []
+                                             XTickLabel: []
+                                           console_mode: 0
+                                                    irf: 40
+                                      impulse_responses: [1×1 struct]
+                                           relative_irf: 0
+                                                     ar: 5
+                                              hp_filter: 0
+                                               hp_ngrid: 512
+                                              nomoments: 0
+                                                 nocorr: 0
+                                                periods: 0
+                                                noprint: 0
+                                        SpectralDensity: [1×1 struct]
+                                            nofunctions: 0
+                                                     ep: [1×1 struct]
+                                                  bnlms: [1×1 struct]
+                                               particle: [1×1 struct]
+                                                    TeX: 0
+                                              xls_sheet: 1
+                                              xls_range: ''
+                                               forecast: 0
+                                                 linear: 0
+                                       stack_solve_algo: 0
+                                              markowitz: 0.5000
+                                minimal_solving_periods: 1
+                                                  order: 1
+                                                pruning: 0
+                                             solve_algo: 2
+                                                 replic: 50
+                                           simul_replic: 1
+                                                   drop: 100
+                                              use_qzdiv: 0
+                                             aim_solver: 0
+                                         k_order_solver: 0
+                                    partial_information: 0
+                                            ACES_solver: 0
+                     conditional_variance_decomposition: []
+                                          ramsey_policy: 0
+                                               timeless: 0
+                                         initial_period: [1 dates]
+                                                dataset: [1×1 struct]
+                                    Harvey_scale_factor: 10
+                                       MaxNumberOfBytes: 1000000
+                               MaximumNumberOfMegaBytes: 111
+                                    PosteriorSampleSize: 1000
+                                    analytic_derivation: 0
+                               analytic_derivation_mode: 0
+                                           bayesian_irf: 0
+                                    bayesian_th_moments: 0
+                                         diffuse_filter: 0
+                                      filter_step_ahead: []
+                                          filtered_vars: 0
+                                              first_obs: 1
+                                            kalman_algo: 0
+                                            fast_kalman: 0
+                                             kalman_tol: 1.0000e-10
+      use_univariate_filters_if_singularity_is_detected: 1
+                                            riccati_tol: 1.0000e-06
+                                               lik_algo: 1
+                                               lik_init: 1
+                                           load_mh_file: 1
+                                                logdata: 0
+                                              loglinear: 0
+                                    logged_steady_state: 0
+                                            mh_conf_sig: 0.9500
+                                         prior_interval: 0.9500
+                                                mh_drop: 0.5000
+                                              mh_jscale: 0.5000
+                                          mh_init_scale: 0.5000
+                                                mh_mode: 1
+                                               mh_nblck: 1
+                                             mh_recover: 0
+                                              mh_replic: 0
+                           recursive_estimation_restart: 0
+                                MCMC_jumping_covariance: 'hessian'
+                         use_calibration_initialization: 0
+                                           mode_compute: 0
+                                              mode_file: 'model_mh_mode'
+                                        moments_varendo: 0
+                                                     nk: 1
+                                             noconstant: 0
+                                           nodiagnostic: 0
+                           mh_posterior_mode_estimation: 0
+                                              prefilter: 0
+                                              presample: 0
+                                            prior_trunc: 0
+                                               smoother: 0
+                             student_degrees_of_freedom: 3
+                                              sub_draws: []
+                               use_mh_covariance_matrix: 0
+                                        gradient_method: 2
+                                       gradient_epsilon: 1.0000e-06
+                              posterior_sampling_method: 'random_walk_metropolis_hastings'
+                                  proposal_distribution: 'rand_multivariate_normal'
+                                          trace_plot_ma: 200
+                       mh_autocorrelation_function_size: 30
+                                            plot_priors: 1
+                                           cova_compute: 1
+                                               parallel: 0
+                                          parallel_info: [1×1 struct]
+                          number_of_grid_points_for_kde: 512
+               conditional_variance_decomposition_dates: [1 5 9 13 17 37 77 117 157 197]
+                                      filter_covariance: 0
+                                   filter_decomposition: 0
+                                selected_variables_only: 0
+    initialize_estimated_parameters_with_the_prior_mode: 0
+                                         estimation_dll: 0
+                                               conf_sig: 0.9500
+                                          homotopy_mode: 0
+                                         homotopy_steps: 1
+                                homotopy_force_continue: 0
+                                                simplex: [1×1 struct]
+                                                  cmaes: [1×1 struct]
+                                                 simpsa: [1×1 struct]
+                                               prior_mc: 20000
+                           prior_analysis_endo_var_list: []
+                                                  block: 0
+                                                use_dll: 0
+                                               bytecode: 0
+                                           sylvester_fp: 0
+                              sylvester_fixed_point_tol: 1.0000e-12
+                                            lyapunov_fp: 0
+                                            lyapunov_db: 0
+                                           lyapunov_srs: 0
+                               lyapunov_fixed_point_tol: 1.0000e-10
+                                  lyapunov_doubling_tol: 1.0000e-16
+                                     dr_cycle_reduction: 0
+                                 dr_cycle_reduction_tol: 1.0000e-07
+                               dr_logarithmic_reduction: 0
+                           dr_logarithmic_reduction_tol: 1.0000e-12
+                       dr_logarithmic_reduction_maxiter: 100
+                                           initial_date: [1×1 struct]
+                                   discretionary_policy: 0
+                                      discretionary_tol: 1.0000e-07
+                                          parameter_set: []
+                                       nonlinear_filter: []
+                                                     ms: [1×1 struct]
+                                     graph_save_formats: [1×1 struct]
+                                      risky_steadystate: 0
+                                       endogenous_prior: 0
+                          endogenous_prior_restrictions: [1×1 struct]
+                                                    osr: [1×1 struct]
+                                                    gpu: 0
+                                            convergence: [1×1 struct]
+                                    DynareRandomStreams: [1×1 struct]
+                                                 varobs: 'Y'
+                                              varobs_id: 23
+                                                varlist: []
 
-Total computing time : 1h14m44s
-Note: warning(s) encountered in MATLAB/Octave code
+res
+
+res = 
+
+  <a href="matlab:helpPopup('struct')" style="font-weight:bold">struct</a> with fields:
+
+               exo_simul: [2×3 double]
+              endo_simul: []
+                      dr: [1×1 struct]
+        exo_steady_state: [3×1 double]
+    exo_det_steady_state: []
+           exo_det_simul: []
+            steady_state: [57×1 double]
+
+M
+
+M = 
+
+  <a href="matlab:helpPopup('struct')" style="font-weight:bold">struct</a> with fields:
+
+                               fname: 'model'
+                                bvar: []
+                              params: [20×1 double]
+                        endo_histval: []
+                  Correlation_matrix: [3×3 double]
+               Correlation_matrix_ME: 1
+                           exo_names: [3×7 char]
+                       exo_names_tex: [3×10 char]
+                      exo_names_long: [3×22 char]
+                          endo_names: [57×17 char]
+                      endo_names_tex: [57×21 char]
+                     endo_names_long: [57×47 char]
+                         param_names: [20×11 char]
+                     param_names_tex: [20×14 char]
+                    param_names_long: [20×60 char]
+                         exo_det_nbr: 0
+                             exo_nbr: 3
+                            endo_nbr: 57
+                           param_nbr: 20
+                       orig_endo_nbr: 40
+                            aux_vars: [1×17 struct]
+                             Sigma_e: [3×3 double]
+                                   H: 0
+                 sigma_e_is_diagonal: 1
+                  lead_lag_incidence: [3×57 double]
+                             nstatic: 18
+                               nfwrd: 7
+                               npred: 31
+                               nboth: 1
+                              nsfwrd: 8
+                              nspred: 32
+                            ndynamic: 39
+                      equations_tags: {40×3 cell}
+    static_and_dynamic_models_differ: 0
+                  exo_names_orig_ord: [1 2 3]
+                         maximum_lag: 1
+                        maximum_lead: 1
+                    maximum_endo_lag: 1
+                   maximum_endo_lead: 1
+                     maximum_exo_lag: 0
+                    maximum_exo_lead: 0
+                      NNZDerivatives: [3×1 double]
+                      exo_det_length: 0
+                               dname: 'model'
+
