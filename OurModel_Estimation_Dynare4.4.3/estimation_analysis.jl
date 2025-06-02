@@ -53,6 +53,21 @@ function gamma_map(m::Float64, s::Float64)
     return alpha, beta
 end
 
+function inverse_gamma_map(m::Float64, s::Float64)
+    if m <= 0 || s <= 0
+        throw(ArgumentError("Mean and standard deviation must be positive."))
+    end
+# Calculate alpha using the mean formula
+alpha = 2 + (m^2 / s^2)
+
+# Calculate beta using the formula derived from the mean
+beta = m * (alpha - 1)
+return alpha, beta
+end 
+
+
+
+# sigma,      gamma_pdf,      1.5, 0.5;
 # b_ratio,    beta_pdf,       0.71, 0.2;
 # x_v,        beta_pdf,       0.5, 0.25;
 # xi_inv,     gamma_pdf,      1.0, 2;
@@ -64,6 +79,12 @@ end
 # sigma_z, 0.01, 0.000001, 0.2,    inv_gamma_pdf,  0.01, 1.0;
 # sigma_delta, 0.01, 0.00001, 0.2,     inv_gamma_pdf,  0.02, 0.01; 
 # sigma_s, 0.01, 0.00001, 0.2,            inv_gamma_pdf,  0.01, 1.0;
+
+# sigma prior 
+α, β = gamma_map(1.5, 0.5)
+gamma_dist = Gamma(α, β)
+sigma_x = 0.5:0.1:2.0
+sigma_prior_pdf = pdf(gamma_dist, sigma_x)
 
 # xi_inv prior 
 α, β = gamma_map(1.0, 2.0)
@@ -89,16 +110,39 @@ beta_dist = Beta(α, β)
 b_x = 0.4:0.025:0.95
 b_prior_pdf = pdf(beta_dist, b_x)
 
+# Shocks 
+# sigma_z prior 
+α, β = inverse_gamma_map(0.01, 1.0)
+inverse_gamma_dist = InverseGamma(α, β)
+sigma_z_x = 0.001:0.001:0.1
+sigma_z_prior_pdf = pdf(inverse_gamma_dist, sigma_z_x)
+
+# sigma_delta prior 
+α, β = inverse_gamma_map(0.02, 0.01)
+inverse_gamma_dist = InverseGamma(α, β)
+sigma_delta_x = 0.001:0.005:0.04
+sigma_delta_prior_pdf = pdf(inverse_gamma_dist, sigma_delta_x)
+
+α, β = inverse_gamma_map(0.02, 0.01)
+inverse_gamma_dist = InverseGamma(α, β)
+sigma_delta_x = 0.001:0.005:0.04
+sigma_delta_prior_pdf = pdf(inverse_gamma_dist, sigma_delta_x)
+
 
 # Table: prior mean, prior std, posterior mean, posterior std
+sigma_vals, sigma_density = columns(struc["sigma"])
 ξ_inv_vals, ξ_inv_density = columns(struc["xi_inv"])
 epsi_vals, epsi_density = columns(struc["epsi"])
 delta_vals, delta_density = columns(struc["delta"])
 b_vals, b_density = columns(struc["b_ratio"])
 
+# Density of shock parameters
 rho_z_vals, rho_z_density = columns(struc["rho_z"])
 rho_delta_vals, rho_delta_density = columns(struc["rho_delta"])
 rho_s_vals, rho_s_density = columns(struc["rho_s"])
+sigma_z_vals, sigma_z_density = columns(struc["sigma_z"])
+sigma_delta_vals, sigma_delta_density = columns(struc["sigma_delta"])
+sigma_s_vals, sigma_s_density = columns(struc["sigma_delta"])
 
 # Vector of dictionaries
 params = [
@@ -153,9 +197,12 @@ params = [
     Dict("vals" => rho_z_vals, "density" => rho_z_density, "x" => rho_z_x, "prior_pdf" => rho_z_prior_pdf, "xlabel" => " ρ_z"),
     Dict("vals" => rho_delta_vals, "density" => rho_delta_density, "x" => rho_delta_x, "prior_pdf" => rho_delta_prior_pdf, "xlabel" => "ρ_δ"),
     Dict("vals" => rho_s_vals, "density" => rho_s_density, "x" => rho_s_x, "prior_pdf" => rho_s_prior_pdf, "xlabel" => "ρ_s"),
+    Dict("vals" => sigma_z_vals, "density" => sigma_z_density, "x" => sigma_z_x, "prior_pdf" => sigma_z_prior_pdf, "xlabel" => " σ_z")
+    Dict("vals" => sigma_delta_vals, "density" => sigma_delta_density, "x" => sigma_delta_x, "prior_pdf" => sigma_delta_prior_pdf, "xlabel" => "σ_δ")
+    Dict("vals" => sigma_s_vals, "density" => sigma_s_density, "x" => sigma_s_x, "prior_pdf" => sigma_s_prior_pdf, "xlabel" => "σ_s")
 ]
 
-fig, axs = subplots(1, 3, figsize=(14, 4))
+fig, axs = subplots(2, 3, figsize=(14, 4))
 axs = axs[:]
 
 for (i, ax) in enumerate(axs)
@@ -181,8 +228,6 @@ savefig("posterior_priors_shocks.pdf")
 
 # Distribution: structural parameters
 key_map = ["σ_a", "ζ", "η", "ρ_ZI", "ρ_N", "ρ_D", "θ", "Ψ_K", "ρ_C", "ρ_g"]
-
-
 
 fig = plt.figure(figsize=(14, 4))
 # First subplot for ϕ

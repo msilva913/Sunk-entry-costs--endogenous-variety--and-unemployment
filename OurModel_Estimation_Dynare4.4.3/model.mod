@@ -346,12 +346,12 @@ estimation(first_obs=1,
            mode_compute=6,
            //mode_file=model_mh_mode,
            //load_mh_file,
-           // mh_recover,
+           //mh_recover,
            mh_replic=100000,%910000,%1500000,%720000,     
            //mh_replic = 0,
            mh_nblocks=1,%11,
-           mh_init_scale=0.5,
-           mh_jscale=0.5,
+           mh_init_scale=0.001,
+           mh_jscale=0.00001,
            mh_drop=0.50);
     
 // evaluate at MCMC joint mode
