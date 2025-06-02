@@ -90,6 +90,7 @@ varexo
 
 parameters
     // Labor market parameters
+    sigma       ${\sigma}$      (long_name='Inverse of intertemporal elasticity of substitution')
     b_ratio     ${b}$           (long_name='Replacement ratio: unemployment benefits to wages')
     x_v         ${x_v}$         (long_name='Share of hiring costs from vacancy creation')
     xi_inv      ${1/\xi}$       (long_name='Inverse elasticity of entrants to vacancy value')
@@ -106,7 +107,6 @@ parameters
     // Fixed parameters
     beta        ${\beta}$       (long_name='Discount factor')
     eta_L       ${\eta_L}$      (long_name='Elasticity of matching function with respect to unemployment')
-    sigma       ${\sigma}$      (long_name='Inverse of intertemporal elasticity of substitution')
     tau         ${\tau}$        (long_name='Aggregate separation rate')
     // Implied parameters from the steady state
     A           ${A}$           (long_name='Match efficiency')
@@ -224,22 +224,22 @@ model;
 // Group 8: observables
 
     [name='Unemployment observation']
-    u_obs = 1/3*(u+u(-1)+u(-2));
+    u_obs = log(1/3*(u+u(-1)+u(-2)));
 
     [name='Vacancy observation']
-    v_obs = 1/3*(v+v(-1)+v(-2));
+    v_obs = log(1/3*(v+v(-1)+v(-2)));
 
     [name='Tightness observation']
-    theta_obs = v_obs/u_obs;
+    theta_obs = v_obs - u_obs;
 
     [name='Labor productivity observation']
     lp_obs = 1/3*(exp(log_z)+exp(log_z(-1))+exp(log_z(-2)));
 
     [name='Job separation observation'] //
-    s_obs = 1/3*(exp(log_s)+exp(log_s(-1))+exp(log_s(-2)));
+    s_obs = log(exp(log_s)+exp(log_s(-1))+exp(log_s(-2)));
 
     [name='Business formation observation']
-    bf_obs = (N_e+N_e(-1)+N_e(-2))/steady_state(N);
+    bf_obs = log(N_e+N_e(-1)+N_e(-2));
 
 // Group 9: lag observables
 
@@ -294,14 +294,15 @@ addpath('DynareUtilites');
 ///////////////////////////////////////////////////////////////////////////
 
 estimated_params;
+sigma,      gamma_pdf,      1.5, 0.5;
 b_ratio,    beta_pdf,       0.71, 0.2;
 x_v,        beta_pdf,       0.5, 0.25;
 xi_inv,     gamma_pdf,      1.0, 2;
 delta,      beta_pdf,       0.0083, 0.005; // 0.0083 monthly corresponds to 10% annual
 epsi,       gamma_pdf,      4.2, 1.5;
-rho_z,      beta_pdf,       0.8, 0.2;
-rho_delta,  beta_pdf,       0.93, 0.1;
-rho_s,      beta_pdf,       0.8, 0.2;
+rho_z,      beta_pdf,       0.8, 0.1; // adjust prior standard dev.
+rho_delta,  beta_pdf,       0.93, 0.05;
+rho_s,      beta_pdf,       0.8, 0.1;
 sigma_z, 0.01, 0.000001, 0.2,    inv_gamma_pdf,  0.01, 1.0;
 sigma_delta, 0.01, 0.00001, 0.2,     inv_gamma_pdf,  0.02, 0.01; // prior can be influenced by product destruction data, not in dataset
 sigma_s, 0.01, 0.00001, 0.2,            inv_gamma_pdf,  0.01, 1.0;
@@ -338,12 +339,12 @@ estimation(first_obs=1,
            order=1,
            lik_init=1,
            prior_trunc=0,
-           mode_compute=9,
+           mode_compute=6,
            //mode_file=model_mh_mode,
-           load_mh_file,
+           //load_mh_file,
            // mh_recover,
-           //mh_replic=100000,%910000,%1500000,%720000,     
-           mh_replic = 0,
+           mh_replic=100000,%910000,%1500000,%720000,     
+           //mh_replic = 0,
            mh_nblocks=1,%11,
            mh_init_scale=0.5,
            mh_jscale=0.5,

@@ -5,7 +5,7 @@ delete('*.asv');
 
 addpath C:\dynare\4.4.3\matlab
 
-firstrun = 0;
+firstrun = 1;
 
 if firstrun == 1
     mh;

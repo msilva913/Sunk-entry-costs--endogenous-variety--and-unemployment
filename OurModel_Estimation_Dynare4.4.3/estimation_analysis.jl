@@ -96,6 +96,10 @@ epsi_vals, epsi_density = columns(struc["epsi"])
 delta_vals, delta_density = columns(struc["delta"])
 b_vals, b_density = columns(struc["b_ratio"])
 
+rho_z_vals, rho_z_density = columns(struc["rho_z"])
+rho_delta_vals, rho_delta_density = columns(struc["rho_delta"])
+rho_s_vals, rho_s_density = columns(struc["rho_s"])
+
 # Vector of dictionaries
 params = [
     Dict("vals" => ξ_inv_vals, "density" => ξ_inv_density, "x" => ξ_inv_x, "prior_pdf" => ξ_prior_pdf, "xlabel" => "ξ_inv"),
@@ -126,23 +130,54 @@ display(fig)
 plt.savefig("posterior_prior_plots.pdf")
 
 
-# phi prior
-α, β = beta_map(0.32, 0.2)
+# Shock processes
+#rho_z
+α, β = beta_map(0.8, 0.1)
 beta_dist = Beta(α, β)
-ϕ_x = 0:0.01:1
-ϕ_prior_pdf = pdf(beta_dist, ϕ_x)
+rho_z_x = 0.7:0.001:0.999
+rho_z_prior_pdf = pdf(beta_dist, rho_z_x)
 
-# eta prior
-α, β = gamma_map(0.2, 0.15)
-gamma_dist = Gamma(α, β)
-η_x = 0:0.01:1
-gamma_prior_pdf = pdf(beta_dist, η_x)
-
-# νR_prior
-α, β = beta_map(0.2, 0.1)
+#rho_delta
+α, β = beta_map(0.93, 0.05)
 beta_dist = Beta(α, β)
-νR_x = 0:0.01:1
-νR_prior_pdf = pdf(beta_dist, νR_x )
+rho_delta_x = 0.8:0.01:0.99
+rho_delta_prior_pdf = pdf(beta_dist, rho_delta_x)
+
+# rho_s
+α, β = beta_map(0.8, 0.1)
+beta_dist = Beta(α, β)
+rho_s_x = 0.7:0.01:0.99
+rho_s_prior_pdf = pdf(beta_dist, rho_s_x)
+
+params = [
+    Dict("vals" => rho_z_vals, "density" => rho_z_density, "x" => rho_z_x, "prior_pdf" => rho_z_prior_pdf, "xlabel" => " ρ_z"),
+    Dict("vals" => rho_delta_vals, "density" => rho_delta_density, "x" => rho_delta_x, "prior_pdf" => rho_delta_prior_pdf, "xlabel" => "ρ_δ"),
+    Dict("vals" => rho_s_vals, "density" => rho_s_density, "x" => rho_s_x, "prior_pdf" => rho_s_prior_pdf, "xlabel" => "ρ_s"),
+]
+
+fig, axs = subplots(1, 3, figsize=(14, 4))
+axs = axs[:]
+
+for (i, ax) in enumerate(axs)
+    param = params[i]
+    ax.plot(param["vals"], param["density"], linewidth=1.5, color="orange", label="Posterior", zorder=2)
+    ax.fill_between(param["vals"], param["density"], color="gold", alpha=0.3, zorder=1)
+    ax.plot(param["x"], param["prior_pdf"], linewidth=1, linestyle="--", color="blue", label="Prior", zorder=2)
+    ax.fill_between(param["x"], param["prior_pdf"], color="cyan", alpha=0.3, zorder=1)
+    ax.set_xlabel(param["xlabel"], fontsize=14)
+    ax.set_ylabel("Density", fontsize=12)
+    ax.legend(loc="upper right", fontsize=10)
+    ax.grid(linestyle="--", alpha=0.7)
+    ax.set_xlim(minimum(param["x"]), maximum(param["x"]))
+    ax.set_ylim(0, maximum(param["density"]) * 1.1)
+end
+
+tight_layout()
+display(fig)
+savefig("posterior_priors_shocks.pdf")
+
+
+
 
 # Distribution: structural parameters
 key_map = ["σ_a", "ζ", "η", "ρ_ZI", "ρ_N", "ρ_D", "θ", "Ψ_K", "ρ_C", "ρ_g"]

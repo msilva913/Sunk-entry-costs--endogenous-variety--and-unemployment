@@ -17,9 +17,9 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [ ...
-    beta, eta_L, sigma, tau, ...                % predetermined parameters
+    beta, eta_L, tau, ...                % predetermined parameters
     f_ss, q_ss, N_ss, w_ss, ls_ss, ...          % Target steady-state values
-    b_ratio, x_v, xi_inv, delta, epsi, ...      % Estimated parameters
+    sigma, b_ratio, x_v, xi_inv, delta, epsi, ...      % Estimated parameters
         rho_z, rho_delta, rho_s, sigma_z, sigma_delta, sigma_s ...
     ] = params
 
@@ -27,7 +27,7 @@ function [ ...
 %% Predetermined parameters - Fixed model coefficients
 beta       = 0.99673;   % Discount factor (4% annual interest rate)
 eta_L      = 0.6;       % Elasticity of matching function wrt unemployment
-sigma      = 1.0;       % Inverse of intertemporal elast. of sub. (log utility)
+%sigma      = 1.0;       % Inverse of intertemporal elast. of sub. (log utility)
 tau        = 0.031;     % Aggregate separation rate %tau = s+ delta(1-s) \approx s + delta
 
 
@@ -45,6 +45,7 @@ ls_ss       = 0.66;     % Labor share of income
 %% Estimated parameters - estimated via Bayesian methods
 
 % Labor market parameters 
+sigma      = 1.0;       % Inverse of intertemporal elast. of sub. (log utility)
 b_ratio     = 0.71;     % Outside option of worker
 x_v         = 0.10;     % share of sunk/non-fixed matching costs to total costs: κ = (1-x_v)/x_v*K/q
 xi_inv      = 1/0.265;  % inverse elasticity of entry to vacancy value

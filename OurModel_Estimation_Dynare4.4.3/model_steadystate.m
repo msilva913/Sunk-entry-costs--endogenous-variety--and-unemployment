@@ -18,30 +18,30 @@ global M_
 
 if isnan(M_.params)
     [ ...
-    beta, eta_L, sigma, tau, ...                % predetermined parameters
+    beta, eta_L, tau, ...                % predetermined parameters
     f_ss, q_ss, N_ss, w_ss, ls_ss, ...          % Target steady-state values
-    b_ratio, x_v, xi_inv, delta, epsi, ...      % Estimated parameters
+    sigma, b_ratio, x_v, xi_inv, delta, epsi, ...      % Estimated parameters
         rho_z, rho_delta, rho_s, sigma_z, sigma_delta, sigma_s ...
     ] ...
     = params;
 else
     [ ...
-    beta, eta_L, sigma, tau, ...                % predetermined parameters
+    beta, eta_L, tau, ...                % predetermined parameters
     f_ss, q_ss, N_ss, w_ss, ls_ss, ...          % Target steady-state values
     ] ...
     = params;
-    
-    b_ratio     = M_.params(1);    
-    x_v         = M_.params(2);
-    xi_inv      = M_.params(3);    
-    delta       = M_.params(4);
-    epsi        = M_.params(5);
-    rho_z       = M_.params(6);    
-    rho_delta   = M_.params(7);    
-    rho_s       = M_.params(8);
-    sigma_z     = M_.params(9);
-    sigma_delta = M_.params(10);
-    sigma_s     = M_.params(11);
+    sigma       = M_.params(1);
+    b_ratio     = M_.params(2);    
+    x_v         = M_.params(3);
+    xi_inv      = M_.params(4);    
+    delta       = M_.params(5);
+    epsi        = M_.params(6);
+    rho_z       = M_.params(7);    
+    rho_delta   = M_.params(8);    
+    rho_s       = M_.params(9);
+    sigma_z     = M_.params(10);
+    sigma_delta = M_.params(11);
+    sigma_s     = M_.params(12);
 end
 
 
@@ -108,12 +108,12 @@ log_z_ss    = log(z_ss);
 log_delta_ss= log(delta);
 log_s_ss    = log(s_ss);
 
-u_obs_ss    = u_ss;
-v_obs_ss    = v_ss;
-theta_obs_ss= v_ss/u_ss;
+u_obs_ss    = log(u_ss);
+v_obs_ss    = log(v_ss);
+theta_obs_ss= log(v_ss/u_ss);
 lp_obs_ss   = z_ss;
-s_obs_ss    = s_ss;
-bf_obs_ss   = 3*N_e_ss/N_ss;
+s_obs_ss    = log(3*s_ss);
+bf_obs_ss   = log(3*N_e_ss);
 
 
 %% Put steady states into ys vector
@@ -175,24 +175,24 @@ ys(40)      = bf_obs_ss;
 if isnan(M_.params)
     
     M_.params       = nan(20,1);
-       
-    M_.params(1)    = b_ratio;
-    M_.params(2)    = x_v;
-    M_.params(3)    = xi_inv;
-    M_.params(4)    = delta;
-    M_.params(5)    = epsi;
-    M_.params(6)    = rho_z;
-    M_.params(7)    = rho_delta;
-    M_.params(8)    = rho_s;
-    M_.params(9)    = sigma_z;
-    M_.params(10)   = sigma_delta;
-    M_.params(11)   = sigma_s;
+    M_.params(1)    = sigma;   
+    M_.params(2)    = b_ratio;
+    M_.params(3)    = x_v;
+    M_.params(4)    = xi_inv;
+    M_.params(5)    = delta;
+    M_.params(6)    = epsi;
+    M_.params(7)    = rho_z;
+    M_.params(8)    = rho_delta;
+    M_.params(9)    = rho_s;
+    M_.params(10)    = sigma_z;
+    M_.params(11)   = sigma_delta;
+    M_.params(12)   = sigma_s;
         
 end
 
-M_.params(12)   = beta;
-M_.params(13)   = eta_L;
-M_.params(14)   = sigma;
+M_.params(13)   = beta;
+M_.params(14)   = eta_L;
+%M_.params(14)   = sigma;
 M_.params(15)   = tau;
 
 M_.params(16)   = A;
@@ -203,6 +203,7 @@ M_.params(20)   = phi;
 
 % disp('------ Parameter Values ------');
 % disp(['beta = ', num2str(beta)]);
+ disp(['sigma = ', num2str(sigma)]);
 % disp(['delta = ', num2str(delta)]);  % Check delta is in (0,1)
 % disp(['tau = ', num2str(tau)]);      % Must be > delta
 % disp(['epsi = ', num2str(epsi)]);    % Must be > 1
