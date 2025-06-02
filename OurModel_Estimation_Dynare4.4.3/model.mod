@@ -57,7 +57,8 @@ var
     Y_c         ${Y_c}$         (long_name='Retail output')
     Y           ${Y}$           (long_name='Aggregate output')
     ls          ${\ell s}$      (long_name='Labor share')
-    s_agg       ${s_{agg}$      (long_name='Aggregate separation rate')
+    lp          ${lp}$          (long_name='Labor productivity')
+    s_agg       ${s_{agg}}$      (long_name='Aggregate separation rate')
 // Group 7: exogenous process
     log_z       ${log(z)}$      (long_name='Tech shocks')
     log_delta   ${log(\delta)}$ (long_name='Product destruction shocks')
@@ -73,7 +74,7 @@ var
     v_obs_lag  
     theta_obs_lag
     lp_obs_lag   
-    s_obs_lag   
+    tau_obs_lag   
     bf_obs_lag
 ;
 
@@ -259,7 +260,7 @@ model;
     lp_obs_lag = lp_obs(-3);
 
     [name='Lag job separation observation'] //
-    s_obs_lag = s_obs(-3);
+    tau_obs_lag = tau_obs(-3);
 
     [name='Lag business formation observation']
     bf_obs_lag = bf_obs(-3);

@@ -91,6 +91,7 @@ Omega_ss    = F_ss/(1+xi_inv)*(e_ss/F_ss)^(1+xi_inv);
 C_ss        = Y_c_ss - Omega_ss - kappa_ss*v_ss*q_ss;
 lam_ss      = C_ss^(-sigma);
 Y_ss        = Y_c_ss + nu_f_ss*N_e_ss;
+lp_ss       = Y_ss/(p_ss*L_ss);
 
 A           = f_ss/(theta_ss^(1-eta_L));
 f_e         = (mu_ss-1)*z_ss*(L_ss/N_ss)*(1-delta)/(delta*mu_ss+rho_ss);
@@ -111,14 +112,14 @@ log_s_ss    = log(s_ss);
 u_obs_ss    = log(u_ss);
 v_obs_ss    = log(v_ss);
 theta_obs_ss= log(v_ss/u_ss);
-lp_obs_ss   = z_ss;
+lp_obs_ss   = log(lp_ss);
 tau_obs_ss    = log(s_agg_ss);
 bf_obs_ss   = log(3*N_e_ss);
 
 
 %% Put steady states into ys vector
 
-ys          = nan(40,1);
+ys          = nan(41,1);
 
 ys(1)       = theta_ss;
 ys(2)       = f_ss;
@@ -149,25 +150,26 @@ ys(21)      = C_ss;
 ys(22)      = Y_c_ss;
 ys(23)      = Y_ss;
 ys(24)      = ls_ss;
-ys(25)      = s_agg_ss;
+ys(25)      = lp_ss;
+ys(26)      = s_agg_ss;
 
-ys(26)      = log_z_ss;
-ys(27)      = log_delta_ss;
-ys(28)      = log_s_ss;
+ys(27)      = log_z_ss;
+ys(28)      = log_delta_ss;
+ys(29)      = log_s_ss;
 
-ys(29)      = u_obs_ss;
-ys(30)      = v_obs_ss;
-ys(31)      = theta_obs_ss;
-ys(32)      = lp_obs_ss;
-ys(33)      = tau_obs_ss;
-ys(34)      = bf_obs_ss;
+ys(30)      = u_obs_ss;
+ys(31)      = v_obs_ss;
+ys(32)      = theta_obs_ss;
+ys(33)      = lp_obs_ss;
+ys(34)      = tau_obs_ss;
+ys(35)      = bf_obs_ss;
 
-ys(35)      = u_obs_ss;
-ys(36)      = v_obs_ss;
-ys(37)      = theta_obs_ss;
-ys(38)      = lp_obs_ss;
-ys(39)      = tau_obs_ss;
-ys(40)      = bf_obs_ss;
+ys(36)      = u_obs_ss;
+ys(37)      = v_obs_ss;
+ys(38)      = theta_obs_ss;
+ys(39)      = lp_obs_ss;
+ys(40)      = tau_obs_ss;
+ys(41)      = bf_obs_ss;
 
 
 %% Save parameters
@@ -203,7 +205,6 @@ M_.params(20)   = phi;
 
 % disp('------ Parameter Values ------');
 % disp(['beta = ', num2str(beta)]);
- disp(['sigma = ', num2str(sigma)]);
 % disp(['delta = ', num2str(delta)]);  % Check delta is in (0,1)
 % disp(['tau = ', num2str(tau)]);      % Must be > delta
 % disp(['epsi = ', num2str(epsi)]);    % Must be > 1

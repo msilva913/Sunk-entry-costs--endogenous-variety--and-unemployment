@@ -17,6 +17,7 @@
 % Names of estimated parameters
 parameter_names = [
     % Structural prameters
+    {'sigma'}       % Risk aversion paramter
     {'b_ratio'}     % Outside option of unemployed worker
     {'x_v'}         % share of sunk/non-fixed matching costs to total costs: κ = (1-x_v)/x_v*K/q
     {'xi_inv'}      % inverse elasticity of entry to vacancy value
@@ -34,16 +35,16 @@ parameter_names = [
 % Load all model parameters from the params.m file
 % The params.m file should contain definitions for all these variables
 [ ...
-    ~, ~, ~, ~, ...
+    ~, ~, ~, ...
     ~, ~, ~, ~, ~, ...
-    b_ratio, x_v, xi_inv, delta, epsi, ...  % Parameters being estimated
+    sigma, b_ratio, x_v, xi_inv, delta, epsi, ...  % Parameters being estimated
     rho_z, rho_delta, rho_s, sigma_z, sigma_delta, sigma_s ...
     ] ...
     = params;
 
 % Create vector of parameters to be estimated
 % Note: The transpose operation (') is crucial for correct dimensionality
-xparam1 = [b_ratio, x_v, xi_inv, delta, epsi, ...
+xparam1 = [sigma, b_ratio, x_v, xi_inv, delta, epsi, ...
          rho_z, rho_delta, rho_s, sigma_z, sigma_delta, sigma_s]';
 
 % Initialize optimization/MCMC variables

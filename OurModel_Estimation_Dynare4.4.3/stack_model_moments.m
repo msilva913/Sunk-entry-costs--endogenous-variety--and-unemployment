@@ -24,7 +24,7 @@
 % Note: The 'composite' variable (col 14) combines wage, labor and rate effects
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% u_obs, v_obs, theta_obs, z_obs, s_obs, bf_obs;
+% u_obs, v_obs, theta_obs, lp_obs, tau_obs, bf_obs;
 
 model_moments = nan(27,1);
 
