@@ -112,7 +112,7 @@ u_obs_ss    = log(u_ss);
 v_obs_ss    = log(v_ss);
 theta_obs_ss= log(v_ss/u_ss);
 lp_obs_ss   = z_ss;
-s_obs_ss    = log(3*s_ss);
+tau_obs_ss    = log(s_agg_ss);
 bf_obs_ss   = log(3*N_e_ss);
 
 
@@ -159,14 +159,14 @@ ys(29)      = u_obs_ss;
 ys(30)      = v_obs_ss;
 ys(31)      = theta_obs_ss;
 ys(32)      = lp_obs_ss;
-ys(33)      = s_obs_ss;
+ys(33)      = tau_obs_ss;
 ys(34)      = bf_obs_ss;
 
 ys(35)      = u_obs_ss;
 ys(36)      = v_obs_ss;
 ys(37)      = theta_obs_ss;
 ys(38)      = lp_obs_ss;
-ys(39)      = s_obs_ss;
+ys(39)      = tau_obs_ss;
 ys(40)      = bf_obs_ss;
 
 
