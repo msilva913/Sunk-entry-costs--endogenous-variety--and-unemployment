@@ -26,7 +26,6 @@ posterior_density = res.posterior_density.parameters;
 save('posterior_density', 'posterior_density')
 
 
-
 posterior_mode = res.posterior_mode.parameters;
 save('posterior_mode', 'posterior_mode');
 posterior_mean = res.posterior_mean.parameters;

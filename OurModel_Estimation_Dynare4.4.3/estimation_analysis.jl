@@ -25,8 +25,6 @@ n = length(keys(struc))
 posterior_mean = matopen("posterior_mean.mat")
 posterior_mean_struc = read(posterior_mean, "posterior_mean")
 
-posterior_mean_struc_shocks = read(posterior_mean_shocks, "posterior_mean_shocks")
-
 # Posterior standard deviation
 # posterior_std = matopen("posterior_std.mat")
 # posterior_std_shocks = matopen("posterior_std_shocks.mat")
@@ -85,54 +83,45 @@ beta_dist = Beta(α, β)
 delta_x = 0.006:0.00025:0.025
 delta_prior_pdf = pdf(beta_dist, delta_x)
 
+#b prior 
+α, β = beta_map(0.71, 0.2)
+beta_dist = Beta(α, β)
+b_x = 0.4:0.025:0.95
+b_prior_pdf = pdf(beta_dist, b_x)
+
 
 # Table: prior mean, prior std, posterior mean, posterior std
 ξ_inv_vals, ξ_inv_density = columns(struc["xi_inv"])
 epsi_vals, epsi_density = columns(struc["epsi"])
 delta_vals, delta_density = columns(struc["delta"])
+b_vals, b_density = columns(struc["b_ratio"])
 
+# Vector of dictionaries
+params = [
+    Dict("vals" => ξ_inv_vals, "density" => ξ_inv_density, "x" => ξ_inv_x, "prior_pdf" => ξ_prior_pdf, "xlabel" => "ξ_inv"),
+    Dict("vals" => epsi_vals, "density" => epsi_density, "x" => epsi_x, "prior_pdf" => epsi_prior_pdf, "xlabel" => "ε"),
+    Dict("vals" => delta_vals, "density" => delta_density, "x" => delta_x, "prior_pdf" => delta_prior_pdf, "xlabel" => "δ"),
+    Dict("vals" => b_vals, "density" => b_density, "x" => b_x, "prior_pdf" => b_prior_pdf, "xlabel" => "b")
+]
 
-fig = plt.figure(figsize=(14, 4))
-# First subplot for xi_inv
-ax1 = fig.add_subplot(1, 3, 1)
-ax1.plot(ξ_inv_vals, ξ_inv_density, linewidth=1.5, color="orange", label="Posterior", zorder=2)
-ax1.fill_between(ξ_inv_vals, ξ_inv_density, color="gold", alpha=0.3, zorder=1)
-ax1.plot(ξ_inv_x, ξ_prior_pdf, linewidth=1, linestyle="--", color="blue", label="Prior", zorder=2)
-ax1.fill_between(ξ_inv_x, ξ_prior_pdf, color="cyan", alpha=0.3, zorder=1)
-ax1.set_xlabel("ξ_inv", fontsize=14)
-ax1.set_ylabel("Density", fontsize=12)
-ax1.legend(loc="upper right", fontsize=10)
-ax1.grid(linestyle="--", alpha=0.7)
-ax1.set_xlim(minimum(ξ_inv_x), maximum(ξ_inv_x))
-ax1.set_ylim(0, max(maximum(ξ_inv_density), maximum(ξ_inv_density)) * 1.1)
+fig, axs = subplots(2, 2, figsize=(14, 6))
+axs = axs[:]
 
-# Second subplot for ε
-ax2 = fig.add_subplot(1, 3, 2)
-ax2.plot(epsi_vals, epsi_density, linewidth=1.5, color="orange", label="Posterior", zorder=2)
-ax2.fill_between(epsi_vals, epsi_density, color="gold", alpha=0.3, zorder=1)
-ax2.plot(epsi_x, epsi_prior_pdf, linewidth=1, linestyle="--", color="blue", label="Prior", zorder=2)
-ax2.fill_between(epsi_x, epsi_prior_pdf, color="cyan", alpha=0.3, zorder=1)
-ax2.set_xlabel("ε", fontsize=14)
-ax2.set_ylabel("Density", fontsize=12)
-ax2.legend(loc="upper right", fontsize=10)
-ax2.grid(linestyle="--", alpha=0.7)
-ax2.set_xlim(minimum(epsi_x), maximum(epsi_x))
-ax2.set_ylim(0, max(maximum(epsi_density), maximum(epsi_density)) * 1.1)
+for (i, ax) in enumerate(axs)
+    param = params[i]
+    ax.plot(param["vals"], param["density"], linewidth=1.5, color="orange", label="Posterior", zorder=2)
+    ax.fill_between(param["vals"], param["density"], color="gold", alpha=0.3, zorder=1)
+    ax.plot(param["x"], param["prior_pdf"], linewidth=1, linestyle="--", color="blue", label="Prior", zorder=2)
+    ax.fill_between(param["x"], param["prior_pdf"], color="cyan", alpha=0.3, zorder=1)
+    ax.set_xlabel(param["xlabel"], fontsize=14)
+    ax.set_ylabel("Density", fontsize=12)
+    ax.legend(loc="upper right", fontsize=10)
+    ax.grid(linestyle="--", alpha=0.7)
+    ax.set_xlim(minimum(param["x"]), maximum(param["x"]))
+    ax.set_ylim(0, maximum(param["density"]) * 1.1)
+end
 
-# Third subplot for δ
-ax3 = fig.add_subplot(1, 3, 3)
-ax3.plot(delta_vals, delta_density, linewidth=1.5, color="orange", label="Posterior", zorder=2)
-ax3.fill_between(delta_vals, delta_density, color="gold", alpha=0.3, zorder=1)
-ax3.plot(delta_x, delta_prior_pdf, linewidth=1, linestyle="--", color="blue", label="Prior", zorder=2)
-ax3.fill_between(delta_x, delta_prior_pdf, color="cyan", alpha=0.3, zorder=1)
-ax3.set_xlabel("δ", fontsize=14)
-ax3.set_ylabel("Density", fontsize=12)
-ax3.legend(loc="upper right", fontsize=10)
-ax3.grid(linestyle="--", alpha=0.7)
-ax3.set_xlim(minimum(delta_x), maximum(delta_x))
-ax3.set_ylim(0, max(maximum(delta_density), maximum(delta_density)) * 1.1)
-
-plt.tight_layout()
+tight_layout()
 display(fig)
 plt.savefig("posterior_prior_plots.pdf")
 
