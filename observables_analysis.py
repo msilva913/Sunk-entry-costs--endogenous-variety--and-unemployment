@@ -209,33 +209,34 @@ def first_moments(dat, alpha_hat):
 data_means = first_moments(dat, alpha_hat)
 print(data_means.to_latex())
 
-choice_vars = ["u", "v", "lp"]
-pairplot = sns.pairplot(cycle_hp[choice_vars], diag_kind="kde")
-pairplot.fig.set_size_inches(12, 8)  # Width, Height
-
-# Add best-fit lines to scatter plots
-for ax in pairplot.axes.flatten():
-    if ax.get_xlabel() in choice_vars and ax.get_ylabel() in choice_vars:
-        sns.regplot(x=ax.get_xlabel(), y=ax.get_ylabel(), data=cycle_hp, ax=ax,
-                    scatter=False, color='gray')
-for i, j in zip(*np.triu_indices_from(pairplot.axes, 1)):
-    pairplot.axes[i, j].set_visible(False)
-plt.show()
-
+choice_vars1 = ["u", "v", "lp"]
+choice_vars2 = ["u", "s", "bf"] 
+savefigs=["pairplot_labor.pdf","pairplot_new.pdf"]
 ###################
-choice_vars = ["u", "s", "bf"]
-pairplot = sns.pairplot(cycle_hp[choice_vars], diag_kind="kde")
-pairplot.fig.set_size_inches(12, 8)  # Width, Height
-
-# Add best-fit lines to scatter plots
-for ax in pairplot.axes.flatten():
-    if ax.get_xlabel() in choice_vars and ax.get_ylabel() in choice_vars:
-        sns.regplot(x=ax.get_xlabel(), y=ax.get_ylabel(), data=cycle_hp, ax=ax,
-                    scatter=False, color='gray')
-for i, j in zip(*np.triu_indices_from(pairplot.axes, 1)):
-    pairplot.axes[i, j].set_visible(False)
-plt.show()
+for item, choice_vars in enumerate([choice_vars1, choice_vars2]):
+    pairplot = sns.pairplot(cycle_hp[choice_vars], diag_kind="kde",
+               plot_kws={'alpha': 0.7},
+               diag_kws={'color': 'gold'})
+    pairplot.fig.set_size_inches(12, 8)  # Width, Height
     
+    # Add best-fit lines to scatter plots
+    for ax in pairplot.diag_axes:
+        ax.set_xlim(cycle_hp[choice_vars[:-1]].min().min(), cycle_hp[choice_vars[:-1]].max().max())
+    for ax in pairplot.axes.flatten():
+        if ax.get_xlabel() in choice_vars and ax.get_ylabel() in choice_vars:
+            sns.regplot(x=ax.get_xlabel(), y=ax.get_ylabel(), data=cycle_hp, ax=ax,
+                        scatter=False, color='gray')
+    for i, j in zip(*np.triu_indices_from(pairplot.axes, 1)):
+        pairplot.axes[i, j].set_visible(False)
+        x = choice_vars[j]
+        y = choice_vars[i]
+        corr = cycle_hp[x].corr(cycle_hp[y])
+        pairplot.axes[j, i].annotate(f'Corr: {corr:.2f}', xy=(0.1, 0.9), 
+                xycoords='axes fraction',fontsize=10, 
+                bbox=dict(boxstyle="round, pad=0.3", edgecolor="gray", facecolor="white"))
+    plt.show()
+    plt.savefig(savefigs[item])
+        
     
      
     
