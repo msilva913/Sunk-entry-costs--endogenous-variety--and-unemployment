@@ -17,6 +17,7 @@ dynare model;
 Data_vs_Model = [Values,model_moments];
 
 %%% Save results %%%
+save("model_moments", "model_moments") % for table
 res = oo_;
 M = M_;
 save('res', 'res');
