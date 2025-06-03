@@ -433,9 +433,10 @@ def dynamic_correlations(cycle, var, ylabel, nleads=12, nlags=12, title=None,
 
 def stacked_moments(cycle, var_labels):
     cycle = cycle[var_labels]
+    
     # Calculate standard deviations
     stds = cycle.std(axis=0)
-    stds = pd.DataFrame(stds)
+    stds = pd.DataFrame(stds, columns=['Value'])
     stds.index = [f"std({label})" for label in var_labels]
     
     # Calculate correlation matrix and extract unique correlations
@@ -448,17 +449,14 @@ def stacked_moments(cycle, var_labels):
         for j in range(i+1, len(var_labels)):
             cor_labels.append(f"Cor({var_labels[i]}, {var_labels[j]})")
     
-    cor_dat = pd.DataFrame(corr_array, index=cor_labels)
+    cor_dat = pd.DataFrame(corr_array, index=cor_labels, columns=['Value'])
     
     # Calculate autocorrelations
-    autocorr_dat = pd.DataFrame([cycle[x].autocorr() for x in var_labels])
+    autocorr_dat = pd.DataFrame([cycle[x].autocorr() for x in var_labels], columns=['Value'])
     autocorr_dat.index = [f"Cor({label}, {label}_{{-1}})" for label in var_labels]
     
     # Combine all into a single DataFrame
     summ = pd.concat([stds, cor_dat, autocorr_dat])
-    
-    # Print formatted output
-    print(summ.style.format(precision=3).to_latex())
     
     return summ
 

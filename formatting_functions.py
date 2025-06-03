@@ -1,4 +1,4 @@
-
+from tabulate import tabulate
 
 def create_stats_table(data, caption="Statistical Summary", label="tab:stats"):
      """
@@ -57,3 +57,94 @@ def create_stats_table(data, caption="Statistical Summary", label="tab:stats"):
          ])
  
      return "\n".join(latex_str)
+ 
+def generate_stacked_moments_latex_table(summ):
+    """
+    Generate LaTeX code for a table with subheadings for standard deviations,
+    cross correlations, and autocorrelations using booktabs for publication quality.
+    Handles any number of columns, dynamically generating column headers.
+
+    Parameters:
+    summ (pd.DataFrame): DataFrame containing the stacked moments with index labels indicating their type.
+
+    Returns:
+    str: A string containing the LaTeX code for the table.
+    """
+    # Generate headers for each column dynamically
+    headers = [f"Value{i+1}" for i in range(summ.shape[1])]
+    
+    # Initialize LaTeX table string with booktabs formatting
+    header_line = " & ".join([f"\\textbf{{{header}}}" for header in headers])
+    latex_table = f"""
+    \\begin{{table}}[h]
+    \\centering
+    \\begin{{tabular}}{{l{'r' * len(headers)}}}
+    \\toprule
+    \\textbf{{Moment Type}} & {header_line} \\\\
+    \\midrule
+    \\multicolumn{{{len(headers) + 1}}}{{c}}{{\\textbf{{Standard Deviations}}}} \\\\
+    \\midrule
+    """
+    
+    # Add standard deviations
+    stds = summ.loc[summ.index.str.startswith('std')]
+    for idx in stds.index:
+        values_line = " & ".join([f"{val:.3f}" for val in stds.loc[idx]])
+        latex_table += f"{idx} & {values_line} \\\\ \n"
+    
+    latex_table += f"\\midrule \\multicolumn{{{len(headers) + 1}}}{{c}}{{\\textbf{{Cross Correlations}}}} \\\\ \\midrule \n"
+    
+    # Add cross correlations
+    cross_corrs = summ.loc[summ.index.str.startswith('Cor(') & ~summ.index.str.contains('_{-1}')]
+    for idx in cross_corrs.index:
+        values_line = " & ".join([f"{val:.3f}" for val in cross_corrs.loc[idx]])
+        latex_table += f"{idx} & {values_line} \\\\ \n"
+    
+    latex_table += f"\\midrule \\multicolumn{{{len(headers) + 1}}}{{c}}{{\\textbf{{Autocorrelations}}}} \\\\ \\midrule \n"
+    
+    # Add autocorrelations
+    autocorrs = summ.loc[summ.index.str.contains('_{-1}')]
+    for idx in autocorrs.index:
+        values_line = " & ".join([f"{val:.3f}" for val in autocorrs.loc[idx]])
+        latex_table += f"{idx} & {values_line} \\\\ \n"
+    
+    latex_table += f"\\bottomrule \\end{{tabular}} \\caption{{Stacked Moments Summary}} \\end{{table}}"
+    
+    return latex_table
+
+def generate_stacked_moments_table(summ):
+    """
+    Generate a plain text table using the tabulate package for moments, including subheadings.
+
+    Parameters:
+    summ (pd.DataFrame): DataFrame containing the stacked moments with index labels indicating their type.
+
+    Returns:
+    str: A string containing the formatted text table.
+    """
+    # Prepare headers
+    headers = ["Moment Type"] + [f"Value{i+1}" for i in range(summ.shape[1])]
+    
+    # Initialize list for table data
+    data = []
+    
+    # Add standard deviations subheading and data
+    data.append(["Standard Deviations"] + [""] * summ.shape[1])
+    stds = summ.loc[summ.index.str.startswith('std')]
+    for idx in stds.index:
+        data.append([idx] + list(map(lambda x: f"{x:.3f}", stds.loc[idx])))
+    
+    # Add cross correlations subheading and data
+    data.append(["Cross Correlations"] + [""] * summ.shape[1])
+    cross_corrs = summ.loc[summ.index.str.startswith('Cor(') & ~summ.index.str.contains('_{-1}')]
+    for idx in cross_corrs.index:
+        data.append([idx] + list(map(lambda x: f"{x:.3f}", cross_corrs.loc[idx])))
+    
+    # Add autocorrelations subheading and data
+    data.append(["Autocorrelations"] + [""] * summ.shape[1])
+    autocorrs = summ.loc[summ.index.str.contains('_{-1}')]
+    for idx in autocorrs.index:
+        data.append([idx] + list(map(lambda x: f"{x:.3f}", autocorrs.loc[idx])))
+    
+    # Use tabulate to format the table
+    return tabulate(data, headers=headers, tablefmt="plain")
