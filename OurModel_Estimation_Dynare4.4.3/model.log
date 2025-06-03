@@ -131,10 +131,10 @@ EIGENVALUES:
                0                0                0
                0                0                0
                0               -0                0
-       7.848e-18       -7.848e-18                0
-       7.061e-17       -7.061e-17                0
-       1.142e-16        1.142e-16                0
-       1.989e-16       -1.989e-16                0
+       9.632e-17        9.632e-17                0
+       1.308e-16        1.308e-16                0
+       2.263e-16       -2.263e-16                0
+       2.507e-16        2.507e-16                0
           0.4029           0.4029                0
             0.78             0.78                0
            0.935            0.935                0
@@ -144,11 +144,11 @@ EIGENVALUES:
            1.024            1.024                0
            1.026            1.026                0
            3.748            3.748                0
-       1.048e+16       -1.048e+16                0
-       1.072e+16       -1.072e+16                0
-       3.228e+16        3.228e+16                0
-       2.061e+17        2.061e+17                0
-       2.588e+17       -2.588e+17                0
+       1.973e+16       -1.973e+16                0
+       3.173e+16        3.173e+16                0
+       4.726e+16        4.726e+16                0
+       1.141e+17        1.141e+17                0
+        1.69e+18        -1.69e+18                0
 
 
 There are 8 eigenvalue(s) larger than 1 in modulus 
@@ -162,28 +162,29 @@ You did not declare endogenous variables after the estimation/calib_smoother com
 Loading 10 observations from dummy_data.mat
 
 [Warning: File 'mh_scale_fname' not found.] 
-[> In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('dynare_estimation_1', 'C:\Users\msilva913\Documents\GitHub\Sunk_entry_costs_endogenous_variety_unemployment\OurModel_Estimation_Dynare4.4.3\DynareImpRespMatching\dynare_estimation_1.m', 150)" style="font-weight:bold">dynare_estimation_1</a> (<a href="matlab: opentoline('C:\Users\msilva913\Documents\GitHub\Sunk_entry_costs_endogenous_variety_unemployment\OurModel_Estimation_Dynare4.4.3\DynareImpRespMatching\dynare_estimation_1.m',150,0)">line 150</a>)
-In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('dynare_estimation', 'C:\dynare\4.4.3\matlab\dynare_estimation.m', 89)" style="font-weight:bold">dynare_estimation</a> (<a href="matlab: opentoline('C:\dynare\4.4.3\matlab\dynare_estimation.m',89,0)">line 89</a>)
-In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('model', 'C:\Users\msilva913\Documents\GitHub\Sunk_entry_costs_endogenous_variety_unemployment\OurModel_Estimation_Dynare4.4.3\model.m', 522)" style="font-weight:bold">model</a> (<a href="matlab: opentoline('C:\Users\msilva913\Documents\GitHub\Sunk_entry_costs_endogenous_variety_unemployment\OurModel_Estimation_Dynare4.4.3\model.m',522,0)">line 522</a>)
-In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('dynare', 'C:\dynare\4.4.3\matlab\dynare.m', 180)" style="font-weight:bold">dynare</a> (<a href="matlab: opentoline('C:\dynare\4.4.3\matlab\dynare.m',180,0)">line 180</a>)] 
-Initial value of the log posterior (or likelihood): -1332.6931
-{Index exceeds the number of array elements. Index must not exceed 0.
+[> In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('dynare_estimation_1', 'C:\Users\msilv\Documents\GitHub\Sunk-entry-costs--endogenous-variety--and-unemployment\OurModel_Estimation_Dynare4.4.3\DynareImpRespMatching\dynare_estimation_1.m', 150)" style="font-weight:bold">dynare_estimation_1</a> (<a href="matlab: opentoline('C:\Users\msilv\Documents\GitHub\Sunk-entry-costs--endogenous-variety--and-unemployment\OurModel_Estimation_Dynare4.4.3\DynareImpRespMatching\dynare_estimation_1.m',150,0)">line 150</a>)
+In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('dynare_estimation', 'C:\dynare\4.4.3\matlab\dynare_estimation.m', 89)" style="font-weight:bold">dynare_estimation</a> (<a href="matlab: opentoline('C:\dynare\4.4.3\matlab\dynare_estimation.m',89,0)">line 89</a>)
+In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('model', 'C:\Users\msilv\Documents\GitHub\Sunk-entry-costs--endogenous-variety--and-unemployment\OurModel_Estimation_Dynare4.4.3\model.m', 522)" style="font-weight:bold">model</a> (<a href="matlab: opentoline('C:\Users\msilv\Documents\GitHub\Sunk-entry-costs--endogenous-variety--and-unemployment\OurModel_Estimation_Dynare4.4.3\model.m',522,0)">line 522</a>)
+In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('dynare', 'C:\dynare\4.4.3\matlab\dynare.m', 180)" style="font-weight:bold">dynare</a> (<a href="matlab: opentoline('C:\dynare\4.4.3\matlab\dynare.m',180,0)">line 180</a>)] 
+Initial value of the log posterior (or likelihood): -1331.1903
+{Index exceeds array bounds.
 
-Error in <a href="matlab:matlab.internal.language.introspective.errorDocCallback('dsge_likelihood', 'C:\Users\msilva913\Documents\GitHub\Sunk_entry_costs_endogenous_variety_unemployment\OurModel_Estimation_Dynare4.4.3\DynareImpRespMatching\dsge_likelihood.m', 301)" style="font-weight:bold">dsge_likelihood</a> (<a href="matlab: opentoline('C:\Users\msilva913\Documents\GitHub\Sunk_entry_costs_endogenous_variety_unemployment\OurModel_Estimation_Dynare4.4.3\DynareImpRespMatching\dsge_likelihood.m',301,0)">line 301</a>)
+Error in <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('dsge_likelihood', 'C:\Users\msilv\Documents\GitHub\Sunk-entry-costs--endogenous-variety--and-unemployment\OurModel_Estimation_Dynare4.4.3\DynareImpRespMatching\dsge_likelihood.m', 301)" style="font-weight:bold">dsge_likelihood</a> (<a href="matlab: opentoline('C:\Users\msilv\Documents\GitHub\Sunk-entry-costs--endogenous-variety--and-unemployment\OurModel_Estimation_Dynare4.4.3\DynareImpRespMatching\dsge_likelihood.m',301,0)">line 301</a>)
         constant = SteadyState(BayesInfo.mfys);
-
-Error in <a href="matlab:matlab.internal.language.introspective.errorDocCallback('gmhmaxlik', 'C:\dynare\4.4.3\matlab\gmhmaxlik.m', 108)" style="font-weight:bold">gmhmaxlik</a> (<a href="matlab: opentoline('C:\dynare\4.4.3\matlab\gmhmaxlik.m',108,0)">line 108</a>)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('gmhmaxlik', 'C:\dynare\4.4.3\matlab\gmhmaxlik.m', 108)" style="font-weight:bold">gmhmaxlik</a> (<a href="matlab: opentoline('C:\dynare\4.4.3\matlab\gmhmaxlik.m',108,0)">line 108</a>)
         logpo2 = - feval(ObjFun,proposal,varargin{:});
-
-Error in <a href="matlab:matlab.internal.language.introspective.errorDocCallback('dynare_estimation_1', 'C:\Users\msilva913\Documents\GitHub\Sunk_entry_costs_endogenous_variety_unemployment\OurModel_Estimation_Dynare4.4.3\DynareImpRespMatching\dynare_estimation_1.m', 426)" style="font-weight:bold">dynare_estimation_1</a> (<a href="matlab: opentoline('C:\Users\msilva913\Documents\GitHub\Sunk_entry_costs_endogenous_variety_unemployment\OurModel_Estimation_Dynare4.4.3\DynareImpRespMatching\dynare_estimation_1.m',426,0)">line 426</a>)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('dynare_estimation_1', 'C:\Users\msilv\Documents\GitHub\Sunk-entry-costs--endogenous-variety--and-unemployment\OurModel_Estimation_Dynare4.4.3\DynareImpRespMatching\dynare_estimation_1.m', 426)" style="font-weight:bold">dynare_estimation_1</a> (<a href="matlab: opentoline('C:\Users\msilv\Documents\GitHub\Sunk-entry-costs--endogenous-variety--and-unemployment\OurModel_Estimation_Dynare4.4.3\DynareImpRespMatching\dynare_estimation_1.m',426,0)">line 426</a>)
                     gmhmaxlik(objective_function,xparam1,[lb ub],gmhmaxlikOptions,Scale,flag,MeanPar,CovJump,dataset_,options_,M_,estim_params_,bayestopt_,oo_);
-
-Error in <a href="matlab:matlab.internal.language.introspective.errorDocCallback('dynare_estimation', 'C:\dynare\4.4.3\matlab\dynare_estimation.m', 89)" style="font-weight:bold">dynare_estimation</a> (<a href="matlab: opentoline('C:\dynare\4.4.3\matlab\dynare_estimation.m',89,0)">line 89</a>)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('dynare_estimation', 'C:\dynare\4.4.3\matlab\dynare_estimation.m', 89)" style="font-weight:bold">dynare_estimation</a> (<a href="matlab: opentoline('C:\dynare\4.4.3\matlab\dynare_estimation.m',89,0)">line 89</a>)
     dynare_estimation_1(var_list,dname);
-
-Error in <a href="matlab:matlab.internal.language.introspective.errorDocCallback('model', 'C:\Users\msilva913\Documents\GitHub\Sunk_entry_costs_endogenous_variety_unemployment\OurModel_Estimation_Dynare4.4.3\model.m', 522)" style="font-weight:bold">model</a> (<a href="matlab: opentoline('C:\Users\msilva913\Documents\GitHub\Sunk_entry_costs_endogenous_variety_unemployment\OurModel_Estimation_Dynare4.4.3\model.m',522,0)">line 522</a>)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('model', 'C:\Users\msilv\Documents\GitHub\Sunk-entry-costs--endogenous-variety--and-unemployment\OurModel_Estimation_Dynare4.4.3\model.m', 522)" style="font-weight:bold">model</a> (<a href="matlab: opentoline('C:\Users\msilv\Documents\GitHub\Sunk-entry-costs--endogenous-variety--and-unemployment\OurModel_Estimation_Dynare4.4.3\model.m',522,0)">line 522</a>)
 dynare_estimation(var_list_);
-
-Error in <a href="matlab:matlab.internal.language.introspective.errorDocCallback('dynare', 'C:\dynare\4.4.3\matlab\dynare.m', 180)" style="font-weight:bold">dynare</a> (<a href="matlab: opentoline('C:\dynare\4.4.3\matlab\dynare.m',180,0)">line 180</a>)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error in <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('dynare', 'C:\dynare\4.4.3\matlab\dynare.m', 180)" style="font-weight:bold">dynare</a> (<a href="matlab: opentoline('C:\dynare\4.4.3\matlab\dynare.m',180,0)">line 180</a>)
 evalin('base',fname) ;
+^^^^^^^^^^^^^^^^^^^^
 } 
