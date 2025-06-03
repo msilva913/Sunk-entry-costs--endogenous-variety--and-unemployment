@@ -159,32 +159,37 @@ The rank condition is verified.
 
 You did not declare endogenous variables after the estimation/calib_smoother command.
 
+
 Loading 10 observations from dummy_data.mat
 
-[Warning: File 'mh_scale_fname' not found.] 
-[> In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('dynare_estimation_1', 'C:\Users\msilv\Documents\GitHub\Sunk-entry-costs--endogenous-variety--and-unemployment\OurModel_Estimation_Dynare4.4.3\DynareImpRespMatching\dynare_estimation_1.m', 150)" style="font-weight:bold">dynare_estimation_1</a> (<a href="matlab: opentoline('C:\Users\msilv\Documents\GitHub\Sunk-entry-costs--endogenous-variety--and-unemployment\OurModel_Estimation_Dynare4.4.3\DynareImpRespMatching\dynare_estimation_1.m',150,0)">line 150</a>)
-In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('dynare_estimation', 'C:\dynare\4.4.3\matlab\dynare_estimation.m', 89)" style="font-weight:bold">dynare_estimation</a> (<a href="matlab: opentoline('C:\dynare\4.4.3\matlab\dynare_estimation.m',89,0)">line 89</a>)
-In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('model', 'C:\Users\msilv\Documents\GitHub\Sunk-entry-costs--endogenous-variety--and-unemployment\OurModel_Estimation_Dynare4.4.3\model.m', 522)" style="font-weight:bold">model</a> (<a href="matlab: opentoline('C:\Users\msilv\Documents\GitHub\Sunk-entry-costs--endogenous-variety--and-unemployment\OurModel_Estimation_Dynare4.4.3\model.m',522,0)">line 522</a>)
-In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('dynare', 'C:\dynare\4.4.3\matlab\dynare.m', 180)" style="font-weight:bold">dynare</a> (<a href="matlab: opentoline('C:\dynare\4.4.3\matlab\dynare.m',180,0)">line 180</a>)] 
-Initial value of the log posterior (or likelihood): -1331.1903
-{Index exceeds array bounds.
+Initial value of the log posterior (or likelihood): -895.5706
 
-Error in <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('dsge_likelihood', 'C:\Users\msilv\Documents\GitHub\Sunk-entry-costs--endogenous-variety--and-unemployment\OurModel_Estimation_Dynare4.4.3\DynareImpRespMatching\dsge_likelihood.m', 301)" style="font-weight:bold">dsge_likelihood</a> (<a href="matlab: opentoline('C:\Users\msilv\Documents\GitHub\Sunk-entry-costs--endogenous-variety--and-unemployment\OurModel_Estimation_Dynare4.4.3\DynareImpRespMatching\dsge_likelihood.m',301,0)">line 301</a>)
-        constant = SteadyState(BayesInfo.mfys);
-                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Error in <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('gmhmaxlik', 'C:\dynare\4.4.3\matlab\gmhmaxlik.m', 108)" style="font-weight:bold">gmhmaxlik</a> (<a href="matlab: opentoline('C:\dynare\4.4.3\matlab\gmhmaxlik.m',108,0)">line 108</a>)
-        logpo2 = - feval(ObjFun,proposal,varargin{:});
-                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Error in <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('dynare_estimation_1', 'C:\Users\msilv\Documents\GitHub\Sunk-entry-costs--endogenous-variety--and-unemployment\OurModel_Estimation_Dynare4.4.3\DynareImpRespMatching\dynare_estimation_1.m', 426)" style="font-weight:bold">dynare_estimation_1</a> (<a href="matlab: opentoline('C:\Users\msilv\Documents\GitHub\Sunk-entry-costs--endogenous-variety--and-unemployment\OurModel_Estimation_Dynare4.4.3\DynareImpRespMatching\dynare_estimation_1.m',426,0)">line 426</a>)
-                    gmhmaxlik(objective_function,xparam1,[lb ub],gmhmaxlikOptions,Scale,flag,MeanPar,CovJump,dataset_,options_,M_,estim_params_,bayestopt_,oo_);
-                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Error in <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('dynare_estimation', 'C:\dynare\4.4.3\matlab\dynare_estimation.m', 89)" style="font-weight:bold">dynare_estimation</a> (<a href="matlab: opentoline('C:\dynare\4.4.3\matlab\dynare_estimation.m',89,0)">line 89</a>)
-    dynare_estimation_1(var_list,dname);
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Error in <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('model', 'C:\Users\msilv\Documents\GitHub\Sunk-entry-costs--endogenous-variety--and-unemployment\OurModel_Estimation_Dynare4.4.3\model.m', 522)" style="font-weight:bold">model</a> (<a href="matlab: opentoline('C:\Users\msilv\Documents\GitHub\Sunk-entry-costs--endogenous-variety--and-unemployment\OurModel_Estimation_Dynare4.4.3\model.m',522,0)">line 522</a>)
-dynare_estimation(var_list_);
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Error in <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('dynare', 'C:\dynare\4.4.3\matlab\dynare.m', 180)" style="font-weight:bold">dynare</a> (<a href="matlab: opentoline('C:\dynare\4.4.3\matlab\dynare.m',180,0)">line 180</a>)
-evalin('base',fname) ;
-^^^^^^^^^^^^^^^^^^^^
-} 
+RESULTS FROM POSTERIOR ESTIMATION
+parameters
+          prior mean     mode    s.d. prior pstdev
+
+sigma         1.500   1.1318  0.0026 gamm  0.5000 
+b_ratio       0.710   0.9361  0.0024 beta  0.2000 
+x_v           0.500   0.0000  0.0000 beta  0.2500 
+xi_inv        1.000   2.2311  0.0159 gamm  2.0000 
+delta         0.008   0.0143  0.0000 beta  0.0050 
+epsi          4.200   4.1824  0.0178 gamm  1.5000 
+rho_z         0.800   0.8666  0.0008 beta  0.1000 
+rho_delta     0.930   0.9923  0.0001 beta  0.0500 
+rho_s         0.800   0.8270  0.0015 beta  0.1000 
+sigma_z       0.010   0.0030  0.0000 invg  1.0000 
+sigma_delta   0.020   0.0261  0.0001 invg  0.0100 
+sigma_s       0.010   0.2000  0.0027 invg  1.0000 
+
+
+Log data density [Laplace approximation] is -985.585731.
+
+Etimation::mcmc: One Chain mode.
+Estimation::mcmc: Old mh-files successfully erased!
+Estimation::mcmc: Old metropolis.log file successfully erased!
+Estimation::mcmc: Creation of a new metropolis.log file.
+Estimation::mcmc: Initialization at the posterior mode.
+
+Estimation::mcmc: Write details about the MCMC... Ok!
+Estimation::mcmc: Details about the MCMC are available in model/metropolis\model_mh_history_0.mat
+

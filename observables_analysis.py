@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import statsmodels.api as sm
+import seaborn as sns
 #import statsmodels.api as sm
 from fredapi import Fred
 import pickle
@@ -37,30 +38,7 @@ cycle_hp = pd.concat([filter_transform(dat[x], init=init, final=final, transform
                                     filter_type="hp_filter", lamb=100_000) for x in lab], axis=1)
 cycle_hp.columns = lab
 
-cycle_ham = pd.concat([filter_transform(dat[x], init=init, final=final, transform_type='log',
-                                    filter_type="hamilton") for x in lab], axis=1)
-cycle_ham.columns = lab
 
-cycle_ham[["bf", "ba"]].corr()
-
-# Stacked moments 
-mom_list = ["u", "v", "theta", "lp", "s"]
-mom = moments(cycle_hp, relative_std="lp", lab=["u", "lp"])
-mom_stacked = stacked_moments(cycle_hp, mom_list)
-" Summarize moments in one column "
-
-mom_stacked.columns = ["Values"]
-mom_tex = create_stats_table(mom)
-print(mom_tex)
-# Export to mat file 
-mom_stacked_dic = mom_stacked.to_dict('list')
-#savemat('moments_empirical.mat', mom_stacked.to_dict('list'))
-
-
-# Extended moments
-mom_list_ext = mom_list + ["bf"]
-mom_stacked_bf = stacked_moments(cycle_hp, mom_list_ext)
-mom_stacked_bf.columns = ["Values"]
 #savemat('moments_bf_empirical.mat', mom_stacked_bf.to_dict('list'))
 # if save_observables:
 #     " Save relevant objects "
@@ -230,17 +208,34 @@ def first_moments(dat, alpha_hat):
     
 data_means = first_moments(dat, alpha_hat)
 print(data_means.to_latex())
-# Comovement of unemployment, labor productivity, N
-# cycle_growth_labor = cycle_growth[['u', 'v','lab_prod', 'N']]
-# mom_growth_labor = moments(100*cycle_growth_labor, lab=['u','lab_prod'], lags=[1])
 
-# # Dependence on time period
-# corr_pre = cycle_growth_labor[init:"1983"].corr()
-# corr_post = cycle_growth_labor["1984":final].corr()
-# corrs_labor = pd.concat([corr_pre, corr_post])
+choice_vars = ["u", "v", "lp"]
+pairplot = sns.pairplot(cycle_hp[choice_vars], diag_kind="kde")
+pairplot.fig.set_size_inches(12, 8)  # Width, Height
 
-# Sectoral comovement
+# Add best-fit lines to scatter plots
+for ax in pairplot.axes.flatten():
+    if ax.get_xlabel() in choice_vars and ax.get_ylabel() in choice_vars:
+        sns.regplot(x=ax.get_xlabel(), y=ax.get_ylabel(), data=cycle_hp, ax=ax,
+                    scatter=False, color='gray')
+for i, j in zip(*np.triu_indices_from(pairplot.axes, 1)):
+    pairplot.axes[i, j].set_visible(False)
+plt.show()
 
+###################
+choice_vars = ["u", "s", "bf"]
+pairplot = sns.pairplot(cycle_hp[choice_vars], diag_kind="kde")
+pairplot.fig.set_size_inches(12, 8)  # Width, Height
+
+# Add best-fit lines to scatter plots
+for ax in pairplot.axes.flatten():
+    if ax.get_xlabel() in choice_vars and ax.get_ylabel() in choice_vars:
+        sns.regplot(x=ax.get_xlabel(), y=ax.get_ylabel(), data=cycle_hp, ax=ax,
+                    scatter=False, color='gray')
+for i, j in zip(*np.triu_indices_from(pairplot.axes, 1)):
+    pairplot.axes[i, j].set_visible(False)
+plt.show()
+    
     
      
     
