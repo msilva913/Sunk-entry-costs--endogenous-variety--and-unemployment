@@ -848,7 +848,7 @@ warning off;
 [oo_.dr.ys,M.params,~] = evaluate_steady_state(oo_.steady_state,M_,options_,oo_,0);
 [oo_.dr,info] = stochastic_solvers(oo_.dr,0,M_,options_,oo_);
 
-oo_.var = get_variance_of_endogenous_variables(oo_.dr, oo_.dr.inv_order_var(29:40));
+oo_.var = get_variance_of_endogenous_variables(oo_.dr, oo_.dr.inv_order_var(30:41));
 
 psitheta = nan(27,1);
 
