@@ -162,61 +162,59 @@ You did not declare endogenous variables after the estimation/calib_smoother com
 
 Loading 10 observations from dummy_data.mat
 
-Initial value of the log posterior (or likelihood): -204.2648
+Initial value of the log posterior (or likelihood): -192.6158
 
 RESULTS FROM POSTERIOR ESTIMATION
 parameters
           prior mean     mode    s.d. prior pstdev
 
-sigma         1.500   1.3281  0.0279 gamm  0.5000 
-b_ratio       0.710   0.9375  0.0098 beta  0.2000 
+sigma         1.500   1.7121  0.0766 gamm  0.5000 
+b_ratio       0.710   0.9526  0.0064 beta  0.2000 
 x_v           0.500   0.0000  0.0000 beta  0.2500 
-xi_inv        1.000   2.5512  0.1169 gamm  2.0000 
-delta         0.008   0.0131  0.0005 beta  0.0050 
-epsi          4.200   4.7368  0.2001 gamm  1.5000 
-rho_z         0.800   0.8612  0.0079 beta  0.1000 
-rho_delta     0.930   0.9957  0.0016 beta  0.0500 
-rho_s         0.800   0.7654  0.0104 beta  0.1000 
-sigma_z       0.010   0.0023  0.0001 invg  1.0000 
-sigma_delta   0.020   0.0270  0.0005 invg  0.0100 
-sigma_s       0.010   0.0501  0.0174 invg  1.0000 
+xi_inv        1.000   2.0216  0.4133 gamm  2.0000 
+delta         0.008   0.0075  0.0011 beta  0.0050 
+epsi          4.200   4.8314  0.4174 gamm  1.5000 
+rho_z         0.800   0.8204  0.0174 beta  0.1000 
+rho_delta     0.930   0.9973  0.0005 beta  0.0500 
+rho_s         0.800   0.6685  0.0371 beta  0.1000 
+sigma_z       0.010   0.0026  0.0005 invg  1.0000 
+sigma_delta   0.020   0.0170  0.0022 invg  0.0100 
+sigma_s       0.010   0.0233  0.0179 invg  1.0000 
 
 
-Log data density [Laplace approximation] is -275.820302.
+Log data density [Laplace approximation] is -248.241464.
 
-Estimation::mcmc: I am loading past metropolis-hastings simulations...
-Estimation::mcmc: I am writting a new mh-history file... Done.
-Estimation::mcmc: Ok. I have loaded 100000 simulations.
+Estimation::mcmc: Recover mode!
+Estimation::mcmc: Chain 1 is not complete!
 
-
-Estimation::mcmc: Number of mh files: 34 per block.
-Estimation::mcmc: Total number of generated files: 34.
-Estimation::mcmc: Total number of iterations: 300000.
+Estimation::mcmc: Number of mh files: 45 per block.
+Estimation::mcmc: Total number of generated files: 45.
+Estimation::mcmc: Total number of iterations: 400000.
 Estimation::mcmc: Current acceptance ratio per chain: 
-                                                       Chain  1: 10.6299%
+                                                       Chain  1: 54.6345%
 
-Geweke (1992) Convergence Tests, based on means of draws 100000 to 120000 vs 150000 to 200000.
+Geweke (1992) Convergence Tests, based on means of draws 50000 to 60000 vs 75000 to 100000.
 p-values are for Chi2-test for equality of means.
      Parameter 	   Post. Mean 	    Post. Std 	 p-val No Taper	 p-val 4% Taper	 p-val 8% Taper	 p-val 15% Taper
-   sigma       	        1.588 	        0.236 	        0.000	        0.000	        0.000	        0.000
-   b_ratio     	        0.947 	        0.009 	        0.000	        0.000	        0.000	        0.000
-   x_v         	        0.000 	        0.000 	        0.000	        0.001	        0.006	        0.015
-   xi_inv      	        2.194 	        0.516 	        0.000	        0.000	        0.000	        0.000
+   sigma       	        1.573 	        0.293 	        0.000	        0.000	        0.000	        0.000
+   b_ratio     	        0.935 	        0.109 	        0.000	        0.271	        0.284	        0.277
+   x_v         	        0.000 	        0.000 	        0.000	        0.797	        0.840	        0.862
+   xi_inv      	        1.799 	        0.881 	        0.000	        0.000	        0.000	        0.000
    delta       	        0.010 	        0.003 	        0.000	        0.000	        0.000	        0.000
-   epsi        	        5.037 	        0.399 	        0.000	        0.000	        0.000	        0.000
-   rho_z       	        0.852 	        0.016 	        0.000	        0.204	        0.324	        0.409
-   rho_delta   	        0.996 	        0.003 	        0.000	        0.000	        0.000	        0.000
-   rho_s       	        0.707 	        0.061 	        0.000	        0.005	        0.019	        0.044
-   sigma_z     	        0.003 	        0.000 	        0.000	        0.000	        0.000	        0.000
-   sigma_delta 	        0.020 	        0.006 	        0.000	        0.000	        0.000	        0.000
-   sigma_s     	        0.042 	        0.020 	        0.000	        0.000	        0.000	        0.000
+   epsi        	        4.937 	        0.733 	        0.000	        0.330	        0.400	        0.429
+   rho_z       	        0.814 	        0.113 	        0.000	        0.001	        0.004	        0.016
+   rho_delta   	        0.983 	        0.114 	        0.000	        0.437	        0.446	        0.435
+   rho_s       	        0.663 	        0.120 	        0.000	        0.000	        0.000	        0.000
+   sigma_z     	        0.003 	        0.001 	        0.000	        0.003	        0.012	        0.034
+   sigma_delta 	        0.019 	        0.006 	        0.000	        0.000	        0.000	        0.000
+   sigma_s     	        0.042 	        0.024 	        0.000	        0.784	        0.820	        0.839
 
 
-Estimation::mcmc: Total number of MH draws: 300000.
-Estimation::mcmc: Total number of generated MH files: 34.
-Estimation::mcmc: I'll use mh-files 17 to 34.
-Estimation::mcmc: In MH-file number 17 I'll start at line 7136.
-Estimation::mcmc: Finally I keep 150000 draws.
+Estimation::mcmc: Total number of MH draws: 400000.
+Estimation::mcmc: Total number of generated MH files: 45.
+Estimation::mcmc: I'll use mh-files 23 to 45.
+Estimation::mcmc: In MH-file number 23 I'll start at line 3562.
+Estimation::mcmc: Finally I keep 200000 draws.
 
 Estimation::marginal density: I'm computing the posterior mean and covariance...  Done!
 Estimation::marginal density: I'm computing the posterior log marginal density (modified harmonic mean)... Done!
@@ -224,48 +222,146 @@ Estimation::marginal density: I'm computing the posterior log marginal density (
 
 ESTIMATION RESULTS
 
-Log data density is -248.986556.
+Log data density is -236.341644.
 posterior_moments: There are not enough draws computes to compute HPD Intervals. Skipping their computation.
 posterior_moments: There are not enough draws computes to compute deciles. Skipping their computation.
 
 parameters
               prior mean   post. mean        95% HPD interval    prior       pstdev
 
-sigma              1.500       1.7626      1.6145      1.9174   gamma       0.5000
-b_ratio            0.710       0.9495      0.9377      0.9612   beta        0.2000
-x_v                0.500       0.0000      0.0000      0.0000   beta        0.2500
-xi_inv             1.000       1.7955      0.8212      2.3861   gamma       2.0000
-delta              0.008       0.0082      0.0061      0.0106   beta        0.0050
-epsi               4.200       5.0659      4.3725      5.9623   gamma       1.5000
-rho_z              0.800       0.8477      0.8159      0.8789   beta        0.1000
-rho_delta          0.930       0.9980      0.9970      0.9989   beta        0.0500
-rho_s              0.800       0.6673      0.5762      0.7281   beta        0.1000
-sigma_z            0.010       0.0028      0.0018      0.0036   invg        1.0000
-sigma_delta        0.020       0.0156      0.0113      0.0196   invg        0.0100
-sigma_s            0.010       0.0391      0.0086      0.0732   invg        1.0000
+sigma              1.500       1.6439      1.2165      1.9964   gamma       0.5000
+b_ratio            0.710       0.9237      0.9259      0.9671   beta        0.2000
+x_v                0.500       0.0000      0.0000      0.0001   beta        0.2500
+xi_inv             1.000       1.1183      0.0000      2.1431   gamma       2.0000
+delta              0.008       0.0082      0.0046      0.0126   beta        0.0050
+epsi               4.200       4.8612      3.8188      6.1949   gamma       1.5000
+rho_z              0.800       0.7705      0.6032      0.8836   beta        0.1000
+rho_delta          0.930       0.9712      0.9961      0.9991   beta        0.0500
+rho_s              0.800       0.5958      0.3897      0.7588   beta        0.1000
+sigma_z            0.010       0.0029      0.0018      0.0047   invg        1.0000
+sigma_delta        0.020       0.0155      0.0086      0.0253   invg        0.0100
+sigma_s            0.010       0.0409      0.0000      0.0936   invg        1.0000
  
 Correlations of Parameters (at Posterior Mode) > 0.7
-    {'delta'      }    {'sigma'    }    {[-0.9293]}
-    {'rho_s'      }    {'sigma'    }    {[-0.8060]}
-    {'sigma_z'    }    {'sigma'    }    {[-0.7195]}
-    {'xi_inv'     }    {'b_ratio'  }    {[ 0.9373]}
-    {'epsi'       }    {'b_ratio'  }    {[ 0.8891]}
-    {'rho_z'      }    {'b_ratio'  }    {[-0.9183]}
-    {'rho_delta'  }    {'b_ratio'  }    {[-0.9068]}
-    {'sigma_s'    }    {'b_ratio'  }    {[-0.8473]}
-    {'epsi'       }    {'xi_inv'   }    {[ 0.9548]}
-    {'rho_z'      }    {'xi_inv'   }    {[-0.9405]}
-    {'rho_delta'  }    {'xi_inv'   }    {[-0.8622]}
-    {'sigma_s'    }    {'xi_inv'   }    {[-0.9329]}
-    {'rho_s'      }    {'delta'    }    {[ 0.7506]}
-    {'sigma_delta'}    {'delta'    }    {[ 0.7693]}
-    {'rho_z'      }    {'epsi'     }    {[-0.8908]}
-    {'rho_delta'  }    {'epsi'     }    {[-0.8991]}
-    {'sigma_s'    }    {'epsi'     }    {[-0.8691]}
-    {'rho_delta'  }    {'rho_z'    }    {[ 0.8453]}
-    {'sigma_s'    }    {'rho_z'    }    {[ 0.9304]}
-    {'sigma_s'    }    {'rho_delta'}    {[ 0.7859]}
-    {'sigma_z'    }    {'rho_s'    }    {[ 0.7325]}
+    {'rho_s'  }    {'sigma'  }    {[-0.8004]}
+    {'sigma_s'}    {'b_ratio'}    {[-0.8347]}
+    {'sigma_s'}    {'x_v'    }    {[ 0.7729]}
 
-Total computing time : 3h14m05s
-Note: warning(s) encountered in MATLAB/Octave code
+{Unrecognized field name "autocorr".
+
+Error in <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('stack_model_moments', 'C:\Users\msilv\Documents\GitHub\Sunk-entry-costs--endogenous-variety--and-unemployment\OurModel_Estimation_Dynare4.4.3\stack_model_moments.m', 52)" style="font-weight:bold">stack_model_moments</a> (<a href="matlab: opentoline('C:\Users\msilv\Documents\GitHub\Sunk-entry-costs--endogenous-variety--and-unemployment\OurModel_Estimation_Dynare4.4.3\stack_model_moments.m',52,0)">line 52</a>)
+model_moments(22) = oo_.autocorr{1,3}(1,1);
+                    ^^^^^^^^^^^^^^^^^^^^^^
+Error in <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('model', 'C:\Users\msilv\Documents\GitHub\Sunk-entry-costs--endogenous-variety--and-unemployment\OurModel_Estimation_Dynare4.4.3\model.m', 543)" style="font-weight:bold">model</a> (<a href="matlab: opentoline('C:\Users\msilv\Documents\GitHub\Sunk-entry-costs--endogenous-variety--and-unemployment\OurModel_Estimation_Dynare4.4.3\model.m',543,0)">line 543</a>)
+stack_model_moments;
+^^^^^^^^^^^^^^^^^^^
+Error in <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('dynare', 'C:\dynare\4.4.3\matlab\dynare.m', 180)" style="font-weight:bold">dynare</a> (<a href="matlab: opentoline('C:\dynare\4.4.3\matlab\dynare.m',180,0)">line 180</a>)
+evalin('base',fname) ;
+^^^^^^^^^^^^^^^^^^^^
+} 
+Data_vs_Model = [Values,model_moments];
+%%% Save results %%%
+save("model_moments", "model_moments") % for table
+res = oo_;
+M = M_;
+save('res', 'res');
+save('M', 'M');
+
+posterior_density = res.posterior_density.parameters;
+save('posterior_density', 'posterior_density')
+posterior_mode = res.posterior_mode.parameters;
+save('posterior_mode', 'posterior_mode');
+posterior_mean = res.posterior_mean.parameters;
+save('posterior_mean', 'posterior_mean');
+
+irf = res.irfs;
+{Unrecognized field name "irfs".
+} 
+irf
+{Not enough input arguments.
+
+Error in <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('irf', 'C:\dynare\4.4.3\matlab\irf.m', 41)" style="font-weight:bold">irf</a> (<a href="matlab: opentoline('C:\dynare\4.4.3\matlab\irf.m',41,0)">line 41</a>)
+    temps = repmat(dr.ys,1,M_.maximum_lag);
+                   ^^^^^
+} 
+irf
+{Not enough input arguments.
+
+Error in <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('irf', 'C:\dynare\4.4.3\matlab\irf.m', 41)" style="font-weight:bold">irf</a> (<a href="matlab: opentoline('C:\dynare\4.4.3\matlab\irf.m',41,0)">line 41</a>)
+    temps = repmat(dr.ys,1,M_.maximum_lag);
+                   ^^^^^
+} 
+irf = res.irfs;
+{Unrecognized field name "irfs".
+} 
+res
+
+res = 
+
+  <a href="matlab:helpPopup('struct')" style="font-weight:bold">struct</a> with fields:
+
+               exo_simul: [3×3 double]
+              endo_simul: []
+                      dr: [1×1 struct]
+        exo_steady_state: [3×1 double]
+    exo_det_steady_state: []
+           exo_det_simul: []
+            steady_state: [58×1 double]
+                   prior: [1×1 struct]
+               posterior: [1×1 struct]
+          posterior_mode: [1×1 struct]
+           posterior_std: [1×1 struct]
+                     var: [12×12 double]
+         MarginalDensity: [1×1 struct]
+             convergence: [1×1 struct]
+          posterior_mean: [1×1 struct]
+        posterior_hpdinf: [1×1 struct]
+        posterior_hpdsup: [1×1 struct]
+        posterior_median: [1×1 struct]
+      posterior_variance: [1×1 struct]
+       posterior_deciles: [1×1 struct]
+       posterior_density: [1×1 struct]
+                Smoother: [1×1 struct]
+       SmoothedVariables: [1×1 struct]
+        UpdatedVariables: [1×1 struct]
+          SmoothedShocks: [1×1 struct]
+
+res.dr
+
+ans = 
+
+  <a href="matlab:helpPopup('struct')" style="font-weight:bold">struct</a> with fields:
+
+                            eigval: [42×1 double]
+                         order_var: [58×1 double]
+                     inv_order_var: [58×1 double]
+                            kstate: [42×4 double]
+    transition_auxiliary_variables: []
+                 restrict_var_list: [58×1 double]
+                  restrict_columns: [34×1 double]
+                                ys: [58×1 double]
+                               ghx: [58×34 double]
+                               ghu: [58×3 double]
+                         state_var: [2 8 14 15 16 25 26 27 28 29 30 31 32 33 34 35 42 43 44 45 … ] (1×34 double)
+                                gx: [8×34 double]
+                                Gy: [34×34 double]
+
+posterior_mean
+
+posterior_mean = 
+
+  <a href="matlab:helpPopup('struct')" style="font-weight:bold">struct</a> with fields:
+
+          sigma: 1.6439
+        b_ratio: 0.9237
+            x_v: 1.7489e-05
+         xi_inv: 1.1183
+          delta: 0.0082
+           epsi: 4.8612
+          rho_z: 0.7705
+      rho_delta: 0.9712
+          rho_s: 0.5958
+        sigma_z: 0.0029
+    sigma_delta: 0.0155
+        sigma_s: 0.0409
+
