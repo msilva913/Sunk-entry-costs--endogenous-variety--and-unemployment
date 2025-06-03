@@ -108,12 +108,12 @@ log_z_ss    = log(z_ss);
 log_delta_ss= log(delta);
 log_s_ss    = log(s_ss);
 
-u_obs_ss    = u_ss;
-v_obs_ss    = v_ss;
-theta_obs_ss= v_ss/u_ss;
-lp_obs_ss   = z_ss;
-s_obs_ss    = s_ss;
-bf_obs_ss   = 3*N_e_ss/N_ss;
+u_obs_ss    = log(u_ss);
+v_obs_ss    = log(v_ss);
+theta_obs_ss= v_obs_ss - u_obs_ss;
+lp_obs_ss   = log_z_ss;
+s_obs_ss    = log(3*s_ss);
+bf_obs_ss   = log(3*N_e_ss);
 
 
 %% Put steady states into ys vector

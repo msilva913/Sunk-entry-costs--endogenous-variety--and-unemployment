@@ -224,22 +224,22 @@ model;
 // Group 8: observables
 
     [name='Unemployment observation']
-    u_obs = 1/3*(u+u(-1)+u(-2));
+    u_obs = log(1/3*(u+u(-1)+u(-2)));
 
     [name='Vacancy observation']
-    v_obs = 1/3*(v+v(-1)+v(-2));
+    v_obs = log(1/3*(v+v(-1)+v(-2)));
 
     [name='Tightness observation']
-    theta_obs = v_obs/u_obs;
+    theta_obs = v_obs - u_obs;
 
     [name='Labor productivity observation']
-    lp_obs = 1/3*(exp(log_z)+exp(log_z(-1))+exp(log_z(-2)));
+    lp_obs = log(1/3*(exp(log_z)+exp(log_z(-1))+exp(log_z(-2))));
 
     [name='Job separation observation'] //
-    s_obs = 1/3*(exp(log_s)+exp(log_s(-1))+exp(log_s(-2)));
+    s_obs = log(exp(log_s)+exp(log_s(-1))+exp(log_s(-2)));
 
     [name='Business formation observation']
-    bf_obs = (N_e+N_e(-1)+N_e(-2))/steady_state(N);
+    bf_obs = log(N_e+N_e(-1)+N_e(-2));
 
 // Group 9: lag observables
 
@@ -299,9 +299,9 @@ x_v,        beta_pdf,       0.5, 0.25;
 xi_inv,     gamma_pdf,      1.0, 2;
 delta,      beta_pdf,       0.0083, 0.005; // 0.0083 monthly corresponds to 10% annual
 epsi,       gamma_pdf,      4.2, 1.5;
-rho_z,      beta_pdf,       0.8, 0.2;
-rho_delta,  beta_pdf,       0.93, 0.1;
-rho_s,      beta_pdf,       0.8, 0.2;
+rho_z,      beta_pdf,       0.8, 0.1; // adjust prior standard dev.
+rho_delta,  beta_pdf,       0.93, 0.05;
+rho_s,      beta_pdf,       0.8, 0.1;
 sigma_z,    inv_gamma_pdf,  0.01, 1.0;
 sigma_delta,inv_gamma_pdf,  0.02, 0.01; // prior can be influenced by product destruction data, not in dataset
 sigma_s,    inv_gamma_pdf,  0.01, 1.0;
