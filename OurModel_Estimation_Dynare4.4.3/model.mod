@@ -57,6 +57,7 @@ var
     Y_c         ${Y_c}$         (long_name='Retail output')
     Y           ${Y}$           (long_name='Aggregate output')
     ls          ${\ell s}$      (long_name='Labor share')
+    lp          ${lp}$          (long_name='Labor productivity')
     s_agg       ${s_{agg}$      (long_name='Aggregate separation rate')
 // Group 7: exogenous process
     log_z       ${log(z)}$      (long_name='Tech shocks')
@@ -67,13 +68,13 @@ var
     v_obs      
     theta_obs   
     lp_obs    
-    s_obs      
+    tau_obs      
     bf_obs   
     u_obs_lag   
     v_obs_lag  
     theta_obs_lag
     lp_obs_lag   
-    s_obs_lag   
+    tau_obs_lag   
     bf_obs_lag
 ;
 
@@ -207,6 +208,9 @@ model;
     [name='Labor share']
     ls = w*L/Y;
 
+    [name='Labor productivity (data consistent)']
+    lp = Y/(p*L);
+
     [name='Aggregate separation rate']
     s_agg = (1-(1-exp(log_delta))*(1-exp(log_s)));
 
@@ -233,10 +237,10 @@ model;
     theta_obs = v_obs - u_obs;
 
     [name='Labor productivity observation']
-    lp_obs = log(1/3*(exp(log_z)+exp(log_z(-1))+exp(log_z(-2))));
+    lp_obs = log(1/3*(lp+lp(-1)+lp(-2)));
 
     [name='Job separation observation'] //
-    s_obs = log(exp(log_s)+exp(log_s(-1))+exp(log_s(-2)));
+    tau_obs = log((1/3)*(s_agg+s_agg(-1)+s_agg(-2)));
 
     [name='Business formation observation']
     bf_obs = log(N_e+N_e(-1)+N_e(-2));
@@ -256,7 +260,7 @@ model;
     lp_obs_lag = lp_obs(-3);
 
     [name='Lag job separation observation'] //
-    s_obs_lag = s_obs(-3);
+    tau_obs_lag = tau_obs(-3);
 
     [name='Lag business formation observation']
     bf_obs_lag = bf_obs(-3);
@@ -359,7 +363,7 @@ model_steadystate([],[]);
 
 // Stochastic simulation
 stoch_simul(order=1,nofunctions,nograph,noprint)
-    u_obs, v_obs, theta_obs, lp_obs, s_obs, bf_obs;
+    u_obs, v_obs, theta_obs, lp_obs, tau_obs, bf_obs;
 stack_model_moments;
 save results;
 delete *.eps;

@@ -1,7 +1,7 @@
 Starting Dynare (version 4.4.3).
 Starting preprocessing of the model file ...
 Substitution of endo lags >= 2: added 17 auxiliary variables and equations.
-Found 57 equation(s).
+Found 58 equation(s).
 Evaluating expressions...done
 Computing static model derivatives:
  - order 1
@@ -40,22 +40,23 @@ Equation number 21 : 0 : Retail output: expenditure
 Equation number 22 : 0 : Output: expenditure
 Equation number 23 : 0 : Output: income
 Equation number 24 : 0 : Labor share
-Equation number 25 : 0 : Aggregate separation rate
-Equation number 26 : 0 : Labor productivity process
-Equation number 27 : 0 : Product line destruction process
-Equation number 28 : 0 : Separation rate process
-Equation number 29 : 0 : Unemployment observation
-Equation number 30 : 0 : Vacancy observation
-Equation number 31 : 0 : Tightness observation
-Equation number 32 : 0 : Labor productivity observation
-Equation number 33 : 0 : Job separation observation
-Equation number 34 : 0 : Business formation observation
-Equation number 35 : 0 : Lag unemployment observation
-Equation number 36 : 0 : Lag vacancy observation
-Equation number 37 : 0 : Lag tightness observation
-Equation number 38 : 0 : Lag labor productivity observation
-Equation number 39 : 0 : Lag job separation observation
-Equation number 40 : 0 : Lag business formation observation
+Equation number 25 : 0 : Labor productivity (data consistent)
+Equation number 26 : 0 : Aggregate separation rate
+Equation number 27 : 0 : Labor productivity process
+Equation number 28 : 0 : Product line destruction process
+Equation number 29 : 0 : Separation rate process
+Equation number 30 : 0 : Unemployment observation
+Equation number 31 : 0 : Vacancy observation
+Equation number 32 : 0 : Tightness observation
+Equation number 33 : 0 : Labor productivity observation
+Equation number 34 : 0 : Job separation observation
+Equation number 35 : 0 : Business formation observation
+Equation number 36 : 0 : Lag unemployment observation
+Equation number 37 : 0 : Lag vacancy observation
+Equation number 38 : 0 : Lag tightness observation
+Equation number 39 : 0 : Lag labor productivity observation
+Equation number 40 : 0 : Lag job separation observation
+Equation number 41 : 0 : Lag business formation observation
 
 
 
@@ -85,6 +86,7 @@ C                 		 1.135
 Y_c               		 1.20625
 Y                 		 1.40864
 ls                		 0.66
+lp                		 1.51515
 s_agg             		 0.031
 log_z             		 0.457716
 log_delta         		 -4.73985
@@ -92,14 +94,14 @@ log_s             		 -3.79619
 u_obs             		 -2.65506
 v_obs             		 -3.32351
 theta_obs         		 -0.668455
-lp_obs            		 0.457716
-s_obs             		 -2.69757
+lp_obs            		 0.415515
+tau_obs           		 -3.47377
 bf_obs            		 -3.63245
 u_obs_lag         		 -2.65506
 v_obs_lag         		 -3.32351
 theta_obs_lag     		 -0.668455
-lp_obs_lag        		 0.457716
-s_obs_lag         		 -2.69757
+lp_obs_lag        		 0.415515
+tau_obs_lag       		 -3.47377
 bf_obs_lag        		 -3.63245
 
 EIGENVALUES:
@@ -120,17 +122,19 @@ EIGENVALUES:
                0               -0                0
                0               -0                0
                0               -0                0
+               0               -0                0
+               0               -0                0
+               0               -0                0
+               0               -0                0
                0                0                0
                0                0                0
                0                0                0
                0                0                0
-               0                0                0
-               0                0                0
-               0                0                0
-               0                0                0
-       1.749e-17        1.749e-17                0
-       1.598e-16       -1.598e-16                0
-       6.804e-16       -6.804e-16                0
+               0               -0                0
+       9.632e-17        9.632e-17                0
+       1.308e-16        1.308e-16                0
+       2.263e-16       -2.263e-16                0
+       2.507e-16        2.507e-16                0
           0.4029           0.4029                0
             0.78             0.78                0
            0.935            0.935                0
@@ -140,11 +144,11 @@ EIGENVALUES:
            1.024            1.024                0
            1.026            1.026                0
            3.748            3.748                0
-       1.276e+16       -1.276e+16                0
-       2.069e+16       -2.069e+16                0
-        9.38e+16         9.38e+16                0
-       1.585e+17       -1.585e+17                0
-       6.411e+18        6.411e+18                0
+       1.973e+16       -1.973e+16                0
+       3.173e+16        3.173e+16                0
+       4.726e+16        4.726e+16                0
+       1.141e+17        1.141e+17                0
+        1.69e+18        -1.69e+18                0
 
 
 There are 8 eigenvalue(s) larger than 1 in modulus 
@@ -161,52 +165,52 @@ Loading 10 observations from dummy_data.mat
 [Warning: File 'mh_scale_fname' not found.] 
 [> In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('dynare_estimation_1', 'C:\Users\zhesh\Dropbox\Cowork\Sunk vacancy costs endogenous product variety labor market frictions\Towards_estimation\OurModel_Estimation_Dynare4.4.3\DynareImpRespMatching\dynare_estimation_1.m', 150)" style="font-weight:bold">dynare_estimation_1</a> (<a href="matlab: opentoline('C:\Users\zhesh\Dropbox\Cowork\Sunk vacancy costs endogenous product variety labor market frictions\Towards_estimation\OurModel_Estimation_Dynare4.4.3\DynareImpRespMatching\dynare_estimation_1.m',150,0)">line 150</a>)
 In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('dynare_estimation', 'C:\dynare\4.4.3\matlab\dynare_estimation.m', 89)" style="font-weight:bold">dynare_estimation</a> (<a href="matlab: opentoline('C:\dynare\4.4.3\matlab\dynare_estimation.m',89,0)">line 89</a>)
-In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('model', 'C:\Users\zhesh\Dropbox\Cowork\Sunk vacancy costs endogenous product variety labor market frictions\Towards_estimation\OurModel_Estimation_Dynare4.4.3\model.m', 517)" style="font-weight:bold">model</a> (<a href="matlab: opentoline('C:\Users\zhesh\Dropbox\Cowork\Sunk vacancy costs endogenous product variety labor market frictions\Towards_estimation\OurModel_Estimation_Dynare4.4.3\model.m',517,0)">line 517</a>)
+In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('model', 'C:\Users\zhesh\Dropbox\Cowork\Sunk vacancy costs endogenous product variety labor market frictions\Towards_estimation\OurModel_Estimation_Dynare4.4.3\model.m', 522)" style="font-weight:bold">model</a> (<a href="matlab: opentoline('C:\Users\zhesh\Dropbox\Cowork\Sunk vacancy costs endogenous product variety labor market frictions\Towards_estimation\OurModel_Estimation_Dynare4.4.3\model.m',522,0)">line 522</a>)
 In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('dynare', 'C:\dynare\4.4.3\matlab\dynare.m', 180)" style="font-weight:bold">dynare</a> (<a href="matlab: opentoline('C:\dynare\4.4.3\matlab\dynare.m',180,0)">line 180</a>)
 In <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('Main', 'C:\Users\zhesh\Dropbox\Cowork\Sunk vacancy costs endogenous product variety labor market frictions\Towards_estimation\OurModel_Estimation_Dynare4.4.3\Main.m', 15)" style="font-weight:bold">Main</a> (<a href="matlab: opentoline('C:\Users\zhesh\Dropbox\Cowork\Sunk vacancy costs endogenous product variety labor market frictions\Towards_estimation\OurModel_Estimation_Dynare4.4.3\Main.m',15,0)">line 15</a>)] 
-Initial value of the log posterior (or likelihood): -1213.7566
+Initial value of the log posterior (or likelihood): -3170.5424
 
 ========================================================== 
-   Change in the covariance matrix = 0.00018683.
-   Mode improvement = 782.133
-   New value of jscale = 0.026599
-========================================================== 
-
-========================================================== 
-   Change in the covariance matrix = 0.014139.
-   Mode improvement = 176.1762
-   New value of jscale = 0.57566
+   Change in the covariance matrix = 0.00063184.
+   Mode improvement = 1968.5141
+   New value of jscale = 0.0076758
 ========================================================== 
 
 ========================================================== 
-   Change in the covariance matrix = 0.014156.
-   Mode improvement = 8.8144
-   New value of jscale = 2.2471
+   Change in the covariance matrix = 5.658e-05.
+   Mode improvement = 66.1194
+   New value of jscale = 0.1821
 ========================================================== 
 
-Optimal value of the scale parameter = 2.2471
+========================================================== 
+   Change in the covariance matrix = 0.0070363.
+   Mode improvement = 265.818
+   New value of jscale = 0.11567
+========================================================== 
 
-Final value of the log posterior (or likelihood): 246.633
+Optimal value of the scale parameter = 0.11567
+
+Final value of the log posterior (or likelihood): 870.0909
 
 
 RESULTS FROM POSTERIOR ESTIMATION
 parameters
           prior mean     mode    s.d. prior pstdev
 
-b_ratio       0.710   0.8898  0.0002 beta  0.2000 
+b_ratio       0.710   0.0545  0.0393 beta  0.2000 
 x_v           0.500   0.0000  0.0000 beta  0.2500 
-xi_inv        1.000   3.5099  0.0002 gamm  2.0000 
-delta         0.008   0.0076  0.0000 beta  0.0050 
-epsi          4.200   4.1697  0.0003 gamm  1.5000 
-rho_z         0.800   0.6131  0.0004 beta  0.1000 
-rho_delta     0.930   0.9698  0.0001 beta  0.0500 
-rho_s         0.800   0.9400  0.0004 beta  0.1000 
-sigma_z       0.010   0.0018  0.0000 invg  1.0000 
-sigma_delta   0.020   0.0116  0.0000 invg  0.0100 
-sigma_s       0.010   0.0420  0.0002 invg  1.0000 
+xi_inv        1.000   3.5347  0.0218 gamm  2.0000 
+delta         0.008   0.0006  0.0000 beta  0.0050 
+epsi          4.200   4.0153  0.0126 gamm  1.5000 
+rho_z         0.800   0.0118  0.0845 beta  0.1000 
+rho_delta     0.930   0.8403  0.0147 beta  0.0500 
+rho_s         0.800   0.0738  0.0568 beta  0.1000 
+sigma_z       0.010   0.0073  0.0003 invg  1.0000 
+sigma_delta   0.020   0.0122  0.0010 invg  0.0100 
+sigma_s       0.010   0.0054  0.0005 invg  1.0000 
 
 
-Log data density [Laplace approximation] is -349.681737.
+Log data density [Laplace approximation] is -948.181694.
 
 Etimation::mcmc: One Chain mode.
 Estimation::mcmc: Old mh-files successfully erased!
@@ -222,22 +226,22 @@ Estimation::mcmc: Number of mh files: 11 per block.
 Estimation::mcmc: Total number of generated files: 11.
 Estimation::mcmc: Total number of iterations: 100000.
 Estimation::mcmc: Current acceptance ratio per chain: 
-                                                       Chain  1: 12.9679%
+                                                       Chain  1: 33.8357%
 
 Geweke (1992) Convergence Tests, based on means of draws 50000 to 60000 vs 75000 to 100000.
 p-values are for Chi2-test for equality of means.
      Parameter 	   Post. Mean 	    Post. Std 	 p-val No Taper	 p-val 4% Taper	 p-val 8% Taper	 p-val 15% Taper
-   b_ratio     	        0.889 	        0.009 	        0.000	        0.000	        0.000	        0.000
-   x_v         	        0.000 	        0.000 	        0.000	        0.622	        0.708	        0.765
-   xi_inv      	        3.540 	        0.022 	        0.000	        0.000	        0.000	        0.000
-   delta       	        0.007 	        0.001 	        0.000	        0.000	        0.001	        0.009
-   epsi        	        4.195 	        0.015 	        0.000	        0.000	        0.000	        0.001
-   rho_z       	        0.663 	        0.045 	        0.000	        0.000	        0.000	        0.000
-   rho_delta   	        0.974 	        0.006 	        0.000	        0.000	        0.000	        0.000
-   rho_s       	        0.930 	        0.014 	        0.000	        0.231	        0.377	        0.486
-   sigma_z     	        0.002 	        0.000 	        0.000	        0.000	        0.000	        0.000
-   sigma_delta 	        0.010 	        0.002 	        0.000	        0.000	        0.000	        0.000
-   sigma_s     	        0.048 	        0.006 	        0.000	        0.877	        0.909	        0.928
+   b_ratio     	        0.069 	        0.034 	        0.000	        0.070	        0.149	        0.227
+   x_v         	        0.000 	        0.000 	        0.000	        0.000	        0.000	        0.000
+   xi_inv      	        3.545 	        0.015 	        0.000	        0.000	        0.000	        0.000
+   delta       	        0.001 	        0.000 	        0.000	        0.000	        0.000	        0.000
+   epsi        	        3.984 	        0.033 	        0.000	        0.026	        0.096	        0.177
+   rho_z       	        0.013 	        0.004 	        0.000	        0.294	        0.302	        0.324
+   rho_delta   	        0.847 	        0.008 	        0.000	        0.000	        0.000	        0.001
+   rho_s       	        0.080 	        0.020 	        0.000	        0.001	        0.002	        0.001
+   sigma_z     	        0.007 	        0.000 	        0.000	        0.000	        0.000	        0.000
+   sigma_delta 	        0.012 	        0.002 	        0.000	        0.000	        0.000	        0.000
+   sigma_s     	        0.006 	        0.001 	        0.000	        0.441	        0.543	        0.610
 
 
 Estimation::mcmc: Total number of MH draws: 100000.
@@ -252,36 +256,58 @@ Estimation::marginal density: I'm computing the posterior log marginal density (
 
 ESTIMATION RESULTS
 
-Log data density is -314.097400.
+Log data density is -942.251400.
 posterior_moments: There are not enough draws computes to compute HPD Intervals. Skipping their computation.
 posterior_moments: There are not enough draws computes to compute deciles. Skipping their computation.
 
 parameters
               prior mean   post. mean        95% HPD interval    prior       pstdev
 
-b_ratio            0.710       0.8898      0.8806      0.8986   beta        0.2000
+b_ratio            0.710       0.0687      0.0225      0.1062   beta        0.2000
 x_v                0.500       0.0000      0.0000      0.0000   beta        0.2500
-xi_inv             1.000       3.5571      3.5314      3.5770   gamma       2.0000
-delta              0.008       0.0063      0.0038      0.0084   beta        0.0050
-epsi               4.200       4.1992      4.1782      4.2206   gamma       1.5000
-rho_z              0.800       0.7019      0.6492      0.7369   beta        0.1000
-rho_delta          0.930       0.9793      0.9712      0.9850   beta        0.0500
-rho_s              0.800       0.9231      0.8946      0.9450   beta        0.1000
-sigma_z            0.010       0.0018      0.0017      0.0019   invg        1.0000
-sigma_delta        0.020       0.0089      0.0074      0.0109   invg        0.0100
-sigma_s            0.010       0.0485      0.0393      0.0589   invg        1.0000
+xi_inv             1.000       3.5538      3.5293      3.5816   gamma       2.0000
+delta              0.008       0.0007      0.0006      0.0008   beta        0.0050
+epsi               4.200       3.9838      3.9324      4.0334   gamma       1.5000
+rho_z              0.800       0.0132      0.0065      0.0204   beta        0.1000
+rho_delta          0.930       0.8448      0.8343      0.8596   beta        0.0500
+rho_s              0.800       0.0752      0.0405      0.1184   beta        0.1000
+sigma_z            0.010       0.0072      0.0070      0.0074   invg        1.0000
+sigma_delta        0.020       0.0119      0.0091      0.0148   invg        0.0100
+sigma_s            0.010       0.0056      0.0045      0.0068   invg        1.0000
  
 Correlations of Parameters (at Posterior Mode) > 0.7
-    {'sigma_z'    }    {'b_ratio'  }    {[-0.7591]}
-    {'rho_z'      }    {'xi_inv'   }    {[ 0.8802]}
-    {'epsi'       }    {'delta'    }    {[-0.7633]}
-    {'rho_s'      }    {'delta'    }    {[-0.7611]}
-    {'rho_s'      }    {'epsi'     }    {[ 0.8080]}
-    {'sigma_z'    }    {'epsi'     }    {[ 0.7466]}
-    {'rho_delta'  }    {'rho_z'    }    {[ 0.7674]}
-    {'sigma_delta'}    {'rho_delta'}    {[-0.7581]}
-    {'sigma_s'    }    {'rho_s'    }    {[-0.8853]}
-    {'sigma_delta'}    {'sigma_z'  }    {[ 0.7881]}
+    {'x_v'        }    {'b_ratio'  }    {[ 0.8782]}
+    {'xi_inv'     }    {'b_ratio'  }    {[ 0.7642]}
+    {'delta'      }    {'b_ratio'  }    {[-0.9533]}
+    {'rho_z'      }    {'b_ratio'  }    {[ 0.8906]}
+    {'rho_delta'  }    {'b_ratio'  }    {[ 0.8854]}
+    {'rho_s'      }    {'b_ratio'  }    {[ 0.9579]}
+    {'sigma_z'    }    {'b_ratio'  }    {[-0.9825]}
+    {'sigma_delta'}    {'b_ratio'  }    {[ 0.7470]}
+    {'xi_inv'     }    {'x_v'      }    {[ 0.8244]}
+    {'delta'      }    {'x_v'      }    {[-0.8398]}
+    {'rho_z'      }    {'x_v'      }    {[ 0.8950]}
+    {'rho_delta'  }    {'x_v'      }    {[ 0.9050]}
+    {'rho_s'      }    {'x_v'      }    {[ 0.8826]}
+    {'sigma_z'    }    {'x_v'      }    {[-0.8912]}
+    {'delta'      }    {'xi_inv'   }    {[-0.7722]}
+    {'rho_z'      }    {'xi_inv'   }    {[ 0.9704]}
+    {'rho_delta'  }    {'xi_inv'   }    {[ 0.9696]}
+    {'rho_s'      }    {'xi_inv'   }    {[ 0.8203]}
+    {'sigma_z'    }    {'xi_inv'   }    {[-0.8550]}
+    {'rho_z'      }    {'delta'    }    {[-0.8949]}
+    {'rho_delta'  }    {'delta'    }    {[-0.8700]}
+    {'rho_s'      }    {'delta'    }    {[-0.9918]}
+    {'sigma_z'    }    {'delta'    }    {[ 0.9664]}
+    {'sigma_delta'}    {'delta'    }    {[-0.8871]}
+    {'rho_delta'  }    {'rho_z'    }    {[ 0.9939]}
+    {'rho_s'      }    {'rho_z'    }    {[ 0.9272]}
+    {'sigma_z'    }    {'rho_z'    }    {[-0.9504]}
+    {'rho_s'      }    {'rho_delta'}    {[ 0.9078]}
+    {'sigma_z'    }    {'rho_delta'}    {[-0.9374]}
+    {'sigma_z'    }    {'rho_s'    }    {[-0.9793]}
+    {'sigma_delta'}    {'rho_s'    }    {[ 0.8680]}
+    {'sigma_delta'}    {'sigma_z'  }    {[-0.7629]}
 
-Total computing time : 0h39m03s
+Total computing time : 1h31m48s
 Note: warning(s) encountered in MATLAB/Octave code
