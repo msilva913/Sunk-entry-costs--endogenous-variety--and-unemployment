@@ -396,3 +396,67 @@ oo_ =
         UpdatedVariables: [1×1 struct]
           SmoothedShocks: [1×1 struct]
 
+res.autocorr
+{Unable to resolve the name 'res.autocorr'.
+} 
+oo_.autocorr
+{Unrecognized field name "autocorr".
+} 
+oo_
+
+oo_ = 
+
+  <a href="matlab:helpPopup struct" style="font-weight:bold">struct</a> with fields:
+
+               exo_simul: [3×3 double]
+              endo_simul: []
+                      dr: [1×1 struct]
+        exo_steady_state: [3×1 double]
+    exo_det_steady_state: []
+           exo_det_simul: []
+            steady_state: [58×1 double]
+                   prior: [1×1 struct]
+               posterior: [1×1 struct]
+          posterior_mode: [1×1 struct]
+           posterior_std: [1×1 struct]
+                     var: [12×12 double]
+         MarginalDensity: [1×1 struct]
+             convergence: [1×1 struct]
+          posterior_mean: [1×1 struct]
+        posterior_hpdinf: [1×1 struct]
+        posterior_hpdsup: [1×1 struct]
+        posterior_median: [1×1 struct]
+      posterior_variance: [1×1 struct]
+       posterior_deciles: [1×1 struct]
+       posterior_density: [1×1 struct]
+                Smoother: [1×1 struct]
+       SmoothedVariables: [1×1 struct]
+        UpdatedVariables: [1×1 struct]
+          SmoothedShocks: [1×1 struct]
+
+for i_plot = 1:11
+    subplot(3,4,i_plot+1),
+    plot(Traceplot_parameter(1:end,i_plot));
+    title(parameter_names(i_plot),'Interpreter','none');
+end
+{The end operator must be used within an array index expression.
+} 
+subplot(3,4,1),
+plot(Traceplot_likelihood(1:end));
+{The end operator must be used within an array index expression.
+} 
+for i_chain = 1:56
+    mhname = sprintf('model_mh%d_blck1.mat', i_chain);
+    addpath('model\metropolis');
+    load(mhname);
+    if i_chain == 1
+        Traceplot_parameter = x2;
+        Traceplot_likelihood = logpo2;
+    else
+        Traceplot_parameter = [Traceplot_parameter; x2];
+        Traceplot_likelihood = [Traceplot_likelihood; logpo2];
+    end
+end
+{Error using <a href="matlab:matlab.internal.language.introspective.errorDocCallback('load')" style="font-weight:bold">load</a>
+Unable to find file or directory 'model_mh56_blck1.mat'.
+} 
