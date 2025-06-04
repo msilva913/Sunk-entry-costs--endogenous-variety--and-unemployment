@@ -4,7 +4,8 @@ close all;
 delete('*.asv');
 
 addpath C:\dynare\4.4.3\matlab
-
+addpath DynareUtilites\
+addpath 
 firstrun = 1;
 
 if firstrun == 1
@@ -36,7 +37,7 @@ irf = res.irfs;
 save('irf.mat', 'irf');
 
 % Load saveplots
-for i_chain = 1:45
+for i_chain = 1:56
     mhname = sprintf('model_mh%d_blck1.mat', i_chain);
     addpath('model\metropolis');
     load(mhname);
@@ -49,4 +50,15 @@ for i_chain = 1:45
     end
 end
 save("Traceplot_parameter", "Traceplot_parameter")
+%mh_mode = mode(Traceplot_parameter)
+
+subplot(3,4,1),
+plot(Traceplot_likelihood(1:end));
+title('log likelihood');
+
+for i_plot = 1:11
+    subplot(3,4,i_plot+1),
+    plot(Traceplot_parameter(1:end,i_plot));
+    title(parameter_names(i_plot),'Interpreter','none');
+end
 

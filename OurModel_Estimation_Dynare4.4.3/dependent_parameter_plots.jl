@@ -12,15 +12,34 @@ include(pwd()*"/generate_tables.jl")
 cd(@__DIR__)
 Traceplot_parameter = matopen("Traceplot_parameter.mat")
 Traceplot_parameter = read(Traceplot_parameter, "Traceplot_parameter")
+
+
 # For steady-state-based dependent parameters, we can omit Shocks
 Traceplot_parameter = Traceplot_parameter[:, 1:(end-6)]
 col_names = [:σ, :b, :x_v, :ξ_inv, :δ, :ε]
 df = DataFrame(Traceplot_parameter, :auto)
 rename!(df, col_names)
+n = size(df, 1)
+
+function moving_average(data; window_size=200)
+    return [mean(data[i:i+window_size-1]) for i in 1:(length(data)-window_size+1)]
+end
+
+window_size = 10000
+dat = 1:n-window_size+1 
+
+fig = figure(figsize=(16, 4))
+for i in 1:size(df)[2]
+    ax = fig.add_subplot(2, 3, i)
+    ax.plot(df[!,col_names[i]], alpha=0.7, color="blue")
+    ax.plot(dat, moving_average(df[!,col_names[i]], window_size=window_size), label="Moving average", color="red", linewidth=2 )
+    ax.set_title(col_names[i])
+end
+fig.tight_layout()
+display(fig)
 
 #labor_share, dest_ann, r_ann, f, η_L, q, sep, b_ratio, x_v, ξ_inv, ε, σ, N, w = targets
 #targets = (labor_share=0.66, dest_ann=0.10, r_ann=0.04, f =0.41, η_L=0.6, q=0.8, sep=0.031, b_ratio=0.71, x_v=0.1, ξ_inv=1/0.265, ε=4.3, σ=1.0, N=1.0, w=1.0)
-n = size(df, 1)
 targets_df = DataFrame(
 labor_share = 0.66*ones(n),
 dest_ann = 1.0 .-((1. .-df[!,:δ]).^12),
