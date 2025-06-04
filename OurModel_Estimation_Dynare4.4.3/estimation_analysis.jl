@@ -107,26 +107,10 @@ delta_prior_pdf = pdf(beta_dist, delta_x)
 #b prior 
 α, β = beta_map(0.71, 0.2)
 beta_dist = Beta(α, β)
-b_x = 0.4:0.025:0.95
+b_x = 0.6:0.005:0.96
 b_prior_pdf = pdf(beta_dist, b_x)
 
 # Shocks 
-# sigma_z prior 
-α, β = inverse_gamma_map(0.01, 1.0)
-inverse_gamma_dist = InverseGamma(α, β)
-sigma_z_x = 0.001:0.001:0.1
-sigma_z_prior_pdf = pdf(inverse_gamma_dist, sigma_z_x)
-
-# sigma_delta prior 
-α, β = inverse_gamma_map(0.02, 0.01)
-inverse_gamma_dist = InverseGamma(α, β)
-sigma_delta_x = 0.001:0.005:0.04
-sigma_delta_prior_pdf = pdf(inverse_gamma_dist, sigma_delta_x)
-
-α, β = inverse_gamma_map(0.01, 1.0)
-inverse_gamma_dist = InverseGamma(α, β)
-sigma_s_x = 0.001:0.001:0.1
-sigma_s_prior_pdf = pdf(inverse_gamma_dist, sigma_s_x)
 
 
 # Table: prior mean, prior std, posterior mean, posterior std
@@ -146,17 +130,19 @@ sigma_s_vals, sigma_s_density = columns(struc["sigma_delta"])
 
 # Vector of dictionaries
 params = [
+    Dict("vals" => sigma_vals, "density" => sigma_density, "x" => sigma_x, "prior_pdf"=> sigma_prior_pdf, "xlabel"=> "σ"),
     Dict("vals" => ξ_inv_vals, "density" => ξ_inv_density, "x" => ξ_inv_x, "prior_pdf" => ξ_prior_pdf, "xlabel" => "ξ_inv"),
     Dict("vals" => epsi_vals, "density" => epsi_density, "x" => epsi_x, "prior_pdf" => epsi_prior_pdf, "xlabel" => "ε"),
     Dict("vals" => delta_vals, "density" => delta_density, "x" => delta_x, "prior_pdf" => delta_prior_pdf, "xlabel" => "δ"),
     Dict("vals" => b_vals, "density" => b_density, "x" => b_x, "prior_pdf" => b_prior_pdf, "xlabel" => "b")
 ]
 
-fig, axs = subplots(2, 2, figsize=(14, 6))
+fig, axs = subplots(2, 3, figsize=(18, 6))
 axs = axs[:]
 
-for (i, ax) in enumerate(axs)
+for i in 1:length(params)
     param = params[i]
+    ax = axs[i]
     ax.plot(param["vals"], param["density"], linewidth=1.5, color="orange", label="Posterior", zorder=2)
     ax.fill_between(param["vals"], param["density"], color="gold", alpha=0.3, zorder=1)
     ax.plot(param["x"], param["prior_pdf"], linewidth=1, linestyle="--", color="blue", label="Prior", zorder=2)
@@ -168,7 +154,7 @@ for (i, ax) in enumerate(axs)
     ax.set_xlim(minimum(param["x"]), maximum(param["x"]))
     ax.set_ylim(0, maximum(param["density"]) * 1.1)
 end
-
+fig.delaxes(axs[end])
 tight_layout()
 display(fig)
 plt.savefig("posterior_prior_plots.pdf")
@@ -192,6 +178,24 @@ rho_delta_prior_pdf = pdf(beta_dist, rho_delta_x)
 beta_dist = Beta(α, β)
 rho_s_x = 0.7:0.01:0.99
 rho_s_prior_pdf = pdf(beta_dist, rho_s_x)
+
+# sigma_z prior 
+α, β = inverse_gamma_map(0.01, 1.0)
+inverse_gamma_dist = InverseGamma(α, β)
+sigma_z_x = 0.001:0.001:0.06
+sigma_z_prior_pdf = pdf(inverse_gamma_dist, sigma_z_x)
+
+# sigma_delta prior 
+α, β = inverse_gamma_map(0.02, 0.01)
+inverse_gamma_dist = InverseGamma(α, β)
+sigma_delta_x = 0.001:0.005:0.06
+sigma_delta_prior_pdf = pdf(inverse_gamma_dist, sigma_delta_x)
+
+α, β = inverse_gamma_map(0.01, 1.0)
+inverse_gamma_dist = InverseGamma(α, β)
+sigma_s_x = 0.001:0.001:0.06
+sigma_s_prior_pdf = pdf(inverse_gamma_dist, sigma_s_x)
+
 
 params = [
     Dict("vals" => rho_z_vals, "density" => rho_z_density, "x" => rho_z_x, "prior_pdf" => rho_z_prior_pdf, "xlabel" => " ρ_z"),
