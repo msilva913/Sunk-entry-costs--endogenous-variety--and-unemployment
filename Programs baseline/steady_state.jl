@@ -229,10 +229,9 @@ function calibrate_labor_share(targets)
 
     # Find F from free entry condition
     #K = (ρ+δ)/(1+ρ)*(e/F)^(1/ξ)
-    if ξ_inv > 0
-        Q = K*(1+ρ)/(ρ+δ) 
-        F = e/Q^(1/ξ_inv)
-    end 
+    Q = K*(1+ρ)/(ρ+δ) 
+    F = e/Q^(1/ξ_inv)
+
     # Given N, solve for f_e
     # N = (μ-1)*zL*(1-δ)/(f_e(δμ+\rho))
     f_e = (μ-1)*z*(L/N)*(1-δ)/(δ*μ+ρ)
