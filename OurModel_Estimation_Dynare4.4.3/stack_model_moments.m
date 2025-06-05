@@ -49,9 +49,19 @@ model_moments(18) = oo_.var(3,6)/(sqrt(oo_.var(3,3))*sqrt(oo_.var(6,6)));
 model_moments(19) = oo_.var(4,5)/(sqrt(oo_.var(4,4))*sqrt(oo_.var(5,5)));
 model_moments(20) = oo_.var(4,6)/(sqrt(oo_.var(4,4))*sqrt(oo_.var(6,6)));
 model_moments(21) = oo_.var(5,6)/(sqrt(oo_.var(5,5))*sqrt(oo_.var(6,6)));
-model_moments(22) = oo_.autocorr{1,3}(1,1);
-model_moments(23) = oo_.autocorr{1,3}(2,2);
-model_moments(24) = oo_.autocorr{1,3}(3,3);
-model_moments(25) = oo_.autocorr{1,3}(4,4);
-model_moments(26) = oo_.autocorr{1,3}(5,5);
-model_moments(27) = oo_.autocorr{1,3}(6,6);
+% Autocorrelations
+if length(oo_.var) > 6
+    model_moments(22) = oo_.var(1,1+6);
+    model_moments(23) = oo_.var(2,2+6);
+    model_moments(24) = oo_.var(3,3+6);
+    model_moments(25) = oo_.var(4,4+6);
+    model_moments(26) = oo_.var(5,5+6);
+    model_moments(27) = oo_.var(6,6+6);
+else
+    model_moments(22) = oo_.autocorr{1,3}(1,1);
+    model_moments(23) = oo_.autocorr{1,3}(2,2);
+    model_moments(24) = oo_.autocorr{1,3}(3,3);
+    model_moments(25) = oo_.autocorr{1,3}(4,4);
+    model_moments(26) = oo_.autocorr{1,3}(5,5);
+    model_moments(27) = oo_.autocorr{1,3}(6,6);
+end
