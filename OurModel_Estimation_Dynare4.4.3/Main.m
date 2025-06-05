@@ -35,7 +35,7 @@ irf = res.irfs;
 save('irf.mat', 'irf');
 
 % Load saveplots
-for i_chain = 1:124
+for i_chain = 1:135
     mhname = sprintf('model_mh%d_blck1.mat', i_chain);
     addpath('model\metropolis');
     load(mhname);

@@ -46,7 +46,7 @@ ls_ss       = 0.66;     % Labor share of income
 
 % Labor market parameters 
 sigma      = 1.64;       % Inverse of intertemporal elast. of sub. (log utility)
-b_ratio     = 0.923;     % Outside option of worker
+b_ratio     = 0.9;     % Outside option of worker
 x_v         = 0.10;     % share of sunk/non-fixed matching costs to total costs: κ = (1-x_v)/x_v*K/q
 xi_inv      = 1.1183;  % inverse elasticity of entry to vacancy value
 
@@ -55,7 +55,7 @@ delta       = 0.0082;  % Product destruction rate (set to 10% annual)
 epsi        = 4.86;  % Prod. elasticity of substitution (set to 30% annual markups)
 
 % Shock process parameters
-rho_z        = 0.7705;   % Persistence of tech shocks
+rho_z        = 0.92;   % Persistence of tech shocks
 rho_delta    = 0.9712;   % Persistence of product destruction shocks
 rho_s        = 0.5958;    % Persistence of separation shocks
 sigma_z      = 0.008;  % Std. dev of tech shocks

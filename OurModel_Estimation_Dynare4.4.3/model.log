@@ -130,25 +130,25 @@ EIGENVALUES:
                0                0                0
                0                0                0
                0                0                0
-               0               -0                0
-       6.591e-19        6.591e-19                0
-       3.694e-17       -3.694e-17                0
-         2.9e-16          2.9e-16                0
-       4.364e-16       -4.364e-16                0
+               0                0                0
+       4.004e-17        4.004e-17                0
+       6.252e-17       -6.252e-17                0
+       1.168e-16        1.168e-16                0
+       2.747e-16        2.747e-16                0
           0.4029           0.4029                0
           0.5958           0.5958                0
-          0.7705           0.7705                0
-          0.9695           0.9695                0
+            0.92             0.92                0
+          0.9687           0.9687                0
           0.9712           0.9712                0
-          0.9924           0.9924                0
-           1.022            1.022         0.002621
-           1.022            1.022        -0.002621
-           5.075            5.075                0
-       1.296e+16        1.296e+16                0
-       1.347e+16       -1.347e+16                0
-       8.367e+16        8.367e+16                0
-       9.309e+16       -9.309e+16                0
-       2.076e+17       -2.076e+17                0
+          0.9915           0.9915                0
+           1.023            1.023        0.0009098
+           1.023            1.023       -0.0009098
+           4.881            4.881                0
+       1.632e+16       -1.632e+16                0
+       2.356e+16       -2.356e+16                0
+        7.59e+16         7.59e+16                0
+        8.11e+16         8.11e+16                0
+       8.182e+17        8.182e+17                0
 
 
 There are 8 eigenvalue(s) larger than 1 in modulus 
@@ -162,19 +162,19 @@ You did not declare endogenous variables after the estimation/calib_smoother com
 
 Loading 10 observations from dummy_data.mat
 
-Initial value of the log posterior (or likelihood): -1215.7755
+Initial value of the log posterior (or likelihood): -1257.6455
 
 RESULTS FROM POSTERIOR ESTIMATION
 parameters
           prior mean     mode    s.d. prior pstdev
 
 sigma         1.500   1.6400  0.0100 gamm  0.5000 
-b_ratio       0.710   0.9230  0.0100 beta  0.2000 
+b_ratio       0.710   0.9000  0.0100 beta  0.2000 
 x_v           0.500   0.1000  0.0100 beta  0.2500 
 xi_inv        1.000   1.1183  0.0100 gamm  2.0000 
 delta         0.008   0.0082  0.0100 beta  0.0050 
 epsi          4.200   4.8600  0.0100 gamm  1.5000 
-rho_z         0.800   0.7705  0.0100 beta  0.1000 
+rho_z         0.800   0.9200  0.0100 beta  0.1000 
 rho_delta     0.930   0.9712  0.0100 beta  0.0500 
 rho_s         0.800   0.5958  0.0100 beta  0.1000 
 sigma_z       0.010   0.0080  0.0100 invg  1.0000 
@@ -182,41 +182,41 @@ sigma_delta   0.020   0.0155  0.0100 invg  0.0100
 sigma_s       0.010   0.0409  0.0100 invg  1.0000 
 
 
-Log data density [Laplace approximation] is -1260.010318.
+Log data density [Laplace approximation] is -1301.880263.
 
 Estimation::mcmc: I am loading past metropolis-hastings simulations...
 Estimation::mcmc: I am writting a new mh-history file... Done.
-Estimation::mcmc: Ok. I have loaded 900000 simulations.
+Estimation::mcmc: Ok. I have loaded 1300000 simulations.
 
 
-Estimation::mcmc: Number of mh files: 124 per block.
-Estimation::mcmc: Total number of generated files: 124.
-Estimation::mcmc: Total number of iterations: 1100000.
+Estimation::mcmc: Number of mh files: 157 per block.
+Estimation::mcmc: Total number of generated files: 157.
+Estimation::mcmc: Total number of iterations: 1400000.
 Estimation::mcmc: Current acceptance ratio per chain: 
-                                                       Chain  1: 60.7567%
+                                                       Chain  1: 51.2625%
 
-Geweke (1992) Convergence Tests, based on means of draws 140000 to 152000 vs 170000 to 200000.
+Geweke (1992) Convergence Tests, based on means of draws 70000 to 76000 vs 85000 to 100000.
 p-values are for Chi2-test for equality of means.
      Parameter 	   Post. Mean 	    Post. Std 	 p-val No Taper	 p-val 4% Taper	 p-val 8% Taper	 p-val 15% Taper
-   sigma       	        0.678 	        0.222 	        0.000	        0.000	        0.000	        0.000
-   b_ratio     	        0.756 	        0.199 	        0.000	        0.000	        0.000	        0.005
-   x_v         	        0.330 	        0.237 	        0.000	        0.000	        0.000	        0.000
-   xi_inv      	        2.005 	        2.222 	        0.000	        0.000	        0.000	        0.004
-   delta       	        0.019 	        0.005 	        0.000	        0.000	        0.000	        0.000
-   epsi        	        4.538 	        0.547 	        0.000	        0.000	        0.000	        0.000
-   rho_z       	        0.833 	        0.148 	        0.000	        0.000	        0.000	        0.000
-   rho_delta   	        0.989 	        0.098 	        0.000	        0.207	        0.208	        0.212
-   rho_s       	        0.927 	        0.098 	        0.000	        0.170	        0.228	        0.308
-   sigma_z     	        0.005 	        0.002 	        0.000	        0.000	        0.000	        0.001
-   sigma_delta 	        0.030 	        0.015 	        0.000	        0.000	        0.000	        0.000
-   sigma_s     	        0.058 	        0.050 	        0.000	        0.000	        0.000	        0.001
+   sigma       	        0.686 	        0.207 	        0.000	        0.000	        0.000	        0.000
+   b_ratio     	        0.791 	        0.198 	        0.000	        0.000	        0.000	        0.001
+   x_v         	        0.310 	        0.239 	        0.000	        0.000	        0.000	        0.004
+   xi_inv      	        1.578 	        2.132 	        0.000	        0.000	        0.000	        0.000
+   delta       	        0.018 	        0.006 	        0.000	        0.000	        0.000	        0.000
+   epsi        	        4.605 	        0.586 	        0.000	        0.742	        0.801	        0.839
+   rho_z       	        0.826 	        0.142 	        0.000	        0.000	        0.000	        0.000
+   rho_delta   	        0.988 	        0.106 	        0.000	        0.085	        0.074	        0.077
+   rho_s       	        0.911 	        0.108 	        0.000	        0.002	        0.012	        0.042
+   sigma_z     	        0.005 	        0.001 	        0.000	        0.000	        0.000	        0.000
+   sigma_delta 	        0.027 	        0.014 	        0.000	        0.000	        0.000	        0.000
+   sigma_s     	        0.074 	        0.059 	        0.000	        0.000	        0.001	        0.009
 
 
-Estimation::mcmc: Total number of MH draws: 1100000.
-Estimation::mcmc: Total number of generated MH files: 124.
-Estimation::mcmc: I'll use mh-files 87 to 124.
-Estimation::mcmc: In MH-file number 87 I'll start at line 2106.
-Estimation::mcmc: Finally I keep 330000 draws.
+Estimation::mcmc: Total number of MH draws: 1400000.
+Estimation::mcmc: Total number of generated MH files: 157.
+Estimation::mcmc: I'll use mh-files 110 to 157.
+Estimation::mcmc: In MH-file number 110 I'll start at line 6738.
+Estimation::mcmc: Finally I keep 420001 draws.
 
 Estimation::marginal density: I'm computing the posterior mean and covariance...  Done!
 Estimation::marginal density: I'm computing the posterior log marginal density (modified harmonic mean)... Done!
@@ -224,25 +224,26 @@ Estimation::marginal density: I'm computing the posterior log marginal density (
 
 ESTIMATION RESULTS
 
-Log data density is -252.988108.
+Log data density is -236.828993.
 posterior_moments: There are not enough draws computes to compute HPD Intervals. Skipping their computation.
 posterior_moments: There are not enough draws computes to compute deciles. Skipping their computation.
 
 parameters
               prior mean   post. mean        95% HPD interval    prior       pstdev
 
-sigma              1.500       0.4821      0.4674      0.4943   gamma       0.5000
-b_ratio            0.710       0.9462      0.9261      0.9622   beta        0.2000
-x_v                0.500       0.5652      0.5529      0.5843   beta        0.2500
-xi_inv             1.000       0.0072      0.0034      0.0133   gamma       2.0000
-delta              0.008       0.0146      0.0116      0.0177   beta        0.0050
-epsi               4.200       4.8279      4.8024      4.8542   gamma       1.5000
-rho_z              0.800       0.7154      0.6902      0.7418   beta        0.1000
-rho_delta          0.930       0.9993      0.9989      0.9996   beta        0.0500
-rho_s              0.800       0.9704      0.9562      0.9823   beta        0.1000
-sigma_z            0.010       0.0059      0.0037      0.0081   invg        1.0000
-sigma_delta        0.020       0.0165      0.0131      0.0206   invg        0.0100
-sigma_s            0.010       0.0872      0.0579      0.1294   invg        1.0000
+sigma              1.500       0.6499      0.4802      0.8011   gamma       0.5000
+b_ratio            0.710       0.9306      0.9156      0.9714   beta        0.2000
+x_v                0.500       0.3322      0.0980      0.7908   beta        0.2500
+xi_inv             1.000       0.0098      0.0035      0.0209   gamma       2.0000
+delta              0.008       0.0126      0.0069      0.0164   beta        0.0050
+epsi               4.200       4.8404      4.7222      4.9964   gamma       1.5000
+rho_z              0.800       0.7768      0.6835      0.8934   beta        0.1000
+rho_delta          0.930       0.9866      0.9984      0.9996   beta        0.0500
+rho_s              0.800       0.8833      0.8011      0.9859   beta        0.1000
+sigma_z            0.010       0.0047      0.0029      0.0071   invg        1.0000
+sigma_delta        0.020       0.0158      0.0108      0.0222   invg        0.0100
+sigma_s            0.010       0.1136      0.0220      0.1803   invg        1.0000
  
 Correlations of Parameters (at Posterior Mode) > 0.7
-Total computing time : 0h29m49s
+Total computing time : 0h12m23s
+Note: warning(s) encountered in MATLAB/Octave code
