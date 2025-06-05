@@ -19,8 +19,8 @@ Data_vs_Model = [Values,model_moments];
 save("model_moments", "model_moments") % for table
 res = oo_;
 M = M_;
-save('res', 'res');
-save('M', 'M');
+%save('res', 'res');
+%save('M', 'M');
 
 posterior_density = res.posterior_density.parameters;
 save('posterior_density', 'posterior_density')
@@ -35,7 +35,7 @@ irf = res.irfs;
 save('irf.mat', 'irf');
 
 % Load saveplots
-for i_chain = 1:56
+for i_chain = 1:124
     mhname = sprintf('model_mh%d_blck1.mat', i_chain);
     addpath('model\metropolis');
     load(mhname);
@@ -47,7 +47,6 @@ for i_chain = 1:56
         Traceplot_likelihood = [Traceplot_likelihood; logpo2];
     end
 end
-%mh_mode = mode(Traceplot_parameter)
 
 subplot(3,4,1),
 plot(Traceplot_likelihood(1:end));
@@ -61,3 +60,6 @@ for i_plot = 1:11
     title(parameter_names(i_plot),'Interpreter','none');
 end
 
+posterior_mode_cell = struct2cell(posterior_mode);
+posterior_mode_num = cell2mat(posterior_mode_cell);
+%save("model_mh_mode", "posterior_mode_num")
