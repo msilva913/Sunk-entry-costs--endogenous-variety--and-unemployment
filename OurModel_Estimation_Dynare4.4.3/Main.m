@@ -4,8 +4,6 @@ close all;
 delete('*.asv');
 
 addpath C:\dynare\4.4.3\matlab
-addpath DynareUtilites\
-addpath 
 firstrun = 1;
 
 if firstrun == 1
@@ -37,7 +35,7 @@ irf = res.irfs;
 save('irf.mat', 'irf');
 
 % Load saveplots
-for i_chain = 1:55
+for i_chain = 1:45
     mhname = sprintf('model_mh%d_blck1.mat', i_chain);
     addpath('model\metropolis');
     load(mhname);

@@ -131,10 +131,10 @@ EIGENVALUES:
                0                0                0
                0                0                0
                0               -0                0
-       7.848e-18       -7.848e-18                0
-       7.061e-17       -7.061e-17                0
-       1.142e-16        1.142e-16                0
-       1.989e-16       -1.989e-16                0
+       9.632e-17        9.632e-17                0
+       1.308e-16        1.308e-16                0
+       2.263e-16       -2.263e-16                0
+       2.507e-16        2.507e-16                0
           0.4029           0.4029                0
             0.78             0.78                0
            0.935            0.935                0
@@ -144,11 +144,11 @@ EIGENVALUES:
            1.024            1.024                0
            1.026            1.026                0
            3.748            3.748                0
-       1.048e+16       -1.048e+16                0
-       1.072e+16       -1.072e+16                0
-       3.228e+16        3.228e+16                0
-       2.061e+17        2.061e+17                0
-       2.588e+17       -2.588e+17                0
+       1.973e+16       -1.973e+16                0
+       3.173e+16        3.173e+16                0
+       4.726e+16        4.726e+16                0
+       1.141e+17        1.141e+17                0
+        1.69e+18        -1.69e+18                0
 
 
 There are 8 eigenvalue(s) larger than 1 in modulus 
@@ -186,37 +186,37 @@ Log data density [Laplace approximation] is -1210.042150.
 
 Estimation::mcmc: I am loading past metropolis-hastings simulations...
 Estimation::mcmc: I am writting a new mh-history file... Done.
-Estimation::mcmc: Ok. I have loaded 600000 simulations.
+Estimation::mcmc: Ok. I have loaded 400000 simulations.
 
 
-Estimation::mcmc: Number of mh files: 79 per block.
-Estimation::mcmc: Total number of generated files: 79.
-Estimation::mcmc: Total number of iterations: 700000.
+Estimation::mcmc: Number of mh files: 56 per block.
+Estimation::mcmc: Total number of generated files: 56.
+Estimation::mcmc: Total number of iterations: 500000.
 Estimation::mcmc: Current acceptance ratio per chain: 
-                                                       Chain  1: 32.4387%
+                                                       Chain  1: 18.6468%
 
 Geweke (1992) Convergence Tests, based on means of draws 50000 to 60000 vs 75000 to 100000.
 p-values are for Chi2-test for equality of means.
      Parameter 	   Post. Mean 	    Post. Std 	 p-val No Taper	 p-val 4% Taper	 p-val 8% Taper	 p-val 15% Taper
-   sigma       	        1.529 	        0.322 	        0.000	        0.000	        0.000	        0.000
-   b_ratio     	        0.918 	        0.163 	        0.000	        0.055	        0.044	        0.019
-   x_v         	        0.000 	        0.000 	        0.000	        0.000	        0.002	        0.016
-   xi_inv      	        1.045 	        1.096 	        0.000	        0.000	        0.000	        0.000
+   sigma       	        1.630 	        0.298 	        0.000	        0.000	        0.000	        0.000
+   b_ratio     	        0.934 	        0.126 	        0.000	        0.326	        0.359	        0.356
+   x_v         	        0.000 	        0.000 	        0.000	        0.000	        0.003	        0.017
+   xi_inv      	        1.806 	        0.640 	        0.000	        0.000	        0.000	        0.000
    delta       	        0.009 	        0.003 	        0.000	        0.000	        0.000	        0.000
-   epsi        	        4.858 	        0.927 	        0.000	        0.123	        0.111	        0.066
-   rho_z       	        0.772 	        0.149 	        0.000	        0.000	        0.000	        0.000
-   rho_delta   	        0.966 	        0.171 	        0.000	        0.099	        0.081	        0.040
-   rho_s       	        0.545 	        0.174 	        0.000	        0.000	        0.000	        0.000
-   sigma_z     	        0.003 	        0.001 	        0.000	        0.000	        0.000	        0.000
-   sigma_delta 	        0.021 	        0.007 	        0.000	        0.000	        0.000	        0.000
-   sigma_s     	        0.039 	        0.019 	        0.000	        0.057	        0.126	        0.202
+   epsi        	        5.178 	        0.814 	        0.000	        0.093	        0.161	        0.207
+   rho_z       	        0.830 	        0.113 	        0.000	        0.022	        0.031	        0.032
+   rho_delta   	        0.979 	        0.132 	        0.000	        0.358	        0.389	        0.385
+   rho_s       	        0.653 	        0.112 	        0.000	        0.000	        0.000	        0.000
+   sigma_z     	        0.002 	        0.001 	        0.000	        0.703	        0.732	        0.762
+   sigma_delta 	        0.019 	        0.005 	        0.000	        0.000	        0.000	        0.000
+   sigma_s     	        0.036 	        0.017 	        0.000	        0.006	        0.034	        0.082
 
 
-Estimation::mcmc: Total number of MH draws: 700000.
-Estimation::mcmc: Total number of generated MH files: 79.
-Estimation::mcmc: I'll use mh-files 40 to 79.
-Estimation::mcmc: In MH-file number 40 I'll start at line 1769.
-Estimation::mcmc: Finally I keep 350000 draws.
+Estimation::mcmc: Total number of MH draws: 500000.
+Estimation::mcmc: Total number of generated MH files: 56.
+Estimation::mcmc: I'll use mh-files 28 to 56.
+Estimation::mcmc: In MH-file number 28 I'll start at line 8917.
+Estimation::mcmc: Finally I keep 250000 draws.
 
 Estimation::marginal density: I'm computing the posterior mean and covariance...  Done!
 Estimation::marginal density: I'm computing the posterior log marginal density (modified harmonic mean)... Done!
@@ -224,64 +224,66 @@ Estimation::marginal density: I'm computing the posterior log marginal density (
 
 ESTIMATION RESULTS
 
-Log data density is -240.462749.
+Log data density is -253.321125.
 posterior_moments: There are not enough draws computes to compute HPD Intervals. Skipping their computation.
 posterior_moments: There are not enough draws computes to compute deciles. Skipping their computation.
 
 parameters
               prior mean   post. mean        95% HPD interval    prior       pstdev
 
-sigma              1.500       1.4890      1.1901      1.9957   gamma       0.5000
-b_ratio            0.710       0.9025      0.9325      0.9671   beta        0.2000
-x_v                0.500       0.0001      0.0000      0.0002   beta        0.2500
-xi_inv             1.000       0.0729      0.0000      0.2283   gamma       2.0000
-delta              0.008       0.0088      0.0042      0.0128   beta        0.0050
-epsi               4.200       4.7992      3.7607      6.3220   gamma       1.5000
-rho_z              0.800       0.7153      0.6172      0.7785   beta        0.1000
-rho_delta          0.930       0.9506      0.9937      0.9989   beta        0.0500
-rho_s              0.800       0.4094      0.3887      0.6757   beta        0.1000
-sigma_z            0.010       0.0032      0.0020      0.0053   invg        1.0000
-sigma_delta        0.020       0.0233      0.0095      0.0309   invg        0.0100
-sigma_s            0.010       0.0347      0.0000      0.0511   invg        1.0000
+sigma              1.500       1.7121      1.6849      1.9238   gamma       0.5000
+b_ratio            0.710       0.9203      0.9376      0.9582   beta        0.2000
+x_v                0.500       0.0000      0.0000      0.0000   beta        0.2500
+xi_inv             1.000       1.2628      0.8146      1.8960   gamma       2.0000
+delta              0.008       0.0078      0.0068      0.0099   beta        0.0050
+epsi               4.200       5.3125      4.2681      5.7116   gamma       1.5000
+rho_z              0.800       0.8077      0.8243      0.8811   beta        0.1000
+rho_delta          0.930       0.9626      0.9972      0.9988   beta        0.0500
+rho_s              0.800       0.5857      0.5836      0.6960   beta        0.1000
+sigma_z            0.010       0.0024      0.0020      0.0035   invg        1.0000
+sigma_delta        0.020       0.0163      0.0110      0.0183   invg        0.0100
+sigma_s            0.010       0.0307      0.0000      0.0557   invg        1.0000
  
 Correlations of Parameters (at Posterior Mode) > 0.7
 {Unrecognized field name "autocorr".
 
-Error in <a href="matlab:matlab.internal.language.introspective.errorDocCallback('stack_model_moments', 'C:\Users\msilva913\Documents\GitHub\Sunk_entry_costs_endogenous_variety_unemployment\OurModel_Estimation_Dynare4.4.3\stack_model_moments.m', 52)" style="font-weight:bold">stack_model_moments</a> (<a href="matlab: opentoline('C:\Users\msilva913\Documents\GitHub\Sunk_entry_costs_endogenous_variety_unemployment\OurModel_Estimation_Dynare4.4.3\stack_model_moments.m',52,0)">line 52</a>)
+Error in <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('stack_model_moments', 'C:\Users\msilv\Documents\GitHub\Sunk-entry-costs--endogenous-variety--and-unemployment\OurModel_Estimation_Dynare4.4.3\stack_model_moments.m', 52)" style="font-weight:bold">stack_model_moments</a> (<a href="matlab: opentoline('C:\Users\msilv\Documents\GitHub\Sunk-entry-costs--endogenous-variety--and-unemployment\OurModel_Estimation_Dynare4.4.3\stack_model_moments.m',52,0)">line 52</a>)
 model_moments(22) = oo_.autocorr{1,3}(1,1);
-
-Error in <a href="matlab:matlab.internal.language.introspective.errorDocCallback('model', 'C:\Users\msilva913\Documents\GitHub\Sunk_entry_costs_endogenous_variety_unemployment\OurModel_Estimation_Dynare4.4.3\model.m', 543)" style="font-weight:bold">model</a> (<a href="matlab: opentoline('C:\Users\msilva913\Documents\GitHub\Sunk_entry_costs_endogenous_variety_unemployment\OurModel_Estimation_Dynare4.4.3\model.m',543,0)">line 543</a>)
+                    ^^^^^^^^^^^^^^^^^^^^^^
+Error in <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('model', 'C:\Users\msilv\Documents\GitHub\Sunk-entry-costs--endogenous-variety--and-unemployment\OurModel_Estimation_Dynare4.4.3\model.m', 543)" style="font-weight:bold">model</a> (<a href="matlab: opentoline('C:\Users\msilv\Documents\GitHub\Sunk-entry-costs--endogenous-variety--and-unemployment\OurModel_Estimation_Dynare4.4.3\model.m',543,0)">line 543</a>)
 stack_model_moments;
-
-Error in <a href="matlab:matlab.internal.language.introspective.errorDocCallback('dynare', 'C:\dynare\4.4.3\matlab\dynare.m', 180)" style="font-weight:bold">dynare</a> (<a href="matlab: opentoline('C:\dynare\4.4.3\matlab\dynare.m',180,0)">line 180</a>)
+^^^^^^^^^^^^^^^^^^^
+Error in <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('dynare', 'C:\dynare\4.4.3\matlab\dynare.m', 180)" style="font-weight:bold">dynare</a> (<a href="matlab: opentoline('C:\dynare\4.4.3\matlab\dynare.m',180,0)">line 180</a>)
 evalin('base',fname) ;
+^^^^^^^^^^^^^^^^^^^^
 } 
+
 Data_vs_Model = [Values,model_moments];
 Data_vs_Model
 
 Data_vs_Model =
 
-    0.2030    0.2341
-    0.1997    0.3783
-    0.3927    0.6121
-    0.0189    0.0007
-    0.0794    0.0090
-    0.0953    0.0164
-   -0.9013   -0.9983
-   -0.9754   -0.9994
-   -0.2542   -0.2292
-    0.6563    0.7611
-   -0.7932   -0.7911
-    0.9746    0.9998
-    0.3122    0.2679
-   -0.7024   -0.7584
-    0.8096    0.7656
-    0.2902    0.2532
-   -0.6965   -0.7598
-    0.8188    0.7757
-   -0.4034   -0.1983
-    0.0506    0.0760
-   -0.6622   -0.5382
+    0.2030    0.2450
+    0.1997    0.4014
+    0.3927    0.6464
+    0.0189    0.0004
+    0.0794    0.0065
+    0.0953    0.0155
+   -0.9013   -0.9996
+   -0.9754   -0.9999
+   -0.2542   -0.2696
+    0.6563    0.7412
+   -0.7932   -0.9106
+    0.9746    0.9999
+    0.3122    0.2835
+   -0.7024   -0.7351
+    0.8096    0.9070
+    0.2902    0.2783
+   -0.6965   -0.7375
+    0.8188    0.9085
+   -0.4034   -0.2790
+    0.0506    0.1986
+   -0.6622   -0.5689
     0.9528       NaN
     0.9484       NaN
     0.9530       NaN
@@ -289,174 +291,3 @@ Data_vs_Model =
     0.7785       NaN
     0.8911       NaN
 
-xparam1
-
-xparam1 =
-
-     0
-     0
-     0
-     0
-     0
-     0
-     0
-     0
-     0
-     0
-     0
-     0
-
-load model_mh_mode.mat; % need to reload this for each estimation?
-for ii=1:1:length(xparam1)
-    para_idx=loc(M_.param_names,char(parameter_names(ii)));
-    M_.params(para_idx)=xparam1(ii);
-end
-xparam1
-
-xparam1 =
-
-     0
-     0
-     0
-     0
-     0
-     0
-     0
-     0
-     0
-     0
-     0
-     0
-
-M_.params
-
-ans =
-
-         0
-         0
-         0
-         0
-         0
-         0
-         0
-         0
-         0
-         0
-         0
-         0
-    0.9967
-    0.6000
-    0.0310
-    0.5357
-       NaN
-       NaN
-       NaN
-       NaN
-
-addpath DynareUtilites\
-addpath DynareUtilites\
-stack_model_moments;
-{Unrecognized field name "autocorr".
-
-Error in <a href="matlab:matlab.internal.language.introspective.errorDocCallback('stack_model_moments', 'C:\Users\msilva913\Documents\GitHub\Sunk_entry_costs_endogenous_variety_unemployment\OurModel_Estimation_Dynare4.4.3\stack_model_moments.m', 52)" style="font-weight:bold">stack_model_moments</a> (<a href="matlab: opentoline('C:\Users\msilva913\Documents\GitHub\Sunk_entry_costs_endogenous_variety_unemployment\OurModel_Estimation_Dynare4.4.3\stack_model_moments.m',52,0)">line 52</a>)
-model_moments(22) = oo_.autocorr{1,3}(1,1);
-} 
-res
-{Unrecognized function or variable 'res'.
-} 
-oo_
-
-oo_ = 
-
-  <a href="matlab:helpPopup struct" style="font-weight:bold">struct</a> with fields:
-
-               exo_simul: [3×3 double]
-              endo_simul: []
-                      dr: [1×1 struct]
-        exo_steady_state: [3×1 double]
-    exo_det_steady_state: []
-           exo_det_simul: []
-            steady_state: [58×1 double]
-                   prior: [1×1 struct]
-               posterior: [1×1 struct]
-          posterior_mode: [1×1 struct]
-           posterior_std: [1×1 struct]
-                     var: [12×12 double]
-         MarginalDensity: [1×1 struct]
-             convergence: [1×1 struct]
-          posterior_mean: [1×1 struct]
-        posterior_hpdinf: [1×1 struct]
-        posterior_hpdsup: [1×1 struct]
-        posterior_median: [1×1 struct]
-      posterior_variance: [1×1 struct]
-       posterior_deciles: [1×1 struct]
-       posterior_density: [1×1 struct]
-                Smoother: [1×1 struct]
-       SmoothedVariables: [1×1 struct]
-        UpdatedVariables: [1×1 struct]
-          SmoothedShocks: [1×1 struct]
-
-res.autocorr
-{Unable to resolve the name 'res.autocorr'.
-} 
-oo_.autocorr
-{Unrecognized field name "autocorr".
-} 
-oo_
-
-oo_ = 
-
-  <a href="matlab:helpPopup struct" style="font-weight:bold">struct</a> with fields:
-
-               exo_simul: [3×3 double]
-              endo_simul: []
-                      dr: [1×1 struct]
-        exo_steady_state: [3×1 double]
-    exo_det_steady_state: []
-           exo_det_simul: []
-            steady_state: [58×1 double]
-                   prior: [1×1 struct]
-               posterior: [1×1 struct]
-          posterior_mode: [1×1 struct]
-           posterior_std: [1×1 struct]
-                     var: [12×12 double]
-         MarginalDensity: [1×1 struct]
-             convergence: [1×1 struct]
-          posterior_mean: [1×1 struct]
-        posterior_hpdinf: [1×1 struct]
-        posterior_hpdsup: [1×1 struct]
-        posterior_median: [1×1 struct]
-      posterior_variance: [1×1 struct]
-       posterior_deciles: [1×1 struct]
-       posterior_density: [1×1 struct]
-                Smoother: [1×1 struct]
-       SmoothedVariables: [1×1 struct]
-        UpdatedVariables: [1×1 struct]
-          SmoothedShocks: [1×1 struct]
-
-for i_plot = 1:11
-    subplot(3,4,i_plot+1),
-    plot(Traceplot_parameter(1:end,i_plot));
-    title(parameter_names(i_plot),'Interpreter','none');
-end
-{The end operator must be used within an array index expression.
-} 
-subplot(3,4,1),
-plot(Traceplot_likelihood(1:end));
-{The end operator must be used within an array index expression.
-} 
-for i_chain = 1:56
-    mhname = sprintf('model_mh%d_blck1.mat', i_chain);
-    addpath('model\metropolis');
-    load(mhname);
-    if i_chain == 1
-        Traceplot_parameter = x2;
-        Traceplot_likelihood = logpo2;
-    else
-        Traceplot_parameter = [Traceplot_parameter; x2];
-        Traceplot_likelihood = [Traceplot_likelihood; logpo2];
-    end
-end
-{Error using <a href="matlab:matlab.internal.language.introspective.errorDocCallback('load')" style="font-weight:bold">load</a>
-Unable to find file or directory 'model_mh56_blck1.mat'.
-} 
