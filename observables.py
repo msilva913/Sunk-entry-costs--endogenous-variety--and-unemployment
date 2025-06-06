@@ -145,10 +145,18 @@ def construct_data(init, final, freq):
     sbf4 = fred.get_series('BFBF4QTOTALSAUS').resample(freq).mean().dropna() / pop
     bawba = fred.get_series("BAWBATOTALSAUS").resample(freq).mean().dropna()/ pop
     #sbf8 = fred.get_series('BFBF8QTOTALSAUS').resample(freq).mean().dropna() / pop
+    
+    " BED "
+    BED_dat = pd.read_excel('BED_data.xlsx', sheet_name='Data Import')
+    BED_dat['Series'] = pd.date_range(start="1992Q3", end="2024Q3", freq="QS")
+    BED_dat.set_index("Series", inplace=True)
+
+    BED_dat.rename(columns={"BDS0000000000000000120008RQ5": "estabs_exit_rate"}, inplace=True)
+    delta = BED_dat["estabs_exit_rate"].resample(freq).mean().dropna()/(100*3)
 
     " Note: these series imply labor productivity in each sector "
     " List of data series "
-    var_load_list = [c, u, v, theta, f, lp, ls, s, w, sbf4, bawba] 
+    var_load_list = [c, u, v, theta, f, lp, ls, s, delta, w, sbf4, bawba] 
     return var_load_list
         
 if __name__ == "__main__":       
@@ -171,9 +179,11 @@ if __name__ == "__main__":
         save_object(var_load_list, 'var_load_list')
     
     dat = pd.concat(var_load_list, axis=1)
-    lab = ['c', 'u', 'v', 'theta', 'jf', 'lp', 'ls', 's', 'w', 'bf', 'ba']
+    lab = ['c', 'u', 'v', 'theta', 'jf', 'lp', 'ls', 's', 'delta', 'w', 'bf', 'ba']
     dat.columns = lab
     dat = dat.loc[init:final]
+    
+    dat[["s", "delta"]].loc["1992":"2019"]
     
     dat.to_pickle("raw_data.pkl")
     #dat = pd.read_pickle("raw.pkl")

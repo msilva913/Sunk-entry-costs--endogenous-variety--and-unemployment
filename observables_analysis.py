@@ -28,7 +28,7 @@ import matplotlib.ticker as mtick
 #arima =  statsmodels.tsa.x13.x13_arima_analysis
 
 " Load raw data "
-lab = ['c', 'u', 'v', 'theta', 'jf', 'lp', 'ls', 's', 'w', 'bf', 'ba']
+lab = ['c', 'u', 'v', 'theta', 'jf', 'lp', 'ls', 's', 'delta', 'w', 'bf', 'ba']
 init= '1951-01-01'
 #final = '2024-10-30'
 final='2020-01-01' # Just before pandemic shock

@@ -23,7 +23,8 @@ df['Series'] = pd.date_range(start="1992Q3", end="2024Q3", freq="QS")
 df.set_index("Series", inplace=True)
 
 df.rename(columns={"BDS0000000000000000120008RQ5": "estabs_exit_rate",
-                   "BDS0000000000000000110008RQ5": "job_dest_rate"}, inplace=True)
+                   "BDS0000000000000000110008RQ5": "perc_employment_lost_establishment_deaths"}, inplace=True)
+                 #  "BDS0000000000000000110008RQ5": "job_dest_rate"}, inplace=True)
 
 recessions = [
     #(pd.Timestamp('1980-01-01'), pd.Timestamp('1980-07-31')),
@@ -38,8 +39,8 @@ recessions = [
 fig, ax = plt.subplots(figsize=(12, 6))
 ax.plot(df.estabs_exit_rate.loc["1992":"2019"], linewidth=2, alpha=0.7,
         label="Establishment exit:BED")
-ax.plot(df.job_dest_rate.loc["1992":"2019"], linewidth=2, alpha=0.7,
-        label="Job destruction:BED")
+ax.plot(df.perc_employment_lost_establishment_deaths.loc["1992":"2019"], linewidth=2, alpha=0.7,
+        label="Percentage employment lost from establishment deaths:BED")
 ax.set_xlabel("Time", fontsize=10)
 ax.set_ylabel("Rate (%)", fontsize=10)
 for start, end in recessions:
