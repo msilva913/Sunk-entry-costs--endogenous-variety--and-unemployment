@@ -185,6 +185,12 @@ if __name__ == "__main__":
     
     dat[["s", "delta"]].loc["1992":"2019"]
     
+    s_ind = dat.s - dat.delta
+    fig, ax = plt.subplots()
+    ax.plot(dat.delta.index, s_ind, label="Idiosyncratic separation")
+    ax.plot(dat.delta, label="Establishment exit rate")
+    plt.legend()
+    plt.show()
     dat.to_pickle("raw_data.pkl")
     #dat = pd.read_pickle("raw.pkl")
     
