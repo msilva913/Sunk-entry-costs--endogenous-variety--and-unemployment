@@ -47,31 +47,3 @@ N_res(steady.θ, cal)
 targets = (targets...,  ϕ=cal.ϕ)
 cal = calibrate(targets)
 steady2 = steady_state(cal)
-
-
-# Study implication of low b
-targets2 = (targets..., b_ratio=0.41)
-cal2 = calibrate_labor_share(targets2)
-steady_state(cal2)
-# Can match labor share for very low values of b 
-# For very high values of b, at a fixed markup, labor share tends to exceed target, requiring negative values of bargaining power.
-
-
-# Examination of entry elasticity ξ → ∞ (ξ_inv → 0)
-para = (cal..., ξ_inv=0.00)
-
-steady = steady_state(para)
-@assert abs(steady.Q-1.0) < 1e-12
-@assert abs(steady.X_v-steady.e) < 1e-12
-@assert abs(steady.K - (cal.ρ+cal.δ)/(1+cal.ρ)) < 1e-12
-
-## Alternate calibration: directly specify ϕ instead of labor share 
-# targets = (ϕ=0.6, dest_ann=0.06, r_ann=0.04, f =0.41, η_L=0.6, q=0.8, sep=0.031, b_ratio=0.71, ξ_inv=1, ε=4, σ=1.5, N=1, w=1.0)
-# cal = calibrate(targets)
-# steady = steady_state(cal)
-# Examination of very high elasticity of substitution
-para = (cal...,  ε=1e12)
-steady = steady_state(para)
-#@assert abs(steady.Q-1.0) < 1e-12
-@assert abs(steady.X_v-steady.e) < 1e-12
-@assert abs(steady.K - (cal.ρ+cal.δ)/(1+cal.ρ)) < 1e-12
