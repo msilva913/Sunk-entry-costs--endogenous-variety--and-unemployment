@@ -22,6 +22,8 @@ steady = steady_state(cal)
 @show C/Y
 @show M/(12*Y)
 
+cal_table = calibration_table(cal, targets)
+
 
 
 ################################################################

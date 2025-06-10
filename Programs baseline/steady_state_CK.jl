@@ -240,7 +240,7 @@ end
 
 function calibration_table(cal, targets)
     @unpack δ, z, b, ϕ, ρ, A, η_L, ξ_inv, A, F = cal
-    @unpack labor_share, r_ann, f, η_L, q, sep, b_ratio, ξ_inv, N, w = targets
+    @unpack ϕ, r_ann, f, η_L, q, sep, b_ratio, ξ_inv, w = targets
 
     ρ = (1+r_ann)^(1/12)-1
     β = 1/(1+ρ)
@@ -255,13 +255,13 @@ function calibration_table(cal, targets)
             "Elasticity of vacancy value",
             "Steady-state wage",
             "Aggregate separation rate",
-            "Labor share",
+            "Bargaining power",
             "Job finding rate",
             "Vacancy filling rate"
         ],
         Value = round.([r_ann, η_L, b, ξ_inv, w, δ, labor_share, 0.41, 0.80], sigdigits=2),
-        Parameter = [L"\rho", L"\eta_L", L"b", L"\delta", L"\xi^{-1}", L"\varepsilon", L"\sigma", L"\kappa", L"z", L"f_e", L"s", L"\phi", L"A", L"F"],
-        Calibration = round.([ρ, η_L, b, δ, ξ_inv, ε, σ, κ, z, f_e, s, ϕ, A, F], sigdigits=3)
+        Parameter = [L"\rho", L"\eta_L", L"b", L"\delta", L"\xi^{-1}", L"z", L"\phi", L"A", L"F"],
+        Calibration = round.([ρ, η_L, b, δ, ξ_inv, z, ϕ, A, F], sigdigits=3)
     )
 
     # Save the DataFrame as a PDF table
