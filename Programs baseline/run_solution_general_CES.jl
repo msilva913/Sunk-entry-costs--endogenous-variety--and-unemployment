@@ -154,27 +154,11 @@ should be ordered in the following way: [x; y; xp; yp].
 If the steady state is unknown leave it as an empty vector (SS=[]), 
 so that the program tries to estimate it.
 """  
-# Values 
-targets = (labor_share=0.66, 
-           dest_ann=0.1, 
-           r_ann=0.04, 
-           f =0.41, 
-           η_L=0.6, 
-           q=0.8, 
-           sep=0.031, 
-           b_ratio=0.71, 
-           x_v=0.1, 
-           ξ_inv=1/0.265, 
-           ε=4.3, σ=1.0, 
-           N=1.0, w=1.0,
-           ζ=0.0)
-cal = calibrate_labor_share(targets)
-
 function SS_symbolics(parameters::Vector{Sym{PyObject}}, targets)
 
     f_e, zbar, δbar, sbar, b, ϕ, ρ, σ, ε, ζ, A, η_L, F, κ, ξ_inv, ρ_z, σ_z, ρ_δ, σ_δ, ρ_s, σ_s = parameters
     # Initial parameters: targets and normalizations/ leave parameters as symbolic to be populated with calibration
-    @unpack N, w, f, q, x_v, labor_share = targets
+    @unpack N, w, f, q, x_v, labor_share, ζ = targets
     N_s = N 
     w_s = w 
     fbar = f 
@@ -236,6 +220,24 @@ end
 PAR_SS = parameters[:]
 SS = SS_symbolics(parameters, targets)
 
+# Values 
+targets = (labor_share=0.66, 
+           dest_ann=0.1, 
+           r_ann=0.04, 
+           f =0.41, 
+           η_L=0.6, 
+           q=0.8, 
+           sep=0.031, 
+           b_ratio=0.71, 
+           x_v=0.1, 
+           ξ_inv=1/0.265, 
+           ε=4.3, σ=1.0, 
+           N=1.0, w=1.0,
+           ζ=0.0)
+cal = calibrate_labor_share(targets)
+
+
+
 # Procesing the model (no adjustment needed)                
 model = (parameters = parameters, estimate = estimate, estimation = position,
         npar = length(parameters), ns = length(estimate), 
@@ -275,6 +277,27 @@ PAR     =   [f_e; zbar; δbar; sbar; b; ϕ; ρ; σ; ε; ζ; A; η_L; F; κ; ξ_i
 sol = solution_interface(model, PAR)
 @unpack ss, SS, sol_mat, eta = sol
 pprint(ss)
+
+## Checks 
+ss2 = steady_state(cal)
+function percentage_difference(value1, value2)
+    return 100 * (value2 - value1) / value1
+end
+
+# Loop through the keys in dict1 and compare with dict2
+for key in keys(ss)
+    if haskey(ss2, key)
+        value1 = ss[key]
+        value2 = ss2[key]
+        percent_diff = percentage_difference(value1, value2)
+        if percent_diff > 1e-4
+            println("Key: $key, Dict1: $value1, Dict2: $value2, Percentage Difference: $percent_diff%")
+        end
+    else
+        println("Key $key not found in dict2.")
+    end
+end
+
 # Export: model, targets, PAR, sol (save output using serialization)
 model_output = (model, targets, PAR, sol)
 serialize("model_output.jls", model_output)
@@ -303,7 +326,7 @@ irf_z = 100 .*DataFrame(irf_z, varnames)
 gen_irf(irf_z)
 Plots.savefig("z_shock.pdf")
 #savefig("z_shock.png")
-serialize("irf_z.jls", irf_z)
+#serialize("irf_z.jls", irf_z)
 
 # Destruction rate shock: consistent with Beveridge curve
 irf_δ= simulate_model(model, sol_mat, T_IR, eta_δ, SS, flag_IR, flag_logdev) 
