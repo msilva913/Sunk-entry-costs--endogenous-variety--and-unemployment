@@ -296,6 +296,7 @@ T_IR = 120 # 10 years
 # Technology shock
 irf_z= simulate_model(model, sol_mat, T_IR, eta_z, SS, flag_IR, flag_logdev)
 irf_z = 100 .*DataFrame(irf_z, varnames)
+pyplot()
 gen_irf(irf_z)
 Plots.savefig("z_shock_nov.pdf")
 savefig("z_shock.png")
