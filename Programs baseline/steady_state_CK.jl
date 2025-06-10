@@ -23,7 +23,7 @@ end
 
 @with_kw mutable struct ParaCalib
 
-    δ::Float64 = 0.005               # Product destruction rate/worker separation rate
+    δ::Float64 = 0.005               # Firm destruction rate/worker separation rate
     z::Float64 = 1.0                    # Technology level
     b::Float64 = 0.71                   # Unemployment insurance
     ϕ::Float64 = 0.5                  # Bargaining power
