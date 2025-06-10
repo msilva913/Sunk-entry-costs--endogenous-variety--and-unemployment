@@ -297,7 +297,7 @@ T_IR = 120 # 10 years
 irf_z= simulate_model(model, sol_mat, T_IR, eta_z, SS, flag_IR, flag_logdev)
 irf_z = 100 .*DataFrame(irf_z, varnames)
 gen_irf(irf_z)
-Plots.savefig("z_shock.pdf")
+Plots.savefig("z_shock_nov.pdf")
 savefig("z_shock.png")
 serialize("irf_z.jls", irf_z)
 
