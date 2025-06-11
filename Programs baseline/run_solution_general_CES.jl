@@ -218,9 +218,6 @@ end
 
 #PAR_SS = [ALPHA; BETA; DELTA; RHO; SIGMA; MUU; AA]
 PAR_SS = parameters[:]
-SS = SS_symbolics(parameters, targets)
-
-# Values 
 targets = (labor_share=0.66, 
            dest_ann=0.1, 
            r_ann=0.04, 
@@ -234,6 +231,10 @@ targets = (labor_share=0.66,
            ε=4.3, σ=1.0, 
            N=1.0, w=1.0,
            ζ=0.0)
+SS = SS_symbolics(parameters, targets)
+
+# Values 
+
 cal = calibrate_labor_share(targets)
 
 
@@ -280,23 +281,6 @@ pprint(ss)
 
 ## Checks 
 ss2 = steady_state(cal)
-function percentage_difference(value1, value2)
-    return 100 * (value2 - value1) / value1
-end
-
-# Loop through the keys in dict1 and compare with dict2
-for key in keys(ss)
-    if haskey(ss2, key)
-        value1 = ss[key]
-        value2 = ss2[key]
-        percent_diff = percentage_difference(value1, value2)
-        if percent_diff > 1e-4
-            println("Key: $key, Dict1: $value1, Dict2: $value2, Percentage Difference: $percent_diff%")
-        end
-    else
-        println("Key $key not found in dict2.")
-    end
-end
 
 # Export: model, targets, PAR, sol (save output using serialization)
 model_output = (model, targets, PAR, sol)
@@ -322,11 +306,13 @@ T_IR = 120 # 10 years
 
 # Technology shock
 irf_z= simulate_model(model, sol_mat, T_IR, eta_z, SS, flag_IR, flag_logdev)
-irf_z = 100 .*DataFrame(irf_z, varnames)
-gen_irf(irf_z)
-Plots.savefig("z_shock.pdf")
+irf_z_gen_CES = 100 .*DataFrame(irf_z, varnames)
+#gen_irf(irf_z)
+#Plots.savefig("z_shock.pdf")
 #savefig("z_shock.png")
-#serialize("irf_z.jls", irf_z)
+serialize("irf_z_gen_CES.jls", irf_z_gen_CES)
+
+# Comparison
 
 # Destruction rate shock: consistent with Beveridge curve
 irf_δ= simulate_model(model, sol_mat, T_IR, eta_δ, SS, flag_IR, flag_logdev) 

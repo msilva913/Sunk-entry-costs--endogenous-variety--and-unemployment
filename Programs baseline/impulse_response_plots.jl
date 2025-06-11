@@ -150,3 +150,51 @@ function gen_irf_comp(irf_bas::DataFrame, irf_alt::DataFrame, labels)
     display(p)
     png("clipboard")
 end
+
+function gen_irf_comp_simp(irf_bas::DataFrame, irf_alt::DataFrame, labels)
+    # Create a 1x3 subplot layout
+    p = Plots.plot(
+        layout=(2, 2), 
+        size=(800, 500), 
+        legend=:topright,
+        fmt=:png
+    )
+
+    # Plot for u
+    plot!(p[1], 
+        [irf_bas.u irf_alt.u],
+        label=[labels[1] labels[2]],
+        alpha=0.6,
+        title=L"u",
+        ylabel="%"
+    )
+
+    # Plot for v
+    plot!(p[2], 
+        [irf_bas.v irf_alt.v],
+        label=[labels[1] labels[2]],
+        alpha=0.6,
+        title=L"v",
+        ylabel="%"
+    )
+
+    # Plot for e
+    plot!(p[3], 
+        [irf_bas.e irf_alt.e],
+        label=[labels[1] labels[2]],
+        alpha=0.6,
+        title=L"e",
+        ylabel="%"
+    )
+
+     plot!(p[4], 
+        [irf_bas.δ irf_alt.δ],
+        label=[labels[1] labels[2]],
+        alpha=0.6,
+        title=L"δ",
+        ylabel="%"
+    )
+    # Display the plot
+    display(p)
+    png("clipboard")
+end

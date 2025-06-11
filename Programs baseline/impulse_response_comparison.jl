@@ -1,12 +1,26 @@
 
 
+include("impulse_response_plots.jl")
+
+irf_df = deserialize("irf_z.jls")
+irf_df_gen_CES = deserialize("irf_z_gen_CES.jls")
+
+
+# 1) Compare z shock: baseline and no variety effects
+gen_irf_comp(irf_z_gen_CES, irf_df, ["No variety effects", "Baseline"])
+savefig("variety_effects_irf_z_comparison.pdf")
+
+
+# 2) Compare δ shock to CK
+irf_δ = deserialize("irf_δ.jls")
+irf_δ_CK = deserialize("irf_δ_CK.jls")
+gen_irf_comp_simp(irf_δ, irf_δ_CK, ["Baseline", "Coles and Kelishomi"])
+savefig("CK_comparison.png")
+
 out = deserialize("model_output.jls")
 model, targets, PAR = out
-irf_df = deserialize("irf_z.jls")
-
 sol = solution_interface(model, PAR)
 @unpack ss, SS, sol_mat, eta = sol
-
 # Focus on technology shocks
 eta_z = zero(eta) # Tech shock
 eta_z[4] = eta[4]

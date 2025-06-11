@@ -155,7 +155,7 @@ so that the program tries to estimate it.
 """  
 # Values 
 targets = (labor_share=0.66, 
-           dest_ann=0.1, 
+           dest_ann=0.3, 
            r_ann=0.04, 
            f =0.41, 
            η_L=0.6, 
@@ -164,6 +164,7 @@ targets = (labor_share=0.66,
            b_ratio=0.71, 
            x_v=0.1, 
            ξ_inv=1/0.265, 
+           #ξ_inv = 0.01,
            ε=4.3, σ=1.0, 
            N=1.0, w=1.0)
 cal = calibrate_labor_share(targets)
@@ -298,16 +299,17 @@ irf_z= simulate_model(model, sol_mat, T_IR, eta_z, SS, flag_IR, flag_logdev)
 irf_z = 100 .*DataFrame(irf_z, varnames)
 pyplot()
 gen_irf(irf_z)
-Plots.savefig("z_shock_nov.pdf")
-savefig("z_shock.png")
-serialize("irf_z.jls", irf_z)
+#savefig("z_shock.png")
+#serialize("irf_z.jls", irf_z)
 
 # Destruction rate shock: consistent with Beveridge curve
 irf_δ= simulate_model(model, sol_mat, T_IR, eta_δ, SS, flag_IR, flag_logdev) 
 irf_δ = 100 .*DataFrame(irf_δ, varnames)
+serialize("irf_δ.jls", irf_δ)
 gen_irf(irf_δ)
-Plots.savefig("dest_shock.pdf")
+#Plots.savefig("dest_shock.pdf")
 
+"""
 # Idiosyncratic job separation shock
 irf_s= simulate_model(model, sol_mat, T_IR, eta_s, SS, flag_IR, flag_logdev) 
 irf_s = 100 .*DataFrame(irf_s, varnames)
@@ -319,7 +321,7 @@ irf_τ= simulate_model(model, sol_mat, T_IR, eta_τ, SS, flag_IR, flag_logdev)
 irf_τ = 100 .*DataFrame(irf_τ, varnames)
 gen_irf(irf_τ)
 Plots.savefig("common_shock.pdf")
-
+"""
 
 
 # # High sunk vacancy posting costs

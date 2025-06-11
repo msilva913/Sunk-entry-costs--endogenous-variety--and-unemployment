@@ -236,8 +236,9 @@ irf_δ_red = irf_δ[1:60, :]
 gen_irf(irf_δ_red)
 savefig("δ_shock_CK.png")
 #Plots.savefig("dest_shock.pdf")
+serialize("irf_δ_CK.jls", irf_δ)
 
-
+"""
 # Technology shock
 irf_z= simulate_model(model, sol_mat, T_IR, eta_z, SS, flag_IR, flag_logdev)
 irf_z = 100 .*DataFrame(irf_z, varnames)
@@ -245,5 +246,5 @@ gen_irf(irf_z)
 Plots.savefig("z_shock.pdf")
 savefig("z_shock.png")
 #serialize("irf_z.jls", irf_z)
-
+"""
 
