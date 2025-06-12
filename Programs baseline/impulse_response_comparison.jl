@@ -50,8 +50,8 @@ irf_z_kappa = deserialize("irf_z_kappa.jls")
 irf_δ_kappa = deserialize("irf_δ_kappa.jls")
 gen_irf_comp(irf_z, irf_z_kappa, ["Baseline", "κ=0"])
 savefig("kappa_comparison_tech_shock.png")
-gen_irf_comp(irf_δ, irf_δ_b, ["Baseline", "b=0.92"])
-savefig("b_comparison_delta_shock.png")
+gen_irf_comp(irf_δ, irf_δ_kappa, ["Baseline", "κ=0"])
+savefig("kappa_comparison_delta_shock.png")
 ##################################################################
 out = deserialize("model_output.jls")
 model, targets, PAR = out
