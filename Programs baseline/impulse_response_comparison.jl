@@ -2,21 +2,42 @@
 
 include("impulse_response_plots.jl")
 
-irf_df = deserialize("irf_z.jls")
-irf_df_gen_CES = deserialize("irf_z_gen_CES.jls")
+irf_z = deserialize("irf_z.jls")
+irf_z_gen_CES = deserialize("irf_z_gen_CES.jls")
 
 
 # 1) Compare z shock: baseline and no variety effects
-gen_irf_comp(irf_z_gen_CES, irf_df, ["No variety effects", "Baseline"])
+gen_irf_comp(irf_z_gen_CES, irf_z, ["No variety effects", "Baseline"])
 savefig("variety_effects_irf_z_comparison.pdf")
 
 
-# 2) Compare δ shock to CK
-irf_δ = deserialize("irf_δ.jls")
+# 2) Compare δ shock to CK (assuming $δ shock accounts for all separtions)
+irf_δ_alt = deserialize("irf_δ_alt.jls")
 irf_δ_CK = deserialize("irf_δ_CK.jls")
-gen_irf_comp_simp(irf_δ, irf_δ_CK, ["Baseline", "Coles and Kelishomi"])
+gen_irf_comp_simp(irf_δ_alt, irf_δ_CK[1:60,:], ["Baseline", "Coles and Kelishomi"])
 savefig("CK_comparison.png")
 
+# 3) Examine role of risk neutrality 
+irf_δ = deserialize("irf_δ.jls")
+irf_δ_risk_netural = deserialize("irf_δ_risk_neutral.jls")
+gen_irf_comp(irf_δ, irf_δ_risk_netural, ["Baseline", "Risk neutral"])
+savefig("risk_aversion_comparison_delta_shock.png")
+
+
+irf_z_risk_neutral = deserialize("irf_z_risk_neutral.jls")
+gen_irf_comp(irf_df[1:60,:], irf_z_risk_neutral[1:60,:], ["Baseline", "Risk neutral"])
+savefig("risk_aversion_comparison_z_shock.png")
+
+# 4) #Examine role of highly elastic vacancy creation
+# Less elastic vacancy creation amplifies separation shocks but dampens tech shocks.
+irf_z_elastic = deserialize("irf_z_elastic.jls")
+irf_δ_elastic = deserialize("irf_δ_elastic.jls")
+gen_irf_comp(irf_δ, irf_δ_elastic, ["Baseline", "ξ_inv=0.5"])
+savefig("elastic_comparison_delta_shock.png")
+gen_irf_comp(irf_z, irf_z_elastic, ["Baseline", "ξ_inv=0.5"])
+savefig("elastic_comparison_tech_shock.png")
+
+##################################################################
 out = deserialize("model_output.jls")
 model, targets, PAR = out
 sol = solution_interface(model, PAR)

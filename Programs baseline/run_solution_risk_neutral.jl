@@ -5,7 +5,7 @@ include("run_solution_core.jl")
 #PAR_SS = [ALPHA; BETA; DELTA; RHO; SIGMA; MUU; AA]
 PAR_SS = parameters[:]
 
-targets = (labor_share=0.66, 
+targets_comp = (labor_share=0.66, 
            dest_ann=0.1, 
            r_ann=0.04, 
            f =0.41, 
@@ -16,11 +16,11 @@ targets = (labor_share=0.66,
            x_v=0.1, 
            ξ_inv=1/0.265, 
            #ξ_inv = 0.01,
-           ε=4.3, σ=1.0, 
+           ε=4.3, σ=0.1, 
            N=1.0, w=1.0)
-
-SS = SS_symbolics(parameters, targets)
-cal = calibrate_labor_share(targets)
+           
+SS = SS_symbolics(parameters, targets_comp)
+cal = calibrate_labor_share(targets_comp)
 
 
 f = gen_model_equations()
@@ -62,8 +62,8 @@ PAR     =   [f_e; zbar; δbar; sbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; 
 sol = solution_interface(model, PAR)
 @unpack ss, SS, sol_mat, eta = sol
 # Export: model, targets, PAR, sol (save output using serialization)
-model_output = (model, targets, PAR, sol)
-serialize("model_output.jls", model_output)
+#model_output = (model, targets, PAR, sol)
+#serialize("model_output.jls", model_output)
 
 
 ## Impulse responses ##
@@ -82,33 +82,19 @@ flag_IR = true
 flag_logdev = true
 T_IR = 60 # 10 years
 
-
 # Technology shock
 irf_z= simulate_model(model, sol_mat, T_IR, eta_z, SS, flag_IR, flag_logdev)
 irf_z = 100 .*DataFrame(irf_z, varnames)
 gen_irf(irf_z)
+serialize("irf_z_risk_neutral.jls", irf_z)
 #savefig("z_shock.png")
-serialize("irf_z.jls", irf_z)
+
+
 
 # Destruction rate shock: consistent with Beveridge curve
 irf_δ= simulate_model(model, sol_mat, T_IR, eta_δ, SS, flag_IR, flag_logdev) 
 irf_δ = 100 .*DataFrame(irf_δ, varnames)
-serialize("irf_δ.jls", irf_δ)
+serialize("irf_δ_risk_neutral.jls", irf_δ)
 gen_irf(irf_δ)
 #Plots.savefig("dest_shock.pdf")
-
-"""
-# Idiosyncratic job separation shock
-irf_s= simulate_model(model, sol_mat, T_IR, eta_s, SS, flag_IR, flag_logdev) 
-irf_s = 100 .*DataFrame(irf_s, varnames)
-gen_irf(irf_s)
-Plots.savefig("s_shock.pdf")
-
-#Commmon separation shock
-irf_τ= simulate_model(model, sol_mat, T_IR, eta_τ, SS, flag_IR, flag_logdev) 
-irf_τ = 100 .*DataFrame(irf_τ, varnames)
-gen_irf(irf_τ)
-Plots.savefig("common_shock.pdf")
-"""
-
 

@@ -257,7 +257,7 @@ function first_order(model::NamedTuple, deriv::NamedTuple)
     end
 
     if rank(z11) < nk
-        # println("Invertibility cosndition violated")
+        # println("Invertibility condition violated")
         indic = 3
     end
     

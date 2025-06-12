@@ -26,7 +26,7 @@ years_fmt = mdates.DateFormatter('%Y')
 #arima =  statsmodels.tsa.x13.x13_arima_analysis
 
 " Load raw data "
-lab = ['c', 'u', 'v', 'theta', 'jf', 'lp', 'ls', 's', 'delta', 'w', 'bf', 'ba']
+lab = ['c', 'u', 'v', 'theta', 'jf', 'lp', 'ls', 's', 'w', 'bf', 'ba']
 init= '1951-01-01'
 #final = '2024-10-30'
 final='2020-01-01' # Just before pandemic shock
@@ -36,17 +36,15 @@ cycle_hp = pd.concat([filter_transform(dat[x], init=init, final=final, transform
                                     filter_type="hp_filter", lamb=100_000) for x in lab], axis=1)
 cycle_hp.columns = lab
 
-"""
 cycle_ham = pd.concat([filter_transform(dat[x], init=init, final=final, transform_type='log',
                                     filter_type="hamilton") for x in lab], axis=1)
 cycle_ham.columns = lab
 
 cycle_ham[["bf", "ba"]].corr()
-"""
 
 # Stacked moments 
-mom_list = ["u", "v", "theta", "lp", "s", "delta"]
-mom = moments(cycle_hp[mom_list], relative_std="lp", lab=["u", "lp"])
+mom_list = ["u", "v", "theta", "lp", "s"]
+mom = moments(cycle_hp, relative_std="lp", lab=["u", "lp"])
 mom_stacked = stacked_moments(cycle_hp, mom_list)
 " Summarize moments in one column "
 
@@ -64,7 +62,8 @@ mom_stacked_bf = stacked_moments(cycle_hp, mom_list_ext)
 mom_stacked_bf.columns = ["Values"]
 tab_tex = generate_stacked_moments_latex_table(mom_stacked_bf)
 tab = generate_stacked_moments_table(mom_stacked_bf)
-savemat('moments_bf_empirical.mat', mom_stacked_bf.to_dict('list'))
+print(tab)
+#savemat('moments_bf_empirical.mat', mom_stacked_bf.to_dict('list'))
 # if save_observables:
 #     " Save relevant objects "
 #     #save_object(cycle, 'cycle')

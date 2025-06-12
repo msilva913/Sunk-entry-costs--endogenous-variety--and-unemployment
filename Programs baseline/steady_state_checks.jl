@@ -4,6 +4,7 @@ targets = (labor_share=0.66, dest_ann=0.10, r_ann=0.04, f =0.41, η_L=0.6, q=0.8
 cal = calibrate_labor_share(targets)
 
 steady = steady_state(cal)
+
 @unpack θ, p, L_c, L_e, w, w_int, L, N, N_e, K, q, ν_f, d_f, C, Y, Y_c, X_v, X, labor_share, sunk_vac_cost_share, x_v, M = steady
 @unpack f_e, τ, δ, z, b, ϕ, ρ, σ, ε, A, η_L, κ, ξ_inv, F, s = cal
 μ = ε/(ε-1)
@@ -35,8 +36,8 @@ surplus_ratio = (ρ+τ)/(1-δ)*(1/(q*x_v))
 @show M/(12*Y)
 
 # Consistency checks: should replicate steady state
-N_jcc(steady.θ, cal)
-N_res(steady.θ, cal)
+@show N_jcc(steady.θ, cal)
+@show N_res(steady.θ, cal)
 
 
 ################################################################
@@ -73,3 +74,16 @@ steady = steady_state(para)
 @assert abs(steady.Q-1.0) < 1e-12
 @assert abs(steady.X_v-steady.e) < 1e-12
 @assert abs(steady.K - (cal.ρ+cal.δ)/(1+cal.ρ)) < 1e-12
+
+
+###################################################
+# Check risk aversion
+targets = (labor_share=0.66, dest_ann=0.10, r_ann=0.04, f =0.41, η_L=0.6, q=0.8, sep=0.031, b_ratio=0.71, x_v=0.1, ξ_inv=1/0.265, 
+ε=4.3, σ=0.0, N=1.0, w=1.0)
+cal = calibrate_labor_share(targets)
+steady = steady_state(cal)
+@show steady.labor_share
+@show steady.sunk_vac_cost_share
+@show steady.x_v
+@show steady.C/steady.Y
+@show steady.M/(12*steady.Y)

@@ -1,7 +1,6 @@
 # Based on original code by Alvaro Salazar-Perez and Hernán D. Seoane
 # Modified by Mario Silva
 
-using MKL
 using DataFrames
 using Serialization
 cd(@__DIR__)
@@ -25,13 +24,6 @@ function solution_interface(model, PAR)
     println("Residuals: $SS_max")
 
     ss = NamedTuple(zip(model.varnames, exp.(SS[1:model.nvar])))
-    # dev = zeros(model.nvar)
-    # common_keys = intersect(keys(ss), keys(steady))
-    # for (i, field) in enumerate(common_keys)
-    #     dev[i] = ss[field] -steady[field]
-    # end
-    # print(maximum(abs.(dev)))
-    # @btime sol_mat = solve_model(model, deriv, eta)
     sol_mat = solve_model(model, deriv, eta)
     println("Model solved")
     out = (SS=SS, ss=ss, eta=eta, deriv=deriv, sol_mat=sol_mat)
@@ -163,7 +155,7 @@ end
 #PAR_SS = [ALPHA; BETA; DELTA; RHO; SIGMA; MUU; AA]
 PAR_SS = parameters[:]
 
-targets = (ϕ=0.6, r_ann=0.04, f =0.41, η_L=0.6, q=0.8, sep=0.0304, b_ratio=0.7, ξ_inv=1/0.265, w=1.0)
+targets = (ϕ=0.6, r_ann=0.04, f =0.41, η_L=0.6, q=0.8, sep=0.034, b_ratio=0.7, ξ_inv=1/0.265, w=1.0)
 SS = SS_symbolics(parameters, targets)
 
 # Values 
@@ -213,8 +205,8 @@ ss2 = steady_state(cal)
 
 
 # Export: model, targets, PAR, sol (save output using serialization)
-model_output = (model, targets, PAR, sol)
-serialize("model_output.jls", model_output)
+model_output_CK = (model, targets, PAR, sol)
+#serialize("model_output.jls", model_output)
 
 
 ## Impulse responses ##
