@@ -37,6 +37,21 @@ savefig("elastic_comparison_delta_shock.png")
 gen_irf_comp(irf_z, irf_z_elastic, ["Baseline", "ξ_inv=0.5"])
 savefig("elastic_comparison_tech_shock.png")
 
+# 5) Compare with high b
+irf_z_b = deserialize("irf_z_b.jls")
+irf_δ_b = deserialize("irf_δ_b.jls")
+gen_irf_comp(irf_z, irf_z_b, ["Baseline", "b=0.92"])
+savefig("b_comparison_tech_shock.png")
+gen_irf_comp(irf_δ, irf_δ_b, ["Baseline", "b=0.92"])
+savefig("b_comparison_delta_shock.png")
+
+# 6) Compare with lower kappa
+irf_z_kappa = deserialize("irf_z_kappa.jls")
+irf_δ_kappa = deserialize("irf_δ_kappa.jls")
+gen_irf_comp(irf_z, irf_z_kappa, ["Baseline", "κ=0"])
+savefig("kappa_comparison_tech_shock.png")
+gen_irf_comp(irf_δ, irf_δ_b, ["Baseline", "b=0.92"])
+savefig("b_comparison_delta_shock.png")
 ##################################################################
 out = deserialize("model_output.jls")
 model, targets, PAR = out
