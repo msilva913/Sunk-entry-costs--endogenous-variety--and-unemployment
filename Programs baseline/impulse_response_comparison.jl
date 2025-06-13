@@ -1,20 +1,24 @@
 
 
+using Serialization
+cd(@__DIR__)
 include("impulse_response_plots.jl")
 
 irf_z = deserialize("irf_z.jls")
 irf_z_gen_CES = deserialize("irf_z_gen_CES.jls")
+T=60
+#####################
 
 
 # 1) Compare z shock: baseline and no variety effects
-gen_irf_comp(irf_z_gen_CES, irf_z, ["No variety effects", "Baseline"])
+gen_irf_comp(irf_z_gen_CES[1:T,:], irf_z[1:T,:], ["No variety effects", "Baseline"])
 savefig("variety_effects_irf_z_comparison.pdf")
 
 
 # 2) Compare δ shock to CK (assuming $δ shock accounts for all separtions)
 irf_δ_alt = deserialize("irf_δ_alt.jls")
 irf_δ_CK = deserialize("irf_δ_CK.jls")
-gen_irf_comp_simp(irf_δ_alt, irf_δ_CK[1:60,:], ["Baseline", "Coles and Kelishomi"])
+gen_irf_comp_simp(irf_δ_alt, irf_δ_CK[1:T,:], ["Baseline", "Coles and Kelishomi"])
 savefig("CK_comparison.png")
 
 # 3) Examine role of risk neutrality 
@@ -25,7 +29,7 @@ savefig("risk_aversion_comparison_delta_shock.png")
 
 
 irf_z_risk_neutral = deserialize("irf_z_risk_neutral.jls")
-gen_irf_comp(irf_df[1:60,:], irf_z_risk_neutral[1:60,:], ["Baseline", "Risk neutral"])
+gen_irf_comp(irf_z[1:T,:], irf_z_risk_neutral[1:T,:], ["Baseline", "Risk neutral"])
 savefig("risk_aversion_comparison_z_shock.png")
 
 # 4) #Examine role of highly elastic vacancy creation

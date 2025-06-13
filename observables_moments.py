@@ -26,7 +26,7 @@ years_fmt = mdates.DateFormatter('%Y')
 #arima =  statsmodels.tsa.x13.x13_arima_analysis
 
 " Load raw data "
-lab = ['c', 'u', 'v', 'theta', 'jf', 'lp', 'ls', 's', 'w', 'bf', 'ba']
+lab = ['c', 'u', 'v', 'theta', 'jf', 'lp', 'ls', 's', 'delta', 'w', 'bf', 'ba']
 init= '1951-01-01'
 #final = '2024-10-30'
 final='2020-01-01' # Just before pandemic shock
@@ -40,12 +40,14 @@ cycle_ham = pd.concat([filter_transform(dat[x], init=init, final=final, transfor
                                     filter_type="hamilton") for x in lab], axis=1)
 cycle_ham.columns = lab
 
-cycle_ham[["bf", "ba"]].corr()
+#cycle_ham[["bf", "ba"]].corr()
+#cycle = cycle_ham
+cycle = cycle_hp
 
 # Stacked moments 
-mom_list = ["u", "v", "theta", "lp", "s"]
-mom = moments(cycle_hp, relative_std="lp", lab=["u", "lp"])
-mom_stacked = stacked_moments(cycle_hp, mom_list)
+mom_list = ["u", "v", "theta", "lp", "s", "bf"]
+mom = moments(cycle, relative_std="lp", lab=["u", "lp"])
+mom_stacked = stacked_moments(cycle, mom_list)
 " Summarize moments in one column "
 
 mom_stacked.columns = ["Values"]
@@ -55,14 +57,17 @@ print(mom_tex)
 mom_stacked_dic = mom_stacked.to_dict('list')
 #savemat('moments_empirical.mat', mom_stacked.to_dict('list'))
 
-
-# Extended moments
-mom_list_ext = mom_list + ["bf"]
-mom_stacked_bf = stacked_moments(cycle_hp, mom_list_ext)
-mom_stacked_bf.columns = ["Values"]
-tab_tex = generate_stacked_moments_latex_table(mom_stacked_bf)
-tab = generate_stacked_moments_table(mom_stacked_bf)
+tab_tex = generate_stacked_moments_latex_table(mom_stacked)
+tab = generate_stacked_moments_table(mom_stacked)
 print(tab)
+
+mom_ext_delta = mom_list + ["delta"]
+mom_stacked_delta = stacked_moments(cycle, mom_ext_delta)
+mom_stacked_delta.columns = ["Values"]
+tab_tex_delta = generate_stacked_moments_latex_table(mom_stacked_delta)
+tab_delta = generate_stacked_moments_table(mom_stacked_delta)
+print(tab_delta)
+
 #savemat('moments_bf_empirical.mat', mom_stacked_bf.to_dict('list'))
 # if save_observables:
 #     " Save relevant objects "

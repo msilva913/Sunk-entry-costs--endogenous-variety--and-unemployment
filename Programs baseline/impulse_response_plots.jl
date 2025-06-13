@@ -1,7 +1,8 @@
-using Plots
-gr()
+using Plots, LaTeXStrings, DataFrames, PGFPlotsX
+#gr()
+pgfplotsx() # enables self-contained latex rendering
 import Plots:default
-default(linewidth=2, grid=true, fontfamily="Computer Modern")
+default(linewidth=2, grid=true, fontfamily="Helvetica")
 
 function gen_irf(irf_df::DataFrame)
     # Set up a 3x2 layout with specified size
