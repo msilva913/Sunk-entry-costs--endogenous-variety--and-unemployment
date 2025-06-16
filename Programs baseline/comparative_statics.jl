@@ -10,6 +10,7 @@ targets = (labor_share=0.66, dest_ann=0.10, r_ann=0.04, f =0.41, η_L=0.6, q=0.8
 cal = calibrate_labor_share(targets)
 steady = steady_state(cal)
 
+
 T = 1000
 θ_grid = range(1e-100, stop=0.9, length=T)
 
@@ -98,4 +99,35 @@ hline!(plt, [steady2.N], linestyle=:dash, linecolor=:red, linewidth=0.5, label=f
 plot!(plt, legend=true)
 
 
+
+############################
+# Numerical differentiation 
+function numerical_derivative(f::Function, x::Float64, h::Float64=1e-5)
+    return (f(x+h)-f(x-h))/(2*h)
+end
+
+function elasticity(f::Function, x::Float64, h::Float64=1e-7)
+    f_x = f(x) 
+    df_dx = numerical_derivative(f,x,h)
+    return (x/f_x)*df_dx
+end
+
+function w_fun(z, cal)
+   para = (cal..., z=z)
+   steady = steady_state(para)
+   return steady.w/steady.p
+end
+
+function labor_prod_fun(z, cal)
+   para = (cal..., z=z)
+   steady = steady_state(para)
+   return steady.Y/(steady.p*steady.L)
+end
+
+targets = (labor_share=0.66, dest_ann=0.10, r_ann=0.04, f =0.41, η_L=0.6, q=0.8, sep=0.031, b_ratio=0.71,
+ x_v=1.0, ξ_inv=1.0, ε=4.3, σ=1.0, N=1, w=1)
+cal = calibrate_labor_share(targets)
+#steady = steady_state(para)
+elast_w_z = elasticity(z -> w_fun(z, cal),cal.z)
+elast_lp_z = elasticity(labor_prod_fun, cal.z)
 

@@ -258,8 +258,8 @@ end
 function gen_irf_comp_simp(irf_bas::DataFrame, irf_alt::DataFrame, labels)
     # Create a 1x3 subplot layout
     p = Plots.plot(
-        layout=(2, 2), 
-        size=(800, 500), 
+        layout=(2, 3), 
+        size=(1000, 500), 
         legend=:topright,
         fmt=:png
     )
@@ -295,7 +295,23 @@ function gen_irf_comp_simp(irf_bas::DataFrame, irf_alt::DataFrame, labels)
         [irf_bas.δ irf_alt.δ],
         label=[labels[1] labels[2]],
         alpha=0.6,
-        title=L"δ",
+        title="δ",
+        ylabel="%"
+    )
+
+    plot!(p[5], 
+        [irf_bas.C irf_alt.C],
+        label=[labels[1] labels[2]],
+        alpha=0.6,
+        title=L"C",
+        ylabel="%"
+    )
+
+        plot!(p[6], 
+        [irf_bas.Y irf_alt.Y],
+        label=[labels[1] labels[2]],
+        alpha=0.6,
+        title=L"Y",
         ylabel="%"
     )
     # Display the plot

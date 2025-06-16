@@ -186,7 +186,7 @@ def first_moments(dat, alpha_hat):
 
     # Create dictionary of statistics
     stats_dict = {
-      #  'Consumption share': dat.cons_share.mean(),
+        'Consumption share': dat.cons_share.mean(),
         'Unemployment rate': dat.u.mean(),
         'Vacancy rate': dat.v.mean(),
         'Market tightness': dat.theta.mean(),
@@ -213,6 +213,7 @@ choice_vars1 = ["u", "v", "lp"]
 choice_vars2 = ["u", "s", "bf"] 
 savefigs=["pairplot_labor.pdf","pairplot_new.pdf"]
 ###################
+
 for item, choice_vars in enumerate([choice_vars1, choice_vars2]):
     pairplot = sns.pairplot(cycle_hp[choice_vars], diag_kind="kde",
                plot_kws={'alpha': 0.7},
