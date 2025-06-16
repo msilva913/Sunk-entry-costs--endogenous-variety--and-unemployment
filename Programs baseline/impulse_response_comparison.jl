@@ -12,7 +12,7 @@ T=60
 
 # 1) Compare z shock: baseline and no variety effects
 gen_irf_comp(irf_z_gen_CES[1:T,:], irf_z[1:T,:], ["No variety effects", "Baseline"])
-savefig("variety_effects_irf_z_comparison.pdf")
+savefig("variety_effects_irf_z_comparison.png")
 
 
 # 2) Compare δ shock to CK (assuming $δ shock accounts for all separtions)
@@ -23,8 +23,8 @@ savefig("CK_comparison.png")
 
 # 3) Examine role of risk neutrality 
 irf_δ = deserialize("irf_δ.jls")
-irf_δ_risk_netural = deserialize("irf_δ_risk_neutral.jls")
-gen_irf_comp(irf_δ, irf_δ_risk_netural, ["Baseline", "Risk neutral"])
+irf_δ_risk_neutral = deserialize("irf_δ_risk_neutral.jls")
+gen_irf_comp(irf_δ, irf_δ_risk_neutral, ["Baseline", "Risk neutral"])
 savefig("risk_aversion_comparison_delta_shock.png")
 
 
@@ -57,6 +57,7 @@ savefig("kappa_comparison_tech_shock.png")
 gen_irf_comp(irf_δ, irf_δ_kappa, ["Baseline", "κ=0"])
 savefig("kappa_comparison_delta_shock.png")
 ##################################################################
+"""
 out = deserialize("model_output.jls")
 model, targets, PAR = out
 sol = solution_interface(model, PAR)
@@ -107,3 +108,4 @@ Plots.savefig("irf_comp_delta.pdf")
 # Compute moments for filtered data (HP and Hamilton)
 # function to compute moments 
 # filter
+"""

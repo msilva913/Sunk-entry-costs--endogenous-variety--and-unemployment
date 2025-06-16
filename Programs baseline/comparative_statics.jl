@@ -6,24 +6,24 @@ include("steady_state.jl")
 Plots.gr()
 default(linewidth=2, grid=true, fontfamily="Computer Modern")
 
-targets = (labor_share=0.66, dest_ann=0.06, r_ann=0.04, f =0.41, η_L=0.6, q=0.8, sep=0.031, b_ratio=0.71, x_v=0.2, ξ_inv=1, ε=4.3, σ=1.0, N=1, w=1)
+targets = (labor_share=0.66, dest_ann=0.10, r_ann=0.04, f =0.41, η_L=0.6, q=0.8, sep=0.031, b_ratio=0.71, x_v=0.2, ξ_inv=1, ε=4.3, σ=1.0, N=1, w=1)
 cal = calibrate_labor_share(targets)
 steady = steady_state(cal)
 
-T = 100
-θ_grid = range(1e-10, stop=1.0, length=T)
+T = 1000
+θ_grid = range(1e-100, stop=0.9, length=T)
 
 N_jcc_grid = N_jcc.(θ_grid, Ref(cal))
 N_res_grid = N_res.(θ_grid, Ref(cal))
    
 # Initial plot of $\theta$ and $N$
 # Initial plot
-plt = plot(θ_grid, N_jcc_grid, label="N: job creation condition", linewidth=2)  # Adjust the alpha value here
-plot!(θ_grid, N_res_grid, label="N: aggregate resource constraint", linewidth=2)  # Adjust the alpha value here
+plt = plot(θ_grid, N_jcc_grid, label="Job creation curve", linewidth=2)  # Adjust the alpha value here
+plot!(θ_grid, N_res_grid, label="Resource constraint curve", linewidth=2)  # Adjust the alpha value here
 xlabel!(L"θ")
 ylabel!(L"N")
-vline!([steady.θ], line=:dash, color=:black, label="Steady "* L"θ", linewidth=0.5)  # Adjust the alpha value here
-hline!([steady.N], line=:dash, color=:black, label="Steady "*"N", linewidth=0.5)  # Adjust the alpha value here
+vline!([steady.θ], line=:dash, color=:black, linewidth=0.5, label=nothing)  # Adjust the alpha value here
+hline!([steady.N], line=:dash, color=:black, linewidth=0.5, label=nothing)  # Adjust the alpha value here
 plot!(legend=true)
 savefig("equilibrium_curves.pdf")
 display(plt)

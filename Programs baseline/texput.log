@@ -1,20 +1,18 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (MiKTeX 25.4) (preloaded format=latex 2025.6.13)  13 JUN 2025 15:32
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 23.5) (preloaded format=latex 2025.5.13)  16 JUN 2025 09:38
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
-**YÌ7ÿ^^A YÌ7ÿ^^A\e9d80fa3073c2723e90722b777140b05.tex
+**揂儐^^A 揂儐^^A\ed96aa997063f553f76dc724f5605cd2.tex
 ! Emergency stop.
-<*> YÌ7ÿ^^A 
-              YÌ7ÿ^^A\e9d80fa3073c2723e90722b777140b05.tex
-*** (job aborted, file error in nonstop mode)
-
- 
+<*> 揂儐^^A 
+              揂儐^^A\ed96aa997063f553f76dc724f5605cd2.tex 
 Here is how much of TeX's memory you used:
- 3 strings out of 468226
- 229 string characters out of 5432999
- 425004 words of memory out of 5000000
- 28632 multiletter control sequences out of 15000+600000
- 626825 words of font info for 40 fonts, out of 8000000 for 9000
+ 3 strings out of 475503
+ 225 string characters out of 5759951
+ 1916245 words of memory out of 5000000
+ 21377 multiletter control sequences out of 15000+600000
+ 558069 words of font info for 36 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  2i,0n,2p,1b,6s stack positions out of 10000i,1000n,20000p,200000b,200000s
+
 No pages of output.

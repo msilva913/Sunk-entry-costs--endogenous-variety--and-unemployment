@@ -68,17 +68,30 @@ function gen_irf_comp(irf_bas::DataFrame, irf_alt::DataFrame, labels)
         fmt=:png
     )
 
+    shock_labels = ["z", "δ"]
+    for (i, x) in enumerate([irf_bas.z, irf_bas.δ])
+        if abs(x[2]) > 1e-7
+        plot!(p[1], 
+        x,
+        label=shock_labels[i],
+        title="Exogenous shock",
+        alpha=0.6,
+        ylabel="%"
+    )
+        end 
+    end 
+
     # Plot for u
-    plot!(p[1], 
+    plot!(p[2], 
         [irf_bas.u irf_alt.u],
         label=[labels[1] labels[2]],
         alpha=0.6,
         title=L"u",
         ylabel="%"
     )
-
+  
     # Plot for v
-    plot!(p[2], 
+    plot!(p[3], 
         [irf_bas.v irf_alt.v],
         label=[labels[1] labels[2]],
         alpha=0.6,
@@ -87,7 +100,7 @@ function gen_irf_comp(irf_bas::DataFrame, irf_alt::DataFrame, labels)
     )
 
     # Plot for e
-    plot!(p[3], 
+    plot!(p[4], 
         [irf_bas.e irf_alt.e],
         label=[labels[1] labels[2]],
         alpha=0.6,
@@ -96,7 +109,7 @@ function gen_irf_comp(irf_bas::DataFrame, irf_alt::DataFrame, labels)
     )
 
     # Plot for N_e
-    plot!(p[4], 
+    plot!(p[5], 
         [irf_bas.N_e irf_alt.N_e],
         label=[labels[1] labels[2]],
         alpha=0.6,
@@ -105,7 +118,7 @@ function gen_irf_comp(irf_bas::DataFrame, irf_alt::DataFrame, labels)
     )
 
       # Plot for p
-      plot!(p[5], 
+      plot!(p[6], 
       [irf_bas.p irf_alt.p],
       label=[labels[1] labels[2]],
       alpha=0.6,
@@ -114,7 +127,7 @@ function gen_irf_comp(irf_bas::DataFrame, irf_alt::DataFrame, labels)
   )
 
     # Plot for C_R
-    plot!(p[6], 
+    plot!(p[7], 
         [irf_bas.C_R irf_alt.C_R],
         label=[labels[1] labels[2]],
         alpha=0.6,
@@ -123,7 +136,7 @@ function gen_irf_comp(irf_bas::DataFrame, irf_alt::DataFrame, labels)
     )
 
     # Plot for Y_R
-    plot!(p[7], 
+    plot!(p[8], 
         [irf_bas.Y_R irf_alt.Y_R],
         label=[labels[1] labels[2]],
         alpha=0.6,
@@ -131,21 +144,111 @@ function gen_irf_comp(irf_bas::DataFrame, irf_alt::DataFrame, labels)
         ylabel="%"
     )
 
-    plot!(p[8], 
+    plot!(p[9], 
         [irf_bas.d_f irf_alt.d_f],
         label=[labels[1] labels[2]],
         alpha=0.6,
         title=L"d_f",
         ylabel="%"
     )
+    
+    # Display the plot
+    display(p)
+    png("clipboard")
+end
+
+function gen_irf_BGM_comp(irf_bas::DataFrame, irf_alt::DataFrame, labels)
+    # Create a 3x2 subplot layout
+    p = Plots.plot(
+        layout=(3, 3), 
+        size=(1100, 700), 
+        legend=:topright,
+        fmt=:png
+    )
+
+    shock_labels = ["z", "δ"]
+    for (i, x) in enumerate([irf_bas.z, irf_bas.δ])
+        if abs(x[2]) > 1e-7
+        plot!(p[1], 
+        x,
+        label=shock_labels[i],
+        title="Exogenous shock",
+        alpha=0.6,
+        ylabel="%"
+    )
+        end 
+    end 
+
+    # Plot for L
+    plot!(p[2], 
+        [irf_bas.L irf_alt.L],
+        label=[labels[1] labels[2]],
+        alpha=0.6,
+        title=L"L",
+        ylabel="%"
+    )
+  
+    # Plot for L_c
+    plot!(p[3], 
+        [irf_bas.L_c irf_alt.L_c],
+        label=[labels[1] labels[2]],
+        alpha=0.6,
+        title=L"L_c",
+        ylabel="%"
+    )
+
+    # Plot for L_e
+    plot!(p[4], 
+        [irf_bas.e irf_alt.e],
+        label=[labels[1] labels[2]],
+        alpha=0.6,
+        title=L"L_e",
+        ylabel="%"
+    )
+
+    # Plot for N_e
+    plot!(p[5], 
+        [irf_bas.N_e irf_alt.N_e],
+        label=[labels[1] labels[2]],
+        alpha=0.6,
+        title=L"N_e",
+        ylabel="%"
+    )
+
+      # Plot for p
+      plot!(p[6], 
+      [irf_bas.p irf_alt.p],
+      label=[labels[1] labels[2]],
+      alpha=0.6,
+      title=L"p",
+      ylabel="%"
+  )
+
+    # Plot for C_R
+    plot!(p[7], 
+        [irf_bas.C_R irf_alt.C_R],
+        label=[labels[1] labels[2]],
+        alpha=0.6,
+        title=L"C_R",
+        ylabel="%"   
+    )
+
+    # Plot for Y_R
+    plot!(p[8], 
+        [irf_bas.Y_R irf_alt.Y_R],
+        label=[labels[1] labels[2]],
+        alpha=0.6,
+        title=L"Y_R",
+        ylabel="%"
+    )
 
     plot!(p[9], 
-    [irf_bas.ls irf_alt.ls],
-    label=[labels[1] labels[2]],
-    alpha=0.6,
-    title=L"ls",
-    ylabel="%"
-)
+        [irf_bas.w_R irf_alt.w_R],
+        label=[labels[1] labels[2]],
+        alpha=0.6,
+        title=L"w_R",
+        ylabel="%"
+    )
     
     # Display the plot
     display(p)
