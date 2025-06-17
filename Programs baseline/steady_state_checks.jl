@@ -34,7 +34,7 @@ surplus_ratio = (ρ+τ)/(1-δ)*(1/(q*x_v))
 @show x_v
 @show C/Y
 @show M/(12*Y)
-
+@show (κ+K/q)/(3*w)
 # Consistency checks: should replicate steady state
 @show N_jcc(steady.θ, cal)
 @show N_res(steady.θ, cal)

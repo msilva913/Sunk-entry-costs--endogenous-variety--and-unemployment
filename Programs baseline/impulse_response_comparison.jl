@@ -13,10 +13,10 @@ T=60
 # Main impulse response: 
 gen_irf(irf_z[1:T,:])
 # calculate impulse response
-@show mean(cumsum(irf_z.w_R[2:24])./cumsum(irf_z.labor_prod[2:24]))
+@show mean(irf_z.w_R[2:24]./irf_z.labor_prod[2:24])
 
 gen_irf(irf_δ[1:T,:])
-@show mean(cumsum(irf_δ.w_R[2:24])./cumsum(irf_δ.labor_prod[2:24]))
+@show mean((irf_δ.w_R[2:60])./irf_δ.labor_prod[2:60])
 
 # 1) Compare z shock: baseline and no variety effects
 gen_irf_comp(irf_z_gen_CES[1:T,:], irf_z[1:T,:], ["No variety effects", "Baseline"])
@@ -34,7 +34,7 @@ savefig("delta_mean_comparison_delta_shock.png")
 # 4) Compare δ shock to CK (assuming $δ shock accounts for all separations)
 
 irf_δ_CK = deserialize("irf_δ_CK.jls")
-gen_irf_comp_simp(irf_δ_alt, irf_δ_CK[1:T,:], ["Baseline", "Coles and Kelishomi"])
+gen_irf_comp_simp(irf_δ_alt, irf_δ_CK[1:T,:], ["Baseline model: high δ", "Coles and Kelishomi"])
 savefig("CK_comparison.png")
 savefig("CK_comparison.pdf")
 
