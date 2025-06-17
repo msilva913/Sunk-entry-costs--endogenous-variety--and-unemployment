@@ -5,7 +5,9 @@ cd(@__DIR__)
 include("impulse_response_plots.jl")
 
 irf_z = deserialize("irf_z.jls")
+irf_δ = deserialize("irf_δ.jls")
 irf_z_gen_CES = deserialize("irf_z_gen_CES.jls")
+irf_δ_gen_CES = deserialize("irf_δ_gen_CES.jls")
 T=60
 #####################
 # Main impulse response: 
@@ -20,23 +22,29 @@ gen_irf(irf_δ[1:T,:])
 gen_irf_comp(irf_z_gen_CES[1:T,:], irf_z[1:T,:], ["No variety effects", "Baseline"])
 savefig("variety_effects_irf_z_comparison.png")
 savefig("variety_effects_irf_z_comparison.pdf")
+# 2) Compare δ shock: baseline and no variety effects
+gen_irf_comp(irf_δ_gen_CES[1:T,:], irf_δ[1:T,:], ["No variety effects", "Baseline"])
+savefig("variety_effects_irf_δ_comparison.png")
 
-
-# 2) Compare δ shock to CK (assuming $δ shock accounts for all separtions)
+# 3) Examine role of δ (relative to baseline model)
 irf_δ_alt = deserialize("irf_δ_alt.jls")
+gen_irf_comp(irf_δ[1:T,:], irf_δ_alt[1:T,:], ["Baseline", "High δ"])
+savefig("delta_mean_comparison_delta_shock.png")
+
+# 4) Compare δ shock to CK (assuming $δ shock accounts for all separations)
+
 irf_δ_CK = deserialize("irf_δ_CK.jls")
 gen_irf_comp_simp(irf_δ_alt, irf_δ_CK[1:T,:], ["Baseline", "Coles and Kelishomi"])
 savefig("CK_comparison.png")
 savefig("CK_comparison.pdf")
 
 
-# 3) Examine role of risk neutrality 
+# 5) Examine role of risk neutrality 
 irf_δ = deserialize("irf_δ.jls")
 irf_δ_risk_neutral = deserialize("irf_δ_risk_neutral.jls")
 gen_irf_comp(irf_δ, irf_δ_risk_neutral, ["Baseline", "Risk neutral"])
 savefig("risk_aversion_comparison_delta_shock.png")
 savefig("risk_aversion_comparison_delta_shock.pdf")
-
 
 irf_z_risk_neutral = deserialize("irf_z_risk_neutral.jls")
 gen_irf_comp(irf_z[1:T,:], irf_z_risk_neutral[1:T,:], ["Baseline", "Risk neutral"])
@@ -44,7 +52,7 @@ savefig("risk_aversion_comparison_z_shock.png")
 savefig("risk_aversion_comparison_z_shock.pdf")
 
 
-# 4) #Examine role of highly elastic vacancy creation
+# 6) #Examine role of highly elastic vacancy creation
 # Less elastic vacancy creation amplifies separation shocks but dampens tech shocks.
 irf_z_elastic = deserialize("irf_z_elastic.jls")
 irf_δ_elastic = deserialize("irf_δ_elastic.jls")
@@ -56,7 +64,7 @@ savefig("elastic_comparison_tech_shock.png")
 savefig("elastic_comparison_tech_shock.pdf")
 
 
-# 5) Compare with high b
+# 7) Compare with high b
 irf_z_b = deserialize("irf_z_b.jls")
 irf_δ_b = deserialize("irf_δ_b.jls")
 gen_irf_comp(irf_z, irf_z_b, ["Baseline", "b=0.92"])
@@ -66,7 +74,7 @@ gen_irf_comp(irf_δ, irf_δ_b, ["Baseline", "b=0.92"])
 savefig("b_comparison_delta_shock.png")
 savefig("b_comparison_delta_shock.pdf")
 
-# 6) Compare with lower kappa
+# 8) Compare with lower kappa
 irf_z_kappa = deserialize("irf_z_kappa.jls")
 irf_δ_kappa = deserialize("irf_δ_kappa.jls")
 gen_irf_comp(irf_z, irf_z_kappa, ["Baseline", "κ=0"])

@@ -318,6 +318,7 @@ serialize("irf_z_gen_CES.jls", irf_z_gen_CES)
 irf_δ= simulate_model(model, sol_mat, T_IR, eta_δ, SS, flag_IR, flag_logdev) 
 irf_δ = 100 .*DataFrame(irf_δ, varnames)
 gen_irf(irf_δ)
+serialize("irf_δ_gen_CES.jls", irf_δ)
 #Plots.savefig("dest_shock.pdf")
 
 # Idiosyncratic job separation shock

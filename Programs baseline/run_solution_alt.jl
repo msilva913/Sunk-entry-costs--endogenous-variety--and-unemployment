@@ -11,22 +11,10 @@ dest_ann = 1-(1-dest_m)^12
 #PAR_SS = [ALPHA; BETA; DELTA; RHO; SIGMA; MUU; AA]
 PAR_SS = parameters[:]
 
-targets_comp = (labor_share=0.66, 
-           dest_ann=dest_ann, 
-           r_ann=0.04, 
-           f =0.41, 
-           η_L=0.6, 
-           q=0.8, 
-           sep=0.034, 
-           b_ratio=0.71, 
-           x_v=0.1, 
-           ξ_inv=1/0.265, 
-           #ξ_inv = 0.01,
-           ε=4.3, σ=1.0, 
-           N=1.0, w=1.0)
-           
-SS = SS_symbolics(parameters, targets_comp)
+targets_comp = (targets..., dest_ann=dest_ann)
 cal = calibrate_labor_share(targets_comp)
+SS = SS_symbolics(parameters, targets_comp)
+
 
 
 f = gen_model_equations()
@@ -95,7 +83,7 @@ irf_z = 100 .*DataFrame(irf_z, varnames)
 gen_irf(irf_z)
 #savefig("z_shock.png")
 serialize("irf_z.jls", irf_z)
-
+"""
 
 # Destruction rate shock: consistent with Beveridge curve
 irf_δ= simulate_model(model, sol_mat, T_IR, eta_δ, SS, flag_IR, flag_logdev) 
@@ -103,4 +91,3 @@ irf_δ = 100 .*DataFrame(irf_δ, varnames)
 serialize("irf_δ_alt.jls", irf_δ)
 gen_irf(irf_δ)
 #Plots.savefig("dest_shock.pdf")
-
