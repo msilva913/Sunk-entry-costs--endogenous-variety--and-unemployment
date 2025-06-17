@@ -119,9 +119,9 @@ alpha_hat = 1-model.params.theta
 
 # Test for heteroskedasticity and autocorrelation (shifts of Beveridge curve)
 resid = model.resid
-white_test = sm.stats.diagnostic.het_white(resid, X)
-print(f"Test statistic: {white_test[0]}")
-print(f"P-value: {white_test[1]}")
+#white_test = sm.stats.diagnostic.het_white(resid, X)
+#print(f"Test statistic: {white_test[0]}")
+#print(f"P-value: {white_test[1]}")
 # Autocorrelation
 
 print("\nAutocorrelation Test (Breusch-Godfrey):")
@@ -214,10 +214,17 @@ choice_vars2 = ["u", "s", "bf"]
 savefigs=["pairplot_labor.pdf","pairplot_new.pdf"]
 ###################
 
+# Define a mapping of old labels to new labels
+label_mapping = {
+    'u': 'Unemployment',
+    'v': 'Vacancies',
+    'lp': 'Labor productivity'
+}
+
 for item, choice_vars in enumerate([choice_vars1, choice_vars2]):
     pairplot = sns.pairplot(cycle_hp[choice_vars], diag_kind="kde",
-               plot_kws={'alpha': 0.7},
-               diag_kws={'color': 'gold'})
+                            plot_kws={'alpha': 0.7},
+                            diag_kws={'color': 'gold'})
     pairplot.fig.set_size_inches(12, 8)  # Width, Height
     
     # Add best-fit lines to scatter plots
@@ -227,17 +234,26 @@ for item, choice_vars in enumerate([choice_vars1, choice_vars2]):
         if ax.get_xlabel() in choice_vars and ax.get_ylabel() in choice_vars:
             sns.regplot(x=ax.get_xlabel(), y=ax.get_ylabel(), data=cycle_hp, ax=ax,
                         scatter=False, color='gray')
+    
+    # Set custom axis labels using label_mapping
+    for ax in pairplot.axes.flatten():
+        if ax.get_xlabel() in choice_vars:
+            ax.set_xlabel(label_mapping.get(ax.get_xlabel(), ax.get_xlabel()))
+        if ax.get_ylabel() in choice_vars:
+            ax.set_ylabel(label_mapping.get(ax.get_ylabel(), ax.get_ylabel()))
+    
     for i, j in zip(*np.triu_indices_from(pairplot.axes, 1)):
         pairplot.axes[i, j].set_visible(False)
         x = choice_vars[j]
         y = choice_vars[i]
         corr = cycle_hp[x].corr(cycle_hp[y])
         pairplot.axes[j, i].annotate(f'Corr: {corr:.2f}', xy=(0.1, 0.9), 
-                xycoords='axes fraction',fontsize=10, 
-                bbox=dict(boxstyle="round, pad=0.3", edgecolor="gray", facecolor="white"))
+                                     xycoords='axes fraction', fontsize=10, 
+                                     bbox=dict(boxstyle="round, pad=0.3", edgecolor="gray", facecolor="white"))
+    
+    # Save the figure before showing it
+    pairplot.savefig(savefigs[item])
     plt.show()
-    plt.savefig(savefigs[item])
-        
     
      
     
