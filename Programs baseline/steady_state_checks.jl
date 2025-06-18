@@ -1,11 +1,12 @@
 include("steady_state.jl")
 
-targets = (labor_share=0.66, dest_ann=0.10, r_ann=0.04, f =0.41, η_L=0.6, q=0.8, sep=0.031, b_ratio=0.71, x_v=0.1, ξ_inv=1/0.265, ε=4.3, σ=1.0, N=1.0, w=1.0)
+targets = (labor_share=0.66, dest_ann=0.10, r_ann=0.04, f =0.41, η_L=0.6, q=0.8, sep=0.031, b_ratio=0.71, x_v=0.2, ξ_inv=1/0.265, ε=4.3, σ=1.0, N=1.0, w=1.0)
 cal = calibrate_labor_share(targets)
 
 steady = steady_state(cal)
 
-@unpack θ, p, L_c, L_e, w, w_int, L, N, N_e, K, q, ν_f, d_f, C, Y, Y_c, X_v, X, labor_share, sunk_vac_cost_share, x_v, M = steady
+@unpack θ, p, L_c, L_e, w, w_int, L, N, N_e, K, q, ν_f, d_f, C, Y, Y_c, X_v, X, labor_share, 
+sunk_vac_cost_share, vacancy_share, x_v, M = steady
 @unpack f_e, τ, δ, z, b, ϕ, ρ, σ, ε, A, η_L, κ, ξ_inv, F, s = cal
 μ = ε/(ε-1)
 # Accuracy checks
@@ -28,16 +29,19 @@ X_v/X
 surplus_ratio = (ρ+τ)/(1-δ)*(1/(q*x_v))
 @assert abs(K - (1-ϕ)/ϕ*(w-b)/(surplus_ratio +  θ*(1/x_v))) < 1e-12
 
-# Steady-state ratios
-@show labor_share
-@show sunk_vac_cost_share
-@show x_v
-@show C/Y
-@show M/(12*Y)
-@show (κ+K/q)/(3*w)
 # Consistency checks: should replicate steady state
 @show N_jcc(steady.θ, cal)
 @show N_res(steady.θ, cal)
+
+# Steady-state ratios
+@show labor_share
+@show sunk_vac_cost_share
+@show vacancy_share
+@show X/(q*v*w)
+@show x_v
+@show C/Y
+@show M/(12*Y)
+
 
 
 ################################################################
