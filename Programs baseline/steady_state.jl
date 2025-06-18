@@ -185,7 +185,7 @@ function steady_state(para; init=0.51)
 end
 
 function calibrate_labor_share(targets)
-    @unpack labor_share, dest_ann, r_ann, f, η_L, q, sep, b_ratio, x_v, ξ_inv, ε, σ, N, w = targets
+    @unpack labor_share, dest_ann, r_ann, f, η_L, q, sep, b_ratio, hiring_cost_wages, ξ_inv, ε, σ, N, w = targets
 
     μ = ε/(ε-1)
     τ = sep
@@ -207,30 +207,37 @@ function calibrate_labor_share(targets)
     s = (τ-δ)/(1-δ)
 
     e = δ*(v+1-u)
-
     p = N^(1/(ε-1))
     N_e = δ/(1-δ)*N
     b = b_ratio*w
+   # X/(qv*w) = hiring_cost_share
+    X = q*v*w*hiring_cost_wages
+
     #w_int = p*z/μ
     recruiter_share = (δ+(ρ+δ)*(ε-1))/(δ+(ρ+δ)*ε) # w_R*L/Y similar to BGM
     w_wint = labor_share/recruiter_share
     w_int = w/(w_wint)
     z = (μ/p)*w_int
 
-    # surplus_ratio = (w_R - w - K)/K 
-    surplus_ratio = (ρ+τ)/(1-δ)*(1/(q*x_v))
-    K = (w_int-w)/(1+surplus_ratio)
 
-    # Find κ given K 
-    κ = (1-x_v)/x_v*K/q
+    function from_K(K)
+        Q = K*(1+ρ)/(ρ+δ) 
+        F = e/Q^(1/ξ_inv)
+        X_v = F/(1+ξ_inv)*(e/F)^(1+ξ_inv)
+        κ = (X-X_v)/(q*v)
+        out = (κ+K/q) - (1-δ)/(ρ+τ)*(w_int-w-K)
+
+        return out, F, X_v, κ
+    end
+    K = fzero(K-> from_K(K)[1], 0.5)
+    out, F, X_v, κ = from_K(K)
+
 
     # From wage equation find ϕ
     ϕ = (w-b)/(w_int-K+θ*(K+q*κ)-b)
 
     # Find F from free entry condition
     #K = (ρ+δ)/(1+ρ)*(e/F)^(1/ξ)
-    Q = K*(1+ρ)/(ρ+δ) 
-    F = e/Q^(1/ξ_inv)
 
     # Given N, solve for f_e
     # N = (μ-1)*zL*(1-δ)/(f_e(δμ+\rho))
