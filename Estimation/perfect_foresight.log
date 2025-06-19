@@ -1,5 +1,0 @@
-Starting Dynare (version 5.4).
-Calling Dynare with arguments: none
-Starting preprocessing of the model file ...
-ERROR: perfect_foresight.mod: line 406, col 6: syntax error, unexpected COMMA, expecting EQUAL or '.'
-
