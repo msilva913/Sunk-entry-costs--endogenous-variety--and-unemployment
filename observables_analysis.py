@@ -186,7 +186,7 @@ def first_moments(dat, alpha_hat):
 
     # Create dictionary of statistics
     stats_dict = {
-        'Consumption share': dat.cons_share.mean(),
+    #    'Consumption share': dat.cons_share.mean(),
         'Unemployment rate': dat.u.mean(),
         'Vacancy rate': dat.v.mean(),
         'Market tightness': dat.theta.mean(),

@@ -25,6 +25,8 @@ M = M_;
 %save('res', 'res');
 %save('M', 'M');
 
+save('model_moments', 'model_moments');
+
 posterior_density = res.posterior_density.parameters;
 save('posterior_density', 'posterior_density')
 

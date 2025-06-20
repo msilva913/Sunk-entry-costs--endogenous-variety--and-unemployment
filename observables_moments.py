@@ -61,12 +61,18 @@ tab_tex = generate_stacked_moments_latex_table(mom_stacked)
 tab = generate_stacked_moments_table(mom_stacked)
 print(tab)
 
+
+" Compare moments to model "
+
+
+"""
 mom_ext_delta = mom_list + ["delta"]
 mom_stacked_delta = stacked_moments(cycle, mom_ext_delta)
 mom_stacked_delta.columns = ["Values"]
 tab_tex_delta = generate_stacked_moments_latex_table(mom_stacked_delta)
 tab_delta = generate_stacked_moments_table(mom_stacked_delta)
 print(tab_delta)
+"""
 
 #savemat('moments_bf_empirical.mat', mom_stacked_bf.to_dict('list'))
 # if save_observables:
