@@ -350,42 +350,6 @@ function N_res(θ, para)
     return N
 end
 
-function calibration_table(cal, targets)
-    @unpack f_e, τ, δ, z, b, ϕ, ρ, σ, ε, A, η_L, ξ_inv, A, F, κ, s = cal
-    @unpack labor_share, dest_ann, r_ann, f, η_L, q, sep, b_ratio, x_v, ξ_inv, ε, σ, N, w = targets
-
-    ρ = (1+r_ann)^(1/12)-1
-    β = 1/(1+ρ)
-    δ = 1-(1-dest_ann)^(1/12)
-    μ = ε/(ε-1)
-
-    # Creating a DataFrame for the table
-    df = DataFrame(
-        Targets = [
-            "Real interest rate",
-            "Elasticity of matching function",
-            "Replacement ratio b/w",
-            "Annual establishment exit rate",
-            "Elasticity of vacancy value",
-            "Markup",
-            "Risk aversion",
-            "Share of sunk vacancy costs to overall hiring costs",
-            "Steady-state wage",
-            "Steady-state mass of firms",
-            "Aggregate separation rate",
-            "Labor share",
-            "Job finding rate",
-            "Vacancy filling rate"
-        ],
-        Value = round.([r_ann, η_L, b, δ, ξ_inv, μ-1, σ, x_v, w, N, τ, labor_share, 0.41, 0.80], sigdigits=2),
-        Parameter = [L"\rho", L"\eta_L", L"b", L"\delta", L"\xi^{-1}", L"\varepsilon", L"\sigma", L"\kappa", L"z", L"f_e", L"s", L"\phi", L"A", L"F"],
-        Calibration = round.([ρ, η_L, b, δ, ξ_inv, ε, σ, κ, z, f_e, s, ϕ, A, F], sigdigits=3)
-    )
-
-    # Save the DataFrame as a PDF table
-    return df
-end
-
 
 
 

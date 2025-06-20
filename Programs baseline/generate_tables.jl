@@ -3,12 +3,54 @@ Generate tables for
     1) calibration 
     2) steady-state shares
 """
-
 include("steady_state.jl")
+using MAT
 cd("C:/Users/msilva913/Documents/GitHub/Sunk_entry_costs_endogenous_variety_unemployment")
 # Load posterior mode 
 posterior_mode = matopen("posterior_mode.mat")
 posterior_mode = read(posterior_mode, "posterior_mode")
+
+function calibration_table(cal, targets)
+    @unpack f_e, τ, δ, z, b, ϕ, ρ, σ, ε, A, η_L, ξ_inv, A, F, κ, s = cal
+    @unpack labor_share, dest_ann, r_ann, f, η_L, q, sep, b_ratio, x_v, ξ_inv, ε, σ, N, w = targets
+
+    ρ = (1+r_ann)^(1/12)-1
+    β = 1/(1+ρ)
+    δ = 1-(1-dest_ann)^(1/12)
+    μ = ε/(ε-1)
+
+    # Creating a DataFrame for the table
+    df = DataFrame(
+        Parameter = [L"\rho", L"\eta_L", L"b", L"\delta", L"\xi^{-1}", L"\varepsilon", L"\sigma", L"\kappa", L"z", L"f_e", L"s",
+         L"\phi", L"A", L"F"],
+        Targets = [
+            "Real interest rate",
+            "Elasticity of matching function",
+          #  "Replacement ratio b/w",
+          "Estimated",
+            "Annual establishment exit rate",
+           # "Elasticity of vacancy value",
+           "Estimated",
+           # "Markup",
+           "Estimated",
+           # "Risk aversion",
+           "Estimated",
+           # "Share of sunk vacancy costs to overall hiring costs",
+           "Estimated",
+            "Steady-state wage",
+            "Steady-state mass of firms",
+            "Aggregate separation rate",
+            "Labor share",
+            "Job finding rate",
+            "Vacancy filling rate"
+        ],
+        Value = map(x -> isa(x, Number) ? round(x, sigdigits=2) : x, [r_ann, η_L, "-", δ, "-", "-", "-", "-", w, N, τ, labor_share, 0.41, 0.80]),
+        Calibration = round.([ρ, η_L, b, δ, ξ_inv, ε, σ, κ, z, f_e, s, ϕ, A, F], sigdigits=3)
+    )
+
+    # Save the DataFrame as a PDF table
+    return df
+end
 
 targets = (labor_share=0.66, 
            dest_ann=0.10, 
@@ -26,6 +68,9 @@ targets = (labor_share=0.66,
 
 cal = calibrate_labor_share(targets)
 ss = steady_state(cal)
+
+
+
 df = calibration_table(cal, targets)
 
 # Generate latex output
@@ -38,6 +83,9 @@ function shares_table(ss::NamedTuple)
     df = DataFrame(
         Share = [
             "Consumption share",
+            "Vacancy rate",
+            "Unemployment rate",
+            "Market tightness",
             "Recruiting cost share",
             "Investment in new product lines",
             "Sunk vacancy cost share",
@@ -46,8 +94,8 @@ function shares_table(ss::NamedTuple)
             "Market power wedge",
             "Stock market cap to GDP"
         ],
-        Symbol = [L"C/Y", L"X/Y", L"\nu N_e/Y", L"X_v/Y", L"e/v", L"w/w^R", L"w^RL/Y", L"M/(12*Y)"],
-        Value = round.([ss.cons_share, ss.vacancy_share, ss.inv_new_firm_share, ss.sunk_vac_cost_share, ss.entrant_share, ss.search_wedge, ss.recruiter_share, ss.M/(12*ss.Y)], sigdigits=2),
+        Symbol = [L"C/Y", L"v", L"u", L"\theta", L"X/Y", L"\nu N_e/Y", L"X_v/Y", L"e/v", L"w/w^R", L"w^RL/Y", L"M/(12*Y)"],
+        Value = round.([ss.cons_share, ss.v, ss.u, ss.θ, ss.vacancy_share, ss.inv_new_firm_share, ss.sunk_vac_cost_share, ss.entrant_share, ss.search_wedge, ss.recruiter_share, ss.M/(12*ss.Y)], sigdigits=2),
 
     )
     return df
