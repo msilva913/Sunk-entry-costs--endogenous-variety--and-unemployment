@@ -38,7 +38,7 @@ priors = res.prior;
 save("priors", "priors")
 
 posterior_std = res.posterior_std.parameters;
-save("posterior_std", "posterior_std");
+save("posterior_std", "poster")
 
 posterior_HPDlow = res.posterior_hpdinf.parameters;
 save('posterior_HPDlow', 'posterior_HPDlow');
