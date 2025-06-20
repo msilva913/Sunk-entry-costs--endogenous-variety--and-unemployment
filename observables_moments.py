@@ -1,5 +1,6 @@
 
 import numpy as np
+import scipy
 import pandas as pd
 import matplotlib.pyplot as plt
 import statsmodels.api as sm
@@ -63,6 +64,73 @@ print(tab)
 
 
 " Compare moments to model "
+mom_model = scipy.io.loadmat("model_moments.mat")
+mom_model = mom_model["model_moments"]
+mom_model = mom_model.flatten()
+
+mom_stacked["Model_moments"] = mom_model
+df = mom_stacked
+# Filter DataFrame
+std_devs = df[df.index.str.startswith('std')]
+correlations = df[df.index.str.startswith('Cor') & ~df.index.str.contains('theta')]
+autocorrelations = df[df.index.str.contains('_{-1}')]
+
+# Generate LaTeX code
+def generate_latex_subtables(df):
+    # Filter DataFrame
+    std_devs_autocorr = df[df.index.str.startswith('std') | df.index.str.contains('_{-1}')]
+    correlations = df[df.index.str.startswith('Cor') & ~df.index.str.contains('theta') & ~df.index.str.contains('_{-1}')]
+
+    # Generate LaTeX code
+    latex_code = r"""
+\begin{table}[h]
+\centering
+\caption{Model Moments}
+\begin{minipage}{0.45\linewidth}
+\centering
+\subcaption{Standard Deviations and Autocorrelations}
+\begin{tabular}{lcc}
+\hline
+\textbf{Moment} & \textbf{Data Value} & \textbf{Model Value} \\
+\hline
+"""
+    for idx, row in std_devs_autocorr.iterrows():
+        latex_code += f"{idx} & {row['Values']:.3f} & {row['Model_moments']:.3f} \\\\\n"
+
+    latex_code += r"""
+\hline
+\end{tabular}
+\end{minipage}%
+\hfill
+\begin{minipage}{0.45\linewidth}
+\centering
+\subcaption{Contemporaneous Correlations}
+\begin{tabular}{lcc}
+\hline
+\textbf{Moment} & \textbf{Data Value} & \textbf{Model Value} \\
+\hline
+"""
+    for idx, row in correlations.iterrows():
+        latex_code += f"{idx} & {row['Values']:.3f} & {row['Model_moments']:.3f} \\\\\n"
+
+    latex_code += r"""
+\hline
+\end{tabular}
+\end{minipage}
+\end{table}
+"""
+    return latex_code
+
+# Call the function and print the LaTeX code
+latex_table_code = generate_latex_subtables(df)
+print(latex_table_code)
+
+
+
+
+
+
+
 
 
 """
