@@ -5,20 +5,6 @@ include("run_solution_core.jl")
 #PAR_SS = [ALPHA; BETA; DELTA; RHO; SIGMA; MUU; AA]
 PAR_SS = parameters[:]
 
-targets = (labor_share=0.66, 
-           dest_ann=0.1, 
-           r_ann=0.04, 
-           f =0.41, 
-           η_L=0.6, 
-           q=0.8, 
-           sep=0.034, 
-           b_ratio=0.71, 
-           x_v=0.1, 
-           ξ_inv=1/0.265, 
-           #ξ_inv = 0.01,
-           ε=4.3, σ=1.0, 
-           N=1.0, w=1.0)
-
 SS = SS_symbolics(parameters, targets)
 cal = calibrate_labor_share(targets)
 
@@ -45,12 +31,21 @@ process_model(model)
 #parameters      = [f_e; δ; s; zbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; μ_z]
 
 # Shock values (from Coles and Kelishomi), monthly frequency
+"""
 ρ_z = 0.965
 σ_z = 0.007
 ρ_δ = 0.875
 σ_δ = 0.042
 ρ_s = 0.875
 σ_s = 0.0042
+"""
+
+ρ_z = posterior_mode["rho_z"]
+σ_z = posterior_mode["sigma_z"]
+ρ_δ = posterior_mode["rho_delta"]
+σ_δ = posterior_mode["sigma_delta"]
+ρ_s = posterior_mode["rho_s"]
+σ_s = posterior_mode["sigma_s"]
 
 @unpack  f_e, δ, s, z, b, ϕ, ρ, σ, ε, A, η_L, F, κ, ξ_inv = cal
 

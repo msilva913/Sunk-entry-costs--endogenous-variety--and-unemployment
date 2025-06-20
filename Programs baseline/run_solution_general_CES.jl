@@ -4,6 +4,7 @@
 using MKL
 using DataFrames
 using Serialization
+using MAT
 cd(@__DIR__)
 #v1.7- 
 #BLAS.vendor() 
@@ -218,6 +219,7 @@ end
 
 #PAR_SS = [ALPHA; BETA; DELTA; RHO; SIGMA; MUU; AA]
 PAR_SS = parameters[:]
+"""
 targets = (labor_share=0.66, 
            dest_ann=0.1, 
            r_ann=0.04, 
@@ -231,6 +233,28 @@ targets = (labor_share=0.66,
            ε=4.3, σ=1.0, 
            N=1.0, w=1.0,
            ζ=0.0)
+"""
+
+cd("C:/Users/msilva913/Documents/GitHub/Sunk_entry_costs_endogenous_variety_unemployment")
+# Load posterior mode 
+posterior_mode = matopen("posterior_mode.mat")
+posterior_mode = read(posterior_mode, "posterior_mode")
+cd(@__DIR__)
+
+targets = (labor_share=0.66, 
+           dest_ann=0.10, 
+           r_ann=0.04, 
+           f =0.41, 
+           η_L=0.6, #elast. of matching function
+           q=0.8, 
+           sep=0.031, 
+           b_ratio=posterior_mode["b_ratio"], 
+            x_v=posterior_mode["x_v"], 
+            ξ_inv=posterior_mode["xi_inv"], # congestion elasticity
+            ε=posterior_mode["epsi"], # elasticity of sub.
+            σ=posterior_mode["sigma"], # log utility
+            N=1, w=1.0,
+            ζ=0.0)
 SS = SS_symbolics(parameters, targets)
 
 # Values 
@@ -261,12 +285,20 @@ process_model(model)
 
 
 # Shock values (from Coles and Kelishomi), monthly frequency
+"""
 ρ_z = 0.965
 σ_z = 0.007
 ρ_δ = 0.875
 σ_δ = 0.042
 ρ_s = 0.875
 σ_s = 0.0042
+"""
+ρ_z = posterior_mode["rho_z"]
+σ_z = posterior_mode["sigma_z"]
+ρ_δ = posterior_mode["rho_delta"]
+σ_δ = posterior_mode["sigma_delta"]
+ρ_s = posterior_mode["rho_s"]
+σ_s = posterior_mode["sigma_s"]
 
 @unpack  f_e, δ, s, z, b, ϕ, ρ, σ, ε, ζ, A, η_L, F, κ, ξ_inv = cal
 

@@ -216,6 +216,7 @@ function SS_symbolics(parameters::Vector{Sym{PyObject}}, targets)
 end
 
 # Set baseline targets 
+"""
 targets = (labor_share=0.66, 
            dest_ann=0.1, 
            r_ann=0.04, 
@@ -229,3 +230,24 @@ targets = (labor_share=0.66,
            #ξ_inv = 0.01,
            ε=4.3, σ=1.0, 
            N=1.0, w=1.0)
+"""
+# Targets based on parameters estimated at posterior mode 
+using MAT
+cd("C:/Users/msilva913/Documents/GitHub/Sunk_entry_costs_endogenous_variety_unemployment")
+# Load posterior mode 
+posterior_mode = matopen("posterior_mode.mat")
+posterior_mode = read(posterior_mode, "posterior_mode")
+cd(@__DIR__)
+targets = (labor_share=0.66, 
+           dest_ann=0.10, 
+           r_ann=0.04, 
+           f =0.41, 
+           η_L=0.6, #elast. of matching function
+           q=0.8, 
+           sep=0.031, 
+           b_ratio=posterior_mode["b_ratio"], 
+            x_v=posterior_mode["x_v"], 
+            ξ_inv=posterior_mode["xi_inv"], # congestion elasticity
+            ε=posterior_mode["epsi"], # elasticity of sub.
+            σ=posterior_mode["sigma"], # log utility
+            N=1, w=1.0)
