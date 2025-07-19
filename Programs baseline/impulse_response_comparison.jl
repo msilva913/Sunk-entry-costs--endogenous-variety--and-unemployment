@@ -6,8 +6,10 @@ include("impulse_response_plots.jl")
 
 irf_z = deserialize("irf_z.jls")
 irf_δ = deserialize("irf_δ.jls")
+irf_s = deserialize("irf_s.jls")
 irf_z_gen_CES = deserialize("irf_z_gen_CES.jls")
 irf_δ_gen_CES = deserialize("irf_δ_gen_CES.jls")
+irf_s_gen_CES = deserialize("irf_s_gen_CES.jls")
 T=60
 #####################
 # Main impulse response: 
@@ -25,6 +27,10 @@ savefig("variety_effects_irf_z_comparison.pdf")
 # 2) Compare δ shock: baseline and no variety effects
 gen_irf_comp(irf_δ_gen_CES[1:T,:], irf_δ[1:T,:], ["No variety effects", "Baseline"])
 savefig("variety_effects_irf_δ_comparison.png")
+
+# 3) Compare s shock
+gen_irf_comp(irf_s_gen_CES[1:T,:], irf_s[1:T,:], ["No variety effects", "Baseline"])
+savefig("variety_effects_irf_s_comparison.png")
 
 # 3) Examine role of δ (relative to baseline model)
 irf_δ_alt = deserialize("irf_δ_alt.jls")

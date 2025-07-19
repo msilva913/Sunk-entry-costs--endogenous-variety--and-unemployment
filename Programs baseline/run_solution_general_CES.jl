@@ -235,7 +235,8 @@ targets = (labor_share=0.66,
            ζ=0.0)
 """
 
-cd("C:/Users/msilva913/Documents/GitHub/Sunk_entry_costs_endogenous_variety_unemployment")
+#cd("C:/Users/msilva913/Documents/GitHub/Sunk_entry_costs_endogenous_variety_unemployment")
+cd("C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unemployment")
 # Load posterior mode 
 posterior_mode = matopen("posterior_mode.mat")
 posterior_mode = read(posterior_mode, "posterior_mode")
@@ -357,12 +358,13 @@ serialize("irf_δ_gen_CES.jls", irf_δ)
 irf_s= simulate_model(model, sol_mat, T_IR, eta_s, SS, flag_IR, flag_logdev) 
 irf_s = 100 .*DataFrame(irf_s, varnames)
 gen_irf(irf_s)
+serialize("irf_s_gen_CES.jls", irf_s)
 #Plots.savefig("s_shock.pdf")
 
 #Commmon separation shock
-irf_τ= simulate_model(model, sol_mat, T_IR, eta_τ, SS, flag_IR, flag_logdev) 
-irf_τ = 100 .*DataFrame(irf_τ, varnames)
-gen_irf(irf_τ)
+# irf_τ= simulate_model(model, sol_mat, T_IR, eta_τ, SS, flag_IR, flag_logdev) 
+# irf_τ = 100 .*DataFrame(irf_τ, varnames)
+# gen_irf(irf_τ)
 #Plots.savefig("common_shock.pdf")
 
 

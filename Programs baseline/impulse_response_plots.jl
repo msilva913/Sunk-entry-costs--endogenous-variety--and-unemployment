@@ -68,8 +68,8 @@ function gen_irf_comp(irf_bas::DataFrame, irf_alt::DataFrame, labels)
         fmt=:png
     )
 
-    shock_labels = ["z", "δ"]
-    for (i, x) in enumerate([irf_bas.z, irf_bas.δ])
+    shock_labels = ["z", "δ", "s"]
+    for (i, x) in enumerate([irf_bas.z, irf_bas.δ, irf_bas.s])
         if abs(x[2]) > 1e-7
         plot!(p[1], 
         x,

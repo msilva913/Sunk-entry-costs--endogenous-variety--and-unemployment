@@ -85,6 +85,13 @@ gen_irf(irf_z)
 #savefig("z_shock.png")
 serialize("irf_z.jls", irf_z)
 
+# Separation rate shock 
+irf_s= simulate_model(model, sol_mat, T_IR, eta_s, SS, flag_IR, flag_logdev)
+irf_s = 100 .*DataFrame(irf_s, varnames)
+gen_irf(irf_s)
+#savefig("z_shock.png")
+serialize("irf_s.jls", irf_s)
+
 # Destruction rate shock: consistent with Beveridge curve
 irf_δ= simulate_model(model, sol_mat, T_IR, eta_δ, SS, flag_IR, flag_logdev) 
 irf_δ = 100 .*DataFrame(irf_δ, varnames)

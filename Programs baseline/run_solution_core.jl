@@ -233,7 +233,8 @@ targets = (labor_share=0.66,
 """
 # Targets based on parameters estimated at posterior mode 
 using MAT
-cd("C:/Users/msilva913/Documents/GitHub/Sunk_entry_costs_endogenous_variety_unemployment")
+#cd("C:/Users/msilva913/Documents/GitHub/Sunk_entry_costs_endogenous_variety_unemployment")
+cd("C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unemployment")
 # Load posterior mode 
 posterior_mode = matopen("posterior_mode.mat")
 posterior_mode = read(posterior_mode, "posterior_mode")
