@@ -1,6 +1,6 @@
 
 using Parameters, CSV, StatsBase, Statistics, Random
-using NLsolve
+using NLsolve 
 using DataFrames
 using Roots, Optim, LeastSquaresOptim
 using PrettyPrinting
