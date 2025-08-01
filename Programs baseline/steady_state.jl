@@ -177,10 +177,11 @@ function steady_state(para; init=0.51)
     x_v = (K/q)/(κ+K/q)
     search_wedge = w/w_int
     recruiter_share = w_int*L/Y
+    ann_int_rate = (1+ρ)^12-1
 
     out = (θ=θ, N=N, f=f, q=q, u=u, v=v, v_pret=v_pret, e=e, K=K, p=p, N_e=N_e, ν_f=ν_f, d_f=d_f, w_int=w_int, w=w, L=L, L_e=L_e, L_c=L_c, Y_c=Y_c, Q=Q, X_v=X_v,
      X=X, C=C, Y=Y, labor_share=labor_share, labor_prod=labor_prod, cons_share=cons_share, inv_new_firm_share=inv_new_firm_share, vacancy_share=vacancy_share, sunk_vac_cost_share=sunk_vac_cost_share, M=M,
-     entrant_share=entrant_share, x_v=x_v, search_wedge=search_wedge, recruiter_share=recruiter_share)
+     entrant_share=entrant_share, x_v=x_v, search_wedge=search_wedge, recruiter_share=recruiter_share, μ=μ, ann_int_rate=ann_int_rate)
     return out
 end
 

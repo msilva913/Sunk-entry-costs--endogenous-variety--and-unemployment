@@ -69,7 +69,7 @@ targets = (labor_share=0.66,
             N=1, w=1.0)
 """
 targets = (labor_share=0.66, dest_ann=0.10, f =0.41, η_L=0.6, q=0.8, sep=0.031, b_ratio=0.71, 
-            x_v=0.2, ξ_inv=1, X_Y=0.015, C_Y=0.80, σ=1.0, N=1.0, w=1.0)
+            x_v=1.0, ξ_inv=1, X_Y=0.015, C_Y=0.80, σ=1.0, N=1.0, w=1.0)
 
 cal = calibrate_shares(targets)
 ss = steady_state(cal)
@@ -87,6 +87,8 @@ print(df_table)
 function shares_table(ss::NamedTuple)
     df = DataFrame(
         Share = [
+            "Annual interest rate",
+            "Gross markup",
             "Consumption share",
             "Vacancy rate",
             "Unemployment rate",
@@ -99,8 +101,8 @@ function shares_table(ss::NamedTuple)
             "Market power wedge",
             "Stock market cap to GDP"
         ],
-        Symbol = [L"C/Y", L"v", L"u", L"\theta", L"X/Y", L"\nu N_e/Y", L"X_v/Y", L"e/v", L"w/w^R", L"w^RL/Y", L"M/(12*Y)"],
-        Value = round.([ss.cons_share, ss.v, ss.u, ss.θ, ss.vacancy_share, ss.inv_new_firm_share, ss.sunk_vac_cost_share, ss.entrant_share, ss.search_wedge, ss.recruiter_share, ss.M/(12*ss.Y)], sigdigits=3),
+        Symbol = [L"(1+ρ)^12-1", L"\mu", L"C/Y", L"v", L"u", L"\theta", L"X/Y", L"\nu N_e/Y", L"X_v/Y", L"e/v", L"w/w^R", L"w^RL/Y", L"M/(12*Y)"],
+        Value = round.([ss.ann_int_rate, ss.μ, ss.cons_share, ss.v, ss.u, ss.θ, ss.vacancy_share, ss.inv_new_firm_share, ss.sunk_vac_cost_share, ss.entrant_share, ss.search_wedge, ss.recruiter_share, ss.M/(12*ss.Y)], sigdigits=3),
 
     )
     return df
