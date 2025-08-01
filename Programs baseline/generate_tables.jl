@@ -74,8 +74,6 @@ targets = (labor_share=0.66, dest_ann=0.10, f =0.41, η_L=0.6, q=0.8, sep=0.031,
 cal = calibrate_shares(targets)
 ss = steady_state(cal)
 
-
-
 df = calibration_table(cal, targets)
 
 # Generate latex output

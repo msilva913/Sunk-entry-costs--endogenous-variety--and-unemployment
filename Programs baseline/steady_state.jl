@@ -228,6 +228,14 @@ function calibrate_shares(targets)
         w_int = w/(w_wint)
         z = (μ/p)*w_int
 
+        L_c = (ρ+δ)*L/(δ*μ+ρ)
+        L_e = δ*(μ-1)*L/(δ*μ+ρ)
+        # Consumption output
+        Y_c = p*z*L_c
+        #@assert L_c + L_e ≈ L
+        # Aggregate output
+        Y = Y_c*(δ+(ρ+δ)*(ε))/((ρ+δ)*ε)
+
         # surplus_ratio = (w_R - w - K)/K 
         surplus_ratio = (ρ+τ)/(1-δ)*(1/(q*x_v))
         K = (w_int-w)/(1+surplus_ratio)
@@ -241,8 +249,6 @@ function calibrate_shares(targets)
         # Sectoral labor  
         f_e = (μ-1)*z*(L/N)*(1-δ)/(δ*μ+ρ)
         ν_f = p*f_e/μ
-        L_e = (δ/(1-δ))*N*f_e/z
-        L_c = L-L_e
 
         # Find F from free entry condition
         #K = (ρ+δ)/(1+ρ)*(e/F)^(1/ξ)
@@ -251,9 +257,6 @@ function calibrate_shares(targets)
         X_v = F/(1+ξ_inv)*(e/F)^(1+ξ_inv)
         X = X_v + κ*v*q
 
-
-        # Consumption output
-        Y_c = p*z*L_c
         C = Y_c - X
         Y = Y_c + ν_f*N_e
         #@show ν_f*N_e/Y - (inv_firm_share)
