@@ -184,14 +184,97 @@ function steady_state(para; init=0.51)
     return out
 end
 
+targets = (labor_share=0.66, dest_ann=0.10, f =0.41, η_L=0.6, q=0.8, sep=0.031, b_ratio=0.71, x_v=0.2, ξ_inv=1, X_Y=0.015, C_Y=0.80, σ=1.0, N=1.0, w=1.0)
+
+
+function calibrate_shares(targets)
+    @unpack labor_share, dest_ann, f, η_L, q, sep, b_ratio, x_v, ξ_inv, C_Y, X_Y, σ, N, w = targets
+    # \nu_f N_e/Y = δ/(ε*(ρ+δ)+δ)
+    δ = 1-(1-dest_ann)^(1/12)
+    τ = sep
+
+     # Correct job finding and vacancy filling probablities
+    f = f/(1-δ)
+    q = q/(1-δ)
+
+    θ = f/q
+    u = τ/(τ+(1-δ)*f)
+    v = θ*u 
+
+    L = 1 - u
+    # Level parameter of matching function 
+    A = f/θ^(1-η_L)
+    s = (τ-δ)/(1-δ)
+    e = δ*(v+1-u)
+
+    #p = N^(1/(ε-1))
+    p = 1.0
+    N_e = δ/(1-δ)*N
+    b = b_ratio*w
+
+    ρ = (1+r_ann)^(1/12)-1
+
+    function loss(ρ)
+        β = 1/(1+ρ)
+        # share of investment in new firms
+        inv_firm_share = 1 - C_Y - X_Y
+        ε = (δ/inv_firm_share -δ)/(ρ+δ)
+        μ = ε/(ε-1) # gross markup 
+
+        #w_int = p*z/μ
+        recruiter_share = (δ+(ρ+δ)*(ε-1))/(δ+(ρ+δ)*ε) # w_R*L/Y similar to BGM
+        w_wint = labor_share/recruiter_share
+        w_int = w/(w_wint)
+        z = (μ/p)*w_int
+
+        # surplus_ratio = (w_R - w - K)/K 
+        surplus_ratio = (ρ+τ)/(1-δ)*(1/(q*x_v))
+        K = (w_int-w)/(1+surplus_ratio)
+
+        # Find κ given K 
+        κ = (1-x_v)/x_v*K/q
+
+        # From wage equation find ϕ
+        ϕ = (w-b)/(w_int-K+θ*(K+q*κ)-b)
+
+        # Sectoral labor  
+        f_e = (μ-1)*z*(L/N)*(1-δ)/(δ*μ+ρ)
+        ν_f = p*f_e/μ
+        L_e = (δ/(1-δ))*N*f_e/z
+        L_c = L-L_e
+
+        # Find F from free entry condition
+        #K = (ρ+δ)/(1+ρ)*(e/F)^(1/ξ)
+        Q = K*(1+ρ)/(ρ+δ) 
+        F = e/Q^(1/ξ_inv)
+        X_v = F/(1+ξ_inv)*(e/F)^(1+ξ_inv)
+        X = X_v + κ*v*q
+
+
+        # Consumption output
+        Y_c = p*z*L_c
+        C = Y_c - X
+        Y = Y_c + ν_f*N_e
+        #@show ν_f*N_e/Y - (inv_firm_share)
+        out = (f_e=f_e, z=z, κ=κ, ϕ=ϕ, ε=ε, F=F)
+        return C/Y - C_Y, out
+    end
+
+    ρ = find_zero(x -> loss(x)[1], (1e-5, 0.1))
+    out = loss(ρ)[2]
+    @unpack f_e, z, κ, ϕ, ε, F = out
+
+    cal = (f_e=f_e, τ=τ, δ=δ, z=z, b=b, ϕ=ϕ, ρ=ρ, σ=σ, ε=ε, A=A, η_L=η_L,κ=κ, ξ_inv=ξ_inv, F=F, s=s)
+
+    return cal
+end
+
+
 function calibrate_labor_share(targets)
-    @unpack labor_share, dest_ann, r_ann, f, η_L, q, sep, b_ratio, x_v, ξ_inv, ε, σ, N, w = targets
+    @unpack labor_share, dest_ann, r_ann, f, η_L, q, sep, b_ratio, x_v, C_Y, X_Y, σ, N, w = targets
 
     μ = ε/(ε-1)
-    τ = sep
-    ρ = (1+r_ann)^(1/12)-1
-    β = 1/(1+ρ)
-    δ = 1-(1-dest_ann)^(1/12)
+
     
     # Correct job finding and vacancy filling probablities
     f = f/(1-δ)
