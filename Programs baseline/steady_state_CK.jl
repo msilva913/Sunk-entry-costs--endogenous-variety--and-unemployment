@@ -236,6 +236,61 @@ function calibrate(targets)
     return cal
 end
 
+function calibrate_alt(targets)
+    """
+    Alternative normalization with z = 1 instead of w = 1
+    b_ratio is now relative to z, not w, so that b = b_ratio*z = b_ratio
+    """
+
+    @unpack ϕ, r_ann, f, η_L, q, sep, b_ratio, ξ_inv, z  = targets
+
+    ρ = (1+r_ann)^(1/12)-1
+    β = 1/(1+ρ)
+    δ = sep
+    
+    # Correct job finding and vacancy filling probablities
+    f = f/(1-δ)
+    q = q/(1-δ)
+
+    θ = f/q
+    u = δ/(δ+(1-δ)*f)
+    v = θ*u 
+
+    L = 1 - u
+    # Level parameter of matching function 
+    A = f/θ^(1-η_L)
+
+    e = δ*(v+1-u)
+
+    function loss_fun(w)
+        b = b_ratio
+        #w_int = p*z/μ
+
+        # surplus_ratio = (w_int - w - K)/K 
+        surplus_ratio = (ρ+δ)/(1-δ)*(1/(q))
+        K = (1-ϕ)/ϕ*(w-b)/(surplus_ratio +  θ)
+        z = surplus_ratio*K + w + K
+        loss = z-1
+        out = (b=b, K=K, z=z)
+        return loss, out
+    end
+
+    # Calc wage
+    w = fzero(x -> loss_fun(x)[1], 1.0)
+    out = loss_fun(w)[2]
+    @unpack b, K, z = out
+
+    # Find F from free entry condition
+    #K = (ρ+δ)/(1+ρ)*(e/F)^(1/ξ)
+    if ξ_inv > 0
+        Q = K*(1+ρ)/(ρ+δ) 
+        F = e/Q^(1/ξ_inv)
+    end 
+
+    cal = ( δ=δ, z=z, b=b, ϕ=ϕ, ρ=ρ, A=A, η_L=η_L, ξ_inv=ξ_inv, F=F)
+    return cal
+end
+
 
 
 function calibration_table(cal, targets)

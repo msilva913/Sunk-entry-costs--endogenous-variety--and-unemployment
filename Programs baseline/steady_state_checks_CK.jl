@@ -1,10 +1,11 @@
 include("steady_state_CK.jl")
-
-targets = (ϕ=0.6, r_ann=0.04, f =0.41, η_L=0.6, q=0.8, sep=0.0304, b_ratio=0.71, ξ_inv=1/0.265, w=1.0)
+# Original calibration in Coles and Kelishomi
+targets = (ϕ=0.6, r_ann=0.04, f =0.41, η_L=0.6, q=0.8, sep=0.034, b_ratio=0.71, ξ_inv=1/0.265, w=1.0)
+targets = (ϕ=0.6, r_ann=0.04, f =0.41, η_L=0.6, q=0.8, sep=0.034, b_ratio=0.71, ξ_inv=1, w=1.0)
 cal = calibrate(targets)
 
 steady = steady_state(cal)
-@unpack θ, w, L, K, q, C, Y, X, labor_share, M = steady
+@unpack θ, w, L, K, q, C, Y, X, labor_share, M, e = steady
 @unpack δ, z, b, ϕ, ρ, A, η_L, ξ_inv, F = cal
 # Accuracy checks
 @assert abs(steady.f*(1-cal.δ) - targets.f) < 1e-12

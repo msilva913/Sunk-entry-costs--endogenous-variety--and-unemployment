@@ -213,7 +213,7 @@ function calibrate_shares(targets)
     N_e = δ/(1-δ)*N
     b = b_ratio*w
 
-    ρ = (1+r_ann)^(1/12)-1
+    #ρ = (1+r_ann)^(1/12)-1
 
     function loss(ρ)
         β = 1/(1+ρ)
