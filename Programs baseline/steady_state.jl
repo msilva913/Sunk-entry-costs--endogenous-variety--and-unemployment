@@ -267,8 +267,9 @@ function calibrate_shares(targets)
     ρ = fzero(vacancy_loss, 0.004/12)
     out = vacancy_loss(ρ)[2]
     @unpack ε, z, f_e, ν_f, ϕ, κ, Q = out
+    # set x_m so as to let F=1
     x_m=Q/e^(ξ_inv)
-    # given x_m, solve for F 
+    # implied value of F (should equal 1)
     F = e/(Q/x_m)^(1/ξ_inv)
 
     cal = (f_e=f_e, τ=τ, δ=δ, z=z, b=b, ϕ=ϕ, ρ=ρ, σ=σ, ε=ε, A=A, η_L=η_L,κ=κ, ξ_inv=ξ_inv, x_m=x_m, s=s, F=F)
