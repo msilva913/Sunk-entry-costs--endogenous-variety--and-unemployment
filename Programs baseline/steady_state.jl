@@ -40,6 +40,7 @@ end
     F::Float64 = 0.0007              # Mass of recruiters with opportunity to create vacancy
     κ::Float64 = 0.2                 # Fixed matching cost
     ξ_inv::Float64 = 1.0             # Inverse elasticity of entry to vacancy value
+    x_m::Float64 = 113.16            # Upper bound on cost distribution
 
     # Worker separation rate
     s = (τ - δ)/(1-δ)
@@ -56,9 +57,9 @@ function e_fun(θ, para)
 end
 
 function K_fun(θ, para)
-    @unpack ρ, δ, F, ξ_inv = para
+    @unpack ρ, δ, F, x_m, ξ_inv = para
     e = e_fun(θ, para)
-    K = (ρ+δ)/(1+ρ)*(e/F)^(ξ_inv)
+    K = (ρ+δ)/(1+ρ)*(e/F)^(ξ_inv)*x_m
     return K
 end
 
@@ -112,14 +113,14 @@ end
 
 
 function steady_state(para; init=0.51)
-    @unpack f_e, τ, δ, z, b, ϕ, ρ, σ, ε, A, η_L, κ, ξ_inv, F, s = para
+    @unpack f_e, τ, δ, z, b, ϕ, ρ, σ, ε, A, η_L, κ, ξ_inv, F, x_m, s = para
 
     μ = ε/(ε-1)
     θ = θ_fun(para)
 
     f = jf(θ, A, η_L)
     q = vf(θ, A, η_L)
-    K = K_fun(θ, para)
+    #K = K_fun(θ, para)
     L = L_fun(θ, para) 
     u = 1 - L
 
@@ -127,15 +128,11 @@ function steady_state(para; init=0.51)
     u = τ/(τ+(1-δ)*f)
     v = θ*u
     e = δ*(v+1-u)
-    if ξ_inv > 0.0
-        K = (ρ+δ)/(1+ρ)*(e/F)^ξ_inv
-        Q = (e/F)^(ξ_inv)
-        X_v = F/(1+ξ_inv)*(e/F)^(1+ξ_inv)
-    else
-        K = (ρ+δ)/(1+ρ)
-        Q = 1.0
-        X_v = e
-    end
+    # Value of a vacancy and associated costs
+    Q = (e/F)^(ξ_inv)*x_m
+    K = (ρ+δ)/(1+ρ)*Q
+    X_v = e*(1/(1+ξ_inv))*Q
+
     v_pret = v-e
 
     # Relative price, businesses, and values
@@ -150,8 +147,10 @@ function steady_state(para; init=0.51)
     w = ϕ*(w_int-K+θ*(K+q*κ))+(1-ϕ)*(b)
 
     # Sectoral labor 
-    L_e = (δ/(1-δ))*N*f_e/z
-    L_c = L-L_e
+    L_c = (ρ+δ)*L/(δ*μ+ρ)
+    L_e = δ*(μ-1)*L/(δ*μ+ρ)
+    #L_e = (δ/(1-δ))*N*f_e/z
+    #L_c = L-L_e
     # Consumption output
     Y_c = p*z*L_c
 
@@ -164,7 +163,7 @@ function steady_state(para; init=0.51)
     C = Y_c - X
     Y = Y_c + ν_f*N_e
     # Stock market cap
-    J = Q + (1+ρ)/(1-δ)*K/q
+    J = Q + (1+ρ)/(1-δ)*K/q 
     M = Q*v +J*L + (N+N_e)*ν_f
     labor_prod = Y/(p*L)
 
@@ -185,9 +184,15 @@ function steady_state(para; init=0.51)
     return out
 end
 
-targets = (labor_share=0.66, dest_ann=0.10, f =0.41, η_L=0.6, q=0.8, sep=0.031, b_ratio=0.71, x_v=0.2, ξ_inv=1, X_Y=0.015, C_Y=0.80, σ=1.0, N=1.0, w=1.0)
+targets = (labor_share=0.66, dest_ann=0.10, f =0.41, η_L=0.6, q=0.8, sep=0.031, b_ratio=0.71, x_v=1.0, 
+        ξ_inv=1, X_Y=0.015, C_Y=0.80, σ=1.0, N=1.0, w=1.0)
 
 
+"""
+Calibrate parameters to targets
+Targets of N and w reflect choice of units.
+N is associated with f_e, and w is associated with z. Normalizing N=1 also implies p=1
+"""
 function calibrate_shares(targets)
     @unpack labor_share, dest_ann, f, η_L, q, sep, b_ratio, x_v, ξ_inv, C_Y, X_Y, σ, N, w = targets
     # \nu_f N_e/Y = δ/(ε*(ρ+δ)+δ)
@@ -214,14 +219,15 @@ function calibrate_shares(targets)
     b = b_ratio*w
 
     #ρ = (1+r_ann)^(1/12)-1
+    inv_firm_share = 1 - C_Y - X_Y
+    # Use labor share and normalization to back out Y 
+    Y = w*L/labor_share
 
-    function loss(ρ)
+    function vacancy_loss(ρ)
         β = 1/(1+ρ)
         # share of investment in new firms
-        inv_firm_share = 1 - C_Y - X_Y
         ε = (δ/inv_firm_share -δ)/(ρ+δ)
         μ = ε/(ε-1) # gross markup 
-
         #w_int = p*z/μ
         recruiter_share = (δ+(ρ+δ)*(ε-1))/(δ+(ρ+δ)*ε) # w_R*L/Y similar to BGM
         w_wint = labor_share/recruiter_share
@@ -234,8 +240,8 @@ function calibrate_shares(targets)
         Y_c = p*z*L_c
         #@assert L_c + L_e ≈ L
         # Aggregate output
-        Y = Y_c*(δ+(ρ+δ)*(ε))/((ρ+δ)*ε)
-
+        #Y = Y_c*(δ+(ρ+δ)*(ε))/((ρ+δ)*ε)
+        #X_v = F*x_m/(1+ξ_inv)*(e/F)^(1+ξ_inv)
         # surplus_ratio = (w_R - w - K)/K 
         surplus_ratio = (ρ+τ)/(1-δ)*(1/(q*x_v))
         K = (w_int-w)/(1+surplus_ratio)
@@ -253,22 +259,19 @@ function calibrate_shares(targets)
         # Find F from free entry condition
         #K = (ρ+δ)/(1+ρ)*(e/F)^(1/ξ)
         Q = K*(1+ρ)/(ρ+δ) 
-        F = e/Q^(1/ξ_inv)
-        X_v = F/(1+ξ_inv)*(e/F)^(1+ξ_inv)
-        X = X_v + κ*v*q
-
-        C = Y_c - X
-        Y = Y_c + ν_f*N_e
-        #@show ν_f*N_e/Y - (inv_firm_share)
-        out = (f_e=f_e, z=z, κ=κ, ϕ=ϕ, ε=ε, F=F)
-        return C/Y - C_Y, out
+        X = e/(1+ξ_inv)*Q + κ*q*v
+        out = (β=β, ε=ε, μ=μ, z=z, ϕ=ϕ, f_e=f_e, ν_f=ν_f, κ=κ, Q=Q)
+        return X/Y - X_Y, out 
     end
+    
+    ρ = fzero(vacancy_loss, 0.004/12)
+    out = vacancy_loss(ρ)[2]
+    @unpack ε, z, f_e, ν_f, ϕ, κ, Q = out
+    x_m=Q/e^(ξ_inv)
+    # given x_m, solve for F 
+    F = e/(Q/x_m)^(1/ξ_inv)
 
-    ρ = find_zero(x -> loss(x)[1], (1e-5, 0.1))
-    out = loss(ρ)[2]
-    @unpack f_e, z, κ, ϕ, ε, F = out
-
-    cal = (f_e=f_e, τ=τ, δ=δ, z=z, b=b, ϕ=ϕ, ρ=ρ, σ=σ, ε=ε, A=A, η_L=η_L,κ=κ, ξ_inv=ξ_inv, F=F, s=s)
+    cal = (f_e=f_e, τ=τ, δ=δ, z=z, b=b, ϕ=ϕ, ρ=ρ, σ=σ, ε=ε, A=A, η_L=η_L,κ=κ, ξ_inv=ξ_inv, x_m=x_m, s=s, F=F)
 
     return cal
 end
@@ -327,81 +330,6 @@ function calibrate_labor_share(targets)
     return cal
 end
 
-"""
-Calibrate parameters to targets
-Targets of N and w reflect choice of units.
-N is associated with f_e, and w is associated with z. Normalizing N=1 also implies p=1
-"""
-function calibrate(targets)
-    @unpack ϕ, dest_ann, r_ann, f, η_L, q, sep, b_ratio, x_v, ξ_inv, ε, σ, N, w = targets
-
-    μ = ε/(ε-1)
-    τ = sep
-    ρ = (1+r_ann)^(1/12)-1
-    β = 1/(1+ρ)
-    δ = 1-(1-dest_ann)^(1/12)
-    
-    # Correct job finding and vacancy filling probablities
-    f = f/(1-δ)
-    q = q/(1-δ)
-
-    θ = f/q
-    u = τ/(τ+(1-δ)*f)
-    v = θ*u 
-
-    L = 1 - u
-    # Level parameter of matching function 
-    A = f/θ^(1-η_L)
-    s = (τ-δ)/(1-δ)
-
-    e = δ*(v+1-u)
-
-    p = N^(1/(ε-1))
-    N_e = δ/(1-δ)*N
-    b = b_ratio*w
-    #w_int = p*z/μ
-    recruiter_share = (δ+(ρ+δ)*(ε-1))/(δ+(ρ+δ)*ε) # w_R*L/Y similar to BGM
-
-    # surplus_ratio = (w_int - w - K)/K 
-    surplus_ratio = (ρ+τ)/(1-δ)*(1/(q*x_v))
-    K = (1-ϕ)/ϕ*(w-b)/(surplus_ratio +  θ*(1/x_v))
-    κ = (1-x_v)/x_v*K/q
-    w_int = surplus_ratio*K + w + K
-    z = (μ/p)*w_int
-
-    # function loss(labor_share)
-    #     w_wint = labor_share/recruiter_share
-    #     w_int = w/(w_wint)
-    #     z = (μ/p)*w_int
-
-    
-    #     K = (w_int-w)/(1+surplus_ratio)
-
-    #     # Find κ given K 
-    #     κ = (1-x_v)/x_v*K/q
-
-    #     # From wage equation find ϕ
-    #     ϕ_new = (w-b)/(w_int-K+θ/(1-δ)*(K+q*κ)-b)
-    #     out = (ϕ_new-ϕ)/ϕ
-    #     return out, w_int, z, K, κ
-    # end 
-    #labor_share = fzero(x-> loss(x)[1], 0.66)
-    #out, w_int, z, K,  κ = loss(labor_share)
-
-
-    # Find F from free entry condition
-    #K = (ρ+δ)/(1+ρ)*(e/F)^(1/ξ)
-    if ξ_inv > 0
-        Q = K*(1+ρ)/(ρ+δ) 
-        F = e/Q^(1/ξ_inv)
-    end 
-    # Given N, solve for f_e
-    # N = (μ-1)*zL*(1-δ)/(f_e(δμ+\rho))
-    f_e = (μ-1)*z*(L/N)*(1-δ)/(δ*μ+ρ)
-
-    cal = (f_e=f_e, τ=τ, δ=δ, z=z, b=b, ϕ=ϕ, ρ=ρ, σ=σ, ε=ε, A=A, η_L=η_L,κ=κ, ξ_inv=ξ_inv, F=F, s=s)
-    return cal
-end
 
 
 

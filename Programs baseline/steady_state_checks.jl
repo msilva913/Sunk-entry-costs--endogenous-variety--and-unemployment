@@ -1,6 +1,6 @@
 include("steady_state.jl")
 
-#targets = (labor_share=0.66, dest_ann=0.10, r_ann=0.04, f =0.41, η_L=0.6, q=0.8, sep=0.031, b_ratio=0.71, x_v=0.2, ξ_inv=1, ε, σ=1.0, N=1.0, w=1.0)
+#targets = (labor_share=0.66, dest_ann=0.10, r_ann=0.04, f =0.41, η_L=0.6, q=0.8, sep=0.031, b_ratio=0.71, x_v=0.5, ξ_inv=1, ε, σ=1.0, N=1.0, w=1.0)
 targets = (labor_share=0.66, dest_ann=0.10, f =0.41, η_L=0.6, q=0.8, sep=0.031, b_ratio=0.71, 
             x_v=1.0, ξ_inv=1, X_Y=0.015, C_Y=0.80, σ=1.0, N=1.0, w=1.0)
 cal = calibrate_shares(targets)
@@ -8,13 +8,19 @@ cal = calibrate_shares(targets)
 steady = steady_state(cal)
 
 @unpack θ, p, L_c, L_e, w, w_int, L, N, N_e, K, q, ν_f, d_f, C, Y, Y_c, X_v, X, labor_share, 
-sunk_vac_cost_share, vacancy_share, x_v, M = steady
-@unpack f_e, τ, δ, z, b, ϕ, ρ, σ, ε, A, η_L, κ, ξ_inv, F, s = cal
+sunk_vac_cost_share, vacancy_share, x_v, M, e, v, u = steady
+@unpack f_e, τ, δ, z, b, ϕ, ρ, σ, ε, A, η_L, κ, ξ_inv, F, x_m, s = cal
 μ = ε/(ε-1)
 # Accuracy checks
+# Normalizations 
 @assert abs(steady.N - targets.N) < 1e-12
 @assert abs(steady.f*(1-cal.δ) - targets.f) < 1e-12
+@assert abs(steady.p - 1.0) < 1e-12
 
+@assert (targets.X_Y - vacancy_share) < 1e-12
+@assert (targets.C_Y - steady.cons_share) < 1e-12
+@assert abs(labor_share - targets.labor_share) < 1e-12
+@assert abs(labor_share - (w/w_int)*(δ+(ρ+δ)*(ε-1))/(δ+(ρ+δ)*ε)) < 1e-12
 
 @assert abs(N*d_f - Y_c/ε) < 1e-12 # profit share of consumption output
 @assert abs(w_int*L/Y - (δ+(ρ+δ)*(ε-1))/(δ+(ρ+δ)*ε)) < 1e-12
@@ -22,13 +28,12 @@ sunk_vac_cost_share, vacancy_share, x_v, M = steady
 @assert abs(Y - p*z*L_c - p*z*L_e/μ) < 1e-12
 @assert abs(p*z*L_c - w_int*L - N*ν_f*ρ/(1-δ)) < 1e-12
 @assert abs(p*z*L_e/μ-ν_f*N_e) < 1e-12
-@assert abs(labor_share - targets.labor_share) < 1e-12
-@assert abs(labor_share - (w/w_int)*(δ+(ρ+δ)*(ε-1))/(δ+(ρ+δ)*ε)) < 1e-12
 @assert abs(κ/(κ+K/q) -(1-x_v)) < 1e-12
 
-δ*ε*(μ+ρ)/(ε*(ρ+δ)+δ)*e^(1+ξ_inv)*F^(1/ξ_inv)/((1+ξ_inv)*p*z*L)
-@assert (targets.X_Y - vacancy_share) < 1e-12
-@assert (targets.C_Y - steady.cons_share) < 1e-12
+# consistency of entrants
+@assert abs(e - δ*(v+1-u)) < 1e-12
+
+
 
 @assert abs(N_e - L_e*z/f_e) < 1e-12
 surplus_ratio = (ρ+τ)/(1-δ)*(1/(q*x_v))
@@ -40,11 +45,13 @@ surplus_ratio = (ρ+τ)/(1-δ)*(1/(q*x_v))
 
 # Steady-state ratios
 @show labor_share
+@show C/Y
+@show X/Y
 @show sunk_vac_cost_share
 @show vacancy_share
 @show X/(q*v*w)
 @show x_v
-@show C/Y
+
 @show M/(12*Y)
 
 

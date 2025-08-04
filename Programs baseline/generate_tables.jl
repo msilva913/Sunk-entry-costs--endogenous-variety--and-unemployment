@@ -3,6 +3,7 @@ Generate tables for
     1) calibration 
     2) steady-state shares
 """
+
 include("steady_state.jl")
 using MAT
 #cd("C:/Users/msilva913/Documents/GitHub/Sunk_entry_costs_endogenous_variety_unemployment")
@@ -11,7 +12,7 @@ using MAT
 #posterior_mode = read(posterior_mode, "posterior_mode")
 
 function calibration_table(cal, targets)
-    @unpack f_e, τ, δ, z, b, ϕ, ρ, σ, ε, A, η_L, ξ_inv, A, F, κ, s = cal
+    @unpack f_e, τ, δ, z, b, ϕ, ρ, σ, ε, A, η_L, ξ_inv, A, F, x_m, κ, s = cal
     @unpack labor_share, dest_ann, f, η_L, q, sep, b_ratio, x_v, ξ_inv, C_Y, X_Y, σ, N, w = targets
 
     #ρ = (1+r_ann)^(1/12)-1
@@ -68,8 +69,21 @@ targets = (labor_share=0.66,
             σ=posterior_mode["sigma"], # log utility
             N=1, w=1.0)
 """
-targets = (labor_share=0.66, dest_ann=0.10, f =0.41, η_L=0.6, q=0.8, sep=0.031, b_ratio=0.71, 
-            x_v=1.0, ξ_inv=1, X_Y=0.015, C_Y=0.80, σ=1.0, N=1.0, w=1.0)
+targets = (labor_share=0.66, # influences ϕ
+           dest_ann=0.10, #estimated, but affects steady-state shares. ε, ρ updated accordingly
+           f =0.41, # fixed, turnover means
+           η_L=0.6, # based on time-series regressions
+           q=0.8, # fixed, turnover means
+           sep=0.031, # imputed from unemployment flows according to Shimer (2005)
+           b_ratio=0.71, #estimated
+           x_v=1.0, # estimated, affects X/Y, ρ updated accordingly
+           ξ_inv=1, # estimated, affects X/Y, ρ updated accordingly
+           X_Y=0.015, #vacancy share target, as Shao and Silos
+           C_Y=0.80, # consumption share, influences value of ε
+           σ=1.0, # benchmark corresponding to log preferences
+           N=1.0, # normalization: pins down f_e
+           w=1.0, # normalization: we express values relative to wage
+)
 
 cal = calibrate_shares(targets)
 ss = steady_state(cal)
@@ -92,15 +106,18 @@ function shares_table(ss::NamedTuple)
             "Unemployment rate",
             "Market tightness",
             "Recruiting cost share",
-            "Investment in new product lines",
+            "Business formation share",
             "Sunk vacancy cost share",
             "New vacancy share",
             "Search wedge",
             "Market power wedge",
+            "Value of a vacancy",
             "Stock market cap to GDP"
         ],
-        Symbol = [L"(1+ρ)^12-1", L"\mu", L"C/Y", L"v", L"u", L"\theta", L"X/Y", L"\nu N_e/Y", L"X_v/Y", L"e/v", L"w/w^R", L"w^RL/Y", L"M/(12*Y)"],
-        Value = round.([ss.ann_int_rate, ss.μ, ss.cons_share, ss.v, ss.u, ss.θ, ss.vacancy_share, ss.inv_new_firm_share, ss.sunk_vac_cost_share, ss.entrant_share, ss.search_wedge, ss.recruiter_share, ss.M/(12*ss.Y)], sigdigits=3),
+        Symbol = [L"(1+ρ)^12-1", L"\mu", L"C/Y", L"v", L"u", L"\theta", L"X/Y", L"\nu N_e/Y", L"X_v/Y", L"e/v", L"w/w^R", L"w^RL/Y", 
+        L"Q", L"M/(12*Y)"],
+        Value = round.([ss.ann_int_rate, ss.μ, ss.cons_share, ss.v, ss.u, ss.θ, ss.vacancy_share, ss.inv_new_firm_share, 
+        ss.sunk_vac_cost_share, ss.entrant_share, ss.search_wedge, ss.recruiter_share, ss.Q, ss.M/(12*ss.Y)], sigdigits=3),
 
     )
     return df
