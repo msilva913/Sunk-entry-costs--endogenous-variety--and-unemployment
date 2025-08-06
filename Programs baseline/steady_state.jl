@@ -198,7 +198,7 @@ function calibrate_shares(targets)
     # \nu_f N_e/Y = δ/(ε*(ρ+δ)+δ)
     δ = 1-(1-dest_ann)^(1/12)
     τ = sep
-
+    
      # Correct job finding and vacancy filling probablities
     f = f/(1-δ)
     q = q/(1-δ)

@@ -5,12 +5,22 @@ cd(@__DIR__)
 include("steady_state.jl")
 Plots.gr()
 default(linewidth=2, grid=true, fontfamily="Computer Modern")
-
-targets = (labor_share=0.66, dest_ann=0.10, r_ann=0.04, f =0.41, η_L=0.6, q=0.8, sep=0.031, b_ratio=0.71, x_v=0.2, ξ_inv=1, ε=4.3, σ=1.0, N=1, w=1)
-cal = calibrate_labor_share(targets)
+targets = (labor_share=0.66, dest_ann=0.10, f =0.41, η_L=0.6, q=0.8, sep=0.031, b_ratio=0.71, 
+            x_v=1.0, ξ_inv=1, X_Y=0.015, C_Y=0.80, σ=1.0, N=1.0, w=1.0)
+cal = calibrate_shares(targets)
 steady = steady_state(cal)
 
+#########################################
+T = 100
+ξ_inv_series = range(0.95, 1.2, length=T)
+X_Y_series = similar(ξ_inv_series)
+for (i, ξ_inv) in enumerate(ξ_inv_series)
+    para = (;cal..., ξ_inv=ξ_inv) #merge syntax to update para 
+    ss = steady_state(para)
+    X_Y_series[i] = ss.vacancy_share
+end
 
+################
 T = 1000
 θ_grid = range(1e-100, stop=0.9, length=T)
 
