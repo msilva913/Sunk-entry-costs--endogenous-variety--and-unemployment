@@ -88,7 +88,7 @@ function θ_fun(para; init_value=0.51)
     μ = ε/(ε-1)
 
     function loss(x)
-        θ = x[1]
+        θ = sqrt(x[1]^2) #ensure positivity
         f = jf(θ, A, η_L)
         q = vf(θ, A, η_L)
         K = K_fun(θ, para)
@@ -107,7 +107,7 @@ function θ_fun(para; init_value=0.51)
     sol = LeastSquaresOptim.optimize(loss, [init_value], Dogleg())
     println("converged=$(sol.converged) at root=$(sol.minimizer) in " *
         "$(sol.iterations) iterations and $(sol.f_calls) function calls")
-    θ = sol.minimizer[1]
+    θ = sqrt(sol.minimizer[1]^2)
     return θ
 end
 
@@ -228,10 +228,12 @@ function calibrate_shares(targets)
         # share of investment in new firms
         ε = (δ/inv_firm_share -δ)/(ρ+δ)
         μ = ε/(ε-1) # gross markup 
-        #w_int = p*z/μ
+  
+        # Labor share = (w/w_int)*(recruiter_share)
         recruiter_share = (δ+(ρ+δ)*(ε-1))/(δ+(ρ+δ)*ε) # w_R*L/Y similar to BGM
         w_wint = labor_share/recruiter_share
         w_int = w/(w_wint)
+        #w_int = p*z/μ
         z = (μ/p)*w_int
 
         L_c = (ρ+δ)*L/(δ*μ+ρ)

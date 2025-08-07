@@ -12,7 +12,7 @@ steady = steady_state(cal)
 
 #########################################
 T = 100
-ξ_inv_series = range(0.95, 1.2, length=T)
+ξ_inv_series = range(0.2, 4, length=T)
 X_Y_series = similar(ξ_inv_series)
 for (i, ξ_inv) in enumerate(ξ_inv_series)
     para = (;cal..., ξ_inv=ξ_inv) #merge syntax to update para 

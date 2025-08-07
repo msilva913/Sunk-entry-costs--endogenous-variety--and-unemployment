@@ -7,7 +7,7 @@ cal = calibrate_shares(targets)
 
 steady = steady_state(cal)
 
-@unpack θ, p, L_c, L_e, w, w_int, L, N, N_e, K, q, ν_f, d_f, C, Y, Y_c, X_v, X, labor_share, 
+@unpack θ, p, L_c, L_e, w, w_int, L, N, N_e, K, q, f, ν_f, d_f, C, Y, Y_c, X_v, X, labor_share, 
 sunk_vac_cost_share, vacancy_share, x_v, M, e, v, u = steady
 @unpack f_e, τ, δ, z, b, ϕ, ρ, σ, ε, A, η_L, κ, ξ_inv, F, x_m, s = cal
 μ = ε/(ε-1)
@@ -31,6 +31,7 @@ sunk_vac_cost_share, vacancy_share, x_v, M, e, v, u = steady
 @assert abs(κ/(κ+K/q) -(1-x_v)) < 1e-12
 
 # consistency of entrants
+@assert abs(v - ((1-δ)*((1-q)*v+s*(1-u))+e)) < 1e-12
 @assert abs(e - δ*(v+1-u)) < 1e-12
 
 
