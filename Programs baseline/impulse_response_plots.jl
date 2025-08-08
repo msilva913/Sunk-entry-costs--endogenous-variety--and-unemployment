@@ -15,7 +15,7 @@ function gen_irf(irf_df::DataFrame)
 
     # Display active shock
     shock_labels = ["z", "δ", "s"]
-    for (i, x) in enumerate([irf_bas.z, irf_bas.δ, irf_bas.s])
+    for (i, x) in enumerate([irf_df.z, irf_df.δ, irf_df.s])
         if abs(x[2]) > 1e-7 # select of initial impulse exceeds threshold
         plot!(p[1], 
         x,

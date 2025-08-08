@@ -191,7 +191,7 @@ function SS_symbolics(parameters::Vector{Sym{PyObject}}, targets)
     L_cs = L_s - L_es 
     Y_cs = p_s*zbar*L_cs
     Q_s = K_s*(1+ρ)/(ρ+δbar)
-    C_s = Y_cs -  F/(1+ξ_inv)*(e_s/F)^(1+ξ_inv) -  κ*v_s*q_s 
+    C_s = Y_cs -  e_s/(1+ξ_inv)*Q_s -  κ*v_s*q_s 
     λ_s = C_s^(-σ)
     Y_s = Y_cs + ν_fs*N_es
 

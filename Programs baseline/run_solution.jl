@@ -41,14 +41,14 @@ process_model(model)
 
 
 # Values at posterior mode of estimation
-"""
-ρ_z = posterior_mode["rho_z"]
-σ_z = posterior_mode["sigma_z"]
-ρ_δ = posterior_mode["rho_delta"]
-σ_δ = posterior_mode["sigma_delta"]
-ρ_s = posterior_mode["rho_s"]
-σ_s = posterior_mode["sigma_s"]
-"""
+
+# ρ_z = posterior_mode["rho_z"]
+# σ_z = posterior_mode["sigma_z"]
+# ρ_δ = posterior_mode["rho_delta"]
+# σ_δ = posterior_mode["sigma_delta"]
+# ρ_s = posterior_mode["rho_s"]
+# σ_s = posterior_mode["sigma_s"]
+
 @unpack  f_e, δ, s, z, b, ϕ, ρ, σ, ε, A, η_L, F, x_m, κ, ξ_inv = cal
 
 zbar = z 
