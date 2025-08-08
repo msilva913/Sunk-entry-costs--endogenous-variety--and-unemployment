@@ -35,6 +35,7 @@ end
 
     F::Float64 = 0.0007              # Mass of recruiters with opportunity to create vacancy
     ξ_inv::Float64 = 1.0             # Inverse elasticity of entry to vacancy value
+    x_m::Float64 = 10                # Level parameter of cost dist.
 
 
 end
@@ -49,9 +50,10 @@ function e_fun(θ, para)
 end
 
 function K_fun(θ, para)
-    @unpack ρ, δ, F, ξ_inv = para
+    @unpack ρ, δ, F, x_m, ξ_inv = para
     e = e_fun(θ, para)
-    K = (ρ+δ)/(1+ρ)*(e/F)^(ξ_inv)
+    Q = (e/F)^ξ_inv*x_m
+    K = (ρ+δ)/(1+ρ)*Q
     return K
 end
 
@@ -98,7 +100,7 @@ end
 
 
 function steady_state(para; init=0.51)
-    @unpack δ, z, b, ϕ, ρ, A, η_L, ξ_inv, F = para
+    @unpack δ, z, b, ϕ, ρ, A, η_L, ξ_inv, F, x_m = para
 
     θ = θ_fun(para)
 
@@ -112,15 +114,10 @@ function steady_state(para; init=0.51)
     u = δ/(δ+(1-δ)*f)
     v = θ*u
     e = δ*(v+1-u)
-    if ξ_inv > 0.0
-        K = (ρ+δ)/(1+ρ)*(e/F)^ξ_inv
-        Q = (e/F)^(ξ_inv)
-        X = F/(1+ξ_inv)*(e/F)^(1+ξ_inv)
-    else
-        K = (ρ+δ)/(1+ρ)
-        Q = 1.0
-        X = e
-    end
+    Q = (e/F)^ξ_inv*x_m
+    K = (ρ+δ)/(1+ρ)*Q
+    X = e/(1+ξ_inv)*Q
+   
     v_pret = v-e
 
     w = ϕ*(z-K+θ*K)+(1-ϕ)*(b)
@@ -280,22 +277,19 @@ function calibrate_alt(targets)
     out = loss_fun(w)[2]
     @unpack b, K, z = out
 
-    # Find F from free entry condition
-    #K = (ρ+δ)/(1+ρ)*(e/F)^(1/ξ)
-    if ξ_inv > 0
-        Q = K*(1+ρ)/(ρ+δ) 
-        F = e/Q^(1/ξ_inv)
-    end 
+    Q = K*(1+ρ)/(ρ+δ) 
+    x_m = Q/e^(ξ_inv)
+    #F = e/Q^(1/ξ_inv)
+    F = 1
 
-    cal = ( δ=δ, z=z, b=b, ϕ=ϕ, ρ=ρ, A=A, η_L=η_L, ξ_inv=ξ_inv, F=F)
+    cal = (δ=δ, z=z, b=b, ϕ=ϕ, ρ=ρ, A=A, η_L=η_L, ξ_inv=ξ_inv, F=F, x_m=x_m)
     return cal
 end
 
 
-
 function calibration_table(cal, targets)
     @unpack δ, z, b, ϕ, ρ, A, η_L, ξ_inv, A, F = cal
-    @unpack ϕ, r_ann, f, η_L, q, sep, b_ratio, ξ_inv, w = targets
+    @unpack ϕ, r_ann, f, η_L, q, sep, b_ratio, ξ_inv, z = targets
 
     ρ = (1+r_ann)^(1/12)-1
     β = 1/(1+ρ)

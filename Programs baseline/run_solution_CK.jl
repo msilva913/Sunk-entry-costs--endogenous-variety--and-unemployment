@@ -37,8 +37,8 @@ end
     flag_SSsolver   = false
 
 # Parameters
-    @syms  zbar δbar b ϕ ρ A η_L F ξ_inv ρ_z σ_z ρ_δ σ_δ
-    parameters      = [zbar; δbar; b; ϕ; ρ; A; η_L; F; ξ_inv; ρ_z; σ_z; ρ_δ; σ_δ ]
+    @syms  zbar δbar b ϕ ρ A η_L F x_m ξ_inv ρ_z σ_z ρ_δ σ_δ
+    parameters      = [zbar; δbar; b; ϕ; ρ; A; η_L; F; x_m; ξ_inv; ρ_z; σ_z; ρ_δ; σ_δ ]
     estimate        = []
     position        = []
     priors          = (;)
@@ -78,7 +78,7 @@ f = fill(Sym("x"), nvar)
     # Wage equation -> w
     f[2] = w - (ϕ*(z-K+θ*K) +(1-ϕ)*b)
     # Value of a vacancy -> Q
-    f[3] = Q - (e/F)^(ξ_inv)
+    f[3] = Q - (e/F)^(ξ_inv)*x_m
     # Expected discounted difference in vacancy value -> K
     f[4] = K - (Q-β*(1-δbar*δ)*Qp)
     # Market tightness -> v
@@ -90,7 +90,7 @@ f = fill(Sym("x"), nvar)
     # Output: Technology
     f[8] = Y - z*L
     # Output -> C
-    f[9] = Y - (C+F/(1+ξ_inv)*(e/F)^(1+ξ_inv))
+    f[9] = Y - (C+e/(1+ξ_inv)*Q)
     # Business entrants -> N_e
     # LOM of vacancies 
     f[10] = v - (v_pret + e)
@@ -114,7 +114,7 @@ so that the program tries to estimate it.
 """  
 function SS_symbolics(parameters::Vector{Sym{PyObject}}, targets)
 
-     zbar, δbar, b, ϕ, ρ, A, η_L, F, ξ_inv, ρ_z, σ_z, ρ_δ, σ_δ = parameters
+     zbar, δbar, b, ϕ, ρ, A, η_L, F, x_m, ξ_inv, ρ_z, σ_z, ρ_δ, σ_δ = parameters
     # Initial parameters: targets and normalizations/ leave parameters as symbolic to be populated with calibration
     @unpack  ϕ, f, q, w = targets
     w_s = w 
@@ -136,7 +136,7 @@ function SS_symbolics(parameters::Vector{Sym{PyObject}}, targets)
 
     Y_s = zbar*L_s
     Q_s = K_s*(1+ρ)/(ρ+δbar)
-    C_s = Y_s -  F/(1+ξ_inv)*(e_s/F)^(1+ξ_inv)
+    C_s = Y_s - e_s/(1+ξ_inv)*Q_s
 
     # Shocks
     z_s = 1.0 
