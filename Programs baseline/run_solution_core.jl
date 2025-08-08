@@ -44,8 +44,8 @@ end
     flag_SSsolver   = false
 
 # Parameters
-    @syms f_e zbar δbar sbar b ϕ ρ σ ε A η_L F κ ξ_inv ρ_z σ_z ρ_δ σ_δ ρ_s σ_s
-    parameters      = [f_e; zbar; δbar; sbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; σ_z; ρ_δ; σ_δ; ρ_s; σ_s ]
+    @syms f_e zbar δbar sbar b ϕ ρ σ ε A η_L F x_m κ ξ_inv ρ_z σ_z ρ_δ σ_δ ρ_s σ_s
+    parameters      = [f_e; zbar; δbar; sbar; b; ϕ; ρ; σ; ε; A; η_L; F; x_m; κ; ξ_inv; ρ_z; σ_z; ρ_δ; σ_δ; ρ_s; σ_s ]
     estimate        = []
     position        = []
     priors          = (;)
@@ -90,7 +90,7 @@ function gen_model_equations()
     # Wage equation -> w
     f[3] = w - (ϕ*(w_int-K+θ*(K+q*κ)) +(1-ϕ)*b)
     # Value of a vacancy -> Q
-    f[4] = Q - (e/F)^(ξ_inv)
+    f[4] = Q - (e/F)^(ξ_inv)*x_m
     # Expected discounted difference in vacancy value -> K
     f[5] = K - (Q-β*λp/λ*(1-δbar*δ)*Qp)
     # Market tightness -> v
@@ -110,7 +110,7 @@ function gen_model_equations()
     # Retail output: resources -> Y_c
     f[13] = Y_c - p*z*zbar*L_c
     # Retail output: expenditure -> C
-    f[14] = Y_c - (C+F/(1+ξ_inv)*(e/F)^(1+ξ_inv)+κ*v*q)
+    f[14] = Y_c - (C+e/(1+ξ_inv)*Q+κ*v*q)
     # Business entrants -> N_e
     f[15] = N_e - L_e*z*zbar/f_e 
     # Firm value relative to price 
@@ -156,7 +156,7 @@ so that the program tries to estimate it.
 """  
 function SS_symbolics(parameters::Vector{Sym{PyObject}}, targets)
 
-    f_e, zbar, δbar, sbar, b, ϕ, ρ, σ, ε, A, η_L, F, κ, ξ_inv, ρ_z, σ_z, ρ_δ, σ_δ, ρ_s, σ_s = parameters
+    f_e, zbar, δbar, sbar, b, ϕ, ρ, σ, ε, A, η_L, F, x_m, κ, ξ_inv, ρ_z, σ_z, ρ_δ, σ_δ, ρ_s, σ_s = parameters
     # Initial parameters: targets and normalizations/ leave parameters as symbolic to be populated with calibration
     @unpack N, w, f, q, x_v, labor_share = targets
     N_s = N 
@@ -216,29 +216,17 @@ function SS_symbolics(parameters::Vector{Sym{PyObject}}, targets)
 end
 
 # Set baseline targets 
-"""
-targets = (labor_share=0.66, 
-           dest_ann=0.1, 
-           r_ann=0.04, 
-           f =0.41, 
-           η_L=0.6, 
-           q=0.8, 
-           sep=0.034, 
-           b_ratio=0.71, 
-           x_v=0.1, 
-           ξ_inv=1/0.265, 
-           #ξ_inv = 0.01,
-           ε=4.3, σ=1.0, 
-           N=1.0, w=1.0)
-"""
+
 # Targets based on parameters estimated at posterior mode 
 using MAT
-#cd("C:/Users/msilva913/Documents/GitHub/Sunk_entry_costs_endogenous_variety_unemployment")
-cd("C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unemployment")
+cd("C:/Users/msilva913/Documents/GitHub/Sunk_entry_costs_endogenous_variety_unemployment")
+#cd("C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unemployment")
 # Load posterior mode 
 posterior_mode = matopen("posterior_mode.mat")
 posterior_mode = read(posterior_mode, "posterior_mode")
 cd(@__DIR__)
+# Targets included parameters estimated at posterior mode
+"""
 targets = (labor_share=0.66, 
            dest_ann=0.10, 
            r_ann=0.04, 
@@ -252,3 +240,21 @@ targets = (labor_share=0.66,
             ε=posterior_mode["epsi"], # elasticity of sub.
             σ=posterior_mode["sigma"], # log utility
             N=1, w=1.0)
+"""
+# Pre-estimation targets 
+targets = (labor_share=0.66, # influences ϕ
+           dest_ann=0.0754, #21% of job destruction from obsolescence 
+           f =0.41, # fixed, turnover means
+           η_L=0.6, # based on time-series regressions
+           q=0.8, # fixed, turnover means
+           sep=0.031, # imputed from unemployment flows according to Shimer (2005)
+           b_ratio=0.71, #estimated
+           x_v=1.0, # estimated, affects X/Y, ρ updated accordingly
+           ξ_inv=1, # estimated, affects X/Y, ρ updated accordingly
+           #X_Y=0.015, #vacancy share target, as Shao and Silos
+           r_ann=0.04, #4% annual interest rate
+           C_Y=0.80, # consumption share, influences value of ε
+           σ=1.0, # benchmark corresponding to log preferences
+           N=1.0, # normalization: pins down f_e
+           w=1.0, # normalization: we express values relative to wage
+)

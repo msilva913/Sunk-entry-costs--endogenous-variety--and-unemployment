@@ -13,7 +13,7 @@ using MAT
 
 function calibration_table(cal, targets)
     @unpack f_e, τ, δ, z, b, ϕ, ρ, σ, ε, A, η_L, ξ_inv, A, F, x_m, κ, s = cal
-    @unpack labor_share, dest_ann, f, η_L, q, sep, b_ratio, x_v, ξ_inv, C_Y, X_Y, σ, N, w = targets
+    @unpack labor_share, dest_ann, f, η_L, q, sep, b_ratio, x_v, ξ_inv, C_Y, r_ann, σ, N, w = targets
 
     #ρ = (1+r_ann)^(1/12)-1
     β = 1/(1+ρ)
@@ -25,12 +25,12 @@ function calibration_table(cal, targets)
         Parameter = [L"\rho", L"\eta_L", L"b", L"\delta", L"\xi^{-1}", L"\varepsilon", L"\sigma", L"\kappa", L"z", L"f_e", L"s",
          L"\phi", L"A", L"F"],
         Targets = [
-            #"Real interest rate",
-            "Recruiting cost share",
+            "Real interest rate",
+            #"Recruiting cost share",
             "Elasticity of matching function",
           #  "Replacement ratio b/w",
           "Estimated",
-            "Annual establishment exit rate",
+            "Job destruction from obsolescence",
            # "Elasticity of vacancy value",
            "Estimated",
            # "Markup",
@@ -70,7 +70,7 @@ targets = (labor_share=0.66,
             N=1, w=1.0)
 """
 targets = (labor_share=0.66, # influences ϕ
-           dest_ann=0.10, #estimated, but affects steady-state shares. ε, ρ updated accordingly
+           dest_ann=0.0754, #21% of job destruction from obsolescence 
            f =0.41, # fixed, turnover means
            η_L=0.6, # based on time-series regressions
            q=0.8, # fixed, turnover means
@@ -78,7 +78,8 @@ targets = (labor_share=0.66, # influences ϕ
            b_ratio=0.71, #estimated
            x_v=1.0, # estimated, affects X/Y, ρ updated accordingly
            ξ_inv=1, # estimated, affects X/Y, ρ updated accordingly
-           X_Y=0.015, #vacancy share target, as Shao and Silos
+           #X_Y=0.015, #vacancy share target, as Shao and Silos
+           r_ann=0.04, #4% annual interest rate
            C_Y=0.80, # consumption share, influences value of ε
            σ=1.0, # benchmark corresponding to log preferences
            N=1.0, # normalization: pins down f_e
@@ -112,12 +113,13 @@ function shares_table(ss::NamedTuple)
             "Search wedge",
             "Market power wedge",
             "Value of a vacancy",
+            "Value of a filled job",
             "Stock market cap to GDP"
         ],
         Symbol = [L"(1+ρ)^12-1", L"\mu", L"C/Y", L"v", L"u", L"\theta", L"X/Y", L"\nu N_e/Y", L"X_v/Y", L"e/v", L"w/w^R", L"w^RL/Y", 
-        L"Q", L"M/(12*Y)"],
+        L"Q", L"J", L"M/(12*Y)"],
         Value = round.([ss.ann_int_rate, ss.μ, ss.cons_share, ss.v, ss.u, ss.θ, ss.vacancy_share, ss.inv_new_firm_share, 
-        ss.sunk_vac_cost_share, ss.entrant_share, ss.search_wedge, ss.recruiter_share, ss.Q, ss.M/(12*ss.Y)], sigdigits=3),
+        ss.sunk_vac_cost_share, ss.entrant_share, ss.search_wedge, ss.recruiter_share, ss.Q, ss.J, ss.M/(12*ss.Y)], sigdigits=3),
 
     )
     return df

@@ -6,7 +6,7 @@ include("run_solution_core.jl")
 PAR_SS = parameters[:]
 
 SS = SS_symbolics(parameters, targets)
-cal = calibrate_labor_share(targets)
+cal = calibrate_shares(targets)
 
 
 f = gen_model_equations()
@@ -31,28 +31,30 @@ process_model(model)
 #parameters      = [f_e; δ; s; zbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; μ_z]
 
 # Shock values (from Coles and Kelishomi), monthly frequency
-"""
+
 ρ_z = 0.965
 σ_z = 0.007
 ρ_δ = 0.875
 σ_δ = 0.042
 ρ_s = 0.875
 σ_s = 0.0042
-"""
 
+
+# Values at posterior mode of estimation
+"""
 ρ_z = posterior_mode["rho_z"]
 σ_z = posterior_mode["sigma_z"]
 ρ_δ = posterior_mode["rho_delta"]
 σ_δ = posterior_mode["sigma_delta"]
 ρ_s = posterior_mode["rho_s"]
 σ_s = posterior_mode["sigma_s"]
-
-@unpack  f_e, δ, s, z, b, ϕ, ρ, σ, ε, A, η_L, F, κ, ξ_inv = cal
+"""
+@unpack  f_e, δ, s, z, b, ϕ, ρ, σ, ε, A, η_L, F, x_m, κ, ξ_inv = cal
 
 zbar = z 
 δbar = δ
 sbar = s
-PAR     =   [f_e; zbar; δbar; sbar; b; ϕ; ρ; σ; ε; A; η_L; F; κ; ξ_inv; ρ_z; σ_z; ρ_δ; σ_δ; ρ_s; σ_s ]
+PAR     =   [f_e; zbar; δbar; sbar; b; ϕ; ρ; σ; ε; A; η_L; F; x_m; κ; ξ_inv; ρ_z; σ_z; ρ_δ; σ_δ; ρ_s; σ_s ]
 
 sol = solution_interface(model, PAR)
 @unpack ss, SS, sol_mat, eta = sol
@@ -82,21 +84,22 @@ T_IR = 60 # 10 years
 irf_z= simulate_model(model, sol_mat, T_IR, eta_z, SS, flag_IR, flag_logdev)
 irf_z = 100 .*DataFrame(irf_z, varnames)
 gen_irf(irf_z)
-#savefig("z_shock.png")
+savefig("z_shock.png")
 serialize("irf_z.jls", irf_z)
 
 # Separation rate shock 
 irf_s= simulate_model(model, sol_mat, T_IR, eta_s, SS, flag_IR, flag_logdev)
 irf_s = 100 .*DataFrame(irf_s, varnames)
 gen_irf(irf_s)
-#savefig("z_shock.png")
+savefig("s_shock.png")
 serialize("irf_s.jls", irf_s)
 
 # Destruction rate shock: consistent with Beveridge curve
 irf_δ= simulate_model(model, sol_mat, T_IR, eta_δ, SS, flag_IR, flag_logdev) 
 irf_δ = 100 .*DataFrame(irf_δ, varnames)
-serialize("irf_δ.jls", irf_δ)
+#serialize("irf_δ.jls", irf_δ)
 gen_irf(irf_δ)
+savefig("delta_shock.png")
 #Plots.savefig("dest_shock.pdf")
 
 """

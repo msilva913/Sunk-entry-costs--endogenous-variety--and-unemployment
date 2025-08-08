@@ -5,54 +5,72 @@ import Plots:default
 default(linewidth=2, grid=true, fontfamily="Helvetica")
 
 function gen_irf(irf_df::DataFrame)
-    # Set up a 3x2 layout with specified size
-    p = Plots.plot(layout=(2, 4), size=(1200, 500), 
-            legend=:right, alpha=0.6)
+    # 3x3 plot layout
+    p = Plots.plot(
+        layout=(3, 3), 
+        size=(1100, 700), 
+        legend=:topright,
+        fmt=:png
+    )
+
+    # Display active shock
+    shock_labels = ["z", "δ", "s"]
+    for (i, x) in enumerate([irf_bas.z, irf_bas.δ, irf_bas.s])
+        if abs(x[2]) > 1e-7 # select of initial impulse exceeds threshold
+        plot!(p[1], 
+        x,
+        label=shock_labels[i],
+        title="Exogenous shock",
+        alpha=0.6,
+        ylabel="%"
+    )
+        end 
+    end 
     
     # Top left plot: labor market variables
-    plot!(p[1], irf_df.u, label=L"u", subplot=1, legend=:right)
-    plot!(p[1], irf_df.v, label=L"v")
-    plot!(p[1], irf_df.θ, label=L"θ")
-    plot!(p[1], irf_df.e, label=L"e")
+    plot!(p[2], irf_df.u, label=L"u", subplot=1, legend=:right)
+    plot!(p[2], irf_df.v, label=L"v")
+    plot!(p[2], irf_df.θ, label="θ")
+    plot!(p[2], irf_df.e, label=L"e")
     # Format y-axis as percentage
-    yticks!(p[1], :auto, fmt=x->string(round(x*100,digits=1),"%"))
+    yticks!(p[2], :auto, fmt=x->string(round(x*100,digits=1),"%"))
 
     # Top middle plot: product line variables
-    plot!(p[2], irf_df.N_e, label=L"N_e")
-    plot!(p[2], irf_df.N, label=L"N")
-    yticks!(p[2], :auto, fmt=x->string(round(x*100,digits=1),"%"))
+    plot!(p[3], irf_df.N_e, label=L"N_e")
+    plot!(p[3], irf_df.N, label=L"N")
+    yticks!(p[3], :auto, fmt=x->string(round(x*100,digits=1),"%"))
     
     # Top right plot: vacancy value variables
-    plot!(p[3], irf_df.Q, label=L"Q")
-    plot!(p[3], irf_df.K, label=L"K")
-    yticks!(p[3], :auto, fmt=x->string(round(x*100,digits=1),"%"))
-
-    # Bottom left plot: consumption and data-consistent counterpart
-    plot!(p[4], irf_df.C, label=L"C")
-    plot!(p[4], irf_df.C_R, label=L"C_R")
+    plot!(p[4], irf_df.Q, label=L"Q")
+    plot!(p[4], irf_df.K, label=L"K")
     yticks!(p[4], :auto, fmt=x->string(round(x*100,digits=1),"%"))
 
-    # Bottom middle plot: output and data-consistent counterpart
-    plot!(p[5], irf_df.Y, label=L"Y")
-    plot!(p[5], irf_df.Y_R, label=L"Y_R")
+    # Bottom left plot: consumption and data-consistent counterpart
+    plot!(p[5], irf_df.C, label=L"C")
+    plot!(p[5], irf_df.C_R, label=L"C_R")
     yticks!(p[5], :auto, fmt=x->string(round(x*100,digits=1),"%"))
 
-    plot!(p[6], irf_df.w, label=L"w")
-    plot!(p[6], irf_df.w_R, label=L"w_{R}")
-    plot!(p[6], irf_df.ls, label="labor share")
+    # Bottom middle plot: output and data-consistent counterpart
+    plot!(p[6], irf_df.Y, label=L"Y")
+    plot!(p[6], irf_df.Y_R, label=L"Y_R")
     yticks!(p[6], :auto, fmt=x->string(round(x*100,digits=1),"%"))
 
-    plot!(p[7], irf_df.d_f, label=L"d_f")
-    plot!(p[7], irf_df.Y_c, label=L"Y_c")
+    plot!(p[7], irf_df.w, label=L"w")
+    plot!(p[7], irf_df.w_R, label=L"w_{R}")
+    plot!(p[7], irf_df.ls, label="labor share")
     yticks!(p[7], :auto, fmt=x->string(round(x*100,digits=1),"%"))
 
-    # Bottom right plot
-    plot!(p[8], irf_df.z, label=L"z")
-    plot!(p[8], irf_df.labor_prod, label="labor productivity")
-    plot!(p[8], irf_df.δ, label=L"δ")
-    #plot!(p[8], irf_df.Y, label=L"Y")
-    plot!(p[8], irf_df.w_int, label=L"w_{int}")
+    plot!(p[8], irf_df.d_f, label=L"d_f")
+    plot!(p[8], irf_df.Y_c, label=L"Y_c")
     yticks!(p[8], :auto, fmt=x->string(round(x*100,digits=1),"%"))
+
+    # Bottom right plot
+    plot!(p[9], irf_df.z, label=L"z")
+    plot!(p[9], irf_df.labor_prod, label="labor productivity")
+    plot!(p[9], irf_df.δ, label="δ")
+    #plot!(p[8], irf_df.Y, label=L"Y")
+    plot!(p[9], irf_df.w_int, label=L"w_{int}")
+    yticks!(p[9], :auto, fmt=x->string(round(x*100,digits=1),"%"))
     
     # Display the plot
     display(p)
