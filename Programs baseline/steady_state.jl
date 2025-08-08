@@ -251,28 +251,27 @@ function calibrate_shares(targets)
         # Find κ given K 
         κ = (1-x_v)/x_v*K/q
 
-        # From wage equation find ϕ
-        ϕ = (w-b)/(w_int-K+θ*(K+q*κ)-b)
-
-        # Sectoral labor  
-        f_e = (μ-1)*z*(L/N)*(1-δ)/(δ*μ+ρ)
-        ν_f = p*f_e/μ
+        Q = K*(1+ρ)/(ρ+δ) 
+        X = e/(1+ξ_inv)*Q + κ*q*v
 
         # Find F from free entry condition
         #K = (ρ+δ)/(1+ρ)*(e/F)^(1/ξ)
-        Q = K*(1+ρ)/(ρ+δ) 
-        X = e/(1+ξ_inv)*Q + κ*q*v
-        out = (β=β, ε=ε, μ=μ, z=z, ϕ=ϕ, f_e=f_e, ν_f=ν_f, κ=κ, Q=Q)
+        out = (β=β, ε=ε, μ=μ, z=z, κ=κ, K=K, w=w, w_int=w_int, b=b, Q=Q)
         return X/Y - X_Y, out 
     end
     
     ρ = fzero(vacancy_loss, 0.004/12)
     out = vacancy_loss(ρ)[2]
-    @unpack ε, z, f_e, ν_f, ϕ, κ, Q = out
+    @unpack ε, z, κ, Q, K, w, w_int, b = out
+
+    # From wage equation find ϕ
+    ϕ = (w-b)/(w_int-K+θ*(K+q*κ)-b)
+    # Sectoral labor  
+    f_e = (μ-1)*z*(L/N)*(1-δ)/(δ*μ+ρ)
+    ν_f = p*f_e/μ
+
     # set x_m so as to let F=1
-    x_m=Q/e^(ξ_inv)
-    # implied value of F (should equal 1)
-    F = e/(Q/x_m)^(1/ξ_inv)
+   
 
     cal = (f_e=f_e, τ=τ, δ=δ, z=z, b=b, ϕ=ϕ, ρ=ρ, σ=σ, ε=ε, A=A, η_L=η_L,κ=κ, ξ_inv=ξ_inv, x_m=x_m, s=s, F=F)
 
@@ -291,7 +290,9 @@ function calibrate_labor_share(targets)
     q = q/(1-δ)
 
     θ = f/q
-    u = τ/(τ+(1-δ)*f)
+    u = τ/(τ+(1-δ)*f) x_m=Q/e^(ξ_inv)
+    # implied value of F (should equal 1)
+    F = e/(Q/x_m)^(1/ξ_inv)
     v = θ*u 
 
     L = 1 - u
