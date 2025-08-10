@@ -52,6 +52,10 @@ surplus_ratio = (ρ+τ)/(1-δ)*(1/(q*x_v))
 @show vacancy_share
 @show X/(q*v*w)
 @show x_v
+# Value of unemployment benefit
+@show b/w_int
+@show b/(Y/L)
+@show b/z
 
 @show M/(12*Y)
 #################################
