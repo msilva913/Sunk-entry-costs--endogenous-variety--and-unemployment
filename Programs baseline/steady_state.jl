@@ -223,6 +223,7 @@ function calibrate_shares(targets)
     ρ = (1+r_ann)^(1/12)-1
     # Use labor share and normalization to back out Y 
     Y = w*L/labor_share
+    surplus_ratio = (ρ+τ)/(1-δ)*(1/(q*x_v))
 
     function vacancy_loss(X_Y)
         # share of investment in new firms
@@ -246,7 +247,6 @@ function calibrate_shares(targets)
         #Y = Y_c*(δ+(ρ+δ)*(ε))/((ρ+δ)*ε)
         #X_v = F*x_m/(1+ξ_inv)*(e/F)^(1+ξ_inv)
         # surplus_ratio = (w_R - w - K)/K 
-        surplus_ratio = (ρ+τ)/(1-δ)*(1/(q*x_v))
         K = (w_int-w)/(1+surplus_ratio)
 
         # Find κ given K 
