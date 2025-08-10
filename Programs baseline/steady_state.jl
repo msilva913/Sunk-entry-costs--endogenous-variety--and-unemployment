@@ -257,13 +257,13 @@ function calibrate_shares(targets)
         C = Y_c - X
         # Find F from free entry condition
         #K = (ρ+δ)/(1+ρ)*(e/F)^(1/ξ)
-        out = (ε=ε, μ=μ, z=z, κ=κ, K=K, w=w, w_int=w_int, b=b, Q=Q)
+        out = (ε=ε, μ=μ, z=z, κ=κ, K=K, w_int=w_int, Q=Q)
         return C/Y-C_Y, out 
     end
     
     X_Y = fzero(vacancy_loss, 0.015)
     out = vacancy_loss(X_Y)[2]
-    @unpack ε, μ, z, κ, Q, K, w, w_int, b = out
+    @unpack ε, μ, z, κ, Q, K, w_int = out
 
     # From wage equation find ϕ
     ϕ = (w-b)/(w_int-K+θ*(K+q*κ)-b)
