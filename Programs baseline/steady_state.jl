@@ -188,7 +188,7 @@ function steady_state(para; init=0.51)
 end
 
 #targets = (labor_share=0.66, dest_ann=0.0754, f =0.41, η_L=0.6, q=0.8, sep=0.031, b_ratio=0.71, x_v=1.0, 
-      #  ξ_inv=1, r_ann=0.04, C_Y=0.80, σ=1.0, N=1.0, w=1.0)
+      #  ξ_inv=1, r_ann=0.04, ε=4.3, σ=1.0, N=1.0, w=1.0)
 
 
 """
@@ -236,7 +236,7 @@ function calibrate_shares(targets)
     L_c = (ρ+δ)*L/(δ*μ+ρ)
     L_e = δ*(μ-1)*L/(δ*μ+ρ)
     # Consumption output
-    Y_c = p*z*L_c
+    C = p*z*L_c
     #@assert L_c + L_e ≈ L
     # Aggregate output
     #Y = Y_c*(δ+(ρ+δ)*(ε))/((ρ+δ)*ε)
