@@ -76,12 +76,12 @@ targets = (labor_share=0.66, # influences ϕ
            q=0.8, # fixed, turnover means
            sep=0.031, # imputed from unemployment flows according to Shimer (2005)
            b_ratio=0.71, #estimated
-           x_v=1.0, # estimated, affects X/Y, ρ updated accordingly
-           ξ_inv=1, # estimated, affects X/Y, ρ updated accordingly
+           x_v=1.0, # estimated, affects X/Y, 
+           ξ_inv=1, # estimated, affects X/Y, 
            #X_Y=0.015, #vacancy share target, as Shao and Silos
            r_ann=0.04, #4% annual interest rate
            C_Y=0.80, # consumption share, influences value of ε
-           σ=1.0, # benchmark corresponding to log preferences
+           σ=1.0, # benchmark corresponding to log preferences, estimated
            N=1.0, # normalization: pins down f_e
            w=1.0, # normalization: we express values relative to wage
 )

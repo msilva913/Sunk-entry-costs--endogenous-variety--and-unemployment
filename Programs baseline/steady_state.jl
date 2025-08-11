@@ -201,7 +201,8 @@ function calibrate_shares(targets)
     # \nu_f N_e/Y = δ/(ε*(ρ+δ)+δ)
     δ = 1-(1-dest_ann)^(1/12)
     τ = sep
-    
+    ρ = (1+r_ann)^(1/12)-1
+
      # Correct job finding and vacancy filling probablities
     f = f/(1-δ)
     q = q/(1-δ)
@@ -220,7 +221,6 @@ function calibrate_shares(targets)
     N_e = δ/(1-δ)*N
     b = b_ratio*w
 
-    ρ = (1+r_ann)^(1/12)-1
     # Use labor share and normalization to back out Y 
     Y = w*L/labor_share
     surplus_ratio = (ρ+τ)/(1-δ)*(1/(q*x_v))
