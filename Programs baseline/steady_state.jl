@@ -187,8 +187,8 @@ function steady_state(para; init=0.51)
     return out
 end
 
-targets = (labor_share=0.66, dest_ann=0.0754, f =0.41, η_L=0.6, q=0.8, sep=0.031, b_ratio=0.71, x_v=1.0, 
-        ξ_inv=1, r_ann=0.04, C_Y=0.80, σ=1.0, N=1.0, w=1.0)
+#targets = (labor_share=0.66, dest_ann=0.0754, f =0.41, η_L=0.6, q=0.8, sep=0.031, b_ratio=0.71, x_v=1.0, 
+      #  ξ_inv=1, r_ann=0.04, C_Y=0.80, σ=1.0, N=1.0, w=1.0)
 
 
 """
@@ -197,7 +197,7 @@ Targets of N and w reflect choice of units.
 N is associated with f_e, and w is associated with z. Normalizing N=1 also implies p=1
 """
 function calibrate_shares(targets)
-    @unpack labor_share, dest_ann, f, η_L, q, sep, b_ratio, x_v, ξ_inv, C_Y, r_ann, σ, N, w = targets
+    @unpack labor_share, dest_ann, f, η_L, q, sep, b_ratio, x_v, ξ_inv, ε, r_ann, σ, N, w = targets
     # \nu_f N_e/Y = δ/(ε*(ρ+δ)+δ)
     δ = 1-(1-dest_ann)^(1/12)
     τ = sep
@@ -224,46 +224,31 @@ function calibrate_shares(targets)
     # Use labor share and normalization to back out Y 
     Y = w*L/labor_share
     surplus_ratio = (ρ+τ)/(1-δ)*(1/(q*x_v))
+    ε = 4.3
+    p = N^(1/(ε-1))
+    μ = ε/(ε-1) # gross markup 
+     # Labor share = (w/w_int)*(recruiter_share)
+    recruiter_share = (δ+(ρ+δ)*(ε-1))/(δ+(ρ+δ)*ε) # w_R*L/Y similar to BGM
+    w_wint = labor_share/recruiter_share
+    w_int = w/(w_wint)
+    #w_int = p*z/μ
+    z = (μ/p)*w_int
+    L_c = (ρ+δ)*L/(δ*μ+ρ)
+    L_e = δ*(μ-1)*L/(δ*μ+ρ)
+    # Consumption output
+    Y_c = p*z*L_c
+    #@assert L_c + L_e ≈ L
+    # Aggregate output
+    #Y = Y_c*(δ+(ρ+δ)*(ε))/((ρ+δ)*ε)
+    #X_v = F*x_m/(1+ξ_inv)*(e/F)^(1+ξ_inv)
+    # surplus_ratio = (w_R - w - K)/K 
+    K = (w_int-w)/(1+surplus_ratio)
 
-    function vacancy_loss(X_Y)
-        # share of investment in new firms
-        inv_firm_share = 1 - C_Y - X_Y
-        ε = (δ/inv_firm_share -δ)/(ρ+δ)
-        p = N^(1/(ε-1))
-        μ = ε/(ε-1) # gross markup 
-  
-        # Labor share = (w/w_int)*(recruiter_share)
-        recruiter_share = (δ+(ρ+δ)*(ε-1))/(δ+(ρ+δ)*ε) # w_R*L/Y similar to BGM
-        w_wint = labor_share/recruiter_share
-        w_int = w/(w_wint)
-        #w_int = p*z/μ
-        z = (μ/p)*w_int
-        L_c = (ρ+δ)*L/(δ*μ+ρ)
-        L_e = δ*(μ-1)*L/(δ*μ+ρ)
-        # Consumption output
-        Y_c = p*z*L_c
-        #@assert L_c + L_e ≈ L
-        # Aggregate output
-        #Y = Y_c*(δ+(ρ+δ)*(ε))/((ρ+δ)*ε)
-        #X_v = F*x_m/(1+ξ_inv)*(e/F)^(1+ξ_inv)
-        # surplus_ratio = (w_R - w - K)/K 
-        K = (w_int-w)/(1+surplus_ratio)
+    # Find κ given K 
+    κ = (1-x_v)/x_v*K/q
 
-        # Find κ given K 
-        κ = (1-x_v)/x_v*K/q
-
-        Q = K*(1+ρ)/(ρ+δ) 
-        X = e/(1+ξ_inv)*Q + κ*q*v
-        C = Y_c - X
-        # Find F from free entry condition
-        #K = (ρ+δ)/(1+ρ)*(e/F)^(1/ξ)
-        out = (ε=ε, μ=μ, z=z, κ=κ, K=K, w_int=w_int, Q=Q)
-        return C/Y-C_Y, out 
-    end
-    
-    X_Y = fzero(vacancy_loss, 0.015)
-    out = vacancy_loss(X_Y)[2]
-    @unpack ε, μ, z, κ, Q, K, w_int = out
+    Q = K*(1+ρ)/(ρ+δ) 
+    X = e/(1+ξ_inv)*Q + κ*q*v
 
     # From wage equation find ϕ
     ϕ = (w-b)/(w_int-K+θ*(K+q*κ)-b)

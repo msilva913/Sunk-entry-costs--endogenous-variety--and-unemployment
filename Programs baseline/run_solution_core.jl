@@ -250,7 +250,8 @@ targets = (labor_share=0.66, # influences ϕ
            sep=0.031, # imputed from unemployment flows according to Shimer (2005)
            b_ratio=0.71, #estimated
            x_v=1.0, # estimated, affects X/Y, ρ updated accordingly
-           ξ_inv=1, # estimated, affects X/Y, ρ updated accordingly
+           #ξ_inv=1, # estimated, affects X/Y, ρ updated accordingly
+           ξ_inv = 0.1, # close to free entry of vacancies
            #X_Y=0.015, #vacancy share target, as Shao and Silos
            r_ann=0.04, #4% annual interest rate
            C_Y=0.80, # consumption share, influences value of ε

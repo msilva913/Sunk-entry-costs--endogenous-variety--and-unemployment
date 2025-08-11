@@ -13,7 +13,7 @@ using MAT
 
 function calibration_table(cal, targets)
     @unpack f_e, τ, δ, z, b, ϕ, ρ, σ, ε, A, η_L, ξ_inv, A, F, x_m, κ, s = cal
-    @unpack labor_share, dest_ann, f, η_L, q, sep, b_ratio, x_v, ξ_inv, C_Y, r_ann, σ, N, w = targets
+    @unpack labor_share, dest_ann, f, η_L, q, sep, b_ratio, x_v, ξ_inv, ε, r_ann, σ, N, w = targets
 
     #ρ = (1+r_ann)^(1/12)-1
     β = 1/(1+ρ)
@@ -77,10 +77,11 @@ targets = (labor_share=0.66, # influences ϕ
            sep=0.031, # imputed from unemployment flows according to Shimer (2005)
            b_ratio=0.71, #estimated
            x_v=1.0, # estimated, affects X/Y, 
-           ξ_inv=1, # estimated, affects X/Y, 
+           ξ_inv=0.1, # estimated, affects X/Y, 
            #X_Y=0.015, #vacancy share target, as Shao and Silos
            r_ann=0.04, #4% annual interest rate
-           C_Y=0.80, # consumption share, influences value of ε
+           #C_Y=0.80, # consumption share, influences value of ε
+           ε = 4.3,
            σ=1.0, # benchmark corresponding to log preferences, estimated
            N=1.0, # normalization: pins down f_e
            w=1.0, # normalization: we express values relative to wage
