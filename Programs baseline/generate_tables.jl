@@ -46,7 +46,7 @@ function calibration_table(cal, targets)
             "Job finding rate",
             "Vacancy filling rate"
         ],
-        Value = map(x -> isa(x, Number) ? round(x, sigdigits=2) : x, [X_Y, η_L, "-", δ, "-", C_Y, "-", "-", w, N, τ, labor_share, 0.41, 0.80]),
+        Value = map(x -> isa(x, Number) ? round(x, sigdigits=2) : x, [r_ann, η_L, "-", δ, "-", ε, "-", "-", w, N, τ, labor_share, 0.41, 0.80]),
         Calibration = round.([ρ, η_L, b, δ, ξ_inv, ε, σ, κ, z, f_e, s, ϕ, A, F], sigdigits=3)
     )
 
@@ -77,8 +77,8 @@ targets = (labor_share=0.66, # influences ϕ
            sep=0.031, # imputed from unemployment flows according to Shimer (2005)
            b_ratio=0.71, #estimated
            x_v=1.0, # estimated, affects X/Y, 
-           #ξ_inv=1.0, # estimated, affects X/Y, 
-           ξ_inv = 1/0.265,
+           ξ_inv=1.0, # estimated, affects X/Y, 
+           #ξ_inv = 1/0.265,
            #X_Y=0.015, #vacancy share target, as Shao and Silos
            r_ann=0.04, #4% annual interest rate
            #C_Y=0.80, # consumption share, influences value of ε

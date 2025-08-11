@@ -152,7 +152,7 @@ function steady_state(para; init=0.51)
     #L_e = (δ/(1-δ))*N*f_e/z
     #L_c = L-L_e
     # Consumption output
-    Y_c = p*z*L_c
+    C = p*z*L_c
 
     @assert abs(e - δ*(θ*τ+(1-δ)*f)/(τ+(1-δ)*f)) < 1e-12
 
@@ -160,8 +160,8 @@ function steady_state(para; init=0.51)
     # total recruiting costs
     X = X_v + κ*v*q
 
-    C = Y_c - X
-    Y = Y_c + ν_f*N_e
+    #C = Y_c - X
+    Y = C + ν_f*N_e
     # Stock market cap
     J = Q + (1+ρ)/(1-δ)*K/q 
     M = Q*v +J*L + (N+N_e)*ν_f
@@ -179,7 +179,7 @@ function steady_state(para; init=0.51)
     ann_int_rate = (1+ρ)^12-1
 
     out = (θ=θ, N=N, f=f, q=q, u=u, v=v, v_pret=v_pret, e=e, K=K, p=p, N_e=N_e, ν_f=ν_f, d_f=d_f, w_int=w_int, w=w,
-     L=L, L_e=L_e, L_c=L_c, Y_c=Y_c, Q=Q, J=J, X_v=X_v,
+     L=L, L_e=L_e, L_c=L_c, Q=Q, J=J, X_v=X_v,
      X=X, C=C, Y=Y, labor_share=labor_share, 
      labor_prod=labor_prod, cons_share=cons_share, inv_new_firm_share=inv_new_firm_share, vacancy_share=vacancy_share,
       sunk_vac_cost_share=sunk_vac_cost_share, M=M,
@@ -224,7 +224,6 @@ function calibrate_shares(targets)
     # Use labor share and normalization to back out Y 
     Y = w*L/labor_share
     surplus_ratio = (ρ+τ)/(1-δ)*(1/(q*x_v))
-    ε = 4.3
     p = N^(1/(ε-1))
     μ = ε/(ε-1) # gross markup 
      # Labor share = (w/w_int)*(recruiter_share)
@@ -235,6 +234,7 @@ function calibrate_shares(targets)
     z = (μ/p)*w_int
     L_c = (ρ+δ)*L/(δ*μ+ρ)
     L_e = δ*(μ-1)*L/(δ*μ+ρ)
+
     # Consumption output
     C = p*z*L_c
     #@assert L_c + L_e ≈ L
