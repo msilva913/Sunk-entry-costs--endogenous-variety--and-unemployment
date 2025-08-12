@@ -7,7 +7,7 @@ cal = calibrate_shares(targets)
 
 steady = steady_state(cal)
 
-@unpack θ, p, L_c, L_e, w, w_int, L, N, N_e, K, q, f, ν_f, d_f, C, Y, X_v, X, labor_share, 
+@unpack θ, p, L_c, L_e, w, w_int, L, N, N_e, K, q, f, ν_f, d_f, C, Y_c, Y, X_v, X, labor_share, 
 sunk_vac_cost_share, vacancy_share, x_v, M, e, v, u = steady
 @unpack f_e, τ, δ, z, b, ϕ, ρ, σ, ε, A, η_L, κ, ξ_inv, F, x_m, s = cal
 μ = ε/(ε-1)
@@ -20,12 +20,13 @@ sunk_vac_cost_share, vacancy_share, x_v, M, e, v, u = steady
 #@assert (targets.X_Y - vacancy_share) < 1e-12
 #@assert (targets.C_Y - steady.cons_share) < 1e-12
 @assert abs(labor_share - targets.labor_share) < 1e-12
-@assert abs(labor_share - (w/w_int)*(δ+(ρ+δ)*(ε-1))/(δ+(ρ+δ)*ε)) < 1e-12
+@assert abs(labor_share - (1+X/Y)*(w/w_int)*(δ+(ρ+δ)*(ε-1))/(δ+(ρ+δ)*ε)) < 1e-12
 
-@assert abs(N*d_f - C/ε) < 1e-12 # profit share of consumption output
-@assert abs(w_int*L/Y - (δ+(ρ+δ)*(ε-1))/(δ+(ρ+δ)*ε)) < 1e-12
-@assert abs(Y - w_int*L - N*d_f) < 1e-12
-@assert abs(Y - p*z*L_c - p*z*L_e/μ) < 1e-12
+@assert abs(N*d_f - Y_c/ε) < 1e-12 # profit share of consumption output
+@assert abs(w_int*L/Y - (1+X/Y)*(δ+(ρ+δ)*(ε-1))/(δ+(ρ+δ)*ε)) < 1e-12
+#@assert abs(Y - w*L - N*d_f) < 1e-12
+@assert abs(Y-C-ν_f*N_e) < 1e-12
+@assert abs(Y+X - p*z*L_c - p*z*L_e/μ) < 1e-12
 @assert abs(p*z*L_c - w_int*L - N*ν_f*ρ/(1-δ)) < 1e-12
 @assert abs(p*z*L_e/μ-ν_f*N_e) < 1e-12
 @assert abs(κ/(κ+K/q) -(1-x_v)) < 1e-12

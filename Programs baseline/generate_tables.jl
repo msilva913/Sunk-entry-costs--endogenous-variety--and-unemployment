@@ -128,7 +128,7 @@ function shares_table(ss::NamedTuple)
 end
 
 df_shares = shares_table(ss)
-
+pprint(df_shares)
 """
 output = IOBuffer()
 show(output, MIME("text/latex"),df_shares)

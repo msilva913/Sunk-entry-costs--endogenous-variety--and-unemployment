@@ -152,7 +152,7 @@ function steady_state(para; init=0.51)
     #L_e = (δ/(1-δ))*N*f_e/z
     #L_c = L-L_e
     # Consumption output
-    C = p*z*L_c
+    Y_c = p*z*L_c
 
     @assert abs(e - δ*(θ*τ+(1-δ)*f)/(τ+(1-δ)*f)) < 1e-12
 
@@ -160,7 +160,7 @@ function steady_state(para; init=0.51)
     # total recruiting costs
     X = X_v + κ*v*q
 
-    #C = Y_c - X
+    C = Y_c - X
     Y = C + ν_f*N_e
     # Stock market cap
     J = Q + (1+ρ)/(1-δ)*K/q 
@@ -180,15 +180,15 @@ function steady_state(para; init=0.51)
 
     out = (θ=θ, N=N, f=f, q=q, u=u, v=v, v_pret=v_pret, e=e, K=K, p=p, N_e=N_e, ν_f=ν_f, d_f=d_f, w_int=w_int, w=w,
      L=L, L_e=L_e, L_c=L_c, Q=Q, J=J, X_v=X_v,
-     X=X, C=C, Y=Y, labor_share=labor_share, 
+     X=X, C=C, Y_c=Y_c, Y=Y, labor_share=labor_share, 
      labor_prod=labor_prod, cons_share=cons_share, inv_new_firm_share=inv_new_firm_share, vacancy_share=vacancy_share,
       sunk_vac_cost_share=sunk_vac_cost_share, M=M,
      entrant_share=entrant_share, x_v=x_v, search_wedge=search_wedge, recruiter_share=recruiter_share, μ=μ, ann_int_rate=ann_int_rate)
     return out
 end
 
-#targets = (labor_share=0.66, dest_ann=0.0754, f =0.41, η_L=0.6, q=0.8, sep=0.031, b_ratio=0.71, x_v=1.0, 
-      #  ξ_inv=1, r_ann=0.04, ε=4.3, σ=1.0, N=1.0, w=1.0)
+targets = (labor_share=0.66, dest_ann=0.0754, f =0.41, η_L=0.6, q=0.8, sep=0.031, b_ratio=0.71, x_v=1.0, 
+        ξ_inv=1, r_ann=0.04, ε=4.3, σ=1.0, N=1.0, w=1.0)
 
 
 """
@@ -228,28 +228,39 @@ function calibrate_shares(targets)
     μ = ε/(ε-1) # gross markup 
      # Labor share = (w/w_int)*(recruiter_share)
     recruiter_share = (δ+(ρ+δ)*(ε-1))/(δ+(ρ+δ)*ε) # w_R*L/Y similar to BGM
-    w_wint = labor_share/recruiter_share
-    w_int = w/(w_wint)
-    #w_int = p*z/μ
-    z = (μ/p)*w_int
     L_c = (ρ+δ)*L/(δ*μ+ρ)
     L_e = δ*(μ-1)*L/(δ*μ+ρ)
+    
+    function vacancy_loss(X_Y)
+        X_Y = sqrt(X_Y^2)
+        # Use labor_share = (1+X/Y)*(w/w_int)*recruiter_share
+        w_wint = labor_share/(recruiter_share*(1+X_Y))
+        w_int = w/(w_wint)
+        #w_int = p*z/μ
+        z = (μ/p)*w_int
+        # Consumption output
+        Y_c = p*z*L_c
+        #@assert L_c + L_e ≈ L
+        # Aggregate output
+        #Y = Y_c*(δ+(ρ+δ)*(ε))/((ρ+δ)*ε)
+        #X_v = F*x_m/(1+ξ_inv)*(e/F)^(1+ξ_inv)
+        # surplus_ratio = (w_R - w - K)/K 
+        K = (w_int-w)/(1+surplus_ratio)
 
-    # Consumption output
-    C = p*z*L_c
-    #@assert L_c + L_e ≈ L
-    # Aggregate output
-    #Y = Y_c*(δ+(ρ+δ)*(ε))/((ρ+δ)*ε)
-    #X_v = F*x_m/(1+ξ_inv)*(e/F)^(1+ξ_inv)
-    # surplus_ratio = (w_R - w - K)/K 
-    K = (w_int-w)/(1+surplus_ratio)
+        # Find κ given K 
+        κ = (1-x_v)/x_v*K/q
 
-    # Find κ given K 
-    κ = (1-x_v)/x_v*K/q
+        Q = K*(1+ρ)/(ρ+δ) 
+        X = e/(1+ξ_inv)*Q + κ*q*v
+        out = (w_int=w_int, κ=κ, z=z, K=K, Q=Q, X=X)
+        return X/Y - X_Y, out
+    end
 
-    Q = K*(1+ρ)/(ρ+δ) 
-    X = e/(1+ξ_inv)*Q + κ*q*v
-
+    X_Y = fzero(x -> vacancy_loss(x)[1], 0.015)
+    out = vacancy_loss(X_Y)[2]
+    @unpack w_int, κ, z, K, Q, X = out
+    X_Y = sqrt(X_Y^2) # ensure positivity
+    
     # From wage equation find ϕ
     ϕ = (w-b)/(w_int-K+θ*(K+q*κ)-b)
     # Sectoral labor  
