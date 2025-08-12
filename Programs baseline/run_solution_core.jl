@@ -115,10 +115,10 @@ function gen_model_equations()
     f[15] = N_e - L_e*z*zbar/f_e 
     # Firm value relative to price 
     f[16] = ν_f - p*f_e/μ 
-    # Output = expenditure
-    f[17] = Y - (Y_c+ν_f*N_e)
-    # Output = income 
-    f[18] = Y - (w_int*L+N*d_f)
+    # Output = C+I
+    f[17] = Y - (C+ν_f*N_e)
+    # Gross output = Gross income 
+    f[18] = Y+X - (w_int*L+N*d_f)
     # LOM of vacancies 
     f[19] = v - (v_pret + e)
     # Predetermined vacancies 
@@ -254,7 +254,7 @@ targets = (labor_share=0.66, # influences ϕ
            ξ_inv = 0.1, # close to free entry of vacancies
            #X_Y=0.015, #vacancy share target, as Shao and Silos
            r_ann=0.04, #4% annual interest rate
-           C_Y=0.80, # consumption share, influences value of ε
+           #C_Y=0.80, # consumption share, influences value of ε
            σ=1.0, # benchmark corresponding to log preferences
            N=1.0, # normalization: pins down f_e
            w=1.0, # normalization: we express values relative to wage
