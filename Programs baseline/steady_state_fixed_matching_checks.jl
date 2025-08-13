@@ -1,0 +1,114 @@
+include("steady_state_fixed_matching.jl")
+
+#targets = (labor_share=0.66, dest_ann=0.10, r_ann=0.04, f =0.41, η_L=0.6, q=0.8, sep=0.031, b_ratio=0.71, x_v=0.5, ξ_inv=1, ε, σ=1.0, N=1.0, w=1.0)
+targets = (labor_share=0.66, dest_ann=0.0754, f =0.41, η_L=0.6, q=0.8, sep=0.031, b_ratio=0.71, 
+         r_ann=0.04, ε=4.3, σ=1.0, N=1.0, w=1.0)
+cal = calibrate_shares(targets)
+
+steady = steady_state(cal)
+
+@unpack θ, p, L_c, L_e, w, w_int, L, N, N_e, q, f, ν_f, d_f, C, Y_c, Y, X, labor_share, 
+vacancy_share, M, v, u = steady
+@unpack f_e, τ, δ, z, b, ϕ, ρ, σ, ε, A, η_L, κ, s = cal
+μ = ε/(ε-1)
+# Accuracy checks
+# Normalizations 
+@assert abs(steady.N - targets.N) < 1e-12
+@assert abs(steady.f*(1-cal.δ) - targets.f) < 1e-12
+@assert abs(steady.p - 1.0) < 1e-12
+
+#@assert (targets.X_Y - vacancy_share) < 1e-12
+#@assert (targets.C_Y - steady.cons_share) < 1e-12
+@assert abs(labor_share - targets.labor_share) < 1e-12
+@assert abs(labor_share - (1+X/Y)*(w/w_int)*(δ+(ρ+δ)*(ε-1))/(δ+(ρ+δ)*ε)) < 1e-12
+
+# Profits
+@assert abs(N*d_f - Y_c/ε) < 1e-12 # profit share of consumption output
+@assert abs(N*d_f/Y - (ρ+δ)/(δ+(ρ+δ)*ε)*(1+X/Y)) < 1e-12
+
+
+
+@assert abs(w_int*L/Y - (1+X/Y)*(δ+(ρ+δ)*(ε-1))/(δ+(ρ+δ)*ε)) < 1e-12
+#@assert abs(Y - w*L - N*d_f) < 1e-12
+@assert abs(Y-C-ν_f*N_e) < 1e-12
+@assert abs(Y+X - p*z*L_c - p*z*L_e/μ) < 1e-12
+@assert abs(p*z*L_c - w_int*L - N*ν_f*ρ/(1-δ)) < 1e-12
+@assert abs(p*z*L_e/μ-ν_f*N_e) < 1e-12
+
+
+@assert abs(N_e - L_e*z/f_e) < 1e-12
+
+# Consistency checks: should replicate steady state
+@show N_jcc(steady.θ, cal)
+@show N_res(steady.θ, cal)
+
+# Steady-state ratios
+search_profit_share = ((w_int-w)*L - X)/Y
+retail_profit_share = N*d_f/Y
+@assert (labor_share + search_profit_share+retail_profit_share -1) < 1e-12
+
+@show labor_share
+@show search_profit_share 
+@show retail_profit_share 
+@show C/Y
+@show X/Y
+@show N*d_f/Y
+@show vacancy_share
+@show X/(q*v*w)
+# Value of unemployment benefit
+@show b/w_int
+@show b/(Y/L)
+@show b/z
+
+@show M/(12*Y)
+#################################
+#Checks for L_c/L
+
+
+################################################################
+# Check consistency of calibrate function 
+targets = (targets...,  ϕ=cal.ϕ)
+cal = calibrate(targets)
+steady2 = steady_state(cal)
+
+
+# Study implication of low b
+targets2 = (targets..., b_ratio=0.41)
+cal2 = calibrate_labor_share(targets2)
+steady_state(cal2)
+# Can match labor share for very low values of b 
+# For very high values of b, at a fixed markup, labor share tends to exceed target, requiring negative values of bargaining power.
+
+
+# Examination of entry elasticity ξ → ∞ (ξ_inv → 0)
+para = (cal..., ξ_inv=0.00)
+
+steady = steady_state(para)
+@assert abs(steady.Q-1.0) < 1e-12
+@assert abs(steady.X_v-steady.e) < 1e-12
+@assert abs(steady.K - (cal.ρ+cal.δ)/(1+cal.ρ)) < 1e-12
+
+## Alternate calibration: directly specify ϕ instead of labor share 
+# targets = (ϕ=0.6, dest_ann=0.06, r_ann=0.04, f =0.41, η_L=0.6, q=0.8, sep=0.031, b_ratio=0.71, ξ_inv=1, ε=4, σ=1.5, N=1, w=1.0)
+# cal = calibrate(targets)
+# steady = steady_state(cal)
+
+# Examination of very high elasticity of substitution
+para = (para...,  ε=1e12)
+steady = steady_state(para)
+@assert abs(steady.Q-1.0) < 1e-12
+@assert abs(steady.X_v-steady.e) < 1e-12
+@assert abs(steady.K - (cal.ρ+cal.δ)/(1+cal.ρ)) < 1e-12
+
+
+###################################################
+# Check risk aversion
+targets = (labor_share=0.66, dest_ann=0.10, r_ann=0.04, f =0.41, η_L=0.6, q=0.8, sep=0.031, b_ratio=0.71, x_v=0.1, ξ_inv=1/0.265, 
+ε=4.3, σ=0.0, N=1.0, w=1.0)
+cal = calibrate_labor_share(targets)
+steady = steady_state(cal)
+@show steady.labor_share
+@show steady.sunk_vac_cost_share
+@show steady.x_v
+@show steady.C/steady.Y
+@show steady.M/(12*steady.Y)
