@@ -31,6 +31,13 @@ sunk_vac_cost_share, vacancy_share, x_v, M, e, v, u = steady
 @assert abs(p*z*L_e/μ-ν_f*N_e) < 1e-12
 @assert abs(κ/(κ+K/q) -(1-x_v)) < 1e-12
 
+# Alternate JCC characterization with wage plugged in 
+@assert abs((w_int-w-K - (ρ+τ)/(1-δ)*(κ+K/q))) < 1e-12
+@assert abs(w_int-w-K - (1-ϕ)*(w_int-K-b)-ϕ*θ*(K+q*κ))< 1e-12
+
+
+@assert abs((1-ϕ)*(w_int-K-b) - (ρ+τ)/(1-δ)*(κ+K/q)*(1-ϕ*θ*q))
+
 # consistency of entrants
 @assert abs(v - ((1-δ)*((1-q)*v+s*(1-u))+e)) < 1e-12
 @assert abs(e - δ*(v+1-u)) < 1e-12

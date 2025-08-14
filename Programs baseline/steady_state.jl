@@ -227,7 +227,7 @@ function calibrate_shares(targets)
     p = N^(1/(ε-1))
     μ = ε/(ε-1) # gross markup 
      # Labor share = (w/w_int)*(recruiter_share)
-    recruiter_share = (δ+(ρ+δ)*(ε-1))/(δ+(ρ+δ)*ε) # w_R*L/Y similar to BGM
+    recruiter_share = (δ+(ρ+δ)*(ε-1))/(δ+(ρ+δ)*ε) # w_R*L/Y^{Gross} similar to BGM
     L_c = (ρ+δ)*L/(δ*μ+ρ)
     L_e = δ*(μ-1)*L/(δ*μ+ρ)
     
