@@ -61,7 +61,7 @@ cycle = cycle_hp
 7) Labor productivity
 """
 mom_list = ["u", "v", "s", "jf", "delta", "bf", "lp" ]
-mom = moments(cycle, relative_std="lp", lab=["u", "lp"])
+mom = moments(cycle[mom_list], relative_std="lp", lab=["u", "lp"])
 mom_stacked = stacked_moments(cycle, mom_list)
 " Summarize moments in one column "
 

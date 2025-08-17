@@ -151,8 +151,10 @@ def construct_data(init, final, freq):
     BED_dat = pd.read_excel('BED_data.xlsx', sheet_name='Data Import')
     BED_dat['Series'] = pd.date_range(start="1992Q3", end="2024Q3", freq="QS")
     BED_dat.set_index("Series", inplace=True)
-
-    BED_dat.rename(columns={"BDS0000000000000000120008RQ5": "estabs_exit_rate"}, inplace=True)
+    
+    #series_id = "BDS0000000000000000110008RQ5"
+    series_id = "BDS0000000000000000120008RQ5"
+    BED_dat.rename(columns={series_id: "estabs_exit_rate"}, inplace=True)
     delta = BED_dat["estabs_exit_rate"].resample(freq).mean().dropna()/(100*3)
 
     " Note: these series imply labor productivity in each sector "
