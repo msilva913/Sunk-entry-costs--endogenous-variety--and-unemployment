@@ -147,6 +147,7 @@ def construct_data(init, final, freq):
     #sbf8 = fred.get_series('BFBF8QTOTALSAUS').resample(freq).mean().dropna() / pop
     
     " BED "
+    " Gross job gains and gross job losses from 1992 forward "
     BED_dat = pd.read_excel('BED_data.xlsx', sheet_name='Data Import')
     BED_dat['Series'] = pd.date_range(start="1992Q3", end="2024Q3", freq="QS")
     BED_dat.set_index("Series", inplace=True)

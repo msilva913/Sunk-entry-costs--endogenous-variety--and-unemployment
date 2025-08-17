@@ -2,7 +2,6 @@
 import numpy as np
 import scipy
 import pandas as pd
-import matplotlib.pyplot as plt
 import statsmodels.api as sm
 #import statsmodels.api as sm
 from fredapi import Fred
@@ -14,7 +13,7 @@ np.set_printoptions(precision=3)
 from scipy.io import savemat
 #pd.options.display.float_format = '{:5,.4g}'.format
 
-from time_series_functions import (moments, stacked_moments, filter_transform)
+from time_series_functions import (moments, filter_transform, stacked_moments)
 from formatting_functions import (create_stats_table, generate_stacked_moments_table, 
                                   generate_stacked_moments_latex_table)
 
@@ -31,22 +30,37 @@ lab = ['c', 'u', 'v', 'theta', 'jf', 'lp', 'ls', 's', 'delta', 'w', 'bf', 'ba']
 init= '1951-01-01'
 #final = '2024-10-30'
 final='2020-01-01' # Just before pandemic shock
+" Raw data series created by file observables.py "
 dat = pd.read_pickle("raw_data.pkl")
+
+" Moments are based on HP-filtered business cycle detrended data "
 
 cycle_hp = pd.concat([filter_transform(dat[x], init=init, final=final, transform_type='log',
                                     filter_type="hp_filter", lamb=100_000) for x in lab], axis=1)
 cycle_hp.columns = lab
 
+"""
 cycle_ham = pd.concat([filter_transform(dat[x], init=init, final=final, transform_type='log',
                                     filter_type="hamilton") for x in lab], axis=1)
 cycle_ham.columns = lab
 
 #cycle_ham[["bf", "ba"]].corr()
+"""
+
 #cycle = cycle_ham
 cycle = cycle_hp
 
-# Stacked moments 
-mom_list = ["u", "v", "theta", "lp", "s", "bf"]
+" Series to target "
+"""
+1) Unemployment
+2) Vacancies
+3) Job separation
+4) Job finding rate
+5) Business destruction rate
+6) Business creation rate
+7) Labor productivity
+"""
+mom_list = ["u", "v", "s", "jf", "delta", "bf", "lp" ]
 mom = moments(cycle, relative_std="lp", lab=["u", "lp"])
 mom_stacked = stacked_moments(cycle, mom_list)
 " Summarize moments in one column "
@@ -56,7 +70,7 @@ mom_tex = create_stats_table(mom)
 print(mom_tex)
 # Export to mat file 
 mom_stacked_dic = mom_stacked.to_dict('list')
-#savemat('moments_empirical.mat', mom_stacked.to_dict('list'))
+savemat('moments_empirical.mat', mom_stacked.to_dict('list'))
 
 tab_tex = generate_stacked_moments_latex_table(mom_stacked)
 tab = generate_stacked_moments_table(mom_stacked)

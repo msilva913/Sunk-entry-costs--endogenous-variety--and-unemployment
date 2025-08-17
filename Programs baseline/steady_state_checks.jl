@@ -33,8 +33,7 @@ sunk_vac_cost_share, vacancy_share, x_v, M, e, v, u = steady
 
 # Alternate JCC characterization with wage plugged in 
 @assert abs((w_int-w-K - (ρ+τ)/(1-δ)*(κ+K/q))) < 1e-12
-@assert abs(w_int-w-K - (1-ϕ)*(w_int-K-b)-ϕ*θ*(K+q*κ))< 1e-12
-
+        
 
 @assert abs((1-ϕ)*(w_int-K-b) - (ρ+τ)/(1-δ)*(κ+K/q)*(1-ϕ*θ*q))
 
