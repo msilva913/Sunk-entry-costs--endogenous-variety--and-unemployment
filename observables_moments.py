@@ -1,101 +1,98 @@
 
 import numpy as np
-import scipy
 import pandas as pd
+import scipy
+from scipy.io import savemat
 import statsmodels.api as sm
-#import statsmodels.api as sm
 from fredapi import Fred
-import pickle
-fred = Fred(api_key = 'd35aabd7dc07cd94481af3d1e2f0ecf3	')
-#from statsmodels.tsa.arima_model import ARMA
+
+# Set display precision for pandas and numpy
 pd.set_option('display.precision', 3)
 np.set_printoptions(precision=3)
-from scipy.io import savemat
-#pd.options.display.float_format = '{:5,.4g}'.format
 
-from time_series_functions import (moments, filter_transform, stacked_moments)
-from formatting_functions import (create_stats_table, generate_stacked_moments_table, 
-                                  generate_stacked_moments_latex_table)
+# Custom function imports
+from time_series_functions import (
+    moments,
+    filter_transform,
+    stacked_moments
+)
+from formatting_functions import (
+    create_stats_table,
+    generate_stacked_moments_table,
+    generate_stacked_moments_latex_table
+)
 
 import matplotlib.dates as mdates
+
+# FRED API key
+fred = Fred(api_key='d35aabd7dc07cd94481af3d1e2f0ecf3')
+
+# Set up date formatting for plots (if needed)
 years = mdates.YearLocator(5, month=1)
 years_fmt = mdates.DateFormatter('%Y')
-#from statsmodels.tsa.x13 import x13_arima_analysis
-#https://www.census.gov/srd/www/x13as/ (binaries necessary to do seasonal decomposition)
-#import statsmodels
-#arima =  statsmodels.tsa.x13.x13_arima_analysis
 
-" Load raw data "
+# === 1. Load and Prepare Raw Data ===
 lab = ['c', 'u', 'v', 'theta', 'jf', 'lp', 'ls', 's', 'delta', 'w', 'bf', 'ba']
-init= '1951-01-01'
-#final = '2024-10-30'
-final='2020-01-01' # Just before pandemic shock
-" Raw data series created by file observables.py "
+init = '1951-01-01'
+final = '2020-01-01'  # Just before pandemic shock
+
+# Raw data series created by file observables.py
 dat = pd.read_pickle("raw_data.pkl")
 
-" Moments are based on HP-filtered business cycle detrended data "
-
-cycle_hp = pd.concat([filter_transform(dat[x], init=init, final=final, transform_type='log',
-                                    filter_type="hp_filter", lamb=100_000) for x in lab], axis=1)
+# === 2. Apply HP Filter for Business Cycle Detrending ===
+cycle_hp = pd.concat([
+    filter_transform(dat[x], init=init, final=final, transform_type='log',
+                     filter_type="hp_filter", lamb=100_000)
+    for x in lab
+], axis=1)
 cycle_hp.columns = lab
 
-"""
-cycle_ham = pd.concat([filter_transform(dat[x], init=init, final=final, transform_type='log',
-                                    filter_type="hamilton") for x in lab], axis=1)
-cycle_ham.columns = lab
+# Optionally, use Hamilton filter instead (commented out)
+# cycle_ham = pd.concat([
+#     filter_transform(dat[x], init=init, final=final, transform_type='log',
+#                      filter_type="hamilton")
+#     for x in lab
+# ], axis=1)
+# cycle_ham.columns = lab
+# cycle = cycle_ham
 
-#cycle_ham[["bf", "ba"]].corr()
-"""
-
-#cycle = cycle_ham
 cycle = cycle_hp
 
-" Series to target "
-"""
-1) Unemployment
-2) Vacancies
-3) Job separation
-4) Job finding rate
-5) Business destruction rate
-6) Business creation rate
-7) Labor productivity
-"""
-mom_list = ["u", "v", "s", "jf", "delta", "bf", "lp" ]
+# === 3. Compute Target Moments ===
+mom_list = ["u", "v", "s", "jf", "delta", "bf", "lp"]
+
+# Compute moments (relative std to 'lp', label unemployment and productivity)
 mom = moments(cycle[mom_list], relative_std="lp", lab=["u", "lp"])
 mom_stacked = stacked_moments(cycle, mom_list)
-" Summarize moments in one column "
-
 mom_stacked.columns = ["Values"]
+
+# Summarize and print moments
 mom_tex = create_stats_table(mom)
 print(mom_tex)
-# Export to mat file 
-mom_stacked_dic = mom_stacked.to_dict('list')
+
+# Export empirical moments to .mat file
 savemat('moments_empirical.mat', mom_stacked.to_dict('list'))
 
+# Generate and print LaTeX and text tables for stacked moments
 tab_tex = generate_stacked_moments_latex_table(mom_stacked)
 tab = generate_stacked_moments_table(mom_stacked)
 print(tab)
 
-
-" Compare moments to model "
-mom_model = scipy.io.loadmat("model_moments.mat")
-mom_model = mom_model["model_moments"]
-mom_model = mom_model.flatten()
-
+# === 4. Compare Empirical Moments to Model Moments ===
+mom_model = scipy.io.loadmat("model_moments.mat")["model_moments"].flatten()
 mom_stacked["Model_moments"] = mom_model
 df = mom_stacked
-# Filter DataFrame
+
+# Filter DataFrame for different types of moments
 std_devs = df[df.index.str.startswith('std')]
 correlations = df[df.index.str.startswith('Cor') & ~df.index.str.contains('theta')]
 autocorrelations = df[df.index.str.contains('_{-1}')]
 
-# Generate LaTeX code
+# === 5. Generate LaTeX Table Comparing Data and Model Moments ===
 def generate_latex_subtables(df):
-    # Filter DataFrame
     std_devs_autocorr = df[df.index.str.startswith('std') | df.index.str.contains('_{-1}')]
     correlations = df[df.index.str.startswith('Cor') & ~df.index.str.contains('theta') & ~df.index.str.contains('_{-1}')]
 
-    # Generate LaTeX code
     latex_code = r"""
 \begin{table}[h]
 \centering
@@ -135,35 +132,23 @@ def generate_latex_subtables(df):
 """
     return latex_code
 
-# Call the function and print the LaTeX code
 latex_table_code = generate_latex_subtables(df)
 print(latex_table_code)
 
+# === 6. (Optional) Extended Moments with Delta ===
+# Uncomment if you want to include delta in the moments
+# mom_ext_delta = mom_list + ["delta"]
+# mom_stacked_delta = stacked_moments(cycle, mom_ext_delta)
+# mom_stacked_delta.columns = ["Values"]
+# tab_tex_delta = generate_stacked_moments_latex_table(mom_stacked_delta)
+# tab_delta = generate_stacked_moments_table(mom_stacked_delta)
+# print(tab_delta)
 
-
-
-
-
-
-
-
-"""
-mom_ext_delta = mom_list + ["delta"]
-mom_stacked_delta = stacked_moments(cycle, mom_ext_delta)
-mom_stacked_delta.columns = ["Values"]
-tab_tex_delta = generate_stacked_moments_latex_table(mom_stacked_delta)
-tab_delta = generate_stacked_moments_table(mom_stacked_delta)
-print(tab_delta)
-"""
-
-#savemat('moments_bf_empirical.mat', mom_stacked_bf.to_dict('list'))
+# === 7. (Optional) Save additional observables for estimation ===
+# Uncomment and modify as needed
 # if save_observables:
-#     " Save relevant objects "
-#     #save_object(cycle, 'cycle')
-#     " Save output for estimation using growth filter"
 #     lab_obs = [x +'_obs' for x in lab]
 #     dic_data = dict(zip(lab_obs, [np.asarray(cycle_growth[x]) for x in cycle_growth.columns]))
-#     sio.savemat('observables.mat', dic_data)
-
+#     savemat('observables.mat', dic_data)
 
 
