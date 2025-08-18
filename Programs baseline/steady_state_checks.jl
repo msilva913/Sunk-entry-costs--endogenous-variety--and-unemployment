@@ -97,6 +97,10 @@ surplus_ratio = (ρ+τ)/(1-δ)*(1/(q*x_v))
 @show X/(q*v*w)
 @show x_v
 
+# Profits
+@show ((w_int-w)*L-X)/Y
+@show (N*d_f)/Y
+
 # Value of unemployment benefit
 @show b/w_int
 @show b/(Y/L)

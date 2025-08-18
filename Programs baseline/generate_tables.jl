@@ -13,7 +13,7 @@ using MAT
 
 function calibration_table(cal, targets)
     @unpack f_e, τ, δ, z, b, ϕ, ρ, σ, ε, A, η_L, ξ_inv, A, F, x_m, κ, s = cal
-    @unpack labor_share, dest_ann, f, η_L, q, sep, b_ratio, x_v, ξ_inv, ε, r_ann, σ, N, w = targets
+    @unpack X_Y, dest_ann, f, η_L, q, sep, b_ratio, x_v, ξ_inv, ε, r_ann, σ, N, w = targets
 
     #ρ = (1+r_ann)^(1/12)-1
     β = 1/(1+ρ)
@@ -69,7 +69,7 @@ targets = (labor_share=0.66,
             σ=posterior_mode["sigma"], # log utility
             N=1, w=1.0)
 """
-targets = (labor_share=0.66, # influences ϕ
+targets = (X_Y = 0.015, # vacancy share target,  influences ϕ
            dest_ann=0.0754, #21% of job destruction from obsolescence 
            f =0.41, # fixed, turnover means
            η_L=0.6, # based on time-series regressions
@@ -100,6 +100,10 @@ df_table = String(take!(output))
 print(df_table)
 
 function shares_table(ss::NamedTuple)
+    # Define additional variables 
+    @unpack w_int, w, L, X, Y, N, d_f = ss
+    recruiter_profit_share = ((w_int-w)*L-X)/Y
+    retailer_profit_share =  (N*d_f)/Y
     df = DataFrame(
         Share = [
             "Annual interest rate",
@@ -111,17 +115,22 @@ function shares_table(ss::NamedTuple)
             "Recruiting cost share",
             "Business formation share",
             "Sunk vacancy cost share",
+            " Vacancy cost share ",
             "New vacancy share",
-            "Search wedge",
-            "Market power wedge",
+            #"Search wedge",
+            #"Market power wedge",
+            "Labor share",
+            "Recruiter profit share",
+            "Retailer profit share",
             "Value of a vacancy",
             "Value of a filled job",
             "Stock market cap to GDP"
         ],
-        Symbol = [L"(1+ρ)^12-1", L"\mu", L"C/Y", L"v", L"u", L"\theta", L"X/Y", L"\nu N_e/Y", L"X_v/Y", L"e/v", L"w/w^R", L"w^RL/Y", 
-        L"Q", L"J", L"M/(12*Y)"],
+        Symbol = [L"(1+ρ)^12-1", L"\mu", L"C/Y", L"v", L"u", L"\theta", L"X/Y", L"\nu N_e/Y", L"X_v/Y", L"X/Y", L"e/v", 
+        L"wL/Y", L"(w^{int}-w)*L-X)/Y", L"N*d_f/Y",  L"Q", L"J", L"M/(12*Y)"],
         Value = round.([ss.ann_int_rate, ss.μ, ss.cons_share, ss.v, ss.u, ss.θ, ss.vacancy_share, ss.inv_new_firm_share, 
-        ss.sunk_vac_cost_share, ss.entrant_share, ss.search_wedge, ss.recruiter_share, ss.Q, ss.J, ss.M/(12*ss.Y)], sigdigits=3),
+        ss.sunk_vac_cost_share, ss.vacancy_share, ss.entrant_share, ss.labor_share, recruiter_profit_share, retailer_profit_share,
+        ss.Q, ss.J, ss.M/(12*ss.Y)], sigdigits=3),
 
     )
     return df
