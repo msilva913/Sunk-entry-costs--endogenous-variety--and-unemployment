@@ -148,3 +148,48 @@ def generate_stacked_moments_table(summ):
     
     # Use tabulate to format the table
     return tabulate(data, headers=headers, tablefmt="plain")
+
+
+def generate_latex_subtables(df):
+    " Generate high-quality table comparing model and empirical moments "
+    std_devs_autocorr = df[df.index.str.startswith('std') | df.index.str.contains('_{-1}')]
+    correlations = df[df.index.str.startswith('Cor') & ~df.index.str.contains('theta') & ~df.index.str.contains('_{-1}')]
+
+    latex_code = r"""
+\begin{table}[h]
+\centering
+\caption{Model Moments}
+\begin{minipage}{0.45\linewidth}
+\centering
+\subcaption{Standard Deviations and Autocorrelations}
+\begin{tabular}{lcc}
+\hline
+\textbf{Moment} & \textbf{Data Value} & \textbf{Model Value} \\
+\hline
+"""
+    for idx, row in std_devs_autocorr.iterrows():
+        latex_code += f"{idx} & {row['Values']:.3f} & {row['Model_moments']:.3f} \\\\\n"
+
+    latex_code += r"""
+\hline
+\end{tabular}
+\end{minipage}%
+\hfill
+\begin{minipage}{0.45\linewidth}
+\centering
+\subcaption{Contemporaneous Correlations}
+\begin{tabular}{lcc}
+\hline
+\textbf{Moment} & \textbf{Data Value} & \textbf{Model Value} \\
+\hline
+"""
+    for idx, row in correlations.iterrows():
+        latex_code += f"{idx} & {row['Values']:.3f} & {row['Model_moments']:.3f} \\\\\n"
+
+    latex_code += r"""
+\hline
+\end{tabular}
+\end{minipage}
+\end{table}
+"""
+    return latex_code
