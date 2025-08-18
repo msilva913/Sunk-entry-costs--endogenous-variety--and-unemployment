@@ -187,7 +187,7 @@ function steady_state(para; init=0.51)
     return out
 end
 
-targets = (labor_share=0.66, dest_ann=0.0754, f =0.41, η_L=0.6, q=0.8, sep=0.031, b_ratio=0.71, x_v=1.0, 
+targets = (X_Y=0.015, dest_ann=0.0754, f =0.41, η_L=0.6, q=0.8, sep=0.031, b_ratio=0.71, x_v=1.0, 
         ξ_inv=1, r_ann=0.04, ε=4.3, σ=1.0, N=1.0, w=1.0)
 
 
@@ -197,7 +197,7 @@ Targets of N and w reflect choice of units.
 N is associated with f_e, and w is associated with z. Normalizing N=1 also implies p=1
 """
 function calibrate_shares(targets)
-    @unpack labor_share, dest_ann, f, η_L, q, sep, b_ratio, x_v, ξ_inv, ε, r_ann, σ, N, w = targets
+    @unpack X_Y, dest_ann, f, η_L, q, sep, b_ratio, x_v, ξ_inv, ε, r_ann, σ, N, w = targets
     # \nu_f N_e/Y = δ/(ε*(ρ+δ)+δ)
     δ = 1-(1-dest_ann)^(1/12)
     τ = sep
@@ -222,7 +222,7 @@ function calibrate_shares(targets)
     b = b_ratio*w
 
     # Use labor share and normalization to back out Y 
-    Y = w*L/labor_share
+    #Y = w*L/labor_share
     surplus_ratio = (ρ+τ)/(1-δ)*(1/(q*x_v))
     p = N^(1/(ε-1))
     μ = ε/(ε-1) # gross markup 
@@ -230,42 +230,42 @@ function calibrate_shares(targets)
     recruiter_share = (δ+(ρ+δ)*(ε-1))/(δ+(ρ+δ)*ε) # w_R*L/Y^{Gross} similar to BGM
     L_c = (ρ+δ)*L/(δ*μ+ρ)
     L_e = δ*(μ-1)*L/(δ*μ+ρ)
-    
-    function vacancy_loss(X_Y)
-        X_Y = sqrt(X_Y^2)
-        # Use labor_share = (1+X/Y)*(w/w_int)*recruiter_share
-        w_wint = labor_share/(recruiter_share*(1+X_Y))
-        w_int = w/(w_wint)
-        #w_int = p*z/μ
-        z = (μ/p)*w_int
-        # Consumption output
-        Y_c = p*z*L_c
-        #@assert L_c + L_e ≈ L
-        # Aggregate output
-        #Y = Y_c*(δ+(ρ+δ)*(ε))/((ρ+δ)*ε)
-        #X_v = F*x_m/(1+ξ_inv)*(e/F)^(1+ξ_inv)
-        # surplus_ratio = (w_R - w - K)/K 
-        K = (w_int-w)/(1+surplus_ratio)
 
-        # Find κ given K 
+
+    function loss(Q)
+        Q = sqrt(Q^2)
+        K = Q*(ρ+δ)/(1+ρ) 
         κ = (1-x_v)/x_v*K/q
-
-        Q = K*(1+ρ)/(ρ+δ) 
+        # Recruiting costs
         X = e/(1+ξ_inv)*Q + κ*q*v
-        out = (w_int=w_int, κ=κ, z=z, K=K, Q=Q, X=X)
-        return X/Y - X_Y, out
+        # w_int, ϕ, z
+        w_int = surplus_ratio*K + w + K
+        ϕ = (w-b)/(w_int-K+θ*(K+q*κ)-b)
+        z = (μ/p)*w_int
+
+        # Firm value and entry cost
+        f_e = (μ-1)*z*(L/N)*(1-δ)/(δ*μ+ρ)
+        ν_f = p*f_e/μ
+
+        # GDP 
+        Y_c = p*z*L_c 
+        C = Y_c - X 
+        Y_new = C + ν_f*N_e
+        Y = 1/(X_Y)*X
+
+        out = (w_int=w_int, κ=κ, z=z, f_e=f_e, K=K, X=X, Y=Y)
+        return (Y-Y_new)/(Y+Y_new), out
     end
 
-    X_Y = fzero(x -> vacancy_loss(x)[1], 0.015)
-    out = vacancy_loss(X_Y)[2]
-    @unpack w_int, κ, z, K, Q, X = out
+    Q = fzero(x -> loss(x)[1], 1.0)
+    out = loss(Q)[2]
+
+    @unpack w_int, κ, z, f_e, K, X, Y = out
     X_Y = sqrt(X_Y^2) # ensure positivity
     
     # From wage equation find ϕ
     ϕ = (w-b)/(w_int-K+θ*(K+q*κ)-b)
-    # Sectoral labor  
-    f_e = (μ-1)*z*(L/N)*(1-δ)/(δ*μ+ρ)
-    ν_f = p*f_e/μ
+   
 
     # set x_m so as to let F=1
     x_m = Q/e^ξ_inv
@@ -274,10 +274,6 @@ function calibrate_shares(targets)
 
     return cal
 end
-
-
-
-
 
 
 """
