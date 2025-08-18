@@ -250,7 +250,7 @@ function calibrate_shares(targets)
         # GDP 
         Y_c = p*z*L_c 
         C = Y_c - X 
-        Y_new = C + ν_f*N_e
+        Y_new = C + ν_f*N_e # Updated output based on Q guess
         Y = 1/(X_Y)*X
 
         out = (w_int=w_int, κ=κ, z=z, f_e=f_e, K=K, X=X, Y=Y)
