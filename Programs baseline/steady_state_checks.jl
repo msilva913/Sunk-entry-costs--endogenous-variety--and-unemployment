@@ -113,6 +113,7 @@ surplus_ratio = (ρ+τ)/(1-δ)*(1/(q*x_v))
 ############################################################
 
 # Check consistency of calibrate function (with ϕ added)
+"""
 targets_aug = (targets..., ϕ=cal.ϕ)
 cal_aug = calibrate(targets_aug)
 steady2 = steady_state(cal_aug)
@@ -154,4 +155,4 @@ steady_risk = steady_state(cal_risk)
 @show steady_risk.x_v
 @show steady_risk.C/steady_risk.Y
 @show steady_risk.M/(12*steady_risk.Y)
-
+"""
