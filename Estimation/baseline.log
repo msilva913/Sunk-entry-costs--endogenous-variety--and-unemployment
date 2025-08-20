@@ -1,5 +1,0 @@
-Starting Dynare (version 6.2).
-Calling Dynare with arguments: none
-Starting preprocessing of the model file ... 
-ERROR: baseline.mod: line 173, cols 39-49: Unknown symbol: theta_delta 
-Preprocessing time: 0h00m00s.
