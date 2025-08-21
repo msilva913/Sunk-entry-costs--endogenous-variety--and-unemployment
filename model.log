@@ -1,0 +1,266 @@
+Starting Dynare (version 4.4.3).
+Starting preprocessing of the model file ...
+Substitution of endo lags >= 2: added 20 auxiliary variables and equations.
+Found 63 equation(s).
+Evaluating expressions...done
+Computing static model derivatives:
+ - order 1
+Computing dynamic model derivatives:
+ - order 1
+Processing outputs ...done
+Preprocessing completed.
+Starting MATLAB/Octave computing.
+
+
+
+
+Residuals of the static equations:
+
+Equation number 1 : 0 : Market tightness
+Equation number 2 : 0 : Job finding probability
+Equation number 3 : 0 : Vacancy filling probability
+Equation number 4 : 0 : Relative price
+Equation number 5 : 0 : Lagrangian multiplier
+Equation number 6 : 0 : Firm value relative to price
+Equation number 7 : 0 : Firm value
+Equation number 8 : 0 : Business entrants
+Equation number 9 : 0 : Job creation condition
+Equation number 10 : 0 : Expected discounted difference in vacancy value
+Equation number 11 : 0 : Value of a vacancy
+Equation number 12 : 0 : Marginal revenue product
+Equation number 13 : 0 : Wage equation
+Equation number 14 : 0 : LOM of firms
+Equation number 15 : 0 : LOM of unemployment
+Equation number 16 : 0 : LOM of vacancies
+Equation number 17 : 0 : Aggregate labor
+Equation number 18 : 0 : Composition of labor
+Equation number 19 : 0 : Retail output: resources
+Equation number 20 : 0 : Sunk vacancy posting costs
+Equation number 21 : 0 : Retail output: expenditure
+Equation number 22 : 0 : Output: expenditure
+Equation number 23 : 0 : Output: income
+Equation number 24 : 0 : Labor share
+Equation number 25 : 0 : Labor productivity (data consistent)
+Equation number 26 : 0 : Aggregate separation rate
+Equation number 27 : 0 : Labor productivity process
+Equation number 28 : 0 : Separation rate process
+Equation number 29 : 0 : Product line destruction process
+Equation number 30 : 0 : Unemployment observation
+Equation number 31 : 0 : Vacancy observation
+Equation number 32 : 0 : Tightness observation
+Equation number 33 : 0 : Labor productivity observation
+Equation number 34 : 0 : Job separation observation
+Equation number 35 : 0 : Business destruction observation
+Equation number 36 : 0 : Business formation observation
+Equation number 37 : 0 : Lag unemployment observation
+Equation number 38 : 0 : Lag vacancy observation
+Equation number 39 : 0 : Lag tightness observation
+Equation number 40 : 0 : Lag labor productivity observation
+Equation number 41 : 0 : Lag job separation observation
+Equation number 42 : 0 : Lag business destruction observation
+Equation number 43 : 0 : Lag business formation observation
+
+
+
+STEADY-STATE RESULTS:
+
+theta             		 0.5125
+f                 		 0.413616
+q                 		 0.807055
+p                 		 1
+lam               		 0.790417
+nu_f              		 22.9515
+d_f               		 0.278364
+N_e               		 0.0088187
+K                 		 0.198711
+Q                 		 16.5827
+e                 		 0.00844205
+w_R               		 1.21574
+w                 		 1
+N                 		 1
+u                 		 0.0702948
+v                 		 0.0360261
+L                 		 0.929705
+L_e               		 0.166485
+L_c               		 0.763221
+Omega             		 0.0293264
+C                 		 1.16976
+Y_c               		 1.20624
+Y                 		 1.40864
+ls                		 0.66
+lp                		 1.51515
+s_agg             		 0.031
+log_z             		 0.457718
+log_s             		 -3.79626
+log_delta         		 -4.73966
+u_obs             		 -2.65506
+v_obs             		 -3.32351
+theta_obs         		 -0.668455
+lp_obs            		 0.415515
+tau_obs           		 -2.37516
+delta_obs         		 -3.64105
+bf_obs            		 -3.63227
+u_obs_lag         		 -2.65506
+v_obs_lag         		 -3.32351
+theta_obs_lag     		 -0.668455
+lp_obs_lag        		 0.415515
+tau_obs_lag       		 -2.37516
+delta_obs_lag     		 -3.64105
+bf_obs_lag        		 -3.63227
+
+EIGENVALUES:
+         Modulus             Real        Imaginary
+
+               0               -0                0
+               0               -0                0
+               0               -0                0
+               0               -0                0
+               0               -0                0
+               0               -0                0
+               0               -0                0
+               0               -0                0
+               0               -0                0
+               0               -0                0
+               0               -0                0
+               0               -0                0
+               0               -0                0
+               0               -0                0
+               0               -0                0
+               0               -0                0
+               0               -0                0
+               0               -0                0
+               0               -0                0
+               0                0                0
+               0                0                0
+               0                0                0
+               0                0                0
+               0                0                0
+               0                0                0
+               0                0                0
+               0                0                0
+               0                0                0
+       1.211e-18        1.211e-18                0
+       6.244e-17       -6.244e-17                0
+       1.398e-16       -1.398e-16                0
+       1.749e-16       -1.749e-16                0
+          0.4029           0.4029                0
+            0.78             0.78                0
+           0.935            0.935                0
+           0.963            0.963                0
+          0.9758           0.9758                0
+           0.987            0.987                0
+           1.022            1.022                0
+           1.023            1.023                0
+           2.567            2.567                0
+       7.096e+15       -7.096e+15                0
+       1.881e+16       -1.881e+16                0
+       2.744e+16       -2.744e+16                0
+        6.96e+16         6.96e+16                0
+       2.423e+17        2.423e+17                0
+
+
+There are 8 eigenvalue(s) larger than 1 in modulus 
+for 8 forward-looking variable(s)
+
+The rank condition is verified.
+
+
+You did not declare endogenous variables after the estimation/calib_smoother command.
+
+
+Loading 10 observations from dummy_data.mat
+
+Initial value of the log posterior (or likelihood): 1.4324
+
+RESULTS FROM POSTERIOR ESTIMATION
+parameters
+          prior mean     mode    s.d. prior pstdev
+
+sigma         1.500   1.0239  0.2852 gamm  0.5000 
+b_ratio       0.700   0.8863  0.0184 beta  0.1000 
+xi_inv        2.000   0.0336  0.0192 gamm  2.0000 
+x_v           0.500   0.0044  0.0018 beta  0.2000 
+epsi          4.200   7.9061  1.0122 gamm  1.5000 
+rho_z         0.800   0.9189  0.0173 beta  0.1000 
+rho_s         0.600   0.8974  0.0294 beta  0.2000 
+rho_delta     0.900   0.8980  0.0509 beta  0.0500 
+sigma_z       0.010   0.0030  0.0004 invg  0.0100 
+sigma_s       0.060   0.0418  0.0079 invg  0.0600 
+sigma_delta   0.020   0.0125  0.0050 invg  0.0200 
+
+
+Log data density [Laplace approximation] is -35.650592.
+
+Estimation::mcmc: Multiple chains mode.
+Estimation::mcmc: Old mh-files successfully erased!
+Estimation::mcmc: Old metropolis.log file successfully erased!
+Estimation::mcmc: Creation of a new metropolis.log file.
+Estimation::mcmc: Searching for initial values...
+Estimation::mcmc: Initial values found!
+
+Estimation::mcmc: Write details about the MCMC... Ok!
+Estimation::mcmc: Details about the MCMC are available in model/metropolis\model_mh_history_0.mat
+
+
+Estimation::mcmc: Number of mh files: 11 per block.
+Estimation::mcmc: Total number of generated files: 110.
+Estimation::mcmc: Total number of iterations: 100000.
+Estimation::mcmc: Current acceptance ratio per chain: 
+                                                       Chain  1: 29.5817%
+                                                       Chain  2: 28.7287%
+                                                       Chain  3: 29.8077%
+                                                       Chain  4: 29.0217%
+                                                       Chain  5: 29.1087%
+                                                       Chain  6: 30.1787%
+                                                       Chain  7: 30.6427%
+                                                       Chain  8: 30.6537%
+                                                       Chain  9: 28.8287%
+                                                       Chain 10: 30.5057%
+Estimation::mcmc::diagnostics: Univariate convergence diagnostic, Brooks and Gelman (1998):
+    Parameter 1...  Done! 
+    Parameter 2...  Done! 
+    Parameter 3...  Done! 
+    Parameter 4...  Done! 
+    Parameter 5...  Done! 
+    Parameter 6...  Done! 
+    Parameter 7...  Done! 
+    Parameter 8...  Done! 
+    Parameter 9...  Done! 
+    Parameter 10...  Done! 
+    Parameter 11...  Done! 
+
+Estimation::mcmc: Total number of MH draws: 100000.
+Estimation::mcmc: Total number of generated MH files: 11.
+Estimation::mcmc: I'll use mh-files 6 to 11.
+Estimation::mcmc: In MH-file number 6 I'll start at line 1920.
+Estimation::mcmc: Finally I keep 50000 draws.
+
+Estimation::marginal density: I'm computing the posterior mean and covariance...  Done!
+Estimation::marginal density: I'm computing the posterior log marginal density (modified harmonic mean)... Done!
+
+
+ESTIMATION RESULTS
+
+Log data density is -35.113717.
+posterior_moments: There are not enough draws computes to compute HPD Intervals. Skipping their computation.
+posterior_moments: There are not enough draws computes to compute deciles. Skipping their computation.
+
+parameters
+              prior mean   post. mean        95% HPD interval    prior       pstdev
+
+sigma              1.500       0.9942      0.4411      1.5983   gamma       0.5000
+b_ratio            0.700       0.8806      0.8431      0.9155   beta        0.1000
+xi_inv             2.000       0.0438      0.0093      0.0989   gamma       2.0000
+x_v                0.500       0.0055      0.0003      0.0124   beta        0.2000
+epsi               4.200       7.8079      5.8720      9.8637   gamma       1.5000
+rho_z              0.800       0.9249      0.8888      0.9579   beta        0.1000
+rho_s              0.600       0.8943      0.8372      0.9480   beta        0.2000
+rho_delta          0.900       0.8687      0.7689      0.9563   beta        0.0500
+sigma_z            0.010       0.0030      0.0021      0.0040   invg        0.0100
+sigma_s            0.060       0.0464      0.0302      0.0632   invg        0.0600
+sigma_delta        0.020       0.0125      0.0059      0.0215   invg        0.0200
+ 
+Correlations of Parameters (at Posterior Mode) > 0.7
+    {'sigma_z'}    {'rho_z'}    {[-0.7207]}
+
+Total computing time : 3h19m31s

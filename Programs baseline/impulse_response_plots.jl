@@ -1,0 +1,338 @@
+using Plots, LaTeXStrings, DataFrames, PGFPlotsX
+#gr()
+pgfplotsx() # enables self-contained latex rendering
+import Plots:default
+default(linewidth=2, grid=true, fontfamily="Helvetica")
+
+function gen_irf(irf_df::DataFrame)
+    # 3x3 plot layout
+    p = Plots.plot(
+        layout=(3, 3), 
+        size=(1100, 700), 
+        legend=:topright,
+        fmt=:png
+    )
+
+    # Display active shock
+    shock_labels = ["z", "δ", "s"]
+    for (i, x) in enumerate([irf_df.z, irf_df.δ, irf_df.s])
+        if abs(x[2]) > 1e-7 # select of initial impulse exceeds threshold
+        plot!(p[1], 
+        x,
+        label=shock_labels[i],
+        title="Exogenous shock",
+        alpha=0.6,
+        ylabel="%"
+    )
+        end 
+    end 
+    
+    # Top left plot: labor market variables
+    plot!(p[2], irf_df.u, label=L"u", subplot=1, legend=:right)
+    plot!(p[2], irf_df.v, label=L"v")
+    plot!(p[2], irf_df.θ, label="θ")
+    plot!(p[2], irf_df.e, label=L"e")
+    # Format y-axis as percentage
+    yticks!(p[2], :auto, fmt=x->string(round(x*100,digits=1),"%"))
+
+    # Top middle plot: product line variables
+    plot!(p[3], irf_df.N_e, label=L"N_e")
+    plot!(p[3], irf_df.N, label=L"N")
+    yticks!(p[3], :auto, fmt=x->string(round(x*100,digits=1),"%"))
+    
+    # Top right plot: vacancy value variables
+    plot!(p[4], irf_df.Q, label=L"Q")
+    plot!(p[4], irf_df.K, label=L"K")
+    yticks!(p[4], :auto, fmt=x->string(round(x*100,digits=1),"%"))
+
+    # Bottom left plot: consumption and data-consistent counterpart
+    plot!(p[5], irf_df.C, label=L"C")
+    plot!(p[5], irf_df.C_R, label=L"C_R")
+    yticks!(p[5], :auto, fmt=x->string(round(x*100,digits=1),"%"))
+
+    # Bottom middle plot: output and data-consistent counterpart
+    plot!(p[6], irf_df.Y, label=L"Y")
+    plot!(p[6], irf_df.Y_R, label=L"Y_R")
+    yticks!(p[6], :auto, fmt=x->string(round(x*100,digits=1),"%"))
+
+    plot!(p[7], irf_df.w, label=L"w")
+    plot!(p[7], irf_df.w_R, label=L"w_{R}")
+    plot!(p[7], irf_df.ls, label="labor share")
+    yticks!(p[7], :auto, fmt=x->string(round(x*100,digits=1),"%"))
+
+    plot!(p[8], irf_df.d_f, label=L"d_f")
+    plot!(p[8], irf_df.Y_c, label=L"Y_c")
+    yticks!(p[8], :auto, fmt=x->string(round(x*100,digits=1),"%"))
+
+    # Bottom right plot
+    plot!(p[9], irf_df.z, label=L"z")
+    plot!(p[9], irf_df.labor_prod, label="labor productivity")
+    plot!(p[9], irf_df.δ, label="δ")
+    #plot!(p[8], irf_df.Y, label=L"Y")
+    plot!(p[9], irf_df.w_int, label=L"w_{int}")
+    yticks!(p[9], :auto, fmt=x->string(round(x*100,digits=1),"%"))
+    
+    # Display the plot
+    display(p)
+    png("clipboard")
+end
+
+function gen_irf_comp(irf_bas::DataFrame, irf_alt::DataFrame, labels)
+    # Create a 3x2 subplot layout
+    p = Plots.plot(
+        layout=(3, 3), 
+        size=(1100, 700), 
+        legend=:topright,
+        fmt=:png
+    )
+
+    shock_labels = ["z", "δ", "s"]
+    for (i, x) in enumerate([irf_bas.z, irf_bas.δ, irf_bas.s])
+        if abs(x[2]) > 1e-7
+        plot!(p[1], 
+        x,
+        label=shock_labels[i],
+        title="Exogenous shock",
+        alpha=0.6,
+        ylabel="%"
+    )
+        end 
+    end 
+
+    # Plot for u
+    plot!(p[2], 
+        [irf_bas.u irf_alt.u],
+        label=[labels[1] labels[2]],
+        alpha=0.6,
+        title=L"u",
+        ylabel="%"
+    )
+  
+    # Plot for v
+    plot!(p[3], 
+        [irf_bas.v irf_alt.v],
+        label=[labels[1] labels[2]],
+        alpha=0.6,
+        title=L"v",
+        ylabel="%"
+    )
+
+    # Plot for e
+    plot!(p[4], 
+        [irf_bas.e irf_alt.e],
+        label=[labels[1] labels[2]],
+        alpha=0.6,
+        title=L"e",
+        ylabel="%"
+    )
+
+    # Plot for N_e
+    plot!(p[5], 
+        [irf_bas.N_e irf_alt.N_e],
+        label=[labels[1] labels[2]],
+        alpha=0.6,
+        title=L"N_e",
+        ylabel="%"
+    )
+
+      # Plot for p
+      plot!(p[6], 
+      [irf_bas.p irf_alt.p],
+      label=[labels[1] labels[2]],
+      alpha=0.6,
+      title=L"p",
+      ylabel="%"
+  )
+
+    # Plot for C_R
+    plot!(p[7], 
+        [irf_bas.C_R irf_alt.C_R],
+        label=[labels[1] labels[2]],
+        alpha=0.6,
+        title=L"C_R",
+        ylabel="%"   
+    )
+
+    # Plot for Y_R
+    plot!(p[8], 
+        [irf_bas.Y_R irf_alt.Y_R],
+        label=[labels[1] labels[2]],
+        alpha=0.6,
+        title=L"Y_R",
+        ylabel="%"
+    )
+
+    plot!(p[9], 
+        [irf_bas.d_f irf_alt.d_f],
+        label=[labels[1] labels[2]],
+        alpha=0.6,
+        title=L"d_f",
+        ylabel="%"
+    )
+    
+    # Display the plot
+    display(p)
+    png("clipboard")
+end
+
+function gen_irf_BGM_comp(irf_bas::DataFrame, irf_alt::DataFrame, labels)
+    # Create a 3x2 subplot layout
+    p = Plots.plot(
+        layout=(3, 3), 
+        size=(1100, 700), 
+        legend=:topright,
+        fmt=:png
+    )
+
+    shock_labels = ["z", "δ"]
+    for (i, x) in enumerate([irf_bas.z, irf_bas.δ])
+        if abs(x[2]) > 1e-7
+        plot!(p[1], 
+        x,
+        label=shock_labels[i],
+        title="Exogenous shock",
+        alpha=0.6,
+        ylabel="%"
+    )
+        end 
+    end 
+
+    # Plot for L
+    plot!(p[2], 
+        [irf_bas.L irf_alt.L],
+        label=[labels[1] labels[2]],
+        alpha=0.6,
+        title=L"L",
+        ylabel="%"
+    )
+  
+    # Plot for L_c
+    plot!(p[3], 
+        [irf_bas.L_c irf_alt.L_c],
+        label=[labels[1] labels[2]],
+        alpha=0.6,
+        title=L"L_c",
+        ylabel="%"
+    )
+
+    # Plot for L_e
+    plot!(p[4], 
+        [irf_bas.e irf_alt.e],
+        label=[labels[1] labels[2]],
+        alpha=0.6,
+        title=L"L_e",
+        ylabel="%"
+    )
+
+    # Plot for N_e
+    plot!(p[5], 
+        [irf_bas.N_e irf_alt.N_e],
+        label=[labels[1] labels[2]],
+        alpha=0.6,
+        title=L"N_e",
+        ylabel="%"
+    )
+
+      # Plot for p
+      plot!(p[6], 
+      [irf_bas.p irf_alt.p],
+      label=[labels[1] labels[2]],
+      alpha=0.6,
+      title=L"p",
+      ylabel="%"
+  )
+
+    # Plot for C_R
+    plot!(p[7], 
+        [irf_bas.C_R irf_alt.C_R],
+        label=[labels[1] labels[2]],
+        alpha=0.6,
+        title=L"C_R",
+        ylabel="%"   
+    )
+
+    # Plot for Y_R
+    plot!(p[8], 
+        [irf_bas.Y_R irf_alt.Y_R],
+        label=[labels[1] labels[2]],
+        alpha=0.6,
+        title=L"Y_R",
+        ylabel="%"
+    )
+
+    plot!(p[9], 
+        [irf_bas.w_R irf_alt.w_R],
+        label=[labels[1] labels[2]],
+        alpha=0.6,
+        title=L"w_R",
+        ylabel="%"
+    )
+    
+    # Display the plot
+    display(p)
+    png("clipboard")
+end
+
+function gen_irf_comp_simp(irf_bas::DataFrame, irf_alt::DataFrame, labels)
+    # Create a 1x3 subplot layout
+    p = Plots.plot(
+        layout=(2, 3), 
+        size=(1000, 500), 
+        legend=:topright,
+        fmt=:png
+    )
+
+    # Plot for u
+    plot!(p[1], 
+        [irf_bas.u irf_alt.u],
+        label=[labels[1] labels[2]],
+        alpha=0.6,
+        title=L"u",
+        ylabel="%"
+    )
+
+    # Plot for v
+    plot!(p[2], 
+        [irf_bas.v irf_alt.v],
+        label=[labels[1] labels[2]],
+        alpha=0.6,
+        title=L"v",
+        ylabel="%"
+    )
+
+    # Plot for e
+    plot!(p[3], 
+        [irf_bas.e irf_alt.e],
+        label=[labels[1] labels[2]],
+        alpha=0.6,
+        title=L"e",
+        ylabel="%"
+    )
+
+     plot!(p[4], 
+        [irf_bas.δ irf_alt.δ],
+        label=[labels[1] labels[2]],
+        alpha=0.6,
+        title="δ",
+        ylabel="%"
+    )
+
+    plot!(p[5], 
+        [irf_bas.C irf_alt.C],
+        label=[labels[1] labels[2]],
+        alpha=0.6,
+        title=L"C",
+        ylabel="%"
+    )
+
+        plot!(p[6], 
+        [irf_bas.Y irf_alt.Y],
+        label=[labels[1] labels[2]],
+        alpha=0.6,
+        title=L"Y",
+        ylabel="%"
+    )
+    # Display the plot
+    display(p)
+    png("clipboard")
+end

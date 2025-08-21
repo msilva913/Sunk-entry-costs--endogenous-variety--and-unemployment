@@ -1,0 +1,152 @@
+Starting Dynare (version 5.4).
+Calling Dynare with arguments: none
+Starting preprocessing of the model file ...
+WARNING: in the 'steady_state_model' block, variable 'u_imp' is not assigned a value
+WARNING: in the 'steady_state_model' block, variable 'e_imp' is not assigned a value
+Substitution of endo lags >= 2: added 2 auxiliary variables and equations.
+Found 23 equation(s).
+Evaluating expressions...done
+Computing static model derivatives (order 1).
+Computing dynamic model derivatives (order 1).
+Processing outputs ...
+done
+Preprocessing completed.
+
+
+
+
+
+Residuals of the static equations:
+
+Equation number 1 : 0 : Job creation condition
+Equation number 2 : 0 : Expected discounted difference in vacancy value
+Equation number 3 : 0 : Wage equation
+Equation number 4 : 0 : LOM of vacancies
+Equation number 5 : 0 : LOM of unemployment
+Equation number 6 : 0 : Market tightness
+Equation number 7 : 0 : Job finding probability
+Equation number 8 : -1.8771e-06 : Vacancy filling probability
+Equation number 9 : 0 : x_obs_m
+Equation number 10 : 0 : x_obs
+Equation number 11 : 0 : w_obs_m
+Equation number 12 : 0 : w_obs
+Equation number 13 : 0 : u_obs
+Equation number 14 : 0 : v_obs
+Equation number 15 : 0 : u_imp
+Equation number 16 : 0 : v_imp
+Equation number 17 : 0 : theta_imp
+Equation number 18 : 0 : e_imp
+Equation number 19 : 0 : Labor productivity process
+Equation number 20 : 0 : Discount factor process
+Equation number 21 : 0 : Bargaining power process
+
+
+
+STEADY-STATE RESULTS:
+
+K                 		 0.0540665
+w                 		 0.943422
+e                 		 0.00498491
+v                 		 0.0394206
+u                 		 0.0695943
+theta             		 0.566434
+f                 		 0.456894
+q                 		 0.806615
+theta_x           		 0
+theta_b           		 0
+theta_alphaL      		 0
+x_obs_m           		 0
+x_obs             		 0
+w_obs_m           		 0
+w_obs             		 0
+u_obs             		 0
+v_obs             		 0
+u_imp             		 0
+v_imp             		 0
+theta_imp         		 0
+e_imp             		 0
+
+EIGENVALUES:
+         Modulus             Real        Imaginary
+
+               0                0                0
+               0                0                0
+               0                0                0
+               0                0                0
+               0                0                0
+       8.243e-17        8.243e-17                0
+       1.102e-16       -1.102e-16                0
+           0.264            0.264                0
+           0.979            0.979                0
+           0.979            0.979                0
+           0.979            0.979                0
+          0.9834           0.9834                0
+           1.021            1.021                0
+           2.793            2.793                0
+       2.527e+16        2.527e+16                0
+       1.437e+19       -1.437e+19                0
+       6.981e+19       -6.981e+19                0
+
+
+There are 5 eigenvalue(s) larger than 1 in modulus 
+for 5 forward-looking variable(s)
+
+The rank condition is verified.
+
+
+MODEL SUMMARY
+
+  Number of variables:         23
+  Number of stochastic shocks: 3
+  Number of state variables:   12
+  Number of jumpers:           5
+  Number of static variables:  9
+
+
+MATRIX OF COVARIANCE OF EXOGENOUS SHOCKS
+Variables         e_x       e_b  e_alphaL
+e_x          0.000049  0.000000  0.000000
+e_b          0.000000  0.000000  0.000000
+e_alphaL     0.000000  0.000000  0.000000
+
+
+
+THEORETICAL MOMENTS
+VARIABLE          MEAN  STD. DEV.   VARIANCE
+theta_x         0.0000     0.0343     0.0012
+u_imp           0.0000    15.0562   226.6892
+v_imp           0.0000     7.7377    59.8716
+theta_imp       0.0000    22.7616   518.0900
+e_imp           0.0000     5.2801    27.8797
+
+
+
+VARIANCE DECOMPOSITION (in percent)
+                  e_x       e_b  e_alphaL
+theta_x        100.00      0.00      0.00
+u_imp          100.00      0.00      0.00
+v_imp          100.00      0.00      0.00
+theta_imp      100.00      0.00      0.00
+e_imp          100.00      0.00      0.00
+
+
+
+MATRIX OF CORRELATIONS
+Variables      theta_x      u_imp      v_imp  theta_imp      e_imp
+theta_x         1.0000    -0.6519     0.7326     0.6802     0.8966
+u_imp          -0.6519     1.0000    -0.9937    -0.9993    -0.2486
+v_imp           0.7326    -0.9937     1.0000     0.9972     0.3554
+theta_imp       0.6802    -0.9993     0.9972     1.0000     0.2852
+e_imp           0.8966    -0.2486     0.3554     0.2852     1.0000
+
+
+
+COEFFICIENTS OF AUTOCORRELATION
+Order             1       2       3       4       5
+theta_x      0.9790  0.9584  0.9383  0.9186  0.8993
+u_imp        0.9998  0.9993  0.9985  0.9973  0.9959
+v_imp        0.9996  0.9987  0.9975  0.9960  0.9942
+theta_imp    0.9998  0.9993  0.9984  0.9972  0.9957
+e_imp        0.9652  0.9313  0.8984  0.8664  0.8353
+Total computing time : 0h00m01s
+Note: 2 warning(s) encountered in the preprocessor
