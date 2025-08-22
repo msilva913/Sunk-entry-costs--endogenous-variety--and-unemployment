@@ -19,7 +19,7 @@ targets = (
 cal = calibrate_shares(targets)
 
 steady = steady_state(cal)
-@unpack θ, w, L, K, q, C, Y, X, entrant_share, vacancy_cost_share, e, M, profit_share, labor_share = steady
+@unpack θ, w, L, K, q, C, Y, X, entrant_share, vacancy_cost_share, e, u, v, M, profit_share, labor_share = steady
 @unpack δ, s, z, b, ϕ, ρ, A, η_L, ξ_inv, x_m, F = cal
 # Accuracy checks
 @assert abs(steady.f*(1-cal.δ) - targets.f) < 1e-12
@@ -33,6 +33,8 @@ steady = steady_state(cal)
 
 
 # Steady-state ratios
+@show u 
+@show v
 @show vacancy_cost_share
 @show entrant_share 
 @show profit_share 

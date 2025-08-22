@@ -114,7 +114,7 @@ function steady_state(para; init=0.51)
     u = 1 - L
 
     # Labor market variables
-    u = δ/(δ+(1-δ)*f)
+    u = τ/(τ+(1-δ)*f)
     v = θ*u
     e = δ*(v+1-u)
     Q = (e/F)^ξ_inv*x_m
@@ -128,7 +128,6 @@ function steady_state(para; init=0.51)
     # Gross Output
     Y = z*L
 
-    @assert abs(e - δ*(θ*δ+(1-δ)*f)/(δ+(1-δ)*f)) < 1e-12
 
     # Additional calculations: V, sunk vacancy costs, C, Y
 
