@@ -35,7 +35,7 @@ years_fmt = mdates.DateFormatter('%Y')
 # === 1. Load and Prepare Raw Data ===
 lab = ['c', 'u', 'v', 'theta', 'jf', 'lp', 'ls', 's', 'delta', 'w', 'bf', 'ba']
 init = '1951-01-01'
-final = '2020-01-01'  # Just before pandemic shock
+final = '2025-07-30'
 
 # Raw data series created by file observables.py
 dat = pd.read_pickle("raw_data.pkl")
@@ -61,9 +61,6 @@ cycle = cycle_hp
 
 # === 3. Compute Target Moments ===
 mom_list = ["u", "v", "s", "jf", "delta", "bf", "lp"]
-
-
-
 
 
 # Compute moments (relative std to 'lp', label unemployment and productivity)

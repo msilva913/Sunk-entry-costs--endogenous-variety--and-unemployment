@@ -17,9 +17,10 @@ BDS0000000000000000110005RQ5 (1): Percent of employment lost from contractions
 BDS0000000000000000120005RQ5 (1): Percent of establishments with employment lost from contractions for the total private sector in the U.S. (as a percent of total establishments in this sector)
 """
 
-df = pd.read_excel('BED_data.xlsx', sheet_name='Data Import')
-
-df['Series'] = pd.date_range(start="1992Q3", end="2024Q3", freq="QS")
+#df = pd.read_excel('BED_data.xlsx', sheet_name='Data Import')
+df = pd.read_csv('BED_data.csv')
+df = df.iloc[:-1]
+df['Series'] = pd.date_range(start="1992Q3", end="2024Q3",  freq="QS")
 df.set_index("Series", inplace=True)
 
 df.rename(columns={"BDS0000000000000000120008RQ5": "estabs_exit_rate",
@@ -43,8 +44,8 @@ ax.plot(df.perc_employment_lost_establishment_deaths.loc["1992":"2019"], linewid
         label="Percentage employment lost from establishment deaths:BED")
 ax.set_xlabel("Time", fontsize=10)
 ax.set_ylabel("Rate (%)", fontsize=10)
-for start, end in recessions:
-    ax.axvspan(start, end, color='gray', alpha=0.3)
+#for start, end in recessions:
+ #   ax.axvspan(start, end, color='gray', alpha=0.3)
 ax.legend(loc="upper right", fontsize=10)
 ax.grid(True, alpha=0.3)
 plt.tight_layout()
@@ -53,6 +54,7 @@ plt.show()
 #df = pd.read_pickle("BDS_data_adj.pkl")
 
 print("Annual BED dest rate =", df.estabs_exit_rate.loc["1992":"2019"].mean()*4)
+print("Employment dest rate=", df.perc_employment_lost_establishment_deaths.loc["1992":"2019"].mean()*4)
 
 """
 Purpose
