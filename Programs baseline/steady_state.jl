@@ -121,6 +121,18 @@ function a_tilde_fun(a_star, k, ε)
      return Δ*a_star 
 end 
 
+
+
+"""
+    S_p(p, f_r, α)
+Top 100p% employment share given ratio of fixed to mean variable labor f_r=f/(l_tilde-f) and shape parameter α 
+
+"""
+function S_p(p, f_r, α)
+    return p*(f_r + p^(-1/α))/(1+f_r)
+end 
+
+
 """
     L_fun(θ, para)
 
