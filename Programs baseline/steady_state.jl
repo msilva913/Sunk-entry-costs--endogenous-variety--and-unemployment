@@ -56,8 +56,17 @@ Invert vacancy filling probability to obtain market tightness θ.
     ξ_inv::Float64 = 1.0               # Inverse elasticity of entry to vacancy value
     x_m::Float64 = 113.16              # Upper bound on cost distribution
 
+    # New parameters related to firm heterogeneity
+    f::Float64 = 2.0                   # Fixed operating cost 
+    a_m::Float64 = 1.0                 # Tail parameter of Pareto distribution => minimum productivity draw
+    k::Float64 = 3.4                 
+
+    #Notes:
+    #1) We must have k >  ε-1 to have a well-define price index 
+    #2) a_m=1.0 just fixes units, from which we can obtain a_star and a_tilde. Equivalently, we can normalize a_tilde=1.0
+
     # Derived parameter: worker separation rate for steady-state
-    s = (τ - δ) / (1 - δ)
+    #s = (τ - δ) / (1 - δ)
 end
 
 # =============================================================================
@@ -65,14 +74,75 @@ end
 # =============================================================================
 
 """
+    H(a)
+Productivity-draw cdf given minimal productivity a_m and Pareto shape parameter k 
+"""
+function H(a, a_m, k)
+    (a_m <=0 || k<=0) && throw(ArgumentError("a_m, k must be > 0 "))
+    if a >= a_m
+        out = 1.0 - (a_m/a)^k 
+    else
+        out = 0.0 
+    end 
+    return out
+end 
+
+"""
+H_inv(cutoff, a_m, k)
+Percentile function of productivity draw H. Given cutoff, finds the associated value.
+function H_e
+"""
+function H_inv(cutoff, am, k)
+    # Solve cutoff = 1.0 - (a_m/a)^k for a
+    (a_m <=0 || k<=0) && throw(ArgumentError("a_m, k must be > 0 "))
+    a = a_m/((1-cutoff)^(1/k))
+    return a 
+end 
+
+
+"""
+    H^e(a)
+Survival cdf given cutoff a_star and Pareto shape parameter k 
+"""
+function H_e(a, a_star, k)
+    (a_star <=0 || k<= 0) && throw(ArgumentError("a_star, k must be > 0"))
+    if a >= a_star
+        out = 1.0 - (a_star/a)^k 
+    else
+        out = 0.0
+    end
+    return out 
+end
+
+function a_tilde_fun(a_star, k, ε)
+    # = E(a^(ε-1)|a>=a*)^(1/(ε-1))
+    (k <= (ε-1)) && throw(ArgumentError("Bounds on k violated"))
+     Δ = (k/(k-(ε-1)))^(1/(ε-1))
+     return Δ*a_star 
+end 
+
+"""
+    L_fun(θ, para)
+
+Steady-state employment as a function of market tightness θ, δ_e and parameters.
+"""
+function L_fun(θ, δ_e, para)
+    @unpack δ, s, A, η_L = para
+    f = jf(θ, A, η_L)
+    τ = 1 - (1 - δ_e) * (1 - s)
+    return (1 - δ_e) * f / (τ + (1 - δ_e) * f)
+end
+
+"""
     e_fun(θ, para)
 
-Employment rate as a function of market tightness θ and parameters.
+New vacancy rate as a function of market tightness θ and parameters.
 """
-function e_fun(θ, para)
-    @unpack δ, τ, A, η_L = para
+function e_fun(θ, δ_e, para)
+    @unpack δ, A, η_L = para
     f = jf(θ, A, η_L)
-    return δ * (θ * τ + (1 - δ) * f) / (τ + (1 - δ) * f)
+    τ = 1 - (1 - δ_e) * (1 - s)
+    return δ_e * (θ * τ + (1 - δ_e) * f) / (τ + (1 - δ_e) * f)
 end
 
 """
@@ -80,11 +150,12 @@ end
 
 Vacancy value as a function of market tightness θ and parameters.
 """
-function K_fun(θ, para)
+function K_fun(θ, δ_e, para)
     @unpack ρ, δ, F, x_m, ξ_inv = para
-    e = e_fun(θ, para)
+    e = e_fun(θ, δ_e, para)
+    # Value of vacancy
     Q = (e / F)^ξ_inv * x_m
-    return (ρ + δ) / (1 + ρ) * Q
+    return (ρ + δ_e) / (1 + ρ) * Q
 end
 
 """
@@ -92,26 +163,15 @@ end
 
 Wage function as a function of market tightness θ, number of businesses N, and parameters.
 """
-function w_fun(θ, N, para)
+function w_fun(θ, N, a_tilde, para)
     @unpack ϕ, b, z, ε, δ, A, η_L, κ = para
     q = vf(θ, A, η_L)
     μ = ε / (ε - 1)
-    w_int = N^(1 / (ε - 1)) * z / μ
-    K = K_fun(θ, para)
+    w_int = N^(1 / (ε - 1)) * z*a_tilde/ μ
+    K = K_fun(θ, δ_e,  para)
     return (1 - ϕ) * b + ϕ * (w_int - K + θ * (K + q * κ))
 end
 
-"""
-    L_fun(θ, para)
-
-Steady-state employment as a function of market tightness θ and parameters.
-"""
-function L_fun(θ, para)
-    @unpack δ, s, A, η_L = para
-    f = jf(θ, A, η_L)
-    τ = 1 - (1 - δ) * (1 - s)
-    return (1 - δ) * f / (τ + (1 - δ) * f)
-end
 
 # =============================================================================
 # Steady-State Solver
@@ -228,9 +288,8 @@ end
 
 # Default calibration targets
 targets = (
-    X_Y=0.015, dest_ann=0.0754, f=0.41, η_L=0.6, q=0.8, sep=0.031, b_ratio=0.71,
-    x_v=1.0, ξ_inv=1, r_ann=0.04, ε=4.3, σ=1.0, N=1.0, w=1.0
-)
+    X_Y=0.015, dest_ann=0.0754, dest_end_frac=0.5, f=0.41, η_L=0.6, q=0.8, sep=0.031, b_ratio=0.71,
+    x_v=1.0, ξ_inv=1, r_ann=0.04, k=3.4, ε=4.3, σ=1.0, N=1.0, w=1.0, a_m=1.0)
 
 """
     calibrate_shares(targets)
@@ -239,25 +298,43 @@ Calibrate model parameters to match empirical targets.
 Returns a NamedTuple of calibrated parameters.
 """
 function calibrate_shares(targets)
-    @unpack X_Y, dest_ann, f, η_L, q, sep, b_ratio, x_v, ξ_inv, ε, r_ann, σ, N, w = targets
+    @unpack X_Y, dest_ann, dest_end_frac, f, η_L, q, sep, b_ratio, x_v, ξ_inv, ε, r_ann, σ, N, w = targets
 
-    δ = 1 - (1 - dest_ann)^(1 / 12)
+    # Multiplier relating a_tilde and a*
+    Δ = (k/(k-(ε-1)))^(1/(ε-1))
+
+    δ_e = 1 - (1 - dest_ann)^(1 / 12)
+    δ = (1.0-dest_end_frac)*δ_e 
+
+    # Purely endogenous destruction threshold
+    H_astar = (δ_e-δ)/(1-δ)
+    # Back out a_star 
+    a_star = H_inv(H_astar, a_m, k)
+    a_tilde = Δ*a_star
+
+    @assert H(a_star, a_m, k) ≈ H_astar 
+
     τ = sep
+    s = (τ - δ_e) / (1 - δ_e)
     ρ = (1 + r_ann)^(1 / 12) - 1
 
     # Correct job finding and vacancy filling probabilities
-    f = f / (1 - δ)
-    q = q / (1 - δ)
+    f = f / (1 - δ_e)
+    q = q / (1 - δ_e)
 
     θ = f / q
-    u = τ / (τ + (1 - δ) * f)
+    u = τ / (τ + (1 - δ_e) * f)
     v = θ * u
     L = 1 - u
+
+    # Matching function level parameter
     A = f / θ^(1 - η_L)
-    s = (τ - δ) / (1 - δ)
-    e = δ * (v + 1 - u)
-    N_e = δ / (1 - δ) * N
+
+    e = δ_e * (v + 1 - u)
+    N_e = δ_e / (1 - δ_e) * N
     b = b_ratio * w
+
+
 
     surplus_ratio = (ρ + τ) / (1 - δ) * (1 / (q * x_v))
     p = N^(1 / (ε - 1))
@@ -268,13 +345,14 @@ function calibrate_shares(targets)
 
     function loss(Q)
         Q = abs(Q)
-        K = Q * (ρ + δ) / (1 + ρ)
+        K = Q * (ρ + δ_e) / (1 + ρ)
         κ = (1 - x_v) / x_v * K / q
         X = e / (1 + ξ_inv) * Q + κ * q * v
         w_int = surplus_ratio * K + w + K
         ϕ = (w - b) / (w_int - K + θ * (K + q * κ) - b)
-        z = (μ / p) * w_int
-        f_e = (μ - 1) * z * (L / N) * (1 - δ) / (δ * μ + ρ)
+
+        z = (μ / p) * w_int *(1/a_tilde) # Now include a_tilde with firm heterogeneity
+        #f_e = (μ - 1) * z * (L / N) * (1 - δ) / (δ * μ + ρ)
         ν_f = p * f_e / μ
         Y_c = p * z * L_c
         C = Y_c - X
