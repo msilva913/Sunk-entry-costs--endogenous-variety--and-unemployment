@@ -370,8 +370,11 @@ function calibrate_shares(targets)
     μ = ε / (ε - 1)
     #recruiter_share = (δ + (ρ + δ) * (ε - 1)) / (δ + (ρ + δ) * ε)
     recruiter_share = ((1-π_s)*ρ+δ_e)/(ρ+δ_e*(1+π_s))
-    L_c = (ρ + δ) * L / (δ * μ + ρ)
-    L_e = δ * (μ - 1) * L / (δ * μ + ρ)
+
+    L_den =  f_e*(δ_e*μ+ρ)+μ*z*f*(1-δ_e)
+    L_c = (f_e*(δ_e+ ρ) + μ*z*f*(1-δ_e))*L/L_den
+    L_e = f_e*δ_e * (μ - 1) * L / L_den
+    @assert L_c + L_e ≈ L 
 
     function loss(Q)
         Q = abs(Q)
