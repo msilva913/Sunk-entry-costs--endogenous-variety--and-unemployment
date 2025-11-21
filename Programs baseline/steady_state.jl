@@ -132,6 +132,14 @@ function S_p(p, f_r, α)
     return p*(f_r + p^(-1/α))/(1+f_r)
 end 
 
+function f_r_from_emp_share(α, p::Float64, Sp::Float64)
+    Sp = 0.54
+    p = 0.02 
+    α = 1.1
+    f_r = (Sp - p^(1-1/α))/(p-Sp)
+    return f_r 
+end
+
 
 """
     L_fun(θ, para)
