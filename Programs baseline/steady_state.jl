@@ -183,7 +183,7 @@ end
 
 Wage function as a function of market tightness θ, number of businesses N, and parameters.
 """
-function w_fun(θ, N, a_tilde, para)
+function w_fun(θ, N, δ_e, a_tilde, para)
     @unpack ϕ, b, z, ε, δ, A, η_L, κ = para
     q = vf(θ, A, η_L)
     μ = ε / (ε - 1)
@@ -309,7 +309,8 @@ end
 # Default calibration targets
 targets = (
     X_Y=0.015, dest_ann=0.0754, dest_end_frac=0.5, f=0.41, η_L=0.6, q=0.8, sep=0.031, b_ratio=0.71,
-    x_v=1.0, ξ_inv=1, r_ann=0.04, k=3.4, ε=4.3, σ=1.0, N=1.0, w=1.0, a_m=1.0)
+    x_v=1.0, ξ_inv=1, r_ann=0.04, ε=4.3, σ=1.0, N=1.0, w=1.0, a_m=1.0,
+    α=1.1, f_r=0.2)
 
 """
     calibrate_shares(targets)
@@ -318,10 +319,15 @@ Calibrate model parameters to match empirical targets.
 Returns a NamedTuple of calibrated parameters.
 """
 function calibrate_shares(targets)
-    @unpack X_Y, dest_ann, dest_end_frac, f, η_L, q, sep, b_ratio, x_v, ξ_inv, ε, r_ann, σ, N, w = targets
+    @unpack X_Y, dest_ann, dest_end_frac, f, η_L, q, sep, b_ratio, x_v, ξ_inv, ε, α, r_ann, σ, N, w, a_m = targets
+
+    # Recover Pareto shape of H (productivity draws)
+    k = α*(ε-1)
 
     # Multiplier relating a_tilde and a*
-    Δ = (k/(k-(ε-1)))^(1/(ε-1))
+    Δ = (α/(α-1))^(1/(ε-1))
+
+    # Min variable employment = (α-1)/α*(l_tilde-v)
 
     δ_e = 1 - (1 - dest_ann)^(1 / 12)
     δ = (1.0-dest_end_frac)*δ_e 
@@ -354,12 +360,16 @@ function calibrate_shares(targets)
     N_e = δ_e / (1 - δ_e) * N
     b = b_ratio * w
 
+    #Retailer profit share (would be 1/ε in absence of fixed costs)
+    π_s = (1/ε - f_r)
 
 
-    surplus_ratio = (ρ + τ) / (1 - δ) * (1 / (q * x_v))
+
+    surplus_ratio = (ρ + τ) / (1 - δ_e) * (1 / (q * x_v))
     p = N^(1 / (ε - 1))
     μ = ε / (ε - 1)
-    recruiter_share = (δ + (ρ + δ) * (ε - 1)) / (δ + (ρ + δ) * ε)
+    #recruiter_share = (δ + (ρ + δ) * (ε - 1)) / (δ + (ρ + δ) * ε)
+    recruiter_share = ((1-π_s)*ρ+δ_e)/(ρ+δ_e*(1+π_s))
     L_c = (ρ + δ) * L / (δ * μ + ρ)
     L_e = δ * (μ - 1) * L / (δ * μ + ρ)
 
