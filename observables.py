@@ -92,7 +92,7 @@ def construct_data(init, final, freq):
     
     # Quarterly averages
     s = s.resample(freq).mean().dropna()
-    f = jf.resample(freq).mean().dropna()
+    jf = jf.resample(freq).mean().dropna()
 
     # Labor share & wage
     ls = fred.get_series('PRS85006173').resample(freq).mean()
@@ -103,6 +103,8 @@ def construct_data(init, final, freq):
     bawba = fred.get_series("BAWBATOTALSAUS").resample(freq).mean().dropna() / pop
 
     # BED: Establishment exit rate
+    # Check this code: https://download.bls.gov/pub/time.series/bd/bd.series
+    ""
     BED_dat = pd.read_excel('BED_data.xlsx', sheet_name='Data Import')
     BED_dat['Series'] = pd.date_range(start="1992Q3", end="2024Q3", freq="QS")
     BED_dat.set_index("Series", inplace=True)
@@ -111,10 +113,13 @@ def construct_data(init, final, freq):
         inplace=True
     )
     delta = BED_dat["estabs_exit_rate"].resample(freq).mean().dropna() / (100 * 3)
-
+    
     # Series output
-    var_load_list = [c, u, v, theta, f, lp, ls, s, delta, w, sbf4, bawba]
-    return var_load_list
+    var_load_list = [c, u, v, theta, jf, lp, ls, s, delta, w, sbf4, bawba]
+    # Combine into dataframe
+    dat = pd.concat(var_load_list, axis=1)
+    dat.columns = ['c', 'u', 'v', 'theta', 'jf', 'lp', 'ls', 's', 'delta', 'w', 'bf', 'ba']
+    return dat
 
 ######################
 # Main Script/Plots  #
@@ -124,20 +129,18 @@ if __name__ == "__main__":
 
     # Date range and configuration
     init = '1951-01-01'
-    final = '2025-07-30'
+    final = '2025-10-01'
     freq = 'QS'
     load = False
 
     # Load or construct data
     if load:
-        var_load_list = pickle.load(open("var_load_list", "rb"))
+        dat = pickle.load(open("var_load_list", "rb"))
     else:
-        var_load_list = construct_data(init, final, freq)
-        save_object(var_load_list, 'var_load_list')
+        dat = construct_data(init, final, freq)
+        save_object(dat, 'dat')
 
-    # Combine into DataFrame
-    dat = pd.concat(var_load_list, axis=1)
-    dat.columns = ['c', 'u', 'v', 'theta', 'jf', 'lp', 'ls', 's', 'delta', 'w', 'bf', 'ba']
+    # Extract relevant dates
     dat = dat.loc[init:final]
 
     # Optional: View separation series since 1992

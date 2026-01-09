@@ -5,6 +5,8 @@ import scipy
 from scipy.io import savemat
 import statsmodels.api as sm
 from fredapi import Fred
+fred = Fred(api_key='d35aabd7dc07cd94481af3d1e2f0ecf3')
+
 
 # Set display precision for pandas and numpy
 pd.set_option('display.precision', 3)
@@ -26,7 +28,6 @@ from formatting_functions import (
 import matplotlib.dates as mdates
 
 # FRED API key
-fred = Fred(api_key='d35aabd7dc07cd94481af3d1e2f0ecf3')
 
 # Set up date formatting for plots (if needed)
 years = mdates.YearLocator(5, month=1)
@@ -35,30 +36,33 @@ years_fmt = mdates.DateFormatter('%Y')
 # === 1. Load and Prepare Raw Data ===
 lab = ['c', 'u', 'v', 'theta', 'jf', 'lp', 'ls', 's', 'delta', 'w', 'bf', 'ba']
 init = '1951-01-01'
-final = '2025-07-30'
+final = '2025-12-30'
 
 # Raw data series created by file observables.py
 dat = pd.read_pickle("raw_data.pkl")
 
 # === 2. Apply HP Filter for Business Cycle Detrending ===
-cycle_hp = pd.concat([
-    filter_transform(dat[x], init=init, final=final, transform_type='log',
-                     filter_type="hp_filter", lamb=100_000)
-    for x in lab
-], axis=1)
-cycle_hp.columns = lab
+filter_type="hp_filter"
 
-# Optionally, use Hamilton filter instead (commented out)
-# cycle_ham = pd.concat([
-#     filter_transform(dat[x], init=init, final=final, transform_type='log',
-#                      filter_type="hamilton")
-#     for x in lab
-# ], axis=1)
-# cycle_ham.columns = lab
-# cycle = cycle_ham
-
-cycle = cycle_hp
-
+if filter_type == "hp_filter":
+    cycle_hp = pd.concat([
+        filter_transform(dat[x], init=init, final=final, transform_type='log',
+                         filter_type="hp_filter", lamb=100_000)
+        for x in lab
+    ], axis=1)
+    cycle_hp.columns = lab
+    cycle = cycle_hp
+    #Optionally, consider Hamilton regression filer
+elif filter_type == "hamilton":
+    cycle_ham = pd.concat([
+        filter_transform(dat[x], init=init, final=final, transform_type='log',
+                         filter_type="hamilton")
+        for x in lab
+    ], axis=1)
+    cycle_ham.columns = lab
+    cycle = cycle_ham
+    
+  
 # === 3. Compute Target Moments ===
 mom_list = ["u", "v", "s", "jf", "delta", "bf", "lp"]
 
