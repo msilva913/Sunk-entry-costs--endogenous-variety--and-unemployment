@@ -1,0 +1,149 @@
+Starting Dynare (version 6.3).
+Calling Dynare with arguments: none
+Starting preprocessing of the model file ... 
+Found 19 equation(s). 
+Evaluating expressions... 
+Computing static model derivatives (order 1). 
+Normalizing the static model... 
+Finding the optimal block decomposition of the static model... 
+6 block(s) found: 
+  5 recursive block(s) and 1 simultaneous block(s). 
+  the largest simultaneous block has 5 equation(s) 
+                                 and 5 feedback variable(s). 
+Computing dynamic model derivatives (order 2). 
+Normalizing the dynamic model... 
+Finding the optimal block decomposition of the dynamic model... 
+6 block(s) found: 
+  5 recursive block(s) and 1 simultaneous block(s). 
+  the largest simultaneous block has 5 equation(s) 
+                                 and 4 feedback variable(s). 
+Preprocessing completed. 
+Preprocessing time: 0h00m00s.
+
+
+Residuals of the static equations:
+Equation number  1: Euler equation         :       0.000000
+Equation number  2: Variety effects        :       0.000000
+Equation number  3: Consumption sector     :       0.000000
+Equation number  4: Labor in entry         :       0.000000
+Equation number  5: Wage from pricing      :       0.000000
+Equation number  6: Labor supply           :      -0.638976
+Equation number  7: Free entry             :       0.000000
+Equation number  8: Profits                :       0.000000
+Equation number  9: Aggregate accounting   :       0.000000
+Equation number 10: Output                 :       0.000000
+Equation number 11: Data-consistent output :       0.000000
+Equation number 12: Firm law of motion     :       0.000000
+Equation number 13: 13                     :       0.000000
+Equation number 14: log_Y                  :       0.000000
+Equation number 15: log_Y_r                :       0.000000
+Equation number 16: log_L                  :       0.000000
+Equation number 17: log_L_C                :       0.000000
+Equation number 18: log_L_E                :       0.000000
+Equation number 19: log_Z                  :       0.000000
+
+
+
+STEADY-STATE RESULTS:
+
+C       		 0.781783
+N_e     		 0.198861
+N       		 7.75556
+d       		 0.0265271
+nu      		 0.736842
+w       		 0.736842
+L       		 0.980644
+L_C     		 0.781783
+L_E     		 0.198861
+Y       		 0.928312
+Y_r     		 0.928312
+rho     		 1
+log_Y   		 -7.43875
+log_Y_r 		 -7.43875
+log_L   		 -1.95461
+log_L_C 		 -24.6178
+log_L_E 		 -161.515
+Z       		 1
+log_Z   		 0
+
+EIGENVALUES:
+         Modulus             Real        Imaginary
+       1.077e-17       -1.077e-17                0
+          0.8664           0.8664                0
+           0.979            0.979                0
+           1.171            1.171                0
+        1.64e+18         1.64e+18                0
+             Inf              Inf                0
+
+There are 3 eigenvalue(s) larger than 1 in modulus for 3 forward-looking variable(s)
+The rank condition is verified.
+
+
+MODEL SUMMARY
+
+  Number of variables:         19
+  Number of stochastic shocks: 1
+  Number of state variables:   3
+  Number of jumpers:           3
+  Number of static variables:  13
+
+
+MATRIX OF COVARIANCE OF EXOGENOUS SHOCKS
+Variables         e_z
+e_z          0.000100
+
+POLICY AND TRANSITION FUNCTIONS
+                               log_Z           log_Y         log_Y_r           log_L         log_L_C         log_L_E               N             rho
+Constant                           0       -7.414144       -7.414144       -1.920291      -24.627326     -161.308420        7.755562        1.000000
+(correction)                       0        0.024601        0.024601        0.034320       -0.009533        0.206722               0               0
+N_e(-1)                            0       -6.497624       -6.497624       -9.064525        2.517924      -54.598756        0.975000               0
+N(-1)                              0       -6.497624       -6.497624       -9.064525        2.517924      -54.598756        0.975000               0
+Z(-1)                      97.900000      185.493300      185.493300      118.834134      -22.131704      673.014986               0               0
+e_z                       100.000000      189.472216      189.472216      121.383181      -22.606439      687.451467               0               0
+N_e(-1),N_e(-1)                    0        0.282308        0.282308        0.232413       -0.064559      -11.603919               0               0
+N(-1),N_e(-1)                      0        0.564616        0.564616        0.464825       -0.129118      -23.207838               0               0
+N(-1),N(-1)                        0        0.282308        0.282308        0.232413       -0.064559      -11.603919               0               0
+Z(-1),N_e(-1)                      0        2.667006        2.667006        7.649823       -2.124951      362.607222               0               0
+Z(-1),N(-1)                        0        2.667006        2.667006        7.649823       -2.124951      362.607222               0               0
+Z(-1),Z(-1)               -48.950000     -102.365633     -102.365633      -96.746555       21.435154    -2487.540785               0               0
+e_z,e_z                            0      -10.036073      -10.036073      -38.948133       10.818926    -2244.304336               0               0
+N_e(-1),e_z                        0        2.724215        2.724215        7.813915       -2.170532      370.385313               0               0
+N(-1),e_z                          0        2.724215        2.724215        7.813915       -2.170532      370.385313               0               0
+Z(-1),e_z                          0      -19.650630      -19.650630      -76.260445       21.183457    -4394.347890               0               0
+
+
+APPROXIMATED THEORETICAL MOMENTS
+VARIABLE         MEAN  STD. DEV.   VARIANCE
+log_Z          0.0000     4.9053    24.0622
+log_Y         -7.4620     6.2213    38.7048
+log_Y_r       -7.4620     6.2213    38.7048
+log_L         -1.9961     2.3766     5.6484
+log_L_C      -24.6063     0.5385     0.2900
+log_L_E     -162.4900    13.1057   171.7607
+N              7.7813     0.5234     0.2740
+rho            1.0000     0.0000     0.0000
+
+
+
+APPROXIMATED MATRIX OF CORRELATIONS
+Variables      log_Z    log_Y  log_Y_r    log_L  log_L_C  log_L_E        N
+log_Z         1.0000   0.9764   0.9764   0.6155   0.2576   0.5088   0.9230
+log_Y         0.9764   1.0000   1.0000   0.7711   0.0430   0.6826   0.8181
+log_Y_r       0.9764   1.0000   1.0000   0.7711   0.0430   0.6826   0.8181
+log_L         0.6155   0.7711   0.7711   1.0000  -0.6030   0.9917   0.2647
+log_L_C       0.2576   0.0430   0.0430  -0.6030   1.0000  -0.7008   0.6096
+log_L_E       0.5088   0.6826   0.6826   0.9917  -0.7008   1.0000   0.1383
+N             0.9230   0.8181   0.8181   0.2647   0.6096   0.1383   1.0000
+
+
+
+APPROXIMATED COEFFICIENTS OF AUTOCORRELATION
+Order           1       2       3       4       5
+log_Z      0.9790  0.9584  0.9383  0.9186  0.8993
+log_Y      0.9523  0.9092  0.8700  0.8344  0.8018
+log_Y_r    0.9523  0.9092  0.8700  0.8344  0.8018
+log_L      0.8597  0.7383  0.6332  0.5423  0.4637
+log_L_C    0.8992  0.8112  0.7343  0.6670  0.6080
+log_L_E    0.8510  0.7222  0.6109  0.5148  0.4319
+N          0.9985  0.9944  0.9881  0.9801  0.9705
+Total computing time : 0h00m01s

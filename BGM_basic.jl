@@ -448,6 +448,7 @@ end
 
 
 para = Para(ε=3.8, ψ=4.0, σ=1.0,  N_l=1, N_u=15)
+#para = Para(ε=4.3, ψ=2.0, σ=2.0,  N_l=1, N_u=15)
 ss = steady_state(para)
 C_mat= initialize(para)
 out = solve_model_time_iter(C_mat, para, max_iter=1000, ω=0.5)

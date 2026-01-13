@@ -1,0 +1,113 @@
+Starting Dynare (version 6.3).
+Calling Dynare with arguments: none
+Starting preprocessing of the model file ... 
+Found 14 equation(s). 
+Evaluating expressions... 
+Computing static model derivatives (order 1). 
+Normalizing the static model... 
+Finding the optimal block decomposition of the static model... 
+3 block(s) found: 
+  2 recursive block(s) and 1 simultaneous block(s). 
+  the largest simultaneous block has 6 equation(s) 
+                                 and 6 feedback variable(s). 
+Computing dynamic model derivatives (order 1). 
+Normalizing the dynamic model... 
+Finding the optimal block decomposition of the dynamic model... 
+3 block(s) found: 
+  2 recursive block(s) and 1 simultaneous block(s). 
+  the largest simultaneous block has 6 equation(s) 
+                                 and 6 feedback variable(s). 
+Preprocessing completed. 
+Preprocessing time: 0h00m00s.
+
+
+Residuals of the static equations:
+Equation number  1: Euler equation                                 :       0.000000
+Equation number  2: Labor FOC                                      :       0.048242
+Equation number  3: Law of motion capital                          :       0.000000
+Equation number  4: resource constraint                            :       0.000000
+Equation number  5: production function                            :       0.000000
+Equation number  6: real wage/firm FOC labor                       :       0.000000
+Equation number  7: annualized real interest rate/firm FOC capital :       0.000000
+Equation number  8: exogenous TFP process                          :       0.000000
+Equation number  9: Definition log output                          :       0.000000
+Equation number 10: Definition log capital                         :       0.000000
+Equation number 11: Definition log consumption                     :       0.000000
+Equation number 12: Definition log hours                           :       0.000000
+Equation number 13: Definition log wage                            :       0.000000
+Equation number 14: Definition log investment                      :      34.086511
+
+
+
+STEADY-STATE RESULTS:
+
+y          		 2.88872
+c          		 2.20977
+k          		 27.1581
+l          		 0.958012
+z          		 0
+r          		 0.140404
+w          		 2.02027
+invest     		 0.678953
+log_y      		 106.081
+log_k      		 330.168
+log_c      		 79.2887
+log_l      		 -4.28953
+log_w      		 70.3231
+log_invest 		 -38.7204
+
+EIGENVALUES:
+         Modulus             Real        Imaginary
+           0.944            0.944                0
+           0.979            0.979                0
+            1.07             1.07                0
+       1.796e+16        1.796e+16                0
+             Inf              Inf                0
+
+There are 3 eigenvalue(s) larger than 1 in modulus for 3 forward-looking variable(s)
+The rank condition is verified.
+
+
+MODEL SUMMARY
+
+  Number of variables:         14
+  Number of stochastic shocks: 1
+  Number of state variables:   2
+  Number of jumpers:           3
+  Number of static variables:  10
+
+
+MATRIX OF COVARIANCE OF EXOGENOUS SHOCKS
+Variables       eps_z
+eps_z        0.000100
+
+POLICY AND TRANSITION FUNCTIONS
+                               log_y           log_l               z
+Constant                  106.081319       -4.289532               0
+k(-1)                       0.397056       -1.220970               0
+z(-1)                     147.080087       73.403114        0.979000
+eps_z                     150.235022       74.977645        1.000000
+
+
+THEORETICAL MOMENTS
+VARIABLE         MEAN  STD. DEV.   VARIANCE
+log_y        106.0813     8.1613    66.6064
+log_l         -4.2895     1.9832     3.9331
+z              0.0000     0.0491     0.0024
+
+
+
+MATRIX OF CORRELATIONS
+Variables     log_y   log_l       z
+log_y        1.0000  0.6029  0.9982
+log_l        0.6029  1.0000  0.6497
+z            0.9982  0.6497  1.0000
+
+
+
+COEFFICIENTS OF AUTOCORRELATION
+Order          1       2       3       4       5
+log_y     0.9829  0.9660  0.9492  0.9325  0.9160
+log_l     0.9255  0.8556  0.7900  0.7284  0.6707
+z         0.9790  0.9584  0.9383  0.9186  0.8993
+Total computing time : 0h00m01s
