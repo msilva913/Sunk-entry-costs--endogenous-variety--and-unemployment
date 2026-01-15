@@ -55,7 +55,7 @@ d = C/(N*epsi);
 [name = 'Aggregate accounting']
 //nu*N_e + C = w*L+N*d;
 % Labor demand interpretation
-L = (1/w)*(C/mu + nu*N_e);
+L = (1/w)*(C/mu +
 
 [name = 'Output']
 Y = C + nu*N_e;
