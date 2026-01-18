@@ -47,7 +47,7 @@ Invert vacancy filling probability to obtain market tightness θ.
     z::Float64 = 1.0                   # Technology level
     b::Float64 = 0.71                  # Unemployment insurance
     ϕ::Float64 = 0.5                   # Bargaining power
-    ρ::Float64 = 0.04 / 12             # Rate of time preference (monthly)
+    r::Float64 = 0.04 / 12             # Rate of time preference (monthly)
     σ::Float64 = 1.0                   # Inverse intertemporal elasticity of substitution
     ε::Float64 = 4.0                   # Elasticity of substitution
     A::Float64 = 0.5631                # Job matching level parameter
@@ -58,13 +58,8 @@ Invert vacancy filling probability to obtain market tightness θ.
     x_m::Float64 = 113.16              # Upper bound on cost distribution
 
     # New parameters related to firm heterogeneity
-    f::Float64 = 2.0                   # Fixed operating cost 
-    a_m::Float64 = 1.0                 # Tail parameter of Pareto distribution => minimum productivity draw
-    k::Float64 = 3.4                 
-
-    #Notes:
-    #1) We must have k >  ε-1 to have a well-define price index 
-    #2) a_m=1.0 just fixes units, from which we can obtain a_star and a_tilde. Equivalently, we can normalize a_tilde=1.0
+    ψ::Float64 = 1.5                   # Curvature related to power law of continuation cost
+    f_m::Float64 = 10.0                 # Max value of cost draw              
 
     # Derived parameter: worker separation rate for steady-state
     #s = (τ - δ) / (1 - δ)
@@ -75,76 +70,32 @@ end
 # =============================================================================
 
 """
-    H(a)
-Productivity-draw cdf given minimal productivity a_m and Pareto shape parameter k 
+    F(x)
+Continuation cost-draw cdf given maximal cost
 """
-function H(a, a_m, k)
-    (a_m <=0 || k<=0) && throw(ArgumentError("a_m, k must be > 0 "))
-    if a >= a_m
-        out = 1.0 - (a_m/a)^k 
+function F(x, f_m, ψ)
+    (a_m <=0 || ψ<=0) && throw(ArgumentError("a_m, k must be > 0 "))
+    if x < f_m
+        out = (x/f_m)^ψ
     else
-        out = 0.0 
+        out = 1.0
     end 
     return out
 end 
 
 """
-H_inv(cutoff, a_m, k)
-Percentile function of productivity draw H. Given cutoff, finds the associated value.
-function H_e
+F_inv(x_m, f_m, ψ)
+Inverse cdf: Given probability F, finds associated value x
 """
-function H_inv(cutoff, am, k)
-    # Solve cutoff = 1.0 - (a_m/a)^k for a
-    (a_m <=0 || k<=0) && throw(ArgumentError("a_m, k must be > 0 "))
-    a = a_m/((1-cutoff)^(1/k))
-    return a 
+function F_inv(F, f_m, ψ)
+    # Solve F = (x/f_m)^ψ for x
+    (f_m <=0 || ψ<=0) && throw(ArgumentError("f_m, ψ must be > 0 "))
+    x = F^(1/ψ)*f_m
+    return x 
 end 
-
-
-"""
-    H^e(a)
-Survival cdf given cutoff a_star and Pareto shape parameter k 
-"""
-function H_e(a, a_star, k)
-    (a_star <=0 || k<= 0) && throw(ArgumentError("a_star, k must be > 0"))
-    if a >= a_star
-        out = 1.0 - (a_star/a)^k 
-    else
-        out = 0.0
-    end
-    return out 
-end
-
-function a_tilde_fun(a_star, k, ε)
-    # = E(a^(ε-1)|a>=a*)^(1/(ε-1))
-    (k <= (ε-1)) && throw(ArgumentError("Bounds on k violated"))
-     Δ = (k/(k-(ε-1)))^(1/(ε-1))
-     return Δ*a_star 
-end 
-
-
-
-"""
-    S_p(p, f_r, α)
-Top 100p% employment share given ratio of fixed to mean variable labor f_r=f/(l_tilde-f) and shape parameter α 
-
-"""
-function S_p(p, f_r, α)
-    return p*(f_r + p^(-1/α))/(1+f_r)
-end 
-
-function f_r_from_emp_share(α, p::Float64, Sp::Float64)
-    Sp = 0.54
-    p = 0.02 
-    α = 1.1
-    f_r = (Sp - p^(1-1/α))/(p-Sp)
-    return f_r 
-end
-
 
 """
     L_fun(θ, para)
-
 Steady-state employment as a function of market tightness θ, δ_e and parameters.
 """
 function L_fun(θ, δ_e, para)
@@ -156,7 +107,6 @@ end
 
 """
     e_fun(θ, para)
-
 New vacancy rate as a function of market tightness θ and parameters.
 """
 function e_fun(θ, δ_e, para)
@@ -168,15 +118,14 @@ end
 
 """
     K_fun(θ, para)
-
 Vacancy value as a function of market tightness θ and parameters.
 """
 function K_fun(θ, δ_e, para)
-    @unpack ρ, δ, F, x_m, ξ_inv = para
+    @unpack ρ, δ, x_m, ξ_inv = para
     e = e_fun(θ, δ_e, para)
     # Value of vacancy
-    Q = (e / F)^ξ_inv * x_m
-    return (ρ + δ_e) / (1 + ρ) * Q
+    Q = (e)^ξ_inv * x_m
+    return (r + δ_e) / (1 + r) * Q
 end
 
 """
@@ -204,7 +153,7 @@ end
 Solve for steady-state market tightness θ given parameters.
 """
 function θ_fun(para; init_value=0.51)
-    @unpack f_e, τ, δ, z, b, ϕ, ρ, σ, ε, A, η_L, κ, ξ_inv, F, s = para
+    @unpack f_e, τ, δ, z, b, ϕ, r, σ, ε, A, η_L, κ, ξ_inv, F, s = para
     μ = ε / (ε - 1)
 
     function loss(x)
@@ -214,10 +163,10 @@ function θ_fun(para; init_value=0.51)
         K = K_fun(θ, para)
         L = L_fun(θ, para)
         u = 1 - L
-        lhs = (κ + K / q) * (ρ + τ + (1 - δ) * ϕ * q * θ)
-        N = (μ - 1) * z * L * (1 - δ) / (f_e * (δ * μ + ρ))
-        p = N^(1 / (ε - 1))
-        w_int = p * z / μ
+        lhs = (κ + K / q) * (r + τ + (1 - δ) * ϕ * q * θ)
+        N = (μ - 1) * z * L * (1 - δ) / (f_e * (δ * μ + r))
+        ρ = N^(1 / (ε - 1))
+        w_int = ρ * z / μ
         rhs = (1 - δ) * (1 - ϕ) * (w_int - K - b)
         return [(lhs - rhs) / (lhs + rhs)]
     end
@@ -235,38 +184,63 @@ Compute steady-state statistics given parameters.
 Returns a NamedTuple of all key statistics.
 """
 function steady_state(para; init=0.51)
-    @unpack f_e, τ, δ, z, b, ϕ, ρ, σ, ε, A, η_L, κ, ξ_inv, F, x_m, s = para
+    @unpack f_e, τ, δ, s, z, b, ϕ, ρ, σ, ε, A, η_L, κ, ξ_inv, f_m ψ, s = para
     μ = ε / (ε - 1)
-    θ = θ_fun(para, init_value=init)
+    #θ = θ_fun(para, init_value=init)
+    out = zeros(2)
+    function loss(x)
+        θ, end_dest = abs.(x) #ensure non-negativity
+        δ_e = δ + end_dest - δ*end_dest   #(1-δ_e)=(1-δ)*(1-end_dest)
+        f = jf(θ, A, η_L)
+        q = vf(θ, A, η_L)
+        K = K_fun(θ, δ_e, para)
+        L = L_fun(θ, δ_e, para)
+        u = 1 - L
+        lhs_jcc = (κ + K / q) * (r + τ + (1 - δ_e) * ϕ * q * θ)
+        N = (μ - 1) * z * L * (1 - δ_e) / (f_e * (δ_e * μ + r))
 
-    f = jf(θ, A, η_L)
-    q = vf(θ, A, η_L)
-    L = L_fun(θ, para)
-    u = 1 - L
+        ρ = N^(1 / (ε - 1))
+        w_int = ρ * z / μ
+        rhs_jcc = (1 - δ_e) * (1 - ϕ) * (w_int - K - b)
+
+        N_e = δ_e*N/(1-δ_e)
+        L_c = (r + δ_e) * L / (δ_e * μ + r)
+        # Consumption output
+        Y_c = ρ * z * L_c
+        # Cutoff
+        x_c = Y_c/(ε*N) + ρ*f_e/μ
+        surv_prob = F(x_c, f_m, ψ) #∈ (0, 1)
+        δ_e_new = 1.0 - surv_prob*(1-δ) #(1-δ_e_new) = surv_prob*(1-δ)
+
+        vars = (; δ_e, f, q, θ, u, ρ, w_int, K, N, N_e, L_c, Y_c, x_c)
+
+        out[1] = (rhs_jcc-lhs_jcc)/(rhs_jcc+lhs_jcc)
+        out[2] = δ_e - δ_e_new
+        return out, vars 
+    end 
+
+    sol = LeastSquaresOptim.optimize(x -> loss(x)[1], [init_value], Dogleg())
+    println("converged=$(sol.converged) at root=$(sol.minimizer) in " *
+        "$(sol.iterations) iterations and $(sol.f_calls) function calls")
+    
+    var = loss(sol.x)[2]
 
     # Labor market variables
-    u = τ / (τ + (1 - δ) * f)
     v = θ * u
-    e = δ * (v + 1 - u)
-    Q = (e / F)^ξ_inv * x_m
-    K = (ρ + δ) / (1 + ρ) * Q
+    e = δ_e * (v + 1 - u)
+    Q = e^ξ_inv * x_m
     X_v = e * (1 / (1 + ξ_inv)) * Q
     v_pret = v - e
 
     # Relative price, businesses, and values
-    N = (μ - 1) * z * L * (1 - δ) / (f_e * (δ * μ + ρ))
-    p = N^(1 / (ε - 1))
-    N_e = δ / (1 - δ) * N
-    ν_f = p * f_e / μ
-    d_f = (ρ + δ) / (1 - δ) * ν_f
+    ν_f = ρ * f_e / μ
+    d_f = (ρ + δ_e) / (1 - δ_e) * ν_f
 
     # Wages
-    w_int = p * z / μ
     w = ϕ * (w_int - K + θ * (K + q * κ)) + (1 - ϕ) * b
 
     # Sectoral labor 
-    L_c = (ρ + δ) * L / (δ * μ + ρ)
-    L_e = δ * (μ - 1) * L / (δ * μ + ρ)
+    L_e = δ_e * (μ - 1) * L / (δ * μ + ρ)
 
     # Consumption output
     Y_c = p * z * L_c
@@ -274,26 +248,31 @@ function steady_state(para; init=0.51)
     # Total recruiting costs
     X = X_v + κ * v * q
 
+    # Total (stochastic) fixed costs 
+    X_c = N*(ψ/(ψ+1))*x_c 
+
     # Output and shares
-    C = Y_c - X
+    C = Y_c - X - X_c
     Y = C + ν_f * N_e
-    J = Q + (1 + ρ) / (1 - δ) * K / q
+    J = Q + (1 + r) / (1 - δ) * K / q
     M = Q * v + J * L + (N + N_e) * ν_f
-    labor_prod = Y / (p * L)
+    labor_prod = Y / (ρ*L)
 
     labor_share = w * L / Y
     cons_share = C / Y
     inv_new_firm_share = ν_f * N_e / Y
     vacancy_share = X / Y
+    fixed_cost_share = X_c/Y
     sunk_vac_cost_share = X_v / Y
     entrant_share = e / v
+
     x_v = (K / q) / (κ + K / q)
     search_wedge = w / w_int
     recruiter_share = w_int * L / Y
-    ann_int_rate = (1 + ρ)^12 - 1
+    ann_int_rate = (1 + r)^12 - 1
 
     return (
-        θ=θ, N=N, f=f, q=q, u=u, v=v, v_pret=v_pret, e=e, K=K, p=p, N_e=N_e,
+        θ=θ, N=N, f=f, q=q, u=u, v=v, v_pret=v_pret, e=e, K=K, ρ=ρ, N_e=N_e,
         ν_f=ν_f, d_f=d_f, w_int=w_int, w=w, L=L, L_e=L_e, L_c=L_c, Q=Q, J=J,
         X_v=X_v, X=X, C=C, Y_c=Y_c, Y=Y, labor_share=labor_share,
         labor_prod=labor_prod, cons_share=cons_share, inv_new_firm_share=inv_new_firm_share,
@@ -310,8 +289,7 @@ end
 # Default calibration targets
 targets = (
     X_Y=0.015, dest_ann=0.0754, dest_end_frac=0.5, f=0.41, η_L=0.6, q=0.8, sep=0.031, b_ratio=0.71,
-    x_v=1.0, ξ_inv=1, r_ann=0.04, ε=4.3, σ=1.0, N=1.0, w=1.0, a_m=1.0,
-    α=1.1, f_r=0.2)
+    x_v=1.0, ξ_inv=1, r_ann=0.04, ε=4.3, σ=1.0, N=1.0, w=1.0, a_m=1.0, ψ=1.5)
 
 """
     calibrate_shares(targets)
@@ -320,30 +298,20 @@ Calibrate model parameters to match empirical targets.
 Returns a NamedTuple of calibrated parameters.
 """
 function calibrate_shares(targets)
-    @unpack X_Y, dest_ann, dest_end_frac, f, η_L, q, sep, b_ratio, x_v, ξ_inv, ε, α, r_ann, σ, N, w, a_m = targets
+    @unpack X_Y, dest_ann, dest_end_frac, f, η_L, q, sep, b_ratio, x_v, ξ_inv, ε, r_ann, σ, N, w, a_m, ψ = targets
 
-    # Recover Pareto shape of H (productivity draws)
-    k = α*(ε-1)
-
-    # Multiplier relating a_tilde and a*
-    Δ = (α/(α-1))^(1/(ε-1))
-
-    # Min variable employment = (α-1)/α*(l_tilde-v)
 
     δ_e = 1 - (1 - dest_ann)^(1 / 12)
     δ = (1.0-dest_end_frac)*δ_e 
+    surv_prob = (1-δ_e)/(1-δ)
 
     # Purely endogenous destruction threshold
-    H_astar = (δ_e-δ)/(1-δ)
-    # Back out a_star 
-    a_star = H_inv(H_astar, a_m, k)
-    a_tilde = Δ*a_star
 
     @assert H(a_star, a_m, k) ≈ H_astar 
 
     τ = sep
     s = (τ - δ_e) / (1 - δ_e)
-    ρ = (1 + r_ann)^(1 / 12) - 1
+    r = (1 + r_ann)^(1 / 12) - 1
 
     # Correct job finding and vacancy filling probabilities
     f = f / (1 - δ_e)
