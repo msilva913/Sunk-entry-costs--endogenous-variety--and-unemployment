@@ -148,48 +148,20 @@ end
 # =============================================================================
 
 """
-    θ_fun(para; init_value=0.51)
-
-Solve for steady-state market tightness θ given parameters.
-"""
-function θ_fun(para; init_value=0.51)
-    @unpack f_e, τ, δ, z, b, ϕ, r, σ, ε, A, η_L, κ, ξ_inv, F, s = para
-    μ = ε / (ε - 1)
-
-    function loss(x)
-        θ = abs(x[1]) # ensure positivity
-        f = jf(θ, A, η_L)
-        q = vf(θ, A, η_L)
-        K = K_fun(θ, para)
-        L = L_fun(θ, para)
-        u = 1 - L
-        lhs = (κ + K / q) * (r + τ + (1 - δ) * ϕ * q * θ)
-        N = (μ - 1) * z * L * (1 - δ) / (f_e * (δ * μ + r))
-        ρ = N^(1 / (ε - 1))
-        w_int = ρ * z / μ
-        rhs = (1 - δ) * (1 - ϕ) * (w_int - K - b)
-        return [(lhs - rhs) / (lhs + rhs)]
-    end
-
-    sol = LeastSquaresOptim.optimize(loss, [init_value], Dogleg())
-    println("converged=$(sol.converged) at root=$(sol.minimizer) in " *
-        "$(sol.iterations) iterations and $(sol.f_calls) function calls")
-    return abs(sol.minimizer[1])
-end
-
-"""
     steady_state(para; init=0.51)
 
 Compute steady-state statistics given parameters.
 Returns a NamedTuple of all key statistics.
 """
 function steady_state(para; init=0.51)
-    @unpack f_e, τ, δ, s, z, b, ϕ, ρ, σ, ε, A, η_L, κ, ξ_inv, f_m ψ, s = para
+    @unpack f_e, τ, δ, s, z, b, ϕ, ρ, σ, ε, A, η_L, κ, ξ_inv, f_m, ψ, s = para
     μ = ε / (ε - 1)
     #θ = θ_fun(para, init_value=init)
     out = zeros(2)
+
     function loss(x)
         θ, end_dest = abs.(x) #ensure non-negativity
+        # Aggregate destruction rate
         δ_e = δ + end_dest - δ*end_dest   #(1-δ_e)=(1-δ)*(1-end_dest)
         f = jf(θ, A, η_L)
         q = vf(θ, A, η_L)
@@ -219,11 +191,13 @@ function steady_state(para; init=0.51)
         return out, vars 
     end 
 
-    sol = LeastSquaresOptim.optimize(x -> loss(x)[1], [init_value], Dogleg())
+    sol = LeastSquaresOptim.optimize(x -> loss(x)[1], [0.51, δ/2.0], Dogleg())
     println("converged=$(sol.converged) at root=$(sol.minimizer) in " *
         "$(sol.iterations) iterations and $(sol.f_calls) function calls")
     
-    var = loss(sol.x)[2]
+    var = loss(sol.minimizer)[2]
+    @unpack δ_e, f, q, θ, u, ρ, w_int, K, N, N_e, L_c, Y_c, x_c = var
+    L_e = L-L_c
 
     # Labor market variables
     v = θ * u
@@ -238,13 +212,8 @@ function steady_state(para; init=0.51)
 
     # Wages
     w = ϕ * (w_int - K + θ * (K + q * κ)) + (1 - ϕ) * b
-
     # Sectoral labor 
-    L_e = δ_e * (μ - 1) * L / (δ * μ + ρ)
-
-    # Consumption output
-    Y_c = p * z * L_c
-
+    L_e = δ_e * (μ - 1) * L / (δ * μ + r)
     # Total recruiting costs
     X = X_v + κ * v * q
 
@@ -289,7 +258,7 @@ end
 # Default calibration targets
 targets = (
     X_Y=0.015, dest_ann=0.0754, dest_end_frac=0.5, f=0.41, η_L=0.6, q=0.8, sep=0.031, b_ratio=0.71,
-    x_v=1.0, ξ_inv=1, r_ann=0.04, ε=4.3, σ=1.0, N=1.0, w=1.0, a_m=1.0, ψ=1.5)
+    x_v=1.0, ξ_inv=1, r_ann=0.04, ε=4.3, σ=1.0, N=1.0, w=1.0, f_m=1.0, ψ=1.5)
 
 """
     calibrate_shares(targets)
@@ -298,16 +267,18 @@ Calibrate model parameters to match empirical targets.
 Returns a NamedTuple of calibrated parameters.
 """
 function calibrate_shares(targets)
-    @unpack X_Y, dest_ann, dest_end_frac, f, η_L, q, sep, b_ratio, x_v, ξ_inv, ε, r_ann, σ, N, w, a_m, ψ = targets
+    @unpack X_Y, dest_ann, dest_end_frac, f, η_L, q, sep, b_ratio, x_v, ξ_inv, ε, r_ann, σ, N, w, f_m, ψ = targets
 
-
+    # Aggregate monthly destruction rate
     δ_e = 1 - (1 - dest_ann)^(1 / 12)
+    # Exogenous destruction rate
     δ = (1.0-dest_end_frac)*δ_e 
+    # Probability of surviving fixed cost shock
     surv_prob = (1-δ_e)/(1-δ)
 
-    # Purely endogenous destruction threshold
+    μ = ε/(ε-1)
 
-    @assert H(a_star, a_m, k) ≈ H_astar 
+    # Purely endogenous destruction threshold
 
     τ = sep
     s = (τ - δ_e) / (1 - δ_e)
@@ -329,52 +300,71 @@ function calibrate_shares(targets)
     N_e = δ_e / (1 - δ_e) * N
     b = b_ratio * w
 
+    # Sectoral labor 
+    L_c = (r+δ_e)*L/(δ_e*μ+r)
+    L_e = L - L_c 
+    #@assert L_e == δ_e*(μ-1)*L/(δ_e*μ+r)
     #Retailer profit share (would be 1/ε in absence of fixed costs)
-    π_s = (1/ε - f_r)
+    #π_s = (1/ε - f_r) #Xc_Yc
 
 
 
-    surplus_ratio = (ρ + τ) / (1 - δ_e) * (1 / (q * x_v))
-    p = N^(1 / (ε - 1))
+    surplus_ratio = (r + τ) / (1 - δ_e) * (1 / (q * x_v))
+    ρ = N^(1 / (ε - 1))
     μ = ε / (ε - 1)
     #recruiter_share = (δ + (ρ + δ) * (ε - 1)) / (δ + (ρ + δ) * ε)
-    recruiter_share = ((1-π_s)*ρ+δ_e)/(ρ+δ_e*(1+π_s))
+    #recruiter_share = ((1-π_s)*ρ+δ_e)/(ρ+δ_e*(1+π_s))
 
-    L_den =  f_e*(δ_e*μ+ρ)+μ*z*f*(1-δ_e)
-    L_c = (f_e*(δ_e+ ρ) + μ*z*f*(1-δ_e))*L/L_den
-    L_e = f_e*δ_e * (μ - 1) * L / L_den
-    @assert L_c + L_e ≈ L 
+    X_c_share = 0.20
 
     function loss(Q)
         Q = abs(Q)
-        K = Q * (ρ + δ_e) / (1 + ρ)
+        K = Q * (r + δ_e) / (1 + r)
         κ = (1 - x_v) / x_v * K / q
+        # Aggregate recruiting costs: (1) sunk and (2) fixed matching costs
         X = e / (1 + ξ_inv) * Q + κ * q * v
         w_int = surplus_ratio * K + w + K
         ϕ = (w - b) / (w_int - K + θ * (K + q * κ) - b)
 
-        z = (μ / p) * w_int *(1/a_tilde) # Now include a_tilde with firm heterogeneity
-        #f_e = (μ - 1) * z * (L / N) * (1 - δ) / (δ * μ + ρ)
-        ν_f = p * f_e / μ
-        Y_c = p * z * L_c
-        C = Y_c - X
+        z = (μ / ρ) * w_int # ρ = μ*w_int/z
+        f_e = (μ - 1) * z * (L / N) * (1 - δ_e) / (δ_e * μ + r) # rearrange resource constraint curve
+        ν_f = ρ * f_e / μ
+        Y_c = ρ * z * L_c
+        # Cutoff
+        x_c = Y_c/(ε*N) +ν_f 
+        X_c = X_c_share*Y_c
+        # Aggregate fixed costs paid 
+        #X_c = N*ψ/(ψ+1)*x_c
+        # Consumption and output
+        C = Y_c - X - X_c # Net out intermediate goods X and X_c
         Y_new = C + ν_f * N_e
         Y = 1 / X_Y * X
-        return (Y - Y_new) / (Y + Y_new), (w_int=w_int, κ=κ, z=z, f_e=f_e, K=K, X=X, Y=Y)
+        return (Y - Y_new) / (Y + Y_new), (;w_int, κ, z, f_e, K, x_c, X_c, X, C, Y_c, Y)
     end
 
-    Q = fzero(x -> loss(x)[1], 1.0)
+
+
+    Q = fzero(x -> loss(x)[1], 0.1)
+    Q = abs(Q)
     out = loss(Q)[2]
-    @unpack w_int, κ, z, f_e, K, X, Y = out
+    @unpack w_int, κ, z, f_e, K, x_c, X_c, X, C, Y_c, Y = out
     X_Y = abs(X_Y)
+
+    # Solve for ψ 
+    ψ_coeff = X_c/(N*x_c)
+    ψ = ψ_coeff/(1-ψ_coeff)
+    # Destruction rate 
+    # Implied power law parameter: (x_c/f_m)^ψ = surv_prob
+    f_m = x_c/surv_prob^(1/ψ)
+    @assert (F(x_c, f_m, ψ) - surv_prob) == 0.0
+
 
     ϕ = (w - b) / (w_int - K + θ * (K + q * κ) - b)
     x_m = Q / e^ξ_inv
-    F = 1.0
 
     return (
         f_e=f_e, τ=τ, δ=δ, z=z, b=b, ϕ=ϕ, ρ=ρ, σ=σ, ε=ε, A=A, η_L=η_L,
-        κ=κ, ξ_inv=ξ_inv, x_m=x_m, s=s, F=F
+        κ=κ, ξ_inv=ξ_inv, x_m=x_m, s=s, ψ=ψ, f_m=f_m
     )
 end
 
