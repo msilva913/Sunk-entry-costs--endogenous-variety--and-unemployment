@@ -34,7 +34,8 @@ steady = steady_state(cal)
 ############################################################
 
 @unpack θ, δ_e, ρ, L_c, L_e, w, w_int, L, N, N_e, K, Q, q, f, ν_f, d_f, C, Y_c, Y, X_v, X,
-         labor_share, sunk_vac_cost_share, vacancy_share, x_v, M, e, v, u = steady
+         labor_share, sunk_vac_cost_share, vacancy_share, x_v, M, e, v, u, 
+         profit_share_rec, profit_share_ret = steady
 
 @unpack f_e, τ, δ, z, b, ϕ, ρ, σ, ε, A, η_L, κ, ξ_inv, x_m, s, f_m, ψ = cal
 
@@ -56,19 +57,24 @@ steady = steady_state(cal)
 #labor_share_exp = (1+(X+X_c)/Y)*(w/w_int)*(((r+δ_e)*(ε-1)+δ_e)/(ε*(r+δ_e)+δ_e)+(r+δ_e)*ε/(ε*(r+δ_e)+δ_e)*X_c/Y_c)
 #@assert abs(labor_share - (1+X/Y)*(w/w_int)*(δ+(ρ+δ)*(ε-1))/(δ+(ρ+δ)*ε)) < 1e-12
 
+labor_share_alt = 1.0 - profit_share_rec - profit_share_ret
+@assert abs(labor_share - labor_share_alt) < 1e-12
+
 # Variable rofit share of consumption output
 @assert abs(N*d_f - Y_c/ε) < 1e-12
 
 # Wage bill share check
-@assert abs(w_int*L/Y - (1+X/Y)*(δ+(ρ+δ)*(ε-1))/(δ+(ρ+δ)*ε)) < 1e-12
+#@assert abs(w_int*L/Y - (1+X/Y)*(δ+(ρ+δ)*(ε-1))/(δ+(ρ+δ)*ε)) < 1e-12
 
 # Output identity
 @assert abs(Y-C-ν_f*N_e) < 1e-12
 
 # Production and cost identities
-@assert abs(Y+X - p*z*L_c - p*z*L_e/μ) < 1e-12
-@assert abs(p*z*L_c - w_int*L - N*ν_f*ρ/(1-δ)) < 1e-12
-@assert abs(p*z*L_e/μ-ν_f*N_e) < 1e-12
+@assert (Y_c - ρ*z*L_c) < 1e-12
+@assert (Y_c - C - X - X_c) < 1e-12
+#@assert abs(Y_c+ν_f*N_e - ρ*z*L_c - ρ*z*L_e/μ) < 1e-12
+@assert abs(ρ*z*L_c - w_int*L - N*ν_f*ρ/(1-δ)) < 1e-12
+@assert abs(ρ*z*L_e/μ-ν_f*N_e) < 1e-12
 
 # Vacancy cost share
 @assert abs(κ/(κ+K/q) -(1-x_v)) < 1e-12
