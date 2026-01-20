@@ -52,14 +52,13 @@ Invert vacancy filling probability to obtain market tightness θ.
     ε::Float64 = 4.0                   # Elasticity of substitution
     A::Float64 = 0.5631                # Job matching level parameter
     η_L::Float64 = 0.6                 # Elasticity of matching function w.r.t. unemployment
-    F::Float64 = 0.0007                # Mass of recruiters
     κ::Float64 = 0.2                   # Fixed matching cost
     ξ_inv::Float64 = 1.0               # Inverse elasticity of entry to vacancy value
     x_m::Float64 = 113.16              # Upper bound on cost distribution
 
     # New parameters related to firm heterogeneity
-    ψ::Float64 = 1.5                   # Curvature related to power law of continuation cost
-    f_m::Float64 = 10.0                 # Max value of cost draw              
+    ψ::Float64 = 1.5                   # Curvature related to power law of continuation cost (shape parameter)
+    f_m::Float64 = 10.0                 # Max value of cost draw (location parameter)              
 
     # Derived parameter: worker separation rate for steady-state
     #s = (τ - δ) / (1 - δ)
@@ -74,7 +73,7 @@ end
 Continuation cost-draw cdf given maximal cost
 """
 function F(x, f_m, ψ)
-    (a_m <=0 || ψ<=0) && throw(ArgumentError("a_m, k must be > 0 "))
+    (f_m <=0 || ψ<=0) && throw(ArgumentError("f_m, k must be > 0 "))
     if x < f_m
         out = (x/f_m)^ψ
     else
@@ -202,13 +201,14 @@ function steady_state(para; init=0.51)
     # Labor market variables
     v = θ * u
     e = δ_e * (v + 1 - u)
+    # Value of Q given free entry
     Q = e^ξ_inv * x_m
     X_v = e * (1 / (1 + ξ_inv)) * Q
     v_pret = v - e
 
     # Relative price, businesses, and values
     ν_f = ρ * f_e / μ
-    d_f = (ρ + δ_e) / (1 - δ_e) * ν_f
+    #d_f = (r + δ_e) / (1 - δ_e) * ν_f
 
     # Wages
     w = ϕ * (w_int - K + θ * (K + q * κ)) + (1 - ϕ) * b
@@ -240,14 +240,19 @@ function steady_state(para; init=0.51)
     recruiter_share = w_int * L / Y
     ann_int_rate = (1 + r)^12 - 1
 
+    # Profit shares of retailers and recruiters
+    profit_share_ret = (1/ε - X_c/Y_c)*Y_c/Y
+    profit_share_rec = ((w_int-w)*L-X)/Y
+
     return (
-        θ=θ, N=N, f=f, q=q, u=u, v=v, v_pret=v_pret, e=e, K=K, ρ=ρ, N_e=N_e,
+        θ=θ,δ_e=δ_e, N=N, f=f, q=q, u=u, v=v, v_pret=v_pret, e=e, K=K, ρ=ρ, N_e=N_e,
         ν_f=ν_f, d_f=d_f, w_int=w_int, w=w, L=L, L_e=L_e, L_c=L_c, Q=Q, J=J,
         X_v=X_v, X=X, C=C, Y_c=Y_c, Y=Y, labor_share=labor_share,
         labor_prod=labor_prod, cons_share=cons_share, inv_new_firm_share=inv_new_firm_share,
         vacancy_share=vacancy_share, sunk_vac_cost_share=sunk_vac_cost_share, M=M,
         entrant_share=entrant_share, x_v=x_v, search_wedge=search_wedge,
-        recruiter_share=recruiter_share, μ=μ, ann_int_rate=ann_int_rate
+        recruiter_share=recruiter_share, μ=μ, ann_int_rate=ann_int_rate,
+        profit_share_rec=profit_share_rec, profit_share_ret=profit_share_ret
     )
 end
 
@@ -257,8 +262,24 @@ end
 
 # Default calibration targets
 targets = (
-    X_Y=0.015, dest_ann=0.0754, dest_end_frac=0.5, f=0.41, η_L=0.6, q=0.8, sep=0.031, b_ratio=0.71,
-    x_v=1.0, ξ_inv=1, r_ann=0.04, ε=4.3, σ=1.0, N=1.0, w=1.0, f_m=1.0, ψ=1.5)
+    X_Y=0.015,        # recruiting cost share of output
+    Xc_Y=0.20,         # fixed cost share of output (Abraham, Bormans, Konings, Roeger)
+    dest_ann=0.0754,   # annual product destruction rate
+    dest_end_frac=0.5, # endogenous share of destruction rate
+    f=0.41,            # job-finding rate, 
+    η_L=0.6,           # elasticity of matching fun wrt unemployment
+    q=0.8,             # vacancy filling rate,
+    sep=0.031,         # aggregate separation rate , 
+    b_ratio=0.71,      # ratio of unemployment benefits to wage,
+    x_v=1.0, 
+    ξ_inv=1, 
+    r_ann=0.04,        # annual discount rate
+    ε=4.3,             # Elasticity of substitution (BGM, Compustat)
+    σ=1.0,             # Inverse IES
+    N=1.0,             # SS mass of forms (normalization)
+    w=1.0,             # SS wage (normalization)
+    #ψ=1.5)
+)
 
 """
     calibrate_shares(targets)
@@ -267,7 +288,7 @@ Calibrate model parameters to match empirical targets.
 Returns a NamedTuple of calibrated parameters.
 """
 function calibrate_shares(targets)
-    @unpack X_Y, dest_ann, dest_end_frac, f, η_L, q, sep, b_ratio, x_v, ξ_inv, ε, r_ann, σ, N, w, f_m, ψ = targets
+    @unpack X_Y, Xc_Y, dest_ann, dest_end_frac, f, η_L, q, sep, b_ratio, x_v, ξ_inv, ε, r_ann, σ, N, w = targets
 
     # Aggregate monthly destruction rate
     δ_e = 1 - (1 - dest_ann)^(1 / 12)
@@ -304,18 +325,15 @@ function calibrate_shares(targets)
     L_c = (r+δ_e)*L/(δ_e*μ+r)
     L_e = L - L_c 
     #@assert L_e == δ_e*(μ-1)*L/(δ_e*μ+r)
-    #Retailer profit share (would be 1/ε in absence of fixed costs)
-    #π_s = (1/ε - f_r) #Xc_Yc
-
-
-
+   
     surplus_ratio = (r + τ) / (1 - δ_e) * (1 / (q * x_v))
     ρ = N^(1 / (ε - 1))
     μ = ε / (ε - 1)
     #recruiter_share = (δ + (ρ + δ) * (ε - 1)) / (δ + (ρ + δ) * ε)
     #recruiter_share = ((1-π_s)*ρ+δ_e)/(ρ+δ_e*(1+π_s))
 
-    X_c_share = 0.20
+    α_c = ε*(r+δ_e)/(ε*(r+δ_e)+δ_e)
+    Xc_Yc = Xc_Y/(α_c*(1+X_Y+Xc_Y))
 
     function loss(Q)
         Q = abs(Q)
@@ -332,7 +350,7 @@ function calibrate_shares(targets)
         Y_c = ρ * z * L_c
         # Cutoff
         x_c = Y_c/(ε*N) +ν_f 
-        X_c = X_c_share*Y_c
+        X_c = Xc_Yc*Y_c
         # Aggregate fixed costs paid 
         #X_c = N*ψ/(ψ+1)*x_c
         # Consumption and output

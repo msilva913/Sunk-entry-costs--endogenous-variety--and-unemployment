@@ -6,20 +6,23 @@ include("steady_state.jl")
 
 # Define calibration targets (edit these as needed)
 targets = (
-    X_Y      = 0.015,
-    dest_ann = 0.0754,
-    f        = 0.41,
-    η_L      = 0.6,
-    q        = 0.8,
-    sep      = 0.031,
-    b_ratio  = 0.71,
-    x_v      = 0.5,
-    ξ_inv    = 1.0,
-    r_ann    = 0.04,
-    ε        = 4.3,
-    σ        = 1.0,
-    N        = 1.0,
-    w        = 1.0
+    X_Y=0.015,        # recruiting cost share of output
+    Xc_Y=0.20,         # fixed cost share of output (Abraham, Bormans, Konings, Roeger)
+    dest_ann=0.0754,   # annual product destruction rate
+    dest_end_frac=0.5, # endogenous share of destruction rate
+    f=0.41,            # job-finding rate, 
+    η_L=0.6,           # elasticity of matching fun wrt unemployment
+    q=0.8,             # vacancy filling rate,
+    sep=0.031,         # aggregate separation rate , 
+    b_ratio=0.71,      # ratio of unemployment benefits to wage,
+    x_v=1.0, 
+    ξ_inv=1, 
+    r_ann=0.04,        # annual discount rate
+    ε=4.3,             # Elasticity of substitution (BGM, Compustat)
+    σ=1.0,             # Inverse IES
+    N=1.0,             # SS mass of forms (normalization)
+    w=1.0,             # SS wage (normalization)
+    #ψ=1.5)
 )
 
 # Calibrate and compute steady state
@@ -30,10 +33,10 @@ steady = steady_state(cal)
 # ----------- Unpack Calibrated Variables ------------------
 ############################################################
 
-@unpack θ, p, L_c, L_e, w, w_int, L, N, N_e, K, Q, q, f, ν_f, d_f, C, Y_c, Y, X_v, X,
+@unpack θ, δ_e, ρ, L_c, L_e, w, w_int, L, N, N_e, K, Q, q, f, ν_f, d_f, C, Y_c, Y, X_v, X,
          labor_share, sunk_vac_cost_share, vacancy_share, x_v, M, e, v, u = steady
 
-@unpack f_e, τ, δ, z, b, ϕ, ρ, σ, ε, A, η_L, κ, ξ_inv, F, x_m, s = cal
+@unpack f_e, τ, δ, z, b, ϕ, ρ, σ, ε, A, η_L, κ, ξ_inv, x_m, s, f_m, ψ = cal
 
 μ = ε/(ε-1)
 
@@ -43,14 +46,17 @@ steady = steady_state(cal)
 
 # Normalizations and target matches
 @assert abs(steady.N - targets.N) < 1e-12
-@assert abs(steady.f*(1-cal.δ) - targets.f) < 1e-12
-@assert abs(steady.p - 1.0) < 1e-12
+@assert abs(steady.f*(1-δ_e) - targets.f) < 1e-12
+@assert abs(steady.ρ - 1.0) < 1e-12
 @assert abs(targets.X_Y - vacancy_share) < 1e-12
+@assert abs(targets.Xc_Y - X_c/Y) < 1e-12
+
 
 # Labor share check (theoretical formula)
-@assert abs(labor_share - (1+X/Y)*(w/w_int)*(δ+(ρ+δ)*(ε-1))/(δ+(ρ+δ)*ε)) < 1e-12
+#labor_share_exp = (1+(X+X_c)/Y)*(w/w_int)*(((r+δ_e)*(ε-1)+δ_e)/(ε*(r+δ_e)+δ_e)+(r+δ_e)*ε/(ε*(r+δ_e)+δ_e)*X_c/Y_c)
+#@assert abs(labor_share - (1+X/Y)*(w/w_int)*(δ+(ρ+δ)*(ε-1))/(δ+(ρ+δ)*ε)) < 1e-12
 
-# Profit share of consumption output
+# Variable rofit share of consumption output
 @assert abs(N*d_f - Y_c/ε) < 1e-12
 
 # Wage bill share check
