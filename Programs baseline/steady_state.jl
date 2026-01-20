@@ -168,8 +168,9 @@ function steady_state(para; init=0.51)
         L = L_fun(θ, δ_e, para)
         u = 1 - L
         lhs_jcc = (κ + K / q) * (r + τ + (1 - δ_e) * ϕ * q * θ)
-        N = (μ - 1) * z * L * (1 - δ_e) / (f_e * (δ_e * μ + r))
-
+        #N = (μ - 1) * z * L * (1 - δ_e) / (f_e * (δ_e * μ + r))
+        # Revised resource constraint curve
+        N = (μ - 1-ψ_coeff) * z * L * (1 - δ_e) / (f_e * (δ_e * μ + r +ψ_coeff*(1-μ*δ_e)))
         ρ = N^(1 / (ε - 1))
         w_int = ρ * z / μ
         rhs_jcc = (1 - δ_e) * (1 - ϕ) * (w_int - K - b)
@@ -212,8 +213,6 @@ function steady_state(para; init=0.51)
 
     # Wages
     w = ϕ * (w_int - K + θ * (K + q * κ)) + (1 - ϕ) * b
-    # Sectoral labor 
-    L_e = δ_e * (μ - 1) * L / (δ * μ + r)
     # Total recruiting costs
     X = X_v + κ * v * q
 
