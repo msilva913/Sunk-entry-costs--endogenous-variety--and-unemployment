@@ -320,21 +320,41 @@ function calibrate_shares(targets)
     N_e = δ_e / (1 - δ_e) * N
     b = b_ratio * w
 
-    # Sectoral labor 
-    L_c = (r+δ_e)*L/(δ_e*μ+r)
-    L_e = L - L_c 
-    #@assert L_e == δ_e*(μ-1)*L/(δ_e*μ+r)
-   
-    surplus_ratio = (r + τ) / (1 - δ_e) * (1 / (q * x_v))
+    # Relative price
     ρ = N^(1 / (ε - 1))
-    μ = ε / (ε - 1)
+
+    # Solve for Xc_Yc
+    function loss(x)
+        π_s = 1/ε - x # profit share in retail
+        # Ratio of Gross consumption output to Gross output
+        Yc_YG = (r+δ_e)/(r+δ_e+δ_e*π_s)
+        # Ratio of Gross output to GDP
+        YG_Y = 1 + X_Y + Xc_Y
+        return Xc_Y/(Yc_YG*YG_Y) -x
+    end 
+    Xc_Yc = find_zero(loss, [0.01, 0.5])
+
+
+
+
+    # Solve for ψ_c consistent with x=Xc_Yc
+    function loss_psi(ψ_c)
+        L_c = (r+δ_e+ψ_c*(1-(μ-1)*δ_e))/(δ_e*μ+r+ψ_c*(1-μ*δ_e))*L
+        Xc_Yc_new = (L/L_c)*(ψ_c/μ)*(μ-1 + (μ-1-ψ_c)*(1-δ_e*μ)/(δ_e*μ+r+ψ_c*(1-μ*δ_e)))
+        return Xc_Yc_new - Xc_Yc
+    end 
+
+    ψ_c = find_zero(loss_psi, 0.1)
+    L_c = (r+δ_e+ψ_c*(1-(μ-1)*δ_e))/(δ_e*μ+r+ψ_c*(1-μ*δ_e))*L
+    L_e = L-L_c
+    @assert abs(L_e- δ_e*(μ-1-ψ_c)*L/(δ_e*μ+r+ψ_c*(1-μ*δ_e))) < 1e-12
+
+    surplus_ratio = (r + τ) / (1 - δ_e) * (1 / (q * x_v))
+
     #recruiter_share = (δ + (ρ + δ) * (ε - 1)) / (δ + (ρ + δ) * ε)
     #recruiter_share = ((1-π_s)*ρ+δ_e)/(ρ+δ_e*(1+π_s))
 
-    α_c = ε*(r+δ_e)/(ε*(r+δ_e)+δ_e)
-    Xc_Yc = Xc_Y/(α_c*(1+X_Y+Xc_Y))
-
-    function loss(Q)
+    function loss_Q(Q)
         Q = abs(Q)
         K = Q * (r + δ_e) / (1 + r)
         κ = (1 - x_v) / x_v * K / q
@@ -344,7 +364,9 @@ function calibrate_shares(targets)
         ϕ = (w - b) / (w_int - K + θ * (K + q * κ) - b)
 
         z = (μ / ρ) * w_int # ρ = μ*w_int/z
-        f_e = (μ - 1) * z * (L / N) * (1 - δ_e) / (δ_e * μ + r) # rearrange resource constraint curve
+        # Find f_e from resource constraint curve 
+        f_e = (μ-1-ψ_c)*(1-δ_e)*z*(L/N)/(δ_e*μ+r+ψ_c*(1-μ*δ_e))
+
         ν_f = ρ * f_e / μ
         Y_c = ρ * z * L_c
         # Cutoff
@@ -356,15 +378,14 @@ function calibrate_shares(targets)
         C = Y_c - X - X_c # Net out intermediate goods X and X_c
         Y_new = C + ν_f * N_e
         Y = 1 / X_Y * X
-        return (Y - Y_new) / (Y + Y_new), (;w_int, κ, z, f_e, K, x_c, X_c, X, C, Y_c, Y)
+        return 100*(Y - Y_new) / (Y + Y_new), (;w_int, κ, z, f_e, K, x_c, X_c, X, C, Y_c, Y)
     end
 
-
-
-    Q = fzero(x -> loss(x)[1], 0.1)
+    Q = fzero(x -> loss_Q(x)[1], 0.1)
     Q = abs(Q)
-    out = loss(Q)[2]
+    out = loss_Q(Q)[2]
     @unpack w_int, κ, z, f_e, K, x_c, X_c, X, C, Y_c, Y = out
+    @show X_c/Y
     X_Y = abs(X_Y)
 
     # Solve for ψ 
