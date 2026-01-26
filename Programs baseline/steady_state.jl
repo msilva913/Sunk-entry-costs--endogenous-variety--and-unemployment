@@ -341,8 +341,9 @@ function calibrate_shares(targets)
     Xc_Yc = find_zero(loss, [0.01, 0.5])
     π_s = 1/ε - Xc_Yc
 
-    L_e = δ_e*π_s*L*μ/(r+δ_e+δ_e*μ)
-    L_c = L - L_e
+    
+    #L_e = δ_e*π_s*L*μ/(r+δ_e+δ_e*μ)
+    #L_c = L - L_e
 
     # Solve for ψ_c consistent with x=Xc_Yc
     function loss_psi(ψ_c)
@@ -351,10 +352,10 @@ function calibrate_shares(targets)
         return 100*(Xc_Yc_new - Xc_Yc)
     end 
 
-    # ψ_c = find_zero(loss_psi, 0.1)
-    # ψ = ψ_c/(1-ψ_c)
-    # L_c = (r+δ_e+ψ_c*(1-(μ-1)*δ_e))/(δ_e*μ+r+ψ_c*(1-μ*δ_e))*L
-    # L_e = L-L_c
+     ψ_c = find_zero(loss_psi, 0.1)
+     ψ = ψ_c/(1-ψ_c)
+     L_c = (r+δ_e+ψ_c*(1-(μ-1)*δ_e))/(δ_e*μ+r+ψ_c*(1-μ*δ_e))*L
+     L_e = L-L_c
     #@assert abs(L_e- δ_e*(μ-1-ψ_c)*L/(δ_e*μ+r+ψ_c*(1-μ*δ_e))) < 1e-12
 
     surplus_ratio = (r + τ) / (1 - δ_e) * (1 / (q * x_v))
@@ -375,6 +376,10 @@ function calibrate_shares(targets)
         # Find f_e from resource constraint curve 
         #f_e = (μ-1-ψ_c)*(1-δ_e)*z*(L/N)/(δ_e*μ+r+ψ_c*(1-μ*δ_e))
         f_e = π_s*z*L_c*(1-δ_e)*μ/(N*(r+δ_e)) #instead sub. for Nd_f = π_s*Y_c
+
+        N*(r+δ_e)/(1-δ_e)*f_e/μ - π_s*z*L_c #fine up to here 
+        N*f_e*((r+δ_e)/μ+π_s*δ_e) - (1-δ_e)*π_s*z*L
+        (N/L)*f_e*((r+δ_e)/μ+δ_e) - (1-δ_e)*(z*(1-ψ_c)/ε-(1/L_c)*ψ_c*f_e/μ)
 
         ν_f = ρ * f_e / μ
         d_f = (r+δ_e)/(1-δ_e)*ν_f
