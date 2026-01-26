@@ -153,8 +153,9 @@ Compute steady-state statistics given parameters.
 Returns a NamedTuple of all key statistics.
 """
 function steady_state(para; init=0.51)
-    @unpack f_e, τ, δ, s, z, b, ϕ, ρ, σ, ε, A, η_L, κ, ξ_inv, f_m, ψ, s = para
+    @unpack f_e, δ, s, z, b, ϕ, ρ, σ, ε, A, η_L, κ, ξ_inv, f_m, ψ, s = para
     μ = ε / (ε - 1)
+    ψ_c = ψ/(1+ψ)
     #θ = θ_fun(para, init_value=init)
     out = zeros(2)
 
@@ -162,6 +163,7 @@ function steady_state(para; init=0.51)
         θ, end_dest = abs.(x) #ensure non-negativity
         # Aggregate destruction rate
         δ_e = δ + end_dest - δ*end_dest   #(1-δ_e)=(1-δ)*(1-end_dest)
+        τ = 1 - (1-δ_e)*(1-s)
         f = jf(θ, A, η_L)
         q = vf(θ, A, η_L)
         K = K_fun(θ, δ_e, para)
@@ -170,13 +172,13 @@ function steady_state(para; init=0.51)
         lhs_jcc = (κ + K / q) * (r + τ + (1 - δ_e) * ϕ * q * θ)
         #N = (μ - 1) * z * L * (1 - δ_e) / (f_e * (δ_e * μ + r))
         # Revised resource constraint curve
-        N = (μ - 1-ψ_coeff) * z * L * (1 - δ_e) / (f_e * (δ_e * μ + r +ψ_coeff*(1-μ*δ_e)))
+        N = (μ - 1-ψ_c) * z * L * (1 - δ_e) / (f_e * (δ_e * μ + r +ψ_c*(1-μ*δ_e)))
         ρ = N^(1 / (ε - 1))
         w_int = ρ * z / μ
         rhs_jcc = (1 - δ_e) * (1 - ϕ) * (w_int - K - b)
 
         N_e = δ_e*N/(1-δ_e)
-        L_c = (r + δ_e) * L / (δ_e * μ + r)
+        L_c = (r+δ_e+ψ_c*(1-(μ-1)*δ_e))/(δ_e*μ+r+ψ_c*(1-μ*δ_e))*L
         # Consumption output
         Y_c = ρ * z * L_c
         # Cutoff
@@ -208,21 +210,27 @@ function steady_state(para; init=0.51)
     v_pret = v - e
 
     # Relative price, businesses, and values
-    ν_f = ρ * f_e / μ
-    #d_f = (r + δ_e) / (1 - δ_e) * ν_f
+    ν_f = ρ * f_e / μ # from free entry
+
+    # Total (stochastic) fixed costs 
+    X_c = N*ψ_c*x_c 
+    # Retail profit share of consumption output
+    π_s = (1/ε) - X_c/Y_c
+
+    #d_f = (r + δ_e) / (1 - δ_e) * ν_f # from Euler
 
     # Wages
     w = ϕ * (w_int - K + θ * (K + q * κ)) + (1 - ϕ) * b
     # Total recruiting costs
     X = X_v + κ * v * q
 
-    # Total (stochastic) fixed costs 
-    X_c = N*(ψ/(ψ+1))*x_c 
+   
 
     # Output and shares
     C = Y_c - X - X_c
     Y = C + ν_f * N_e
-    J = Q + (1 + r) / (1 - δ) * K / q
+
+    J = Q + (1 + r) / (1 - δ_e) * K / q
     M = Q * v + J * L + (N + N_e) * ν_f
     labor_prod = Y / (ρ*L)
 
@@ -330,21 +338,20 @@ function calibrate_shares(targets)
         Yc_YG = (r+δ_e)/(r+δ_e+δ_e*π_s)
         # Ratio of Gross output to GDP
         YG_Y = 1 + X_Y + Xc_Y
-        return Xc_Y/(Yc_YG*YG_Y) -x
+        return 100*(Xc_Y/(Yc_YG*YG_Y) -x)
     end 
     Xc_Yc = find_zero(loss, [0.01, 0.5])
-
-
 
 
     # Solve for ψ_c consistent with x=Xc_Yc
     function loss_psi(ψ_c)
         L_c = (r+δ_e+ψ_c*(1-(μ-1)*δ_e))/(δ_e*μ+r+ψ_c*(1-μ*δ_e))*L
         Xc_Yc_new = (L/L_c)*(ψ_c/μ)*(μ-1 + (μ-1-ψ_c)*(1-δ_e*μ)/(δ_e*μ+r+ψ_c*(1-μ*δ_e)))
-        return Xc_Yc_new - Xc_Yc
+        return 100*(Xc_Yc_new - Xc_Yc)
     end 
 
     ψ_c = find_zero(loss_psi, 0.1)
+    ψ = ψ_c/(1-ψ_c)
     L_c = (r+δ_e+ψ_c*(1-(μ-1)*δ_e))/(δ_e*μ+r+ψ_c*(1-μ*δ_e))*L
     L_e = L-L_c
     @assert abs(L_e- δ_e*(μ-1-ψ_c)*L/(δ_e*μ+r+ψ_c*(1-μ*δ_e))) < 1e-12
@@ -365,9 +372,11 @@ function calibrate_shares(targets)
 
         z = (μ / ρ) * w_int # ρ = μ*w_int/z
         # Find f_e from resource constraint curve 
-        f_e = (μ-1-ψ_c)*(1-δ_e)*z*(L/N)/(δ_e*μ+r+ψ_c*(1-μ*δ_e))
+        #f_e = (μ-1-ψ_c)*(1-δ_e)*z*(L/N)/(δ_e*μ+r+ψ_c*(1-μ*δ_e))
+        f_e = π_s*z*L_c*(1-δ_e)*μ/(N*(r+δ_e)) #instead sub. for Nd_f = π_s*Y_c
 
         ν_f = ρ * f_e / μ
+        d_f = (r+δ_e)/(1-δ_e)*ν_f
         Y_c = ρ * z * L_c
         # Cutoff
         x_c = Y_c/(ε*N) +ν_f 
@@ -378,19 +387,21 @@ function calibrate_shares(targets)
         C = Y_c - X - X_c # Net out intermediate goods X and X_c
         Y_new = C + ν_f * N_e
         Y = 1 / X_Y * X
-        return 100*(Y - Y_new) / (Y + Y_new), (;w_int, κ, z, f_e, K, x_c, X_c, X, C, Y_c, Y)
+        return 100*(Y - Y_new) / (Y + Y_new), (;w_int, κ, z, f_e, K, d_f, ν_f, x_c, X_c, X, C, Y_c, Y)
     end
 
     Q = fzero(x -> loss_Q(x)[1], 0.1)
     Q = abs(Q)
     out = loss_Q(Q)[2]
-    @unpack w_int, κ, z, f_e, K, x_c, X_c, X, C, Y_c, Y = out
+    @unpack w_int, κ, z, f_e, K, d_f, ν_f, x_c, X_c, X, C, Y_c, Y = out
     @show X_c/Y
     X_Y = abs(X_Y)
+    @show X_c/Y - Xc_Y # should be zero, but there is discrepancy
+    d_f = (r + δ_e) / (1 - δ_e) * ν_f # from Euler
+    @show N*d_f - π_s*Y_c # discrepancy in retailer profits
+    @show X_c - N*ψ_c*x_c
 
-    # Solve for ψ 
-    ψ_coeff = X_c/(N*x_c)
-    ψ = ψ_coeff/(1-ψ_coeff)
+
     # Destruction rate 
     # Implied power law parameter: (x_c/f_m)^ψ = surv_prob
     f_m = x_c/surv_prob^(1/ψ)

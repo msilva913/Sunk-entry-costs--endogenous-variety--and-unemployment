@@ -60,8 +60,8 @@ steady = steady_state(cal)
 labor_share_alt = 1.0 - profit_share_rec - profit_share_ret
 @assert abs(labor_share - labor_share_alt) < 1e-12
 
-# Variable rofit share of consumption output
-@assert abs(N*d_f - Y_c/ε) < 1e-12
+# Retail profits 
+@assert abs(N*d_f - Y_c/ε - X_c) < 1e-12
 
 # Wage bill share check
 #@assert abs(w_int*L/Y - (1+X/Y)*(δ+(ρ+δ)*(ε-1))/(δ+(ρ+δ)*ε)) < 1e-12
