@@ -355,10 +355,8 @@ function calibrate_shares(targets)
     end 
 
     ψ_c = find_zero(loss_psi, 0.1)
-
     ψ = ψ_c/(1-ψ_c)
 
-    
     surplus_ratio = (r + τ) / (1 - δ_e) * (1 / (q * x_v))
 
     #recruiter_share = (δ + (ρ + δ) * (ε - 1)) / (δ + (ρ + δ) * ε)
