@@ -163,30 +163,37 @@ function steady_state(para; init=0.51)
         θ, end_dest = abs.(x) #ensure non-negativity
         # Aggregate destruction rate
         δ_e = δ + end_dest - δ*end_dest   #(1-δ_e)=(1-δ)*(1-end_dest)
+        # Profit share in the consumption sector 
+        π_s = (μ-1)/μ*(1-ψ_c)*(r+δ_e)/(r+δ_e+ψ_c*(1-δ_e))
+        # Aggregate separation rate
         τ = 1 - (1-δ_e)*(1-s)
+
         f = jf(θ, A, η_L)
         q = vf(θ, A, η_L)
         K = K_fun(θ, δ_e, para)
         L = L_fun(θ, δ_e, para)
         u = 1 - L
         lhs_jcc = (κ + K / q) * (r + τ + (1 - δ_e) * ϕ * q * θ)
-        #N = (μ - 1) * z * L * (1 - δ_e) / (f_e * (δ_e * μ + r))
-        # Revised resource constraint curve
-        N = (μ - 1-ψ_c) * z * L * (1 - δ_e) / (f_e * (δ_e * μ + r +ψ_c*(1-μ*δ_e)))
+    
+        # Revised resource constraint curve using π_s
+        N = π_s*z*L*(1-δ_e)/(f_e*((r+δ_e)/μ+δ_e*π_s))
+
         ρ = N^(1 / (ε - 1))
         w_int = ρ * z / μ
         rhs_jcc = (1 - δ_e) * (1 - ϕ) * (w_int - K - b)
 
+        # Entrants
         N_e = δ_e*N/(1-δ_e)
-        L_c = (r+δ_e+ψ_c*(1-(μ-1)*δ_e))/(δ_e*μ+r+ψ_c*(1-μ*δ_e))*L
-        # Consumption output
+
+        # Consumption output and labor
+        L_c = (r+δ_e)*L/(r+δ_e+δ_e*π_s*μ)
         Y_c = ρ * z * L_c
         # Cutoff
         x_c = Y_c/(ε*N) + ρ*f_e/μ
         surv_prob = F(x_c, f_m, ψ) #∈ (0, 1)
         δ_e_new = 1.0 - surv_prob*(1-δ) #(1-δ_e_new) = surv_prob*(1-δ)
 
-        vars = (; δ_e, f, q, θ, u, ρ, w_int, K, N, N_e, L_c, Y_c, x_c)
+        vars = (; δ_e, f, q, θ, u, ρ, w_int, K, N, N_e, L_c, Y_c, x_c, π_s)
 
         out[1] = (rhs_jcc-lhs_jcc)/(rhs_jcc+lhs_jcc)
         out[2] = δ_e - δ_e_new
@@ -198,7 +205,7 @@ function steady_state(para; init=0.51)
         "$(sol.iterations) iterations and $(sol.f_calls) function calls")
     
     var = loss(sol.minimizer)[2]
-    @unpack δ_e, f, q, θ, u, ρ, w_int, K, N, N_e, L_c, Y_c, x_c = var
+    @unpack δ_e, f, q, θ, u, ρ, w_int, K, N, N_e, L_c, Y_c, x_c, π_s = var
     L_e = L-L_c
 
     # Labor market variables
@@ -214,8 +221,6 @@ function steady_state(para; init=0.51)
 
     # Total (stochastic) fixed costs 
     X_c = N*ψ_c*x_c 
-    # Retail profit share of consumption output
-    π_s = (1/ε) - X_c/Y_c
 
     #d_f = (r + δ_e) / (1 - δ_e) * ν_f # from Euler
 
@@ -246,18 +251,16 @@ function steady_state(para; init=0.51)
     ann_int_rate = (1 + r)^12 - 1
 
     # Profit shares of retailers and recruiters
-    profit_share_ret = (1/ε - X_c/Y_c)*Y_c/Y
+    profit_share_ret = π_s*Y_c/Y
     profit_share_rec = ((w_int-w)*L-X)/Y
 
-    return (
-        θ=θ,δ_e=δ_e, N=N, f=f, q=q, u=u, v=v, v_pret=v_pret, e=e, K=K, ρ=ρ, N_e=N_e,
-        ν_f=ν_f, d_f=d_f, w_int=w_int, w=w, L=L, L_e=L_e, L_c=L_c, Q=Q, J=J,
-        X_v=X_v, X=X, C=C, Y_c=Y_c, Y=Y, labor_share=labor_share,
-        labor_prod=labor_prod, cons_share=cons_share, inv_new_firm_share=inv_new_firm_share,
-        vacancy_share=vacancy_share, sunk_vac_cost_share=sunk_vac_cost_share, M=M,
-        entrant_share=entrant_share, x_v=x_v, search_wedge=search_wedge,
-        recruiter_share=recruiter_share, μ=μ, ann_int_rate=ann_int_rate,
-        profit_share_rec=profit_share_rec, profit_share_ret=profit_share_ret
+    return (;
+        θ,δ_e, N, f, q, u, v, v_pret, e, K, ρ, N_e,
+        ν_f, d_f, w_int, w, L, L_e, L_c, Q, J,
+        X_v, X, X_c, C, Y_c, Y, labor_share,
+        labor_prod, cons_share, inv_new_firm_share, vacancy_share, sunk_vac_cost_share, 
+        M, entrant_share, x_v, search_wedge, recruiter_share, μ, ann_int_rate,
+        π_s, profit_share_rec, profit_share_ret
     )
 end
 
@@ -341,23 +344,21 @@ function calibrate_shares(targets)
     Xc_Yc = find_zero(loss, [0.01, 0.5])
     π_s = 1/ε - Xc_Yc
 
-    
-    #L_e = δ_e*π_s*L*μ/(r+δ_e+δ_e*μ)
+    L_c = (r+δ_e)*L/(r+δ_e+δ_e*π_s*μ)
+    L_e = L - L_c
+    @assert abs(L_e - δ_e*π_s*L*μ/(r+δ_e+δ_e*π_s*μ))< 1e-12
     #L_c = L - L_e
 
-    # Solve for ψ_c consistent with x=Xc_Yc
     function loss_psi(ψ_c)
-        L_c = (r+δ_e+ψ_c*(1-(μ-1)*δ_e))/(δ_e*μ+r+ψ_c*(1-μ*δ_e))*L
-        Xc_Yc_new = (L/L_c)*(ψ_c/μ)*(μ-1 + (μ-1-ψ_c)*(1-δ_e*μ)/(δ_e*μ+r+ψ_c*(1-μ*δ_e)))
-        return 100*(Xc_Yc_new - Xc_Yc)
+        π_s_new = (μ-1)/μ*(1-ψ_c)*(r+δ_e)/(r+δ_e+ψ_c*(1-δ_e))
+        return π_s_new - π_s 
     end 
 
-     ψ_c = find_zero(loss_psi, 0.1)
-     ψ = ψ_c/(1-ψ_c)
-     L_c = (r+δ_e+ψ_c*(1-(μ-1)*δ_e))/(δ_e*μ+r+ψ_c*(1-μ*δ_e))*L
-     L_e = L-L_c
-    #@assert abs(L_e- δ_e*(μ-1-ψ_c)*L/(δ_e*μ+r+ψ_c*(1-μ*δ_e))) < 1e-12
+    ψ_c = find_zero(loss_psi, 0.1)
 
+    ψ = ψ_c/(1-ψ_c)
+
+    
     surplus_ratio = (r + τ) / (1 - δ_e) * (1 / (q * x_v))
 
     #recruiter_share = (δ + (ρ + δ) * (ε - 1)) / (δ + (ρ + δ) * ε)
@@ -373,20 +374,15 @@ function calibrate_shares(targets)
         ϕ = (w - b) / (w_int - K + θ * (K + q * κ) - b)
 
         z = (μ / ρ) * w_int # ρ = μ*w_int/z
-        # Find f_e from resource constraint curve 
-        #f_e = (μ-1-ψ_c)*(1-δ_e)*z*(L/N)/(δ_e*μ+r+ψ_c*(1-μ*δ_e))
+        # Find f_e from L_c, N relationship
         f_e = π_s*z*L_c*(1-δ_e)*μ/(N*(r+δ_e)) #instead sub. for Nd_f = π_s*Y_c
-
-        N*(r+δ_e)/(1-δ_e)*f_e/μ - π_s*z*L_c #fine up to here 
-        N*f_e*((r+δ_e)/μ+π_s*δ_e) - (1-δ_e)*π_s*z*L
-        (N/L)*f_e*((r+δ_e)/μ+δ_e) - (1-δ_e)*(z*(1-ψ_c)/ε-(1/L_c)*ψ_c*f_e/μ)
 
         ν_f = ρ * f_e / μ
         d_f = (r+δ_e)/(1-δ_e)*ν_f
         Y_c = ρ * z * L_c
         # Cutoff
         x_c = Y_c/(ε*N) +ν_f 
-        X_c = Xc_Yc*Y_c
+        X_c = N*ψ_c*x_c
         # Aggregate fixed costs paid 
         #X_c = N*ψ/(ψ+1)*x_c
         # Consumption and output
@@ -402,11 +398,12 @@ function calibrate_shares(targets)
     @unpack w_int, κ, z, f_e, K, d_f, ν_f, x_c, X_c, X, C, Y_c, Y = out
     @show X_c/Y
     X_Y = abs(X_Y)
-    @show X_c/Y - Xc_Y # should be zero, but there is discrepancy
+    @show X_c/Y - Xc_Y
+
     d_f = (r + δ_e) / (1 - δ_e) * ν_f # from Euler
     @show N*d_f - π_s*Y_c # discrepancy in retailer profits
     @show X_c - N*ψ_c*x_c
-    @show N*f_e*((r+δ_e)/μ+δ_e) - (1-δ_e)*π_s*z*L
+    @show N*f_e*((r+δ_e)/μ+δ_e*π_s) - (1-δ_e)*π_s*z*L
 
 
     # Destruction rate 
@@ -427,7 +424,7 @@ end
 # =============================================================================
 # Curves: Job Creation & Resource Constraint
 # =============================================================================
-
+## This curves need to be updated with endogenous δ_e##
 """
     N_jcc(θ, para)
 

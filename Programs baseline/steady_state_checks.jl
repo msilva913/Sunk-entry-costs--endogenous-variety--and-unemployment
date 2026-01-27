@@ -25,6 +25,7 @@ targets = (
     #ψ=1.5)
 )
 
+
 # Calibrate and compute steady state
 cal = calibrate_shares(targets)
 steady = steady_state(cal)
@@ -33,8 +34,8 @@ steady = steady_state(cal)
 # ----------- Unpack Calibrated Variables ------------------
 ############################################################
 
-@unpack θ, δ_e, ρ, L_c, L_e, w, w_int, L, N, N_e, K, Q, q, f, ν_f, d_f, C, Y_c, Y, X_v, X,
-         labor_share, sunk_vac_cost_share, vacancy_share, x_v, M, e, v, u, 
+@unpack θ, δ_e, ρ, L_c, L_e, w, w_int, L, N, N_e, K, Q, q, f, ν_f, d_f, C, Y_c, Y, X_v, X, X_c,
+         labor_share, sunk_vac_cost_share, vacancy_share, x_v, M, e, v, u, π_s,
          profit_share_rec, profit_share_ret = steady
 
 @unpack f_e, τ, δ, z, b, ϕ, ρ, σ, ε, A, η_L, κ, ξ_inv, x_m, s, f_m, ψ = cal
@@ -53,15 +54,13 @@ steady = steady_state(cal)
 @assert abs(targets.Xc_Y - X_c/Y) < 1e-12
 
 
-# Labor share check (theoretical formula)
-#labor_share_exp = (1+(X+X_c)/Y)*(w/w_int)*(((r+δ_e)*(ε-1)+δ_e)/(ε*(r+δ_e)+δ_e)+(r+δ_e)*ε/(ε*(r+δ_e)+δ_e)*X_c/Y_c)
-#@assert abs(labor_share - (1+X/Y)*(w/w_int)*(δ+(ρ+δ)*(ε-1))/(δ+(ρ+δ)*ε)) < 1e-12
-
 labor_share_alt = 1.0 - profit_share_rec - profit_share_ret
 @assert abs(labor_share - labor_share_alt) < 1e-12
 
 # Retail profits 
-@assert abs(N*d_f - Y_c/ε - X_c) < 1e-12
+@assert abs(N*d_f - π_s*Y_c) < 1e-12
+ - Y_c/ε - X_c
+@assert abs(N*d_f - Y_c/ε + X_c) < 1e-12
 
 # Wage bill share check
 #@assert abs(w_int*L/Y - (1+X/Y)*(δ+(ρ+δ)*(ε-1))/(δ+(ρ+δ)*ε)) < 1e-12
@@ -73,32 +72,33 @@ labor_share_alt = 1.0 - profit_share_rec - profit_share_ret
 @assert (Y_c - ρ*z*L_c) < 1e-12
 @assert (Y_c - C - X - X_c) < 1e-12
 #@assert abs(Y_c+ν_f*N_e - ρ*z*L_c - ρ*z*L_e/μ) < 1e-12
-@assert abs(ρ*z*L_c - w_int*L - N*ν_f*ρ/(1-δ)) < 1e-12
+
 @assert abs(ρ*z*L_e/μ-ν_f*N_e) < 1e-12
 
 # Vacancy cost share
 @assert abs(κ/(κ+K/q) -(1-x_v)) < 1e-12
 
 # Wage equation/JCC
-@assert abs((w_int-w-K - (ρ+τ)/(1-δ)*(κ+K/q))) < 1e-12
+@assert abs((w_int-w-K - (r+τ)/(1-δ_e)*(κ+K/q))) < 1e-12
 @assert abs(w - ϕ*(w_int-K+ θ*(K+q* κ))- (1-ϕ)*b) < 1e-12
 
 # Entrant consistency
-@assert abs(v - ((1-δ)*((1-q)*v+s*(1-u))+e)) < 1e-12
-@assert abs(e - δ*(v+1-u)) < 1e-12
+@assert abs(v - ((1-δ_e)*((1-q)*v+s*(1-u))+e)) < 1e-12
+@assert abs(e - δ_e*(v+1-u)) < 1e-12
 @assert abs(N_e - L_e*z/f_e) < 1e-12
 
 # Surplus ratio and capital check
-surplus_ratio = (ρ+τ)/(1-δ)*(1/(q*x_v))
+surplus_ratio = (r+τ)/(1-δ_e)*(1/(q*x_v))
 @assert abs(K - (1-ϕ)/ϕ*(w-b)/(surplus_ratio +  θ*(1/x_v))) < 1e-12
 
 # Consistency x_m with Q
-@assert abs(Q - (e/F)^ξ_inv*x_m) < 1e-12
+@assert abs(Q - e^ξ_inv*x_m) < 1e-12
 
 ############################################################
 # ----------- Display Key Steady-State Ratios --------------
 ############################################################
 
+# TO DO: Curves to be revised
 @show N_jcc(steady.θ, cal)
 @show N_res(steady.θ, cal)
 @show labor_share
