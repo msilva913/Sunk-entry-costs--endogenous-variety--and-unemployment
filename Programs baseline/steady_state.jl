@@ -109,7 +109,7 @@ end
 New vacancy rate as a function of market tightness θ and parameters.
 """
 function e_fun(θ, δ_e, para)
-    @unpack δ, A, η_L = para
+    @unpack δ, s, A, η_L = para
     f = jf(θ, A, η_L)
     τ = 1 - (1 - δ_e) * (1 - s)
     return δ_e * (θ * τ + (1 - δ_e) * f) / (τ + (1 - δ_e) * f)
@@ -120,7 +120,7 @@ end
 Vacancy value as a function of market tightness θ and parameters.
 """
 function K_fun(θ, δ_e, para)
-    @unpack ρ, δ, x_m, ξ_inv = para
+    @unpack r, δ, x_m, ξ_inv = para
     e = e_fun(θ, δ_e, para)
     # Value of vacancy
     Q = (e)^ξ_inv * x_m
@@ -132,11 +132,11 @@ end
 
 Wage function as a function of market tightness θ, number of businesses N, and parameters.
 """
-function w_fun(θ, N, δ_e, a_tilde, para)
+function w_fun(θ, N, δ_e, para)
     @unpack ϕ, b, z, ε, δ, A, η_L, κ = para
     q = vf(θ, A, η_L)
     μ = ε / (ε - 1)
-    w_int = N^(1 / (ε - 1)) * z*a_tilde/ μ
+    w_int = N^(1 / (ε - 1)) * z/ μ
     K = K_fun(θ, δ_e,  para)
     return (1 - ϕ) * b + ϕ * (w_int - K + θ * (K + q * κ))
 end
@@ -153,7 +153,7 @@ Compute steady-state statistics given parameters.
 Returns a NamedTuple of all key statistics.
 """
 function steady_state(para; init=0.51)
-    @unpack f_e, δ, s, z, b, ϕ, ρ, σ, ε, A, η_L, κ, ξ_inv, f_m, ψ, s = para
+    @unpack f_e, δ, s, z, b, ϕ, r, σ, ε, A, η_L, κ, ξ_inv, x_m, f_m, ψ, s = para
     μ = ε / (ε - 1)
     ψ_c = ψ/(1+ψ)
     #θ = θ_fun(para, init_value=init)
@@ -193,7 +193,7 @@ function steady_state(para; init=0.51)
         surv_prob = F(x_c, f_m, ψ) #∈ (0, 1)
         δ_e_new = 1.0 - surv_prob*(1-δ) #(1-δ_e_new) = surv_prob*(1-δ)
 
-        vars = (; δ_e, f, q, θ, u, ρ, w_int, K, N, N_e, L_c, Y_c, x_c, π_s)
+        vars = (; δ_e, f, q, θ, u, ρ, w_int, K, N, N_e, L_c, Y_c, x_c, π_s, surv_prob)
 
         out[1] = (rhs_jcc-lhs_jcc)/(rhs_jcc+lhs_jcc)
         out[2] = δ_e - δ_e_new
@@ -205,7 +205,8 @@ function steady_state(para; init=0.51)
         "$(sol.iterations) iterations and $(sol.f_calls) function calls")
     
     var = loss(sol.minimizer)[2]
-    @unpack δ_e, f, q, θ, u, ρ, w_int, K, N, N_e, L_c, Y_c, x_c, π_s = var
+    @unpack δ_e, f, q, θ, u, ρ, w_int, K, N, N_e, L_c, Y_c, x_c, π_s, surv_prob = var
+    L = 1-u
     L_e = L-L_c
 
     # Labor market variables
@@ -222,7 +223,7 @@ function steady_state(para; init=0.51)
     # Total (stochastic) fixed costs 
     X_c = N*ψ_c*x_c 
 
-    #d_f = (r + δ_e) / (1 - δ_e) * ν_f # from Euler
+    d_f = (r + δ_e) / (1 - δ_e) * ν_f # from Euler
 
     # Wages
     w = ϕ * (w_int - K + θ * (K + q * κ)) + (1 - ϕ) * b
@@ -243,7 +244,7 @@ function steady_state(para; init=0.51)
     vacancy_share = X / Y
     fixed_cost_share = X_c/Y
     sunk_vac_cost_share = X_v / Y
-    entrant_share = e / v
+    entrant_vac_share = e / v
 
     x_v = (K / q) / (κ + K / q)
     search_wedge = w / w_int
@@ -254,12 +255,14 @@ function steady_state(para; init=0.51)
     profit_share_ret = π_s*Y_c/Y
     profit_share_rec = ((w_int-w)*L-X)/Y
 
+    end_dest_share = (1-surv_prob)/δ_e
+
     return (;
         θ,δ_e, N, f, q, u, v, v_pret, e, K, ρ, N_e,
         ν_f, d_f, w_int, w, L, L_e, L_c, Q, J,
-        X_v, X, X_c, C, Y_c, Y, labor_share,
+        X_v, X, X_c, C, Y_c, Y, labor_share, end_dest_share,
         labor_prod, cons_share, inv_new_firm_share, vacancy_share, sunk_vac_cost_share, 
-        M, entrant_share, x_v, search_wedge, recruiter_share, μ, ann_int_rate,
+        M, entrant_vac_share, x_v, search_wedge, recruiter_share, μ, ann_int_rate,
         π_s, profit_share_rec, profit_share_ret
     )
 end
@@ -413,8 +416,8 @@ function calibrate_shares(targets)
     ϕ = (w - b) / (w_int - K + θ * (K + q * κ) - b)
     x_m = Q / e^ξ_inv
 
-    return (
-        f_e=f_e, τ=τ, δ=δ, z=z, b=b, ϕ=ϕ, ρ=ρ, σ=σ, ε=ε, A=A, η_L=η_L,
+    return (;
+        f_e, δ=δ, z=z, b=b, ϕ=ϕ, r, σ=σ, ε=ε, A=A, η_L=η_L,
         κ=κ, ξ_inv=ξ_inv, x_m=x_m, s=s, ψ=ψ, f_m=f_m
     )
 end

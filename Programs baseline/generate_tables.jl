@@ -12,62 +12,64 @@ using MAT
 #posterior_mode = read(posterior_mode, "posterior_mode")
 
 function calibration_table(cal, targets)
-    @unpack f_e, τ, δ, z, b, ϕ, ρ, σ, ε, A, η_L, ξ_inv, A, F, x_m, κ, s = cal
-    @unpack X_Y, dest_ann, f, η_L, q, sep, b_ratio, x_v, ξ_inv, ε, r_ann, σ, N, w = targets
+    @unpack f_e, δ, s, z, b, ϕ, r, σ, ε, A, η_L, κ, ξ_inv, f_m, ψ, s = cal
+    @unpack X_Y, Xc_Y, dest_ann, dest_end_frac, f, η_L, q, sep, b_ratio, x_v, ξ_inv, ε, r_ann, σ, N, w = targets
 
-    #ρ = (1+r_ann)^(1/12)-1
-    β = 1/(1+ρ)
-    δ = 1-(1-dest_ann)^(1/12)
+    r = (1+r_ann)^(1/12)-1
+    β = 1/(1+r)
+    δ_e = 1-(1-dest_ann)^(1/12)
     μ = ε/(ε-1)
-
+    τ = (1-δ_e)*(1-s)
     # Creating a DataFrame for the table
     df = DataFrame(
-        Parameter = [L"\rho", L"\eta_L", L"b", L"\delta", L"\xi^{-1}", L"\varepsilon", L"\sigma", L"\kappa", L"z", L"f_e", L"s",
-         L"\phi", L"A", L"F"],
+        Parameter = [L"r", L"\eta_L", L"b", L"\delta", L"\xi^{-1}", L"\varepsilon", L"\sigma", L"\kappa", L"z", L"f_e", L"s",
+         L"\phi", L"A", L"f_m", L"\psi"],
         Targets = [
             "Real interest rate",
-            #"Recruiting cost share",
             "Elasticity of matching function",
-          #  "Replacement ratio b/w",
-          "Estimated",
+          "Estimated",   #  "Replacement ratio b/w",
             "Job destruction from obsolescence",
-           # "Elasticity of vacancy value",
-           "Estimated",
-           # "Markup",
-           "Investment share",
-           # "Risk aversion",
-           "Estimated",
-           # "Share of sunk vacancy costs to overall hiring costs",
-           "Estimated",
+           "Estimated", # "Elasticity of vacancy value",
+            "Markup", # Elasticity of substitution
+          # "Investment share",
+           "Estimated",  # "Risk aversion",
+           "Estimated", # "Share of sunk vacancy costs to overall hiring costs",
             "Steady-state wage",
             "Steady-state mass of firms",
-            "Aggregate separation rate",
-            "Labor share",
+            "Match separation rate",
+            "Recruiting cost share: X/Y",
             "Job finding rate",
-            "Vacancy filling rate"
+            L"Endogenous destruction share: "*L"$(1-F(x_c))/\delta_e$",
+            "Fixed cost share: "*L"$X^c/Y$",
         ],
-        Value = map(x -> isa(x, Number) ? round(x, sigdigits=2) : x, [r_ann, η_L, "-", δ, "-", ε, "-", "-", w, N, τ, labor_share, 0.41, 0.80]),
-        Calibration = round.([ρ, η_L, b, δ, ξ_inv, ε, σ, κ, z, f_e, s, ϕ, A, F], sigdigits=3)
+        Value = map(x -> isa(x, Number) ? round(x, sigdigits=2) : x, [r_ann, η_L, "-", δ, "-", ε, "-", "-", w, N, τ, X_Y, 0.41, 0.5, 0.20]),
+        Calibration = round.([r, η_L, b, δ, ξ_inv, ε, σ, κ, z, f_e, s, ϕ, A, f_m, ψ], sigdigits=3)
     )
 
     # Save the DataFrame as a PDF table
     return df
 end
 
-"""
-targets = (labor_share=0.66, 
-           dest_ann=0.10, 
-           r_ann=0.04, 
-           f =0.41, 
-           η_L=0.6, #elast. of matching function
-           q=0.8, 
-           sep=0.031, 
-           b_ratio=posterior_mode["b_ratio"], 
-            x_v=posterior_mode["x_v"], 
-            ξ_inv=posterior_mode["xi_inv"], # congestion elasticity
-            ε=posterior_mode["epsi"], # elasticity of sub.
-            σ=posterior_mode["sigma"], # log utility
-            N=1, w=1.0)
+targets = (
+    X_Y=0.015,        # recruiting cost share of output
+    Xc_Y=0.20,         # fixed cost share of output (Abraham, Bormans, Konings, Roeger)
+    dest_ann=0.0754,   # annual product destruction rate
+    dest_end_frac=0.5, # endogenous share of destruction rate
+    f=0.41,            # job-finding rate, 
+    η_L=0.6,           # elasticity of matching fun wrt unemployment
+    q=0.8,             # vacancy filling rate,
+    sep=0.031,         # aggregate separation rate , 
+    b_ratio=0.71,      # ratio of unemployment benefits to wage,
+    x_v=1.0, 
+    ξ_inv=1, 
+    r_ann=0.04,        # annual discount rate
+    ε=4.3,             # Elasticity of substitution (BGM, Compustat)
+    σ=1.0,             # Inverse IES
+    N=1.0,             # SS mass of forms (normalization)
+    w=1.0,             # SS wage (normalization)
+    #ψ=1.5)
+)
+
 """
 targets = (X_Y = 0.015, # vacancy share target,  influences ϕ
            dest_ann=0.0754, #21% of job destruction from obsolescence 
@@ -87,6 +89,7 @@ targets = (X_Y = 0.015, # vacancy share target,  influences ϕ
            N=1.0, # normalization: pins down f_e
            w=1.0, # normalization: we express values relative to wage
 )
+"""
 
 cal = calibrate_shares(targets)
 ss = steady_state(cal)
@@ -101,9 +104,10 @@ print(df_table)
 
 function shares_table(ss::NamedTuple)
     # Define additional variables 
-    @unpack w_int, w, L, X, Y, N, d_f = ss
+    @unpack w_int, w, L, X, Y, N, d_f, δ_e, end_dest_share, entrant_vac_share = ss
     recruiter_profit_share = ((w_int-w)*L-X)/Y
     retailer_profit_share =  (N*d_f)/Y
+
     df = DataFrame(
         Share = [
             "Annual interest rate",
@@ -112,10 +116,10 @@ function shares_table(ss::NamedTuple)
             "Vacancy rate",
             "Unemployment rate",
             "Market tightness",
+             "Business formation share",
             "Recruiting cost share",
-            "Business formation share",
-            "Sunk vacancy cost share",
-            " Vacancy cost share ",
+            "Fixed cost share",
+            "Endogenous share of destruction shock",
             "New vacancy share",
             #"Search wedge",
             #"Market power wedge",
@@ -126,10 +130,10 @@ function shares_table(ss::NamedTuple)
             "Value of a filled job",
             "Stock market cap to GDP"
         ],
-        Symbol = [L"(1+ρ)^12-1", L"\mu", L"C/Y", L"v", L"u", L"\theta", L"X/Y", L"\nu N_e/Y", L"X_v/Y", L"X/Y", L"e/v", 
-        L"wL/Y", L"(w^{int}-w)*L-X)/Y", L"N*d_f/Y",  L"Q", L"J", L"M/(12*Y)"],
-        Value = round.([ss.ann_int_rate, ss.μ, ss.cons_share, ss.v, ss.u, ss.θ, ss.vacancy_share, ss.inv_new_firm_share, 
-        ss.sunk_vac_cost_share, ss.vacancy_share, ss.entrant_share, ss.labor_share, recruiter_profit_share, retailer_profit_share,
+        Symbol = [L"(1+r)^12-1", L"\mu", L"C/Y", L"v", L"u", L"\theta",  L"\nu N_e/Y", L"X/Y", L"Xc/Y", L"(1-F(x^c))/\delta_e",
+       L"e/v", L"wL/Y", L"(w^{int}-w)*L-X)/Y", L"N*d_f/Y",  L"Q", L"J", L"M/(12*Y)"],
+        Value = round.([ss.ann_int_rate, ss.μ, ss.cons_share, ss.v, ss.u, ss.θ, ss.inv_new_firm_share, ss.vacancy_share,
+         ss.X_c/ss.Y, ss.end_dest_share,  ss.entrant_vac_share, ss.labor_share, recruiter_profit_share, retailer_profit_share,
         ss.Q, ss.J, ss.M/(12*ss.Y)], sigdigits=3),
 
     )
