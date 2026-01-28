@@ -258,7 +258,7 @@ function steady_state(para; init=0.51)
     end_dest_share = (1-surv_prob)/δ_e
 
     return (;
-        θ,δ_e, N, f, q, u, v, v_pret, e, K, ρ, N_e,
+        θ,δ_e, x_c, N, f, q, u, v, v_pret, e, K, ρ, N_e,
         ν_f, d_f, w_int, w, L, L_e, L_c, Q, J,
         X_v, X, X_c, C, Y_c, Y, labor_share, end_dest_share,
         labor_prod, cons_share, inv_new_firm_share, vacancy_share, sunk_vac_cost_share, 
