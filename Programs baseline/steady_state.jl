@@ -93,6 +93,8 @@ function F_inv(F, f_m, ψ)
     return x 
 end 
 
+
+
 """
     L_fun(θ, para)
 Steady-state employment as a function of market tightness θ, δ_e and parameters.
@@ -434,11 +436,11 @@ Job creation curve: N as a function of θ.
 function N_jcc(θ, para)
     @unpack ρ, τ, A, η_L, δ, ϕ, z, ε, b, κ = para
     q = vf(θ, A, η_L)
-    K = K_fun(θ, para)
+    K = K_fun(θ, δ_e, para)
     μ = ε / (ε - 1)
-    w_int = (1 / ((1 - δ) * (1 - ϕ))) * (κ * q + K) * ((ρ + τ) / q + (1 - δ) * ϕ * θ) + K + b
-    p = w_int * (μ / z)
-    N = p^(ε - 1)
+    w_int = (1 / ((1 - δ_e) * (1 - ϕ))) * (κ * q + K) * ((ρ + τ) / q + (1 - δ_e) * ϕ * θ) + K + b
+    ρ= w_int * (μ / z)
+    N = ρ^(ε - 1)
     return N
 end
 
@@ -447,13 +449,68 @@ end
 
 Resource constraint curve: N as a function of θ.
 """
-function N_res(θ, para)
-    @unpack ρ, δ, τ, A, η_L, f_e, ε, z = para
+function N_res(θ, δ_e, para)
+    @unpack ρ, δ, τ, A, η_L, f_e, ε, z, ψ = para
     μ = ε / (ε - 1)
+    ψ_c = ψ/(1+ψ)
     f = jf(θ, A, η_L)
-    u = τ / (τ + (1 - δ) * f)
+    u = τ / (τ + (1 - δ_e) * f)
     L = 1 - u
-    N = (μ - 1) * z * L * (1 - δ) / (f_e * (δ * μ + ρ))
+    π_s = (μ-1)/μ*(1-ψ_c)*(r+δ_e)/(r+δ_e+ψ_c*(1-δ_e))
+    N = z * L * (1 - δ_e) / (f_e * (δ_e + (r+δ_e)/(μ*π_s)))
     return N
 end
+
+function δ_e_fun(x_c, para)
+    @unpack δ, f_m, ψ = para
+    return 1 - (1-δ)*F(x_c, f_m, ψ)
+end
+
+function x_c_fun(δ_e, para)
+    @unpack δ, f_m, ψ = para 
+    return ((1-δ_e)/(1-δ))^(1/ψ)*f_m
+end 
+
+function x_c_fe_fun(δ_e, ρ, para)
+    @unpack f_e, r, ψ, ε = para 
+    μ = ε/(ε-1)
+    ψ_c = ψ/(1+ψ)
+    return ρ*f_e/μ*((r+δ_e)/(1-δ_e)*(r+δ_e+ψ_c*(1-δ_e))/((1-ψ_c)*(r+δ_e))+1 )
+end
+
+using PyPlot
+steady.x_c
+x_c_space = 0.1:0.1:10
+
+δ_e_inv = zero(x_c_space)
+for (i, x) in enumerate(x_c_space)
+    δ_e_inv[i] = find_zero(δ -> x_c_fe_fun(δ, steady.ρ, para) - x, 0.05)
+end 
+
+indices=δ_e_inv .> para.δ
+
+fig, ax = PyPlot.subplots()
+ax.plot(x_c_space, δ_e_fun.(x_c_space, Ref(cal)))
+ax.plot(x_c_space[indices], δ_e_inv[indices])
+ax.set_xlabel(L"$x^c$")
+ax.set_ylabel(L"$\delta_e$")
+ax.legend()
+tight_layout()
+display(fig)
+
+δ_space = cal.δ:0.0001:cal.δ*4
+ρ = steady.ρ
+x_c_space = x_c_fe_fun.(δ_space, Ref(ρ), Ref(para))
+x_c_space2 = x_c_fun.(δ_space, Ref(para))
+
+fig, ax = PyPlot.subplots()
+ax.plot(δ_space, x_c_space, label="Exit condition")
+ax.plot(δ_space, x_c_space2, label="Distributional condition")
+ax.set_xlabel(L"δ_e")
+ax.set_ylabel(L"$x^c$")
+ax.legend()
+tight_layout()
+display(fig)
+
+
 
