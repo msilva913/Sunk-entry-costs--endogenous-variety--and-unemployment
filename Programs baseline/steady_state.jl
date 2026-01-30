@@ -433,7 +433,7 @@ end
 
 Job creation curve: N as a function of θ.
 """
-function N_jcc(θ, para)
+function N_jcc(θ, δ_e, para)
     @unpack ρ, τ, A, η_L, δ, ϕ, z, ε, b, κ = para
     q = vf(θ, A, η_L)
     K = K_fun(θ, δ_e, para)
@@ -466,12 +466,16 @@ function δ_e_fun(x_c, para)
     return 1 - (1-δ)*F(x_c, f_m, ψ)
 end
 
-function x_c_fun(δ_e, para)
+function x_c_dest_fun(δ_e, para)
     @unpack δ, f_m, ψ = para 
     return ((1-δ_e)/(1-δ))^(1/ψ)*f_m
 end 
 
-function x_c_fe_fun(δ_e, ρ, para)
+"""
+    x_c(delta_e)-> number
+    Exit threshold as a function of exit condition combined with free entry
+"""
+function x_c_exit_thresh_fun(δ_e, ρ, para)
     @unpack f_e, r, ψ, ε = para 
     μ = ε/(ε-1)
     ψ_c = ψ/(1+ψ)
@@ -479,6 +483,9 @@ function x_c_fe_fun(δ_e, ρ, para)
 end
 
 using PyPlot
+
+cal = calibrate_shares(targets)
+steady = steady_state(cal)
 steady.x_c
 x_c_space = 0.1:0.1:10
 
@@ -487,30 +494,46 @@ for (i, x) in enumerate(x_c_space)
     δ_e_inv[i] = find_zero(δ -> x_c_fe_fun(δ, steady.ρ, para) - x, 0.05)
 end 
 
-indices=δ_e_inv .> para.δ
+# indices=δ_e_inv .> para.δ
 
-fig, ax = PyPlot.subplots()
-ax.plot(x_c_space, δ_e_fun.(x_c_space, Ref(cal)))
-ax.plot(x_c_space[indices], δ_e_inv[indices])
-ax.set_xlabel(L"$x^c$")
-ax.set_ylabel(L"$\delta_e$")
-ax.legend()
-tight_layout()
-display(fig)
+# fig, ax = PyPlot.subplots()
+# ax.plot(x_c_space, δ_e_fun.(x_c_space, Ref(cal)))
+# ax.plot(x_c_space[indices], δ_e_inv[indices])
+# ax.set_xlabel(L"$x^c$")
+# ax.set_ylabel(L"$\delta_e$")
+# ax.legend()
+# tight_layout()
+# display(fig)
 
-δ_space = cal.δ:0.0001:cal.δ*4
+para = cal
+δ_space = cal.δ:0.00001:cal.δ*3
 ρ = steady.ρ
-x_c_space = x_c_fe_fun.(δ_space, Ref(ρ), Ref(para))
-x_c_space2 = x_c_fun.(δ_space, Ref(para))
+x_c_space_exit_thresh_1 = x_c_exit_thresh_fun.(δ_space, Ref(ρ), Ref(para))
+x_c_space_exit_thresh_2 = x_c_exit_thresh_fun.(δ_space, Ref(ρ*1.1), Ref(para))
+
+x_c_space = x_c_dest_fun.(δ_space, Ref(para))
 
 fig, ax = PyPlot.subplots()
-ax.plot(δ_space, x_c_space, label="Exit condition")
-ax.plot(δ_space, x_c_space2, label="Distributional condition")
+ax.plot(δ_space, x_c_space_exit_thresh_1, label="Exit threshold curve") #exit-entry locus
+ax.plot(δ_space, x_c_space_exit_thresh_2, label="Exit threshold curve: higher ρ") #exit-entry locus
+ax.plot(δ_space, x_c_space, label="Product destruction curve")
 ax.set_xlabel(L"δ_e")
 ax.set_ylabel(L"$x^c$")
 ax.legend()
 tight_layout()
 display(fig)
+
+function solve_δ_e(ρ, para)
+    function loss(δ_e)
+        x_c1 = x_c_dest_fun(δ_e, para)
+        x_c2 = x_c_exit_thresh_fun(δ_e, ρ, para)
+        return (x_c1-x_c2)/(x_c1+x_c2)
+    end 
+    δ_e = find_zero(loss, (1e-6, 0.3))
+end 
+
+#############################################
+
 
 
 

@@ -172,6 +172,5 @@ function dataframe_to_latex(df::DataFrame)
 
     return join([header; rows; footer], "\n")
 end
-
 latex_table = dataframe_to_latex(df_shares)
 println(latex_table)
