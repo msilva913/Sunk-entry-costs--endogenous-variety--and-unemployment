@@ -11,44 +11,56 @@ using MAT
 #posterior_mode = matopen("posterior_mode.mat")
 #posterior_mode = read(posterior_mode, "posterior_mode")
 
+
 function calibration_table(cal, targets)
-    @unpack f_e, δ, s, z, b, ϕ, r, σ, ε, A, η_L, κ, ξ_inv, f_m, ψ, s = cal
-    @unpack X_Y, Xc_Y, dest_ann, dest_end_frac, f, η_L, q, sep, b_ratio, x_v, ξ_inv, ε, r_ann, σ, N, w = targets
+    @unpack f_e, δ, s, z, b, ϕ, σ, ε, A, η_L, κ, ξ_inv, f_m, ψ = cal
+    @unpack X_Y, Xc_Y, dest_ann, dest_end_frac, f, q, sep, x_v, r_ann, N, w = targets
 
-    r = (1+r_ann)^(1/12)-1
-    β = 1/(1+r)
-    δ_e = 1-(1-dest_ann)^(1/12)
-    μ = ε/(ε-1)
-    τ = (1-δ_e)*(1-s)
-    # Creating a DataFrame for the table
+    r = (1 + r_ann)^(1/12) - 1
+    β = 1 / (1 + r)
+    δ_e = 1 - (1 - dest_ann)^(1/12)
+
+    Parameter = [
+        L"b", L"\kappa", L"\xi^{-1}", L"\sigma", L"\delta_{\text{end,share}}",  # Estimated
+        L"r", L"\eta_L", L"\varepsilon", L"\delta_e",                        # Directly set
+        L"z", L"f_e",                                                        # Dependent: normalizations
+        L"s", L"\phi", L"A", L"f_m", L"\psi"                      # Dependent: long-run targets
+    ]
+
+    Targets = [
+        "Estimated", "Estimated", "Estimated", "Estimated", "Estimated",
+        "Real interest rate (annual)", "Elasticity of matching function", "Elasticity of substitution", "Establishment exit rate (annual)",
+        "Steady-state wage", "Steady-state mass of firms",
+        "Aggregate separation rate",
+        "Recruiting cost share: " * L"$X/Y$",
+        "Job finding rate",
+        L"Endogenous destruction share: " * L"$(1-F(x^c))/\delta_e$",
+        "Fixed cost share: " * L"$X^c/Y$"
+    ]
+
+    Value = [
+        "-", "-", "-", "-", "-",
+        r_ann, η_L, ε, dest_ann,
+        w, N,
+        sep, X_Y, f, dest_end_frac, Xc_Y
+    ]
+
+    Calibration = [
+        b, κ, ξ_inv, σ, dest_end_frac,
+        r, η_L, ε, δ_e,
+        z, f_e,
+        s, ϕ, A, f_m, ψ
+    ]
+
     df = DataFrame(
-        Parameter = [L"r", L"\eta_L", L"b", L"\delta", L"\xi^{-1}", L"\varepsilon", L"\sigma", L"\kappa", L"z", L"f_e", L"s",
-         L"\phi", L"A", L"f_m", L"\psi"],
-        Targets = [
-            "Real interest rate",
-            "Elasticity of matching function",
-          "Estimated",   #  "Replacement ratio b/w",
-            "Job destruction from obsolescence",
-           "Estimated", # "Elasticity of vacancy value",
-            "Markup", # Elasticity of substitution
-          # "Investment share",
-           "Estimated",  # "Risk aversion",
-           "Estimated", # "Share of sunk vacancy costs to overall hiring costs",
-            "Steady-state wage",
-            "Steady-state mass of firms",
-            "Match separation rate",
-            "Recruiting cost share: X/Y",
-            "Job finding rate",
-            L"Endogenous destruction share: "*L"$(1-F(x_c))/\delta_e$",
-            "Fixed cost share: "*L"$X^c/Y$",
-        ],
-        Value = map(x -> isa(x, Number) ? round(x, sigdigits=2) : x, [r_ann, η_L, "-", δ, "-", ε, "-", "-", w, N, τ, X_Y, 0.41, 0.5, 0.20]),
-        Calibration = round.([r, η_L, b, δ, ξ_inv, ε, σ, κ, z, f_e, s, ϕ, A, f_m, ψ], sigdigits=3)
+        Parameter = Parameter,
+        Targets = Targets,
+        Value = map(x -> isa(x, Number) ? round(x, sigdigits = 2) : x, Value),
+        Calibration = round.(Calibration, sigdigits = 3)
     )
-
-    # Save the DataFrame as a PDF table
     return df
 end
+
 
 targets = (
     X_Y=0.015,        # recruiting cost share of output
@@ -101,6 +113,12 @@ output = IOBuffer()
 show(output, MIME("text/latex"),df)
 df_table = String(take!(output))
 print(df_table)
+
+# Text that can be exported to WhatsApp
+show(output, MIME"text/plain"(), df; allrows=true, allcols=true)
+text = "" * String(take!(output)) * "" 
+clipboard(text) # copy to system clipboard
+println("Copied ", length(text), " chars.")
 
 function shares_table(ss::NamedTuple)
     # Define additional variables 
