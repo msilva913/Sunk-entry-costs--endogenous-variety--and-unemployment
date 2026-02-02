@@ -43,17 +43,17 @@ Invert vacancy filling probability to obtain market tightness θ.
 @with_kw mutable struct ParaCalib
     f_e::Float64 = 1.0                 # Entry cost
     τ::Float64 = 0.0305                # Worker separation rate
-    δ::Float64 = 0.005                 # Product destruction rate
+    δ::Float64 = 0.005                 # Product destruction rate (Directly set)
     z::Float64 = 1.0                   # Technology level
-    b::Float64 = 0.71                  # Unemployment insurance
-    ϕ::Float64 = 0.5                   # Bargaining power
+    b::Float64 = 0.71                  # Unemployment insurance (Estimated)
+    ϕ::Float64 = 0.5                   # Bargaining power 
     r::Float64 = 0.04 / 12             # Rate of time preference (monthly)
-    σ::Float64 = 1.0                   # Inverse intertemporal elasticity of substitution
-    ε::Float64 = 4.0                   # Elasticity of substitution
+    σ::Float64 = 1.0                   # Inverse intertemporal elasticity of substitution (Estimated)
+    ε::Float64 = 4.0                   # Elasticity of substitution (Directly set)
     A::Float64 = 0.5631                # Job matching level parameter
     η_L::Float64 = 0.6                 # Elasticity of matching function w.r.t. unemployment
-    κ::Float64 = 0.2                   # Fixed matching cost
-    ξ_inv::Float64 = 1.0               # Inverse elasticity of entry to vacancy value
+    κ::Float64 = 0.2                   # Fixed matching cost (Estimated)
+    ξ_inv::Float64 = 1.0               # Inverse elasticity of entry to vacancy value (Estimated)
     x_m::Float64 = 113.16              # Upper bound on cost distribution
 
     # New parameters related to firm heterogeneity
@@ -278,17 +278,17 @@ targets = (
     X_Y=0.015,        # recruiting cost share of output
     Xc_Y=0.20,         # fixed cost share of output (Abraham, Bormans, Konings, Roeger)
     dest_ann=0.0754,   # annual product destruction rate
-    dest_end_frac=0.5, # endogenous share of destruction rate
+    dest_end_frac=0.5, # endogenous share of destruction rate (Estimated)
     f=0.41,            # job-finding rate, 
     η_L=0.6,           # elasticity of matching fun wrt unemployment
     q=0.8,             # vacancy filling rate,
     sep=0.031,         # aggregate separation rate , 
-    b_ratio=0.71,      # ratio of unemployment benefits to wage,
+    b_ratio=0.71,      # ratio of unemployment benefits to wage (Estimated)
     x_v=1.0, 
-    ξ_inv=1, 
+    ξ_inv=1,           # Estimated
     r_ann=0.04,        # annual discount rate
     ε=4.3,             # Elasticity of substitution (BGM, Compustat)
-    σ=1.0,             # Inverse IES
+    σ=1.0,             # Inverse IES (Estimated)
     N=1.0,             # SS mass of forms (normalization)
     w=1.0,             # SS wage (normalization)
     #ψ=1.5)
@@ -374,7 +374,6 @@ function calibrate_shares(targets)
         # Aggregate recruiting costs: (1) sunk and (2) fixed matching costs
         X = e / (1 + ξ_inv) * Q + κ * q * v
         w_int = surplus_ratio * K + w + K
-        ϕ = (w - b) / (w_int - K + θ * (K + q * κ) - b)
 
         z = (μ / ρ) * w_int # ρ = μ*w_int/z
         # Find f_e from L_c, N relationship
@@ -413,7 +412,6 @@ function calibrate_shares(targets)
     # Implied power law parameter: (x_c/f_m)^ψ = surv_prob
     f_m = x_c/surv_prob^(1/ψ)
     @assert (F(x_c, f_m, ψ) - surv_prob) == 0.0
-
 
     ϕ = (w - b) / (w_int - K + θ * (K + q * κ) - b)
     x_m = Q / e^ξ_inv
