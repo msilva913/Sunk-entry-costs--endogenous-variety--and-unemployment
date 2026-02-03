@@ -45,9 +45,16 @@ steady = steady_state(cal)
 τ = 1-(1-δ_e)*(1-s)
 μ = ε/(ε-1)
 
+
 ############################################################
 # -------------------- Consistency Checks ------------------
 ############################################################
+
+# Separation elasticity 
+dest_elast_1 = dest_elast(cal, x_c)
+surv_prob = (x_c/f_m)^ψ
+dest_elast_2 = ψ*surv_prob/(1-surv_prob)
+@assert abs(dest_elast_1 - dest_elast_2) < 1e-12
 
 # Normalizations and target matches
 @assert abs(steady.N - targets.N) < 1e-12

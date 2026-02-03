@@ -143,6 +143,11 @@ function w_fun(θ, N, δ_e, para)
     return (1 - ϕ) * b + ϕ * (w_int - K + θ * (K + q * κ))
 end
 
+function dest_elast(para, x_c)
+    @unpack ψ, f_m = para 
+    return ψ*(x_c/f_m)^ψ/(1-(x_c/f_m)^ψ)
+end 
+
 
 # =============================================================================
 # Steady-State Solver
@@ -487,10 +492,10 @@ steady = steady_state(cal)
 steady.x_c
 x_c_space = 0.1:0.1:10
 
-δ_e_inv = zero(x_c_space)
-for (i, x) in enumerate(x_c_space)
-    δ_e_inv[i] = find_zero(δ -> x_c_fe_fun(δ, steady.ρ, para) - x, 0.05)
-end 
+# δ_e_inv = zero(x_c_space)
+# for (i, x) in enumerate(x_c_space)
+#     δ_e_inv[i] = find_zero(δ -> x_c_fe_fun(δ, steady.ρ, para) - x, 0.05)
+# end 
 
 # indices=δ_e_inv .> para.δ
 
