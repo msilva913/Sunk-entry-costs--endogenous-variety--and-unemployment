@@ -50,10 +50,10 @@ steady = steady_state(cal)
 # -------------------- Consistency Checks ------------------
 ############################################################
 
-# Separation elasticity 
+# Separation elasticity ψ F(x_c)/(1-F(x_c))
 dest_elast_1 = dest_elast(cal, x_c)
-surv_prob = (x_c/f_m)^ψ
-dest_elast_2 = ψ*surv_prob/(1-surv_prob)
+@show surv_prob = (x_c/f_m)^ψ
+@show dest_elast_2 = ψ*surv_prob/(1-surv_prob)
 @assert abs(dest_elast_1 - dest_elast_2) < 1e-12
 
 # Normalizations and target matches
