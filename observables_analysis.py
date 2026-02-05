@@ -14,7 +14,7 @@ np.set_printoptions(precision=3)
 from scipy.io import savemat
 #pd.options.display.float_format = '{:5,.4g}'.format
 
-from time_series_functions import (moments, stacked_moments, filter_transform)
+from time_series_functions import (moments, stacked_moments, filter_transform, cf_filter)
 from formatting_functions import create_stats_table
 from statsmodels.stats.diagnostic import acorr_lm
 
@@ -254,6 +254,34 @@ for item, choice_vars in enumerate([choice_vars1, choice_vars2]):
     # Save the figure before showing it
     pairplot.savefig(savefigs[item])
     plt.show()
+    
+"8) Decomposition of fluctuations of separation and job finding rates to unemployment "
+u_ss = dat.s/(dat.s + dat.jf) 
+
+init = "1951" # Dates aligned with Broer et al. 2025
+final = "2025"
+jf_ss =dat.loc[init:final].jf.mean()
+s_ss = dat.loc[init:final].s.mean()
+
+jf_comp =  s_ss/(s_ss+dat.jf)
+s_comp = dat.s/(dat.s + jf_ss)
+
+jf_var = dat.u.cov(jf_comp)/np.var(dat.u)
+s_var = dat.u.cov(s_comp)/np.var(dat.u)
+
+print(f"u variance explained by job finding rate:{jf_var:.2f}")
+print(f"u variance explained by job separation rate:{s_var:.2f}")
+
+fig, ax = plt.subplots(figsize=(10, 5))
+ax.plot(dat.u, label="Unemployment series")
+ax.plot(u_ss, label="Steady-state approximation of unemployment", linestyle="--", color="black")
+ax.plot(jf_comp, label="Component of job-finding rate to unemployment", color="yellow")
+ax.plot(s_comp, label="Component of separation rate to uenemployment", color="blue")
+ax.xaxis.set_major_locator(years)
+ax.xaxis.set_major_formatter(years_fmt)
+ax.legend()
+plt.tight_layout()
+plt.show()
     
      
     
