@@ -72,10 +72,11 @@ end
     F(x)
 Continuation cost-draw cdf given maximal cost
 """
-function F(x, f_m, ψ)
+function F(x, para)
+    @unpack p_0, f_m, ψ = para
     (f_m <=0 || ψ<=0) && throw(ArgumentError("f_m, k must be > 0 "))
     if x < f_m
-        out = (x/f_m)^ψ
+        out = 1-p_0 + p_0*(x/f_m)^ψ
     else
         out = 1.0
     end 
@@ -146,6 +147,16 @@ function dest_elast(para, x_c)
     return ψ*(x_c/f_m)^ψ/(1-(x_c/f_m)^ψ)
 end 
 
+function δ_e_fun(x_c, para)
+    @unpack δ, f_m, ψ = para
+    return 1 - (1-δ)*F(x_c,para)
+end
+
+function x_c_dest_fun(δ_e, para)
+    @unpack δ, f_m, ψ = para 
+    return ((1-δ_e)/(1-δ))^(1/ψ)*f_m
+end 
+
 
 # =============================================================================
 # Steady-State Solver
@@ -158,59 +169,53 @@ Compute steady-state statistics given parameters.
 Returns a NamedTuple of all key statistics.
 """
 function steady_state(para; init=0.51)
-    @unpack f_e, δ, s, z, b, ϕ, r, σ, ε, A, η_L, κ, ξ_inv, x_m, f_m, ψ, s = para
+    @unpack f_e, δ, s, z, b, ϕ, r, σ, ε, A, η_L, κ, ξ_inv, x_m, f_m, ψ, p_0, s = para
     μ = ε / (ε - 1)
     ψ_c = ψ/(1+ψ)
+    cons = ψ_c*p_0
     #θ = θ_fun(para, init_value=init)
     out = zeros(2)
 
-    function loss(x)
-        θ, end_dest = abs.(x) #ensure non-negativity
-        # Aggregate destruction rate
-        δ_e = δ + end_dest - δ*end_dest   #(1-δ_e)=(1-δ)*(1-end_dest)
-        # Profit share in the consumption sector 
-        π_s = (μ-1)/μ*(1-ψ_c)*(r+δ_e)/(r+δ_e+ψ_c*(1-δ_e))
-        # Aggregate separation rate
-        τ = 1 - (1-δ_e)*(1-s)
+     function loss(y) # y = [log θ, log x_c]
+        θ = exp(y[1])
+        x_c = exp(y[2])
 
-        f = jf(θ, A, η_L)
-        q = vf(θ, A, η_L)
-        K = K_fun(θ, δ_e, para)
-        L = L_fun(θ, δ_e, para)
-        u = 1 - L
-        lhs_jcc = (κ + K / q) * (r + τ + (1 - δ_e) * ϕ * q * θ)
-    
-        # Revised resource constraint curve using π_s
-        N = π_s*z*L*(1-δ_e)/(f_e*((r+δ_e)/μ+δ_e*π_s))
+        δ_e = δ_e_fun(x_c, para)
 
-        ρ = N^(1 / (ε - 1))
+        π_s = (μ-1)/μ*(1-cons)*(r+δ_e)/(r+δ_e+cons*(1-δ_e))
+        τ   = 1 - (1-δ_e)*(1-s)
+
+        f   = jf(θ, A, η_L)
+        q   = vf(θ, A, η_L)
+        K   = K_fun(θ, δ_e, para)
+        L   = L_fun(θ, δ_e, para)
+        u   = 1 - L
+
+        lhs_jcc = (κ + K/q) * (r + τ + (1 - δ_e) * ϕ * q * θ)
+
+        N   = π_s*z*L*(1-δ_e)/(f_e*((r+δ_e)/μ + δ_e*π_s))
+        ρ   = N^(1/(ε - 1))
         w_int = ρ * z / μ
         rhs_jcc = (1 - δ_e) * (1 - ϕ) * (w_int - K - b)
 
-        # Entrants
-        N_e = δ_e*N/(1-δ_e)
-
-        # Consumption output and labor
         L_c = (r+δ_e)*L/(r+δ_e+δ_e*π_s*μ)
         Y_c = ρ * z * L_c
-        # Cutoff
-        x_c = Y_c/(ε*N) + ρ*f_e/μ
-        surv_prob = F(x_c, f_m, ψ) #∈ (0, 1)
-        δ_e_new = 1.0 - surv_prob*(1-δ) #(1-δ_e_new) = surv_prob*(1-δ)
+        x_c_new = Y_c/(ε*N) + ρ*f_e/μ
 
-        vars = (; δ_e, f, q, θ, u, ρ, w_int, K, N, N_e, L_c, Y_c, x_c, π_s, surv_prob)
+        r1 = rhs_jcc - lhs_jcc
+        r2 = log(x_c_new/x_c)
 
-        out[1] = (rhs_jcc-lhs_jcc)/(rhs_jcc+lhs_jcc)
-        out[2] = δ_e - δ_e_new
-        return out, vars 
-    end 
+        resid = [r1, r2]  # fresh vector
+        vars = (; δ_e, f, q, θ, u, ρ, w_int, K, N, L_c, Y_c, x_c, x_c_new, π_s)
+        return resid, vars
+    end
 
-    sol = LeastSquaresOptim.optimize(x -> loss(x)[1], [0.51, δ/2.0], Dogleg())
+    sol = LeastSquaresOptim.optimize(x -> loss(x)[1], [log(0.51), log(δ/2.0)], Dogleg())
     println("converged=$(sol.converged) at root=$(sol.minimizer) in " *
         "$(sol.iterations) iterations and $(sol.f_calls) function calls")
     
     var = loss(sol.minimizer)[2]
-    @unpack δ_e, f, q, θ, u, ρ, w_int, K, N, N_e, L_c, Y_c, x_c, π_s, surv_prob = var
+    @unpack δ_e, f, q, θ, u, ρ, w_int, K, N, L_c, Y_c, x_c, π_s = var
     L = 1-u
     L_e = L-L_c
 
@@ -226,7 +231,7 @@ function steady_state(para; init=0.51)
     ν_f = ρ * f_e / μ # from free entry
 
     # Total (stochastic) fixed costs 
-    X_c = N*ψ_c*x_c 
+    X_c = N*cons*x_c 
 
     d_f = (r + δ_e) / (1 - δ_e) * ν_f # from Euler
 
@@ -260,7 +265,9 @@ function steady_state(para; init=0.51)
     profit_share_ret = π_s*Y_c/Y
     profit_share_rec = ((w_int-w)*L-X)/Y
 
-    end_dest_share = (1-surv_prob)/δ_e
+    dest_end_frac = (δ_e-δ)/δ_e
+
+    dest_el = dest_elast(para, x_c)
 
     return (;
         θ,δ_e, x_c, N, f, q, u, v, v_pret, e, K, ρ, N_e,
@@ -268,7 +275,7 @@ function steady_state(para; init=0.51)
         X_v, X, X_c, C, Y_c, Y, labor_share, end_dest_share,
         labor_prod, cons_share, inv_new_firm_share, vacancy_share, sunk_vac_cost_share, 
         M, entrant_vac_share, x_v, search_wedge, recruiter_share, μ, ann_int_rate,
-        π_s, profit_share_rec, profit_share_ret
+        π_s, profit_share_rec, profit_share_ret, dest_el
     )
 end
 
@@ -282,6 +289,7 @@ targets = (
     Xc_Y=0.20,         # fixed cost share of output (Abraham, Bormans, Konings, Roeger)
     dest_ann=0.0754,   # annual product destruction rate
     dest_end_frac=0.5, # endogenous share of destruction rate (Estimated)
+    p_0          =0.5, # probability of drawing from
     #dest_el = 1.0,  # Destruction elasticity wrt x_c
     f=0.41,            # job-finding rate, 
     η_L=0.6,           # elasticity of matching fun wrt unemployment
@@ -295,7 +303,7 @@ targets = (
     σ=1.0,             # Inverse IES (Estimated)
     N=1.0,             # SS mass of forms (normalization)
     w=1.0,             # SS wage (normalization)
-    ψ=1.5
+    #ψ=1.5
 )
 
 """
@@ -367,7 +375,7 @@ function calibrate_shares(targets)
 
     cons = find_zero(loss_psi, 0.1)
     #ψ = ψ_c/(1-ψ_c)
-    ψ_c = ψ/(1+ψ) 
+    #ψ_c = ψ/(1+ψ) 
     ψ_c = cons/p_0
     ψ = ψ_c/(1-ψ_c)
 
@@ -420,16 +428,14 @@ function calibrate_shares(targets)
     z = (surv_prob - (1-p_0))/p_0
     dest_el = ψ*z/(1-z)
 
-    f_m = x_c/surv_prob^(1/ψ)
-    @assert (F(x_c, f_m, ψ) - surv_prob) == 0.0
+    f_m = x_c/z^(1/ψ)
+
+    #@assert (F(x_c, para) - surv_prob) == 0.0
 
     ϕ = (w - b) / (w_int - K + θ * (K + q * κ) - b)
     x_m = Q / e^ξ_inv
 
     
-
-
-
     # Destruction rate 
     # Implied power law parameter: (x_c/f_m)^ψ = surv_prob
 
@@ -449,17 +455,13 @@ function calibrate_shares(targets)
     #     return out, (; p_0, z, ψ)
     # end 
 
-    res = LeastSquaresOptim.optimize(x -> loss(x)[1], [0.1], Dogleg())
+    #res = LeastSquaresOptim.optimize(x -> loss(x)[1], [0.1], Dogleg())
     #ψ = fzero(x -> loss(x)[1], 0.1)
     #out = loss(p_0)[2]
 
-
-
-  
-
     return (;
         f_e, δ=δ, z=z, b=b, ϕ=ϕ, r, σ=σ, ε=ε, A=A, η_L=η_L,
-        κ=κ, ξ_inv=ξ_inv, x_m=x_m, s=s, ψ=ψ, f_m=f_m
+        κ=κ, ξ_inv=ξ_inv, x_m=x_m, s=s, ψ=ψ, p_0=p_0, f_m=f_m
     )
 end
 
@@ -500,15 +502,7 @@ function N_res(θ, δ_e, para)
     return N
 end
 
-function δ_e_fun(x_c, para)
-    @unpack δ, f_m, ψ = para
-    return 1 - (1-δ)*F(x_c, f_m, ψ)
-end
 
-function x_c_dest_fun(δ_e, para)
-    @unpack δ, f_m, ψ = para 
-    return ((1-δ_e)/(1-δ))^(1/ψ)*f_m
-end 
 
 """
     x_c(delta_e)-> number

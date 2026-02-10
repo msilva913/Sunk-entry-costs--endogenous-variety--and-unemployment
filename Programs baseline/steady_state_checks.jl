@@ -9,21 +9,24 @@ targets = (
     X_Y=0.015,        # recruiting cost share of output
     Xc_Y=0.20,         # fixed cost share of output (Abraham, Bormans, Konings, Roeger)
     dest_ann=0.0754,   # annual product destruction rate
-    dest_end_frac=0.5, # endogenous share of destruction rate
+    dest_end_frac=0.5, # endogenous share of destruction rate (Estimated)
+    p_0          =0.5, # probability of drawing from
+    #dest_el = 1.0,  # Destruction elasticity wrt x_c
     f=0.41,            # job-finding rate, 
     η_L=0.6,           # elasticity of matching fun wrt unemployment
     q=0.8,             # vacancy filling rate,
     sep=0.031,         # aggregate separation rate , 
-    b_ratio=0.71,      # ratio of unemployment benefits to wage,
+    b_ratio=0.71,      # ratio of unemployment benefits to wage (Estimated)
     x_v=1.0, 
-    ξ_inv=1, 
+    ξ_inv=1,           # Estimated
     r_ann=0.04,        # annual discount rate
     ε=4.3,             # Elasticity of substitution (BGM, Compustat)
-    σ=1.0,             # Inverse IES
+    σ=1.0,             # Inverse IES (Estimated)
     N=1.0,             # SS mass of forms (normalization)
     w=1.0,             # SS wage (normalization)
-    #ψ=1.5)
+    #ψ=1.5
 )
+
 
 
 # Calibrate and compute steady state
