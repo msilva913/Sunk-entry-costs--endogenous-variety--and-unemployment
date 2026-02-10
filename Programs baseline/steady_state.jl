@@ -282,7 +282,7 @@ targets = (
     Xc_Y=0.20,         # fixed cost share of output (Abraham, Bormans, Konings, Roeger)
     dest_ann=0.0754,   # annual product destruction rate
     dest_end_frac=0.5, # endogenous share of destruction rate (Estimated)
-    dest_el = 1.0,  # Destruction elasticity wrt x_c
+    #dest_el = 1.0,  # Destruction elasticity wrt x_c
     f=0.41,            # job-finding rate, 
     η_L=0.6,           # elasticity of matching fun wrt unemployment
     q=0.8,             # vacancy filling rate,
@@ -295,7 +295,7 @@ targets = (
     σ=1.0,             # Inverse IES (Estimated)
     N=1.0,             # SS mass of forms (normalization)
     w=1.0,             # SS wage (normalization)
-    #ψ=1.5)
+    ψ=1.5
 )
 
 """
@@ -305,7 +305,7 @@ Calibrate model parameters to match empirical targets.
 Returns a NamedTuple of calibrated parameters.
 """
 function calibrate_shares(targets)
-    @unpack X_Y, Xc_Y, dest_ann, dest_end_frac, dest_el, f, η_L, q, sep, b_ratio, x_v, ξ_inv, ε, r_ann, σ, N, w = targets
+    @unpack X_Y, Xc_Y, dest_ann, dest_end_frac, p_0, f, η_L, q, sep, b_ratio, x_v, ξ_inv, ε, r_ann, σ, N, w = targets
 
     # Aggregate monthly destruction rate
     δ_e = 1 - (1 - dest_ann)^(1 / 12)
@@ -359,6 +359,7 @@ function calibrate_shares(targets)
     #L_c = L - L_e
 
     #cons = ψ_c*p_0
+    
     function loss_psi(cons)
         π_s_new = (μ-1)/μ*(1-cons)*(r+δ_e)/(r+δ_e+cons*(1-δ_e))
         return π_s_new - π_s 
@@ -366,6 +367,9 @@ function calibrate_shares(targets)
 
     cons = find_zero(loss_psi, 0.1)
     #ψ = ψ_c/(1-ψ_c)
+    ψ_c = ψ/(1+ψ) 
+    ψ_c = cons/p_0
+    ψ = ψ_c/(1-ψ_c)
 
     surplus_ratio = (r + τ) / (1 - δ_e) * (1 / (q * x_v))
 
@@ -412,6 +416,19 @@ function calibrate_shares(targets)
     @show X_c - N*cons*x_c
     @show N*f_e*((r+δ_e)/μ+δ_e*π_s) - (1-δ_e)*π_s*z*L
 
+    # surv_prob = 1-p_0 + p_0*z 
+    z = (surv_prob - (1-p_0))/p_0
+    dest_el = ψ*z/(1-z)
+
+    f_m = x_c/surv_prob^(1/ψ)
+    @assert (F(x_c, f_m, ψ) - surv_prob) == 0.0
+
+    ϕ = (w - b) / (w_int - K + θ * (K + q * κ) - b)
+    x_m = Q / e^ξ_inv
+
+    
+
+
 
     # Destruction rate 
     # Implied power law parameter: (x_c/f_m)^ψ = surv_prob
@@ -422,27 +439,23 @@ function calibrate_shares(targets)
     2) dest_el = ψ*z/(1-z) 
     3) ψ/(1+ψ)*p_0 = cons 
     =# 
-    function loss(x)
-        ψ = abs(x[1])
-        ψ_c = ψ/(1+ψ)
-        p_0 = cons/ψ_c
-        z_inv = ψ/dest_el + 1.0 
-        z = 1.0/z_inv
-        out = surv_prob - (1-p_0+p_0*z)
-        return out, (; p_0, z, ψ)
-    end 
+    # function loss(x)
+    #     ψ = abs(x[1])
+    #     ψ_c = ψ/(1+ψ)
+    #     p_0 = cons/ψ_c
+    #     z_inv = ψ/dest_el + 1.0 
+    #     z = 1.0/z_inv
+    #     out = surv_prob - (1-p_0+p_0*z)
+    #     return out, (; p_0, z, ψ)
+    # end 
 
     res = LeastSquaresOptim.optimize(x -> loss(x)[1], [0.1], Dogleg())
-    ψ = fzero(x -> loss(x)[1], 0.1)
-    out = loss(p_0)[2]
+    #ψ = fzero(x -> loss(x)[1], 0.1)
+    #out = loss(p_0)[2]
 
 
 
-    f_m = x_c/surv_prob^(1/ψ)
-    @assert (F(x_c, f_m, ψ) - surv_prob) == 0.0
-
-    ϕ = (w - b) / (w_int - K + θ * (K + q * κ) - b)
-    x_m = Q / e^ξ_inv
+  
 
     return (;
         f_e, δ=δ, z=z, b=b, ϕ=ϕ, r, σ=σ, ε=ε, A=A, η_L=η_L,
