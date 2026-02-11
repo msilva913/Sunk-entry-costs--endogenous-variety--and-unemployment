@@ -74,7 +74,7 @@ Continuation cost-draw cdf given maximal cost
 """
 function F(x, para)
     @unpack p_0, f_m, ψ = para
-    (f_m <=0 || ψ<=0) && throw(ArgumentError("f_m, k must be > 0 "))
+    (f_m <=0 || ψ<=0 || p_0 < 0 || p_0>1) && throw(ArgumentError("f_m, k must be > 0, p_0 must be in (0,1) "))
     if x < f_m
         out = 1-p_0 + p_0*(x/f_m)^ψ
     else
@@ -144,7 +144,9 @@ end
 
 function dest_elast(para, x_c)
     @unpack ψ, f_m = para 
-    return ψ*(x_c/f_m)^ψ/(1-(x_c/f_m)^ψ)
+    ζ = (x_c/f_m)^ψ
+    ζ = min(ζ, 1.0)
+    return ψ*ζ/(1-ζ)
 end 
 
 function δ_e_fun(x_c, para)
@@ -153,9 +155,24 @@ function δ_e_fun(x_c, para)
 end
 
 function x_c_dest_fun(δ_e, para)
-    @unpack δ, f_m, ψ = para 
-    return ((1-δ_e)/(1-δ))^(1/ψ)*f_m
-end 
+    @unpack δ, f_m, ψ, p_0 = para
+    F_target = (1 - δ_e)/(1 - δ)
+    if F_target <= 1 - p_0
+        return 0.0
+    else
+        ζ = (F_target - (1 - p_0)) / p_0
+    return f_m * ζ^(1/ψ)
+    end
+end
+
+function F_inv(F, f_m, ψ, p_0)
+    if F <= 1 - p_0
+        return 0.0
+    else
+        ζ = (F - (1 - p_0)) / p_0
+        return f_m * ζ^(1/ψ)
+    end
+end
 
 
 # =============================================================================
@@ -174,7 +191,6 @@ function steady_state(para; init=0.51)
     ψ_c = ψ/(1+ψ)
     cons = ψ_c*p_0
     #θ = θ_fun(para, init_value=init)
-    out = zeros(2)
 
      function loss(y) # y = [log θ, log x_c]
         θ = exp(y[1])
@@ -218,6 +234,7 @@ function steady_state(para; init=0.51)
     @unpack δ_e, f, q, θ, u, ρ, w_int, K, N, L_c, Y_c, x_c, π_s = var
     L = 1-u
     L_e = L-L_c
+    N_e = δ_e*N/(1-δ_e)
 
     # Labor market variables
     v = θ * u
@@ -272,7 +289,7 @@ function steady_state(para; init=0.51)
     return (;
         θ,δ_e, x_c, N, f, q, u, v, v_pret, e, K, ρ, N_e,
         ν_f, d_f, w_int, w, L, L_e, L_c, Q, J,
-        X_v, X, X_c, C, Y_c, Y, labor_share, end_dest_share,
+        X_v, X, X_c, C, Y_c, Y, labor_share, dest_end_frac,
         labor_prod, cons_share, inv_new_firm_share, vacancy_share, sunk_vac_cost_share, 
         M, entrant_vac_share, x_v, search_wedge, recruiter_share, μ, ann_int_rate,
         π_s, profit_share_rec, profit_share_ret, dest_el
@@ -286,7 +303,7 @@ end
 # Default calibration targets
 targets = (
     X_Y=0.015,        # recruiting cost share of output
-    Xc_Y=0.20,         # fixed cost share of output (Abraham, Bormans, Konings, Roeger)
+    Xc_Y=0.1,         # fixed cost share of output (Abraham, Bormans, Konings, Roeger)
     dest_ann=0.0754,   # annual product destruction rate
     dest_end_frac=0.5, # endogenous share of destruction rate (Estimated)
     p_0          =0.5, # probability of drawing from
@@ -425,39 +442,18 @@ function calibrate_shares(targets)
     @show N*f_e*((r+δ_e)/μ+δ_e*π_s) - (1-δ_e)*π_s*z*L
 
     # surv_prob = 1-p_0 + p_0*z 
-    z = (surv_prob - (1-p_0))/p_0
-    dest_el = ψ*z/(1-z)
+    ζ = (surv_prob - (1-p_0))/p_0 #ζ = (x_c/f_m)^ψ
+    dest_el = ψ*ζ/(1-ζ)
 
-    f_m = x_c/z^(1/ψ)
+    f_m = x_c/ζ^(1/ψ)
 
     #@assert (F(x_c, para) - surv_prob) == 0.0
 
     ϕ = (w - b) / (w_int - K + θ * (K + q * κ) - b)
     x_m = Q / e^ξ_inv
 
-    
     # Destruction rate 
     # Implied power law parameter: (x_c/f_m)^ψ = surv_prob
-
-    #= 
-    Solve (p_0, z, ψ) using following 3 equations
-    1) surv = 1-p_0 + p_0 z
-    2) dest_el = ψ*z/(1-z) 
-    3) ψ/(1+ψ)*p_0 = cons 
-    =# 
-    # function loss(x)
-    #     ψ = abs(x[1])
-    #     ψ_c = ψ/(1+ψ)
-    #     p_0 = cons/ψ_c
-    #     z_inv = ψ/dest_el + 1.0 
-    #     z = 1.0/z_inv
-    #     out = surv_prob - (1-p_0+p_0*z)
-    #     return out, (; p_0, z, ψ)
-    # end 
-
-    #res = LeastSquaresOptim.optimize(x -> loss(x)[1], [0.1], Dogleg())
-    #ψ = fzero(x -> loss(x)[1], 0.1)
-    #out = loss(p_0)[2]
 
     return (;
         f_e, δ=δ, z=z, b=b, ϕ=ϕ, r, σ=σ, ε=ε, A=A, η_L=η_L,
@@ -490,18 +486,26 @@ end
 
 Resource constraint curve: N as a function of θ.
 """
-function N_res(θ, δ_e, para)
-    @unpack ρ, δ, τ, A, η_L, f_e, ε, z, ψ = para
+
+function profit_share(δ_e, para)
+    @unpack r, δ, A, η_L, f_e, ε, z, ψ, p_0 = para
     μ = ε / (ε - 1)
     ψ_c = ψ/(1+ψ)
+    cons = ψ_c*p_0
+    π_s = (μ-1)/μ*(1-cons)*(r+δ_e)/(r+δ_e+cons*(1-δ_e))
+    return π_s 
+end
+
+function N_res(θ, δ_e, para)
+    @unpack r, δ, A, η_L, f_e, ε, z, ψ, p_0 = para
     f = jf(θ, A, η_L)
     u = τ / (τ + (1 - δ_e) * f)
+    τ = 1 - (1-δ_e)*(1-s)
     L = 1 - u
-    π_s = (μ-1)/μ*(1-ψ_c)*(r+δ_e)/(r+δ_e+ψ_c*(1-δ_e))
+    π_s = profit_share(δ_e, para)
     N = z * L * (1 - δ_e) / (f_e * (δ_e + (r+δ_e)/(μ*π_s)))
     return N
 end
-
 
 
 """
@@ -511,32 +515,18 @@ end
 function x_c_exit_thresh_fun(δ_e, ρ, para)
     @unpack f_e, r, ψ, ε = para 
     μ = ε/(ε-1)
-    ψ_c = ψ/(1+ψ)
-    return ρ*f_e/μ*((r+δ_e)/(1-δ_e)*(r+δ_e+ψ_c*(1-δ_e))/((1-ψ_c)*(r+δ_e))+1 )
+    π_s = profit_share(δ_e, para)
+    return  (ρ*f_e/μ) * (1 + (r + δ_e)/(ε*π_s*(1-δ_e)))
 end
 
 using PyPlot
 
+#targ = (;targets..., p_0=0.1, dest_end_frac=0.8)
 cal = calibrate_shares(targets)
 steady = steady_state(cal)
 steady.x_c
-x_c_space = 0.1:0.1:10
-
-# δ_e_inv = zero(x_c_space)
-# for (i, x) in enumerate(x_c_space)
-#     δ_e_inv[i] = find_zero(δ -> x_c_fe_fun(δ, steady.ρ, para) - x, 0.05)
-# end 
-
-# indices=δ_e_inv .> para.δ
-
-# fig, ax = PyPlot.subplots()
-# ax.plot(x_c_space, δ_e_fun.(x_c_space, Ref(cal)))
-# ax.plot(x_c_space[indices], δ_e_inv[indices])
-# ax.set_xlabel(L"$x^c$")
-# ax.set_ylabel(L"$\delta_e$")
-# ax.legend()
-# tight_layout()
-# display(fig)
+steady.dest_el
+x_c_space = 0.1*steady.x_c:0.1:2*steady.x_c
 
 para = cal
 δ_space = cal.δ:0.00001:cal.δ*3

@@ -39,12 +39,13 @@ steady = steady_state(cal)
 
 @unpack θ, δ_e, x_c, ρ, L_c, L_e, w, w_int, L, N, N_e, K, Q, q, f, ν_f, d_f, C, Y_c, Y, X_v, X, X_c,
          labor_share, sunk_vac_cost_share, vacancy_share, x_v, M, e, v, u, π_s,
-         profit_share_rec, profit_share_ret = steady
+         profit_share_rec, profit_share_ret, dest_el = steady
 
-@unpack f_e, δ, z, b, ϕ, r, σ, ε, A, η_L, κ, ξ_inv, x_m, s, f_m, ψ = cal
+@unpack f_e, δ, z, b, ϕ, r, σ, ε, A, η_L, κ, ξ_inv, x_m, s, f_m, ψ, p_0 = cal
 
 # Composites
 ψ_c = ψ/(ψ+1)
+ζ = (x_c/f_m)^ψ
 τ = 1-(1-δ_e)*(1-s)
 μ = ε/(ε-1)
 
@@ -55,9 +56,9 @@ steady = steady_state(cal)
 
 # Separation elasticity ψ F(x_c)/(1-F(x_c))
 dest_elast_1 = dest_elast(cal, x_c)
-@show surv_prob = (x_c/f_m)^ψ
-@show dest_elast_2 = ψ*surv_prob/(1-surv_prob)
-@assert abs(dest_elast_1 - dest_elast_2) < 1e-12
+@show surv_prob = 1-p_0 + p_0*ζ
+@assert abs(dest_elast_1 - dest_el) < 1e-12
+
 
 # Normalizations and target matches
 @assert abs(steady.N - targets.N) < 1e-12
@@ -108,16 +109,15 @@ surplus_ratio = (r+τ)/(1-δ_e)*(1/(q*x_v))
 @assert abs(Q - e^ξ_inv*x_m) < 1e-12
 
 # Cutoff
-x_c - ρ*f_e/μ*((r+δ_e)/((1-δ_e)*(μ*π_s))*(μ-1) + 1)
-@assert abs(x_c - ρ*f_e/μ*((r+δ_e)/(1-δ_e)*(r+δ_e+ψ_c*(1-δ_e))/((1-ψ_c)*(r+δ_e))+1))<1e-12
+@assert abs(x_c - ρ*f_e/μ*((r+δ_e)/((1-δ_e)*(μ*π_s))*(μ-1) + 1)) < 1e-12 
 
 ############################################################
 # ----------- Display Key Steady-State Ratios --------------
 ############################################################
 
 # TO DO: Curves to be revised
-@show N_jcc(steady.θ, cal)
-@show N_res(steady.θ, cal)
+@show N_jcc(steady.θ, δ_e,  cal)
+@show N_res(steady.θ, δ_e,  cal)
 @show labor_share
 @show C/Y
 @show X/Y
