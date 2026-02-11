@@ -306,7 +306,7 @@ targets = (
     Xc_Y=0.1,         # fixed cost share of output (Abraham, Bormans, Konings, Roeger)
     dest_ann=0.0754,   # annual product destruction rate
     dest_end_frac=0.5, # endogenous share of destruction rate (Estimated)
-    p_0          =0.5, # probability of drawing from
+    p_0          =0.5, # probability of drawing from continuous (bounded power law) part
     #dest_el = 1.0,  # Destruction elasticity wrt x_c
     f=0.41,            # job-finding rate, 
     η_L=0.6,           # elasticity of matching fun wrt unemployment
@@ -471,11 +471,12 @@ end
 Job creation curve: N as a function of θ.
 """
 function N_jcc(θ, δ_e, para)
-    @unpack ρ, τ, A, η_L, δ, ϕ, z, ε, b, κ = para
+    @unpack r, A, η_L, δ, ϕ, z, ε, b, κ = para
+    τ = 1 - (1-δ_e)*(1-s)
     q = vf(θ, A, η_L)
     K = K_fun(θ, δ_e, para)
     μ = ε / (ε - 1)
-    w_int = (1 / ((1 - δ_e) * (1 - ϕ))) * (κ * q + K) * ((ρ + τ) / q + (1 - δ_e) * ϕ * θ) + K + b
+    w_int = (1 / ((1 - δ_e) * (1 - ϕ))) * (κ * q + K) * ((r + τ) / q + (1 - δ_e) * ϕ * θ) + K + b
     ρ= w_int * (μ / z)
     N = ρ^(ε - 1)
     return N
@@ -498,6 +499,7 @@ end
 
 function N_res(θ, δ_e, para)
     @unpack r, δ, A, η_L, f_e, ε, z, ψ, p_0 = para
+    τ = 1-(1-δ_e)*(1-s)
     f = jf(θ, A, η_L)
     u = τ / (τ + (1 - δ_e) * f)
     τ = 1 - (1-δ_e)*(1-s)
