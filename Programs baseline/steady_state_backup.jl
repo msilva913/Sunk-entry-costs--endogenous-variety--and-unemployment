@@ -1,0 +1,569 @@
+
+# =============================================================================
+# Steady-State and Calibration Analysis
+# =============================================================================
+
+using Parameters, CSV, StatsBase, Statistics, Random
+using NLsolve, DataFrames
+using Roots, Optim, LeastSquaresOptim
+using PrettyPrinting, LaTeXStrings
+
+
+cd(@__DIR__)
+
+# =============================================================================
+# Matching Functions
+# =============================================================================
+
+"""
+    jf(θ, A, η_L)
+
+Job finding probability as a function of market tightness θ.
+"""
+jf(θ, A, η_L) = min(A * θ^(1 - η_L), 1.0)
+
+"""
+    vf(θ, A, η_L)
+
+Vacancy filling probability as a function of market tightness θ.
+"""
+vf(θ, A, η_L) = min(A * θ^(-η_L), 1.0)
+
+"""
+    θ_invert(q, A, η_L)
+
+Invert vacancy filling probability to obtain market tightness θ.
+"""
+θ_invert(q, A, η_L) = (q / A)^(-1 / η_L)
+
+# =============================================================================
+# Parameter Struct
+# =============================================================================
+
+@with_kw mutable struct ParaCalib
+    f_e::Float64 = 1.0                 # Entry cost
+    τ::Float64 = 0.0305                # Worker separation rate
+    δ::Float64 = 0.005                 # Product destruction rate (Directly set)
+    z::Float64 = 1.0                   # Technology level
+    b::Float64 = 0.71                  # Unemployment insurance (Estimated)
+    ϕ::Float64 = 0.5                   # Bargaining power 
+    r::Float64 = 0.04 / 12             # Rate of time preference (monthly)
+    σ::Float64 = 1.0                   # Inverse intertemporal elasticity of substitution (Estimated)
+    ε::Float64 = 4.0                   # Elasticity of substitution (Directly set)
+    A::Float64 = 0.5631                # Job matching level parameter
+    η_L::Float64 = 0.6                 # Elasticity of matching function w.r.t. unemployment
+    κ::Float64 = 0.2                   # Fixed matching cost (Estimated)
+    ξ_inv::Float64 = 1.0               # Inverse elasticity of entry to vacancy value (Estimated)
+    x_m::Float64 = 113.16              # Upper bound on cost distribution
+
+    # New parameters related to firm heterogeneity
+    ψ::Float64 = 1.5                   # Curvature related to power law of continuation cost (shape parameter)
+    f_m::Float64 = 10.0                 # Max value of cost draw (location parameter)              
+
+    # Derived parameter: worker separation rate for steady-state
+    #s = (τ - δ) / (1 - δ)
+end
+
+# =============================================================================
+# Equilibrium Functions
+# =============================================================================
+
+"""
+    F(x)
+Continuation cost-draw cdf given maximal cost
+"""
+function F(x, para)
+    @unpack p_0, f_m, ψ = para
+    (f_m <=0 || ψ<=0 || p_0 < 0 || p_0>1) && throw(ArgumentError("f_m, k must be > 0, p_0 must be in (0,1) "))
+    if x < f_m
+        out = 1-p_0 + p_0*(x/f_m)^ψ
+    else
+        out = 1.0
+    end 
+    return out
+end 
+
+"""
+    F_inv_simple(F, f_m, ψ)
+
+Inverse cdf (simple power law): Given probability F, finds associated value x.
+"""
+function F_inv_simple(F, f_m, ψ)
+    # Solve F = (x/f_m)^ψ for x
+    (f_m <=0 || ψ<=0) && throw(ArgumentError("f_m, ψ must be > 0 "))
+    x = F^(1/ψ)*f_m
+    return x 
+end 
+
+"""
+    L_fun(θ, para)
+Steady-state employment as a function of market tightness θ, δ_e and parameters.
+"""
+function L_fun(θ, δ_e, para)
+    @unpack δ, s, A, η_L = para
+    f = jf(θ, A, η_L)
+    τ = 1 - (1 - δ_e) * (1 - s)
+    return (1 - δ_e) * f / (τ + (1 - δ_e) * f)
+end
+
+"""
+    e_fun(θ, para)
+New vacancy rate as a function of market tightness θ and parameters.
+"""
+function e_fun(θ, δ_e, para)
+    @unpack δ, s, A, η_L = para
+    f = jf(θ, A, η_L)
+    τ = 1 - (1 - δ_e) * (1 - s)
+    return δ_e * (θ * τ + (1 - δ_e) * f) / (τ + (1 - δ_e) * f)
+end
+
+"""
+    K_fun(θ, para)
+Vacancy value as a function of market tightness θ and parameters.
+"""
+function K_fun(θ, δ_e, para)
+    @unpack r, δ, x_m, ξ_inv = para
+    e = e_fun(θ, δ_e, para)
+    # Value of vacancy
+    Q = (e)^ξ_inv * x_m
+    return (r + δ_e) / (1 + r) * Q
+end
+
+"""
+    w_fun(θ, N, para)
+
+Wage function as a function of market tightness θ, number of businesses N, and parameters.
+"""
+function w_fun(θ, N, δ_e, para)
+    @unpack ϕ, b, z, ε, δ, A, η_L, κ = para
+    q = vf(θ, A, η_L)
+    μ = ε / (ε - 1)
+    w_int = N^(1 / (ε - 1)) * z/ μ
+    K = K_fun(θ, δ_e,  para)
+    return (1 - ϕ) * b + ϕ * (w_int - K + θ * (K + q * κ))
+end
+
+function dest_elast(para, x_c)
+    @unpack ψ, f_m = para 
+    ζ = (x_c/f_m)^ψ
+    ζ = min(ζ, 1.0)
+    return ψ*ζ/(1-ζ)
+end 
+
+function δ_e_fun(x_c, para)
+    @unpack δ, f_m, ψ = para
+    return 1 - (1-δ)*F(x_c,para)
+end
+
+function x_c_dest_fun(δ_e, para)
+    @unpack δ, f_m, ψ, p_0 = para
+    F_target = (1 - δ_e)/(1 - δ)
+    if F_target <= 1 - p_0
+        return 0.0
+    else
+        ζ = (F_target - (1 - p_0)) / p_0
+    return f_m * ζ^(1/ψ)
+    end
+end
+
+function F_inv(F, f_m, ψ, p_0)
+    """
+    Inverse cdf (bounded power law): Given probability F, finds associated value x.
+    Accounts for atom at 0 with probability (1-p_0).
+    """
+    if F <= 1 - p_0
+        return 0.0
+    else
+        ζ = (F - (1 - p_0)) / p_0
+        return f_m * ζ^(1/ψ)
+    end
+end
+
+
+# =============================================================================
+# Steady-State Solver
+# =============================================================================
+
+"""
+    steady_state(para; init=0.51)
+
+Compute steady-state statistics given parameters.
+Returns a NamedTuple of all key statistics.
+"""
+function steady_state(para; init=0.51)
+    @unpack f_e, δ, s, z, b, ϕ, r, σ, ε, A, η_L, κ, ξ_inv, x_m, f_m, ψ, p_0, s = para
+    μ = ε / (ε - 1)
+    ψ_c = ψ/(1+ψ)
+    cons = ψ_c*p_0
+    #θ = θ_fun(para, init_value=init)
+
+     function loss(y) # y = [log θ, log x_c]
+        θ = exp(y[1])
+        x_c = exp(y[2])
+
+        δ_e = δ_e_fun(x_c, para)
+
+        π_s = (μ-1)/μ*(1-cons)*(r+δ_e)/(r+δ_e+cons*(1-δ_e))
+        τ   = 1 - (1-δ_e)*(1-s)
+
+        f   = jf(θ, A, η_L)
+        q   = vf(θ, A, η_L)
+        K   = K_fun(θ, δ_e, para)
+        L   = L_fun(θ, δ_e, para)
+        u   = 1 - L
+
+        lhs_jcc = (κ + K/q) * (r + τ + (1 - δ_e) * ϕ * q * θ)
+
+        N   = π_s*z*L*(1-δ_e)/(f_e*((r+δ_e)/μ + δ_e*π_s))
+        ρ   = N^(1/(ε - 1))
+        w_int = ρ * z / μ
+        rhs_jcc = (1 - δ_e) * (1 - ϕ) * (w_int - K - b)
+
+        L_c = (r+δ_e)*L/(r+δ_e+δ_e*π_s*μ)
+        Y_c = ρ * z * L_c
+        x_c_new = Y_c/(ε*N) + ρ*f_e/μ
+
+        r1 = rhs_jcc - lhs_jcc
+        r2 = log(x_c_new/x_c)
+
+        resid = [r1, r2]  # fresh vector
+        vars = (; δ_e, f, q, θ, u, ρ, w_int, K, N, L_c, Y_c, x_c, x_c_new, π_s)
+        return resid, vars
+    end
+
+    sol = LeastSquaresOptim.optimize(x -> loss(x)[1], [log(0.51), log(δ/2.0)], Dogleg())
+    println("converged=$(sol.converged) at root=$(sol.minimizer) in " *
+        "$(sol.iterations) iterations and $(sol.f_calls) function calls")
+    
+    var = loss(sol.minimizer)[2]
+    @unpack δ_e, f, q, θ, u, ρ, w_int, K, N, L_c, Y_c, x_c, π_s = var
+    L = 1-u
+    L_e = L-L_c
+    N_e = δ_e*N/(1-δ_e)
+
+    # Labor market variables
+    v = θ * u
+    e = δ_e * (v + 1 - u)
+    # Value of Q given free entry
+    Q = e^ξ_inv * x_m
+    X_v = e * (1 / (1 + ξ_inv)) * Q
+    v_pret = v - e
+
+    # Relative price, businesses, and values
+    ν_f = ρ * f_e / μ # from free entry
+
+    # Total (stochastic) fixed costs 
+    X_c = N*cons*x_c 
+
+    d_f = (r + δ_e) / (1 - δ_e) * ν_f # from Euler
+
+    # Wages
+    w = ϕ * (w_int - K + θ * (K + q * κ)) + (1 - ϕ) * b
+    # Total recruiting costs
+    X = X_v + κ * v * q
+
+    # Output and shares
+    C = Y_c - X - X_c
+    Y = C + ν_f * N_e
+
+    J = Q + (1 + r) / (1 - δ_e) * K / q
+    M = Q * v + J * L + (N + N_e) * ν_f
+    labor_prod = Y / (ρ*L)
+
+    labor_share = w * L / Y
+    cons_share = C / Y
+    inv_new_firm_share = ν_f * N_e / Y
+    vacancy_share = X / Y
+    fixed_cost_share = X_c/Y
+    sunk_vac_cost_share = X_v / Y
+    entrant_vac_share = e / v
+
+    x_v = (K / q) / (κ + K / q)
+    search_wedge = w / w_int
+    recruiter_share = w_int * L / Y
+    ann_int_rate = (1 + r)^12 - 1
+
+    # Profit shares of retailers and recruiters
+    profit_share_ret = π_s*Y_c/Y
+    profit_share_rec = ((w_int-w)*L-X)/Y
+
+    dest_end_frac = (δ_e-δ)/δ_e
+
+    dest_el = dest_elast(para, x_c)
+
+    return (;
+        θ,δ_e, x_c, N, f, q, u, v, v_pret, e, K, ρ, N_e,
+        ν_f, d_f, w_int, w, L, L_e, L_c, Q, J,
+        X_v, X, X_c, C, Y_c, Y, labor_share, dest_end_frac,
+        labor_prod, cons_share, inv_new_firm_share, vacancy_share, sunk_vac_cost_share, 
+        M, entrant_vac_share, x_v, search_wedge, recruiter_share, μ, ann_int_rate,
+        π_s, profit_share_rec, profit_share_ret, dest_el
+    )
+end
+
+# =============================================================================
+# Calibration
+# =============================================================================
+
+# Default calibration targets
+targets = (
+    X_Y=0.015,        # recruiting cost share of output
+    Xc_Y=0.1,         # fixed cost share of output (Abraham, Bormans, Konings, Roeger)
+    dest_ann=0.0754,   # annual product destruction rate
+    dest_end_frac=0.5, # endogenous share of destruction rate (Estimated)
+    p_0          =0.5, # probability of drawing from continuous (bounded power law) part
+    #dest_el = 1.0,  # Destruction elasticity wrt x_c
+    f=0.41,            # job-finding rate, 
+    η_L=0.6,           # elasticity of matching fun wrt unemployment
+    q=0.8,             # vacancy filling rate,
+    sep=0.031,         # aggregate separation rate , 
+    b_ratio=0.71,      # ratio of unemployment benefits to wage (Estimated)
+    x_v=1.0, 
+    ξ_inv=1,           # Estimated
+    r_ann=0.04,        # annual discount rate
+    ε=4.3,             # Elasticity of substitution (BGM, Compustat)
+    σ=1.0,             # Inverse IES (Estimated)
+    N=1.0,             # SS mass of forms (normalization)
+    w=1.0,             # SS wage (normalization)
+    #ψ=1.5
+)
+
+"""
+    calibrate_shares(targets)
+
+Calibrate model parameters to match empirical targets.
+Returns a NamedTuple of calibrated parameters.
+"""
+function calibrate_shares(targets)
+    @unpack X_Y, Xc_Y, dest_ann, dest_end_frac, p_0, f, η_L, q, sep, b_ratio, x_v, ξ_inv, ε, r_ann, σ, N, w = targets
+
+    # Aggregate monthly destruction rate
+    δ_e = 1 - (1 - dest_ann)^(1 / 12)
+    # Exogenous destruction rate
+    δ = (1.0-dest_end_frac)*δ_e 
+    # Probability of surviving fixed cost shock
+    surv_prob = (1-δ_e)/(1-δ)
+
+    μ = ε/(ε-1)
+
+    # Purely endogenous destruction threshold
+
+    τ = sep
+    s = (τ - δ_e) / (1 - δ_e)
+    r = (1 + r_ann)^(1 / 12) - 1
+
+    # Correct job finding and vacancy filling probabilities
+    f = f / (1 - δ_e)
+    q = q / (1 - δ_e)
+
+    θ = f / q
+    u = τ / (τ + (1 - δ_e) * f)
+    v = θ * u
+    L = 1 - u
+
+    # Matching function level parameter
+    A = f / θ^(1 - η_L)
+
+    e = δ_e * (v + 1 - u)
+    N_e = δ_e / (1 - δ_e) * N
+    b = b_ratio * w
+
+    # Relative price
+    ρ = N^(1 / (ε - 1))
+
+    # Solve for Xc_Yc
+    function loss(x)
+        π_s = 1/ε - x # profit share in retail
+        # Ratio of Gross consumption output to Gross output
+        Yc_YG = (r+δ_e)/(r+δ_e+δ_e*π_s)
+        # Ratio of Gross output to GDP
+        YG_Y = 1 + X_Y + Xc_Y
+        return 100*(Xc_Y/(Yc_YG*YG_Y) -x)
+    end 
+    Xc_Yc = find_zero(loss, [0.01, 0.5])
+    π_s = 1/ε - Xc_Yc
+
+    L_c = (r+δ_e)*L/(r+δ_e+δ_e*π_s*μ)
+    L_e = L - L_c
+    @assert abs(L_e - δ_e*π_s*L*μ/(r+δ_e+δ_e*π_s*μ))< 1e-12
+    #L_c = L - L_e
+
+    #cons = ψ_c*p_0
+    
+    function loss_psi(cons)
+        π_s_new = (μ-1)/μ*(1-cons)*(r+δ_e)/(r+δ_e+cons*(1-δ_e))
+        return π_s_new - π_s 
+    end 
+
+    cons = find_zero(loss_psi, 0.1)
+    #ψ = ψ_c/(1-ψ_c)
+    #ψ_c = ψ/(1+ψ) 
+    ψ_c = cons/p_0
+    ψ = ψ_c/(1-ψ_c)
+
+    surplus_ratio = (r + τ) / (1 - δ_e) * (1 / (q * x_v))
+
+    #recruiter_share = (δ + (ρ + δ) * (ε - 1)) / (δ + (ρ + δ) * ε)
+    #recruiter_share = ((1-π_s)*ρ+δ_e)/(ρ+δ_e*(1+π_s))
+
+    function loss_Q(Q)
+        Q = abs(Q)
+        K = Q * (r + δ_e) / (1 + r)
+        κ = (1 - x_v) / x_v * K / q
+        # Aggregate recruiting costs: (1) sunk and (2) fixed matching costs
+        X = e / (1 + ξ_inv) * Q + κ * q * v
+        w_int = surplus_ratio * K + w + K
+
+        z = (μ / ρ) * w_int # ρ = μ*w_int/z
+        # Find f_e from L_c, N relationship
+        f_e = π_s*z*L_c*(1-δ_e)*μ/(N*(r+δ_e)) #instead sub. for Nd_f = π_s*Y_c
+
+        ν_f = ρ * f_e / μ
+        d_f = (r+δ_e)/(1-δ_e)*ν_f
+        Y_c = ρ * z * L_c
+        # Cutoff
+        x_c = Y_c/(ε*N) +ν_f 
+        X_c = N*cons*x_c #cons = ψ_c*p_0
+        # Aggregate fixed costs paid 
+        #X_c = N*ψ/(ψ+1)*x_c
+        # Consumption and output
+        C = Y_c - X - X_c # Net out intermediate goods X and X_c
+        Y_new = C + ν_f * N_e
+        Y = 1 / X_Y * X
+        return 100*(Y - Y_new) / (Y + Y_new), (;w_int, κ, z, f_e, K, d_f, ν_f, x_c, X_c, X, C, Y_c, Y)
+    end
+
+    Q = fzero(x -> loss_Q(x)[1], 0.1)
+    Q = abs(Q)
+    out = loss_Q(Q)[2]
+    @unpack w_int, κ, z, f_e, K, d_f, ν_f, x_c, X_c, X, C, Y_c, Y = out
+    @show X_c/Y
+    X_Y = abs(X_Y)
+    @show X_c/Y - Xc_Y
+
+    d_f = (r + δ_e) / (1 - δ_e) * ν_f # from Euler
+    @show N*d_f - π_s*Y_c # discrepancy in retailer profits
+    @show X_c - N*cons*x_c
+    @show N*f_e*((r+δ_e)/μ+δ_e*π_s) - (1-δ_e)*π_s*z*L
+
+    # surv_prob = 1-p_0 + p_0*z 
+    ζ = (surv_prob - (1-p_0))/p_0 #ζ = (x_c/f_m)^ψ
+    dest_el = ψ*ζ/(1-ζ)
+
+    f_m = x_c/ζ^(1/ψ)
+
+    #@assert (F(x_c, para) - surv_prob) == 0.0
+
+    ϕ = (w - b) / (w_int - K + θ * (K + q * κ) - b)
+    x_m = Q / e^ξ_inv
+
+    # Destruction rate 
+    # Implied power law parameter: (x_c/f_m)^ψ = surv_prob
+
+    return (;
+        f_e, δ=δ, z=z, b=b, ϕ=ϕ, r, σ=σ, ε=ε, A=A, η_L=η_L,
+        κ=κ, ξ_inv=ξ_inv, x_m=x_m, s=s, ψ=ψ, p_0=p_0, f_m=f_m
+    )
+end
+
+# =============================================================================
+# Curves: Job Creation & Resource Constraint
+# =============================================================================
+## This curves need to be updated with endogenous δ_e##
+"""
+    N_jcc(θ, para)
+
+Job creation curve: N as a function of θ.
+"""
+function N_jcc(θ, δ_e, para)
+    @unpack r, A, η_L, δ, ϕ, z, ε, b, κ = para
+    τ = 1 - (1-δ_e)*(1-s)
+    q = vf(θ, A, η_L)
+    K = K_fun(θ, δ_e, para)
+    μ = ε / (ε - 1)
+    w_int = (1 / ((1 - δ_e) * (1 - ϕ))) * (κ * q + K) * ((r + τ) / q + (1 - δ_e) * ϕ * θ) + K + b
+    ρ= w_int * (μ / z)
+    N = ρ^(ε - 1)
+    return N
+end
+
+"""
+    N_res(θ, para)
+
+Resource constraint curve: N as a function of θ.
+"""
+
+function profit_share(δ_e, para)
+    @unpack r, δ, A, η_L, f_e, ε, z, ψ, p_0 = para
+    μ = ε / (ε - 1)
+    ψ_c = ψ/(1+ψ)
+    cons = ψ_c*p_0
+    π_s = (μ-1)/μ*(1-cons)*(r+δ_e)/(r+δ_e+cons*(1-δ_e))
+    return π_s 
+end
+
+function N_res(θ, δ_e, para)
+    @unpack r, δ, A, η_L, f_e, ε, z, ψ, p_0, s = para
+    τ = 1-(1-δ_e)*(1-s)
+    f = jf(θ, A, η_L)
+    u = τ / (τ + (1 - δ_e) * f)
+    L = 1 - u
+    π_s = profit_share(δ_e, para)
+    μ = ε / (ε - 1)
+    N = z * L * (1 - δ_e) / (f_e * (δ_e + (r+δ_e)/(μ*π_s)))
+    return N
+end
+
+
+"""
+    x_c(delta_e)-> number
+    Exit threshold as a function of exit condition combined with free entry
+"""
+function x_c_exit_thresh_fun(δ_e, ρ, para)
+    @unpack f_e, r, ψ, ε = para 
+    μ = ε/(ε-1)
+    π_s = profit_share(δ_e, para)
+    return  (ρ*f_e/μ) * (1 + (r + δ_e)/(ε*π_s*(1-δ_e)))
+end
+
+using PyPlot
+
+#targ = (;targets..., p_0=0.1, dest_end_frac=0.8)
+cal = calibrate_shares(targets)
+steady = steady_state(cal)
+steady.x_c
+steady.dest_el
+x_c_space = 0.1*steady.x_c:0.1:2*steady.x_c
+
+para = cal
+δ_space = cal.δ:0.00001:cal.δ*3
+ρ = steady.ρ
+x_c_space_exit_thresh_1 = x_c_exit_thresh_fun.(δ_space, Ref(ρ), Ref(para))
+x_c_space_exit_thresh_2 = x_c_exit_thresh_fun.(δ_space, Ref(ρ*1.1), Ref(para))
+
+x_c_space = x_c_dest_fun.(δ_space, Ref(para))
+
+fig, ax = PyPlot.subplots()
+ax.plot(δ_space, x_c_space_exit_thresh_1, label="Exit threshold curve") #exit-entry locus
+ax.plot(δ_space, x_c_space_exit_thresh_2, label="Exit threshold curve: higher ρ") #exit-entry locus
+ax.plot(δ_space, x_c_space, label="Product destruction curve")
+ax.set_xlabel(L"δ_e")
+ax.set_ylabel(L"$x^c$")
+ax.legend()
+tight_layout()
+display(fig)
+
+function solve_δ_e(ρ, para)
+    function loss(δ_e)
+        x_c1 = x_c_dest_fun(δ_e, para)
+        x_c2 = x_c_exit_thresh_fun(δ_e, ρ, para)
+        return (x_c1-x_c2)/(x_c1+x_c2)
+    end 
+    δ_e = find_zero(loss, (1e-6, 0.3))
+end 
+
+#############################################
+
+
+
+

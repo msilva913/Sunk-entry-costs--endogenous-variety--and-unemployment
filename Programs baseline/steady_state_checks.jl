@@ -10,21 +10,20 @@ targets = (
     Xc_Y=0.20,         # fixed cost share of output (Abraham, Bormans, Konings, Roeger)
     dest_ann=0.0754,   # annual product destruction rate
     dest_end_frac=0.5, # endogenous share of destruction rate (Estimated)
-    p_0          =0.5, # probability of drawing from
-    #dest_el = 1.0,  # Destruction elasticity wrt x_c
-    f=0.41,            # job-finding rate, 
+    p_0=0.5,           # probability of drawing from
+    #dest_el=1.0,      # Destruction elasticity wrt x_c
+    f=0.41,            # job-finding rate 
     η_L=0.6,           # elasticity of matching fun wrt unemployment
     q=0.8,             # vacancy filling rate,
-    sep=0.031,         # aggregate separation rate , 
+    sep=0.031,         # aggregate separation rate
     b_ratio=0.71,      # ratio of unemployment benefits to wage (Estimated)
-    x_v=1.0, 
-    ξ_inv=1,           # Estimated
+    x_v=1.0,           # (Estimated)
+    ξ_inv=1,           # entry elasticity inverse (Estimated)
     r_ann=0.04,        # annual discount rate
-    ε=4.3,             # Elasticity of substitution (BGM, Compustat)
-    σ=1.0,             # Inverse IES (Estimated)
-    N=1.0,             # SS mass of forms (normalization)
-    w=1.0,             # SS wage (normalization)
-    #ψ=1.5
+    ε=4.3,             # elasticity of substitution (BGM, Compustat)
+    σ=1.0,             # inverse IES (Estimated)
+    N=1.0,             # SS mass of firms (normalization)
+    w=1.0              # SS wage (normalization)
 )
 
 
@@ -71,9 +70,8 @@ dest_elast_1 = dest_elast(cal, x_c)
 labor_share_alt = 1.0 - profit_share_rec - profit_share_ret
 @assert abs(labor_share - labor_share_alt) < 1e-12
 
-# Retail profits 
+# Retail profits
 @assert abs(N*d_f - π_s*Y_c) < 1e-12
- - Y_c/ε - X_c
 @assert abs(N*d_f - Y_c/ε + X_c) < 1e-12
 
 # Wage bill share check
@@ -90,20 +88,20 @@ labor_share_alt = 1.0 - profit_share_rec - profit_share_ret
 @assert abs(ρ*z*L_e/μ-ν_f*N_e) < 1e-12
 
 # Vacancy cost share
-@assert abs(κ/(κ+K/q) -(1-x_v)) < 1e-12
+@assert abs(κ/(κ+K/q) - (1-x_v)) < 1e-12
 
-# Wage equation/JCC
-@assert abs((w_int-w-K - (r+τ)/(1-δ_e)*(κ+K/q))) < 1e-12
-@assert abs(w - ϕ*(w_int-K+ θ*(K+q* κ))- (1-ϕ)*b) < 1e-12
+# Wage equation and job creation condition
+@assert abs(w_int - w - K - (r+τ)/(1-δ_e)*(κ+K/q)) < 1e-12
+@assert abs(w - ϕ*(w_int - K + θ*(K + q*κ)) - (1-ϕ)*b) < 1e-12
 
 # Entrant consistency
-@assert abs(v - ((1-δ_e)*((1-q)*v+s*(1-u))+e)) < 1e-12
-@assert abs(e - δ_e*(v+1-u)) < 1e-12
+@assert abs(v - ((1-δ_e)*((1-q)*v + s*(1-u)) + e)) < 1e-12
+@assert abs(e - δ_e*(v + 1 - u)) < 1e-12
 @assert abs(N_e - L_e*z/f_e) < 1e-12
 
 # Surplus ratio and capital check
-surplus_ratio = (r+τ)/(1-δ_e)*(1/(q*x_v))
-@assert abs(K - (1-ϕ)/ϕ*(w-b)/(surplus_ratio +  θ*(1/x_v))) < 1e-12
+surplus_ratio = (r + τ)/(1 - δ_e) * (1/(q*x_v))
+@assert abs(K - (1-ϕ)/ϕ*(w-b)/(surplus_ratio + θ*(1/x_v))) < 1e-12
 
 # Consistency x_m with Q
 @assert abs(Q - e^ξ_inv*x_m) < 1e-12
