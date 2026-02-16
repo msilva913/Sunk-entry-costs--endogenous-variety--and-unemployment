@@ -13,272 +13,283 @@ Table 5. Components of private sector gross job gains and losses by firm size, s
 Table 6. Private sector gross job gains and losses by state, seasonally adjusted
 Table 7. Private sector gross job gains and losses as a percent of total employment by state, seasonally adjusted
 Table 8. Private sector establishment births and deaths, seasonally adjusted
+"""
 
 """
-# Initial imports 
-from fredapi import Fred
-import numpy as np
+This script loads, cleans, and merges JOLTS vacancy data from FRED
+and Business Employment Dynamics (BED) data from a local file.
+The goal is to create a single panel DataFrame for analyzing the 
+relationship between vacancies, establishment births, and deaths across key industries.
+
+Analysis Hypotheses:
+1) Higher establishment numbers (births) lead to faster vacancy creation.
+2) More firm exits (deaths) lead to slower vacancy creation.
+"""
+
+# =============================================================================
+# 1. SETUP AND CONFIGURATION
+# =============================================================================
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-fred = Fred(api_key='9c70445138df124be4928605b7e08bd4')
+import numpy as np
+from fredapi import Fred
 import os
-os.chdir(r"C:\Users\msilv\Documents\GitHub\Sunk-entry-costs--endogenous-variety--and-unemployment\Data")
-load = True
-from time_series_functions import filter_transform, moments
+from time_series_functions import hp_filter
+# --- Configuration ---
+# Set your working directory if needed
+# os.chdir(r"C:\Your\Project\Path\Data")
 
-if load == False:
-    # Dictionary of industries for the seasonally adjusted level of vacancies
-    industries_level = {
-        'JTSJOL': 'Total Nonfarm',
-        'JTS1000JOL': 'Total Private',
-        'JTS2300JOL': 'Construction',
-        'JTS3000JOL': 'Manufacturing',
-        'JTS3200JOL': 'Durable Goods Manufacturing',
-        'JTS3400JOL': 'Nondurable Goods Manufacturing',
-        'JTS4000JOL': 'Trade, Transportation, and Utilities',
-        'JTS4400JOL': 'Retail Trade',
-        'JTS540099JOL': 'Professional and Business Services',
-        'JTS6000JOL': 'Private Education and Health Services',
-        'JTS6200JOL': 'Health Care and Social Assistance',
-        'JTS7000JOL': 'Leisure and Hospitality',
-        'JTS7100JOL': 'Arts, Entertainment, and Recreation',
-        'JTS7200JOL': 'Accommodation and Food Services',
-        'JTS9000JOL': 'Government',  
-        'JTS9200JOL': 'State and Local',
-    }
+# API and File Paths
+FRED_API_KEY = '9c70445138df124be4928605b7e08bd4'
+JOLTS_DATA_CSV = 'jolts_vacancies_industry_adjusted_levels.csv'
+BED_DATA_XLSX = "BED_establishment_industry.xlsx"
+FORCE_JOLTS_RELOAD = False # Set to True to re-download JOLTS data from FRED
+
+# Define the 6 industries of interest
+SELECTED_INDUSTRIES = [
+    "Nondurable Goods Manufacturing", "Durable Goods Manufacturing", "Construction",
+    "Trade, Transportation, and Utilities", "Professional and Business Services", "Leisure and Hospitality"
+]
+
+# Mapping for BED Series IDs to internal codes
+BED_ID_TO_NAME_MAP = {
+    'BDS0000000000200020120007LQ5': 'BTH_NDR', 'BDS0000000000200010120007LQ5': 'BTH_DUR',
+    'BDS0000000000100000120007LQ5': 'BTH_CON', 'BDS0000000000200070120007LQ5': 'BTH_TTU',
+    #'BDS0000000000600000120007LQ5': 'BTH_PBS',
+    'BDS0000000000200050120007LQ5': 'BTH_LHS',
+    'BDS0000000000200020120008LQ5': 'DTH_NDR', 'BDS0000000000200010120008LQ5': 'DTH_DUR',
+    'BDS0000000000100000120008LQ5': 'DTH_CON', 'BDS0000000000200070120008LQ5': 'DTH_TTU',
+  #  'BDS0000000000600000120008LQ5': 'DTH_PBS', 
+  'BDS0000000000200050120008LQ5': 'DTH_LHS',
+}
+
+# Mapping from internal codes to the full industry names used in the JOLTS data
+BED_CODE_TO_INDUSTRY_MAP = {
+    'NDR': 'Nondurable Goods Manufacturing', 'DUR': 'Durable Goods Manufacturing', 'CON': 'Construction',
+    'TTU': 'Trade, Transportation, and Utilities', 'PBS': 'Professional and Business Services', 'LHS': 'Leisure and Hospitality',
+}
 
 
+# =============================================================================
+# 2. DATA LOADING AND PREPARATION FUNCTIONS
+# =============================================================================
+
+def load_jolts_data(api_key, selected_industries, filepath, force_reload=False):
+    """
+    Loads JOLTS vacancy data from FRED API or local CSV, processes it into
+    a clean quarterly panel format for the selected industries.
+    """
+    print("--- Loading JOLTS Vacancy Data ---")
+    if force_reload or not os.path.exists(filepath):
+        print("Fetching data from FRED API...")
+        fred = Fred(api_key=api_key)
+        
+        industries_level_full = {
+            'JTS3200JOL': 'Durable Goods Manufacturing', 'JTS3400JOL': 'Nondurable Goods Manufacturing',
+            'JTS2300JOL': 'Construction', 'JTS4000JOL': 'Trade, Transportation, and Utilities',
+            'JTS540099JOL': 'Professional and Business Services', 'JTS7000JOL': 'Leisure and Hospitality'
+        }
+        
+        data_list = [fred.get_series(sid, name=name) for sid, name in industries_level_full.items() if name in selected_industries]
+        df_wide = pd.concat(data_list, axis=1)
+        df_wide.to_csv(filepath)
+    else:
+        print(f"Loading data from local file: {filepath}")
+        df_wide = pd.read_csv(filepath, index_col=0, parse_dates=True)
+
+    df_wide.index = pd.to_datetime(df_wide.index)
+    df_quarterly = df_wide[selected_industries].resample("QE").mean()
+    df_panel = df_quarterly.reset_index().melt(id_vars=["index"], var_name="industry", value_name="vacancies")
+    df_panel.rename(columns={'index': 'date'}, inplace=True)
     
-    data_list = []
-    for series_id, name in industries_level.items():
-        series_data = fred.get_series(series_id)
-        series_data.name = name
-        data_list.append(series_data)
+    print("JOLTS data processing complete.\n")
+    return df_panel
+
+# --- THIS IS THE CORRECTED FUNCTION ---
+def load_bed_data(filepath, id_map, industry_map):
+    """
+    Loads and processes Business Employment Dynamics (BED) data from a wide-format
+    Excel file into a clean quarterly panel format by creating the date index from scratch.
+    """
+    print("--- Loading BED Birth/Death Data ---")
+    # 1. Read wide-format Excel file, using the first column (Series ID) as the index
+    df_raw = pd.read_excel(filepath, skiprows=3, index_col=0)
+
+    # 2. Filter for the series we care about
+    df_filtered = df_raw.loc[id_map.keys()]
+
+    # 3. Transpose so dates are rows and series are columns
+    df_transposed = df_filtered.transpose()
     
-    # Combine into one DataFrame
-    df = pd.concat(data_list, axis=1)
+    # 4. Clean data values (remove footnotes, etc.) and convert to numeric
+    for col in df_transposed.columns:
+        df_transposed[col] = pd.to_numeric(
+            df_transposed[col].astype(str).str.replace(r'[^\d.]', '', regex=True),
+            errors='coerce'
+        )
 
-    #Save to CSV
-    df.to_csv('jolts_vacancies_industry_adjusted_levels.csv')
-else:
-    df = pd.read_csv('jolts_vacancies_industry_adjusted_levels.csv')
+    # 5. --- CREATE DATE INDEX FROM SCRATCH ---
+    # Generate a new DatetimeIndex starting from Q3 1992, matching the BED data's start.
+    # The number of periods is determined by the number of rows in the transposed data.
+    num_periods = len(df_transposed)
+    date_index = pd.period_range(start='1992Q3', periods=num_periods, freq='Q').to_timestamp('Q')
+    
+    # Assign the newly created index to the DataFrame
+    df_transposed.index = date_index
 
-print(df.shape, df.columns)
-df.head()
+    # 6. Rename columns from Series IDs to our short names (e.g., 'BTH_NDR')
+    df_final = df_transposed.rename(columns=id_map)
+    df_final = df_final.dropna(how='all').sort_index()
 
-# Set datetimeindex 
-df.rename(columns={"Unnamed: 0": "date"}, inplace=True)
-df.index = pd.to_datetime(df.date, format='%Y-%m-%d')
-df.drop(["date"], axis=1, inplace=True)
+    # 7. Reshape the data into a long panel format
+    df_long = df_final.reset_index().melt(id_vars='index', var_name='series_name', value_name='value')
+    df_long.rename(columns={'index': 'date'}, inplace=True)
+    df_long['measure'] = df_long['series_name'].str.split('_').str[0]
+    df_long['industry_code'] = df_long['series_name'].str.split('_').str[1]
+    
+    # 8. Pivot to get 'births' and 'deaths' as separate columns
+    bed_panel_wide = df_long.pivot_table(
+        index=['date', 'industry_code'],
+        columns='measure',
+        values='value'
+    ).reset_index()
+    bed_panel_wide.rename(columns={'BTH': 'births', 'DTH': 'deaths'}, inplace=True)
+    
+    # 9. Map industry codes to full names for merging and final cleanup
+    bed_panel = bed_panel_wide.copy()
+    bed_panel['industry'] = bed_panel['industry_code'].map(industry_map)
+    bed_panel.drop(columns=['industry_code'], inplace=True)
+    
+    print("BED data processing complete.\n")
+    return bed_panel
 
-# Select industry groups 
-industry_gr = ["Nondurable Goods Manufacturing", 
-            "Durable Goods Manufacturing",
-            "Construction",
-            "Trade, Transportation, and Utilities",
-            "Retail Trade",
-            "Professional and Business Services"]
 
-# Reduced dataset corresponding to select industry groups
-df_red = df[industry_gr]
-ind_means = df_red.apply(np.mean, axis=0)
-ind_means.sort_values(ascending=False, inplace=True)
-print(ind_means)
+# =============================================================================
+# 3. EXECUTION: LOAD, MERGE, AND VERIFY
+# =============================================================================
 
-fig, ax = plt.subplots()
-sns.barplot(data=ind_means, ax=ax)
-plt.xticks(rotation=45, ha="right") # rotate and align labels
-plt.tight_layout()
+# Load both datasets into panel format
+jolts_panel = load_jolts_data(FRED_API_KEY, SELECTED_INDUSTRIES, JOLTS_DATA_CSV, force_reload=FORCE_JOLTS_RELOAD)
+bed_panel = load_bed_data(BED_DATA_XLSX, BED_ID_TO_NAME_MAP, BED_CODE_TO_INDUSTRY_MAP)
 
-# Time series plots 
-# 1) Raw plots
-fig, axes = plt.subplots(nrows=2, ncols=3, figsize=(14, 6), 
-                       sharex=True, sharey=False)
-axes_flat = axes.ravel()
-for i, col in enumerate(df_red.columns):
-    ax = axes_flat[i] # flatten the axes
-    ax.plot(df_red.index, df_red[col], linestyle='-', alpha=0.9, linewidth=1.5, color='forestgreen')
-    ax.set_title(col)
+# Merge the JOLTS and BED panels on 'date' and 'industry'
+print("--- Merging JOLTS and BED data ---")
+# Use an inner merge to keep only the time periods and industries present in both datasets
+merged_panel = pd.merge(jolts_panel, bed_panel, on=['date', 'industry'], how='inner')
+
+# Set a multi-index for easy analysis and sort
+merged_panel.set_index(['industry', 'date'], inplace=True)
+merged_panel.sort_index(inplace=True)
+
+# Final verification
+print("\n=== FINAL MERGED DATAFRAME ===")
+print("\nShape:", merged_panel.shape)
+print("\nData Head:")
+print(merged_panel.head(10))
+print("\n...")
+print("Data Tail:")
+print(merged_panel.tail(10))
+print("\nData Info:")
+merged_panel.info()
+##################
+
+# =============================================================================
+# 4. VISUALIZATION: PLOT TIME SERIES IN LOG LEVELS
+# =============================================================================
+print("\n--- Generating Time Series Plots ---")
+import matplotlib.pyplot as plt
+# =============================================================================
+# --- Use .apply() for efficient log transformation ---
+#  1. Select the columns to transform
+cols_to_transform = ['vacancies', 'births', 'deaths']
+
+# 2. Apply the np.log function and add a 'log_' prefix to the new columns
+log_df = merged_panel[cols_to_transform].apply(np.log)
+log_df = log_df[cols_to_transform].groupby('industry').transform(lambda x: x-x.iloc[0])
+# Get the unique list of industries to iterate over
+industries = log_df.index.get_level_values('industry').unique()
+
+# --- Plot 1: Vacancies vs. Establishment Births ---
+
+# Create a 2x3 grid of subplots
+fig1, axes1 = plt.subplots(nrows=2, ncols=3, figsize=(18, 8), sharex=True)
+axes1 = axes1.ravel() # Flatten the 2x3 grid for easy iteration
+
+for i, industry in enumerate(industries):
+    ax = axes1[i]
+    data_for_industry = log_df.loc[industry]
+    
+    # Plot using the new 'log_' columns
+    ax.plot(data_for_industry.index, data_for_industry['vacancies'], color='blue', label='Log Vacancies', linewidth=1.5)
+    ax.plot(data_for_industry.index, data_for_industry['births'], color='forestgreen', label='Log Births', linewidth=1.5, alpha=0.9)
+    ax.axhline(0, color='grey', linestyle='--', linewidth=0.8)
+    ax.set_title(industry, fontsize=14)
+    ax.grid(True, which='both', linestyle='--', linewidth=0.5)
+
+axes1[0].legend()
+fig1.suptitle('Log Vacancies vs. Log Establishment Births by Industry', fontsize=16, y=1.02)
 plt.tight_layout()
 plt.show()
 
-" Apply logarithm and construct cylical deviation"
-init = df_red.index[0] 
-final = df_red.index[-1]
 
-cycle = pd.concat([filter_transform(df_red[x], init=init, final=final, transform_type='log',
-                        filter_type="hp_filter", lamb=100_000) for x in industry_gr], axis=1)
-cycle.columns = df_red.columns
-# 2) Plots of cyclical deviations 
-fig, axes = plt.subplots(nrows=2, ncols=3, figsize=(14, 6), 
-                       sharex=True, sharey=False)
-axes_flat = axes.ravel()
+# --- Plot 2: Vacancies vs. Establishment Deaths ---
 
-for i, col in enumerate(cycle.columns):
-    ax = axes_flat[i] # flatten the axes
-    ax.plot(cycle.index, cycle[col], linestyle='-', alpha=0.9, linewidth=1.5, color="forestgreen")
-    ax.set_title(col)
+# Create another 2x3 grid of subplots
+fig2, axes2 = plt.subplots(nrows=2, ncols=3, figsize=(18, 8), sharex=True)
+axes2 = axes2.ravel() # Flatten the grid
+
+for i, industry in enumerate(industries):
+    ax = axes2[i]
+    data_for_industry = log_df.loc[industry]
+    
+    # Plot using the new 'log_' columns
+    ax.plot(data_for_industry.index, data_for_industry['vacancies'], color='blue', label='Log Vacancies', linewidth=1.5)
+    ax.plot(data_for_industry.index, data_for_industry['deaths'], color='red', label='Log Deaths', linewidth=1.5, alpha=0.8)
+    ax.axhline(0, color='grey', linestyle='--', linewidth=0.8)
+    
+    ax.set_title(industry, fontsize=14)
+    ax.grid(True, which='both', linestyle='--', linewidth=0.5)
+
+axes2[0].legend()
+fig2.suptitle('Log Vacancies vs. Log Establishment Deaths by Industry', fontsize=16, y=1.02)
+plt.tight_layout()
+plt.show()
+
+" Extract cycle "
+import statsmodels.api as sm
+hp_lambda=10**5
+def get_hp_cycle(series):
+    """Applies the HP filter to a single series and returns the cyclical component."""
+    cycle, trend = sm.tsa.filters.hpfilter(series.dropna(), hp_lambda)
+    return cycle
+
+def apply_filter_to_group(df_chunk):
+    return df_chunk.apply(get_hp_cycle)
+
+cols_to_filter = ['vacancies', 'births', 'deaths']
+log_df_cleaned = log_df.dropna(subset=cols_to_filter, how="all")
+cycle = log_df_cleaned.groupby('industry').apply(apply_filter_to_group)
+cycle.index = cycle.index.droplevel(1)
+
+# Create another 2x3 grid of subplots
+fig4, axes4 = plt.subplots(nrows=2, ncols=3, figsize=(18, 8), sharex=True)
+axes4 = axes4.ravel() # Flatten the grid
+
+for i, industry in enumerate(industries):
+    ax = axes4[i]
+    data_for_industry = cycle.loc[industry]
+    
+    # Plot using the new 'log_' columns
+    ax.plot(data_for_industry.index, data_for_industry['vacancies'], color='blue', label='Cyclical Vacancies', linewidth=1.5)
+    ax.plot(data_for_industry.index, data_for_industry['deaths'], color='red', label='Cyclical Deaths', linewidth=1.5, alpha=0.8)
+    ax.axhline(0, color='grey', linestyle='--', linewidth=0.8)
+    
+    ax.set_title(industry, fontsize=14)
+    ax.grid(True, which='both', linestyle='--', linewidth=0.5)
+
+axes4[0].legend()
+fig4.suptitle('Log Vacancies vs. Log Establishment Deaths by Industry', fontsize=16, y=1.02)
 plt.tight_layout()
 plt.show()
 
 # 3) Moments 
-mom = moments(cycle, relative_std="Nondurable Goods Manufacturing", lab=["Nondurable Goods Manufacturing"])
-
-##############################
-import requests
-import json
-import matplotlib.ticker as mticker
-
-# --- Configuration ---
-# 1. Enter your BLS API key here.
-API_KEY = 'YOUR_API_KEY_HERE' 
-
-# 2. Define the industries and data types you want to fetch.
-# I've included the exact series IDs for your requested industries and more.
-series_map = {
-    # --- Establishment Births (Number) ---
-    'BTH_CON': 'BDU000000101200000050012', # Construction Births
-    'BTH_DUR': 'BDU0000003200000050012', # Durable Goods Mfg Births
-    'BTH_NDR': 'BDU0000003100000050012', # Nondurable Goods Mfg Births
-    'BTH_RT':  'BDU0000004400000050012', # Retail Trade Births
-    'BTH_PBS': 'BDU0000006000000050012', # Professional & Business Services Births
-    
-    # --- Establishment Deaths (Number) ---
-    'DTH_CON': 'BDU000000101200000050013', # Construction Deaths
-    'DTH_DUR': 'BDU0000003200000050013', # Durable Goods Mfg Deaths
-    'DTH_NDR': 'BDU0000003100000050013', # Nondurable Goods Mfg Deaths
-    'DTH_RT':  'BDU0000004400000050013', # Retail Trade Deaths
-    'DTH_PBS': 'BDU0000006000000050013', # Professional & Business Services Deaths
-}
-
-# 3. Define the time range for the data.
-start_year = '2000'
-end_year = '2023'
-
-# --- API Request and Data Processing ---
-
-def fetch_bls_data(series_dict, start, end, api_key):
-    """Fetches data from the BLS API and returns a clean DataFrame."""
-    if api_key == 'YOUR_API_KEY_HERE':
-        print("Warning: Please replace 'YOUR_API_KEY_HERE' with your actual BLS API key.")
-        return None
-
-    headers = {'Content-type': 'application/json'}
-    
-    # The BLS API can accept up to 50 series in a single request
-    data = json.dumps({
-        "seriesid": list(series_dict.values()),
-        "startyear": start,
-        "endyear": end,
-        "registrationkey": api_key,
-        "catalog": True # Good practice to get metadata
-    })
-    
-    # Send the request
-    p = requests.post('https://api.bls.gov/publicAPI/v2/timeseries/data/', data=data, headers=headers)
-    
-    if p.status_code != 200:
-        print(f"Error fetching data: {p.status_code}")
-        print(p.json())
-        return None
-        
-    json_data = p.json()
-    
-    if json_data['status'] != 'REQUEST_SUCCEEDED':
-        print(f"BLS API Error: {json_data['message']}")
-        return None
-
-    # Process the JSON response into a DataFrame
-    all_series_data = []
-    series_titles = {s_id: series['seriesTitle'] for s_id, series in zip(series_dict.values(), json_data['Results']['series'])}
-
-    for series_id, series_name in series_dict.items():
-        try:
-            series_data = json_data['Results']['series']
-            # Find the specific series data from the response
-            for s in series_data:
-                if s['seriesID'] == series_name:
-                    df = pd.DataFrame(s['data'])
-                    df['seriesID'] = series_name
-                    df['seriesName'] = series_id
-                    df['value'] = pd.to_numeric(df['value'])
-                    # Create a proper date index
-                    df['date'] = pd.to_datetime(df['year'] + '-' + df['period'].str.replace('Q0', '').astype(int) * 3)
-                    df = df[['date', 'value', 'seriesName']]
-                    all_series_data.append(df)
-                    break
-        except KeyError:
-            print(f"Could not find data for series: {series_name}")
-
-    if not all_series_data:
-        print("No data processed.")
-        return None
-        
-    # Combine all series into a single pivot table
-    combined_df = pd.concat(all_series_data)
-    final_df = combined_df.pivot(index='date', columns='seriesName', values='value')
-    final_df = final_df.sort_index()
-    
-    return final_df
-
-# Fetch the data
-bed_data = fetch_bls_data(series_map, start_year, end_year, API_KEY)
-
-
-# --- Plotting the Results ---
-
-if bed_data is not None:
-    print("Successfully fetched data. Columns available:")
-    print(bed_data.columns)
-    
-    # Define your color palette
-    colors = {
-        'births': '#3776ab', # Deep Azure
-        'deaths': '#C0C0C0', # Silver/Gray
-    }
-
-    # Plot for Construction
-    fig, ax = plt.subplots(figsize=(12, 7))
-    
-    bed_data['BTH_CON'].plot(ax=ax, color=colors['births'], label='Establishment Births', lw=2.5)
-    bed_data['DTH_CON'].plot(ax=ax, color=colors['deaths'], label='Establishment Deaths', lw=2.5, linestyle='--')
-    
-    ax.set_title('Establishment Births and Deaths: Construction', fontsize=16, pad=20)
-    ax.set_ylabel('Number of Establishments')
-    ax.set_xlabel('Year')
-    ax.grid(axis='y', linestyle='--', alpha=0.6)
-    ax.legend()
-    
-    # Format y-axis to have commas for thousands
-    ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, p: format(int(x), ',')))
-    
-    plt.tight_layout()
-    plt.show()
-
-    # Plot for Manufacturing (Durable vs. Nondurable)
-    fig, (ax1, ax2) = plt.subplots(nrows=2, ncols=1, figsize=(12, 10), sharex=True)
-
-    # Durable Goods
-    bed_data['BTH_DUR'].plot(ax=ax1, color='#00008B', label='Births', lw=2) # Dark Blue
-    bed_data['DTH_DUR'].plot(ax=ax1, color='#A9A9A9', label='Deaths', lw=2, linestyle='--') # Dark Gray
-    ax1.set_title('Durable Goods Manufacturing', fontsize=14)
-    ax1.set_ylabel('Number of Establishments')
-    ax1.legend()
-    ax1.grid(axis='y', linestyle='--', alpha=0.6)
-    ax1.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, p: format(int(x), ',')))
-    
-    # Nondurable Goods
-    bed_data['BTH_NDR'].plot(ax=ax2, color='#00008B', label='Births', lw=2)
-    bed_data['DTH_NDR'].plot(ax=ax2, color='#A9A9A9', label='Deaths', lw=2, linestyle='--')
-    ax2.set_title('Nondurable Goods Manufacturing', fontsize=14)
-    ax2.set_ylabel('Number of Establishments')
-    ax2.set_xlabel('Year')
-    ax2.legend()
-    ax2.grid(axis='y', linestyle='--', alpha=0.6)
-    ax2.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, p: format(int(x), ',')))
-    
-    fig.suptitle('Manufacturing Establishment Dynamics', fontsize=18, y=0.96)
-    plt.tight_layout(rect=[0, 0, 1, 0.94])
-    plt.show()
-
+#mom = moments(cycle, relative_std="Nondurable Goods Manufacturing", lab=["Nondurable Goods Manufacturing"])
