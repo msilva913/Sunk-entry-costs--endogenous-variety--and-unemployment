@@ -34,6 +34,8 @@ import numpy as np
 from fredapi import Fred
 import os
 from time_series_functions import hp_filter
+pd.set_option('display.max_columns', 8)
+
 # --- Configuration ---
 # Set your working directory if needed
 # os.chdir(r"C:\Your\Project\Path\Data")
@@ -291,5 +293,111 @@ fig4.suptitle('Log Vacancies vs. Log Establishment Deaths by Industry', fontsize
 plt.tight_layout()
 plt.show()
 
-# 3) Moments 
-#mom = moments(cycle, relative_std="Nondurable Goods Manufacturing", lab=["Nondurable Goods Manufacturing"])
+# =============================================================================
+# 7. CALCULATE COMOVEMENT STATISTICS BY INDUSTRY
+# =============================================================================
+print("\n--- Calculating Comovement Moments for Cyclical Data ---")
+
+# --- Step 1: Define a function to calculate all the desired stats for one group ---
+def calculate_comovement_stats(group):
+    """
+    Calculates key comovement statistics for vacancies and deaths for a single industry group.
+    
+    Args:
+        group (DataFrame): A DataFrame for one industry containing the cyclical components.
+        
+    Returns:
+        pd.Series: A series containing the calculated statistics.
+    """
+    # Check if the required columns exist and have data
+    if 'vacancies' not in group or 'deaths' not in group:
+        return pd.Series(dtype='float64')
+        
+    vacancies = group['vacancies']
+    deaths = group['deaths']
+
+    # --- 1. Contemporaneous Correlation ---
+    corr_contemp = vacancies.corr(deaths)
+
+    # --- 2. Relative Volatility ---
+    std_vac = vacancies.std()
+    std_deaths = deaths.std()
+    # Avoid division by zero if a series has no variation
+    relative_vol_deaths_to_vac = std_deaths / std_vac if std_vac > 0 else np.nan
+
+    # --- 3. Lead/Lag Correlations ---
+    # Correlation of vacancies(t) with deaths(t-1) -> "Lagging" correlation
+    corr_lag1 = vacancies.corr(deaths.shift(1))
+    
+    # Correlation of vacancies(t) with deaths(t+1) -> "Leading" correlation
+    corr_lead1 = vacancies.corr(deaths.shift(-1))
+    
+    # You can add more lags/leads if needed
+    # corr_lag2 = vacancies.corr(deaths.shift(2))
+    # corr_lead2 = vacancies.corr(deaths.shift(-2))
+
+    # --- Combine results into a pandas Series ---
+    stats = pd.Series({
+        'corr(v_t, exit_t)': corr_contemp,
+        'corr(v_t, exit_t-1)': corr_lag1,
+        'corr(v_t, exit_t+1)': corr_lead1,
+        'std(deaths) / std(vacancies)': relative_vol_deaths_to_vac,
+        'std(vacancies)': std_vac,
+        'std(deaths)': std_deaths,
+    })
+    
+    return stats
+
+
+# --- Step 2: Apply the function to each industry group ---
+comov_table = cycle.groupby('industry').apply(calculate_comovement_stats)
+comov_table_form = comov_table.style.format("{:.3g}")
+
+# --- Step 3: Display the results ---
+print("\nComovement Statistics: Cyclical Vacancies vs. Cyclical Deaths")
+# Format the table for better readability
+print(comov_table_form.to_string())
+
+#--- Generate markdown and latex tables ---# 
+from tabulate import tabulate 
+# Set display precision for the table 
+comov_table_rounded = comov_table.round(3)
+# Generate table using tabulate 
+whatsapp_table = tabulate(
+    comov_table_rounded,
+    headers="keys",   # Use DataFrame columns names as headers
+    tablefmt="pip",   # markdown-style pip format
+    showindex=True    # Show DataFrame index (industry names)
+    )
+print("--- Table for WhatsApp/Messaging ---")
+print(whatsapp_table)
+
+###### Latex table ###################
+# Define a formatter function for significant figures
+def sig_fig_formatter(x):
+    """Formats a number to 3 significant figures."""
+    return f"{x:.3g}"
+
+# Generate the LaTeX table string
+latex_table_string = comov_table.to_latex(
+    # --- Core Formatting ---
+    float_format=sig_fig_formatter, # Apply our custom formatter for significant figures
+    
+    # --- Labels and Caption ---
+    caption="Comovement Statistics for Cyclical Components of Vacancies and Deaths",
+    label="tab:comovement_stats", # The label for cross-referencing with \ref{...}
+    
+    # --- Column Headers and Index ---
+    header=True,            # Include the column headers
+    index=True,             # Include the index (industry names)
+    
+    # --- Advanced (Optional) ---
+    # You can escape special characters if your index/columns have them
+    # escape=True, 
+    # You can also suggest column alignment (l=left, c=center, r=right)
+    column_format='l' + 'r' * len(comov_table.columns) # Left-align index, right-align data
+)
+
+# Print the result
+print("\n--- LaTeX Code (for use with booktabs package) ---")
+print(latex_table_string)
