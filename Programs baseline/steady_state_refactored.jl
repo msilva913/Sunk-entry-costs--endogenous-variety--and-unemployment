@@ -557,7 +557,14 @@ function calibrate_shares(targets)
     end 
     
     # Bracket for search: Xc_Yc ∈ [0.01, 0.5] (fixed cost ratio must be positive, less than 50% of profit share)
-    Xc_Yc = find_zero(loss_xc, (0.01, 0.5))
+    Xc_Yc = NaN  # Initialize to ensure scope visibility
+    try
+        Xc_Yc = find_zero(loss_xc, (0.01, 0.5))
+    catch e
+        @warn "Stage 2 root-find failed: $(e). Evaluating loss at bracket endpoints..."
+        @show loss_xc(0.01), loss_xc(0.5)
+        rethrow(e)
+    end
     π_s = 1 / ε - Xc_Yc
     
     # Allocate labor between consumption-production and goods-production
@@ -576,7 +583,17 @@ function calibrate_shares(targets)
         return π_s_new - π_s 
     end 
     
-    cons = find_zero(loss_psi, (1e-3, 0.95))  # cons ∈ (0,1)
+    cons = NaN  # Initialize to ensure scope visibility
+    cons_result = find_zero(loss_psi, 0.3)  # Use initial guess instead of bracket
+    
+    # Check if convergence failed
+    if isa(cons_result, Roots.ConvergenceFailed)
+        @error "Stage 3 root-find failed to converge"
+        @show loss_psi(1e-3), loss_psi(0.3), loss_psi(0.5), loss_psi(0.95)
+        @show π_s  # Show target π_s we're trying to match
+        error("Convergence failed in Stage 3: $(cons_result)")
+    end
+    cons = cons_result
     
     # Convert consumption parameter to distribution shape: ψ = cons / (1 - cons) * (1 / p_0)
     ψ_c = cons / p_0
@@ -633,9 +650,18 @@ function calibrate_shares(targets)
         return loss_val, (; w_int, κ, z, f_e, K, d_f, ν_f, x_c, X_c, X, C, Y_c, Y=Y_new)
     end
 
-    # Root-find: Q ∈ [0.001, 1.0] with robust bracketing
+    # Root-find: Q using initial guess (more robust than bracketing)
     loss_Q_residual(Q) = loss_Q(Q)[1]
-    Q_opt = find_zero(loss_Q_residual, (1e-3, 1.0))
+    Q_opt = NaN  # Initialize to ensure scope visibility
+    Q_result = find_zero(loss_Q_residual, 0.1)  # Use initial guess instead of bracket
+    
+    # Check if convergence failed
+    if isa(Q_result, Roots.ConvergenceFailed)
+        @error "Stage 4 root-find failed to converge"
+        @show loss_Q_residual(0.01), loss_Q_residual(0.1), loss_Q_residual(1.0)
+        error("Convergence failed in Stage 4: $(Q_result)")
+    end
+    Q_opt = Q_result
     Q = abs(Q_opt)
     
     # Extract all computed values from loss function (avoid double-evaluation)

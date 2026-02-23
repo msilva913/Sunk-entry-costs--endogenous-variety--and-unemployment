@@ -4,7 +4,7 @@ Generate tables for
     2) steady-state shares
 """
 
-include("steady_state.jl")
+include("steady_state_refactored.jl")
 using MAT
 #cd("C:/Users/msilva913/Documents/GitHub/Sunk_entry_costs_endogenous_variety_unemployment")
 # Load posterior mode 
@@ -13,23 +13,23 @@ using MAT
 
 
 function calibration_table(cal, targets)
-    @unpack f_e, δ, s, z, b, ϕ, σ, ε, A, η_L, κ, ξ_inv, f_m, ψ = cal
-    @unpack X_Y, Xc_Y, dest_ann, dest_end_frac, f, q, sep, x_v, r_ann, N, w = targets
+    @unpack f_e, δ, s, z, b, ϕ, σ, ε, A, η_L, κ, ξ_inv, f_m, ψ, p_0 = cal
+    @unpack X_Y, Xc_Y, dest_ann, dest_end_frac, f, q, sep, x_v, r_ann, N, w, p_0 = targets
 
     r = (1 + r_ann)^(1/12) - 1
     β = 1 / (1 + r)
     δ_e = 1 - (1 - dest_ann)^(1/12)
 
     Parameter = [
-        L"b", L"\kappa", L"\xi^{-1}", L"\sigma", L"\delta_{\text{end,share}}",  # Estimated
-        L"r", L"\eta_L", L"\varepsilon", L"\delta_e",                        # Directly set
-        L"z", L"f_e",                                                        # Dependent: normalizations
-        L"s", L"\phi", L"A", L"f_m", L"\psi"                      # Dependent: long-run targets
+        L"b", L"\kappa", L"\xi^{-1}", L"\sigma", L"\varepsilon", L"\delta_{\text{end,share}}",  # Estimated
+        L"r", L"\eta_L", L"\delta_e", L"p_0",                # Directly set: r, η_L; Target-driven: δ_e; Provisional: p_0
+        L"z", L"f_e",                                        # Dependent: normalizations
+        L"s", L"\phi", L"A", L"f_m", L"\psi"                # Dependent: derived from estimates
     ]
 
     Targets = [
-        "Estimated", "Estimated", "Estimated", "Estimated", "Estimated",
-        "Real interest rate (annual)", "Elasticity of matching function", "Elasticity of substitution", "Establishment exit rate (annual)",
+        "Estimated", "Estimated", "Estimated", "Estimated", "Estimated", "Estimated",
+        "Real interest rate (annual, fixed)", "Elasticity of matching function (fixed)", "Establishment exit rate (annual, target mean)", "Mass point probability (provisional—to be estimated)",
         "Steady-state wage", "Steady-state mass of firms",
         "Aggregate separation rate",
         "Recruiting cost share: " * L"$X/Y$",
@@ -39,15 +39,15 @@ function calibration_table(cal, targets)
     ]
 
     Value = [
-        "-", "-", "-", "-", "-",
-        r_ann, η_L, ε, dest_ann,
+        "-", "-", "-", "-", "-", "-",
+        r_ann, η_L, dest_ann, p_0,
         w, N,
         sep, X_Y, f, dest_end_frac, Xc_Y
     ]
 
     Calibration = [
-        b, κ, ξ_inv, σ, dest_end_frac,
-        r, η_L, ε, δ_e,
+        b, κ, ξ_inv, σ, ε, dest_end_frac,
+        r, η_L, δ_e, p_0,
         z, f_e,
         s, ϕ, A, f_m, ψ
     ]
@@ -64,22 +64,22 @@ end
 
 targets = (
     X_Y=0.015,        # recruiting cost share of output
-    Xc_Y=0.20,         # fixed cost share of output (Abraham, Bormans, Konings, Roeger)
+    Xc_Y=0.1,          # fixed cost share of output
     dest_ann=0.0754,   # annual product destruction rate
     dest_end_frac=0.5, # endogenous share of destruction rate
-    f=0.41,            # job-finding rate, 
-    η_L=0.6,           # elasticity of matching fun wrt unemployment
-    q=0.8,             # vacancy filling rate,
-    sep=0.031,         # aggregate separation rate , 
-    b_ratio=0.71,      # ratio of unemployment benefits to wage,
-    x_v=1.0, 
-    ξ_inv=1, 
-    r_ann=0.04,        # annual discount rate
-    ε=4.3,             # Elasticity of substitution (BGM, Compustat)
-    σ=1.0,             # Inverse IES
-    N=1.0,             # SS mass of forms (normalization)
-    w=1.0,             # SS wage (normalization)
-    #ψ=1.5)
+    p_0=0.5,           # probability of continuous part
+    f=0.41,            # job-finding rate
+    η_L=0.6,           # elasticity of matching fun wrt unemployment (fixed)
+    q=0.8,             # vacancy filling rate
+    sep=0.031,         # aggregate separation rate
+    b_ratio=0.71,      # ratio of unemployment benefits to wage (estimated)
+    x_v=1.0,           # vacancy value split (estimated)
+    ξ_inv=1,           # entry elasticity inverse (estimated)
+    r_ann=0.04,        # annual discount rate (fixed)
+    ε=4.3,             # elasticity of substitution (estimated)
+    σ=1.0,             # inverse IES (estimated)
+    N=1.0,             # SS mass of firms (normalization)
+    w=1.0              # SS wage (normalization)
 )
 
 """
@@ -122,7 +122,7 @@ println("Copied ", length(text), " chars.")
 
 function shares_table(ss::NamedTuple)
     # Define additional variables 
-    @unpack w_int, w, L, X, Y, N, d_f, δ_e, end_dest_share, entrant_vac_share = ss
+    @unpack w_int, w, L, X, Y, N, d_f, δ_e, dest_end_frac, entrant_vac_share = ss
     recruiter_profit_share = ((w_int-w)*L-X)/Y
     retailer_profit_share =  (N*d_f)/Y
 
@@ -151,7 +151,7 @@ function shares_table(ss::NamedTuple)
         Symbol = [L"(1+r)^12-1", L"\mu", L"C/Y", L"v", L"u", L"\theta",  L"\nu N_e/Y", L"X/Y", L"Xc/Y", L"(1-F(x^c))/\delta_e",
        L"e/v", L"wL/Y", L"(w^{int}-w)*L-X)/Y", L"N*d_f/Y",  L"Q", L"J", L"M/(12*Y)"],
         Value = round.([ss.ann_int_rate, ss.μ, ss.cons_share, ss.v, ss.u, ss.θ, ss.inv_new_firm_share, ss.vacancy_share,
-         ss.X_c/ss.Y, ss.end_dest_share,  ss.entrant_vac_share, ss.labor_share, recruiter_profit_share, retailer_profit_share,
+         ss.X_c/ss.Y, ss.dest_end_frac,  ss.entrant_vac_share, ss.labor_share, recruiter_profit_share, retailer_profit_share,
         ss.Q, ss.J, ss.M/(12*ss.Y)], sigdigits=3),
 
     )
