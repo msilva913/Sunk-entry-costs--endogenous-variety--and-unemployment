@@ -124,7 +124,7 @@ println("Copied ", length(text), " chars.")
 
 function shares_table(ss::NamedTuple)
     # Define additional variables 
-    @unpack w_int, w, L, X, Y, N, d_f, δ_e, end_dest_share, entrant_vac_share = ss
+    @unpack w_int, w, L, X, Y, N, d_f, δ_e, dest_end_frac, entrant_vac_share = ss
     recruiter_profit_share = ((w_int-w)*L-X)/Y
     retailer_profit_share =  (N*d_f)/Y
 
@@ -153,7 +153,7 @@ function shares_table(ss::NamedTuple)
         Symbol = [L"(1+r)^12-1", L"\mu", L"C/Y", L"v", L"u", L"\theta",  L"\nu N_e/Y", L"X/Y", L"Xc/Y", L"(1-F(x^c))/\delta_e",
        L"e/v", L"wL/Y", L"(w^{int}-w)*L-X)/Y", L"N*d_f/Y",  L"Q", L"J", L"M/(12*Y)"],
         Value = round.([ss.ann_int_rate, ss.μ, ss.cons_share, ss.v, ss.u, ss.θ, ss.inv_new_firm_share, ss.vacancy_share,
-         ss.X_c/ss.Y, ss.end_dest_share,  ss.entrant_vac_share, ss.labor_share, recruiter_profit_share, retailer_profit_share,
+         ss.X_c/ss.Y, ss.dest_end_frac,  ss.entrant_vac_share, ss.labor_share, recruiter_profit_share, retailer_profit_share,
         ss.Q, ss.J, ss.M/(12*ss.Y)], sigdigits=3),
 
     )
