@@ -1,4 +1,4 @@
-include("steady_state.jl")
+include("steady_state_refactored.jl")
 
 ############################################################
 # --- Calibration Targets and Steady-State Calculation -----
@@ -7,7 +7,7 @@ include("steady_state.jl")
 # Define calibration targets (edit these as needed)
 targets = (
     X_Y=0.015,        # recruiting cost share of output
-    Xc_Y=0.20,         # fixed cost share of output (Abraham, Bormans, Konings, Roeger)
+    Xc_Y=0.10,         # fixed cost share of output (Abraham, Bormans, Konings, Roeger)
     dest_ann=0.0754,   # annual product destruction rate
     dest_end_frac=0.5, # endogenous share of destruction rate (Estimated)
     p_0=0.5,           # probability of drawing from

@@ -576,7 +576,8 @@ function calibrate_shares(targets)
         return π_s_new - π_s 
     end 
     
-    cons = find_zero(loss_psi, (1e-3, 0.95))  # cons ∈ (0,1)
+    cons = find_zero(loss_psi, 0.1)
+   
     
     # Convert consumption parameter to distribution shape: ψ = cons / (1 - cons) * (1 / p_0)
     ψ_c = cons / p_0
@@ -635,7 +636,7 @@ function calibrate_shares(targets)
 
     # Root-find: Q ∈ [0.001, 1.0] with robust bracketing
     loss_Q_residual(Q) = loss_Q(Q)[1]
-    Q_opt = find_zero(loss_Q_residual, (1e-3, 1.0))
+    Q_opt = find_zero(loss_Q_residual, 1.0)
     Q = abs(Q_opt)
     
     # Extract all computed values from loss function (avoid double-evaluation)

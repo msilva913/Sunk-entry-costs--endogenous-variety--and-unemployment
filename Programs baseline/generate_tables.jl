@@ -4,7 +4,7 @@ Generate tables for
     2) steady-state shares
 """
 
-include("steady_state.jl")
+include("steady_state_refactored.jl")
 using MAT
 #cd("C:/Users/msilva913/Documents/GitHub/Sunk_entry_costs_endogenous_variety_unemployment")
 # Load posterior mode 
@@ -13,7 +13,7 @@ using MAT
 
 
 function calibration_table(cal, targets)
-    @unpack f_e, δ, s, z, b, ϕ, σ, ε, A, η_L, κ, ξ_inv, f_m, ψ = cal
+    @unpack f_e, δ, s, z, b, ϕ, σ, ε, A, η_L, κ, ξ_inv, f_m, ψ, p_0 = cal
     @unpack X_Y, Xc_Y, dest_ann, dest_end_frac, f, q, sep, x_v, r_ann, N, w = targets
 
     r = (1 + r_ann)^(1/12) - 1
@@ -21,14 +21,14 @@ function calibration_table(cal, targets)
     δ_e = 1 - (1 - dest_ann)^(1/12)
 
     Parameter = [
-        L"b", L"\kappa", L"\xi^{-1}", L"\sigma", L"\delta_{\text{end,share}}",  # Estimated
+        L"b", L"\kappa", L"\xi^{-1}", L"\sigma", L"\delta_{\text{end,share}}", L"p_0",  # Estimated
         L"r", L"\eta_L", L"\varepsilon", L"\delta_e",                        # Directly set
         L"z", L"f_e",                                                        # Dependent: normalizations
         L"s", L"\phi", L"A", L"f_m", L"\psi"                      # Dependent: long-run targets
     ]
 
     Targets = [
-        "Estimated", "Estimated", "Estimated", "Estimated", "Estimated",
+        "Estimated", "Estimated", "Estimated", "Estimated", "Estimated", "Estimated",
         "Real interest rate (annual)", "Elasticity of matching function", "Elasticity of substitution", "Establishment exit rate (annual)",
         "Steady-state wage", "Steady-state mass of firms",
         "Aggregate separation rate",
@@ -39,14 +39,14 @@ function calibration_table(cal, targets)
     ]
 
     Value = [
-        "-", "-", "-", "-", "-",
+        "-", "-", "-", "-", "-", "-",
         r_ann, η_L, ε, dest_ann,
         w, N,
         sep, X_Y, f, dest_end_frac, Xc_Y
     ]
 
     Calibration = [
-        b, κ, ξ_inv, σ, dest_end_frac,
+        b, κ, ξ_inv, σ, dest_end_frac, p_0,
         r, η_L, ε, δ_e,
         z, f_e,
         s, ϕ, A, f_m, ψ
@@ -64,23 +64,25 @@ end
 
 targets = (
     X_Y=0.015,        # recruiting cost share of output
-    Xc_Y=0.20,         # fixed cost share of output (Abraham, Bormans, Konings, Roeger)
+    Xc_Y=0.10,         # fixed cost share of output (Abraham, Bormans, Konings, Roeger)
     dest_ann=0.0754,   # annual product destruction rate
-    dest_end_frac=0.5, # endogenous share of destruction rate
-    f=0.41,            # job-finding rate, 
+    dest_end_frac=0.5, # endogenous share of destruction rate (Estimated)
+    p_0=0.5,           # probability of drawing from
+    #dest_el=1.0,      # Destruction elasticity wrt x_c
+    f=0.41,            # job-finding rate 
     η_L=0.6,           # elasticity of matching fun wrt unemployment
     q=0.8,             # vacancy filling rate,
-    sep=0.031,         # aggregate separation rate , 
-    b_ratio=0.71,      # ratio of unemployment benefits to wage,
-    x_v=1.0, 
-    ξ_inv=1, 
+    sep=0.031,         # aggregate separation rate
+    b_ratio=0.71,      # ratio of unemployment benefits to wage (Estimated)
+    x_v=1.0,           # (Estimated)
+    ξ_inv=1,           # entry elasticity inverse (Estimated)
     r_ann=0.04,        # annual discount rate
-    ε=4.3,             # Elasticity of substitution (BGM, Compustat)
-    σ=1.0,             # Inverse IES
-    N=1.0,             # SS mass of forms (normalization)
-    w=1.0,             # SS wage (normalization)
-    #ψ=1.5)
+    ε=4.3,             # elasticity of substitution (BGM, Compustat)
+    σ=1.0,             # inverse IES (Estimated)
+    N=1.0,             # SS mass of firms (normalization)
+    w=1.0              # SS wage (normalization)
 )
+
 
 """
 targets = (X_Y = 0.015, # vacancy share target,  influences ϕ
