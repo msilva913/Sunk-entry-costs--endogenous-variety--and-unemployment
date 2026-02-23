@@ -476,98 +476,185 @@ const TARGETS = (
     calibrate_shares(targets)
 
 Calibrate model parameters to match empirical targets.
-Returns a NamedTuple of calibrated parameters.
+
+Calibration proceeds in three sequential stages:
+  1. **Stage 1 (Direct conversions)**: Convert targets to intermediate labor-market variables
+     - destruction rates: dest_ann, dest_end_frac → δ_e, δ
+     - time preference: r_ann → r (monthly)
+     - labor market: f, q, η_L, sep → θ, u, v, L, A
+  
+  2. **Stage 2 (Profit share)**: Root-find consumption-sector output share
+     - Target: Xc_Y (fixed cost share)
+     - Pin: Xc_Yc (fixed cost share within consumption sector), then π_s (profit share)
+  
+  3. **Stage 3 (Distribution parameters)**: Root-find consumption parameter
+     - Target: π_s (from Stage 2)
+     - Pin: cons (cost distribution mass fraction), then ψ, f_m
+  
+  4. **Stage 4 (Vacancy value)**: Root-find vacancy value Q
+     - Targets: X_Y (recruiting share), x_v (vacancy-value split)
+     - Pin: Q, then K, κ, w_int, z, f_e, x_c, x_m, ϕ
+
+Returns a NamedTuple of 18 calibrated parameters for ParaCalib.
 """
 function calibrate_shares(targets)
     @unpack X_Y, Xc_Y, dest_ann, dest_end_frac, p_0, f, η_L, q, sep, b_ratio, x_v, ξ_inv, ε, r_ann, σ, N, w = targets
 
-    # Convert annual to monthly rates
+    # =================================================================
+    # STAGE 1: Direct Conversions (Targets → Fundamentals)
+    # =================================================================
+    # Target: dest_ann (annual rate) → δ_e (monthly destruction rate)
+    # Target: dest_end_frac → fraction of δ_e that is endogenous
     δ_e = 1 - (1 - dest_ann)^(1 / 12)
     δ = (1.0 - dest_end_frac) * δ_e
     surv_prob = (1 - δ_e) / (1 - δ)
     
+    # Target: ε → markup; sep → worker separation rate
     μ = compute_markup(ε)
     τ = sep
     s = (τ - δ_e) / (1 - δ_e)
+    
+    # Target: r_ann → monthly discount rate
     r = (1 + r_ann)^(1 / 12) - 1
 
-    # Correct job finding and vacancy filling rates for ongoing destruction
-    f = f / (1 - δ_e)
-    q = q / (1 - δ_e)
-
-    θ = f / q
-    u = τ / (τ + (1 - δ_e) * f)
+    # Targets: f, q (corrected for destruction), η_L → labor market tightness, unemployment
+    # Note: f and q are corrected rates (conditional on survival); divide out survival prob
+    f_corr = f / (1 - δ_e)
+    q_corr = q / (1 - δ_e)
+    θ = f_corr / q_corr
+    u = τ / (τ + (1 - δ_e) * f_corr)
     v = θ * u
     L = 1 - u
 
-    A = f / θ^(1 - η_L)
+    # Target: η_L → matching function level
+    A = f_corr / θ^(1 - η_L)
 
+    # Derived from job creation/destruction balance
     e = δ_e * (v + 1 - u)
     N_e = δ_e / (1 - δ_e) * N
     b = b_ratio * w
     ρ = N^(1 / (ε - 1))
 
-    # Solve for consumption sector output share
+    # =================================================================
+    # STAGE 2: Solve for Profit Share (Root-find Xc_Yc)
+    # =================================================================
+    # Target: Xc_Y (fixed cost as share of total output)
+    # Relationship: Xc_Y = (Xc_Yc) * (Yc_YG) * (YG_Y)
+    #   where Xc_Yc ≡ fixed cost / consumption output (endogenous)
+    #         Yc_YG ≡ consumption output / goods output (from national accounts)
+    #         YG_Y  ≡ goods output / total output (from national accounts)
+    # Solving for Xc_Yc pins the profit share π_s.
+    
     function loss_xc(x)
-        π_s = 1 / ε - x
-        Yc_YG = (r + δ_e) / (r + δ_e + δ_e * π_s)
+        # x is Xc_Yc; solve π_s = 1/ε - x (profit share = retail markup - fixed cost ratio)
+        π_s_trial = 1 / ε - x
+        # Fraction of retail output spent on consumption vs goods
+        Yc_YG = (r + δ_e) / (r + δ_e + δ_e * π_s_trial)
+        # Gross output is consumption + fixed costs + recruiting
         YG_Y = 1 + X_Y + Xc_Y
-        return 100 * (Xc_Y / (Yc_YG * YG_Y) - x)
+        # Match: target ratio should equal computed ratio
+        return Xc_Y / (Yc_YG * YG_Y) - x
     end 
-    Xc_Yc = find_zero(loss_xc, [0.01, 0.5])
+    
+    # Bracket for search: Xc_Yc ∈ [0.01, 0.5] (fixed cost ratio must be positive, less than 50% of profit share)
+    Xc_Yc = find_zero(loss_xc, (0.01, 0.5))
     π_s = 1 / ε - Xc_Yc
-
+    
+    # Allocate labor between consumption-production and goods-production
     L_c = (r + δ_e) * L / (r + δ_e + δ_e * π_s * μ)
     L_e = L - L_c
 
-    # Solve for consumption parameter
-    function loss_psi(cons)
-        π_s_new = (μ - 1) / μ * (1 - cons) * (r + δ_e) / (r + δ_e + cons * (1 - δ_e))
+    # =================================================================
+    # STAGE 3: Solve for Cost Distribution Parameter (Root-find cons)
+    # =================================================================
+    # Target: π_s (from Stage 2)
+    # Relationship: π_s(cons) = [(μ-1)/μ] * (1-cons) * (r+δ_e) / (r+δ_e + cons*(1-δ_e))
+    # Solving for cons (mass fraction of distribution with costs) pins ψ.
+    
+    function loss_psi(cons_trial)
+        π_s_new = (μ - 1) / μ * (1 - cons_trial) * (r + δ_e) / (r + δ_e + cons_trial * (1 - δ_e))
         return π_s_new - π_s 
     end 
-    cons = find_zero(loss_psi, 0.1)
     
+    cons = find_zero(loss_psi, (1e-3, 0.95))  # cons ∈ (0,1)
+    
+    # Convert consumption parameter to distribution shape: ψ = cons / (1 - cons) * (1 / p_0)
     ψ_c = cons / p_0
     ψ = ψ_c / (1 - ψ_c)
 
-    surplus_ratio = (r + τ) / (1 - δ_e) * (1 / (q * x_v))
+    # Pre-compute wage-setting surplus ratio for later use
+    surplus_ratio = (r + τ) / (1 - δ_e) * (1 / (q_corr * x_v))
 
-    # Solve for vacancy value Q
-    function loss_Q(Q)
-        Q = abs(Q)
-        K = Q * (r + δ_e) / (1 + r)
-        κ = (1 - x_v) / x_v * K / q
-        X = e / (1 + ξ_inv) * Q + κ * q * v
+    # =================================================================
+    # STAGE 4: Solve for Vacancy Value (Root-find Q)
+    # =================================================================
+    # Targets: X_Y (recruiting cost share), x_v (share of vacancy value allocated to sunk costs)
+    # Relationship: X_Y = [recruiting flows] / [total output]
+    # Complex equilibrium: Q → K → w_int → z → f_e → Y via aggregate consistency.
+    
+    function loss_Q(Q_trial)
+        Q_trial = abs(Q_trial)
+        # Step A: Vacancy value → contact rate value
+        K = Q_trial * (r + δ_e) / (1 + r)
+        
+        # Step B: Contact value split into fixed vs variable matching cost
+        κ = (1 - x_v) / x_v * K / q_corr
+        
+        # Step C: Recruiting expenditure = sunk entry + variable matching cost
+        X = e / (1 + ξ_inv) * Q_trial + κ * q_corr * v
+        
+        # Step D: Wage-setting interior solution
         w_int = surplus_ratio * K + w + K
         
+        # Step E: Firm productivity required to support w_int
         z = (μ / ρ) * w_int
+        
+        # Step F: Entry cost from free-entry condition
         f_e = π_s * z * L_c * (1 - δ_e) * μ / (N * (r + δ_e))
         
+        # Step G: Firm value and fixed costs
         ν_f = ρ * f_e / μ
         d_f = (r + δ_e) / (1 - δ_e) * ν_f
         Y_c = ρ * z * L_c
         x_c = Y_c / (ε * N) + ν_f
         X_c = N * cons * x_c
         
+        # Step H: Output accounting: Y = C + ν_f*(N_e)
         C = Y_c - X - X_c
         Y_new = C + ν_f * N_e
-        Y = 1 / X_Y * X
         
-        return 100 * (Y - Y_new) / (Y + Y_new), (;w_int, κ, z, f_e, K, d_f, ν_f, x_c, X_c, X, C, Y_c, Y)
+        # Step I: Consistency check: recruiting cost share of output
+        Y_from_recruiting = 1 / X_Y * X
+        
+        # Loss: output implied by recruiting costs should match computed output
+        loss_val = 100 * (Y_from_recruiting - Y_new) / (Y_from_recruiting + Y_new)
+        
+        # Return loss and all intermediate values for extraction
+        return loss_val, (; w_int, κ, z, f_e, K, d_f, ν_f, x_c, X_c, X, C, Y_c, Y=Y_new)
     end
 
-    Q = fzero(x -> loss_Q(x)[1], 0.1)
-    Q = abs(Q)
-    out = loss_Q(Q)[2]
-    @unpack w_int, κ, z, f_e, K, d_f, ν_f, x_c, X_c, X, C, Y_c, Y = out
+    # Root-find: Q ∈ [0.001, 1.0] with robust bracketing
+    loss_Q_residual(Q) = loss_Q(Q)[1]
+    Q_opt = find_zero(loss_Q_residual, (1e-3, 1.0))
+    Q = abs(Q_opt)
+    
+    # Extract all computed values from loss function (avoid double-evaluation)
+    _, Q_results = loss_Q(Q)
+    @unpack w_int, κ, z, f_e, K, d_f, ν_f, x_c, X_c, X, C, Y_c = Q_results
 
-    # Compute distribution parameters
+    # =================================================================
+    # STAGE 5: Final Parameter Calculations
+    # =================================================================
+    # Compute distribution quantile and upper bound
     ζ = (surv_prob - (1 - p_0)) / p_0
     dest_el = ψ * ζ / (1 - ζ)
     f_m = x_c / ζ^(1 / ψ)
 
-    # Bargaining power and upper bound
-    ϕ = (w - b) / (w_int - K + θ * (K + q * κ) - b)
+    # Extract bargaining power from wage equation
+    w_surplus = w_int - K + θ * (K + q_corr * κ) - b  # Surplus available for wage negotiation
+    ϕ = (w - b) / w_surplus
+    
+    # Upper bound of cost distribution
     x_m = Q / e^ξ_inv
 
     return (;
