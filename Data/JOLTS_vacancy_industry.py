@@ -30,8 +30,6 @@ from fredapi import Fred
 from tabulate import tabulate
 import os
 
-from time_series_functions import hp_filter
-
 # Display settings
 pd.set_option('display.max_columns', 8)
 
@@ -67,13 +65,14 @@ BED_ID_TO_NAME_MAP = {
     'BDS0000000000100000120007LQ5': 'BTH_CON',  # Construction births
     'BDS0000000000200070120007LQ5': 'BTH_TTU',  # Trade/Trans/Utils births
     'BDS0000000000200050120007LQ5': 'BTH_LHS',  # Leisure/Hospitality births
+    'BDS0000000000200100120007LQ5': 'BTH_PBS',  # Professional and Business Services births
     'BDS0000000000200020120008LQ5': 'DTH_NDR',  # Nondurable deaths
     'BDS0000000000200010120008LQ5': 'DTH_DUR',  # Durable deaths
     'BDS0000000000100000120008LQ5': 'DTH_CON',  # Construction deaths
     'BDS0000000000200070120008LQ5': 'DTH_TTU',  # Trade/Trans/Utils deaths
     'BDS0000000000200050120008LQ5': 'DTH_LHS',  # Leisure/Hospitality deaths
+    'BDS0000000000200100120008LQ5': 'DTH_PBS',  # Professional and Business Services deaths
 }
-
 # --- Industry Code to Full Name Mapping (for merging) ---
 BED_CODE_TO_INDUSTRY_MAP = {
     'NDR': 'Nondurable Goods Manufacturing',
@@ -177,10 +176,10 @@ def load_bed_data(filepath, id_map, industry_map):
     
     # Read wide-format Excel file
     df_raw = pd.read_excel(filepath, skiprows=3, index_col=0)
-    
+
     # Filter for selected series
     df_filtered = df_raw.loc[id_map.keys()]
-    
+
     # Transpose to get dates as rows
     df_transposed = df_filtered.transpose()
     
@@ -229,6 +228,7 @@ def load_bed_data(filepath, id_map, industry_map):
     bed_panel = bed_panel_wide.copy()
     bed_panel['industry'] = bed_panel['industry_code'].map(industry_map)
     bed_panel.drop(columns=['industry_code'], inplace=True)
+    
     
     print("BED data processing complete.\n")
     return bed_panel
@@ -292,7 +292,15 @@ def get_hp_cycle(series):
     np.ndarray
         Cyclical component from HP filter
     """
-    cycle, trend = sm.tsa.filters.hpfilter(series.dropna(), HP_LAMBDA)
+    s = series.dropna()
+    # HP filter requires at least 3 observations; use a higher threshold to avoid
+    # numerical issues on very short series. If series is too short, return an
+    # array of NaNs with the same index.
+    if len(s) < 8:
+        return pd.Series(data=np.nan, index=series.index)
+    cycle, trend = sm.tsa.filters.hpfilter(s, HP_LAMBDA)
+    # Reindex cycle to match original series index (fill missing with NaN)
+    cycle = pd.Series(cycle, index=s.index).reindex(series.index)
     return cycle
 
 
@@ -389,62 +397,69 @@ plt.show()
 # 7. COMOVEMENT STATISTICS AND CORRELATION ANALYSIS
 # =============================================================================
 
-def calculate_comovement_stats(group):
+def calculate_comovement_stats(group, series_name='deaths'):
     """
-    Calculates key comovement statistics for vacancies and deaths within an industry.
+    Calculates key comovement statistics for vacancies and a secondary series (births or deaths).
     
     Computes contemporaneous correlations, lead/lag correlations, and relative volatilities
-    to assess the dynamic relationship between vacancy openings and firm exits.
+    to assess the dynamic relationship between vacancy openings and firm dynamics.
     
     Parameters
     ----------
     group : pd.DataFrame
         Cyclical components data for a single industry
+    series_name : str, optional
+        Name of the series to correlate with vacancies ('deaths' or 'births'), default 'deaths'
     
     Returns
     -------
     pd.Series
         Dictionary of statistics with keys:
-        - corr(v_t, exit_t): Contemporaneous correlation
-        - corr(v_t, exit_t-1): Lagged correlation (deaths lead)
-        - corr(v_t, exit_t+1): Leading correlation (deaths follow)
-        - std(deaths) / std(vacancies): Relative volatility
+        - corr(v_t, series_t): Contemporaneous correlation
+        - corr(v_t, series_t-1): Lagged correlation (series leads)
+        - corr(v_t, series_t+1): Leading correlation (series follows)
+        - std(series) / std(vacancies): Relative volatility
         - std(vacancies): Vacancy volatility
-        - std(deaths): Death volatility
+        - std(series): Series volatility
     """
-    if 'vacancies' not in group or 'deaths' not in group:
+    if 'vacancies' not in group or series_name not in group:
         return pd.Series(dtype='float64')
     
     vacancies = group['vacancies']
-    deaths = group['deaths']
+    series = group[series_name]
     
     # Correlations
-    corr_contemp = vacancies.corr(deaths)
-    corr_lag1 = vacancies.corr(deaths.shift(1))
-    corr_lead1 = vacancies.corr(deaths.shift(-1))
+    corr_contemp = vacancies.corr(series)
+    corr_lag1 = vacancies.corr(series.shift(1))
+    corr_lead1 = vacancies.corr(series.shift(-1))
     
     # Volatility
     std_vac = vacancies.std()
-    std_deaths = deaths.std()
-    relative_vol_deaths_to_vac = std_deaths / std_vac if std_vac > 0 else np.nan
+    std_series = series.std()
+    relative_vol = std_series / std_vac if std_vac > 0 else np.nan
     
     return pd.Series({
-        'corr(v_t, exit_t)': corr_contemp,
-        'corr(v_t, exit_t-1)': corr_lag1,
-        'corr(v_t, exit_t+1)': corr_lead1,
-        'std(deaths) / std(vacancies)': relative_vol_deaths_to_vac,
+        f'corr(v_t, {series_name}_t)': corr_contemp,
+        f'corr(v_t, {series_name}_t-1)': corr_lag1,
+        f'corr(v_t, {series_name}_t+1)': corr_lead1,
+        f'std({series_name}) / std(vacancies)': relative_vol,
         'std(vacancies)': std_vac,
-        'std(deaths)': std_deaths,
+        f'std({series_name})': std_series,
     })
 
 
-# Apply function to each industry
+# Apply function to each industry - Deaths and Births
 print("\n--- Computing Industry Statistics ---")
-comov_table = cycle.groupby('industry').apply(calculate_comovement_stats)
+comov_table_deaths = cycle.groupby('industry').apply(lambda x: calculate_comovement_stats(x, 'deaths'))
+comov_table_births = cycle.groupby('industry').apply(lambda x: calculate_comovement_stats(x, 'births'))
 
 # Display in console
 print("\nComovement Statistics: Cyclical Vacancies vs. Cyclical Deaths")
-print(comov_table.to_string())
+print(comov_table_deaths.to_string())
+
+print("\n\nComovement Statistics: Cyclical Vacancies vs. Cyclical Births")
+print(comov_table_births.to_string())
+
 
 
 # =============================================================================
@@ -457,25 +472,58 @@ def sig_fig_formatter(x):
     return f"{x:.3g}"
 
 
-# Markdown table for messaging/documentation
-print("\n--- Markdown Format ---")
-comov_table_rounded = comov_table.round(3)
-markdown_table = tabulate(
-    comov_table_rounded,
+# =============================================================================
+# TABLE 8a: Vacancies vs. Deaths (Markdown)
+# =============================================================================
+print("\n--- TABLE 8a: Vacancies vs. Deaths (Markdown Format) ---")
+comov_table_deaths_rounded = comov_table_deaths.round(3)
+markdown_table_deaths = tabulate(
+    comov_table_deaths_rounded,
     headers="keys",
     tablefmt="pipe",
     showindex=True
 )
-print(markdown_table)
+print(markdown_table_deaths)
 
-# LaTeX table for publication
-print("\n--- LaTeX Format ---")
-latex_table_string = comov_table.to_latex(
+# =============================================================================
+# TABLE 8b: Vacancies vs. Births (Markdown)
+# =============================================================================
+print("\n--- TABLE 8b: Vacancies vs. Births (Markdown Format) ---")
+comov_table_births_rounded = comov_table_births.round(3)
+markdown_table_births = tabulate(
+    comov_table_births_rounded,
+    headers="keys",
+    tablefmt="pipe",
+    showindex=True
+)
+print(markdown_table_births)
+
+
+# =============================================================================
+# TABLE 8a: Vacancies vs. Deaths (LaTeX)
+# =============================================================================
+print("\n--- TABLE 8a: Vacancies vs. Deaths (LaTeX Format) ---")
+latex_table_deaths = comov_table_deaths.to_latex(
     float_format=sig_fig_formatter,
-    caption="Comovement Statistics for Cyclical Components of Vacancies and Deaths",
-    label="tab:comovement_stats",
+    caption="Comovement Statistics for Cyclical Vacancies and Establishment Deaths",
+    label="tab:comovement_deaths",
     header=True,
     index=True,
-    column_format='l' + 'r' * len(comov_table.columns)
+    column_format='l' + 'r' * len(comov_table_deaths.columns)
 )
-print(latex_table_string)
+print(latex_table_deaths)
+
+# =============================================================================
+# TABLE 8b: Vacancies vs. Births (LaTeX)
+# =============================================================================
+print("\n--- TABLE 8b: Vacancies vs. Births (LaTeX Format) ---")
+latex_table_births = comov_table_births.to_latex(
+    float_format=sig_fig_formatter,
+    caption="Comovement Statistics for Cyclical Vacancies and Establishment Births",
+    label="tab:comovement_births",
+    header=True,
+    index=True,
+    column_format='l' + 'r' * len(comov_table_births.columns)
+)
+print(latex_table_births)
+
