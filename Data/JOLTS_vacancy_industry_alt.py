@@ -36,7 +36,6 @@ pd.set_option('display.max_columns', 8)
 
 
 # --- Working Directory ---
-os.chdir(r"C:\Users\msilv\Documents\GitHub\Sunk-entry-costs--endogenous-variety--and-unemployment\Data")
 os.chdir(r"C:\Users\msilva913\Documents\GitHub\Sunk_entry_costs_endogenous_variety_unemployment\Data")
 
 # --- FRED API Configuration ---
@@ -552,103 +551,40 @@ print(latex_table_births)
 
 
 # =============================================================================
-# 9. PANEL REGRESSION: Vacancies on Deaths with Entity and Time Fixed Effects
+# 9. PANEL REGRESSION: Vacancies on Lagged Deaths
 # =============================================================================
 """
 Panel Regression Analysis
 ==========================
 
-Objective: Estimate the causal effect of establishment deaths on vacancies,
-controlling for business-cycle factors via entity and time fixed effects.
+Dependent variable : cyclical component of log(vacancies_{i,t})
+Independent variable: cyclical component of log(deaths_{i,t-1})  [one-quarter lag]
 
-Specification: vacancies_it = β * deaths_it + α_i + γ_t + ε_it
-  - Dependent variable: cyclical component of log(vacancies)
-  - Independent variable: cyclical component of log(deaths)
-  - α_i: Industry (entity) fixed effects
-  - γ_t: Time (quarter) fixed effects
-  - Standard errors: Clustered by industry
+Three specifications:
+  (1) No controls           : vacancies_it = β·deaths_lag1_it + ε_it
+  (2) Time fixed effects    : vacancies_it = β·deaths_lag1_it + γ_t + ε_it
+  (3) Industry fixed effects: vacancies_it = β·deaths_lag1_it + α_i + ε_it
 
-Interpretation: β captures the within-industry, within-quarter relationship
-between deaths and vacancies, removing business-cycle variation that affects
-all industries simultaneously.
+Standard errors clustered by industry in all specifications.
+
+Note: Both industry and time FE together are not identified with only 6
+industries and ~80 quarters (the within-group variation is exhausted). The
+three separate specifications allow clear interpretation of each set of
+controls.
 """
 
-# Prepare cyclical panel for regression
+def _stars(p):
+    """Return significance stars for a p-value."""
+    if p < 0.01:  return '***'
+    if p < 0.05:  return '**'
+    if p < 0.10:  return '*'
+    return ''
+
+
+# --- Prepare regression data ---
 print("\n--- Preparing Cyclical Panel for Regression ---")
 cycle_panel = cycle.reset_index()
 
-reg_df = cycle_panel.dropna(subset=['vacancies', 'deaths']).copy()
-reg_df['deaths_lag1'] = reg_df.groupby('industry')['deaths'].shift(1)
-reg_df = reg_df.dropna(subset=['deaths_lag1'])
-
-# Convert date to string for categorical time fixed effect
-reg_df['date_fe'] = reg_df['date'].astype(str)
-
-# Initialize results table
-results = []
-
-# Model 1: No controls
-print('\n--- Panel Regression Results ---')
-formula_1 = 'vacancies ~ deaths_lag1'
-ols_1 = smf.ols(formula_1, data=reg_df).fit()
-clustered_1 = ols_1.get_robustcov_results(cov_type='cluster', groups=reg_df['industry'])
-idx_1 = list(ols_1.params.index).index('deaths_lag1')
-coef_1 = ols_1.params['deaths_lag1']
-se_1 = clustered_1.bse[idx_1]
-pval_1 = clustered_1.pvalues[idx_1]
-sig_1 = '***' if pval_1 < 0.01 else '**' if pval_1 < 0.05 else '*' if pval_1 < 0.10 else ''
-results.append({
-    'Specification': 'No Controls',
-    'Coefficient': f"{coef_1:.3f}{sig_1}",
-    'Std Error': f"{se_1:.3f}",
-    'p-value': f"{pval_1:.3f}"
-})
-
-# Model 2: Time fixed effects
-formula_2 = 'vacancies ~ deaths_lag1 + C(date_fe)'
-ols_2 = smf.ols(formula_2, data=reg_df).fit()
-clustered_2 = ols_2.get_robustcov_results(cov_type='cluster', groups=reg_df['industry'])
-idx_2 = list(ols_2.params.index).index('deaths_lag1')
-coef_2 = ols_2.params['deaths_lag1']
-se_2 = clustered_2.bse[idx_2]
-pval_2 = clustered_2.pvalues[idx_2]
-sig_2 = '***' if pval_2 < 0.01 else '**' if pval_2 < 0.05 else '*' if pval_2 < 0.10 else ''
-results.append({
-    'Specification': 'Time FE',
-    'Coefficient': f"{coef_2:.3f}{sig_2}",
-    'Std Error': f"{se_2:.3f}",
-    'p-value': f"{pval_2:.3f}"
-})
-
-# Model 3: Industry fixed effects
-formula_3 = 'vacancies ~ deaths_lag1 + C(date_fe)+ C(industry)'
-ols_3 = smf.ols(formula_3, data=reg_df).fit()
-clustered_3 = ols_3.get_robustcov_results(cov_type='cluster', groups=reg_df['industry'])
-idx_3 = list(ols_3.params.index).index('deaths_lag1')
-coef_3 = ols_3.params['deaths_lag1']
-se_3 = clustered_3.bse[idx_3]
-pval_3 = clustered_3.pvalues[idx_3]
-sig_3 = '***' if pval_3 < 0.01 else '**' if pval_3 < 0.05 else '*' if pval_3 < 0.10 else ''
-results.append({
-    'Specification': 'Industry and Time FE',
-    'Coefficient': f"{coef_3:.3f}{sig_3}",
-    'Std Error': f"{se_3:.3f}",
-    'p-value': f"{pval_3:.3f}"
-})
-
-# Create and display summary table
-results_df = pd.DataFrame(results)
-print("\n" + "="*90)
-print("Effect of Establishment Deaths (Lagged) on Vacancies: Panel Regression Results")
-print("="*90)
-print(f"\nSample: {len(reg_df)} observations, {reg_df['industry'].nunique()} industries")
-print(f"Standard Errors: Clustered by industry\nSignificance: *** p<0.01, ** p<0.05, * p<0.10\n")
-print(results_df.to_string(index=False))
-print("\n" + "="*90 + "\n")
-
-###############################
-
-cycle_panel = cycle.reset_index()
 reg_df = cycle_panel.dropna(subset=['vacancies', 'deaths']).copy()
 reg_df['deaths_lag1'] = reg_df.groupby('industry')['deaths'].shift(1)
 reg_df = reg_df.dropna(subset=['deaths_lag1'])
@@ -673,15 +609,14 @@ specs = [
 results = {}
 for label, formula in specs:
     ols_res  = smf.ols(formula, data=reg_df).fit()
-    idx = list(ols_res.params.index).index('deaths_lag1')
     clustered = ols_res.get_robustcov_results(
         cov_type='cluster',
         groups=reg_df['industry']
     )
     results[label] = {
-        'coef'  : ols_res.params['deaths_lag1'],
-        'se'    : ols_res.bse['deaths_lag1'],
-        'pval'  : clustered.pvalues[idx],
+        'coef'  : clustered.params['deaths_lag1'],
+        'se'    : clustered.bse['deaths_lag1'],
+        'pval'  : clustered.pvalues['deaths_lag1'],
         'nobs'  : int(ols_res.nobs),
         'r2'    : ols_res.rsquared,
     }
@@ -731,5 +666,4 @@ latex_reg = summary_df.to_latex(
     escape=False,
 )
 print(latex_reg)
-
 
