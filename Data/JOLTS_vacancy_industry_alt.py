@@ -603,7 +603,7 @@ print("\n--- Running Panel OLS Regressions (3 specifications) ---")
 specs = [
     ('(1) No Controls',          'vacancies ~ deaths_lag1'),
     ('(2) Time FE',               'vacancies ~ deaths_lag1 + C(date_fe)'),
-    ('(3) Industry FE',           'vacancies ~ deaths_lag1 + C(industry_fe)'),
+    ('(3) Industry and Time FE',           'vacancies ~ deaths_lag1 + C(date_fe) + C(industry_fe)'),
 ]
 
 results = {}
@@ -613,10 +613,13 @@ for label, formula in specs:
         cov_type='cluster',
         groups=reg_df['industry']
     )
+
+    coef_idx = ols_res.model.exog_names.index('deaths_lag1')
+
     results[label] = {
-        'coef'  : clustered.params['deaths_lag1'],
-        'se'    : clustered.bse['deaths_lag1'],
-        'pval'  : clustered.pvalues['deaths_lag1'],
+        'coef'  : float(np.asarray(clustered.params)[coef_idx]),
+        'se'    : float(np.asarray(clustered.bse)[coef_idx]),
+        'pval'  : float(np.asarray(clustered.pvalues)[coef_idx]),
         'nobs'  : int(ols_res.nobs),
         'r2'    : ols_res.rsquared,
     }
@@ -627,22 +630,23 @@ print("TABLE 9: Effect of Lagged Establishment Deaths on Vacancies")
 print("         Dependent variable: Cyclical log(vacancies)")
 print("=" * 80)
 
-rows = []
-for label, res in results.items():
-    coef  = res['coef']
-    se    = res['se']
-    pval  = res['pval']
-    stars = _stars(pval)
-    rows.append({
-        'Specification'         : label,
-        'Coefficient'           : f"{coef:.4f}{stars}",
-        'Std. Error (clustered)': f"({se:.4f})",
-        'p-value'               : f"{pval:.4f}",
-        'R²'                    : f"{res['r2']:.3f}",
-        'N'                     : res['nobs'],
-    })
-
-summary_df = pd.DataFrame(rows).set_index('Specification')
+summary_df = pd.DataFrame.from_dict(results, orient='index')
+summary_df.index.name = 'Specification'
+summary_df = summary_df.rename(columns={
+    'coef': 'Coefficient',
+    'se': 'Std. Error (clustered)',
+    'pval': 'p-value',
+    'r2': 'R²',
+    'nobs': 'N'
+})
+summary_df['Coefficient'] = summary_df.apply(
+    lambda r: f"{r['Coefficient']:.4f}{_stars(r['p-value'])}", axis=1
+)
+summary_df['Std. Error (clustered)'] = summary_df['Std. Error (clustered)'].map(lambda x: f"({x:.4f})")
+summary_df['p-value'] = summary_df['p-value'].map(lambda x: f"{x:.4f}")
+summary_df['R²'] = summary_df['R²'].map(lambda x: f"{x:.3f}")
+summary_df['N'] = summary_df['N'].astype(int)
+summary_df = summary_df[['Coefficient', 'Std. Error (clustered)', 'p-value', 'R²', 'N']]
 print(summary_df.to_string())
 print("\nSignificance: *** p<0.01  ** p<0.05  * p<0.10")
 print("Standard errors clustered by industry.")
