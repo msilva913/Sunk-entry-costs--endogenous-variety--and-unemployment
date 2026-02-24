@@ -26,6 +26,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import statsmodels.api as sm
+import statsmodels.formula.api as smf
 from fredapi import Fred
 from tabulate import tabulate
 import os
@@ -36,6 +37,7 @@ pd.set_option('display.max_columns', 8)
 
 # --- Working Directory ---
 os.chdir(r"C:\Users\msilv\Documents\GitHub\Sunk-entry-costs--endogenous-variety--and-unemployment\Data")
+os.chdir(r"C:\Users\msilva913\Documents\GitHub\Sunk_entry_costs_endogenous_variety_unemployment\Data")
 
 # --- FRED API Configuration ---
 FRED_API_KEY = '9c70445138df124be4928605b7e08bd4'
@@ -82,6 +84,27 @@ BED_CODE_TO_INDUSTRY_MAP = {
     'PBS': 'Professional and Business Services',
     'LHS': 'Leisure and Hospitality',
 }
+
+# --- QCEW Supersector/NAICS Code Map ---
+# Maps QCEW industry codes to BED industry codes for merging.
+# BED "Trade, Transportation, and Utilities" = QCEW supersector 1021
+# BED "Professional and Business Services"   = QCEW supersector 1024
+# BED "Leisure and Hospitality"              = QCEW supersector 1026
+# BED "Construction"                         = QCEW supersector 1012
+# BED "Nondurable Goods Manufacturing"       = NAICS 31-32 (sectors 31, 32)
+# BED "Durable Goods Manufacturing"          = NAICS 33
+# --- QCEW Industry Code Map (corrected) ---
+# For manufacturing, QCEW publishes NAICS sectors 31, 32, 33 separately.
+# There is no combined nondurable (31+32) supersector code — must be summed manually.
+QCEW_INDUSTRY_MAP = {
+    'NDR': ['31', '32'],  # Nondurable: fetch NAICS 31 AND 32 separately, then sum
+    'DUR': ['33'],         # Durable: NAICS sector 33
+    'CON': ['23'],         # Construction: NAICS sector 23
+    'TTU': ['1021'],       # Trade, Transportation, and Utilities (supersector)
+    'PBS': ['1024'],       # Professional and Business Services (supersector)
+    'LHS': ['1026'],       # Leisure and Hospitality (supersector)
+}
+
 
 
 # =============================================================================
@@ -526,4 +549,89 @@ latex_table_births = comov_table_births.to_latex(
     column_format='l' + 'r' * len(comov_table_births.columns)
 )
 print(latex_table_births)
+
+
+# =============================================================================
+# 9. PANEL REGRESSION: Vacancies on Deaths with Entity and Time Fixed Effects
+# =============================================================================
+"""
+Panel Regression Analysis
+==========================
+
+Objective: Estimate the causal effect of establishment deaths on vacancies,
+controlling for business-cycle factors via entity and time fixed effects.
+
+Specification: vacancies_it = β * deaths_it + α_i + γ_t + ε_it
+  - Dependent variable: cyclical component of log(vacancies)
+  - Independent variable: cyclical component of log(deaths)
+  - α_i: Industry (entity) fixed effects
+  - γ_t: Time (quarter) fixed effects
+  - Standard errors: Clustered by industry
+
+Interpretation: β captures the within-industry, within-quarter relationship
+between deaths and vacancies, removing business-cycle variation that affects
+all industries simultaneously.
+"""
+
+# Prepare cyclical panel for regression
+print("\n--- Preparing Cyclical Panel for Regression ---")
+cycle_panel = cycle.reset_index()
+
+reg_df = cycle_panel.dropna(subset=['vacancies', 'deaths']).copy()
+reg_df['deaths_lag1'] = reg_df.groupby('industry')['deaths'].shift(1)
+
+print(f"Regression data shape: {reg_df.shape}")
+print(f"Industries: {reg_df['industry'].nunique()}")
+print(f"Quarters: {reg_df['date'].nunique()}")
+print(f"Observation balance: {reg_df.groupby('industry').size().unique()}")
+
+# Convert date to string to treat as categorical time fixed effect (quarter labels)
+reg_df['date_fe'] = reg_df['date'].astype(str)
+
+# Formula with industry and time fixed effects
+formula = 'vacancies ~ deaths_lag1 + C(industry) + C(date_fe)'
+
+print(f'\n--- Running Panel OLS Regression ---')
+print(f'Formula: {formula}')
+print(f'Data observations: {len(reg_df)}\n')
+    
+ols_res = smf.ols(formula, data=reg_df).fit()
+# Cluster-robust SEs by industry
+clustered = ols_res.get_robustcov_results(cov_type='cluster', groups=reg_df['industry'])
+print(clustered.summary())
+    
+# Extract and display deaths coefficient
+print("\n" + "="*80)
+print("KEY FINDING: Effect of Establishment Deaths on Vacancies")
+print("="*80)
+deaths_coef = clustered.params[0]
+deaths_se = clustered.bse[0]
+deaths_pval = clustered.pvalues[0]
+deaths_tstat = deaths_coef / deaths_se
+    
+print(f"\nCoefficient on deaths (cyclical): {deaths_coef:.6f}")
+print(f"Standard Error (clustered):      {deaths_se:.6f}")
+print(f"t-statistic:                     {deaths_tstat:.4f}")
+print(f"p-value:                         {deaths_pval:.6f}")
+print(f"\n95% CI: [{deaths_coef - 1.96*deaths_se:.6f}, {deaths_coef + 1.96*deaths_se:.6f}]")
+    
+if deaths_pval < 0.01:
+    sig_level = "***"
+elif deaths_pval < 0.05:
+    sig_level = "**"
+elif deaths_pval < 0.10:
+    sig_level = "*"
+else:
+    sig_level = ""
+    
+print(f"\nSignificance: {sig_level} (p < {'0.01' if deaths_pval < 0.01 else '0.05' if deaths_pval < 0.05 else '0.10' if deaths_pval < 0.10 else '0.10'})")
+print("\nInterpretation:")
+print("A 1% increase in the cyclical component of establishment deaths is associated")
+print(f"with a {deaths_coef:.4f}% {'decrease' if deaths_coef < 0 else 'increase'} in the cyclical component of vacancies,")
+print("holding fixed industry and time effects (i.e., net of broader business cycles).")
+print("="*80 + "\n")
+
+else:
+    print('\n--- Skipping Regression ---')
+    print('ERROR: Required columns (vacancies, deaths, industry, date) not found in cyclical panel.')
 

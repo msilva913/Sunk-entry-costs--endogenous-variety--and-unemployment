@@ -38,7 +38,7 @@ pd.set_option('display.max_columns', 8)
 
 # --- Working Directory ---
 os.chdir(r"C:\Users\msilv\Documents\GitHub\Sunk-entry-costs--endogenous-variety--and-unemployment\Data")
-
+os.chdir(r"C:\Users\msilva913\Documents\GitHub\Sunk_entry_costs_endogenous_variety_unemployment")
 # --- FRED API Configuration ---
 FRED_API_KEY = '9c70445138df124be4928605b7e08bd4'
 FORCE_JOLTS_RELOAD = False  # Set to True to re-download JOLTS data from FRED
@@ -799,4 +799,5 @@ latex_table_establishments = comov_table_establishments.to_latex(
     column_format='l' + 'r' * len(comov_table_establishments.columns)
 )
 print(latex_table_establishments)
+
 
