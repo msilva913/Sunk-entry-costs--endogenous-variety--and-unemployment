@@ -31,6 +31,9 @@ Prerequisite
 
 import sys
 import pandas as pd
+import os
+os.chdir(r"C:\Users\msilva913\Documents\GitHub\Sunk_entry_costs_endogenous_variety_unemployment\Data\Bartek analysis")  # Set working directory to script's location
+
 from construct_delta_instrument import (
     BASE_YEAR,
     START_QUARTER,

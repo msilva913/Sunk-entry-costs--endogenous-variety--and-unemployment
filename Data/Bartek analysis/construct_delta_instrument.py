@@ -163,17 +163,31 @@ INDUSTRY_LABELS = {
 # For national supersectors (state=00), industry codes are 6-digit:
 #   0000{SS}  where SS is the 2-digit supersector padded to 4 digits.
 # We verify this directly when fetching bd.series below.
+# BED series IDs encode industry as a 6-character code at positions 14-19.
+# BED uses the same 4-digit supersector codes as QCEW (1011, 1012, ... 1027),
+# left-padded with two zeros to fill the 6-character field.
+# Confirmed from bd.industry flat file:
+#   1011 = Natural resources and mining
+#   1012 = Construction
+#   1013 = Manufacturing
+#   1021 = Trade, transportation, and utilities
+#   1022 = Information
+#   1023 = Financial activities
+#   1024 = Professional and business services
+#   1025 = Education and health services
+#   1026 = Leisure and hospitality
+#   1027 = Other services
 BED_INDUSTRY_MAP = {
-    "10": "000010",   # Mining and logging
-    "20": "000020",   # Construction
-    "30": "000030",   # Manufacturing
-    "40": "000040",   # Trade, transport, utilities
-    "50": "000050",   # Information
-    "55": "000055",   # Financial activities
-    "60": "000060",   # Professional and business services
-    "65": "000065",   # Education and health services
-    "70": "000070",   # Leisure and hospitality
-    "80": "000080",   # Other services
+    "10": "001011",   # Mining and logging
+    "20": "001012",   # Construction
+    "30": "001013",   # Manufacturing
+    "40": "001021",   # Trade, transport, utilities
+    "50": "001022",   # Information
+    "55": "001023",   # Financial activities
+    "60": "001024",   # Professional and business services
+    "65": "001025",   # Education and health services
+    "70": "001026",   # Leisure and hospitality
+    "80": "001027",   # Other services
 }
 
 # 3-digit NAICS alternative (swap into INDUSTRY_CODES when 3-digit BED
@@ -276,8 +290,10 @@ def fetch_bed_closings_national(
         # Build the 10 target series IDs
         # Format: BDU + 00000 + 00 + 000 + {code6} + 1 + 1 + 00 + 06 + L + Q + 5
         inv_map    = {v: k for k, v in BED_INDUSTRY_MAP.items()}
+        # Seasonal code: BED national supersector series are published
+        # seasonally adjusted (S) only -- "U" returns no data.
         series_ids = [
-            f"BDU0000000000{code6}110006LQ5"
+            f"BDS0000000000{code6}110006LQ5"
             for code6 in BED_INDUSTRY_MAP.values()
         ]
 
@@ -333,11 +349,34 @@ def fetch_bed_closings_national(
                     })
 
         if not all_rows:
+            # Diagnose: print what the API actually returned for the first chunk
+            # to distinguish "series not found" from "series found but empty"
+            _diag_payload = {
+                "seriesid" : series_ids,
+                "startyear": "2006",
+                "endyear"  : "2010",
+            }
+            _diag_resp = requests.post(
+                api_url,
+                json    = _diag_payload,
+                headers = {"Content-Type": "application/json"},
+                timeout = 60,
+            ).json()
+            _series_diag = _diag_resp.get("Results", {}).get("series", [])
+            _diag_lines = []
+            for _s in _series_diag[:3]:           # show first 3 series
+                _n = len(_s.get("data", []))
+                _diag_lines.append(
+                    f"  {_s['seriesID']}  ->  {_n} observations"
+                )
+            _diag_str = "\n".join(_diag_lines) if _diag_lines else "  (no series objects returned)"
             raise ValueError(
-                "BLS API returned no data.  Possible causes:\n"
-                "  - Series IDs are incorrect for the current BED vintage\n"
-                "  - API rate limit exceeded (try again after a few minutes)\n"
-                f"Series requested: {series_ids}"
+                "BLS API returned no data.\n"
+                f"  status : {_diag_resp.get('status')}\n"
+                f"  message: {_diag_resp.get('message', '(none)')}\n"
+                f"  series returned (first 3, 2006-2010 diagnostic window):\n"
+                f"{_diag_str}\n"
+                f"  series requested: {series_ids[:3]} ..."
             )
 
         df = (

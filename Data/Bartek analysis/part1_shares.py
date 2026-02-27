@@ -73,11 +73,8 @@ with pd.option_context("display.float_format", "{:.4f}".format,
     print(grid.to_string())
 # -- Export ------------------------------------------
 shares.to_csv("shares_base_2006.csv")
-grid.to_csv("shares_grid_base_2006}.csv")
+grid.to_csv("shares_grid_base_2006.csv")
  
-
-
-
 # ── Summary statistics on the grid ───────────────────────────────────────
 print("\n--- Column means (average share by supersector across states) ---")
 col_means = grid.mean().sort_values(ascending=False)
