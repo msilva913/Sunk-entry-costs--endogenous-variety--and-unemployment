@@ -163,31 +163,30 @@ INDUSTRY_LABELS = {
 # For national supersectors (state=00), industry codes are 6-digit:
 #   0000{SS}  where SS is the 2-digit supersector padded to 4 digits.
 # We verify this directly when fetching bd.series below.
-# BED series IDs encode industry as a 6-character code at positions 14-19.
-# BED uses the same 4-digit supersector codes as QCEW (1011, 1012, ... 1027),
-# left-padded with two zeros to fill the 6-character field.
-# Confirmed from bd.industry flat file:
-#   1011 = Natural resources and mining
-#   1012 = Construction
-#   1013 = Manufacturing
-#   1021 = Trade, transportation, and utilities
-#   1022 = Information
-#   1023 = Financial activities
-#   1024 = Professional and business services
-#   1025 = Education and health services
-#   1026 = Leisure and hospitality
-#   1027 = Other services
+# BED industry codes confirmed from bd.industry flat file.
+# BED separates Goods-producing (1xxxxx) from Service-providing (2xxxxx).
+# Trade/transport/utilities has no single BED aggregate — must be summed.
+#
+# Direct 1-to-1 series (pipeline code → single BED industry code):
 BED_INDUSTRY_MAP = {
-    "10": "001011",   # Mining and logging
-    "20": "001012",   # Construction
-    "30": "001013",   # Manufacturing
-    "40": "001021",   # Trade, transport, utilities
-    "50": "001022",   # Information
-    "55": "001023",   # Financial activities
-    "60": "001024",   # Professional and business services
-    "65": "001025",   # Education and health services
-    "70": "001026",   # Leisure and hospitality
-    "80": "001027",   # Other services
+    "10": "100010",   # Natural resources and mining  (Goods-producing)
+    "20": "100020",   # Construction                  (Goods-producing)
+    "30": "100030",   # Manufacturing                 (Goods-producing)
+    "50": "200050",   # Information
+    "55": "200060",   # Financial activities
+    "60": "200070",   # Professional and business services
+    "65": "200080",   # Education and health services
+    "70": "200090",   # Leisure and hospitality
+    "80": "200100",   # Other services
+}
+
+# Trade/transport/utilities (pipeline "40") has no BED aggregate.
+# Must fetch and sum these four sub-series:
+BED_TRADE_COMPONENTS = {
+    "200010": "Wholesale trade",
+    "200020": "Retail trade",
+    "200030": "Transportation and warehousing",
+    "200040": "Utilities",
 }
 
 # 3-digit NAICS alternative (swap into INDUSTRY_CODES when 3-digit BED
@@ -241,33 +240,38 @@ def fetch_bed_closings_national(
     Fetch national BED employment losses from *closing* establishments
     by supersector from the BLS public API v1 (no registration required).
 
-    BED series ID structure (verified against bd.txt and db.nomics.world):
+    BED series ID structure (28 chars, confirmed from bd.txt and bd.industry):
         BD + seasonal(1) + msa(5) + state(2) + county(3) + industry(6)
            + unitanalysis(1) + dataelement(1) + sizeclass(2)
            + dataclass(2) + ratelevel(1) + periodicity(1) + ownership(1)
 
     Target parameters:
-        seasonal     = U  (not seasonally adjusted)
+        seasonal     = S  (seasonally adjusted)
         state        = 00 (national)
         msa/county   = 00000 / 000
-        industry     = 000010 ... 000080  (10 supersectors)
+        industry     = BED industry code from bd.industry (NOT NAICS codes)
+                       Goods-producing: 100010, 100020, 100030
+                       Service-providing: 200010–200100
         unitanalysis = 1   (establishment)
         dataelement  = 1   (employment level)
-        sizeclass    = 00  (all sizes)
+        sizeclass    = 00  (all sizes, industry breakdown)
         dataclass    = 06  (Closings)
-        ratelevel    = L   (level not rate)
+        ratelevel    = L   (level, not rate)
         periodicity  = Q   (quarterly)
         ownership    = 5   (private sector)
 
-    Dataclass codes confirmed from bd.txt and db.nomics:
+    Trade/transport/utilities (pipeline "40") has no single BED aggregate.
+    It is built by summing BED_TRADE_COMPONENTS:
+        200010 = Wholesale trade
+        200020 = Retail trade
+        200030 = Transportation and warehousing
+        200040 = Utilities
+
+    Dataclass codes (from bd.txt):
         01 = Gross Job Gains     05 = Contractions
         02 = Expansions          06 = Closings      <-- we want this
         03 = Openings            07 = Births
         04 = Gross Job Losses    08 = Deaths
-
-    The BLS v1 API allows up to 25 series per request, up to 20 years
-    per call.  We issue two calls (1992-2011, 2012-present) to cover
-    the full BED history from 1992Q3.
 
     Parameters
     ----------
@@ -278,7 +282,7 @@ def fetch_bed_closings_national(
     Returns
     -------
     pd.DataFrame
-        Columns: quarter_label, industry_code (2-digit), closings_nat
+        Columns: quarter_label, industry_code (pipeline supersector code), closings_nat
     """
     cache_dir.mkdir(parents=True, exist_ok=True)
     cache_file = cache_dir / "bed_closings_national_supersector.parquet"
@@ -287,27 +291,25 @@ def fetch_bed_closings_national(
         print("  [BED national] loading from cache")
         df = pd.read_parquet(cache_file)
     else:
-        # Build the 10 target series IDs
-        # Format: BDU + 00000 + 00 + 000 + {code6} + 1 + 1 + 00 + 06 + L + Q + 5
-        inv_map    = {v: k for k, v in BED_INDUSTRY_MAP.items()}
-        # Seasonal code: BED national supersector series are published
-        # seasonally adjusted (S) only -- "U" returns no data.
-        series_ids = [
-            f"BDS0000000000{code6}110006LQ5"
-            for code6 in BED_INDUSTRY_MAP.values()
-        ]
+        # All BED codes to request: 9 direct + 4 trade components = 13 series
+        # Format: BDS + 00000(msa) + 00(state) + 000(county)
+        #             + {bed_code}(6) + 1(unit) + 1(element)
+        #             + 00(sizeclass) + 06(closings) + L(level) + Q + 5(private)
+        direct_inv  = {v: k for k, v in BED_INDUSTRY_MAP.items()}
+        trade_codes = set(BED_TRADE_COMPONENTS.keys())
+        all_bed_codes = list(BED_INDUSTRY_MAP.values()) + list(trade_codes)
+        series_ids = [f"BDS0000000000{c}110006LQ5" for c in all_bed_codes]
 
-        print(
-            f"  [BED national] fetching {len(series_ids)} closing series "
-            f"from BLS API v1 ..."
-        )
+        print(f"  [BED national] fetching {len(series_ids)} series "
+              f"(9 direct + 4 trade components) from BLS API v1 ...")
+        for c in all_bed_codes:
+            label = INDUSTRY_LABELS.get(direct_inv.get(c), BED_TRADE_COMPONENTS.get(c, c))
+            print(f"    BDS0000000000{c}110006LQ5  [{label}]")
 
-        # Two API calls to cover the full 1992-present history
-        # (v1 limit: 20 years per request)
         api_url     = "https://api.bls.gov/publicAPI/v1/timeseries/data/"
         year_chunks = [("1992", "2011"), ("2012", "2030")]
 
-        all_rows = []
+        raw_rows = []   # one row per (bed_code, quarter)
         for start_yr, end_yr in year_chunks:
             payload = {
                 "seriesid" : series_ids,
@@ -316,9 +318,9 @@ def fetch_bed_closings_national(
             }
             resp = requests.post(
                 api_url,
-                json=payload,
-                headers={"Content-Type": "application/json"},
-                timeout=60,
+                json    = payload,
+                headers = {"Content-Type": "application/json"},
+                timeout = 60,
             )
             resp.raise_for_status()
             result = resp.json()
@@ -330,57 +332,55 @@ def fetch_bed_closings_national(
                 )
 
             for series in result["Results"]["series"]:
-                sid   = series["seriesID"]
-                # industry_code sits at chars 13-18 of the full series ID
-                # (after "BD" prefix: chars 11-16 in 0-indexed suffix)
-                code6 = sid[13:19]
-                code2 = inv_map.get(code6)
-                if code2 is None:
+                sid      = series["seriesID"]
+                bed_code = sid[13:19]
+                if bed_code not in direct_inv and bed_code not in trade_codes:
                     continue
                 for obs in series["data"]:
-                    # period format is "Q01", "Q02", "Q03", "Q04"
+                    if obs.get("value", "-") == "-":
+                        continue
                     qnum = obs["period"].lstrip("Q").lstrip("0") or "1"
-                    all_rows.append({
+                    raw_rows.append({
                         "quarter_label": f"{obs['year']}Q{qnum}",
-                        "industry_code": code2,
-                        "closings_nat" : float(
-                            obs["value"].replace(",", "")
-                        ),
+                        "bed_code"     : bed_code,
+                        "closings_nat" : float(obs["value"].replace(",", "")),
                     })
 
-        if not all_rows:
-            # Diagnose: print what the API actually returned for the first chunk
-            # to distinguish "series not found" from "series found but empty"
-            _diag_payload = {
-                "seriesid" : series_ids,
-                "startyear": "2006",
-                "endyear"  : "2010",
-            }
-            _diag_resp = requests.post(
+        if not raw_rows:
+            _probe = requests.post(
                 api_url,
-                json    = _diag_payload,
+                json    = {"seriesid": series_ids[:3],
+                           "startyear": "2008", "endyear": "2010"},
                 headers = {"Content-Type": "application/json"},
                 timeout = 60,
             ).json()
-            _series_diag = _diag_resp.get("Results", {}).get("series", [])
-            _diag_lines = []
-            for _s in _series_diag[:3]:           # show first 3 series
-                _n = len(_s.get("data", []))
-                _diag_lines.append(
-                    f"  {_s['seriesID']}  ->  {_n} observations"
-                )
-            _diag_str = "\n".join(_diag_lines) if _diag_lines else "  (no series objects returned)"
+            _sers = "\n".join(
+                f"  {s['seriesID']}  →  {len(s.get('data',[]))} obs  "
+                f"{s.get('message','')}"
+                for s in _probe.get("Results", {}).get("series", [])
+            )
             raise ValueError(
                 "BLS API returned no data.\n"
-                f"  status : {_diag_resp.get('status')}\n"
-                f"  message: {_diag_resp.get('message', '(none)')}\n"
-                f"  series returned (first 3, 2006-2010 diagnostic window):\n"
-                f"{_diag_str}\n"
-                f"  series requested: {series_ids[:3]} ..."
+                f"  status : {_probe.get('status')}\n"
+                f"  message: {_probe.get('message','(none)')}\n"
+                f"  probe (2008-2010, first 3 series):\n{_sers}\n"
+                f"  series tried: {series_ids}"
             )
 
+        raw = pd.DataFrame(raw_rows)
+
+        # Assign pipeline supersector code to each row
+        raw["industry_code"] = raw["bed_code"].map(
+            lambda c: direct_inv.get(c, "40" if c in trade_codes else None)
+        )
+        raw = raw[raw["industry_code"].notna()]
+
+        # Sum trade components + keep direct series as-is
         df = (
-            pd.DataFrame(all_rows)
+            raw
+            .groupby(["quarter_label", "industry_code"])["closings_nat"]
+            .sum()
+            .reset_index()
             .sort_values(["industry_code", "quarter_label"])
             .reset_index(drop=True)
         )

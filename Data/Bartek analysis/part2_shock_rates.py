@@ -45,6 +45,7 @@ from construct_delta_instrument import (
     INDUSTRY_LABELS,
     FIPS2D_TO_STATE,
     build_national_shock_rates,
+    fetch_bed_closings_national,
 )
 
 # -----------------------------------------------------------------------
@@ -87,6 +88,38 @@ print(f"Valid cells: {n_valid:,} / {len(shock_rates):,}")
 
 print("\nFirst 10 rows:")
 print(shock_rates.head(10).to_string(index=False))
+
+shock_rates.groupby("industry_code")["g_delta_loo"].agg(["mean","std"]) \
+           .rename(index=INDUSTRY_LABELS) \
+           .assign(cv = lambda d: d["std"] / d["mean"]) \
+           .sort_values("std", ascending=False)
+
+
+print("\n--- Raw BED closings by supersector (sanity check) ---")
+print("    Closings should be in the hundreds of thousands per quarter.")
+print("    Near-zero values indicate a broken or missing BED series.\n")
+
+bed_nat = fetch_bed_closings_national(
+    cache_dir     = DEFAULT_CACHE_DIR,
+    start_quarter = START_QUARTER,
+    end_quarter   = END_QUARTER,
+)
+
+bed_summary = (
+    bed_nat
+    .groupby("industry_code")["closings_nat"]
+    .agg(["mean", "min", "max", "count"])
+    .rename(index=INDUSTRY_LABELS)
+    .rename(columns={"mean": "mean_jobs", "min": "min_jobs",
+                     "max": "max_jobs", "count": "n_quarters"})
+    .sort_values("mean_jobs", ascending=False)
+    .round(0)
+)
+
+print(bed_summary.to_string())
+print("\n--- Trade/transport raw values (first 20 quarters) ---")
+tt = bed_nat[bed_nat["industry_code"] == "40"].sort_values("quarter_label")
+print(tt.head(20).to_string(index=False))
 
 print("\n--- Mean LOO closing rate by supersector (×1 000) ---")
 mean_rate = (
