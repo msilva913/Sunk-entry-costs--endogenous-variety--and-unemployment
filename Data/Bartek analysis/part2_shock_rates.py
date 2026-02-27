@@ -94,6 +94,7 @@ shock_rates.groupby("industry_code")["g_delta_loo"].agg(["mean","std"]) \
            .assign(cv = lambda d: d["std"] / d["mean"]) \
            .sort_values("std", ascending=False)
 
+shock_rates.to_csv("shock_rates.csv", index=False)
 
 print("\n--- Raw BED closings by supersector (sanity check) ---")
 print("    Closings should be in the hundreds of thousands per quarter.")
