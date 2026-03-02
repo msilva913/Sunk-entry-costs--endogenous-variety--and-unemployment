@@ -306,11 +306,20 @@ def fetch_bed_closings_national(
             label = INDUSTRY_LABELS.get(direct_inv.get(c), BED_TRADE_COMPONENTS.get(c, c))
             print(f"    BDS0000000000{c}110006LQ5  [{label}]")
 
+        # BLS API v1 limit: 10 years per request for unregistered users.
+        # Three chunks cover the full BED history (1992Q3 to present).
         api_url     = "https://api.bls.gov/publicAPI/v1/timeseries/data/"
-        year_chunks = [("1992", "2011"), ("2012", "2030")]
+        year_chunks = [("1992", "2001"), ("2002", "2011"), ("2012", "2030")]
 
+        import time
         raw_rows = []   # one row per (bed_code, quarter)
-        for start_yr, end_yr in year_chunks:
+        n_chunks  = len(year_chunks)
+        for c_idx, (start_yr, end_yr) in enumerate(year_chunks):
+            print(
+                f"    chunk {c_idx+1}/{n_chunks}  "
+                f"({len(series_ids)} series, {start_yr}-{end_yr}) ...",
+                end=" ", flush=True,
+            )
             payload = {
                 "seriesid" : series_ids,
                 "startyear": start_yr,
@@ -331,6 +340,7 @@ def fetch_bed_closings_national(
                     f"{result.get('message', result)}"
                 )
 
+            n_obs = 0
             for series in result["Results"]["series"]:
                 sid      = series["seriesID"]
                 bed_code = sid[13:19]
@@ -345,6 +355,20 @@ def fetch_bed_closings_national(
                         "bed_code"     : bed_code,
                         "closings_nat" : float(obs["value"].replace(",", "")),
                     })
+                    n_obs += 1
+            print(f"{n_obs} obs")
+            if n_obs == 0:
+                raise ValueError(
+                    f"BLS API returned 0 observations for chunk {start_yr}-{end_yr}. "
+                    f"This usually means rate limiting. Wait 60 seconds and retry, "
+                    f"or register a free BLS API key at https://data.bls.gov/registrationEngine/"
+                )
+
+            # Sleep between chunks to avoid silent rate-limit truncation.
+            # The BLS API v1 returns REQUEST_SUCCEEDED even when throttled,
+            # yielding 0 observations with no error message.
+            if c_idx < n_chunks - 1:
+                time.sleep(2.0)
 
         if not raw_rows:
             _probe = requests.post(

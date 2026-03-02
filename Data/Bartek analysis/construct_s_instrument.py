@@ -78,7 +78,9 @@ Incomplete quarters (fewer than 3 months returned) are dropped.
 
 API call count (first run only; results cached as parquet thereafter)
 ----------------------------------------------------------------------
-    10 series, 1 batch, 2 year-chunks = 2 API calls total
+    10 series, 1 batch, 3 year-chunks = 3 API calls total
+    Chunks: 2000-2008 / 2009-2017 / 2018-2030
+    (BLS API v1 unregistered limit is 10 years per request)
 
 Requirements
 ------------
@@ -229,7 +231,7 @@ def fetch_jolts_layoffs_national(
     Monthly observations are summed within each calendar quarter.
     Incomplete quarters (fewer than 3 months) are dropped.
 
-    API calls: 10 series / 1 batch * 2 year-chunks = 2 total.
+    API calls: 10 series / 1 batch * 3 year-chunks = 3 total.
 
     Parameters
     ----------
@@ -264,7 +266,10 @@ def fetch_jolts_layoffs_national(
         for sid in series_ids:
             print(f"    {sid}  [{INDUSTRY_LABELS[sid_to_ind[sid]]}]")
 
-        year_chunks = [("2000", "2013"), ("2014", "2030")]
+        # BLS API v1 limit: 10 years per request for unregistered users
+        # (20 years with a free registered key).  Use three chunks to stay
+        # safely within the limit across the full 2000-present JOLTS history.
+        year_chunks = [("2000", "2008"), ("2009", "2017"), ("2018", "2030")]
         batches     = list(_chunked(series_ids, 25))
         n_batches   = len(batches)
         all_obs     = []
