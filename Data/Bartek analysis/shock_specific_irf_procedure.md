@@ -24,6 +24,11 @@ $$B^k_{s,t} = \sum_j \omega_{s,j,t_0} \cdot g^k_{-s,j,t}$$
 
 where $\omega_{s,j,t_0}$ are pre-recession employment shares (state $s$, supersector $j$, base year $t_0$) and $g^k_{-s,j,t}$ is a leave-one-out national shock rate for shock type $k$. The ten supersectors are the standard BLS private nonfarm supersectors (Mining, Construction, Manufacturing, Trade/transport/utilities, Information, Financial activities, Professional and business services, Education and health, Leisure and hospitality, Other services).
 
+**Identification**
+Bartik instrument exploits interaction between predetermined local industry composition and national industry-level shocks to generate plausibly exogenous variation in local labor market conditions.
+
+The identifying assumption following Goldsmith-Pinkham, Sorkin and Swift (2020) is that **shares are exogenous** conditional on controls. The pre-determined industry composition $\omega_{s,j,t_0}$ should be uncorrelated with error term in the outcome equation, so that states did not sort into high-closing or high-layoff indusries in anticipation of future labor market outcomes.
+
 ### Employment shares $\omega_{s,j,t_0}$
 
 **Source:** Quarterly Census of Employment and Wages (QCEW), annual average employment by state and supersector.
@@ -35,6 +40,11 @@ where $\omega_{s,j,t_0}$ are pre-recession employment shares (state $s$, superse
 $$\omega_{s,j,t_0} = \frac{E_{s,j,t_0}}{E_{s,t_0}}$$
 
 where $E_{s,t_0}$ is total private nonfarm employment in state $s$ in the base year. Shares sum to one within each state across the ten supersectors.
+
+
+
+
+
 
 **Retrieval:** QCEW data are fetched via the BLS public API v1 (`api.bls.gov/publicAPI/v1/timeseries/data/`). Series IDs follow the format `ENU{state_fips_5d}{seasonal}{supersector_code}` — for example, `ENU010000105101` for Alabama Mining, seasonally adjusted. The full set requires 500 series (50 states × 10 supersectors) plus 10 national series. Because the API v1 unregistered limit is 10 years per request and 25 series per request, calls are batched into groups of 25 series and three year-chunks (1990–2000, 2001–2010, 2011–present). Results are cached as parquet after the first pull, which is an efficient open-source columnar storage file format.
 
