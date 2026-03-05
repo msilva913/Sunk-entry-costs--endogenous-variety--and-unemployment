@@ -100,3 +100,13 @@ else:
     )[["state", "supersector", "share_of_nat", "emp_state_ind", "emp_nat_loo"]]
     print(dominant_display.round(4).to_string(index=False))
     print("  (These cells receive the largest LOO correction.)")
+    
+import matplotlib.pyplot as plt
+import seaborn as sns      
+plt.figure(figsize=(20, 5))
+g = sns.clustermap(grid.T, cmap="viridis", figsize=(22, 6),
+                   linewidths=0, cbar_pos=(0.02, 0.8, 0.03, 0.15),
+                   dendrogram_ratio=0.1)
+g.ax_heatmap.set_xlabel("State")
+g.ax_heatmap.set_ylabel("Industry")
+plt.show()
