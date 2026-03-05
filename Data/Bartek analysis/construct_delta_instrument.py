@@ -157,18 +157,18 @@ QCEW_TO_INDUSTRY_CODE = {
 }
 QCEW_SUPERSECTOR_CODES = list(QCEW_TO_INDUSTRY_CODE.keys())  # 9 non-TTU codes
 
-# agglvl=54: NAICS sector codes (2-digit strings) → pipeline codes
-# NAICS 44 and 45 appear as separate rows; both map to Retail "42".
-# NAICS 48, 49, and 22 appear as separate rows; all map to TWU "43".
+# agglvl=54: NAICS sector industry_code strings → pipeline codes.
+# At agglvl=54 QCEW pre-combines NAICS 44 and 45 into a single "44-45" row,
+# and NAICS 48 and 49 into a single "48-49" row — matching BDS conventions.
+# There is therefore no within-pipeline summing required for Retail or
+# Transport/Warehousing; each maps 1-to-1 to its pipeline code.
 QCEW_TTU_TO_INDUSTRY_CODE = {
-    "42":   "41",   # Wholesale trade (NAICS 42)
-    "44":   "42",   # Retail trade pt 1 (NAICS 44)
-    "45":   "42",   # Retail trade pt 2 (NAICS 45)
-    "48":   "43",   # Transportation (NAICS 48)
-    "49":   "43",   # Warehousing (NAICS 49)
-    "22":   "43",   # Utilities (NAICS 22)
+    "42":    "41",   # Wholesale trade
+    "44-45": "42",   # Retail trade (combined NAICS 44+45)
+    "48-49": "43",   # Transportation & warehousing (combined NAICS 48+49)
+    "22":    "43",   # Utilities → Transport/WH/Util
 }
-QCEW_TTU_NAICS_CODES = list(QCEW_TTU_TO_INDUSTRY_CODE.keys())  # 6 NAICS codes
+QCEW_TTU_NAICS_CODES = list(QCEW_TTU_TO_INDUSTRY_CODE.keys())  # 4 codes
 
 INDUSTRY_LABELS = {
     "10": "Mining",
@@ -893,13 +893,16 @@ def fetch_qcew_annual(
     # Two agglvl passes:
     #
     #   agglvl=53 — State, by BLS Supersector, by ownership.
-    #               9 non-TTU supersectors (1011-1027 excluding 1021).
+    #               9 non-TTU supersectors (BLS codes 1011-1027 excl. 1021).
     #
     #   agglvl=54 — State, by NAICS Sector, by ownership.
-    #               6 NAICS codes covering the three TTU sub-industries:
-    #               "42" (Wholesale), "44"/"45" (Retail), "48"/"49"/"22" (TWU).
-    #               NAICS 44 and 45 are separate rows summed to pipeline "42".
-    #               NAICS 48, 49, and 22 are separate rows summed to "43".
+    #               QCEW pre-combines NAICS 44+45 → "44-45" and 48+49 → "48-49"
+    #               (same convention as BDS).  Utilities is code "22".
+    #               Four industry_code strings: "42", "44-45", "48-49", "22".
+    #               "44-45" and "48-49" each map 1-to-1 to pipeline codes,
+    #               so no within-pipeline summing is required for Retail or
+    #               Transport/Warehousing.  Only "22" and "48-49" share a
+    #               target ("43") and are summed by the groupby below.
     valid_fips_5d = set(STATE_FIPS.values())
 
     # Pass 1: 9 non-TTU supersectors at agglvl=53
@@ -938,7 +941,9 @@ def fetch_qcew_annual(
             f"  agglvl sample:    {raw.get('agglvl_code', pd.Series()).unique()[:10]}"
         )
 
-    # Sum NAICS 44+45 → "42" and 48+49+22 → "43" within each state
+    # Groupby sums "22" (Utilities) and "48-49" (Transport/WH) into "43".
+    # All other pipeline codes have exactly one source row per state and
+    # are passed through unchanged by the sum.
     df = (
         df.groupby(["area_fips", "industry_code"])["annual_avg_emplvl"]
         .sum().reset_index()

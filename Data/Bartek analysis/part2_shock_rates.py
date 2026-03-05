@@ -85,6 +85,7 @@ from construct_delta_instrument import (
 
 # Optional Census API key — set CENSUS_API_KEY env var or edit here
 import os
+# from api.census.gov/data/key_signup.html
 CENSUS_KEY = os.environ.get("CENSUS_API_KEY", "")
 
 # -----------------------------------------------------------------------
