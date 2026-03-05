@@ -24,8 +24,6 @@ Run
     python part1_shares.py
 """
 
-import os
-os.chdir(r"C:\Users\msilva913\Documents\GitHub\Sunk_entry_costs_endogenous_variety_unemployment\Data\Bartek analysis")  # Set working directory to script's location
 import pandas as pd
 from construct_delta_instrument import (
     BASE_YEAR,
@@ -71,10 +69,7 @@ with pd.option_context("display.float_format", "{:.4f}".format,
                        "display.max_columns", 12,
                        "display.width", 120):
     print(grid.to_string())
-# -- Export ------------------------------------------
-shares.to_csv("shares_base_2006.csv")
-grid.to_csv("shares_grid_base_2006.csv")
- 
+
 # ── Summary statistics on the grid ───────────────────────────────────────
 print("\n--- Column means (average share by supersector across states) ---")
 col_means = grid.mean().sort_values(ascending=False)
@@ -101,4 +96,3 @@ else:
     )[["state", "supersector", "share_of_nat", "emp_state_ind", "emp_nat_loo"]]
     print(dominant_display.round(4).to_string(index=False))
     print("  (These cells receive the largest LOO correction.)")
-

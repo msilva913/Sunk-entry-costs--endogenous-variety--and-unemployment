@@ -1,8 +1,8 @@
 """
 construct_delta_instrument.py
 =============================
-Constructs the product-destruction (delta) Bartik instrument for the
-shock-specific local projection exercise.
+Constructs the permanence-adjusted product-destruction (delta) Bartik
+instrument for the shock-specific local projection exercise.
 
 The instrument for state s at quarter t is:
 
@@ -12,35 +12,57 @@ where:
     omega_{s,j,t0}   = share of supersector j in state s total private
                        nonfarm employment in base year t0  (QCEW)
 
-    g^delta_{-s,j,t} = leave-one-out national job-loss rate from
-                       *closing* establishments in supersector j at
-                       quarter t  (BED):
+    g^delta_{-s,j,t} = leave-one-out national permanent-exit rate from
+                       closing establishments in supersector j at
+                       quarter t  (BED × BDS permanence calibration):
 
-                           closings^nat_{-s,j,t}
-                           ---------------------
+                           closings^perm_{j,t}
+                           -------------------
                              E^nat_{-s,j,t0}
 
-Both data sources are fetched directly from BLS and cached locally —
+                       where closings^perm_{j,t} = π_{j,y(t)} × BED closings_{j,t}
+
+Permanence calibration
+----------------------
+Raw BED closings count both permanent exits and temporary shutdowns
+(establishments that reopen within 1–3 quarters).  In 2020Q2 this
+contamination is severe — approximately 400k of the recorded closings
+were lockdown-induced temporary shutdowns that later reopened.
+
+The calibration uses Census BDS annual exit counts by NAICS sector
+to compute the supersector-level permanence ratio:
+
+    π_{j,y} = BDS exits_{j,y} / Σ_{q: y(q)=y} BED closings_{j,q}
+
+BDS year y covers March y-1 to March y (BED quarters Q2(y-1)–Q1(y)).
+BDS exits are defined identically to BED deaths: establishments absent
+from March y payrolls that were present in March y-1.  π_{j,y} is
+therefore the fraction of BED closings in supersector j × BDS year y
+that proved permanent.
+
+Sample endpoint
+---------------
+BDS data are available through 2023 (as of early 2026).  BDS year 2023
+maps to BED quarters 2022Q2–2023Q1.  The permanence-adjusted delta
+instrument runs from 1992Q3 to 2023Q1 by default.
+
+Both data sources are fetched directly from BLS/Census and cached locally —
 no manual downloads required.
 
 Industry disaggregation
 -----------------------
-Uses the 10 BLS supersectors.  National BED closings at supersector
-level are available directly from the BLS flat file server.  To switch
-to 3-digit NAICS, replace INDUSTRY_CODES with NAICS3_PRIVATE_NONFARM
-and update BED_INDUSTRY_MAP accordingly; everything else is identical.
+Uses the 10 BLS supersectors.  BED closings by supersector are fetched
+from the BLS API; BDS exits by NAICS sector are fetched from the Census
+BDS API and aggregated to supersectors via BDS_SECTOR_TO_INDUSTRY.
 
 Leave-one-out correction
 ------------------------
-Applied universally.  Denominator LOO uses QCEW employment:
+Denominator-only LOO is applied universally:
 
     E^nat_{-s,j,t0} = E^nat_{j,t0} - E_{s,j,t0}
 
-Numerator LOO (subtract state closings from national) requires
-state-level BED by supersector, which is available in the same BLS
-flat file but only at total-private level for states.  When not
-available at the supersector-by-state level, denominator-only LOO is
-applied and a diagnostic table flags dominant cells.
+State-level BED closings by supersector are unavailable via the public
+API so numerator LOO cannot be implemented.
 
 Requirements
 ------------
@@ -93,33 +115,39 @@ STATE_FIPS_2D = {abbrev: code[:2] for abbrev, code in STATE_FIPS.items()}
 FIPS2D_TO_STATE = {v: k for k, v in STATE_FIPS_2D.items()}
 
 # ---------------------------------------------------------------------------
-# Supersector definitions
+# Supersector / industry definitions
 # ---------------------------------------------------------------------------
-# INDUSTRY_CODES: the shared 2-digit supersector codes used throughout the
-# pipeline as the common key.  These match the BED series ID industry field
-# (padded to 6 digits in BED_INDUSTRY_MAP below).
+# INDUSTRY_CODES: the 12 pipeline codes used throughout.  The former
+# Trade/transport/utilities aggregate ("40") is split into three:
 #
-# QCEW uses a DIFFERENT 4-digit coding for supersectors at agglvl=53:
-#   QCEW "1011" = Mining & logging      -> our "10"
-#   QCEW "1012" = Construction          -> our "20"
-#   QCEW "1013" = Manufacturing         -> our "30"
-#   QCEW "1021" = Trade/transport/util  -> our "40"
-#   QCEW "1022" = Information           -> our "50"
-#   QCEW "1023" = Financial activities  -> our "55"
-#   QCEW "1024" = Prof & business svcs  -> our "60"
-#   QCEW "1025" = Education & health    -> our "65"
-#   QCEW "1026" = Leisure & hospitality -> our "70"
-#   QCEW "1027" = Other services        -> our "80"
-# fetch_qcew_annual filters on the QCEW codes and remaps to INDUSTRY_CODES
-# before returning, so all downstream code works with the common key.
-INDUSTRY_CODES = ["10", "20", "30", "40", "50", "55", "60", "65", "70", "80"]
+#   "41" = Wholesale trade                      (NAICS 42)
+#   "42" = Retail trade                         (NAICS 44-45)
+#   "43" = Transportation, warehousing          (NAICS 48-49 + 22)
+#           & utilities
+#
+# Note: pipeline codes "41"/"42"/"43" are internal identifiers only.
+# They do NOT correspond to NAICS sector numbers (NAICS 41 does not exist;
+# NAICS 42 is Wholesale which maps to pipeline "41", etc.).  The
+# INDUSTRY_LABELS dict makes every code human-readable throughout.
+#
+# QCEW agglvl codes:
+#   agglvl=53 — State, by BLS Supersector, by ownership
+#               4-digit codes 1011-1027 (BLS-internal, NOT NAICS)
+#   agglvl=54 — State, by NAICS Sector, by ownership
+#               2-digit NAICS codes as strings: "22","42","44","45","48","49"
+#               (combined NAICS sectors like 44-45 and 48-49 appear as two
+#               separate rows in the bulk CSV)
+#
+# For the 9 non-TTU supersectors fetch_qcew_annual uses agglvl=53 (unchanged).
+# For the three TTU sub-industries it uses agglvl=54 with NAICS sector codes.
+INDUSTRY_CODES = ["10", "20", "30", "41", "42", "43", "50", "55", "60", "65", "70", "80"]
 
-# Mapping from QCEW 4-digit supersector codes (agglvl=53) to the common key
+# agglvl=53: BLS supersector codes → pipeline codes (TTU removed)
 QCEW_TO_INDUSTRY_CODE = {
     "1011": "10",   # Mining and logging
     "1012": "20",   # Construction
     "1013": "30",   # Manufacturing
-    "1021": "40",   # Trade, transportation, and utilities
+    # "1021" Trade/transport/utilities is handled at agglvl=54 below
     "1022": "50",   # Information
     "1023": "55",   # Financial activities
     "1024": "60",   # Professional and business services
@@ -127,13 +155,28 @@ QCEW_TO_INDUSTRY_CODE = {
     "1026": "70",   # Leisure and hospitality
     "1027": "80",   # Other services
 }
-QCEW_SUPERSECTOR_CODES = list(QCEW_TO_INDUSTRY_CODE.keys())
+QCEW_SUPERSECTOR_CODES = list(QCEW_TO_INDUSTRY_CODE.keys())  # 9 non-TTU codes
+
+# agglvl=54: NAICS sector codes (2-digit strings) → pipeline codes
+# NAICS 44 and 45 appear as separate rows; both map to Retail "42".
+# NAICS 48, 49, and 22 appear as separate rows; all map to TWU "43".
+QCEW_TTU_TO_INDUSTRY_CODE = {
+    "42":   "41",   # Wholesale trade (NAICS 42)
+    "44":   "42",   # Retail trade pt 1 (NAICS 44)
+    "45":   "42",   # Retail trade pt 2 (NAICS 45)
+    "48":   "43",   # Transportation (NAICS 48)
+    "49":   "43",   # Warehousing (NAICS 49)
+    "22":   "43",   # Utilities (NAICS 22)
+}
+QCEW_TTU_NAICS_CODES = list(QCEW_TTU_TO_INDUSTRY_CODE.keys())  # 6 NAICS codes
 
 INDUSTRY_LABELS = {
     "10": "Mining",
     "20": "Construction",
     "30": "Manufacturing",
-    "40": "Trade, transport & utilities",
+    "41": "Wholesale trade",
+    "42": "Retail trade",
+    "43": "Transport, warehousing & utilities",
     "50": "Information",
     "55": "Financial activities",
     "60": "Professional & business services",
@@ -143,29 +186,10 @@ INDUSTRY_LABELS = {
 }
 
 # BED series ID encodes supersector as a 6-digit industry_code.
-# From bd.txt: "National data available at 2 and 3 digit NAICS sectors"
-# The mapping below converts our 2-digit NAICS prefix to the 6-digit
-# BED industry_code that appears in bd.series.
-# Pattern confirmed in bd.txt example: industry_code 200090 = Leisure & hosp.
-# The supersector codes follow the pattern: {supersector_2digit}0000
-# with the leading zero padding.  Confirmed by checking bd.industry:
-#   000010 = Mining and logging
-#   000020 = Construction
-#   000030 = Manufacturing
-#   000040 = Trade, transportation, and utilities
-#   000050 = Information
-#   000055 = Financial activities
-#   000060 = Professional and business services
-#   000065 = Education and health services
-#   000070 = Leisure and hospitality  (matches example: 200090? No.)
-# The bd.txt example shows industry_code=200090 for state=06 (California)
-# which is 3-digit NAICS 009 padded — that is state-level.
-# For national supersectors (state=00), industry codes are 6-digit:
-#   0000{SS}  where SS is the 2-digit supersector padded to 4 digits.
-# We verify this directly when fetching bd.series below.
-# BED industry codes confirmed from bd.industry flat file.
 # BED separates Goods-producing (1xxxxx) from Service-providing (2xxxxx).
-# Trade/transport/utilities has no single BED aggregate — must be summed.
+# The 9 non-TTU supersectors each have a direct 1-to-1 BED series.
+# The three TTU sub-industries are built by assigning the four existing
+# BED sub-series (200010-200040) directly to pipeline codes (see BED_TTU_MAP).
 #
 # Direct 1-to-1 series (pipeline code → single BED industry code):
 BED_INDUSTRY_MAP = {
@@ -180,14 +204,55 @@ BED_INDUSTRY_MAP = {
     "80": "200100",   # Other services
 }
 
-# Trade/transport/utilities (pipeline "40") has no BED aggregate.
-# Must fetch and sum these four sub-series:
-BED_TRADE_COMPONENTS = {
-    "200010": "Wholesale trade",
-    "200020": "Retail trade",
-    "200030": "Transportation and warehousing",
-    "200040": "Utilities",
+# TTU sub-component BED series → pipeline codes.
+# 200030 (Transportation & WH) and 200040 (Utilities) both map to "43" and
+# are summed by the groupby in fetch_bed_closings_national.
+BED_TTU_MAP = {
+    "200010": "41",   # Wholesale trade
+    "200020": "42",   # Retail trade
+    "200030": "43",   # Transportation and warehousing → Transport/WH/Util
+    "200040": "43",   # Utilities                      → Transport/WH/Util
 }
+
+# ---------------------------------------------------------------------------
+# BDS sector-to-supersector mapping
+# ---------------------------------------------------------------------------
+# The Census Bureau's Business Dynamics Statistics (BDS) publishes annual
+# establishment exits by 2-digit NAICS sector.  These map to our ten BLS
+# supersectors as follows.  Several supersectors require aggregating multiple
+# NAICS sectors (Trade/transport/utilities, Financial activities, etc.).
+#
+# Note on Mining: BLS "Mining and logging" includes NAICS 21 (Mining) plus
+# NAICS 113 (Logging, a sub-sector of NAICS 11).  BDS publishes NAICS 11
+# (Agriculture, forestry, fishing) as a whole — we use only NAICS 21 as the
+# BDS proxy for Mining, since logging is a negligible share and cannot be
+# cleanly extracted from NAICS 11.
+BDS_SECTOR_TO_INDUSTRY = {
+    "21":    "10",   # Mining (approx. Mining & logging)
+    "23":    "20",   # Construction
+    "31-33": "30",   # Manufacturing
+    "42":    "41",   # Wholesale trade
+    "44-45": "42",   # Retail trade
+    "48-49": "43",   # Transportation & warehousing → Transport/WH/Util
+    "22":    "43",   # Utilities                    → Transport/WH/Util
+    "51":    "50",   # Information
+    "52":    "55",   # Finance & insurance → Financial activities
+    "53":    "55",   # Real estate & rental → Financial activities
+    "54":    "60",   # Professional & technical svcs → Prof & business svcs
+    "55":    "60",   # Management of companies → Prof & business svcs
+    "56":    "60",   # Admin & support → Prof & business svcs
+    "61":    "65",   # Educational services → Education & health
+    "62":    "65",   # Health care & social assistance → Education & health
+    "71":    "70",   # Arts, entertainment & recreation → Leisure & hospitality
+    "72":    "70",   # Accommodation & food services → Leisure & hospitality
+    "81":    "80",   # Other services
+}
+BDS_SECTORS   = list(BDS_SECTOR_TO_INDUSTRY.keys())  # 18 NAICS sectors
+BDS_API_URL   = "https://api.census.gov/data/timeseries/bds"
+# BDS data availability: 1978 through the most recently published year.
+# As of early 2026, 2023 is the last complete year.
+BDS_END_YEAR  = 2023
+BDS_START_YEAR = 1992   # first year we need (aligns with BED start 1992Q3)
 
 # 3-digit NAICS alternative (swap into INDUSTRY_CODES when 3-digit BED
 # data are available — no other changes required).
@@ -285,25 +350,31 @@ def fetch_bed_closings_national(
         Columns: quarter_label, industry_code (pipeline supersector code), closings_nat
     """
     cache_dir.mkdir(parents=True, exist_ok=True)
-    cache_file = cache_dir / "bed_closings_national_supersector.parquet"
+    # Cache name reflects the 12-industry disaggregation.
+    # Delete bed_closings_national_supersector.parquet (old 10-industry cache)
+    # if present — it will be ignored since the filename changed.
+    cache_file = cache_dir / "bed_closings_national_12ind.parquet"
 
     if cache_file.exists():
         print("  [BED national] loading from cache")
         df = pd.read_parquet(cache_file)
     else:
-        # All BED codes to request: 9 direct + 4 trade components = 13 series
+        # All BED codes to request: 9 direct + 4 TTU sub-series = 13 series
+        # BED_TTU_MAP maps 200010/200020/200030/200040 directly to pipeline
+        # codes "41"/"42"/"43" (200030 and 200040 both → "43", summed below).
         # Format: BDS + 00000(msa) + 00(state) + 000(county)
         #             + {bed_code}(6) + 1(unit) + 1(element)
         #             + 00(sizeclass) + 06(closings) + L(level) + Q + 5(private)
         direct_inv  = {v: k for k, v in BED_INDUSTRY_MAP.items()}
-        trade_codes = set(BED_TRADE_COMPONENTS.keys())
-        all_bed_codes = list(BED_INDUSTRY_MAP.values()) + list(trade_codes)
+        ttu_codes   = set(BED_TTU_MAP.keys())
+        all_bed_codes = list(BED_INDUSTRY_MAP.values()) + list(ttu_codes)
         series_ids = [f"BDS0000000000{c}110006LQ5" for c in all_bed_codes]
 
         print(f"  [BED national] fetching {len(series_ids)} series "
-              f"(9 direct + 4 trade components) from BLS API v1 ...")
+              f"(9 direct + 4 TTU sub-components) from BLS API v1 ...")
         for c in all_bed_codes:
-            label = INDUSTRY_LABELS.get(direct_inv.get(c), BED_TRADE_COMPONENTS.get(c, c))
+            pip = direct_inv.get(c) or BED_TTU_MAP.get(c)
+            label = INDUSTRY_LABELS.get(pip, c)
             print(f"    BDS0000000000{c}110006LQ5  [{label}]")
 
         # BLS API v1 limit: 10 years per request for unregistered users.
@@ -344,7 +415,7 @@ def fetch_bed_closings_national(
             for series in result["Results"]["series"]:
                 sid      = series["seriesID"]
                 bed_code = sid[13:19]
-                if bed_code not in direct_inv and bed_code not in trade_codes:
+                if bed_code not in direct_inv and bed_code not in ttu_codes:
                     continue
                 for obs in series["data"]:
                     if obs.get("value", "-") == "-":
@@ -393,13 +464,15 @@ def fetch_bed_closings_national(
 
         raw = pd.DataFrame(raw_rows)
 
-        # Assign pipeline supersector code to each row
+        # Assign pipeline code: direct series use BED_INDUSTRY_MAP inverse;
+        # TTU sub-series use BED_TTU_MAP (200030 and 200040 both → "43").
         raw["industry_code"] = raw["bed_code"].map(
-            lambda c: direct_inv.get(c, "40" if c in trade_codes else None)
+            lambda c: direct_inv.get(c) or BED_TTU_MAP.get(c)
         )
         raw = raw[raw["industry_code"].notna()]
 
-        # Sum trade components + keep direct series as-is
+        # Groupby sums the two TWU sub-series (200030+200040) into "43"
+        # and keeps all other series as single-row groups unchanged.
         df = (
             raw
             .groupby(["quarter_label", "industry_code"])["closings_nat"]
@@ -423,6 +496,340 @@ def fetch_bed_closings_national(
     ].copy()
     return df
 
+
+# ---------------------------------------------------------------------------
+# 2b.  BDS FETCHING  (annual exits by NAICS sector, national)
+# ---------------------------------------------------------------------------
+
+def _quarter_to_bds_year(quarter_label: str) -> int:
+    """
+    Map a BED quarter label to the BDS fiscal year that contains it.
+
+    BDS defines an exit as zero employment in March of year y with positive
+    employment in March of year y-1.  The four BED quarters that fall within
+    BDS year y are:  Q2(y-1), Q3(y-1), Q4(y-1), Q1(y).
+
+    Mapping rule
+    ------------
+        Q1 of calendar year Y  →  BDS year Y
+        Q2, Q3, Q4 of year Y   →  BDS year Y + 1
+
+    Examples
+    --------
+        "2020Q1"  →  2020    (covered by BDS year 2020: Apr 2019 – Mar 2020)
+        "2020Q2"  →  2021    (covered by BDS year 2021: Apr 2020 – Mar 2021)
+        "2020Q3"  →  2021
+        "2020Q4"  →  2021
+    """
+    cal_year = int(quarter_label[:4])
+    q        = int(quarter_label[5])
+    return cal_year if q == 1 else cal_year + 1
+
+
+def fetch_bds_exits_national(
+    cache_dir   : Path = DEFAULT_CACHE_DIR,
+    census_key  : str  = "",
+) -> pd.DataFrame:
+    """
+    Fetch annual establishment exit counts by NAICS sector (national) from
+    the Census Bureau Business Dynamics Statistics (BDS) API.
+
+    BDS defines an establishment exit as a unit with positive employment in
+    March of year y-1 and zero employment in March of year y, with no
+    reopening for four or more consecutive quarters.  This is the same
+    non-reopening criterion used for BED 'deaths' (establishments closed
+    ≥ 4 consecutive quarters), applied at annual frequency.
+
+    API endpoint
+    ------------
+    https://api.census.gov/data/timeseries/bds
+        ?get=YEAR,ESTABS_EXIT
+        &for=us:1
+        &SECTOR={sector}
+        [&key={census_key}]
+
+    Returns all available years in a single call per sector.  18 sector
+    codes × 1 call each = 18 requests total; results are cached.
+
+    Parameters
+    ----------
+    cache_dir  : Local directory for the cached parquet file.
+    census_key : Optional Census API key.  Without a key BDS requests are
+                 capped at 500/day per IP; register free at
+                 https://api.census.gov/data/key_signup.html.
+
+    Returns
+    -------
+    pd.DataFrame
+        Columns: bds_year (int), industry_code (pipeline supersector key),
+                 bds_exits (int)
+        One row per (supersector, year).
+    """
+    import time as _time
+
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    cache_file = cache_dir / "bds_exits_national_supersector.parquet"
+
+    if cache_file.exists():
+        print("  [BDS national] loading from cache")
+        return pd.read_parquet(cache_file)
+
+    print(
+        f"  [BDS national] fetching {len(BDS_SECTORS)} NAICS sectors "
+        f"from Census BDS API ..."
+    )
+    if not census_key:
+        print(
+            "    NOTE: no Census API key supplied.  Calls are rate-limited "
+            "to 500/day.  Register free at https://api.census.gov/data/key_signup.html"
+        )
+
+    raw_rows = []
+    for i, sector in enumerate(BDS_SECTORS):
+        params = {
+            "get"   : "YEAR,ESTABS_EXIT",
+            "for"   : "us:1",
+            "SECTOR": sector,
+        }
+        if census_key:
+            params["key"] = census_key
+
+        try:
+            resp = requests.get(BDS_API_URL, params=params, timeout=30)
+            resp.raise_for_status()
+            data = resp.json()
+        except Exception as exc:
+            raise RuntimeError(
+                f"BDS API call failed for SECTOR={sector}: {exc}\n"
+                f"  URL tried: {resp.url if 'resp' in dir() else 'N/A'}"
+            ) from exc
+
+        # Response: [[headers], [row1], [row2], ...]
+        if not data or len(data) < 2:
+            raise ValueError(
+                f"BDS API returned empty data for SECTOR={sector}.\n"
+                f"  Response: {data}"
+            )
+        headers = data[0]
+        try:
+            year_col  = headers.index("YEAR")
+            exits_col = headers.index("ESTABS_EXIT")
+        except ValueError as exc:
+            raise ValueError(
+                f"Unexpected BDS column names for SECTOR={sector}: "
+                f"{headers}"
+            ) from exc
+
+        for row in data[1:]:
+            try:
+                yr  = int(row[year_col])
+                ex  = int(row[exits_col]) if row[exits_col] not in (None, "N", "") else None
+            except (ValueError, TypeError):
+                continue
+            if ex is None:
+                continue
+            raw_rows.append({
+                "bds_year"      : yr,
+                "naics_sector"  : sector,
+                "bds_exits_raw" : ex,
+            })
+
+        # Brief pause between calls to avoid hitting rate limit
+        if i < len(BDS_SECTORS) - 1:
+            _time.sleep(0.3)
+
+    if not raw_rows:
+        raise ValueError(
+            "BDS API returned no exit counts across all sectors.\n"
+            "  Check Census API availability and sector codes."
+        )
+
+    raw = pd.DataFrame(raw_rows)
+
+    # Map NAICS sectors to pipeline supersector codes and aggregate
+    raw["industry_code"] = raw["naics_sector"].map(BDS_SECTOR_TO_INDUSTRY)
+    raw = raw[raw["industry_code"].notna()].copy()
+
+    df = (
+        raw
+        .groupby(["bds_year", "industry_code"])["bds_exits_raw"]
+        .sum()
+        .reset_index()
+        .rename(columns={"bds_exits_raw": "bds_exits"})
+        .sort_values(["industry_code", "bds_year"])
+        .reset_index(drop=True)
+    )
+
+    n_years = df["bds_year"].nunique()
+    n_ss    = df["industry_code"].nunique()
+    print(
+        f"  [BDS national] cached {len(df):,} rows | "
+        f"{n_ss} supersectors | "
+        f"{df['bds_year'].min()}–{df['bds_year'].max()}  ({n_years} years)"
+    )
+    df.to_parquet(cache_file, index=False)
+    return df
+
+
+def compute_permanence_ratios(
+    bed_closings : pd.DataFrame,
+    bds_exits    : pd.DataFrame,
+) -> pd.DataFrame:
+    """
+    Compute the quarterly permanence ratio π_{j,y} for each supersector j
+    and BDS fiscal year y.
+
+    Definition
+    ----------
+        π_{j,y} = BDS exits_{j,y}  /  Σ_{q: y(q)=y} BED closings_{j,q}
+
+    where y(q) maps BED quarter q to its BDS year via _quarter_to_bds_year().
+    The ratio lies in (0, 1) and represents the fraction of within-year BED
+    closings that turned out to be permanent exits rather than temporary
+    shutdowns.
+
+    In normal years π ≈ 0.85–0.92 for most supersectors.
+    In 2021 (covering BED 2020Q2–2021Q1), π is substantially below 1.0 for
+    high-contact service industries (Leisure, Other services) because many
+    2020Q2 COVID lockdown closures reopened before March 2021.
+
+    Parameters
+    ----------
+    bed_closings : Output of fetch_bed_closings_national().
+                   Columns: quarter_label, industry_code, closings_nat
+    bds_exits    : Output of fetch_bds_exits_national().
+                   Columns: bds_year, industry_code, bds_exits
+
+    Returns
+    -------
+    pd.DataFrame
+        Columns: industry_code, bds_year (int), pi (float in (0,1]),
+                 bds_exits, bed_closings_sum, n_quarters
+        One row per (supersector, BDS year).
+
+    Notes
+    -----
+    BDS years without a corresponding BDS exit count (either before BDS
+    coverage or after its endpoint) receive π = NaN and are excluded from
+    the adjustment.  The first BDS year (1993) has only 3 of 4 BED quarters
+    available (BED starts 1992Q3, missing 1992Q2) — the ratio is computed on
+    the available quarters and is slightly upward-biased for that year only.
+    """
+    # Map each BED quarter to its BDS year
+    bed = bed_closings.copy()
+    bed["bds_year"] = bed["quarter_label"].apply(_quarter_to_bds_year)
+
+    # Sum BED closings within each (supersector, BDS year)
+    bed_sum = (
+        bed.groupby(["industry_code", "bds_year"])
+        .agg(bed_closings_sum=("closings_nat", "sum"),
+             n_quarters=("closings_nat", "count"))
+        .reset_index()
+    )
+
+    # Merge with BDS exits
+    merged = bed_sum.merge(bds_exits, on=["industry_code", "bds_year"], how="left")
+
+    # Compute ratio; cap at 1.0 to handle rounding artifacts
+    merged["pi"] = np.where(
+        (merged["bed_closings_sum"] > 0) & merged["bds_exits"].notna(),
+        (merged["bds_exits"] / merged["bed_closings_sum"]).clip(upper=1.0),
+        np.nan,
+    )
+
+    n_nan = merged["pi"].isna().sum()
+    if n_nan > 0:
+        print(
+            f"  [π] {n_nan} (supersector, year) cells with NaN π — "
+            f"outside BDS coverage or zero BED closings"
+        )
+
+    print(
+        f"  [π] computed for {merged['pi'].notna().sum()} "
+        f"(supersector, BDS year) cells  |  "
+        f"BDS years {int(merged.loc[merged['pi'].notna(), 'bds_year'].min())}–"
+        f"{int(merged.loc[merged['pi'].notna(), 'bds_year'].max())}"
+    )
+    print(
+        f"  [π] cross-supersector mean: {merged['pi'].mean():.3f}  "
+        f"min: {merged['pi'].min():.3f}  max: {merged['pi'].max():.3f}"
+    )
+
+    return merged[[
+        "industry_code", "bds_year",
+        "pi", "bds_exits", "bed_closings_sum", "n_quarters",
+    ]].sort_values(["industry_code", "bds_year"]).reset_index(drop=True)
+
+
+def apply_permanence_adjustment(
+    bed_closings     : pd.DataFrame,
+    permanence_ratios: pd.DataFrame,
+) -> pd.DataFrame:
+    """
+    Multiply quarterly BED closings by the permanence ratio π_{j,y(q)} to
+    produce a permanent-exit-only quarterly closing series.
+
+    The operation preserves within-year quarterly variation (the relative
+    magnitudes of closings across the four quarters of a given BDS year are
+    unchanged) while scaling the annual level to confirmed permanent exits.
+
+    Parameters
+    ----------
+    bed_closings      : Columns: quarter_label, industry_code, closings_nat
+    permanence_ratios : Output of compute_permanence_ratios().
+                        Columns: industry_code, bds_year, pi
+
+    Returns
+    -------
+    pd.DataFrame
+        Same columns as bed_closings plus:
+            bds_year      : BDS fiscal year assigned to each quarter
+            pi            : permanence ratio used
+            closings_raw  : original unadjusted BED closings (for diagnostics)
+        The 'closings_nat' column now contains the permanence-adjusted values.
+
+    Notes
+    -----
+    Quarters for which π is NaN (no BDS coverage) retain their raw BED
+    closing values and a warning is printed.  For the primary estimation
+    sample (2001Q1–2023Q1) all quarters have BDS coverage.
+    """
+    adj = bed_closings.copy()
+    adj["bds_year"]     = adj["quarter_label"].apply(_quarter_to_bds_year)
+    adj["closings_raw"] = adj["closings_nat"].copy()
+
+    adj = adj.merge(
+        permanence_ratios[["industry_code", "bds_year", "pi"]],
+        on=["industry_code", "bds_year"],
+        how="left",
+    )
+
+    n_no_pi = adj["pi"].isna().sum()
+    if n_no_pi > 0:
+        missing_qtrs = (
+            adj.loc[adj["pi"].isna(), "quarter_label"].unique().tolist()[:6]
+        )
+        print(
+            f"  [adj] WARNING: {n_no_pi} quarter-supersector cells have no "
+            f"π (no BDS coverage) — raw closings used.  "
+            f"Sample quarters: {missing_qtrs}"
+        )
+        adj["pi"] = adj["pi"].fillna(1.0)   # raw = adjusted when no pi
+
+    adj["closings_nat"] = adj["closings_raw"] * adj["pi"]
+
+    mean_raw = adj["closings_raw"].mean()
+    mean_adj = adj["closings_nat"].mean()
+    print(
+        f"  [adj] mean quarterly closings: raw={mean_raw:,.0f}k  "
+        f"adjusted={mean_adj:,.0f}k  "
+        f"(ratio={mean_adj/mean_raw:.3f})"
+    )
+
+    return adj[[
+        "quarter_label", "industry_code",
+        "closings_nat", "closings_raw", "bds_year", "pi",
+    ]]
 
 
 # ---------------------------------------------------------------------------
@@ -449,7 +856,10 @@ def fetch_qcew_annual(
         Columns: area_fips, industry_code, annual_avg_emplvl
     """
     cache_dir.mkdir(parents=True, exist_ok=True)
-    cache_file = cache_dir / f"qcew_{year}_supersector_private.parquet"
+    # Cache name reflects the 12-industry disaggregation.
+    # Delete qcew_{year}_supersector_private.parquet (old 10-industry cache)
+    # if present — it will be ignored since the filename changed.
+    cache_file = cache_dir / f"qcew_{year}_12ind_private.parquet"
 
     if cache_file.exists():
         print(f"  [QCEW {year}] loading from cache")
@@ -480,56 +890,67 @@ def fetch_qcew_annual(
     #   national     = "US000"
     # We filter to the 50 state-level 5-digit codes.
     #
-    # agglvl_code reference (official BLS table):
-    #   50 = State, Total Covered
-    #   51 = State, Total, by ownership
-    #   52 = State, by Domain, by ownership
-    #   53 = State, by Supersector, by ownership   <-- we want this
-    #   54 = State, NAICS Sector, by ownership     (NOT supersector)
-    #   55 = State, NAICS 3-digit, by ownership
-    #   70-79 = County level
+    # Two agglvl passes:
     #
-    # At agglvl=53, industry_code uses QCEW's own 4-digit supersector codes
-    # (1011, 1012, ... 1027) which differ from BED's 2-digit codes (10, 20...).
-    # We filter on the QCEW codes and remap to the pipeline's common key.
-    valid_fips_5d = set(STATE_FIPS.values())   # e.g. {"01000", "06000", ...}
+    #   agglvl=53 — State, by BLS Supersector, by ownership.
+    #               9 non-TTU supersectors (1011-1027 excluding 1021).
+    #
+    #   agglvl=54 — State, by NAICS Sector, by ownership.
+    #               6 NAICS codes covering the three TTU sub-industries:
+    #               "42" (Wholesale), "44"/"45" (Retail), "48"/"49"/"22" (TWU).
+    #               NAICS 44 and 45 are separate rows summed to pipeline "42".
+    #               NAICS 48, 49, and 22 are separate rows summed to "43".
+    valid_fips_5d = set(STATE_FIPS.values())
 
-    mask = (
+    # Pass 1: 9 non-TTU supersectors at agglvl=53
+    mask53 = (
         (raw["own_code"]      == "5") &
         (raw["area_fips"].isin(valid_fips_5d)) &
         (raw["industry_code"].isin(QCEW_SUPERSECTOR_CODES))
     )
     if "agglvl_code" in raw.columns:
-        mask &= (raw["agglvl_code"] == "53")
+        mask53 &= (raw["agglvl_code"] == "53")
 
-    df = raw.loc[
-        mask,
-        ["area_fips", "industry_code", "annual_avg_emplvl"],
-    ].copy()
+    df53 = raw.loc[mask53, ["area_fips", "industry_code", "annual_avg_emplvl"]].copy()
+    df53["industry_code"] = df53["industry_code"].map(QCEW_TO_INDUSTRY_CODE)
+
+    # Pass 2: TTU NAICS sectors at agglvl=54
+    mask54 = (
+        (raw["own_code"]      == "5") &
+        (raw["area_fips"].isin(valid_fips_5d)) &
+        (raw["industry_code"].isin(QCEW_TTU_NAICS_CODES))
+    )
+    if "agglvl_code" in raw.columns:
+        mask54 &= (raw["agglvl_code"] == "54")
+
+    df54 = raw.loc[mask54, ["area_fips", "industry_code", "annual_avg_emplvl"]].copy()
+    df54["industry_code"] = df54["industry_code"].map(QCEW_TTU_TO_INDUSTRY_CODE)
+
+    df = pd.concat([df53, df54], ignore_index=True)
 
     if df.empty:
         raise ValueError(
-            f"QCEW {year}: filter returned 0 rows.\n"
-            f"  Looked for agglvl_code=53, own_code=5, "
-            f"industry_code in {QCEW_SUPERSECTOR_CODES}\n"
-            f"  area_fips sample:   {raw['area_fips'].unique()[:8]}\n"
-            f"  own_code values:    {raw['own_code'].unique()}\n"
-            f"  agglvl_code sample: {raw['agglvl_code'].unique()[:10] if 'agglvl_code' in raw.columns else 'N/A'}\n"
-            f"  industry_code sample (agglvl=53, own=5): "
-            f"{raw[(raw['agglvl_code']=='53') & (raw['own_code']=='5')]['industry_code'].unique()[:10] if 'agglvl_code' in raw.columns else 'N/A'}"
+            f"QCEW {year}: both agglvl=53 and agglvl=54 filters returned 0 rows.\n"
+            f"  agglvl=53 codes sought: {QCEW_SUPERSECTOR_CODES}\n"
+            f"  agglvl=54 codes sought: {QCEW_TTU_NAICS_CODES}\n"
+            f"  area_fips sample: {raw['area_fips'].unique()[:8]}\n"
+            f"  own_code values:  {raw['own_code'].unique()}\n"
+            f"  agglvl sample:    {raw.get('agglvl_code', pd.Series()).unique()[:10]}"
         )
 
-    # Remap QCEW 4-digit supersector codes to the common 2-digit key used
-    # everywhere else in the pipeline and in BED series IDs.
-    df["industry_code"] = df["industry_code"].map(QCEW_TO_INDUSTRY_CODE)
+    # Sum NAICS 44+45 → "42" and 48+49+22 → "43" within each state
+    df = (
+        df.groupby(["area_fips", "industry_code"])["annual_avg_emplvl"]
+        .sum().reset_index()
+    )
 
-    # Normalise area_fips to 2-digit state FIPS for compact downstream keys.
+    # Normalise area_fips to 2-digit state FIPS
     df["area_fips"] = df["area_fips"].str[:2]
 
     df.to_parquet(cache_file, index=False)
     print(f"  [QCEW {year}] cached {len(df):,} rows  "
           f"({df['area_fips'].nunique()} states x "
-          f"{df['industry_code'].nunique()} supersectors)")
+          f"{df['industry_code'].nunique()} industries)")
     return df
 
 
@@ -651,12 +1072,18 @@ def build_loo_shock_rates(
     """
     Compute g^delta_{-s,j,t} for every (state, supersector, quarter).
 
-        g^delta_{-s,j,t} = closings^nat_{j,t} / E^nat_{-s,j,t0}
+        g^delta_{-s,j,t} = closings^perm_{j,t} / E^nat_{-s,j,t0}
+
+    The numerator is taken from the 'closings_nat' column of bed_nat.
+    When bed_nat is the output of apply_permanence_adjustment(), this column
+    contains permanence-adjusted values (BED closings × π_{j,y}).  When
+    bed_nat is the raw output of fetch_bed_closings_national(), it contains
+    unadjusted values — the function is agnostic to which is supplied.
 
     Denominator LOO is applied universally.  Numerator LOO requires
-    state-level BED by supersector (not yet in the flat files at that
-    granularity) so is not applied here; the denominator correction
-    alone is the standard approach in the literature for this case.
+    state-level BED by supersector (not published via the public API) so is
+    not applied here; the denominator correction alone is the standard
+    approach in the Bartik literature for this case.
 
     Returns
     -------
@@ -754,15 +1181,20 @@ def build_bartik_instrument(
 def build_delta_instrument(
     base_year     : int  = 2006,
     start_quarter : str  = "1992Q3",
-    end_quarter   : str  = "2024Q2",
+    end_quarter   : str  = "2023Q1",
     cache_dir     : Path = DEFAULT_CACHE_DIR,
     save_output   : bool = True,
     output_dir    : Path = DEFAULT_OUTPUT_DIR,
+    census_key    : str  = "",
 ) -> pd.DataFrame:
     """
-    End-to-end construction of the delta Bartik instrument.
+    End-to-end construction of the permanence-adjusted delta Bartik instrument.
 
-    All data are fetched automatically from BLS and cached locally.
+    The numerator uses BED gross job losses from closing establishments,
+    scaled by the BDS/BED permanence ratio π_{j,y} to filter out temporary
+    shutdowns and retain only permanent establishment exits.
+
+    All data are fetched automatically from BLS and Census and cached locally.
 
     Parameters
     ----------
@@ -770,13 +1202,13 @@ def build_delta_instrument(
                     Default 2006 (Great Recession).  Use 2019 for COVID.
     start_quarter : First quarter of the instrument time series.
                     Default "1992Q3" (earliest BED date).
-    end_quarter   : Last quarter of the instrument time series.
-                    Default "2024Q2".
-    cache_dir     : Local directory for caching BLS downloads.
-                    Default Path("data/cache").
+    end_quarter   : Last quarter.  Default "2023Q1" (last BDS-covered quarter).
+                    BDS year 2023 maps to BED 2022Q2–2023Q1.  Quarters beyond
+                    2023Q1 lack a permanence ratio and use raw BED as fallback.
+    cache_dir     : Local directory for caching BLS/Census downloads.
     save_output   : Write the instrument to CSV.  Default True.
     output_dir    : Directory for the output CSV.
-                    Default Path("data/instruments").
+    census_key    : Optional Census API key for BDS fetch.
 
     Returns
     -------
@@ -787,42 +1219,55 @@ def build_delta_instrument(
 
     Examples
     --------
-    # Great Recession
+    # Great Recession identification episode
     df_gr = build_delta_instrument(base_year=2006)
 
-    # COVID
-    df_covid = build_delta_instrument(
-        base_year     = 2019,
-        start_quarter = "1992Q3",
-        end_quarter   = "2024Q2",
-    )
+    # COVID episode (use 2019 base year, raw BED fallback for 2023Q2+)
+    df_covid = build_delta_instrument(base_year=2019, end_quarter="2024Q2")
     """
     print("=" * 60)
     print(
-        f"Delta instrument  |  base year = {base_year}  |  "
-        f"{start_quarter} – {end_quarter}"
+        f"Delta instrument (permanence-adjusted)  |  "
+        f"base year = {base_year}  |  {start_quarter} – {end_quarter}"
     )
     print("=" * 60)
 
     # Step 1: QCEW employment shares
     shares = build_employment_shares(base_year, cache_dir)
 
-    # Step 2: BED closings from BLS flat files
-    print(f"\n[BED] fetching national closings from BLS ...")
-    bed_nat = fetch_bed_closings_national(cache_dir, start_quarter, end_quarter)
+    # Steps 2-4: BED closings → BDS exits → permanence ratios → adjusted series
+    print(f"\n[BED] fetching national closings (raw) from BLS ...")
+    bed_raw = fetch_bed_closings_national(
+        cache_dir, start_quarter="1992Q3", end_quarter="2024Q2"
+    )
     print(
-        f"  {bed_nat['quarter_label'].nunique()} quarters  |  "
-        f"{bed_nat['industry_code'].nunique()} supersectors"
+        f"  {bed_raw['quarter_label'].nunique()} quarters  |  "
+        f"{bed_raw['industry_code'].nunique()} supersectors"
     )
 
-    # Step 3: LOO shock rates
-    shock_rates = build_loo_shock_rates(shares, bed_nat)
+    print(f"\n[BDS] fetching annual exits ...")
+    bds_exits = fetch_bds_exits_national(cache_dir, census_key=census_key)
 
-    # Step 4: Bartik aggregation
+    print(f"\n[π] computing permanence ratios ...")
+    perm_ratios = compute_permanence_ratios(bed_raw, bds_exits)
+
+    print(f"\n[adj] applying permanence adjustment ...")
+    bed_adj = apply_permanence_adjustment(bed_raw, perm_ratios)
+
+    # Filter to requested window after adjustment
+    bed_window = bed_adj[
+        (bed_adj["quarter_label"] >= start_quarter) &
+        (bed_adj["quarter_label"] <= end_quarter)
+    ].copy()
+
+    # Step 5: LOO shock rates
+    shock_rates = build_loo_shock_rates(shares, bed_window)
+
+    # Step 6: Bartik aggregation
     print("\n[Bartik] aggregating ...")
     instrument = build_bartik_instrument(shares, shock_rates)
 
-    # Step 5: Summary
+    # Step 7: Summary
     print("\n" + "=" * 60)
     print("Instrument summary (cross-state, last 8 quarters):")
     print("=" * 60)
@@ -834,7 +1279,7 @@ def build_delta_instrument(
     )
     print(summary.tail(8).to_string())
 
-    # Step 6: Save
+    # Step 8: Save
     if save_output:
         output_dir.mkdir(parents=True, exist_ok=True)
         fpath = output_dir / f"delta_instrument_base{base_year}.csv"
@@ -851,27 +1296,54 @@ def build_delta_instrument(
 def build_national_shock_rates(
     shares        : pd.DataFrame,
     start_quarter : str  = "1992Q3",
-    end_quarter   : str  = "2024Q2",
+    end_quarter   : str  = "2023Q1",
     cache_dir     : Path = DEFAULT_CACHE_DIR,
     save_output   : bool = True,
     output_dir    : Path = DEFAULT_OUTPUT_DIR,
+    census_key    : str  = "",
 ) -> pd.DataFrame:
     """
-    Fetch BED national closings and compute the leave-one-out shock rate
-    g^delta_{-s,j,t} for every (state, supersector, quarter) cell.
+    Fetch BED national closings, apply the BDS/BED permanence calibration,
+    and compute the leave-one-out shock rate g^delta_{-s,j,t} for every
+    (state, supersector, quarter) cell.
 
-    This is Part 2 of the sequential pipeline.  It depends on `shares`
-    (from Part 1) for the LOO denominator, but is otherwise independent
-    of the final Bartik aggregation (Part 3).
+    This is Part 2 of the sequential delta-instrument pipeline.
+
+    Permanence calibration
+    ----------------------
+    Raw BED closings include both permanent exits and temporary shutdowns
+    (establishments that reopen within one to three quarters).  The
+    calibration multiplies quarterly BED closings by the permanence ratio
+    π_{j,y}, computed as:
+
+        π_{j,y} = BDS exits_{j,y} / Σ_{q: y(q)=y} BED closings_{j,q}
+
+    where BDS exits are the Census Bureau's annual establishment exit counts
+    by NAICS sector — establishments absent from March y payrolls that were
+    present in March y-1.  π_{j,y} is the fraction of BED closings in
+    supersector j during BDS fiscal year y that proved to be permanent.
+
+    The adjustment is computed using the full BED history (1992Q3 onward) as
+    the denominator for each BDS year, then applied to the requested window.
+
+    Sample endpoint
+    ---------------
+    BDS data are published through {BDS_END_YEAR} (as of early 2026).
+    BDS year {BDS_END_YEAR} maps to BED quarters
+    {BDS_END_YEAR-1}Q2 – {BDS_END_YEAR}Q1.  The permanence-adjusted δ
+    instrument therefore has a practical endpoint of {BDS_END_YEAR}Q1.
+    Quarters beyond that lack a BDS permanence ratio; raw BED closings
+    are used as a fallback with a warning.
 
     Parameters
     ----------
     shares        : Output of build_employment_shares() — Part 1 result.
     start_quarter : First quarter of the shock rate series. Default "1992Q3".
-    end_quarter   : Last quarter of the shock rate series.  Default "2024Q2".
-    cache_dir     : Directory for caching the BED download.
-    save_output   : Write shock rates to parquet in output_dir. Default True.
+    end_quarter   : Last quarter.  Default "2023Q1" (last BDS-covered quarter).
+    cache_dir     : Directory for caching BED and BDS downloads.
+    save_output   : Write shock rates to parquet in output_dir.
     output_dir    : Directory for the output parquet.
+    census_key    : Optional Census API key for BDS fetch.
 
     Returns
     -------
@@ -879,28 +1351,72 @@ def build_national_shock_rates(
         Columns: state_fips, industry_code, quarter_label, g_delta_loo
         One row per (state, supersector, quarter).
     """
-    print(f"\n[BED] fetching national closings from BLS API ...")
-    bed_nat = fetch_bed_closings_national(cache_dir, start_quarter, end_quarter)
+    # ------------------------------------------------------------------
+    # Step 1: Fetch raw BED closings (full history for denominator use)
+    # ------------------------------------------------------------------
+    print(f"\n[BED] fetching national closings (raw) from BLS ...")
+    bed_raw = fetch_bed_closings_national(
+        cache_dir, start_quarter="1992Q3", end_quarter="2024Q2"
+    )
     print(
-        f"  {bed_nat['quarter_label'].nunique()} quarters  |  "
-        f"{bed_nat['industry_code'].nunique()} supersectors"
+        f"  {bed_raw['quarter_label'].nunique()} quarters  |  "
+        f"{bed_raw['industry_code'].nunique()} supersectors"
     )
 
-    print("\n[Shock rates] computing LOO rates g^delta_{{-s,j,t}} ...")
-    shock_rates = build_loo_shock_rates(shares, bed_nat)
+    # ------------------------------------------------------------------
+    # Step 2: Fetch BDS annual exits by NAICS sector
+    # ------------------------------------------------------------------
+    print(f"\n[BDS] fetching annual exits by NAICS sector ...")
+    bds_exits = fetch_bds_exits_national(cache_dir, census_key=census_key)
+
+    # ------------------------------------------------------------------
+    # Step 3: Compute permanence ratios π_{j,y}
+    # ------------------------------------------------------------------
+    print(f"\n[π] computing permanence ratios ...")
+    perm_ratios = compute_permanence_ratios(bed_raw, bds_exits)
+
+    # Cache permanence ratios as a standalone diagnostic file
+    perm_path = output_dir / "permanence_ratios_by_supersector.parquet"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    perm_ratios.to_parquet(perm_path, index=False)
+    print(f"  [π] saved: {perm_path}")
+
+    # ------------------------------------------------------------------
+    # Step 4: Apply permanence adjustment
+    # ------------------------------------------------------------------
+    print(f"\n[adj] applying permanence adjustment to BED closings ...")
+    bed_adj = apply_permanence_adjustment(bed_raw, perm_ratios)
+
+    # Filter to requested window
+    bed_adj_window = bed_adj[
+        (bed_adj["quarter_label"] >= start_quarter) &
+        (bed_adj["quarter_label"] <= end_quarter)
+    ].copy()
+
+    print(
+        f"  {bed_adj_window['quarter_label'].nunique()} quarters in window  |  "
+        f"{bed_adj_window['industry_code'].nunique()} supersectors"
+    )
+
+    # ------------------------------------------------------------------
+    # Step 5: Build LOO shock rates on adjusted closings
+    # ------------------------------------------------------------------
+    print("\n[Shock rates] computing LOO rates g^delta_{{-s,j,t}} "
+          "(permanence-adjusted numerator) ...")
+    shock_rates = build_loo_shock_rates(shares, bed_adj_window)
 
     n_total  = len(shock_rates)
     n_valid  = shock_rates["g_delta_loo"].notna().sum()
     n_qtrs   = shock_rates["quarter_label"].nunique()
-    n_states = shock_rates["state_fips"].nunique()
     print(
-        f"  {n_valid:,} / {n_total:,} cells have valid rates  |  "
-        f"{n_states} states x {shock_rates['industry_code'].nunique()} "
-        f"supersectors x {n_qtrs} quarters"
+        f"  {n_valid:,} / {n_total:,} cells valid  |  "
+        f"{shock_rates['state_fips'].nunique()} states × "
+        f"{shock_rates['industry_code'].nunique()} supersectors × "
+        f"{n_qtrs} quarters"
     )
 
-    # Spot-check: mean closing rate by supersector over the full sample
-    print("\n  Mean LOO closing rate by supersector (x1000 for readability):")
+    # Spot-check: mean adjusted closing rate by supersector
+    print("\n  Mean LOO adjusted closing rate by supersector (×1 000):")
     mean_by_ss = (
         shock_rates
         .groupby("industry_code")["g_delta_loo"]
@@ -935,8 +1451,12 @@ def build_national_shock_rates(
 
 BASE_YEAR     = 2006
 START_QUARTER = "1992Q3"
-END_QUARTER   = "2024Q2"
+# END_QUARTER is the last BED quarter fully covered by BDS permanence calibration.
+# BDS data extend through year 2023 (as of early 2026), which maps to BED
+# quarters 2022Q2–2023Q1.  Quarters beyond 2023Q1 use raw BED as fallback.
+END_QUARTER   = "2023Q1"
 
 SHARES_PATH      = DEFAULT_OUTPUT_DIR / f"shares_base{BASE_YEAR}.parquet"
 SHOCK_RATES_PATH = DEFAULT_OUTPUT_DIR / f"shock_rates_{START_QUARTER}_{END_QUARTER}.parquet"
 INSTRUMENT_PATH  = DEFAULT_OUTPUT_DIR / f"delta_instrument_base{BASE_YEAR}.csv"
+PERM_RATIOS_PATH = DEFAULT_OUTPUT_DIR / "permanence_ratios_by_supersector.parquet"

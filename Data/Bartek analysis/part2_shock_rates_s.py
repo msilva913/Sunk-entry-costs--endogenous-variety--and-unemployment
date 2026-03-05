@@ -1,14 +1,31 @@
 """
-part2_shock_rates_s.py -- National LOO layoff rates  (g^s_{-s,j,t})
-=====================================================================
-Loads the employment shares saved by part1_shares.py, fetches national
-JOLTS Layoffs & Discharges from the BLS public API, and computes the
-leave-one-out shock rate for every (state, supersector, quarter) cell:
+part2_shock_rates_s.py — National LOO total-separation rates  (g^s_{-s,j,t})
+=============================================================================
+Loads the employment shares saved by part1_shares.py, fetches national JOLTS
+Total Separations from the BLS public API, and computes the leave-one-out
+shock rate for every (state, supersector, quarter) cell:
 
-    g^s_{-s,j,t} = layoffs^nat_{j,t} / E^nat_{-s,j,t0}
+    g^s_{-s,j,t} = separations^nat_{j,t} / E^nat_{-s,j,t0}
+
+Numerator: JOLTS total separations (TS)
+---------------------------------------
+Total separations = layoffs + discharges + quits + other separations.
+This is the correct empirical counterpart to the DMP match dissolution
+rate s, which is agnostic about who initiates the separation.  A quit at a
+surviving firm triggers the same vacancy repost as an employer-initiated
+layoff.
+
+No permanence adjustment is applied to the s numerator.  JOLTS largely
+misses closing establishments because those units exit the survey frame
+before responding.  The published total-separations series therefore already
+approximates separations at *continuing* establishments only — the
+closing-establishment component is largely absent by construction.
+(Davis-Faberman-Haltiwanger 2012 show the published JOLTS undercounts
+separations at closing establishments; the flip side is that the closing-
+establishment contamination in the *published* series is already small.)
 
 Denominator LOO applied universally (JOLTS does not publish state-level
-layoffs at the supersector level via the public API).
+total separations at the supersector level via the public API).
 
 Output
 ------
@@ -18,7 +35,7 @@ Columns in output:
     state_fips     2-digit state FIPS
     industry_code  2-digit supersector code (pipeline convention)
     quarter_label  e.g. "2008Q4"
-    g_s_loo        LOO layoff rate (layoffs / base employment)
+    g_s_loo        LOO separation rate (total separations / base employment)
 
 Run
 ---
@@ -30,21 +47,12 @@ Prerequisite
 
 Sample window
 -------------
-    2001Q1 - 2024Q2  (first complete quarter of national JOLTS coverage)
+    2001Q1 - 2023Q1  (first complete quarter of national JOLTS coverage;
+    matching the delta instrument endpoint for joint estimation)
 """
 
 import sys
 import pandas as pd
-# ---------------------------------------------------------------------------
-# Working directory: set to the folder containing this script so that
-# relative paths (data/cache/, data/instruments/) resolve correctly
-# regardless of where Python is launched from.
-#
-# Path(__file__) is used when the script is run directly (e.g. python
-# part2_shock_rates.py or F5 in VS Code with "Run Python File").
-# The fallback handles interactive/REPL execution (e.g. VS Code's
-# "Run Selection" or Jupyter-style terminals) where __file__ is undefined.
-# ---------------------------------------------------------------------------
 import os
 from pathlib import Path
 
@@ -64,7 +72,7 @@ from construct_s_instrument import (
     INDUSTRY_LABELS,
     FIPS2D_TO_STATE,
     build_national_shock_rates_s,
-    fetch_jolts_layoffs_national,
+    fetch_jolts_separations_national,
 )
 
 # -----------------------------------------------------------------------
@@ -94,7 +102,7 @@ shock_rates = build_national_shock_rates_s(
 # Inspect
 # -----------------------------------------------------------------------
 print("\n" + "=" * 60)
-print(f"Part 2s -- LOO s-shock rates  ({START_QUARTER} - {END_QUARTER})")
+print(f"Part 2s — LOO s-shock rates  ({START_QUARTER} - {END_QUARTER})")
 print("=" * 60)
 
 n_states = shock_rates["state_fips"].nunique()
@@ -111,7 +119,7 @@ print(shock_rates.head(10).to_string(index=False))
 # -----------------------------------------------------------------------
 # Mean LOO rate by supersector
 # -----------------------------------------------------------------------
-print("\n--- Mean LOO layoff rate by supersector (x1 000) ---")
+print("\n--- Mean LOO total-separation rate by supersector (x1 000) ---")
 mean_rate = (
     shock_rates.groupby("industry_code")["g_s_loo"]
     .mean()
@@ -125,9 +133,9 @@ for name, rate in mean_rate.items():
     print(f"  {name:<36}  {rate:6.3f}  {bar}")
 
 # -----------------------------------------------------------------------
-# Time series: national layoff rate by supersector
+# Time series: national total-separation rate by supersector
 # -----------------------------------------------------------------------
-print("\n--- Time series: national layoff rate by supersector (x1 000) ---")
+print("\n--- Time series: national total-separation rate by supersector (x1 000) ---")
 print("    Grey = Great Recession, Red = COVID.\n")
 pivot = (
     shock_rates
@@ -144,9 +152,9 @@ with pd.option_context("display.max_columns", 12, "display.width", 130,
     print(pivot.loc["2007Q1":"2011Q4"].to_string())
 
 # -----------------------------------------------------------------------
-# Peak layoff quarter by supersector
+# Peak separation quarter by supersector
 # -----------------------------------------------------------------------
-print("\n--- Peak layoff quarter by supersector ---")
+print("\n--- Peak total-separation quarter by supersector ---")
 peak_by_ss = (
     shock_rates
     .groupby(["industry_code", "quarter_label"])["g_s_loo"]
@@ -164,19 +172,20 @@ peak_by_ss = (
 print(peak_by_ss.to_string(index=False))
 
 # -----------------------------------------------------------------------
-# Sanity check: raw national JOLTS levels
+# Sanity check: raw national JOLTS total-separation levels
 # -----------------------------------------------------------------------
-print("\n--- Raw national JOLTS layoff levels by supersector (sanity check) ---")
+print("\n--- Raw national JOLTS total-separation levels by supersector ---")
 print("    All levels in thousands of workers per quarter.")
-print("    Plausible ranges: ~150k (Mining) to ~5 000k (Trade/transport)\n")
-jolts_nat = fetch_jolts_layoffs_national(
+print("    Total separations >> layoffs alone.  Plausible ranges:")
+print("    ~200k (Mining) to ~8 000k (Trade/transport).\n")
+jolts_nat = fetch_jolts_separations_national(
     cache_dir     = DEFAULT_CACHE_DIR,
     start_quarter = START_QUARTER,
     end_quarter   = END_QUARTER,
 )
 nat_summary = (
     jolts_nat
-    .groupby("industry_code")["layoffs_nat"]
+    .groupby("industry_code")["separations_nat"]
     .agg(["mean", "min", "max", "count"])
     .rename(index=INDUSTRY_LABELS)
     .rename(columns={"mean": "mean_k", "min": "min_k",
@@ -187,24 +196,23 @@ nat_summary = (
 print(nat_summary.to_string())
 
 # -----------------------------------------------------------------------
-# Plot: LOO layoff rates over time, all supersectors on one axis
+# Plot: LOO total-separation rates over time, all supersectors on one axis
 # -----------------------------------------------------------------------
 try:
     import matplotlib.pyplot as plt
     import matplotlib.ticker as mticker
-    import pandas as pd
 
-    # Build national layoff rate: layoffs_nat / emp_nat (no LOO).
-    # The numerator is identical across states; showing the national rate
-    # directly is the correct representation of the shock series.
+    # National separation rate: separations_nat / emp_nat (no LOO).
+    # Numerator is identical across states; this is the correct representation
+    # of the shock series driving the Bartik instrument.
     _nat = (
-        jolts_nat                        # fetched in the sanity-check block above
+        jolts_nat
         .merge(
             shares[["industry_code", "emp_nat_ind"]]
             .drop_duplicates("industry_code"),
             on="industry_code",
         )
-        .assign(g_nat=lambda d: d["layoffs_nat"] / d["emp_nat_ind"] * 1000)
+        .assign(g_nat=lambda d: d["separations_nat"] / d["emp_nat_ind"] * 1000)
     )
     _pivot = (
         _nat
@@ -212,7 +220,6 @@ try:
         .rename(columns=INDUSTRY_LABELS)
         .sort_index()
     )
-    # Reindex to complete quarterly grid to expose any gaps as breaks
     all_quarters = pd.period_range(
         start=_pivot.index[0], end=_pivot.index[-1], freq="Q"
     ).strftime("%YQ%q").tolist()
@@ -232,52 +239,33 @@ try:
     top5      = set(mean_rank.index[:5])
 
     fig, ax = plt.subplots(figsize=(13, 6))
-
     for i, col in enumerate(mean_rank.index):
         ls = "-" if col in top5 else "--"
         lw = 1.6 if col in top5 else 1.2
         ax.plot(
-            plot_data.index,
-            plot_data[col],
-            label     = col,
-            color     = colors[i % len(colors)],
-            linestyle = ls,
-            linewidth = lw,
+            plot_data.index, plot_data[col],
+            label=col, color=colors[i % len(colors)],
+            linestyle=ls, linewidth=lw,
         )
-
-    # Recession shading: GR and COVID
-    ax.axvspan(
-        pd.Timestamp("2007-12-01"), pd.Timestamp("2009-06-01"),
-        alpha=0.10, color="grey", label="_GR"
-    )
-    ax.axvspan(
-        pd.Timestamp("2020-01-01"), pd.Timestamp("2020-07-01"),
-        alpha=0.10, color="red", label="_COVID"
-    )
-
+    ax.axvspan(pd.Timestamp("2007-12-01"), pd.Timestamp("2009-06-01"),
+               alpha=0.10, color="grey", label="_GR")
+    ax.axvspan(pd.Timestamp("2020-01-01"), pd.Timestamp("2020-07-01"),
+               alpha=0.10, color="red",  label="_COVID")
     ax.set_title(
-        "National layoff & discharge rates by supersector\n"
-        "(quarterly, per 1 000 base workers)",
+        "National total-separation rates by supersector\n"
+        "(JOLTS TS, quarterly, per 1 000 base workers)",
         fontsize=12,
     )
     ax.set_xlabel("")
-    ax.set_ylabel("Layoff rate (x1 000)", fontsize=10)
+    ax.set_ylabel("Total-separation rate (x1 000)", fontsize=10)
     ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f"{x:.3f}"))
-    ax.legend(
-        loc            = "upper left",
-        fontsize       = 8,
-        framealpha     = 0.85,
-        ncol           = 2,
-        title          = "Supersector",
-        title_fontsize = 8,
-    )
+    ax.legend(loc="upper left", fontsize=8, framealpha=0.85,
+              ncol=2, title="Supersector", title_fontsize=8)
     ax.grid(axis="y", linewidth=0.5, alpha=0.4)
     fig.tight_layout()
-
     outpath = DEFAULT_OUTPUT_DIR / "shock_rates_s_by_supersector.png"
     DEFAULT_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     fig.savefig(outpath, dpi=150)
-    plt.show()
     plt.close(fig)
     print(f"\nPlot saved: {outpath}")
 

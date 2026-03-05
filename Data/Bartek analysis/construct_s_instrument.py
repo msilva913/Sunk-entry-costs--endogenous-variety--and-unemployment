@@ -13,12 +13,39 @@ where:
                       nonfarm employment in base year t0  (QCEW, identical
                       to the delta instrument — reuses shares_base{YEAR}.parquet)
 
-    g^s_{-s,j,t}   = leave-one-out quarterly layoff rate at *surviving*
-                      employers in supersector j at quarter t  (JOLTS):
+    g^s_{-s,j,t}   = leave-one-out quarterly total separation rate at
+                      approximately surviving employers in supersector j at
+                      quarter t  (JOLTS total separations):
 
-                          layoffs^nat_{j,t}
-                          -----------------
+                          separations^nat_{j,t}
+                          ---------------------
                            E^nat_{-s,j,t0}
+
+Numerator: JOLTS total separations
+-----------------------------------
+The JOLTS 'total separations' series (data element TS) captures all
+employer-employee separations regardless of initiation: layoffs, discharges,
+voluntary quits, and retirements.  This is the appropriate empirical
+counterpart to the standard DMP match dissolution rate s, which is agnostic
+about initiation — a quit triggers the same vacancy repost as a layoff.
+
+By contrast, JOLTS layoffs and discharges (LD) would exclude quits, which
+constitute a large and economically relevant share of total separations and
+belong in the model's s shock: when a worker quits at a surviving firm, the
+firm immediately reposts the vacancy, generating exactly the same response
+as an employer-initiated layoff.
+
+Davis-Faberman-Haltiwanger (DFH) note
+---------------------------------------
+JOLTS significantly undercounts separations at closing establishments
+because those establishments exit the survey sample before responding.
+This sampling limitation is advantageous for our purpose: the published
+JOLTS total separations series already approximates separations at
+*continuing* establishments only — the closing-establishment component
+is largely absent.  No correction for closing-establishment contamination
+is therefore needed.  The primary residual DFH concern (undercounting at
+rapidly contracting continuing establishments) affects levels but not the
+cross-industry variation that identifies the Bartik instrument.
 
 LOO correction
 --------------
@@ -26,21 +53,15 @@ Denominator-only LOO is applied universally:
 
     E^nat_{-s,j,t0} = E^nat_{j,t0} - E_{s,j,t0}   (from QCEW base year)
 
-JOLTS does not publish state-level layoffs at the supersector level via the
-public API — only national supersector and regional (4-region) totals are
-available.  Denominator-only LOO is therefore the standard approach and is
-consistent with most of the Bartik literature (Goldsmith-Pinkham et al. 2020,
-Autor et al. 2013).  The denominator correction does the substantive
-econometric work: it prevents a state's own base employment from inflating
-the instrument's denominator and creating a mechanical correlation with local
-outcomes.
+JOLTS does not publish state-level total separations at the supersector
+level via the public API.
 
 Data source
 -----------
-    National JOLTS layoffs & discharges: available from 2000M12 at supersector
-    level.  First complete quarter: 2001Q1.
+    National JOLTS total separations (TS): available from 2000M12 at
+    supersector level.  First complete quarter: 2001Q1.
 
-Sample start: 2001Q1  (first quarter with national JOLTS supersector coverage)
+Sample start: 2001Q1
 
 JOLTS series ID format  (21 chars, from jt.txt)
 -----------------------------------------------
@@ -52,10 +73,10 @@ Target parameters:
     state        = 00  (national)
     area         = 00000
     sizeclass    = 00  (all sizes)
-    dataelement  = LD  (layoffs and discharges)
+    dataelement  = TS  (total separations)  ← changed from LD (layoffs)
     ratelevel    = L   (level, thousands of jobs)
 
-Example: JT+S+110099+00+00000+00+LD+L  =  "JTS1100990000000LDL"  (21 chars)
+Example: JT+S+110099+00+00000+00+TS+L  =  "JTS1100990000000TSL"  (21 chars)
 
 JOLTS industry codes (confirmed from jt.industry):
     110099 = Mining and logging
@@ -71,7 +92,7 @@ JOLTS industry codes (confirmed from jt.industry):
 
 Monthly to quarterly aggregation
 ---------------------------------
-JOLTS publishes monthly levels (thousands of layoffs during the month).
+JOLTS publishes monthly levels (thousands of separations during the month).
 We sum the three months in each calendar quarter to obtain a quarterly flow
 comparable in units to the annual QCEW base employment denominator.
 Incomplete quarters (fewer than 3 months returned) are dropped.
@@ -80,7 +101,6 @@ API call count (first run only; results cached as parquet thereafter)
 ----------------------------------------------------------------------
     10 series, 1 batch, 3 year-chunks = 3 API calls total
     Chunks: 2000-2008 / 2009-2017 / 2018-2030
-    (BLS API v1 unregistered limit is 10 years per request)
 
 Requirements
 ------------
@@ -124,13 +144,15 @@ FIPS2D_TO_STATE = {v: k for k, v in STATE_FIPS_2D.items()}
 # ---------------------------------------------------------------------------
 # Supersector definitions
 # ---------------------------------------------------------------------------
-INDUSTRY_CODES = ["10", "20", "30", "40", "50", "55", "60", "65", "70", "80"]
+INDUSTRY_CODES = ["10", "20", "30", "41", "42", "43", "50", "55", "60", "65", "70", "80"]
 
 INDUSTRY_LABELS = {
     "10": "Mining",
     "20": "Construction",
     "30": "Manufacturing",
-    "40": "Trade, transport & utilities",
+    "41": "Wholesale trade",
+    "42": "Retail trade",
+    "43": "Transport, warehousing & utilities",
     "50": "Information",
     "55": "Financial activities",
     "60": "Professional & business services",
@@ -140,13 +162,19 @@ INDUSTRY_LABELS = {
 }
 
 # JOLTS industry codes from jt.industry.
-# Unlike BED, JOLTS publishes Trade/transport/utilities as a direct aggregate
-# (400000) so no sub-component summing is required.
+# Unlike BED, JOLTS publishes the three TTU sub-industries as separate series:
+#   "41" Wholesale Trade                  → JOLTS code 420000  (NAICS 42)
+#   "42" Retail Trade                     → JOLTS code 440000  (NAICS 44-45)
+#   "43" Transport, Warehousing & Util    → JOLTS code 480099  (NAICS 48-49+22)
+#        (BLS combines 48-49 and 22 into a single published TWU series)
+# The aggregate TTU series (400000) is no longer used.
 JOLTS_INDUSTRY_MAP = {
     "10": "110099",   # Mining and logging
     "20": "230000",   # Construction
     "30": "300000",   # Manufacturing
-    "40": "400000",   # Trade, transportation, and utilities
+    "41": "420000",   # Wholesale trade
+    "42": "440000",   # Retail trade
+    "43": "480099",   # Transportation, warehousing, and utilities (combined)
     "50": "510000",   # Information
     "55": "510099",   # Financial activities
     "60": "540099",   # Professional and business services
@@ -170,9 +198,11 @@ DEFAULT_OUTPUT_DIR = Path("data/instruments")
 # Pipeline configuration
 # START_QUARTER = 2001Q1: first complete quarter of national JOLTS data.
 # (JOLTS launched December 2000; January-March 2001 = first full quarter.)
+# END_QUARTER = 2023Q1: aligned with the delta instrument's BDS endpoint.
+# Joint estimation sample therefore runs 2001Q1-2023Q1 for both instruments.
 BASE_YEAR      = 2006
 START_QUARTER  = "2001Q1"
-END_QUARTER    = "2024Q2"
+END_QUARTER    = "2023Q1"
 
 SHARES_PATH        = DEFAULT_OUTPUT_DIR / f"shares_base{BASE_YEAR}.parquet"
 SHOCK_RATES_S_PATH = (
@@ -188,16 +218,21 @@ S_INSTRUMENT_PATH  = DEFAULT_OUTPUT_DIR / f"s_instrument_base{BASE_YEAR}.csv"
 
 def _build_series_id(industry: str) -> str:
     """
-    Construct a 21-character national JOLTS layoffs series ID.
+    Construct a 21-character national JOLTS total separations series ID.
 
-    JT + S + industry(6) + 00(state) + 00000(area) + 00(size) + LD + L
-    Example: "JTS1100990000000LDL"
+    JT + S + industry(6) + 00(state) + 00000(area) + 00(size) + TS + L
+    Example: "JTS1100990000000TSL"
+
+    dataelement = TS (Total Separations) captures all separations regardless
+    of initiation: layoffs, discharges, voluntary quits, and retirements.
+    This is the correct empirical counterpart to the DMP match dissolution
+    rate s, which is agnostic about who initiates the separation.
 
     Parameters
     ----------
     industry : 6-char JOLTS industry code, e.g. "110099"
     """
-    sid = f"JTS{industry}000000000LDL"
+    sid = f"JTS{industry}000000000TSL"
     assert len(sid) == 21, f"Series ID length error: '{sid}' is {len(sid)} chars"
     return sid
 
@@ -218,20 +253,30 @@ def _chunked(lst: list, n: int):
         yield lst[i : i + n]
 
 
-def fetch_jolts_layoffs_national(
+def fetch_jolts_separations_national(
     cache_dir     : Path  = DEFAULT_CACHE_DIR,
     start_quarter : str   = START_QUARTER,
     end_quarter   : str   = END_QUARTER,
     sleep_secs    : float = 1.0,
 ) -> pd.DataFrame:
     """
-    Fetch national JOLTS Layoffs & Discharges (SA, level) via the BLS
-    public API v1.  Results are cached as parquet after the first call.
+    Fetch national JOLTS Total Separations (SA, level) via the BLS public
+    API v1.  Results are cached as parquet after the first call.
+
+    Total separations = layoffs + discharges + quits + other separations.
+    This is the appropriate numerator for the s-shock instrument: it
+    captures all match dissolutions at surviving firms regardless of
+    initiation, which is the correct empirical counterpart to the DMP
+    match dissolution rate s.
+
+    JOLTS largely misses closing establishments (they exit the survey
+    frame before responding), so the published total separations series
+    already approximates separations at continuing establishments.
 
     Monthly observations are summed within each calendar quarter.
     Incomplete quarters (fewer than 3 months) are dropped.
 
-    API calls: 10 series / 1 batch * 3 year-chunks = 3 total.
+    API calls: 10 series / 1 batch × 3 year-chunks = 3 total.
 
     Parameters
     ----------
@@ -243,11 +288,14 @@ def fetch_jolts_layoffs_national(
     Returns
     -------
     pd.DataFrame
-        Columns: industry_code, quarter_label, layoffs_nat
+        Columns: industry_code, quarter_label, separations_nat
         One row per (supersector, quarter).
     """
     cache_dir.mkdir(parents=True, exist_ok=True)
-    cache_file = cache_dir / "jolts_layoffs_national.parquet"
+    # Cache name reflects 12-industry disaggregation.
+    # Delete jolts_separations_national.parquet (old 10-industry cache) if
+    # present — it will be ignored since the filename changed.
+    cache_file = cache_dir / "jolts_separations_national_12ind.parquet"
 
     if cache_file.exists():
         print("  [JOLTS national] loading from cache")
@@ -260,8 +308,8 @@ def fetch_jolts_layoffs_national(
         }
 
         print(
-            f"  [JOLTS national] fetching {len(series_ids)} supersector "
-            f"layoff series from BLS API v1 ..."
+            f"  [JOLTS national] fetching {len(series_ids)} industry "
+            f"total-separations series from BLS API v1 ..."
         )
         for sid in series_ids:
             print(f"    {sid}  [{INDUSTRY_LABELS[sid_to_ind[sid]]}]")
@@ -347,7 +395,7 @@ def fetch_jolts_layoffs_national(
         quarterly = quarterly[quarterly["count"] == 3].copy()
         df = (
             quarterly
-            .rename(columns={"total": "layoffs_nat"})
+            .rename(columns={"total": "separations_nat"})
             .drop(columns="count")
             .sort_values(["industry_code", "quarter_label"])
             .reset_index(drop=True)
@@ -379,16 +427,19 @@ def build_loo_shock_rates_s(
 
     Denominator-only LOO applied universally:
 
-        g^s_{-s,j,t} = layoffs_nat_{j,t} / E^nat_{-s,j,t0}
+        g^s_{-s,j,t} = separations_nat_{j,t} / E^nat_{-s,j,t0}
 
     E^nat_{-s,j,t0} = E^nat_{j,t0} - E_{s,j,t0}  is taken from `shares`.
+    The numerator is JOLTS total separations — all separations (layoffs,
+    discharges, quits, other) at approximately surviving establishments.
 
     Parameters
     ----------
     shares    : Output of build_employment_shares() from
                 construct_delta_instrument.  Must contain columns
                 [state_fips, industry_code, emp_nat_loo].
-    jolts_nat : Output of fetch_jolts_layoffs_national().
+    jolts_nat : Output of fetch_jolts_separations_national().
+                Must contain column 'separations_nat'.
 
     Returns
     -------
@@ -408,7 +459,7 @@ def build_loo_shock_rates_s(
 
     panel["g_s_loo"] = np.where(
         panel["emp_nat_loo"] > 0,
-        panel["layoffs_nat"] / panel["emp_nat_loo"],
+        panel["separations_nat"] / panel["emp_nat_loo"],
         np.nan,
     )
 
@@ -540,8 +591,8 @@ def build_s_instrument(
     else:
         print(f"\n[Shares] {len(shares):,} rows passed directly")
 
-    print(f"\n[JOLTS] fetching national layoffs & discharges ...")
-    jolts_nat = fetch_jolts_layoffs_national(
+    print(f"\n[JOLTS] fetching national total separations ...")
+    jolts_nat = fetch_jolts_separations_national(
         cache_dir, start_quarter, end_quarter
     )
     print(
@@ -595,8 +646,8 @@ def build_national_shock_rates_s(
     pd.DataFrame
         Columns: state_fips, industry_code, quarter_label, g_s_loo
     """
-    print(f"\n[JOLTS] fetching national layoffs & discharges ...")
-    jolts_nat = fetch_jolts_layoffs_national(
+    print(f"\n[JOLTS] fetching national total separations ...")
+    jolts_nat = fetch_jolts_separations_national(
         cache_dir, start_quarter, end_quarter
     )
     print(
@@ -606,7 +657,7 @@ def build_national_shock_rates_s(
 
     shock_rates = build_loo_shock_rates_s(shares, jolts_nat)
 
-    print("\n  Mean LOO layoff rate by supersector (x1 000):")
+    print("\n  Mean LOO total-separation rate by supersector (×1 000):")
     mean_by_ss = (
         shock_rates
         .groupby("industry_code")["g_s_loo"]
@@ -627,3 +678,12 @@ def build_national_shock_rates_s(
         print(f"\n  Saved: {fpath}")
 
     return shock_rates
+
+
+# ---------------------------------------------------------------------------
+# Backward-compatibility alias
+# ---------------------------------------------------------------------------
+# The old name 'fetch_jolts_layoffs_national' is preserved so that any
+# external scripts importing from this module do not immediately break.
+# It now returns JOLTS total separations, not just layoffs and discharges.
+fetch_jolts_layoffs_national = fetch_jolts_separations_national

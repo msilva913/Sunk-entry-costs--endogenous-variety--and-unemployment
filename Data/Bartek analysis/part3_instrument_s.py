@@ -149,7 +149,9 @@ std_series   = summary["std"]
 peak_quarter = std_series.idxmax()
 print(f"\nPeak cross-state dispersion: {peak_quarter}  "
       f"(std = {std_series[peak_quarter]:.4f} x10^-3)")
-print("(Expect 2009 or 2020 given Great Recession and COVID layoff spikes.)")
+print("(Expect 2009 or 2020 given Great Recession and COVID separation spikes."
+      "  Note: with total separations (TS) instead of layoffs (LD), the"
+      "  COVID spike may be attenuated since quits collapsed in 2020Q2.)")
 
 print(f"\n--- State ranking at {peak_quarter} ---")
 peak_df = (
@@ -277,7 +279,7 @@ try:
             axes[1], dist_s, COLOR_S, "bartik_s", instrument,
             lo_s, hi_s, peak_s,
             r"$s$-instrument  $B^s_{s,t}$"
-            "\n(JOLTS layoffs & discharges)",
+            "\n(JOLTS total separations)",
             r"$B^s_{s,t}$ (×1 000)",
         ),
     ]:
@@ -323,8 +325,8 @@ try:
         fontsize=12, y=1.01,
     )
     fig.tight_layout()
+
     outpath = DEFAULT_OUTPUT_DIR / "instruments_distribution_comparison.png"
-    plt.show()
     fig.savefig(outpath, dpi=150, bbox_inches="tight")
     plt.close(fig)
     print(f"\nTwo-panel plot saved: {outpath}")

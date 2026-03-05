@@ -1,11 +1,15 @@
 """
-part2_shock_rates.py — National LOO closing rates  (g^delta_{-s,j,t})
-=======================================================================
-Loads the employment shares saved by part1_shares.py, fetches BED
-national closing employment from the BLS public API, and computes the
-leave-one-out shock rate for every (state, supersector, quarter) cell:
+part2_shock_rates.py — Permanence-adjusted national LOO closing rates  (g^delta_{-s,j,t})
+==========================================================================================
+Loads the employment shares saved by part1_shares.py, fetches BED national
+closing employment, applies the BDS/BED permanence calibration, and computes
+the leave-one-out shock rate for every (state, supersector, quarter) cell:
 
-    g^delta_{-s,j,t} = closings^nat_{j,t} / E^nat_{-s,j,t0}
+    g^delta_{-s,j,t} = closings^perm_{j,t} / E^nat_{-s,j,t0}
+
+where closings^perm_{j,t} = π_{j,y(t)} × BED closings_{j,t} and π_{j,y} is
+the fraction of BED closings in supersector j × BDS year y that proved
+permanent (not temporary shutdowns).
 
 The numerator is the same for all states; the denominator is state-
 specific because E^nat_{-s,j,t0} = E^nat_{j,t0} - E_{s,j,t0}.
@@ -13,12 +17,13 @@ specific because E^nat_{-s,j,t0} = E^nat_{j,t0} - E_{s,j,t0}.
 Output
 ------
     data/instruments/shock_rates_{START}_{END}.parquet
+    data/instruments/permanence_ratios_by_supersector.parquet  (diagnostic)
 
-Columns in output:
+Columns in shock_rates parquet:
     state_fips     2-digit state FIPS
     industry_code  2-digit supersector code
     quarter_label  e.g. "2008Q4"
-    g_delta_loo    LOO closing rate (employment lost / base employment)
+    g_delta_loo    LOO adjusted-closing rate (perm. employment lost / base emp.)
 
 Run
 ---
@@ -27,6 +32,17 @@ Run
 Prerequisite
 ------------
     python part1_shares.py   (must have run first)
+
+Note on Census API key
+----------------------
+The BDS fetch in this step calls the Census Bureau API.  Without a key,
+requests are limited to ~500/day per IP.  Export your key as an environment
+variable before running:
+
+    export CENSUS_API_KEY=your_key_here    (Linux/macOS)
+    set CENSUS_API_KEY=your_key_here       (Windows)
+
+Or pass it directly: build_national_shock_rates(..., census_key="your_key")
 """
 
 import sys
@@ -57,11 +73,19 @@ from construct_delta_instrument import (
     DEFAULT_OUTPUT_DIR,
     SHARES_PATH,
     SHOCK_RATES_PATH,
+    PERM_RATIOS_PATH,
     INDUSTRY_LABELS,
     FIPS2D_TO_STATE,
     build_national_shock_rates,
     fetch_bed_closings_national,
+    fetch_bds_exits_national,
+    compute_permanence_ratios,
+    apply_permanence_adjustment,
 )
+
+# Optional Census API key — set CENSUS_API_KEY env var or edit here
+import os
+CENSUS_KEY = os.environ.get("CENSUS_API_KEY", "")
 
 # -----------------------------------------------------------------------
 # Load Part 1 output
@@ -84,6 +108,7 @@ shock_rates = build_national_shock_rates(
     cache_dir     = DEFAULT_CACHE_DIR,
     save_output   = True,
     output_dir    = DEFAULT_OUTPUT_DIR,
+    census_key    = CENSUS_KEY,
 )
 
 # -----------------------------------------------------------------------
@@ -172,10 +197,104 @@ print("\n--- Trade/transport raw values (first 20 quarters) ---")
 tt = bed_nat[bed_nat["industry_code"] == "40"].sort_values("quarter_label")
 print(tt.head(20).to_string(index=False))
 
-# Check manufacturing 
-bed_nat[bed_nat["industry_code"] == "30"].sort_values("quarter_label")
 # -----------------------------------------------------------------------
-# Plot: LOO closing rates over time, all supersectors on one axis
+# Permanence ratio diagnostic
+# -----------------------------------------------------------------------
+print("\n" + "=" * 60)
+print("Permanence ratios π_{j,y}  (BDS exits / BED closings sum)")
+print("=" * 60)
+
+if PERM_RATIOS_PATH.exists():
+    perm = pd.read_parquet(PERM_RATIOS_PATH)
+
+    # Cross-supersector mean π by year
+    print("\n--- Mean π by year (all supersectors) ---")
+    pi_by_year = (
+        perm.groupby("bds_year")["pi"]
+        .mean()
+        .round(3)
+    )
+    with pd.option_context("display.max_rows", 50):
+        print(pi_by_year.to_string())
+
+    # π by supersector for key recession years
+    key_years = [y for y in [2009, 2010, 2020, 2021, 2022] if y in perm["bds_year"].values]
+    if key_years:
+        print(f"\n--- π by supersector for key years {key_years} ---")
+        pivot_pi = (
+            perm[perm["bds_year"].isin(key_years)]
+            .pivot(index="industry_code", columns="bds_year", values="pi")
+            .rename(index=INDUSTRY_LABELS)
+            .round(3)
+        )
+        print(pivot_pi.to_string())
+
+    # Flag unusually low π (potential temporary-closure episodes)
+    low_pi = perm[perm["pi"] < 0.5].sort_values("pi")
+    if not low_pi.empty:
+        print(f"\n--- Cells with π < 0.50 (high temporary-closure contamination) ---")
+        low_pi_display = low_pi.assign(
+            supersector=lambda d: d["industry_code"].map(INDUSTRY_LABELS)
+        )[["supersector", "bds_year", "pi", "bds_exits", "bed_closings_sum"]].round(3)
+        print(low_pi_display.to_string(index=False))
+    else:
+        print("\nNo cells with π < 0.50.")
+else:
+    print(f"  (Permanence ratios not found at {PERM_RATIOS_PATH} — run build step first)")
+
+# -----------------------------------------------------------------------
+# Plot 1: Permanence ratios π_{j,y} by supersector over time
+# -----------------------------------------------------------------------
+try:
+    import matplotlib.pyplot as plt
+    import matplotlib.ticker as mticker
+
+    if PERM_RATIOS_PATH.exists():
+        perm_plot = pd.read_parquet(PERM_RATIOS_PATH)
+        perm_pivot = (
+            perm_plot
+            .pivot(index="bds_year", columns="industry_code", values="pi")
+            .rename(columns=INDUSTRY_LABELS)
+            .sort_index()
+        )
+        colors_pi = [
+            "#1f77b4", "#d62728", "#2ca02c", "#ff7f0e", "#9467bd",
+            "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf",
+        ]
+        fig_pi, ax_pi = plt.subplots(figsize=(13, 5))
+        for i, col in enumerate(perm_pivot.columns):
+            ax_pi.plot(
+                perm_pivot.index, perm_pivot[col],
+                label=col, color=colors_pi[i % len(colors_pi)],
+                linewidth=1.4, marker="o", markersize=3,
+            )
+        ax_pi.axhline(1.0, color="black", linewidth=0.8, linestyle=":", alpha=0.5)
+        ax_pi.axvspan(2008, 2010.5, alpha=0.10, color="grey", label="_GR")
+        ax_pi.axvspan(2020, 2022.5, alpha=0.10, color="red",  label="_COVID")
+        ax_pi.set_title(
+            r"Permanence ratio $\pi_{j,y}$ = BDS exits / BED closings sum"
+            "\nby supersector and BDS year  (π ≈ 1 → all closings permanent; "
+            "π ↓ in 2021 → many COVID closings were temporary)",
+            fontsize=10,
+        )
+        ax_pi.set_xlabel("BDS year")
+        ax_pi.set_ylabel(r"$\pi_{j,y}$", fontsize=10)
+        ax_pi.set_ylim(0, 1.15)
+        ax_pi.legend(fontsize=7, framealpha=0.85, ncol=2,
+                     title="Supersector", title_fontsize=7)
+        ax_pi.grid(axis="y", linewidth=0.5, alpha=0.4)
+        fig_pi.tight_layout()
+        outpath_pi = DEFAULT_OUTPUT_DIR / "permanence_ratios_by_supersector.png"
+        DEFAULT_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+        fig_pi.savefig(outpath_pi, dpi=150)
+        plt.close(fig_pi)
+        print(f"\nPlot saved: {outpath_pi}")
+
+except ImportError:
+    print("\n(matplotlib not available -- skipping permanence ratio plot)")
+
+# -----------------------------------------------------------------------
+# Plot 2: LOO adjusted-closing rates over time, all supersectors
 # -----------------------------------------------------------------------
 try:
     import matplotlib.pyplot as plt
@@ -258,11 +377,11 @@ try:
     ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f"{x:.3f}"))
     ax.legend(
         loc            = "upper left",
-        fontsize       = 9,
+        fontsize       = 8,
         framealpha     = 0.85,
         ncol           = 2,
         title          = "Supersector",
-        title_fontsize = 9,
+        title_fontsize = 8,
     )
     ax.grid(axis="y", linewidth=0.5, alpha=0.4)
     fig.tight_layout()
@@ -270,7 +389,6 @@ try:
     outpath = DEFAULT_OUTPUT_DIR / "shock_rates_delta_by_supersector.png"
     DEFAULT_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     fig.savefig(outpath, dpi=150)
-    plt.show()
     plt.close(fig)
     print(f"\nPlot saved: {outpath}")
 

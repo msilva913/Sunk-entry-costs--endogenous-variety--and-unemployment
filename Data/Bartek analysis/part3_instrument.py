@@ -249,10 +249,8 @@ try:
 
     outpath = DEFAULT_OUTPUT_DIR / "instrument_delta_distribution.png"
     fig.savefig(outpath, dpi=150)
-    plt.show()
     plt.close(fig)
     print(f"\nPlot saved: {outpath}")
 
 except ImportError:
     print("\n(matplotlib not available -- skipping plot)")
-    
