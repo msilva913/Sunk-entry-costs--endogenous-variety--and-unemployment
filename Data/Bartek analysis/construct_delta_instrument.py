@@ -557,6 +557,12 @@ def fetch_bds_exits_national(
     y-1 and zero employment in March of year y, with no reopening for ≥4
     consecutive quarters — identical non-reopening criterion to BED 'deaths'.
 
+    The BDS column used is `job_destruction_deaths` — employment at permanently
+    exiting establishments (raw worker count, converted to thousands to match
+    BED API units).  BED `closings_nat` from the BLS API v1 is in thousands of
+    workers; BDS reports raw workers.  The /1000 conversion is applied when
+    reading the CSV so the π ratio is dimensionally consistent.
+
     Parameters
     ----------
     cache_dir  : Local directory for the cached parquet file.
@@ -574,7 +580,7 @@ def fetch_bds_exits_national(
     import time as _time
 
     cache_dir.mkdir(parents=True, exist_ok=True)
-    cache_file = cache_dir / "bds_exits_national_supersector.parquet"
+    cache_file = cache_dir / "bds_job_destruction_deaths_supersector.parquet"
 
     if cache_file.exists():
         print("  [BDS national] loading from cache")
@@ -587,15 +593,14 @@ def fetch_bds_exits_national(
         print(f"  [BDS national] reading from local file: {bds_file}")
         raw_csv = pd.read_csv(
             bds_file,
-            sep        = None,       # auto-detect tab vs comma
-            engine     = "python",
-            dtype      = str,
-            low_memory = False,
+            sep    = None,       # auto-detect tab vs comma
+            engine = "python",
+            dtype  = str,
         )
         # Normalise column names (lowercase, strip whitespace)
         raw_csv.columns = raw_csv.columns.str.strip().str.lower()
 
-        required = {"year", "sector", "estabs_exit"}
+        required = {"year", "sector", "job_destruction_deaths"}
         missing_cols = required - set(raw_csv.columns)
         if missing_cols:
             raise ValueError(
@@ -603,15 +608,20 @@ def fetch_bds_exits_national(
                 f"  Found columns: {list(raw_csv.columns)}"
             )
 
-        raw_csv = raw_csv[["year", "sector", "estabs_exit"]].copy()
-        raw_csv["year"]        = pd.to_numeric(raw_csv["year"],        errors="coerce")
-        raw_csv["estabs_exit"] = pd.to_numeric(raw_csv["estabs_exit"], errors="coerce")
-        raw_csv = raw_csv.dropna(subset=["year", "estabs_exit"])
-        raw_csv["year"]        = raw_csv["year"].astype(int)
-        raw_csv["estabs_exit"] = raw_csv["estabs_exit"].astype(int)
-        raw_csv["sector"]      = raw_csv["sector"].str.strip()
+        # job_destruction_deaths = employment at establishments that permanently
+        # exited (zero employment for 4+ consecutive quarters after March y).
+        # BDS reports this in RAW worker counts.
+        # BED closings_nat (from BLS API v1) is in THOUSANDS of workers.
+        # Divide BDS by 1000 to align units before computing the π ratio.
+        raw_csv = raw_csv[["year", "sector", "job_destruction_deaths"]].copy()
+        raw_csv["year"]                  = pd.to_numeric(raw_csv["year"],                  errors="coerce")
+        raw_csv["job_destruction_deaths"] = pd.to_numeric(raw_csv["job_destruction_deaths"], errors="coerce")
+        raw_csv = raw_csv.dropna(subset=["year", "job_destruction_deaths"])
+        raw_csv["year"]                  = raw_csv["year"].astype(int)
+        # Convert raw workers → thousands to match BED API units
+        raw_csv["job_destruction_deaths"] = raw_csv["job_destruction_deaths"] / 1000.0
+        raw_csv["sector"]                 = raw_csv["sector"].str.strip()
 
-        # Keep only the 18 NAICS sectors the pipeline uses
         raw_csv = raw_csv[raw_csv["sector"].isin(BDS_SECTORS)].copy()
         if raw_csv.empty:
             raise ValueError(
@@ -621,9 +631,9 @@ def fetch_bds_exits_national(
             )
 
         raw = raw_csv.rename(columns={
-            "year"       : "bds_year",
-            "sector"     : "naics_sector",
-            "estabs_exit": "bds_exits_raw",
+            "year"                  : "bds_year",
+            "sector"                : "naics_sector",
+            "job_destruction_deaths": "bds_exits_raw",
         })
 
     # ------------------------------------------------------------------ #
@@ -714,6 +724,11 @@ def fetch_bds_exits_national(
         .sort_values(["industry_code", "bds_year"])
         .reset_index(drop=True)
     )
+
+    # BDS job_destruction_deaths is in raw worker counts.
+    # BED closings_nat is in thousands of workers (BLS convention).
+    # Convert BDS to thousands so the π ratio is dimensionally consistent.
+    df["bds_exits"] = df["bds_exits"] / 1000.0
 
     n_years = df["bds_year"].nunique()
     n_ss    = df["industry_code"].nunique()

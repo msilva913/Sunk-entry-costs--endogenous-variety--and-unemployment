@@ -60,10 +60,6 @@ import pandas as pd
 import os
 from pathlib import Path
 
-try:
-    os.chdir(Path(__file__).resolve().parent)
-except NameError:
-    os.chdir(r"C:\Users\msilva913\Documents\GitHub\Sunk_entry_costs_endogenous_variety_unemployment\Data\Bartek analysis")
 
 from construct_delta_instrument import (
     BASE_YEAR,
@@ -304,101 +300,111 @@ except ImportError:
 # -----------------------------------------------------------------------
 # Plot 2: LOO adjusted-closing rates over time, all supersectors
 # -----------------------------------------------------------------------
-try:
-    import matplotlib.pyplot as plt
-    import matplotlib.ticker as mticker
+import matplotlib.pyplot as plt
+import matplotlib.ticker as mticker
+   
 
-    # Build national closing rate: closings_nat / emp_nat (no LOO).
-    # The LOO perturbation in the denominator is negligible for plotting
-    # purposes and the numerator is identical across states -- so the
-    # correct thing to show is the underlying national shock series.
-    _nat = (
-        bed_nat                          # fetched in the sanity-check block above
-        .merge(
-            shares[["industry_code", "emp_nat_ind"]]
-            .drop_duplicates("industry_code"),
-            on="industry_code",
-        )
-        .assign(g_nat=lambda d: d["closings_nat"] / d["emp_nat_ind"] * 1000)
+# Build national closing rate: closings_nat / emp_nat (no LOO).
+# The LOO perturbation in the denominator is negligible for plotting
+# purposes and the numerator is identical across states -- so the
+# correct thing to show is the underlying national shock series.
+_nat = (
+    bed_nat                          # fetched in the sanity-check block above
+    .merge(
+        shares[["industry_code", "emp_nat_ind"]]
+        .drop_duplicates("industry_code"),
+        on="industry_code",
     )
-    _pivot = (
-        _nat
-        .pivot(index="quarter_label", columns="industry_code", values="g_nat")
-        .rename(columns=INDUSTRY_LABELS)
-        .sort_index()
-    )
-    # Reindex to a complete quarterly grid so matplotlib shows gaps as breaks
-    # rather than drawing misleading straight lines across missing quarters.
-    all_quarters = pd.period_range(
-        start=_pivot.index[0], end=_pivot.index[-1], freq="Q"
-    ).strftime("%YQ%q").tolist()
-    plot_data = _pivot.reindex(all_quarters)
+    .assign(g_nat=lambda d: d["closings_nat"] / d["emp_nat_ind"] * 1000)
+)
+_pivot = (
+    _nat
+    .pivot(index="quarter_label", columns="industry_code", values="g_nat")
+    .rename(columns=INDUSTRY_LABELS)
+    .sort_index()
+)
+# Reindex to a complete quarterly grid so matplotlib shows gaps as breaks
+# rather than drawing misleading straight lines across missing quarters.
+all_quarters = pd.period_range(
+    start=_pivot.index[0], end=_pivot.index[-1], freq="Q"
+).strftime("%YQ%q").tolist()
+plot_data = _pivot.reindex(all_quarters)
 
-    # Parse quarter_label to datetime for a clean x-axis
-    def _ql_to_dt(ql):
-        import pandas as pd
-        y, q = ql.split("Q")
-        return pd.Timestamp(year=int(y), month=int(q) * 3 - 2, day=1)
+# Parse quarter_label to datetime for a clean x-axis
+def _ql_to_dt(ql):
+    import pandas as pd
+    y, q = ql.split("Q")
+    return pd.Timestamp(year=int(y), month=int(q) * 3 - 2, day=1)
 
-    plot_data.index = [_ql_to_dt(q) for q in plot_data.index]
+plot_data.index = [_ql_to_dt(q) for q in plot_data.index]
 
-    # Color palette: 10 visually distinct colors
-    colors = [
-        "#1f77b4", "#d62728", "#2ca02c", "#ff7f0e", "#9467bd",
-        "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf",
-    ]
-    # Line styles: solid for top-5 by mean, dashed for bottom-5
-    mean_rank = plot_data.mean().sort_values(ascending=False)
-    top5      = set(mean_rank.index[:5])
+# Color palette: 10 visually distinct colors
+colors = [
+    "#1f77b4", "#d62728", "#2ca02c", "#ff7f0e", "#9467bd",
+    "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf",
+]
+# Line styles: solid for top-5 by mean, dashed for bottom-5
+mean_rank = plot_data.mean().sort_values(ascending=False)
+top5      = set(mean_rank.index[:5])
 
-    fig, ax = plt.subplots(figsize=(13, 6))
+fig, ax = plt.subplots(figsize=(13, 6))
 
-    for i, col in enumerate(mean_rank.index):
-        ls = "-" if col in top5 else "--"
-        lw = 1.6 if col in top5 else 1.2
-        ax.plot(
-            plot_data.index,
-            plot_data[col],
-            label     = col,
-            color     = colors[i % len(colors)],
-            linestyle = ls,
-            linewidth = lw,
-        )
-
-    # Recession shading: GR and COVID
-    ax.axvspan(
-        pd.Timestamp("2007-12-01"), pd.Timestamp("2009-06-01"),
-        alpha=0.10, color="grey", label="_GR"
-    )
-    ax.axvspan(
-        pd.Timestamp("2020-01-01"), pd.Timestamp("2020-07-01"),
-        alpha=0.10, color="red", label="_COVID"
+for i, col in enumerate(mean_rank.index):
+    ls = "-" if col in top5 else "--"
+    lw = 1.6 if col in top5 else 1.2
+    ax.plot(
+        plot_data.index,
+        plot_data[col],
+        label     = col,
+        color     = colors[i % len(colors)],
+        linestyle = ls,
+        linewidth = lw,
     )
 
-    ax.set_title(
-        "National establishment closing rates by supersector\n"
-        "(quarterly, per 1 000 base workers)",
-        fontsize=12,
-    )
-    ax.set_xlabel("")
-    ax.set_ylabel("Closing rate (×1 000)", fontsize=10)
-    ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f"{x:.3f}"))
-    ax.legend(
-        loc            = "upper left",
-        fontsize       = 8,
-        framealpha     = 0.85,
-        ncol           = 2,
-        title          = "Supersector",
-        title_fontsize = 8,
-    )
-    ax.grid(axis="y", linewidth=0.5, alpha=0.4)
-    fig.tight_layout()
+# Recession shading: GR and COVID
+ax.axvspan(
+    pd.Timestamp("2007-12-01"), pd.Timestamp("2009-06-01"),
+    alpha=0.10, color="grey", label="_GR"
+)
+ax.axvspan(
+    pd.Timestamp("2020-01-01"), pd.Timestamp("2020-07-01"),
+    alpha=0.10, color="red", label="_COVID"
+)
 
-    outpath = DEFAULT_OUTPUT_DIR / "shock_rates_delta_by_supersector.png"
-    DEFAULT_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    fig.savefig(outpath, dpi=150)
-    plt.close(fig)
-    print(f"\nPlot saved: {outpath}")
+ax.set_title(
+    "National establishment closing rates by supersector\n"
+    "(quarterly, per 1 000 base workers)",
+    fontsize=12,
+)
+ax.set_xlabel("")
+ax.set_ylabel("Closing rate (×1 000)", fontsize=10)
+ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f"{x:.3f}"))
+ax.legend(
+    loc            = "upper left",
+    fontsize       = 8,
+    framealpha     = 0.85,
+    ncol           = 2,
+    title          = "Supersector",
+    title_fontsize = 8,
+)
+ax.grid(axis="y", linewidth=0.5, alpha=0.4)
+fig.tight_layout()
+plt.show()
+outpath = DEFAULT_OUTPUT_DIR / "shock_rates_delta_by_supersector.png"
+DEFAULT_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+fig.savefig(outpath, dpi=150)
+plt.close(fig)
+print(f"\nPlot saved: {outpath}")
 
-except ImportError:
-    print("\n(matplotlib not available -- skipping plot)")
+# Permanence ratios by industry 
+# Load 
+pi = pd.read_parquet("data/instruments/permanence_ratios_by_supersector.parquet")
+print(pi.pivot(index="bds_year", columns="industry_code", values="pi").round(3).to_string())
+
+pivot = pi.pivot(index="bds_year", columns="industry_code", values="pi")
+pivot.columns = [INDUSTRY_LABELS[c] for c in pivot.columns]
+pivot.plot(figsize=(14, 5), title="Permanence ratios π_{j,y} by industry")
+plt.axhline(1.0, color="black", linewidth=0.8, linestyle="--")
+plt.ylabel("π  (fraction of BED closings that are permanent exits)")
+plt.tight_layout()
+plt.show()

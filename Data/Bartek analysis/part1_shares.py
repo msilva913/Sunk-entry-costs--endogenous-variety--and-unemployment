@@ -26,8 +26,7 @@ Run
 
 import pandas as pd
 import os      
-#os.chdir(r"C:\Users\msilva913\Documents\GitHub\Sunk_entry_costs_endogenous_variety_unemployment\Data\Bartek analysis"
-#)
+import seaborn as sns
 from pathlib import Path
 try:
     BASE_DIR = Path(__file__).resolve().parent
@@ -119,7 +118,7 @@ g = sns.clustermap(grid.T, cmap="viridis", figsize=(22, 6),
 g.ax_heatmap.set_xlabel("State")
 g.ax_heatmap.set_ylabel("Industry")
 #plt.show()
-shares
-
+grid
+grid.to_csv(DEFAULT_OUTPUT_DIR/f"shares_base_2006.csv")
 
 
