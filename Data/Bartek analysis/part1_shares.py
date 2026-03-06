@@ -26,8 +26,17 @@ Run
 
 import pandas as pd
 import os      
-os.chdir(r"C:\Users\msilva913\Documents\GitHub\Sunk_entry_costs_endogenous_variety_unemployment\Data\Bartek analysis"
-)
+#os.chdir(r"C:\Users\msilva913\Documents\GitHub\Sunk_entry_costs_endogenous_variety_unemployment\Data\Bartek analysis"
+#)
+from pathlib import Path
+try:
+    BASE_DIR = Path(__file__).resolve().parent
+except NameError:
+    BASE_DIR = Path.cwd()   # whatever directory VS Code opened
+
+DEFAULT_CACHE_DIR  = BASE_DIR / "data" / "cache"
+DEFAULT_OUTPUT_DIR = BASE_DIR / "data" / "instruments"
+BDS_FILE = BASE_DIR / "data" / "raw" / "bds2023_sec_nat.csv"
 
 from construct_delta_instrument import (
     BASE_YEAR,
@@ -109,4 +118,8 @@ g = sns.clustermap(grid.T, cmap="viridis", figsize=(22, 6),
                    dendrogram_ratio=0.1)
 g.ax_heatmap.set_xlabel("State")
 g.ax_heatmap.set_ylabel("Industry")
-plt.show()
+#plt.show()
+shares
+
+
+

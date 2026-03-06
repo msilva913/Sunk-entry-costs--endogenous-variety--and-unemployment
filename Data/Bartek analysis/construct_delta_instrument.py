@@ -158,17 +158,21 @@ QCEW_TO_INDUSTRY_CODE = {
 QCEW_SUPERSECTOR_CODES = list(QCEW_TO_INDUSTRY_CODE.keys())  # 9 non-TTU codes
 
 # agglvl=54: NAICS sector industry_code strings → pipeline codes.
-# At agglvl=54 QCEW pre-combines NAICS 44 and 45 into a single "44-45" row,
-# and NAICS 48 and 49 into a single "48-49" row — matching BDS conventions.
-# There is therefore no within-pipeline summing required for Retail or
-# Transport/Warehousing; each maps 1-to-1 to its pipeline code.
+# In the QCEW annual bulk CSV at agglvl=54 each 2-digit NAICS sector
+# appears as its own row.  Retail (44, 45) and Transport/WH (48, 49)
+# are NOT pre-combined: they appear as four separate rows.
+# The groupby in fetch_qcew_annual sums 44+45 → "42" and 48+49+22 → "43".
+# (The QCEW industry reference catalog shows "44-45" and "48-49" as
+# combined labels, but those are display names — not the actual CSV values.)
 QCEW_TTU_TO_INDUSTRY_CODE = {
-    "42":    "41",   # Wholesale trade
-    "44-45": "42",   # Retail trade (combined NAICS 44+45)
-    "48-49": "43",   # Transportation & warehousing (combined NAICS 48+49)
-    "22":    "43",   # Utilities → Transport/WH/Util
+    "42":   "41",   # Wholesale trade
+    "44":   "42",   # Retail trade pt 1 (NAICS 44)
+    "45":   "42",   # Retail trade pt 2 (NAICS 45)
+    "48":   "43",   # Transportation (NAICS 48)
+    "49":   "43",   # Warehousing (NAICS 49)
+    "22":   "43",   # Utilities (NAICS 22)
 }
-QCEW_TTU_NAICS_CODES = list(QCEW_TTU_TO_INDUSTRY_CODE.keys())  # 4 codes
+QCEW_TTU_NAICS_CODES = list(QCEW_TTU_TO_INDUSTRY_CODE.keys())  # 6 codes
 
 INDUSTRY_LABELS = {
     "10": "Mining",
@@ -527,36 +531,38 @@ def _quarter_to_bds_year(quarter_label: str) -> int:
 
 
 def fetch_bds_exits_national(
-    cache_dir   : Path = DEFAULT_CACHE_DIR,
-    census_key  : str  = "",
+    cache_dir   : Path  = DEFAULT_CACHE_DIR,
+    census_key  : str   = "",
+    bds_file    : Path  = None,
 ) -> pd.DataFrame:
     """
-    Fetch annual establishment exit counts by NAICS sector (national) from
-    the Census Bureau Business Dynamics Statistics (BDS) API.
+    Load annual establishment exit counts by NAICS sector (national) from
+    the Census Bureau Business Dynamics Statistics (BDS).
 
-    BDS defines an establishment exit as a unit with positive employment in
-    March of year y-1 and zero employment in March of year y, with no
-    reopening for four or more consecutive quarters.  This is the same
-    non-reopening criterion used for BED 'deaths' (establishments closed
-    ≥ 4 consecutive quarters), applied at annual frequency.
+    Two source modes
+    ----------------
+    1. Local CSV file (preferred, no API key required):
+       Pass bds_file = Path("path/to/bds2023_sec_nat.csv") or equivalent.
+       Download once from:
+         https://www.census.gov/data/datasets/time-series/econ/bds/bds-datasets.html
+       Choose National → Sector table.  Expected columns (tab-separated):
+         year, sector, estabs_exit  (plus other columns which are ignored).
 
-    API endpoint
-    ------------
-    https://api.census.gov/data/timeseries/bds
-        ?get=YEAR,ESTABS_EXIT
-        &for=us:1
-        &SECTOR={sector}
-        [&key={census_key}]
+    2. Census BDS API (fallback, requires internet):
+       Called automatically if bds_file is None or not found.
+       Optional census_key raises the rate limit from 500 to unlimited calls/day.
+       Register free at https://api.census.gov/data/key_signup.html.
 
-    Returns all available years in a single call per sector.  18 sector
-    codes × 1 call each = 18 requests total; results are cached.
+    BDS exit definition: establishment with positive March employment in year
+    y-1 and zero employment in March of year y, with no reopening for ≥4
+    consecutive quarters — identical non-reopening criterion to BED 'deaths'.
 
     Parameters
     ----------
     cache_dir  : Local directory for the cached parquet file.
-    census_key : Optional Census API key.  Without a key BDS requests are
-                 capped at 500/day per IP; register free at
-                 https://api.census.gov/data/key_signup.html.
+    census_key : Optional Census API key (only used in API mode).
+    bds_file   : Path to a locally downloaded BDS national-by-sector CSV.
+                 If supplied and the file exists, the API is never called.
 
     Returns
     -------
@@ -574,77 +580,126 @@ def fetch_bds_exits_national(
         print("  [BDS national] loading from cache")
         return pd.read_parquet(cache_file)
 
-    print(
-        f"  [BDS national] fetching {len(BDS_SECTORS)} NAICS sectors "
-        f"from Census BDS API ..."
-    )
-    if not census_key:
-        print(
-            "    NOTE: no Census API key supplied.  Calls are rate-limited "
-            "to 500/day.  Register free at https://api.census.gov/data/key_signup.html"
+    # ------------------------------------------------------------------ #
+    # MODE 1: local CSV                                                    #
+    # ------------------------------------------------------------------ #
+    if bds_file is not None and Path(bds_file).exists():
+        print(f"  [BDS national] reading from local file: {bds_file}")
+        raw_csv = pd.read_csv(
+            bds_file,
+            sep        = None,       # auto-detect tab vs comma
+            engine     = "python",
+            dtype      = str,
+            low_memory = False,
         )
+        # Normalise column names (lowercase, strip whitespace)
+        raw_csv.columns = raw_csv.columns.str.strip().str.lower()
 
-    raw_rows = []
-    for i, sector in enumerate(BDS_SECTORS):
-        params = {
-            "get"   : "YEAR,ESTABS_EXIT",
-            "for"   : "us:1",
-            "SECTOR": sector,
-        }
-        if census_key:
-            params["key"] = census_key
-
-        try:
-            resp = requests.get(BDS_API_URL, params=params, timeout=30)
-            resp.raise_for_status()
-            data = resp.json()
-        except Exception as exc:
-            raise RuntimeError(
-                f"BDS API call failed for SECTOR={sector}: {exc}\n"
-                f"  URL tried: {resp.url if 'resp' in dir() else 'N/A'}"
-            ) from exc
-
-        # Response: [[headers], [row1], [row2], ...]
-        if not data or len(data) < 2:
+        required = {"year", "sector", "estabs_exit"}
+        missing_cols = required - set(raw_csv.columns)
+        if missing_cols:
             raise ValueError(
-                f"BDS API returned empty data for SECTOR={sector}.\n"
-                f"  Response: {data}"
+                f"BDS CSV is missing expected columns: {missing_cols}\n"
+                f"  Found columns: {list(raw_csv.columns)}"
             )
-        headers = data[0]
-        try:
-            year_col  = headers.index("YEAR")
-            exits_col = headers.index("ESTABS_EXIT")
-        except ValueError as exc:
+
+        raw_csv = raw_csv[["year", "sector", "estabs_exit"]].copy()
+        raw_csv["year"]        = pd.to_numeric(raw_csv["year"],        errors="coerce")
+        raw_csv["estabs_exit"] = pd.to_numeric(raw_csv["estabs_exit"], errors="coerce")
+        raw_csv = raw_csv.dropna(subset=["year", "estabs_exit"])
+        raw_csv["year"]        = raw_csv["year"].astype(int)
+        raw_csv["estabs_exit"] = raw_csv["estabs_exit"].astype(int)
+        raw_csv["sector"]      = raw_csv["sector"].str.strip()
+
+        # Keep only the 18 NAICS sectors the pipeline uses
+        raw_csv = raw_csv[raw_csv["sector"].isin(BDS_SECTORS)].copy()
+        if raw_csv.empty:
             raise ValueError(
-                f"Unexpected BDS column names for SECTOR={sector}: "
-                f"{headers}"
-            ) from exc
+                f"No matching rows after filtering BDS CSV to pipeline sectors.\n"
+                f"  Expected sectors: {BDS_SECTORS}\n"
+                f"  Sectors found in file: {raw_csv['sector'].unique().tolist()}"
+            )
 
-        for row in data[1:]:
-            try:
-                yr  = int(row[year_col])
-                ex  = int(row[exits_col]) if row[exits_col] not in (None, "N", "") else None
-            except (ValueError, TypeError):
-                continue
-            if ex is None:
-                continue
-            raw_rows.append({
-                "bds_year"      : yr,
-                "naics_sector"  : sector,
-                "bds_exits_raw" : ex,
-            })
+        raw = raw_csv.rename(columns={
+            "year"       : "bds_year",
+            "sector"     : "naics_sector",
+            "estabs_exit": "bds_exits_raw",
+        })
 
-        # Brief pause between calls to avoid hitting rate limit
-        if i < len(BDS_SECTORS) - 1:
-            _time.sleep(0.3)
-
-    if not raw_rows:
-        raise ValueError(
-            "BDS API returned no exit counts across all sectors.\n"
-            "  Check Census API availability and sector codes."
+    # ------------------------------------------------------------------ #
+    # MODE 2: Census BDS API                                               #
+    # ------------------------------------------------------------------ #
+    else:
+        if bds_file is not None:
+            print(f"  [BDS national] WARNING: bds_file not found at {bds_file} — falling back to API")
+        print(
+            f"  [BDS national] fetching {len(BDS_SECTORS)} NAICS sectors "
+            f"from Census BDS API ..."
         )
+        if not census_key:
+            print(
+                "    NOTE: no Census API key supplied.  Calls are rate-limited "
+                "to 500/day.  Register free at https://api.census.gov/data/key_signup.html"
+            )
 
-    raw = pd.DataFrame(raw_rows)
+        raw_rows = []
+        for i, sector in enumerate(BDS_SECTORS):
+            params = {
+                "get"   : "YEAR,ESTABS_EXIT",
+                "for"   : "us:*",
+                "SECTOR": sector,
+            }
+            if census_key:
+                params["key"] = census_key
+
+            try:
+                resp = requests.get(BDS_API_URL, params=params, timeout=30)
+                resp.raise_for_status()
+                data = resp.json()
+            except Exception as exc:
+                raise RuntimeError(
+                    f"BDS API call failed for SECTOR={sector}: {exc}\n"
+                    f"  URL tried: {resp.url if 'resp' in dir() else 'N/A'}"
+                ) from exc
+
+            if not data or len(data) < 2:
+                raise ValueError(
+                    f"BDS API returned empty data for SECTOR={sector}.\n"
+                    f"  Response: {data}"
+                )
+            headers = data[0]
+            try:
+                year_col  = headers.index("YEAR")
+                exits_col = headers.index("ESTABS_EXIT")
+            except ValueError as exc:
+                raise ValueError(
+                    f"Unexpected BDS column names for SECTOR={sector}: {headers}"
+                ) from exc
+
+            for row in data[1:]:
+                try:
+                    yr = int(row[year_col])
+                    ex = int(row[exits_col]) if row[exits_col] not in (None, "N", "") else None
+                except (ValueError, TypeError):
+                    continue
+                if ex is None:
+                    continue
+                raw_rows.append({
+                    "bds_year"      : yr,
+                    "naics_sector"  : sector,
+                    "bds_exits_raw" : ex,
+                })
+
+            if i < len(BDS_SECTORS) - 1:
+                _time.sleep(0.3)
+
+        if not raw_rows:
+            raise ValueError(
+                "BDS API returned no exit counts across all sectors.\n"
+                "  Check Census API availability and sector codes."
+            )
+
+        raw = pd.DataFrame(raw_rows)
 
     # Map NAICS sectors to pipeline supersector codes and aggregate
     raw["industry_code"] = raw["naics_sector"].map(BDS_SECTOR_TO_INDUSTRY)
@@ -941,9 +996,9 @@ def fetch_qcew_annual(
             f"  agglvl sample:    {raw.get('agglvl_code', pd.Series()).unique()[:10]}"
         )
 
-    # Groupby sums "22" (Utilities) and "48-49" (Transport/WH) into "43".
-    # All other pipeline codes have exactly one source row per state and
-    # are passed through unchanged by the sum.
+    # Groupby sums: NAICS 44+45 → pipeline "42" (Retail),
+    # NAICS 48+49+22 → pipeline "43" (Transport/WH/Util).
+    # Wholesale ("41") passes through as a single row.
     df = (
         df.groupby(["area_fips", "industry_code"])["annual_avg_emplvl"]
         .sum().reset_index()
@@ -1191,6 +1246,7 @@ def build_delta_instrument(
     save_output   : bool = True,
     output_dir    : Path = DEFAULT_OUTPUT_DIR,
     census_key    : str  = "",
+    bds_file      : Path = None,
 ) -> pd.DataFrame:
     """
     End-to-end construction of the permanence-adjusted delta Bartik instrument.
@@ -1251,7 +1307,9 @@ def build_delta_instrument(
     )
 
     print(f"\n[BDS] fetching annual exits ...")
-    bds_exits = fetch_bds_exits_national(cache_dir, census_key=census_key)
+    bds_exits = fetch_bds_exits_national(
+        cache_dir, census_key=census_key, bds_file=bds_file
+    )
 
     print(f"\n[π] computing permanence ratios ...")
     perm_ratios = compute_permanence_ratios(bed_raw, bds_exits)
@@ -1306,6 +1364,7 @@ def build_national_shock_rates(
     save_output   : bool = True,
     output_dir    : Path = DEFAULT_OUTPUT_DIR,
     census_key    : str  = "",
+    bds_file      : Path = None,
 ) -> pd.DataFrame:
     """
     Fetch BED national closings, apply the BDS/BED permanence calibration,
@@ -1348,7 +1407,11 @@ def build_national_shock_rates(
     cache_dir     : Directory for caching BED and BDS downloads.
     save_output   : Write shock rates to parquet in output_dir.
     output_dir    : Directory for the output parquet.
-    census_key    : Optional Census API key for BDS fetch.
+    census_key    : Optional Census API key for BDS fetch (API mode only).
+    bds_file      : Path to locally downloaded BDS national-by-sector CSV.
+                    If supplied and the file exists, the Census API is not
+                    called.  Download from:
+                    https://www.census.gov/data/datasets/time-series/econ/bds/bds-datasets.html
 
     Returns
     -------
@@ -1372,7 +1435,9 @@ def build_national_shock_rates(
     # Step 2: Fetch BDS annual exits by NAICS sector
     # ------------------------------------------------------------------
     print(f"\n[BDS] fetching annual exits by NAICS sector ...")
-    bds_exits = fetch_bds_exits_national(cache_dir, census_key=census_key)
+    bds_exits = fetch_bds_exits_national(
+        cache_dir, census_key=census_key, bds_file=bds_file
+    )
 
     # ------------------------------------------------------------------
     # Step 3: Compute permanence ratios π_{j,y}

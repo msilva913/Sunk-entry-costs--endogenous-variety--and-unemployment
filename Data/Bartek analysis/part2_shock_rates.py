@@ -85,8 +85,14 @@ from construct_delta_instrument import (
 
 # Optional Census API key — set CENSUS_API_KEY env var or edit here
 import os
-# from api.census.gov/data/key_signup.html
-CENSUS_KEY = os.environ.get("CENSUS_API_KEY", "3440fc7532853f1bf58b784f2b598a6817f9c9e7")
+CENSUS_KEY = os.environ.get("CENSUS_API_KEY", "")
+
+# Path to locally downloaded BDS national-by-sector CSV (preferred).
+# Download once from:
+#   https://www.census.gov/data/datasets/time-series/econ/bds/bds-datasets.html
+#   → National → Sector table  (e.g. bds2023_sec_nat.csv)
+# Set to None to fall back to the Census API instead.
+BDS_FILE = Path("data/raw/bds2023_sec_nat.csv")   # edit filename as needed
 
 # -----------------------------------------------------------------------
 # Load Part 1 output
@@ -110,6 +116,7 @@ shock_rates = build_national_shock_rates(
     save_output   = True,
     output_dir    = DEFAULT_OUTPUT_DIR,
     census_key    = CENSUS_KEY,
+    bds_file      = BDS_FILE,
 )
 
 # -----------------------------------------------------------------------
