@@ -232,7 +232,13 @@ BED_TTU_MAP = {
 # BDS proxy for Mining, since logging is a negligible share and cannot be
 # cleanly extracted from NAICS 11.
 BDS_SECTOR_TO_INDUSTRY = {
-    "21":    "10",   # Mining (approx. Mining & logging)
+    "11":    "10",   # Agriculture, forestry, fishing & hunting → Natural resources & mining
+    "21":    "10",   # Mining, quarrying, oil & gas extraction  → Natural resources & mining
+    # BED pipeline "10" = "Natural resources and mining" supersector,
+    # which covers both NAICS 11 and NAICS 21.  Both must be included here
+    # so that the BDS numerator and BED denominator are measured over the
+    # same industry scope.  Omitting NAICS 11 causes π ≈ 0.15 for Mining
+    # (BED denominator ~3-4× too large relative to BDS numerator).
     "23":    "20",   # Construction
     "31-33": "30",   # Manufacturing
     "42":    "41",   # Wholesale trade
@@ -240,15 +246,15 @@ BDS_SECTOR_TO_INDUSTRY = {
     "48-49": "43",   # Transportation & warehousing → Transport/WH/Util
     "22":    "43",   # Utilities                    → Transport/WH/Util
     "51":    "50",   # Information
-    "52":    "55",   # Finance & insurance → Financial activities
-    "53":    "55",   # Real estate & rental → Financial activities
+    "52":    "55",   # Finance & insurance           → Financial activities
+    "53":    "55",   # Real estate & rental          → Financial activities
     "54":    "60",   # Professional & technical svcs → Prof & business svcs
-    "55":    "60",   # Management of companies → Prof & business svcs
-    "56":    "60",   # Admin & support → Prof & business svcs
-    "61":    "65",   # Educational services → Education & health
+    "55":    "60",   # Management of companies       → Prof & business svcs
+    "56":    "60",   # Admin & support               → Prof & business svcs
+    "61":    "65",   # Educational services          → Education & health
     "62":    "65",   # Health care & social assistance → Education & health
     "71":    "70",   # Arts, entertainment & recreation → Leisure & hospitality
-    "72":    "70",   # Accommodation & food services → Leisure & hospitality
+    "72":    "70",   # Accommodation & food services  → Leisure & hospitality
     "81":    "80",   # Other services
 }
 BDS_SECTORS   = list(BDS_SECTOR_TO_INDUSTRY.keys())  # 18 NAICS sectors
@@ -724,11 +730,6 @@ def fetch_bds_exits_national(
         .sort_values(["industry_code", "bds_year"])
         .reset_index(drop=True)
     )
-
-    # BDS job_destruction_deaths is in raw worker counts.
-    # BED closings_nat is in thousands of workers (BLS convention).
-    # Convert BDS to thousands so the π ratio is dimensionally consistent.
-    df["bds_exits"] = df["bds_exits"] / 1000.0
 
     n_years = df["bds_year"].nunique()
     n_ss    = df["industry_code"].nunique()
