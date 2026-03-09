@@ -35,7 +35,7 @@ import sys
 import os
 import numpy as np
 import pandas as pd
-import matplotlib 
+import matplotlib
 matplotlib.use("Agg")   # non-interactive backend — avoids all crash issues
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
@@ -83,6 +83,14 @@ print("\n[Bartik] aggregating B^delta_{s,t} ...")
 instrument = build_bartik_instrument(shares, shock_rates)
 
 # -----------------------------------------------------------------------
+# Rescale to quarterly rates (pure dimensionless fractions)
+# BED closings and JOLTS separations are in thousands of workers;
+# QCEW emp_nat_ind is in raw worker counts → multiply by 1000 to correct.
+# Resulting units: quarterly rate as fraction of base-year employment.
+# -----------------------------------------------------------------------
+instrument["bartik_delta"] = instrument["bartik_delta"] * 1000
+
+# -----------------------------------------------------------------------
 # Save
 # -----------------------------------------------------------------------
 DEFAULT_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -112,13 +120,12 @@ else:
     print(low_weight.to_string(index=False))
 
 # Cross-state distribution over time
-print("\n--- Cross-state distribution by quarter (×1 000) ---")
+print("\n--- Cross-state distribution by quarter (quarterly rate) ---")
 summary = (
     instrument
     .groupby("quarter_label")["bartik_delta"]
     .agg(["mean", "std", "min", "max"])
-    .mul(1000)
-    .round(4)
+    .round(6)
 )
 with pd.option_context("display.max_rows", 200):
     print(summary.to_string())
@@ -127,7 +134,7 @@ with pd.option_context("display.max_rows", 200):
 std_series   = summary["std"]
 peak_quarter = std_series.idxmax()
 print(f"\nPeak cross-state dispersion: {peak_quarter}  "
-      f"(std = {std_series[peak_quarter]:.4f} ×10⁻³)")
+      f"(std = {std_series[peak_quarter]:.6f})")
 print("(Great Recession instrument should peak around 2008Q4–2009Q2.)")
 
 # State ranking at peak
@@ -135,9 +142,9 @@ print(f"\n--- State ranking at {peak_quarter} ---")
 peak_df = (
     instrument
     .query("quarter_label == @peak_quarter")
-    .assign(bartik_x1000 = lambda d: d["bartik_delta"].mul(1000).round(4))
+    .assign(bartik_delta = lambda d: d["bartik_delta"].round(6))
     .sort_values("bartik_delta", ascending=False)
-    [["state", "bartik_x1000", "weight_sum", "n_supersectors"]]
+    [["state", "bartik_delta", "weight_sum", "n_supersectors"]]
 )
 print(peak_df.to_string(index=False))
 
@@ -160,7 +167,6 @@ dist = (
         p75   = lambda x: np.percentile(x, 75),
         p90   = lambda x: np.percentile(x, 90),
     )
-    .mul(1000)
     .sort_index()
 )
 # Reindex to complete quarterly grid so gaps render as breaks
@@ -175,18 +181,16 @@ peak_q = summary["std"].idxmax()
 peak_vals = (
     instrument
     .query("quarter_label == @peak_q")
-    .assign(b1000=lambda d: d["bartik_delta"] * 1000)
-    .sort_values("b1000")
+    .sort_values("bartik_delta")
 )
-state_lo = peak_vals.iloc[0][["state", "b1000"]]
-state_hi = peak_vals.iloc[-1][["state", "b1000"]]
+state_lo = peak_vals.iloc[0][["state", "bartik_delta"]]
+state_hi = peak_vals.iloc[-1][["state", "bartik_delta"]]
 
 # State time series for the two extreme states
 def _state_series(abbrev):
     s = (
         instrument[instrument["state"] == abbrev]
         .set_index("quarter_label")["bartik_delta"]
-        .mul(1000)
         .reindex(all_q)
     )
     dates_s = [_ql_to_dt(q) for q in s.index]
@@ -229,11 +233,11 @@ ax.axvspan(pd.Timestamp("2020-01-01"), pd.Timestamp("2020-07-01"),
 
 ax.set_title(
     r"Bartik $\delta$-instrument $B^\delta_{s,t}$: cross-state distribution over time"
-    "\n(quarterly, ×1 000 base workers; base year 2006)",
+    "\n(quarterly rate; base year 2006)",
     fontsize=11,
 )
-ax.set_ylabel(r"$B^\delta_{s,t}$ (×1 000)", fontsize=10)
-ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f"{x:.3f}"))
+ax.set_ylabel(r"$B^\delta_{s,t}$ (quarterly rate)", fontsize=10)
+ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f"{x:.4f}"))
 ax.legend(fontsize=8, framealpha=0.85, ncol=2)
 ax.grid(axis="y", linewidth=0.5, alpha=0.4)
 fig.tight_layout()

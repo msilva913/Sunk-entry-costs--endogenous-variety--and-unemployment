@@ -269,3 +269,5 @@ fig.savefig(outpath, dpi=150)
 plt.close(fig)
 _open_file(outpath)
 print(f"\nPlot saved: {outpath}")
+
+print(jolts_nat["quarter_label"].min(), jolts_nat["quarter_label"].max())

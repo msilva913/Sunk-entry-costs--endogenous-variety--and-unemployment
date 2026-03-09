@@ -96,6 +96,14 @@ print("\n[Bartik] aggregating B^s_{s,t} ...")
 instrument = build_bartik_instrument_s(shares, shock_rates_s)
 
 # -----------------------------------------------------------------------
+# Rescale to quarterly rates (pure dimensionless fractions)
+# JOLTS separations are in thousands of workers; QCEW emp_nat_ind is in
+# raw worker counts → multiply by 1000 to correct.
+# Resulting units: quarterly rate as fraction of base-year employment.
+# -----------------------------------------------------------------------
+instrument["bartik_s"] = instrument["bartik_s"] * 1000
+
+# -----------------------------------------------------------------------
 # Save
 # -----------------------------------------------------------------------
 DEFAULT_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -129,13 +137,12 @@ else:
 # -----------------------------------------------------------------------
 # Cross-state distribution over time
 # -----------------------------------------------------------------------
-print("\n--- Cross-state distribution by quarter (x1 000) ---")
+print("\n--- Cross-state distribution by quarter (quarterly rate) ---")
 summary = (
     instrument
     .groupby("quarter_label")["bartik_s"]
     .agg(["mean", "std", "min", "max"])
-    .mul(1000)
-    .round(4)
+    .round(6)
 )
 with pd.option_context("display.max_rows", 200):
     print(summary.to_string())
@@ -146,7 +153,7 @@ with pd.option_context("display.max_rows", 200):
 std_series   = summary["std"]
 peak_quarter = std_series.idxmax()
 print(f"\nPeak cross-state dispersion: {peak_quarter}  "
-      f"(std = {std_series[peak_quarter]:.4f} x10^-3)")
+      f"(std = {std_series[peak_quarter]:.6f})")
 print("(Expect 2009 or 2020 given Great Recession and COVID separation spikes."
       "  Note: with total separations (TS) instead of layoffs (LD), the"
       "  COVID spike may be attenuated since quits collapsed in 2020Q2.)")
@@ -155,9 +162,9 @@ print(f"\n--- State ranking at {peak_quarter} ---")
 peak_df = (
     instrument
     .query("quarter_label == @peak_quarter")
-    .assign(bartik_x1000 = lambda d: d["bartik_s"].mul(1000).round(4))
+    .assign(bartik_s = lambda d: d["bartik_s"].round(6))
     .sort_values("bartik_s", ascending=False)
-    [["state", "bartik_x1000", "weight_sum", "n_supersectors"]]
+    [["state", "bartik_s", "weight_sum", "n_supersectors"]]
 )
 print(peak_df.to_string(index=False))
 
@@ -214,7 +221,6 @@ else:
                 p75  = lambda x: np.percentile(x, 75),
                 p90  = lambda x: np.percentile(x, 90),
             )
-            .mul(1000)
             .sort_index()
         )
         all_q = pd.period_range(
@@ -235,7 +241,6 @@ else:
         s = (
             df[df["state"] == abbrev]
             .set_index("quarter_label")[col]
-            .mul(1000)
             .reindex(all_q)
         )
         return [_ql_to_dt(q) for q in s.index], s.values
@@ -260,14 +265,14 @@ else:
             lo_d, hi_d, peak_d,
             r"$\delta$-instrument  $B^\delta_{s,t}$"
             "\n(BED establishment closings)",
-            r"$B^\delta_{s,t}$ (×1 000)",
+            r"$B^\delta_{s,t}$ (quarterly rate)",
         ),
         (
             axes[1], dist_s, COLOR_S, "bartik_s", instrument,
             lo_s, hi_s, peak_s,
             r"$s$-instrument  $B^s_{s,t}$"
             "\n(JOLTS total separations)",
-            r"$B^s_{s,t}$ (×1 000)",
+            r"$B^s_{s,t}$ (quarterly rate)",
         ),
     ]:
         valid = dist.dropna(subset=["mean"])
@@ -303,7 +308,7 @@ else:
 
     fig.suptitle(
         "Bartik instrument cross-state distributions over time\n"
-        "(quarterly, ×1 000 base workers; employment shares fixed at 2006)",
+        "(quarterly rates; employment shares fixed at 2006)",
         fontsize=12, y=1.01,
     )
     fig.tight_layout()
@@ -313,3 +318,4 @@ else:
     plt.close(fig)
     _open_file(outpath)
     print(f"\nTwo-panel plot saved: {outpath}")
+    
