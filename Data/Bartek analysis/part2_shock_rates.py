@@ -46,20 +46,22 @@ Or pass it directly: build_national_shock_rates(..., census_key="your_key")
 """
 
 import sys
-import pandas as pd
-# ---------------------------------------------------------------------------
-# Working directory: set to the folder containing this script so that
-# relative paths (data/cache/, data/instruments/) resolve correctly
-# regardless of where Python is launched from.
-#
-# Path(__file__) is used when the script is run directly (e.g. python
-# part2_shock_rates.py or F5 in VS Code with "Run Python File").
-# The fallback handles interactive/REPL execution (e.g. VS Code's
-# "Run Selection" or Jupyter-style terminals) where __file__ is undefined.
-# ---------------------------------------------------------------------------
 import os
+import pandas as pd
+import matplotlib
+matplotlib.use("Agg")   # non-interactive backend — avoids all crash issues
+import matplotlib.pyplot as plt
+import matplotlib.ticker as mticker
 from pathlib import Path
 
+def _open_file(path):
+    """Open a saved plot with the OS default viewer."""
+    os.startfile(path)
+
+try:
+    os.chdir(Path(__file__).resolve().parent)
+except NameError:
+    os.chdir(Path.home() / "Documents" / "GitHub" / "Sunk_entry_costs_endogenous_variety_unemployment" / "Data" / "Bartek analysis")
 
 from construct_delta_instrument import (
     BASE_YEAR,
@@ -197,8 +199,8 @@ bed_summary = (
     .round(0)
 )
 print(bed_summary.to_string())
-print("\n--- Trade/transport raw values (first 20 quarters) ---")
-tt = bed_nat[bed_nat["industry_code"] == "40"].sort_values("quarter_label")
+print("\n--- Transport/WH/Util (43) raw values (first 20 quarters) ---")
+tt = bed_nat[bed_nat["industry_code"] == "43"].sort_values("quarter_label")
 print(tt.head(20).to_string(index=False))
 
 # -----------------------------------------------------------------------
@@ -249,67 +251,60 @@ else:
 # -----------------------------------------------------------------------
 # Plot 1: Permanence ratios π_{j,y} by supersector over time
 # -----------------------------------------------------------------------
-try:
-    import matplotlib.pyplot as plt
-    import matplotlib.ticker as mticker
-
-    if PERM_RATIOS_PATH.exists():
-        perm_plot = pd.read_parquet(PERM_RATIOS_PATH)
-        perm_pivot = (
-            perm_plot
-            .pivot(index="bds_year", columns="industry_code", values="pi")
-            .rename(columns=INDUSTRY_LABELS)
-            .sort_index()
+if PERM_RATIOS_PATH.exists():
+    perm_plot = pd.read_parquet(PERM_RATIOS_PATH)
+    perm_pivot = (
+        perm_plot
+        .pivot(index="bds_year", columns="industry_code", values="pi")
+        .rename(columns=INDUSTRY_LABELS)
+        .sort_index()
+    )
+    colors_pi = [
+        "#1f77b4", "#d62728", "#2ca02c", "#ff7f0e", "#9467bd",
+        "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf",
+    ]
+    fig_pi, ax_pi = plt.subplots(figsize=(13, 5))
+    for i, col in enumerate(perm_pivot.columns):
+        ax_pi.plot(
+            perm_pivot.index, perm_pivot[col],
+            label=col, color=colors_pi[i % len(colors_pi)],
+            linewidth=1.4, marker="o", markersize=3,
         )
-        colors_pi = [
-            "#1f77b4", "#d62728", "#2ca02c", "#ff7f0e", "#9467bd",
-            "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf",
-        ]
-        fig_pi, ax_pi = plt.subplots(figsize=(13, 5))
-        for i, col in enumerate(perm_pivot.columns):
-            ax_pi.plot(
-                perm_pivot.index, perm_pivot[col],
-                label=col, color=colors_pi[i % len(colors_pi)],
-                linewidth=1.4, marker="o", markersize=3,
-            )
-        ax_pi.axhline(1.0, color="black", linewidth=0.8, linestyle=":", alpha=0.5)
-        ax_pi.axvspan(2008, 2010.5, alpha=0.10, color="grey", label="_GR")
-        ax_pi.axvspan(2020, 2022.5, alpha=0.10, color="red",  label="_COVID")
-        ax_pi.set_title(
-            r"Permanence ratio $\pi_{j,y}$ = BDS exits / BED closings sum"
-            "\nby supersector and BDS year  (π ≈ 1 → all closings permanent; "
-            "π ↓ in 2021 → many COVID closings were temporary)",
-            fontsize=10,
-        )
-        ax_pi.set_xlabel("BDS year")
-        ax_pi.set_ylabel(r"$\pi_{j,y}$", fontsize=10)
-        ax_pi.set_ylim(0, 1.15)
-        ax_pi.legend(fontsize=7, framealpha=0.85, ncol=2,
-                     title="Supersector", title_fontsize=7)
-        ax_pi.grid(axis="y", linewidth=0.5, alpha=0.4)
-        fig_pi.tight_layout()
-        outpath_pi = DEFAULT_OUTPUT_DIR / "permanence_ratios_by_supersector.png"
-        DEFAULT_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-        fig_pi.savefig(outpath_pi, dpi=150)
-        plt.close(fig_pi)
-        print(f"\nPlot saved: {outpath_pi}")
-
-except ImportError:
-    print("\n(matplotlib not available -- skipping permanence ratio plot)")
+    ax_pi.axhline(1.0, color="black", linewidth=0.8, linestyle=":", alpha=0.5)
+    ax_pi.axvspan(2008, 2010.5, alpha=0.10, color="grey", label="_GR")
+    ax_pi.axvspan(2020, 2022.5, alpha=0.10, color="red",  label="_COVID")
+    ax_pi.set_title(
+        r"Permanence ratio $\pi_{j,y}$ = BDS exits / BED closings sum"
+        "\nby supersector and BDS year  (π ≈ 1 → all closings permanent; "
+        "π ↓ in 2021 → many COVID closings were temporary)",
+        fontsize=10,
+    )
+    ax_pi.set_xlabel("BDS year")
+    ax_pi.set_ylabel(r"$\pi_{j,y}$", fontsize=10)
+    ax_pi.set_ylim(0, 1.15)
+    ax_pi.legend(fontsize=7, framealpha=0.85, ncol=2,
+                 title="Supersector", title_fontsize=7)
+    ax_pi.grid(axis="y", linewidth=0.5, alpha=0.4)
+    fig_pi.tight_layout()
+    outpath_pi = DEFAULT_OUTPUT_DIR / "permanence_ratios_by_supersector.png"
+    DEFAULT_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    fig_pi.savefig(outpath_pi, dpi=150)
+    plt.close(fig_pi)
+    _open_file(outpath_pi)
+    print(f"\nPlot saved: {outpath_pi}")
 
 # -----------------------------------------------------------------------
-# Plot 2: LOO adjusted-closing rates over time, all supersectors
+# Plot 2: Permanence-adjusted closing rates over time, all supersectors
 # -----------------------------------------------------------------------
-import matplotlib.pyplot as plt
-import matplotlib.ticker as mticker
-   
+if PERM_RATIOS_PATH.exists():
+    perm_for_plot = pd.read_parquet(PERM_RATIOS_PATH)
+    bed_adj = apply_permanence_adjustment(bed_nat, perm_for_plot)
+else:
+    print("  WARNING: permanence ratios not found — plotting raw BED closings")
+    bed_adj = bed_nat.copy()
 
-# Build national closing rate: closings_nat / emp_nat (no LOO).
-# The LOO perturbation in the denominator is negligible for plotting
-# purposes and the numerator is identical across states -- so the
-# correct thing to show is the underlying national shock series.
 _nat = (
-    bed_nat                          # fetched in the sanity-check block above
+    bed_adj
     .merge(
         shares[["industry_code", "emp_nat_ind"]]
         .drop_duplicates("industry_code"),
@@ -323,32 +318,25 @@ _pivot = (
     .rename(columns=INDUSTRY_LABELS)
     .sort_index()
 )
-# Reindex to a complete quarterly grid so matplotlib shows gaps as breaks
-# rather than drawing misleading straight lines across missing quarters.
 all_quarters = pd.period_range(
     start=_pivot.index[0], end=_pivot.index[-1], freq="Q"
 ).strftime("%YQ%q").tolist()
 plot_data = _pivot.reindex(all_quarters)
 
-# Parse quarter_label to datetime for a clean x-axis
 def _ql_to_dt(ql):
-    import pandas as pd
     y, q = ql.split("Q")
     return pd.Timestamp(year=int(y), month=int(q) * 3 - 2, day=1)
 
 plot_data.index = [_ql_to_dt(q) for q in plot_data.index]
 
-# Color palette: 10 visually distinct colors
 colors = [
     "#1f77b4", "#d62728", "#2ca02c", "#ff7f0e", "#9467bd",
     "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf",
 ]
-# Line styles: solid for top-5 by mean, dashed for bottom-5
 mean_rank = plot_data.mean().sort_values(ascending=False)
 top5      = set(mean_rank.index[:5])
 
 fig, ax = plt.subplots(figsize=(13, 6))
-
 for i, col in enumerate(mean_rank.index):
     ls = "-" if col in top5 else "--"
     lw = 1.6 if col in top5 else 1.2
@@ -361,50 +349,26 @@ for i, col in enumerate(mean_rank.index):
         linewidth = lw,
     )
 
-# Recession shading: GR and COVID
-ax.axvspan(
-    pd.Timestamp("2007-12-01"), pd.Timestamp("2009-06-01"),
-    alpha=0.10, color="grey", label="_GR"
-)
-ax.axvspan(
-    pd.Timestamp("2020-01-01"), pd.Timestamp("2020-07-01"),
-    alpha=0.10, color="red", label="_COVID"
-)
-
+ax.axvspan(pd.Timestamp("2007-12-01"), pd.Timestamp("2009-06-01"),
+           alpha=0.10, color="grey", label="_GR")
+ax.axvspan(pd.Timestamp("2020-01-01"), pd.Timestamp("2020-07-01"),
+           alpha=0.10, color="red", label="_COVID")
 ax.set_title(
     "National establishment closing rates by supersector\n"
-    "(quarterly, per 1 000 base workers)",
+    "(permanence-adjusted, quarterly, per 1 000 base workers)",
     fontsize=12,
 )
 ax.set_xlabel("")
 ax.set_ylabel("Closing rate (×1 000)", fontsize=10)
 ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f"{x:.3f}"))
-ax.legend(
-    loc            = "upper left",
-    fontsize       = 8,
-    framealpha     = 0.85,
-    ncol           = 2,
-    title          = "Supersector",
-    title_fontsize = 8,
-)
+ax.legend(loc="upper left", fontsize=8, framealpha=0.85, ncol=2,
+          title="Supersector", title_fontsize=8)
 ax.grid(axis="y", linewidth=0.5, alpha=0.4)
 fig.tight_layout()
-plt.show()
+
 outpath = DEFAULT_OUTPUT_DIR / "shock_rates_delta_by_supersector.png"
 DEFAULT_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 fig.savefig(outpath, dpi=150)
 plt.close(fig)
+_open_file(outpath)
 print(f"\nPlot saved: {outpath}")
-
-# Permanence ratios by industry 
-# Load 
-pi = pd.read_parquet("data/instruments/permanence_ratios_by_supersector.parquet")
-print(pi.pivot(index="bds_year", columns="industry_code", values="pi").round(3).to_string())
-
-pivot = pi.pivot(index="bds_year", columns="industry_code", values="pi")
-pivot.columns = [INDUSTRY_LABELS[c] for c in pivot.columns]
-pivot.plot(figsize=(14, 5), title="Permanence ratios π_{j,y} by industry")
-plt.axhline(1.0, color="black", linewidth=0.8, linestyle="--")
-plt.ylabel("π  (fraction of BED closings that are permanent exits)")
-plt.tight_layout()
-plt.show()
