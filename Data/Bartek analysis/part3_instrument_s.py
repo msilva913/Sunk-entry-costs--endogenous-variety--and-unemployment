@@ -46,24 +46,22 @@ To use both in a joint IV regression:
 """
 
 import sys
-import pandas as pd
-# ---------------------------------------------------------------------------
-# Working directory: set to the folder containing this script so that
-# relative paths (data/cache/, data/instruments/) resolve correctly
-# regardless of where Python is launched from.
-#
-# Path(__file__) is used when the script is run directly (e.g. python
-# part3_instrument.py or F5 in VS Code with "Run Python File").
-# The fallback handles interactive/REPL execution (e.g. VS Code's
-# "Run Selection" or Jupyter-style terminals) where __file__ is undefined.
-# ---------------------------------------------------------------------------
 import os
+import numpy as np
+import pandas as pd
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import matplotlib.ticker as mticker
 from pathlib import Path
+
+def _open_file(path):
+    os.startfile(path)
 
 try:
     os.chdir(Path(__file__).resolve().parent)
 except NameError:
-    os.chdir(r"C:\Users\msilva913\Documents\GitHub\Sunk_entry_costs_endogenous_variety_unemployment\Data\Bartek analysis")
+    os.chdir(Path.home() / "Documents" / "GitHub" / "Sunk_entry_costs_endogenous_variety_unemployment" / "Data" / "Bartek analysis")
 
 from construct_s_instrument import (
     BASE_YEAR,
@@ -195,18 +193,11 @@ else:
 
 # -----------------------------------------------------------------------
 # Plot: two-panel comparison of B^delta and B^s distributions over time
-# Each panel: mean + 10-90 band + 25-75 IQR band + 2 extreme state lines
 # -----------------------------------------------------------------------
-try:
-    import matplotlib.pyplot as plt
-    import matplotlib.ticker as mticker
-    import numpy as np
-
-    delta_path = DEFAULT_OUTPUT_DIR / f"delta_instrument_base{BASE_YEAR}.csv"
-    if not delta_path.exists():
-        print(f"\n(Two-panel plot skipped: {delta_path} not found)")
-        raise FileNotFoundError
-
+delta_path = DEFAULT_OUTPUT_DIR / f"delta_instrument_base{BASE_YEAR}.csv"
+if not delta_path.exists():
+    print(f"\n(Two-panel plot skipped: {delta_path} not found)")
+else:
     delta = pd.read_csv(delta_path)
 
     def _ql_to_dt(ql):
@@ -214,7 +205,6 @@ try:
         return pd.Timestamp(year=int(y), month=int(q) * 3 - 2, day=1)
 
     def _build_dist(df, col):
-        """Percentile panel for one instrument, ×1000, on complete quarterly grid."""
         raw = (
             df.groupby("quarter_label")[col]
             .agg(
@@ -233,10 +223,7 @@ try:
         return raw.reindex(all_q)
 
     def _extreme_states(df, col):
-        """Return (state_lo, state_hi) labels at the peak-dispersion quarter."""
-        peak_q = (
-            df.groupby("quarter_label")[col].std().idxmax()
-        )
+        peak_q = df.groupby("quarter_label")[col].std().idxmax()
         vals = (
             df.query("quarter_label == @peak_q")
             .assign(b=lambda d: d[col] * 1000)
@@ -262,8 +249,8 @@ try:
     all_q_d = dist_d.index.tolist()
     all_q_s = dist_s.index.tolist()
 
-    COLOR_D = "#1f77b4"   # blue for delta
-    COLOR_S = "#d62728"   # red for s
+    COLOR_D = "#1f77b4"
+    COLOR_S = "#d62728"
 
     fig, axes = plt.subplots(1, 2, figsize=(16, 5), sharey=False)
 
@@ -287,17 +274,13 @@ try:
         dts   = [_ql_to_dt(q) for q in valid.index]
         all_q = dist.index.tolist()
 
-        # 10–90 band
         ax.fill_between(dts, valid["p10"], valid["p90"],
                         alpha=0.18, color=color, label="10–90th pctile")
-        # 25–75 IQR band
         ax.fill_between(dts, valid["p25"], valid["p75"],
                         alpha=0.32, color=color, label="25–75th pctile (IQR)")
-        # Mean
         ax.plot(dts, valid["mean"], color=color, linewidth=2.0,
                 label="Cross-state mean")
 
-        # Extreme state reference lines
         ds, vs = _state_ts(df, col, lo, all_q)
         ax.plot(ds, vs, color="firebrick", linewidth=0.85, linestyle=":",
                 label=f"{lo} (lowest at {peak_q})")
@@ -305,7 +288,6 @@ try:
         ax.plot(ds, vs, color="darkgreen", linewidth=0.85, linestyle=":",
                 label=f"{hi} (highest at {peak_q})")
 
-        # Recession shading
         ax.axvspan(pd.Timestamp("2007-12-01"), pd.Timestamp("2009-06-01"),
                    alpha=0.08, color="grey")
         ax.axvspan(pd.Timestamp("2020-01-01"), pd.Timestamp("2020-07-01"),
@@ -329,7 +311,5 @@ try:
     outpath = DEFAULT_OUTPUT_DIR / "instruments_distribution_comparison.png"
     fig.savefig(outpath, dpi=150, bbox_inches="tight")
     plt.close(fig)
+    _open_file(outpath)
     print(f"\nTwo-panel plot saved: {outpath}")
-
-except (ImportError, FileNotFoundError):
-    pass
