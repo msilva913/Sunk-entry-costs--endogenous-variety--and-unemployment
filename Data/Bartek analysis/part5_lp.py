@@ -109,6 +109,13 @@ CI_LEVEL   = 0.90                     # confidence band width for main plot
 Z90        = 1.645
 Z95        = 1.960
 
+# Cap outcome quarter at 2019Q4 to exclude COVID (2020Q1–2021Q4) from the
+# h-quarter-ahead outcome window. Without this, COVID enters the outcome at
+# different horizons for δ (h=6+) and s (h=12+) depending on sample end
+# dates, producing sharp spurious jumps in β_h at exactly those horizons.
+# Set to None to use the full sample (useful as a robustness check).
+MAX_OUTCOME_QUARTER = "2019Q4"
+
 INSTR_DIR  = Path("data/instruments")
 RESULTS_DIR = Path("data/results")
 
@@ -251,12 +258,28 @@ def run_lp_horizon(base_panel: pd.DataFrame, h: int,
     )
     df = df.merge(outcomes_lookup, on=["state_fips", "future_ql"], how="left")
 
-    # Δy_{s,t,h} = y_{s,t+h}
-    # State and time FEs absorb the baseline — no manual subtraction needed.
-    # The t-1 subtraction is appropriate in a single-recession cross-section
-    # (where there are no FEs), but in the panel LP it is redundant given α_s
-    # and α_t, and creates near-collinearity with the u_{s,t-1} control.
-    df["dep_var"] = df["y_future"]
+    # Drop observations where the outcome quarter falls in or after the COVID
+    # window. COVID (2020Q1–2021Q4) caused an aggregate unemployment spike
+    # completely unrelated to the Bartik instrument, contaminating β_h at
+    # the horizons where those quarters first enter the outcome window.
+    if MAX_OUTCOME_QUARTER is not None:
+        df = df[df["future_ql"] <= MAX_OUTCOME_QUARTER].copy()
+
+    # Outcome: y_{s,t+h} - y_{s,t-1}  (Test A — baseline is t-1, not t)
+    #
+    # Motivation: y_{s,t} is contaminated by the shock itself — states with
+    # a large B_{s,t} already have elevated unemployment within quarter t.
+    # Differencing from t therefore understates the early response and
+    # mechanically produces upward drift in β_h as the cumulative effect
+    # accumulates above an already-elevated starting point.
+    #
+    # Using t-1 as baseline avoids this: unemployment one quarter before
+    # the shock is predetermined with respect to B_{s,t}. The cost is
+    # near-collinearity between the baseline and u_{s,t-1} (they differ
+    # only by one quarter), but this affects efficiency not identification.
+    # β_0 is no longer anchored at zero by construction — it now measures
+    # the within-quarter impact of the shock on unemployment.
+    df["dep_var"] = df["y_future"] - df["unemp_lag1"]
 
     # Drop rows with missing dep_var or any regressor
     required = ["dep_var", shock_col, "unemp_lag1", "lf_log_lag1"]
@@ -421,7 +444,7 @@ def plot_irf(results: dict[str, pd.DataFrame],
                        linestyle=":", alpha=0.6)
 
         ax.set_title(f"IRF — {label}\n"
-                     f"(unemployment rate level, pp)",
+                     f"(cumulative change in unemp. rate from shock quarter, pp)",
                      fontsize=11)
         ax.set_xlabel("Horizon h (quarters)", fontsize=10)
         ax.set_ylabel("pp change in unemp. rate per 1 pp shock", fontsize=10)
@@ -463,29 +486,36 @@ def plot_irf(results: dict[str, pd.DataFrame],
 
     caption = (
         "Notes: Each panel plots 17 coefficients $\\hat{{\\beta}}_h$, $h=0,\\ldots,16$, "
-        "from separate OLS regressions of $y_{{s,t+h}}$ (unemployment rate level) "
-        "on the Bartik instrument $B_{{s,t}}^{{(k)}}$, state fixed effects $\\alpha_s$, "
-        "time fixed effects $\\alpha_t$, lagged unemployment $u_{{s,t-1}}$, and lagged "
-        "log labor force $\\log(\\mathrm{{LF}}_{{s,t-1}})$.  "
-        "State and time fixed effects absorb the baseline level for each state and "
-        "quarter respectively, so no manual differencing from a recession peak is "
-        "needed or appropriate — the panel formulation with continuous quarterly shocks "
-        "differs from a single-recession cross-section in this respect.  "
+        "from separate OLS regressions of $y_{{s,t+h}} - y_{{s,t-1}}$ (cumulative "
+        "change in the unemployment rate from one quarter before the shock) on the "
+        "Bartik instrument $B_{{s,t}}^{{(k)}}$, state fixed effects $\\alpha_s$, time "
+        "fixed effects $\\alpha_t$, lagged unemployment $u_{{s,t-1}}$, and lagged log "
+        "labor force $\\log(\\mathrm{{LF}}_{{s,t-1}})$.  "
+        "The baseline is $t-1$ rather than $t$: differencing from the shock quarter "
+        "$t$ itself is problematic because $y_{{s,t}}$ is contaminated by the "
+        "contemporaneous shock — states with larger $B_{{s,t}}$ already have elevated "
+        "unemployment within quarter $t$, causing the difference $y_{{s,t+h}}-y_{{s,t}}$ "
+        "to understate the early response and drift upward mechanically at long horizons. "
+        "Using $t-1$ as the baseline avoids this: unemployment one quarter before the "
+        "shock is predetermined with respect to $B_{{s,t}}$. Unlike the $y_{{s,t}}$ "
+        "baseline, $\\hat{{\\beta}}_0$ is not anchored at zero — it measures the "
+        "within-quarter impact of the shock.  "
+        "Outcome quarters are capped at 2019Q4 to exclude COVID (2020Q1–2021Q4), "
+        "which produces spurious jumps in $\\hat{{\\beta}}_h$ at the horizons where "
+        "COVID outcomes first enter the outcome window.  "
         "The instrument is rescaled to percentage points (×100), so $\\hat{{\\beta}}_h$ "
-        "measures the unemployment rate (in pp) associated with a "
-        "1 pp increase in the Bartik-predicted shock rate, conditional on state and "
-        "time means.  "
-        "Note that the $\\delta$ and $s$ instruments have different cross-sectional "
-        "standard deviations (after rescaling: "
+        "measures the cumulative change in the unemployment rate (in pp) per "
+        "1 pp increase in the Bartik-predicted shock rate.  "
+        "The $\\delta$ and $s$ instruments have different cross-sectional standard "
+        "deviations (after rescaling: "
         f"SD($B^{{\\delta}}$) $\\approx$ {instr_sds.get('δ shock', float('nan')):.2f} pp, "
         f"SD($B^{{s}}$) $\\approx$ {instr_sds.get('s shock', float('nan')):.2f} pp), "
-        "so the coefficients are not directly comparable in magnitude across panels; "
-        "a 1-pp shock is a much larger relative move for $\\delta$ than for $s$.  "
+        "so coefficients are not directly comparable in magnitude across panels.  "
         + (sd_text + "  " if sd_text else "")
         + "Shaded bands: 90\\% CI; dashed lines: 95\\% CI.  "
         "Standard errors clustered by state (50 clusters).  "
-        "$\\delta$ instrument sample: 1992Q3–2023Q1; "
-        "$s$ instrument sample: 2001Q1–2023Q1."
+        "$\\delta$ instrument sample: 1992Q3–2019Q4 (outcomes); "
+        "$s$ instrument sample: 2001Q1–2019Q4 (outcomes)."
     )
 
     fig.text(
@@ -620,4 +650,3 @@ for lbl, df in [("δ", irf_delta), ("s", irf_s)]:
           f"SE = {peak['se']:.4f}  p = {peak['pval']:.3f}  "
           f"N = {int(peak['nobs'])}")
     print(f"    90% CI: [{peak['ci90_lo']:.4f}, {peak['ci90_hi']:.4f}]")
-    
