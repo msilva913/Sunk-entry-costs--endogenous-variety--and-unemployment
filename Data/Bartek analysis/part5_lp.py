@@ -744,7 +744,7 @@ instr_sds_main = {
 
 # Main comparison: δ (full sample) and s side by side
 plot_irf(
-    {"δ shock": irf_delta, "s shock": irf_s},
+    {"δ shock": irf_delta_nfci, "s shock": irf_s_nfci},
     out_path=RESULTS_DIR / "lp_irf_combined.png",
     instr_sds=instr_sds_main,
 )
