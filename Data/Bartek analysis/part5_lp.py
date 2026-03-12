@@ -72,6 +72,7 @@ Prerequisites
     python part3_instrument.py        (produces delta_instrument_base2006.csv)
     python part3_instrument_s.py      (produces s_instrument_base2006.csv)
     python part4_outcomes.py          (produces laus_quarterly.parquet)
+    python part7_nfci.py              (produces nfci_quarterly.parquet)
 """
 
 import os
@@ -122,6 +123,7 @@ RESULTS_DIR = Path("data/results")
 DELTA_INSTR_FILE = INSTR_DIR / f"delta_instrument_base{BASE_YEAR}.csv"
 S_INSTR_FILE     = INSTR_DIR / f"s_instrument_base{BASE_YEAR}.csv"
 LAUS_FILE        = INSTR_DIR / "laus_quarterly.parquet"
+NFCI_FILE        = Path("data/cache") / "nfci_quarterly.parquet"
 
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -168,6 +170,22 @@ def load_outcomes() -> pd.DataFrame:
           f"({laus['quarter_label'].min()} – {laus['quarter_label'].max()})")
     return laus[["state_fips", "state", "quarter_label",
                  "unemp_rate", "labor_force"]]
+
+
+def load_nfci() -> pd.DataFrame:
+    """
+    Load quarterly NFCI data produced by part7_nfci.py.
+    Returns DataFrame with columns: quarter_label, nfci, nfci_risk,
+    nfci_credit, nfci_leverage, anfci.
+    """
+    nfci = pd.read_parquet(NFCI_FILE)
+    print(f"  NFCI: {nfci.shape}  "
+          f"({nfci['quarter_label'].min()} – {nfci['quarter_label'].max()})")
+    print(f"  nfci_risk — mean={nfci['nfci_risk'].mean():.3f}  "
+          f"SD={nfci['nfci_risk'].std():.3f}  "
+          f"min={nfci['nfci_risk'].min():.3f}  "
+          f"max={nfci['nfci_risk'].max():.3f}")
+    return nfci[["quarter_label", "nfci", "nfci_risk", "anfci"]]
 
 
 # ---------------------------------------------------------------------------
@@ -233,7 +251,8 @@ def build_panel(instr: pd.DataFrame, instr_col: str,
 # LP estimation — one horizon
 # ---------------------------------------------------------------------------
 def run_lp_horizon(base_panel: pd.DataFrame, h: int,
-                   shock_col: str) -> dict | None:
+                   shock_col: str,
+                   include_nfci: bool = False) -> dict | None:
     """
     Estimate the LP for a single horizon h.
 
@@ -283,6 +302,8 @@ def run_lp_horizon(base_panel: pd.DataFrame, h: int,
 
     # Drop rows with missing dep_var or any regressor
     required = ["dep_var", shock_col, "unemp_lag1", "lf_log_lag1"]
+    if include_nfci:
+        required.append("instr_x_nfci")
     df = df.dropna(subset=required).copy()
 
     if len(df) < 100:
@@ -296,8 +317,15 @@ def run_lp_horizon(base_panel: pd.DataFrame, h: int,
     time_dummies  = pd.get_dummies(df["quarter_label"],  prefix="qt",
                                    drop_first=True, dtype=float)
 
+    core_regressors = [shock_col, "unemp_lag1", "lf_log_lag1"]
+    if include_nfci:
+        # Note: the main effect of nfci_risk_dm is absorbed by time FEs
+        # (it varies only over time, not across states within a quarter),
+        # so only the interaction term enters as a cross-sectional regressor.
+        core_regressors.append("instr_x_nfci")
+
     X = pd.concat(
-        [df[[shock_col, "unemp_lag1", "lf_log_lag1"]],
+        [df[core_regressors],
          state_dummies,
          time_dummies],
         axis=1,
@@ -313,33 +341,44 @@ def run_lp_horizon(base_panel: pd.DataFrame, h: int,
         cov_kwds={"groups": df["state_fips"].values},
     )
 
-    beta = float(model.params[shock_col])
-    se   = float(model.bse[shock_col])
+    beta  = float(model.params[shock_col])
+    se    = float(model.bse[shock_col])
     tstat = float(model.tvalues[shock_col])
     pval  = float(model.pvalues[shock_col])
 
-    # First-stage relevance: F-statistic from regressing the instrument
-    # on controls + FEs (partial F for the instrument after partialling
-    # out all other regressors)
-    # We compute this as the squared t-stat on the instrument, which equals
-    # the partial F with one instrument under clustered SEs
+    # Interaction coefficient δ_h (None when include_nfci=False)
+    if include_nfci:
+        delta_h    = float(model.params["instr_x_nfci"])
+        delta_h_se = float(model.bse["instr_x_nfci"])
+        delta_h_t  = float(model.tvalues["instr_x_nfci"])
+        delta_h_p  = float(model.pvalues["instr_x_nfci"])
+    else:
+        delta_h = delta_h_se = delta_h_t = delta_h_p = None
+
+    # Partial F: squared t-stat on the instrument (equals partial F
+    # with one instrument under clustered SEs)
     partial_f = tstat ** 2
 
     return {
-        "h":        h,
-        "beta":     beta,
-        "se":       se,
-        "tstat":    tstat,
-        "pval":     pval,
-        "partial_f": partial_f,
-        "ci90_lo":  beta - Z90 * se,
-        "ci90_hi":  beta + Z90 * se,
-        "ci95_lo":  beta - Z95 * se,
-        "ci95_hi":  beta + Z95 * se,
-        "nobs":     int(model.nobs),
-        "r2":       float(model.rsquared),
-        "n_clusters": df["state_fips"].nunique(),
-        "qt_range": f"{df['quarter_label'].min()}–{df['quarter_label'].max()}",
+        "h":           h,
+        "beta":        beta,
+        "se":          se,
+        "tstat":       tstat,
+        "pval":        pval,
+        "partial_f":   partial_f,
+        "ci90_lo":     beta - Z90 * se,
+        "ci90_hi":     beta + Z90 * se,
+        "ci95_lo":     beta - Z95 * se,
+        "ci95_hi":     beta + Z95 * se,
+        # Interaction coefficient δ_h (None when include_nfci=False)
+        "delta_h":     delta_h,
+        "delta_h_se":  delta_h_se,
+        "delta_h_t":   delta_h_t,
+        "delta_h_p":   delta_h_p,
+        "nobs":        int(model.nobs),
+        "r2":          float(model.rsquared),
+        "n_clusters":  df["state_fips"].nunique(),
+        "qt_range":    f"{df['quarter_label'].min()}–{df['quarter_label'].max()}",
     }
 
 
@@ -347,34 +386,52 @@ def run_lp_horizon(base_panel: pd.DataFrame, h: int,
 # LP estimation — all horizons
 # ---------------------------------------------------------------------------
 def run_lp(base_panel: pd.DataFrame, shock_col: str,
-           label: str) -> pd.DataFrame:
+           label: str,
+           include_nfci: bool = False) -> pd.DataFrame:
     """
     Run LP for all horizons 0..16 and return results as a DataFrame.
 
     Args:
-        base_panel: output of build_panel()
-        shock_col:  'bartik_delta' or 'bartik_s'
-        label:      human-readable label for printing (e.g. 'δ shock')
+        base_panel:   output of build_panel() with attach_nfci_interaction()
+        shock_col:    'bartik_delta' or 'bartik_s'
+        label:        human-readable label for printing (e.g. 'δ shock')
+        include_nfci: if True, include B_{s,t} × NFCI_risk_dm interaction.
+                      The printed table gains a δ_h column.
     """
+    nfci_tag = " [+NFCI interaction]" if include_nfci else ""
     print(f"\n{'='*60}")
-    print(f"  LP — {label}  (h = 0 … {max(HORIZONS)})")
+    print(f"  LP — {label}{nfci_tag}  (h = 0 … {max(HORIZONS)})")
     print(f"{'='*60}")
-    print(f"  {'h':>3}  {'β_h':>10}  {'SE':>8}  {'t':>7}  {'p':>6}  "
-          f"{'partial-F':>10}  {'N':>6}")
+    if include_nfci:
+        print(f"  {'h':>3}  {'β_h':>10}  {'SE':>8}  {'t':>7}  {'p':>6}  "
+              f"{'δ_h':>10}  {'δ_h SE':>8}  {'δ_h p':>6}  {'N':>6}")
+    else:
+        print(f"  {'h':>3}  {'β_h':>10}  {'SE':>8}  {'t':>7}  {'p':>6}  "
+              f"{'partial-F':>10}  {'N':>6}")
     print(f"  {'-'*60}")
 
     rows = []
     for h in HORIZONS:
-        res = run_lp_horizon(base_panel, h, shock_col)
+        res = run_lp_horizon(base_panel, h, shock_col,
+                             include_nfci=include_nfci)
         if res is None:
             continue
         rows.append(res)
         sig = ("***" if res["pval"] < 0.01 else
                "**"  if res["pval"] < 0.05 else
                "*"   if res["pval"] < 0.10 else "")
-        print(f"  {h:3d}  {res['beta']:10.4f}  {res['se']:8.4f}  "
-              f"{res['tstat']:7.3f}  {res['pval']:6.3f}  "
-              f"{res['partial_f']:10.2f}  {res['nobs']:6d}  {sig}")
+        if include_nfci:
+            dsig = ("***" if res["delta_h_p"] < 0.01 else
+                    "**"  if res["delta_h_p"] < 0.05 else
+                    "*"   if res["delta_h_p"] < 0.10 else "")
+            print(f"  {h:3d}  {res['beta']:10.4f}  {res['se']:8.4f}  "
+                  f"{res['tstat']:7.3f}  {res['pval']:6.3f}  "
+                  f"{res['delta_h']:10.4f}  {res['delta_h_se']:8.4f}  "
+                  f"{res['delta_h_p']:6.3f}{dsig}  {res['nobs']:6d}  {sig}")
+        else:
+            print(f"  {h:3d}  {res['beta']:10.4f}  {res['se']:8.4f}  "
+                  f"{res['tstat']:7.3f}  {res['pval']:6.3f}  "
+                  f"{res['partial_f']:10.2f}  {res['nobs']:6d}  {sig}")
 
     return pd.DataFrame(rows)
 
@@ -463,9 +520,9 @@ def plot_irf(results: dict[str, pd.DataFrame],
         }
 
     fig.suptitle(
-        "Panel LP — Bartik δ and s shocks → unemployment rate\n"
+        "Panel LP — Bartik δ and s shocks → unemployment rate  [Test A: baseline = t−1]\n"
         "(state + time FEs; controls: u_{t-1}, log LF_{t-1}; "
-        "SEs clustered by state)",
+        "SEs clustered by state; outcomes capped 2019Q4)",
         fontsize=11, y=1.01,
     )
 
@@ -546,9 +603,10 @@ print("=" * 60)
 # -----------------------------------------------------------------------
 # Load data
 # -----------------------------------------------------------------------
-print("\n[1] Loading instruments and outcomes")
+print("\n[1] Loading instruments, outcomes, and NFCI")
 delta_instr, s_instr = load_instruments()
 outcomes = load_outcomes()
+nfci     = load_nfci()
 
 # -----------------------------------------------------------------------
 # Build panels
@@ -565,6 +623,65 @@ print("  δ panel (post-2001):")
 delta_post2001 = delta_panel[
     delta_panel["quarter_label"] >= "2001Q1"
 ].copy().reset_index(drop=True)
+
+# -----------------------------------------------------------------------
+# Merge NFCI and construct demeaned interaction term
+# -----------------------------------------------------------------------
+print("\n[2b] Merging NFCI and constructing interaction term")
+
+def attach_nfci_interaction(panel: pd.DataFrame,
+                             nfci: pd.DataFrame,
+                             instr_col: str) -> pd.DataFrame:
+    """
+    Merge quarterly NFCI into panel and construct the demeaned interaction
+    term for the financial conditions robustness specification.
+
+    Demeaning is done within the panel's own estimation sample — i.e. the
+    mean of nfci_risk is computed over the quarters actually present in the
+    panel after merging, not over the full NFCI history. This ensures that
+    the interaction term equals zero at average financial conditions
+    prevailing during the estimation window, making β_h interpretable as
+    the IRF at typical sample-period financial conditions.
+
+    Two interaction columns are added:
+        nfci_risk_dm     : demeaned risk subindex  (nfci_risk − mean)
+        instr_x_nfci     : B_{s,t} × nfci_risk_dm  (the interaction regressor)
+
+    The interaction is NOT included in the baseline LP regressions —
+    it is available in the panel for use in robustness specifications.
+    """
+    panel = panel.merge(
+        nfci[["quarter_label", "nfci", "nfci_risk", "anfci"]],
+        on="quarter_label",
+        how="left",
+    )
+
+    # Warn if any quarters in the panel have no NFCI match
+    n_missing = panel["nfci_risk"].isna().sum()
+    if n_missing > 0:
+        missing_qtrs = (panel.loc[panel["nfci_risk"].isna(), "quarter_label"]
+                        .unique().tolist())
+        print(f"  [warn] {n_missing} panel rows have no NFCI match "
+              f"({len(missing_qtrs)} quarters): {missing_qtrs[:5]} ...")
+
+    # Demean within the panel's own sample
+    nfci_mean = panel["nfci_risk"].mean()
+    nfci_sd   = panel["nfci_risk"].std()
+    panel["nfci_risk_dm"] = panel["nfci_risk"] - nfci_mean
+
+    print(f"  {instr_col}: nfci_risk sample mean = {nfci_mean:.4f}  "
+          f"SD = {nfci_sd:.4f}  "
+          f"(demeaned range: [{panel['nfci_risk_dm'].min():.3f}, "
+          f"{panel['nfci_risk_dm'].max():.3f}])")
+
+    # Interaction: instrument (already in pp) × demeaned risk index
+    panel["instr_x_nfci"] = panel[instr_col] * panel["nfci_risk_dm"]
+
+    return panel
+
+delta_panel    = attach_nfci_interaction(delta_panel,    nfci, "bartik_delta")
+s_panel        = attach_nfci_interaction(s_panel,        nfci, "bartik_s")
+delta_post2001 = attach_nfci_interaction(delta_post2001, nfci, "bartik_delta")
 n_post = delta_post2001["quarter_label"].nunique()
 print(f"    Restricted to 2001Q1+: {len(delta_post2001):,} rows "
       f"({delta_post2001['state_fips'].nunique()} states × {n_post} quarters)")
@@ -587,9 +704,15 @@ for lbl, pnl, col in [("δ", delta_panel, "bartik_delta"),
 # -----------------------------------------------------------------------
 print("\n[4] Running panel LPs")
 
-irf_delta       = run_lp(delta_panel,      "bartik_delta", "δ shock")
-irf_s           = run_lp(s_panel,          "bartik_s",     "s shock")
-irf_delta_post  = run_lp(delta_post2001,   "bartik_delta", "δ shock (post-2001)")
+irf_delta       = run_lp(delta_panel,    "bartik_delta", "δ shock")
+irf_s           = run_lp(s_panel,        "bartik_s",     "s shock")
+irf_delta_post  = run_lp(delta_post2001, "bartik_delta", "δ shock (post-2001)")
+
+# Interaction robustness: baseline + B × NFCI_risk_dm
+irf_delta_nfci  = run_lp(delta_panel,    "bartik_delta", "δ shock",
+                          include_nfci=True)
+irf_s_nfci      = run_lp(s_panel,        "bartik_s",     "s shock",
+                          include_nfci=True)
 
 # -----------------------------------------------------------------------
 # Save results
@@ -599,10 +722,14 @@ print("\n[5] Saving results")
 irf_delta.to_csv(RESULTS_DIR / "lp_irf_delta.csv", index=False)
 irf_s.to_csv(RESULTS_DIR / "lp_irf_s.csv", index=False)
 irf_delta_post.to_csv(RESULTS_DIR / "lp_irf_delta_post2001.csv", index=False)
+irf_delta_nfci.to_csv(RESULTS_DIR / "lp_irf_delta_nfci.csv", index=False)
+irf_s_nfci.to_csv(RESULTS_DIR / "lp_irf_s_nfci.csv", index=False)
 
 print(f"  Saved: {RESULTS_DIR / 'lp_irf_delta.csv'}")
 print(f"  Saved: {RESULTS_DIR / 'lp_irf_s.csv'}")
 print(f"  Saved: {RESULTS_DIR / 'lp_irf_delta_post2001.csv'}")
+print(f"  Saved: {RESULTS_DIR / 'lp_irf_delta_nfci.csv'}")
+print(f"  Saved: {RESULTS_DIR / 'lp_irf_s_nfci.csv'}")
 
 # -----------------------------------------------------------------------
 # Plot IRFs
