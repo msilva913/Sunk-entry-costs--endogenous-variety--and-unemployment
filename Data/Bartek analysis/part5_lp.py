@@ -55,10 +55,16 @@ comparability with the s IRF.
 
 Outputs
 -------
-    data/results/lp_irf_delta.csv   — β_h, SE, CIs for δ shock
-    data/results/lp_irf_s.csv       — β_h, SE, CIs for s shock
-    data/results/lp_irf_delta_post2001.csv  — δ on post-2001 sample
-    data/results/lp_irf_combined.png — side-by-side IRF plot
+    data/results/lp_irf_delta.csv              — β_h, SE, CIs for δ shock (full)
+    data/results/lp_irf_s.csv                 — β_h, SE, CIs for s shock
+    data/results/lp_irf_delta_post2001.csv    — δ on post-2001 sample
+    data/results/lp_irf_delta_nfci.csv        — δ with NFCI interaction
+    data/results/lp_irf_s_nfci.csv            — s with NFCI interaction
+    data/results/lp_irf_delta_resid.csv       — δ residualized (post-2001)
+    data/results/lp_irf_s_resid.csv           — s residualized
+    data/results/lp_irf_combined.png          — raw δ and s side by side
+    data/results/lp_irf_delta_resid_comparison.png  — δ raw vs. residualized
+    data/results/lp_irf_s_resid_comparison.png      — s raw vs. residualized
 
 Run
 ---
@@ -120,8 +126,10 @@ MAX_OUTCOME_QUARTER = "2019Q4"
 INSTR_DIR  = Path("data/instruments")
 RESULTS_DIR = Path("data/results")
 
-DELTA_INSTR_FILE = INSTR_DIR / f"delta_instrument_base{BASE_YEAR}.csv"
-S_INSTR_FILE     = INSTR_DIR / f"s_instrument_base{BASE_YEAR}.csv"
+DELTA_INSTR_FILE       = INSTR_DIR / f"delta_instrument_base{BASE_YEAR}.csv"
+S_INSTR_FILE           = INSTR_DIR / f"s_instrument_base{BASE_YEAR}.csv"
+DELTA_RESID_INSTR_FILE = INSTR_DIR / f"delta_instrument_resid_base{BASE_YEAR}.csv"
+S_RESID_INSTR_FILE     = INSTR_DIR / f"s_instrument_resid_base{BASE_YEAR}.csv"
 LAUS_FILE        = INSTR_DIR / "laus_quarterly.parquet"
 NFCI_FILE        = Path("data/cache") / "nfci_quarterly.parquet"
 
@@ -744,7 +752,7 @@ instr_sds_main = {
 
 # Main comparison: δ (full sample) and s side by side
 plot_irf(
-    {"δ shock": irf_delta_nfci, "s shock": irf_s_nfci},
+    {"δ shock": irf_delta, "s shock": irf_s},
     out_path=RESULTS_DIR / "lp_irf_combined.png",
     instr_sds=instr_sds_main,
 )
@@ -765,9 +773,76 @@ if not irf_delta_post.empty:
 _open_file(RESULTS_DIR / "lp_irf_combined.png")
 
 # -----------------------------------------------------------------------
+# Residualized instruments — LP (if available)
+# -----------------------------------------------------------------------
+if DELTA_RESID_INSTR_FILE.exists() and S_RESID_INSTR_FILE.exists():
+    print("\n[7] Running LPs with productivity-residualized instruments")
+
+    delta_resid_raw = pd.read_csv(DELTA_RESID_INSTR_FILE,
+                                   dtype={"state_fips": str})
+    s_resid_raw     = pd.read_csv(S_RESID_INSTR_FILE,
+                                   dtype={"state_fips": str})
+    delta_resid_raw["state_fips"] = delta_resid_raw["state_fips"].str.zfill(2)
+    s_resid_raw["state_fips"]     = s_resid_raw["state_fips"].str.zfill(2)
+
+    # Residualized series are demeaned so the column name is the same;
+    # build_panel expects the instrument column to be named bartik_delta/bartik_s.
+    outcomes = load_outcomes()
+    delta_resid_panel = build_panel(delta_resid_raw, "bartik_delta", outcomes)
+    s_resid_panel     = build_panel(s_resid_raw,     "bartik_s",     outcomes)
+
+    # Restrict δ residualized to post-2001 for direct comparability with s.
+    delta_resid_post = delta_resid_panel[
+        delta_resid_panel["quarter_label"] >= "2001Q1"
+    ].copy()
+
+    irf_delta_resid = run_lp(delta_resid_post, "bartik_delta",
+                              "δ shock (resid, post-2001)")
+    irf_s_resid     = run_lp(s_resid_panel,    "bartik_s",
+                              "s shock (resid)")
+
+    irf_delta_resid.to_csv(RESULTS_DIR / "lp_irf_delta_resid.csv", index=False)
+    irf_s_resid.to_csv(RESULTS_DIR     / "lp_irf_s_resid.csv",     index=False)
+    print(f"  Saved: {RESULTS_DIR / 'lp_irf_delta_resid.csv'}")
+    print(f"  Saved: {RESULTS_DIR / 'lp_irf_s_resid.csv'}")
+
+    # Comparison plot: raw (post-2001) vs. residualized, δ and s side by side
+    instr_sds_resid = {
+        "δ raw (post-2001)":  float(delta_post2001["bartik_delta"].std()),
+        "δ residualized":     float(delta_resid_post["bartik_delta"].std()),
+        "s raw":              float(s_panel["bartik_s"].std()),
+        "s residualized":     float(s_resid_panel["bartik_s"].std()),
+    }
+
+    # δ comparison
+    plot_irf(
+        {"δ raw (post-2001)": irf_delta_post,
+         "δ residualized":    irf_delta_resid},
+        out_path=RESULTS_DIR / "lp_irf_delta_resid_comparison.png",
+        instr_sds=instr_sds_resid,
+    )
+    print(f"  Saved: {RESULTS_DIR / 'lp_irf_delta_resid_comparison.png'}")
+
+    # s comparison
+    plot_irf(
+        {"s raw":         irf_s,
+         "s residualized": irf_s_resid},
+        out_path=RESULTS_DIR / "lp_irf_s_resid_comparison.png",
+        instr_sds=instr_sds_resid,
+    )
+    print(f"  Saved: {RESULTS_DIR / 'lp_irf_s_resid_comparison.png'}")
+
+    _open_file(RESULTS_DIR / "lp_irf_delta_resid_comparison.png")
+    _open_file(RESULTS_DIR / "lp_irf_s_resid_comparison.png")
+
+else:
+    print("\n[7] Residualized instruments not found — skipping resid LP.")
+    print("    Run part3_resid_instruments.py first.")
+
+# -----------------------------------------------------------------------
 # Summary table
 # -----------------------------------------------------------------------
-print("\n[7] Summary — peak unemployment response")
+print("\n[8] Summary — peak unemployment response")
 for lbl, df in [("δ", irf_delta), ("s", irf_s)]:
     if df.empty:
         continue
