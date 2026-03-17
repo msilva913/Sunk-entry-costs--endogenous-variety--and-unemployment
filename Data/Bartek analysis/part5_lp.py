@@ -109,8 +109,9 @@ except NameError:
 
 # ---------------------------------------------------------------------------
 # Configuration
-# ---------------------------------------------------------------------------
-HORIZONS   = list(range(17))          # h = 0, 1, ..., 16 quarters
+# --------------------------  -------------------------------------------------
+T          = 20
+HORIZONS   = list(range(T+1))          # h = 0, 1, ..., 16 quarters
 BASE_YEAR  = 2006                     # must match part1/part3 base year
 CI_LEVEL   = 0.90                     # confidence band width for main plot
 Z90        = 1.645
@@ -441,7 +442,23 @@ def run_lp(base_panel: pd.DataFrame, shock_col: str,
                   f"{res['tstat']:7.3f}  {res['pval']:6.3f}  "
                   f"{res['partial_f']:10.2f}  {res['nobs']:6d}  {sig}")
 
-    return pd.DataFrame(rows)
+    # ── Standardize to unit-SD scale ───────────────────────────────────────
+    # Multiply β_h, SE, and CIs by the instrument's cross-sectional SD so
+    # coefficients are in unemployment pp per 1-SD shock.  This makes raw
+    # and residualized IRFs directly comparable in magnitude despite being
+    # in different units (rate vs. log-residual).  The SD is computed from
+    # the full panel passed to this function (all horizons share the same
+    # instrument column, so one SD applies uniformly).
+    instr_sd = float(base_panel[shock_col].std())
+    scale_cols = ["beta", "se", "ci90_lo", "ci90_hi", "ci95_lo", "ci95_hi"]
+    irf = pd.DataFrame(rows)
+    irf[scale_cols] = irf[scale_cols] * instr_sd
+    # Also scale the interaction coefficient δ_h if present.
+    if include_nfci:
+        irf["delta_h"]    = irf["delta_h"]    * instr_sd
+        irf["delta_h_se"] = irf["delta_h_se"] * instr_sd
+    irf["instr_sd"] = instr_sd   # store for reference in plots / tables
+    return irf
 
 
 # ---------------------------------------------------------------------------
