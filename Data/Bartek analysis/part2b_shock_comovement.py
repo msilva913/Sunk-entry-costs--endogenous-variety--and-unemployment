@@ -23,7 +23,6 @@ productivity falls.  This file asks two questions:
      coefficients.
 
 Regression:
-    g^k_{j,t}: industry j shock rate of type k ∈ {δ, s} in quarter t
     log g^k_{j,t} = α_j + γ_k Δlog p_t + ν^k_{j,t},   k ∈ {δ, s}
 
 The residuals ν^δ and ν^s are the closest empirical analog to the truly
@@ -74,12 +73,18 @@ from construct_delta_instrument import (
     SHOCK_RATES_PATH,
     INDUSTRY_LABELS,
 )
-from construct_s_instrument import SHOCK_RATES_S_PATH
+from construct_s_instrument import (
+    SHOCK_RATES_S_PATH,
+    SHOCK_RATES_LD_PATH,
+    SHOCK_RATES_QU_PATH,
+)
 
 # ── paths ──────────────────────────────────────────────────────────────────
-PROD_CACHE   = DEFAULT_CACHE_DIR / "ophnfb_quarterly.parquet"
-RESID_D_PATH = DEFAULT_OUTPUT_DIR / "shock_rates_delta_resid.parquet"
-RESID_S_PATH = DEFAULT_OUTPUT_DIR / "shock_rates_s_resid.parquet"
+PROD_CACHE    = DEFAULT_CACHE_DIR / "ophnfb_quarterly.parquet"
+RESID_D_PATH  = DEFAULT_OUTPUT_DIR / "shock_rates_delta_resid.parquet"
+RESID_S_PATH  = DEFAULT_OUTPUT_DIR / "shock_rates_s_resid.parquet"
+RESID_LD_PATH = DEFAULT_OUTPUT_DIR / "shock_rates_ld_resid.parquet"
+RESID_QU_PATH = DEFAULT_OUTPUT_DIR / "shock_rates_qu_resid.parquet"
 RESULTS_DIR  = Path("data/results")
 
 DEFAULT_CACHE_DIR.mkdir(parents=True, exist_ok=True)
@@ -114,9 +119,10 @@ print("=" * 65)
 print("Part 2b — Shock-productivity decomposition and comovement")
 print("=" * 65)
 
-for p in [SHOCK_RATES_PATH, SHOCK_RATES_S_PATH]:
+for p in [SHOCK_RATES_PATH, SHOCK_RATES_S_PATH,
+           SHOCK_RATES_LD_PATH, SHOCK_RATES_QU_PATH]:
     if not p.exists():
-        script = ("part2_shock_rates.py" if "shock_rates" in p.name
+        script = ("part2_shock_rates.py" if "shock_rates_1" in p.name
                   else "part2_shock_rates_s.py")
         sys.exit(f"ERROR: {p} not found.  Run {script} first.")
 
@@ -124,24 +130,30 @@ for p in [SHOCK_RATES_PATH, SHOCK_RATES_S_PATH]:
 # Average across states to recover the national series.
 # The LOO correction only affects the denominator and is negligible here.
 
-raw_d = pd.read_parquet(SHOCK_RATES_PATH)
-raw_s = pd.read_parquet(SHOCK_RATES_S_PATH)
+raw_d  = pd.read_parquet(SHOCK_RATES_PATH)
+raw_s  = pd.read_parquet(SHOCK_RATES_S_PATH)
+raw_ld = pd.read_parquet(SHOCK_RATES_LD_PATH)
+raw_qu = pd.read_parquet(SHOCK_RATES_QU_PATH)
 
-nat_d = (raw_d.groupby(["industry_code", "quarter_label"])["g_delta_loo"]
+def _nat_series(raw, col, new_col):
+    return (raw.groupby(["industry_code", "quarter_label"])[col]
                .mean().reset_index()
-               .rename(columns={"g_delta_loo": "g_delta"}))
+               .rename(columns={col: new_col}))
 
-nat_s = (raw_s.groupby(["industry_code", "quarter_label"])["g_s_loo"]
-               .mean().reset_index()
-               .rename(columns={"g_s_loo": "g_s"}))
+nat_d  = _nat_series(raw_d,  "g_delta_loo", "g_delta")
+nat_s  = _nat_series(raw_s,  "g_s_loo",     "g_s")
+nat_ld = _nat_series(raw_ld, "g_ld_loo",    "g_ld")
+nat_qu = _nat_series(raw_qu, "g_qu_loo",    "g_qu")
 
-print(f"\nδ: {nat_d['quarter_label'].nunique()} quarters, "
-      f"{nat_d['industry_code'].nunique()} industries")
-print(f"s: {nat_s['quarter_label'].nunique()} quarters, "
-      f"{nat_s['industry_code'].nunique()} industries")
+for lbl, df in [("δ",     nat_d), ("s (TS)", nat_s),
+                ("s (LD)", nat_ld), ("s (QU)", nat_qu)]:
+    print(f"  {lbl}: {df['quarter_label'].nunique()} quarters, "
+          f"{df['industry_code'].nunique()} industries")
 
-# Restrict to overlapping sample (s starts 2001Q1).
-nat = nat_d.merge(nat_s, on=["industry_code", "quarter_label"], how="inner")
+# Restrict to overlapping sample.
+nat = nat_d.merge(nat_s,  on=["industry_code", "quarter_label"], how="inner")
+nat = nat.merge(nat_ld, on=["industry_code", "quarter_label"], how="inner")
+nat = nat.merge(nat_qu, on=["industry_code", "quarter_label"], how="inner")
 print(f"Overlapping sample: {nat['quarter_label'].min()} – "
       f"{nat['quarter_label'].max()}  "
       f"({nat['quarter_label'].nunique()} quarters, "
@@ -149,9 +161,13 @@ print(f"Overlapping sample: {nat['quarter_label'].min()} – "
       f"{len(nat):,} obs)")
 
 # Remove zeros/negatives (log undefined); attach labels.
-nat = nat[(nat["g_delta"] > 0) & (nat["g_s"] > 0)].copy()
+pos = ((nat["g_delta"] > 0) & (nat["g_s"] > 0) &
+       (nat["g_ld"] > 0) & (nat["g_qu"] > 0))
+nat = nat[pos].copy()
 nat["log_g_delta"]    = np.log(nat["g_delta"])
 nat["log_g_s"]        = np.log(nat["g_s"])
+nat["log_g_ld"]       = np.log(nat["g_ld"])
+nat["log_g_qu"]       = np.log(nat["g_qu"])
 nat["industry_label"] = nat["industry_code"].map(INDUSTRY_LABELS).fillna(
                             nat["industry_code"].astype(str))
 nat = nat.sort_values(["industry_code", "quarter_label"]).reset_index(drop=True)
@@ -166,7 +182,7 @@ if PROD_CACHE.exists():
     print(f"\nProductivity: loaded from cache ({PROD_CACHE})")
 else:
     print("\nFetching OPHNFB from FRED via fredapi ...")
-    api_key = os.environ.get("FRED_API_KEY", "d35aabd7dc07cd94481af3d1e2f0ecf3")
+    api_key = os.environ.get("FRED_API_KEY", "")
     if not api_key:
         sys.exit("ERROR: set FRED_API_KEY environment variable before running.")
     fred  = Fred(api_key=api_key)
@@ -234,18 +250,17 @@ def _residualize(df, dep_col, resid_col, prod_col="dlog_p"):
 nat = nat.sort_values(["industry_code", "quarter_label"]).reset_index(drop=True)
 
 print(f"\n--- Productivity regression  (\u0394log p_t, quarterly growth) ---")
-resid_d = _residualize(nat, "log_g_delta", "nu_delta")
-resid_s = _residualize(nat, "log_g_s",     "nu_s")
+resid_d  = _residualize(nat, "log_g_delta", "nu_delta")
+resid_s  = _residualize(nat, "log_g_s",     "nu_s")
+resid_ld = _residualize(nat, "log_g_ld",    "nu_ld")
+resid_qu = _residualize(nat, "log_g_qu",    "nu_qu")
 
-# Merge residuals back into nat on keys — no index alignment issues.
-# Assign residuals by position — nat is already sorted and 0-based indexed,
-# and _residualize works on an identically-sorted copy, so the numpy arrays
-# are in the same row order.  No merge or index alignment needed.
 nat["nu_delta"] = resid_d["nu_delta"].to_numpy()
 nat["nu_s"]     = resid_s["nu_s"].to_numpy()
+nat["nu_ld"]    = resid_ld["nu_ld"].to_numpy()
+nat["nu_qu"]    = resid_qu["nu_qu"].to_numpy()
 
-# Confirm columns are present and non-null.
-for col in ["nu_delta", "nu_s"]:
+for col in ["nu_delta", "nu_s", "nu_ld", "nu_qu"]:
     n_null = nat[col].isna().sum()
     status = f"WARNING: {n_null} nulls" if n_null else f"OK ({len(nat):,} obs)"
     print(f"  {col}: {status}")
@@ -265,30 +280,48 @@ def _by_industry_r(df, col1, col2):
           .sort_values("r")
     )
 
+# ── Pooled pairwise correlations ──────────────────────────────────────────
+pairs = [
+    ("δ vs TS",  "log_g_delta", "log_g_s",  "nu_delta", "nu_s"),
+    ("δ vs LD",  "log_g_delta", "log_g_ld", "nu_delta", "nu_ld"),
+    ("δ vs QU",  "log_g_delta", "log_g_qu", "nu_delta", "nu_qu"),
+    ("LD vs QU", "log_g_ld",    "log_g_qu", "nu_ld",    "nu_qu"),
+    ("TS vs LD", "log_g_s",     "log_g_ld", "nu_s",     "nu_ld"),
+    ("TS vs QU", "log_g_s",     "log_g_qu", "nu_s",     "nu_qu"),
+]
+
+print(f"\n--- Pooled cross-series correlations ---")
+print(f"  {'Pair':<12}  {'r raw':>8}  {'r resid':>8}  {'reduction':>10}")
+print(f"  {'-'*46}")
+for label, rc1, rc2, rc3, rc4 in pairs:
+    r_raw_p   = _pooled_r(nat, rc1, rc2)
+    r_resid_p = _pooled_r(nat, rc3, rc4)
+    print(f"  {label:<12}  {r_raw_p:>+8.4f}  {r_resid_p:>+8.4f}  {r_raw_p-r_resid_p:>+10.4f}")
+
+print(f"\n--- Per-industry corr(δ vs LD) and corr(δ vs QU) ---")
+by_dld_raw   = _by_industry_r(nat, "log_g_delta", "log_g_ld").rename(columns={"r": "r_dLD_raw"})
+by_dld_resid = _by_industry_r(nat, "nu_delta",    "nu_ld"   ).rename(columns={"r": "r_dLD_resid"})
+by_dqu_raw   = _by_industry_r(nat, "log_g_delta", "log_g_qu").rename(columns={"r": "r_dQU_raw"})
+by_dqu_resid = _by_industry_r(nat, "nu_delta",    "nu_qu"   ).rename(columns={"r": "r_dQU_resid"})
+by_ind = (by_dld_raw
+          .merge(by_dld_resid, on="industry_label")
+          .merge(by_dqu_raw,   on="industry_label")
+          .merge(by_dqu_resid, on="industry_label")
+          .sort_values("r_dLD_raw"))
+print(by_ind.to_string(index=False))
+
+# Keep for plot titles
 r_raw   = _pooled_r(nat, "log_g_delta", "log_g_s")
 r_resid = _pooled_r(nat, "nu_delta",    "nu_s")
 
-print(f"\n--- Pooled cross-series correlation corr(g^δ, g^s) ---")
-print(f"  Raw        r = {r_raw:+.4f}")
-print(f"  Residualized r = {r_resid:+.4f}  "
-      f"(reduction = {r_raw - r_resid:+.4f})")
-if abs(r_raw - r_resid) > 0.15:
-    print("  → Productivity explains most co-movement.")
-else:
-    print("  → Productivity explains little; deeper co-movement present.")
-
-print(f"\n--- Per-industry corr(g^δ, g^s) ---")
-by_raw   = _by_industry_r(nat, "log_g_delta", "log_g_s").rename(columns={"r": "r_raw"})
-by_resid = _by_industry_r(nat, "nu_delta",    "nu_s"   ).rename(columns={"r": "r_resid"})
-by_ind   = by_raw.merge(by_resid, on="industry_label").sort_values("r_raw")
-print(by_ind.to_string(index=False))
-
 # ── 6. save residualized series ────────────────────────────────────────────
 
-nat[["industry_code", "quarter_label", "nu_delta"]].to_parquet(RESID_D_PATH, index=False)
-nat[["industry_code", "quarter_label", "nu_s"]    ].to_parquet(RESID_S_PATH, index=False)
-print(f"\nSaved: {RESID_D_PATH}")
-print(f"Saved: {RESID_S_PATH}")
+nat[["industry_code", "quarter_label", "nu_delta"]].to_parquet(RESID_D_PATH,  index=False)
+nat[["industry_code", "quarter_label", "nu_s"]    ].to_parquet(RESID_S_PATH,  index=False)
+nat[["industry_code", "quarter_label", "nu_ld"]   ].to_parquet(RESID_LD_PATH, index=False)
+nat[["industry_code", "quarter_label", "nu_qu"]   ].to_parquet(RESID_QU_PATH, index=False)
+for p in [RESID_D_PATH, RESID_S_PATH, RESID_LD_PATH, RESID_QU_PATH]:
+    print(f"Saved: {p}")
 
 # ── 7. plots ───────────────────────────────────────────────────────────────
 

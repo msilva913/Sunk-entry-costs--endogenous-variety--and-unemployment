@@ -205,10 +205,9 @@ START_QUARTER  = "2001Q1"
 END_QUARTER    = "2023Q1"
 
 SHARES_PATH        = DEFAULT_OUTPUT_DIR / f"shares_base{BASE_YEAR}.parquet"
-SHOCK_RATES_S_PATH = (
-    DEFAULT_OUTPUT_DIR /
-    f"shock_rates_s_{START_QUARTER}_{END_QUARTER}.parquet"
-)
+SHOCK_RATES_S_PATH  = DEFAULT_OUTPUT_DIR / f"shock_rates_s_{START_QUARTER}_{END_QUARTER}.parquet"
+SHOCK_RATES_LD_PATH = DEFAULT_OUTPUT_DIR / f"shock_rates_ld_{START_QUARTER}_{END_QUARTER}.parquet"
+SHOCK_RATES_QU_PATH = DEFAULT_OUTPUT_DIR / f"shock_rates_qu_{START_QUARTER}_{END_QUARTER}.parquet"
 S_INSTRUMENT_PATH  = DEFAULT_OUTPUT_DIR / f"s_instrument_base{BASE_YEAR}.csv"
 
 
@@ -216,23 +215,43 @@ S_INSTRUMENT_PATH  = DEFAULT_OUTPUT_DIR / f"s_instrument_base{BASE_YEAR}.csv"
 # 2.  JOLTS API FETCHING
 # ---------------------------------------------------------------------------
 
-def _build_series_id(industry: str) -> str:
+# Valid JOLTS dataelement codes for separations decomposition:
+#   TS = total separations  (layoffs + discharges + quits + other)
+#   LD = layoffs and discharges
+#   QU = quits
+JOLTS_DATAELEMENTS = {"TS", "LD", "QU"}
+
+# Cache file names keyed by dataelement
+JOLTS_CACHE_FILES = {
+    "TS": "jolts_separations_national_12ind.parquet",
+    "LD": "jolts_ld_national_12ind.parquet",
+    "QU": "jolts_quits_national_12ind.parquet",
+}
+
+# Shock rate parquet names keyed by dataelement
+def _shock_rates_path(dataelement: str, start_q: str, end_q: str,
+                      output_dir: Path) -> Path:
+    tag = {"TS": "s", "LD": "ld", "QU": "qu"}[dataelement]
+    return output_dir / f"shock_rates_{tag}_{start_q}_{end_q}.parquet"
+
+
+def _build_series_id(industry: str, dataelement: str = "TS") -> str:
     """
-    Construct a 21-character national JOLTS total separations series ID.
+    Construct a 21-character national JOLTS series ID.
 
-    JT + S + industry(6) + 00(state) + 00000(area) + 00(size) + TS + L
-    Example: "JTS1100990000000TSL"
-
-    dataelement = TS (Total Separations) captures all separations regardless
-    of initiation: layoffs, discharges, voluntary quits, and retirements.
-    This is the correct empirical counterpart to the DMP match dissolution
-    rate s, which is agnostic about who initiates the separation.
+    JT + S + industry(6) + 00(state) + 00000(area) + 00(size) + DE + L
+    Example: "JTS1100990000000TSL"  (total separations)
+             "JTS1100990000000LDL"  (layoffs and discharges)
+             "JTS1100990000000QUL"  (quits)
 
     Parameters
     ----------
-    industry : 6-char JOLTS industry code, e.g. "110099"
+    industry    : 6-char JOLTS industry code, e.g. "110099"
+    dataelement : "TS" (default), "LD", or "QU"
     """
-    sid = f"JTS{industry}000000000TSL"
+    if dataelement not in JOLTS_DATAELEMENTS:
+        raise ValueError(f"dataelement must be one of {JOLTS_DATAELEMENTS}")
+    sid = f"JTS{industry}000000000{dataelement}L"
     assert len(sid) == 21, f"Series ID length error: '{sid}' is {len(sid)} chars"
     return sid
 
@@ -258,32 +277,20 @@ def fetch_jolts_separations_national(
     start_quarter : str   = START_QUARTER,
     end_quarter   : str   = END_QUARTER,
     sleep_secs    : float = 1.0,
+    dataelement   : str   = "TS",
 ) -> pd.DataFrame:
     """
-    Fetch national JOLTS Total Separations (SA, level) via the BLS public
+    Fetch national JOLTS separation series (SA, level) via the BLS public
     API v1.  Results are cached as parquet after the first call.
-
-    Total separations = layoffs + discharges + quits + other separations.
-    This is the appropriate numerator for the s-shock instrument: it
-    captures all match dissolutions at surviving firms regardless of
-    initiation, which is the correct empirical counterpart to the DMP
-    match dissolution rate s.
-
-    JOLTS largely misses closing establishments (they exit the survey
-    frame before responding), so the published total separations series
-    already approximates separations at continuing establishments.
-
-    Monthly observations are summed within each calendar quarter.
-    Incomplete quarters (fewer than 3 months) are dropped.
-
-    API calls: 10 series / 1 batch × 3 year-chunks = 3 total.
 
     Parameters
     ----------
     cache_dir     : Directory for caching the parquet file.
     start_quarter : First quarter to return, e.g. "2001Q1".
     end_quarter   : Last quarter to return,  e.g. "2024Q2".
-    sleep_secs    : Pause between API calls (rate-limit courtesy). Default 1.0.
+    sleep_secs    : Pause between API calls (rate-limit courtesy).
+    dataelement   : "TS" total separations (default), "LD" layoffs and
+                    discharges, or "QU" quits.
 
     Returns
     -------
@@ -291,25 +298,25 @@ def fetch_jolts_separations_national(
         Columns: industry_code, quarter_label, separations_nat
         One row per (supersector, quarter).
     """
+    if dataelement not in JOLTS_DATAELEMENTS:
+        raise ValueError(f"dataelement must be one of {JOLTS_DATAELEMENTS}")
     cache_dir.mkdir(parents=True, exist_ok=True)
-    # Cache name reflects 12-industry disaggregation.
-    # Delete jolts_separations_national.parquet (old 10-industry cache) if
-    # present — it will be ignored since the filename changed.
-    cache_file = cache_dir / "jolts_separations_national_12ind.parquet"
+    cache_file = cache_dir / JOLTS_CACHE_FILES[dataelement]
 
     if cache_file.exists():
-        print("  [JOLTS national] loading from cache")
+        print(f"  [JOLTS {dataelement}] loading from cache")
         df = pd.read_parquet(cache_file)
     else:
-        series_ids = [_build_series_id(jt) for jt in JOLTS_INDUSTRY_MAP.values()]
+        series_ids = [_build_series_id(jt, dataelement)
+                      for jt in JOLTS_INDUSTRY_MAP.values()]
         sid_to_ind = {
-            _build_series_id(jt): pip
+            _build_series_id(jt, dataelement): pip
             for pip, jt in JOLTS_INDUSTRY_MAP.items()
         }
 
         print(
-            f"  [JOLTS national] fetching {len(series_ids)} industry "
-            f"total-separations series from BLS API v1 ..."
+            f"  [JOLTS {dataelement}] fetching {len(series_ids)} industry "
+            f"separation series from BLS API v1 ..."
         )
         for sid in series_ids:
             print(f"    {sid}  [{INDUSTRY_LABELS[sid_to_ind[sid]]}]")
@@ -403,7 +410,7 @@ def fetch_jolts_separations_national(
 
         df.to_parquet(cache_file, index=False)
         print(
-            f"  [JOLTS national] cached {len(df):,} rows | "
+            f"  [JOLTS {dataelement}] cached {len(df):,} rows | "
             f"{df['industry_code'].nunique()} supersectors | "
             f"{df['quarter_label'].nunique()} quarters"
         )
@@ -419,34 +426,31 @@ def fetch_jolts_separations_national(
 # ---------------------------------------------------------------------------
 
 def build_loo_shock_rates_s(
-    shares   : pd.DataFrame,
-    jolts_nat: pd.DataFrame,
+    shares      : pd.DataFrame,
+    jolts_nat   : pd.DataFrame,
+    out_col     : str = "g_s_loo",
 ) -> pd.DataFrame:
     """
-    Compute g^s_{-s,j,t} for every (state, supersector, quarter) cell.
+    Compute LOO shock rates for every (state, supersector, quarter) cell.
 
-    Denominator-only LOO applied universally:
+        g^k_{-s,j,t} = separations_nat_{j,t} / E^nat_{-s,j,t0}
 
-        g^s_{-s,j,t} = separations_nat_{j,t} / E^nat_{-s,j,t0}
-
-    E^nat_{-s,j,t0} = E^nat_{j,t0} - E_{s,j,t0}  is taken from `shares`.
-    The numerator is JOLTS total separations — all separations (layoffs,
-    discharges, quits, other) at approximately surviving establishments.
+    Works for any separation type (TS, LD, QU) — the caller controls
+    which JOLTS series is passed in `jolts_nat` and what the output
+    column is named via `out_col`.
 
     Parameters
     ----------
-    shares    : Output of build_employment_shares() from
-                construct_delta_instrument.  Must contain columns
-                [state_fips, industry_code, emp_nat_loo].
-    jolts_nat : Output of fetch_jolts_separations_national().
-                Must contain column 'separations_nat'.
+    shares    : Must contain [state_fips, industry_code, emp_nat_loo].
+    jolts_nat : Must contain [industry_code, quarter_label, separations_nat].
+    out_col   : Name for the output rate column.  Default "g_s_loo".
 
     Returns
     -------
     pd.DataFrame
-        Columns: state_fips, industry_code, quarter_label, g_s_loo
+        Columns: state_fips, industry_code, quarter_label, {out_col}
     """
-    print("\n[Shock rates s] denominator LOO applied universally")
+    print(f"\n[Shock rates] LOO applied — output column: {out_col}")
 
     state_ind = shares[["state_fips", "industry_code"]].drop_duplicates()
     panel = state_ind.merge(jolts_nat, on="industry_code", how="inner")
@@ -457,17 +461,17 @@ def build_loo_shock_rates_s(
         how="left",
     )
 
-    panel["g_s_loo"] = np.where(
+    panel[out_col] = np.where(
         panel["emp_nat_loo"] > 0,
         panel["separations_nat"] / panel["emp_nat_loo"],
         np.nan,
     )
 
-    n_nan = panel["g_s_loo"].isna().sum()
+    n_nan = panel[out_col].isna().sum()
     if n_nan > 0:
         print(f"  WARNING: {n_nan} NaN cells (emp_nat_loo <= 0) -- excluded")
 
-    n_valid = panel["g_s_loo"].notna().sum()
+    n_valid = panel[out_col].notna().sum()
     print(
         f"  {n_valid:,} valid cells  |  "
         f"{panel['state_fips'].nunique()} states x "
@@ -475,7 +479,7 @@ def build_loo_shock_rates_s(
         f"{panel['quarter_label'].nunique()} quarters"
     )
 
-    return panel[["state_fips", "industry_code", "quarter_label", "g_s_loo"]]
+    return panel[["state_fips", "industry_code", "quarter_label", out_col]]
 
 
 # ---------------------------------------------------------------------------
@@ -636,31 +640,43 @@ def build_national_shock_rates_s(
     cache_dir     : Path = DEFAULT_CACHE_DIR,
     save_output   : bool = True,
     output_dir    : Path = DEFAULT_OUTPUT_DIR,
+    dataelement   : str  = "TS",
 ) -> pd.DataFrame:
     """
-    Fetch JOLTS national layoffs and compute g^s_{-s,j,t} for every
-    (state, supersector, quarter) cell.  This is Part 2 of the pipeline.
+    Fetch JOLTS national separation series and compute LOO shock rates
+    for every (state, supersector, quarter) cell.  Part 2 of the pipeline.
+
+    Parameters
+    ----------
+    dataelement : "TS" total separations (default), "LD" layoffs and
+                  discharges, "QU" quits.
 
     Returns
     -------
     pd.DataFrame
-        Columns: state_fips, industry_code, quarter_label, g_s_loo
+        Columns: state_fips, industry_code, quarter_label, g_{tag}_loo
+        where tag is "s" for TS, "ld" for LD, "qu" for QU.
     """
-    print(f"\n[JOLTS] fetching national total separations ...")
+    tag     = {"TS": "s", "LD": "ld", "QU": "qu"}[dataelement]
+    out_col = f"g_{tag}_loo"
+    label   = {"TS": "total separations", "LD": "layoffs & discharges",
+               "QU": "quits"}[dataelement]
+
+    print(f"\n[JOLTS] fetching national {label} ...")
     jolts_nat = fetch_jolts_separations_national(
-        cache_dir, start_quarter, end_quarter
+        cache_dir, start_quarter, end_quarter, dataelement=dataelement
     )
     print(
         f"  {jolts_nat['quarter_label'].nunique()} quarters x "
         f"{jolts_nat['industry_code'].nunique()} supersectors"
     )
 
-    shock_rates = build_loo_shock_rates_s(shares, jolts_nat)
+    shock_rates = build_loo_shock_rates_s(shares, jolts_nat, out_col=out_col)
 
-    print("\n  Mean LOO total-separation rate by supersector (×1 000):")
+    print(f"\n  Mean LOO {label} rate by supersector (×1 000):")
     mean_by_ss = (
         shock_rates
-        .groupby("industry_code")["g_s_loo"]
+        .groupby("industry_code")[out_col]
         .mean()
         .mul(1000)
         .round(3)
@@ -670,20 +686,52 @@ def build_national_shock_rates_s(
 
     if save_output:
         output_dir.mkdir(parents=True, exist_ok=True)
-        fpath = (
-            output_dir /
-            f"shock_rates_s_{start_quarter}_{end_quarter}.parquet"
-        )
+        fpath = _shock_rates_path(dataelement, start_quarter, end_quarter,
+                                  output_dir)
         shock_rates.to_parquet(fpath, index=False)
         print(f"\n  Saved: {fpath}")
 
     return shock_rates
 
 
+# Convenience wrappers for LD and QU (used by part2_shock_rates_s.py
+# and part2b_shock_comovement.py).
+def build_national_shock_rates_ld(shares, start_quarter=START_QUARTER,
+                                   end_quarter=END_QUARTER,
+                                   cache_dir=DEFAULT_CACHE_DIR,
+                                   save_output=True,
+                                   output_dir=DEFAULT_OUTPUT_DIR):
+    """Layoffs-and-discharges LOO shock rates.  See build_national_shock_rates_s."""
+    return build_national_shock_rates_s(
+        shares, start_quarter, end_quarter, cache_dir,
+        save_output, output_dir, dataelement="LD"
+    )
+
+
+def build_national_shock_rates_qu(shares, start_quarter=START_QUARTER,
+                                   end_quarter=END_QUARTER,
+                                   cache_dir=DEFAULT_CACHE_DIR,
+                                   save_output=True,
+                                   output_dir=DEFAULT_OUTPUT_DIR):
+    """Quits LOO shock rates.  See build_national_shock_rates_s."""
+    return build_national_shock_rates_s(
+        shares, start_quarter, end_quarter, cache_dir,
+        save_output, output_dir, dataelement="QU"
+    )
+
+
 # ---------------------------------------------------------------------------
-# Backward-compatibility alias
+# Convenience aliases for each separation component.
 # ---------------------------------------------------------------------------
-# The old name 'fetch_jolts_layoffs_national' is preserved so that any
-# external scripts importing from this module do not immediately break.
-# It now returns JOLTS total separations, not just layoffs and discharges.
+def fetch_jolts_ld_national(**kwargs) -> pd.DataFrame:
+    """Fetch JOLTS Layoffs and Discharges (LD). See
+    fetch_jolts_separations_national for full parameter docs."""
+    return fetch_jolts_separations_national(dataelement="LD", **kwargs)
+
+def fetch_jolts_quits_national(**kwargs) -> pd.DataFrame:
+    """Fetch JOLTS Quits (QU). See
+    fetch_jolts_separations_national for full parameter docs."""
+    return fetch_jolts_separations_national(dataelement="QU", **kwargs)
+
+# Backward-compat: old name preserved so existing imports do not break.
 fetch_jolts_layoffs_national = fetch_jolts_separations_national

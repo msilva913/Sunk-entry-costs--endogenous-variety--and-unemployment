@@ -76,9 +76,13 @@ from construct_s_instrument import (
     DEFAULT_OUTPUT_DIR,
     SHARES_PATH,
     SHOCK_RATES_S_PATH,
+    SHOCK_RATES_LD_PATH,
+    SHOCK_RATES_QU_PATH,
     INDUSTRY_LABELS,
     FIPS2D_TO_STATE,
     build_national_shock_rates_s,
+    build_national_shock_rates_ld,
+    build_national_shock_rates_qu,
     fetch_jolts_separations_national,
 )
 
@@ -96,7 +100,35 @@ print(f"Loaded shares from {SHARES_PATH}  ({len(shares):,} rows)")
 # -----------------------------------------------------------------------
 # Compute shock rates
 # -----------------------------------------------------------------------
+# ── Total separations (TS) — existing series ───────────────────────────
 shock_rates = build_national_shock_rates_s(
+    shares        = shares,
+    start_quarter = START_QUARTER,
+    end_quarter   = END_QUARTER,
+    cache_dir     = DEFAULT_CACHE_DIR,
+    save_output   = True,
+    output_dir    = DEFAULT_OUTPUT_DIR,
+    dataelement   = "TS",
+)
+
+# ── Layoffs and discharges (LD) ─────────────────────────────────────────
+print("\n" + "=" * 60)
+print("Part 2s — Layoffs & discharges shock rates")
+print("=" * 60)
+shock_rates_ld = build_national_shock_rates_ld(
+    shares        = shares,
+    start_quarter = START_QUARTER,
+    end_quarter   = END_QUARTER,
+    cache_dir     = DEFAULT_CACHE_DIR,
+    save_output   = True,
+    output_dir    = DEFAULT_OUTPUT_DIR,
+)
+
+# ── Quits (QU) ─────────────────────────────────────────────────────────
+print("\n" + "=" * 60)
+print("Part 2s — Quits shock rates")
+print("=" * 60)
+shock_rates_qu = build_national_shock_rates_qu(
     shares        = shares,
     start_quarter = START_QUARTER,
     end_quarter   = END_QUARTER,
@@ -269,5 +301,3 @@ fig.savefig(outpath, dpi=150)
 plt.close(fig)
 _open_file(outpath)
 print(f"\nPlot saved: {outpath}")
-
-print(jolts_nat["quarter_label"].min(), jolts_nat["quarter_label"].max())
