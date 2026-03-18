@@ -119,12 +119,14 @@ print("=" * 65)
 print("Part 2b — Shock-productivity decomposition and comovement")
 print("=" * 65)
 
-for p in [SHOCK_RATES_PATH, SHOCK_RATES_S_PATH,
-           SHOCK_RATES_LD_PATH, SHOCK_RATES_QU_PATH]:
-    if not p.exists():
-        script = ("part2_shock_rates.py" if "shock_rates_1" in p.name
-                  else "part2_shock_rates_s.py")
-        sys.exit(f"ERROR: {p} not found.  Run {script} first.")
+_missing = [p for p in [SHOCK_RATES_PATH, SHOCK_RATES_S_PATH,
+                        SHOCK_RATES_LD_PATH, SHOCK_RATES_QU_PATH]
+            if not p.exists()]
+if _missing:
+    msg = "Missing required shock rate files:\n"
+    msg += "\n".join(f"  {p}" for p in _missing)
+    msg += "\nRun part2_shock_rates.py and part2_shock_rates_s.py first."
+    raise FileNotFoundError(msg)
 
 # ── 2. national industry series ────────────────────────────────────────────
 # Average across states to recover the national series.
@@ -330,100 +332,121 @@ quarters   = sorted(nat["quarter_label"].unique())
 dates      = [_ql_to_dt(q) for q in quarters]
 n_ind      = len(industries)
 
-# ── plot A: raw log series by industry ────────────────────────────────────
-fig, axes = plt.subplots(n_ind, 2,
-                         figsize=(14, 2.2 * n_ind),
+# ── plot A: raw log series by industry, all four shock types ──────────────
+# Four columns: δ, TS, LD, QU
+series_cols = [
+    ("log_g_delta", r"$\log g^\delta$",  "#1f77b4"),
+    ("log_g_s",     r"$\log g^{TS}$",     "#d62728"),
+    ("log_g_ld",    r"$\log g^{LD}$",     "#2ca02c"),
+    ("log_g_qu",    r"$\log g^{QU}$",     "#ff7f0e"),
+]
+fig, axes = plt.subplots(n_ind, 4,
+                         figsize=(20, 2.0 * n_ind),
                          sharex=True, squeeze=False)
 for i, ind in enumerate(industries):
     sub = (nat[nat["industry_label"] == ind]
            .set_index("quarter_label")
            .reindex(quarters))
-    for ax, col, color in [(axes[i, 0], "log_g_delta", "#1f77b4"),
-                            (axes[i, 1], "log_g_s",    "#d62728")]:
-        ax.plot(dates, sub[col].values, color=color, linewidth=1.2)
+    for j, (col, _, color) in enumerate(series_cols):
+        ax = axes[i, j]
+        ax.plot(dates, sub[col].values, color=color, linewidth=1.1)
         _add_recessions(ax)
-        ax.set_ylabel(ind, fontsize=7)
+        ax.set_ylabel(ind if j == 0 else "", fontsize=7)
         ax.grid(axis="y", linewidth=0.4, alpha=0.4)
-axes[0, 0].set_title(r"$\log g^\delta_{j,t}$  (δ shock rate)",  fontsize=10)
-axes[0, 1].set_title(r"$\log g^s_{j,t}$  (s shock rate)", fontsize=10)
-fig.suptitle("National industry shock rates by supersector (raw)",
+for j, (_, title, _) in enumerate(series_cols):
+    axes[0, j].set_title(title, fontsize=10)
+fig.suptitle("National industry shock rates by supersector (raw log)",
              fontsize=11, y=1.005)
 fig.tight_layout()
 p = RESULTS_DIR / "comovement_raw_series.png"
-fig.savefig(p, dpi=130, bbox_inches="tight"); plt.close(fig); _open_file(p)
+fig.savefig(p, dpi=120, bbox_inches="tight"); plt.close(fig); _open_file(p)
 print(f"\nPlot A saved: {p}")
 
-# ── plot B: 2×2 correlation heatmaps ──────────────────────────────────────
+# ── plot B: cross-industry correlation heatmaps, 2×4 grid ─────────────────
+# Row 1: raw series; Row 2: residualized
 def _corr_matrix(df, col):
     """Cross-industry Pearson r matrix (industries × industries)."""
     wide = df.pivot_table(index="quarter_label",
                           columns="industry_label",
-                          values=col,
-                          aggfunc="mean")   # aggfunc guards against duplicates
+                          values=col, aggfunc="mean")
     return wide.corr()
 
-cm = {
-    "raw_d":   _corr_matrix(nat, "log_g_delta"),
-    "raw_s":   _corr_matrix(nat, "log_g_s"),
-    "resid_d": _corr_matrix(nat, "nu_delta"),
-    "resid_s": _corr_matrix(nat, "nu_s"),
-}
-
-fig, axes = plt.subplots(2, 2, figsize=(14, 11))
-panels = [
-    (axes[0, 0], cm["raw_d"],   r"$\log g^\delta_{j,t}$ (raw)"),
-    (axes[0, 1], cm["raw_s"],   r"$\log g^s_{j,t}$ (raw)"),
-    (axes[1, 0], cm["resid_d"], r"$\nu^\delta_{j,t}$ (residualized)"),
-    (axes[1, 1], cm["resid_s"], r"$\nu^s_{j,t}$ (residualized)"),
+hmap_panels = [
+    (r"$\log g^\delta$ raw",  "log_g_delta"),
+    (r"$\log g^{TS}$ raw",     "log_g_s"),
+    (r"$\log g^{LD}$ raw",     "log_g_ld"),
+    (r"$\log g^{QU}$ raw",     "log_g_qu"),
+    (r"$\nu^\delta$ resid",   "nu_delta"),
+    (r"$\nu^{TS}$ resid",      "nu_s"),
+    (r"$\nu^{LD}$ resid",      "nu_ld"),
+    (r"$\nu^{QU}$ resid",      "nu_qu"),
 ]
-for ax, mat, title in panels:
-    im = ax.imshow(mat.values, vmin=-1, vmax=1, cmap="RdBu_r", aspect="auto")
+fig, axes = plt.subplots(2, 4, figsize=(22, 11))
+for idx, (title, col) in enumerate(hmap_panels):
+    ax  = axes[idx // 4, idx % 4]
+    mat = _corr_matrix(nat, col)
+    im  = ax.imshow(mat.values, vmin=-1, vmax=1, cmap="RdBu_r", aspect="auto")
     labels = mat.columns.tolist()
-    ax.set_xticks(range(len(labels))); ax.set_xticklabels(labels, rotation=45,
-                                                           ha="right", fontsize=7)
-    ax.set_yticks(range(len(labels))); ax.set_yticklabels(labels, fontsize=7)
-    ax.set_title(title, fontsize=10)
+    ax.set_xticks(range(len(labels)))
+    ax.set_xticklabels(labels, rotation=45, ha="right", fontsize=6)
+    ax.set_yticks(range(len(labels)))
+    ax.set_yticklabels(labels, fontsize=6)
+    ax.set_title(title, fontsize=9)
     for ii in range(len(labels)):
         for jj in range(len(labels)):
             v = mat.values[ii, jj]
             ax.text(jj, ii, f"{v:.2f}", ha="center", va="center",
-                    fontsize=6, color="white" if abs(v) > 0.7 else "black")
+                    fontsize=5, color="white" if abs(v) > 0.7 else "black")
     plt.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
-
 fig.suptitle(
-    "Cross-industry correlation matrices: raw vs. productivity-residualized\n"
-    f"Pooled corr(g^δ, g^s): raw = {r_raw:.3f}  →  residualized = {r_resid:.3f}",
+    "Cross-industry correlation matrices: raw vs. residualized (all four shock types)",
     fontsize=11, y=1.01,
 )
 fig.tight_layout()
 p = RESULTS_DIR / "comovement_correlation_heatmaps.png"
-fig.savefig(p, dpi=130, bbox_inches="tight"); plt.close(fig); _open_file(p)
+fig.savefig(p, dpi=120, bbox_inches="tight"); plt.close(fig); _open_file(p)
 print(f"Plot B saved: {p}")
 
-# ── plot C: cross-series scatter raw vs. residualized ─────────────────────
-fig, axes = plt.subplots(1, 2, figsize=(11, 5))
-axes[0].scatter(nat["log_g_delta"], nat["log_g_s"], s=6, alpha=0.4, color="#555")
-axes[0].set_xlabel(r"$\log g^\delta_{j,t}$")
-axes[0].set_ylabel(r"$\log g^s_{j,t}$")
-axes[0].set_title(f"Raw  (r = {r_raw:.3f})", fontsize=10)
-
-axes[1].scatter(nat["nu_delta"], nat["nu_s"], s=6, alpha=0.4, color="#1f77b4")
-axes[1].set_xlabel(r"$\nu^\delta_{j,t}$")
-axes[1].set_ylabel(r"$\nu^s_{j,t}$")
-axes[1].set_title(f"Residualized  (r = {r_resid:.3f})", fontsize=10)
-
-for ax in axes:
-    ax.axhline(0, color="black", linewidth=0.6)
-    ax.axvline(0, color="black", linewidth=0.6)
+# ── plot C: δ vs each s-type scatter, raw and residualized ────────────────
+# Three pairs: δ vs TS, δ vs LD, δ vs QU  (2 rows × 3 cols)
+scatter_pairs = [
+    ("δ vs TS", "log_g_delta", "log_g_s",  "nu_delta", "nu_s",
+     r"$\log g^\delta$", r"$\log g^{TS}$",
+     r"$\nu^\delta$",    r"$\nu^{TS}$"),
+    ("δ vs LD", "log_g_delta", "log_g_ld", "nu_delta", "nu_ld",
+     r"$\log g^\delta$", r"$\log g^{LD}$",
+     r"$\nu^\delta$",    r"$\nu^{LD}$"),
+    ("δ vs QU", "log_g_delta", "log_g_qu", "nu_delta", "nu_qu",
+     r"$\log g^\delta$", r"$\log g^{QU}$",
+     r"$\nu^\delta$",    r"$\nu^{QU}$"),
+]
+fig, axes = plt.subplots(2, 3, figsize=(15, 9))
+for col_idx, (lbl, rx, ry, nx, ny, rxl, ryl, nxl, nyl) in enumerate(scatter_pairs):
+    r_r = nat[rx].corr(nat[ry])
+    r_n = nat[nx].corr(nat[ny])
+    # top row: raw
+    ax = axes[0, col_idx]
+    ax.scatter(nat[rx], nat[ry], s=5, alpha=0.35, color="#555")
+    ax.set_xlabel(rxl, fontsize=9); ax.set_ylabel(ryl, fontsize=9)
+    ax.set_title(f"{lbl} — raw  (r = {r_r:.3f})", fontsize=9)
+    ax.axhline(0, color="black", linewidth=0.5)
+    ax.axvline(0, color="black", linewidth=0.5)
     ax.grid(linewidth=0.4, alpha=0.4)
-
+    # bottom row: residualized
+    ax = axes[1, col_idx]
+    ax.scatter(nat[nx], nat[ny], s=5, alpha=0.35, color="#1f77b4")
+    ax.set_xlabel(nxl, fontsize=9); ax.set_ylabel(nyl, fontsize=9)
+    ax.set_title(f"{lbl} — residualized  (r = {r_n:.3f})", fontsize=9)
+    ax.axhline(0, color="black", linewidth=0.5)
+    ax.axvline(0, color="black", linewidth=0.5)
+    ax.grid(linewidth=0.4, alpha=0.4)
 fig.suptitle(
-    r"$g^\delta_{j,t}$ vs. $g^s_{j,t}$: raw and residualized on $\Delta\log p_t$",
+    r"δ vs each s-type: raw (top) and residualized on $\Delta\log p_t$ (bottom)",
     fontsize=11,
 )
 fig.tight_layout()
 p = RESULTS_DIR / "comovement_scatter.png"
-fig.savefig(p, dpi=130, bbox_inches="tight"); plt.close(fig); _open_file(p)
+fig.savefig(p, dpi=120, bbox_inches="tight"); plt.close(fig); _open_file(p)
 print(f"Plot C saved: {p}")
 
 print("\nDone.")
