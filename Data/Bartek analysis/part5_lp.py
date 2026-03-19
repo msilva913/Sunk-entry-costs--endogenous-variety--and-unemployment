@@ -56,15 +56,17 @@ comparability with the s IRF.
 Outputs
 -------
     data/results/lp_irf_delta.csv              — β_h, SE, CIs for δ shock (full)
-    data/results/lp_irf_s.csv                 — β_h, SE, CIs for s shock
+    data/results/lp_irf_s.csv                 — β_h, SE, CIs for s-TS shock
     data/results/lp_irf_delta_post2001.csv    — δ on post-2001 sample
     data/results/lp_irf_delta_nfci.csv        — δ with NFCI interaction
     data/results/lp_irf_s_nfci.csv            — s with NFCI interaction
     data/results/lp_irf_delta_resid.csv       — δ residualized (post-2001)
-    data/results/lp_irf_s_resid.csv           — s residualized
-    data/results/lp_irf_combined.png          — raw δ and s side by side
-    data/results/lp_irf_delta_resid_comparison.png  — δ raw vs. residualized
-    data/results/lp_irf_s_resid_comparison.png      — s raw vs. residualized
+    data/results/lp_irf_s_resid.csv           — s-TS residualized
+    data/results/lp_irf_ld_resid.csv          — s-LD (layoffs & discharges) residualized
+    data/results/lp_irf_qu_resid.csv          — s-QU (quits) residualized
+    data/results/lp_irf_delta_resid_comparison.png   — δ raw vs. residualized
+    data/results/lp_irf_s_decomp_comparison.png      — s raw vs TS/LD/QU residualized
+    data/results/lp_irf_delta_ld_qu_comparison.png   — δ vs LD vs QU (core asymmetry)
 
 Run
 ---
@@ -79,6 +81,8 @@ Prerequisites
     python part3_instrument_s.py      (produces s_instrument_base2006.csv)
     python part4_outcomes.py          (produces laus_quarterly.parquet)
     python part7_nfci.py              (produces nfci_quarterly.parquet)
+    python part2b_shock_comovement.py (produces residualized shock parquets)
+    python part3_resid_instruments.py (produces LD/QU residualized instruments)
 """
 
 import os
@@ -109,9 +113,8 @@ except NameError:
 
 # ---------------------------------------------------------------------------
 # Configuration
-# --------------------------  -------------------------------------------------
-T          = 20
-HORIZONS   = list(range(T+1))          # h = 0, 1, ..., 16 quarters
+# ---------------------------------------------------------------------------
+HORIZONS   = list(range(21))          # h = 0, 1, ..., 20 quarters
 BASE_YEAR  = 2006                     # must match part1/part3 base year
 CI_LEVEL   = 0.90                     # confidence band width for main plot
 Z90        = 1.645
@@ -131,6 +134,8 @@ DELTA_INSTR_FILE       = INSTR_DIR / f"delta_instrument_base{BASE_YEAR}.csv"
 S_INSTR_FILE           = INSTR_DIR / f"s_instrument_base{BASE_YEAR}.csv"
 DELTA_RESID_INSTR_FILE = INSTR_DIR / f"delta_instrument_resid_base{BASE_YEAR}.csv"
 S_RESID_INSTR_FILE     = INSTR_DIR / f"s_instrument_resid_base{BASE_YEAR}.csv"
+LD_RESID_INSTR_FILE    = INSTR_DIR / f"ld_instrument_resid_base{BASE_YEAR}.csv"
+QU_RESID_INSTR_FILE    = INSTR_DIR / f"qu_instrument_resid_base{BASE_YEAR}.csv"
 LAUS_FILE        = INSTR_DIR / "laus_quarterly.parquet"
 NFCI_FILE        = Path("data/cache") / "nfci_quarterly.parquet"
 
@@ -468,147 +473,132 @@ def plot_irf(results: dict[str, pd.DataFrame],
              out_path: Path,
              instr_sds: dict[str, float] | None = None) -> None:
     """
-    Side-by-side IRF plots for δ and s shocks with detailed figure caption.
+    Side-by-side IRF plots.  Each β_h is already scaled to 1-SD units by
+    run_lp(), so all panels share the same y-axis interpretation:
+    pp change in unemployment rate per 1-SD shock.
 
-    Shaded bands show 90% confidence interval (clustered SEs).
-    A dashed 95% CI contour is added as a thin outer line.
-    Zero line and h=4/8/12/16 grid lines aid readability.
-
-    results:    dict mapping label → DataFrame from run_lp()
-    instr_sds:  dict mapping label → cross-sectional SD of instrument (in pp,
-                i.e. after ×100 rescaling) — used in caption for 1-SD scaling
+    results:   dict mapping label → DataFrame from run_lp()
+    instr_sds: dict mapping label → instrument SD (stored in irf["instr_sd"]);
+               kept as parameter for backward compatibility but no longer
+               used for scaling (scaling already done in run_lp).
     """
     n = len(results)
-    # Extra bottom margin for caption
     fig, axes = plt.subplots(1, n, figsize=(7 * n, 6), sharey=False)
     if n == 1:
         axes = [axes]
 
-    colors = {"δ shock": "#1f77b4", "s shock": "#d62728",
-              "δ shock (post-2001)": "#aec7e8"}
+    color_cycle = ["#1f77b4", "#d62728", "#2ca02c", "#ff7f0e",
+                   "#9467bd", "#8c564b"]
 
-    peak_info = {}   # collect peak β per label for caption
+    peak_info = {}
 
-    for ax, (label, df) in zip(axes, results.items()):
+    for (ax, (label, df)), color in zip(
+            zip(axes, results.items()), color_cycle):
         if df.empty:
             ax.set_visible(False)
             continue
 
-        h      = df["h"].values
-        beta   = df["beta"].values
-        lo90   = df["ci90_lo"].values
-        hi90   = df["ci90_hi"].values
-        lo95   = df["ci95_lo"].values
-        hi95   = df["ci95_hi"].values
+        h    = df["h"].values
+        beta = df["beta"].values
+        lo90 = df["ci90_lo"].values
+        hi90 = df["ci90_hi"].values
+        lo95 = df["ci95_lo"].values
+        hi95 = df["ci95_hi"].values
 
-        color = colors.get(label, "#2ca02c")
+        # Retrieve per-IRF instrument SD stored by run_lp (for caption).
+        isd = float(df["instr_sd"].iloc[0]) if "instr_sd" in df.columns else np.nan
+        max_h = int(h.max())
 
-        # 95% CI — thin dashed contour
-        ax.plot(h, lo95, color=color, linewidth=0.7,
-                linestyle="--", alpha=0.6)
-        ax.plot(h, hi95, color=color, linewidth=0.7,
-                linestyle="--", alpha=0.6)
-
-        # 90% CI — filled band
+        # 95% CI contour
+        ax.plot(h, lo95, color=color, linewidth=0.7, linestyle="--", alpha=0.6)
+        ax.plot(h, hi95, color=color, linewidth=0.7, linestyle="--", alpha=0.6)
+        # 90% CI band
         ax.fill_between(h, lo90, hi90, color=color, alpha=0.20,
-                        label="90% CI (clustered)")
-
+                        label="90% CI")
         # Point estimate
         ax.plot(h, beta, color=color, linewidth=2.0,
                 marker="o", markersize=3.5, label=label)
 
-        # Zero line
-        ax.axhline(0, color="black", linewidth=0.8, linestyle="-")
+        ax.axhline(0, color="black", linewidth=0.8)
+        for hh in range(4, max_h + 1, 4):
+            ax.axvline(hh, color="grey", linewidth=0.5, linestyle=":", alpha=0.6)
 
-        # Vertical grid at 4-quarter multiples
-        for hh in [4, 8, 12, 16]:
-            ax.axvline(hh, color="grey", linewidth=0.5,
-                       linestyle=":", alpha=0.6)
-
-        ax.set_title(f"IRF — {label}\n"
-                     f"(cumulative change in unemp. rate from shock quarter, pp)",
-                     fontsize=11)
+        ax.set_title(f"IRF — {label}", fontsize=11)
         ax.set_xlabel("Horizon h (quarters)", fontsize=10)
-        ax.set_ylabel("pp change in unemp. rate per 1 pp shock", fontsize=10)
-        ax.set_xticks(h)
+        ax.set_ylabel("pp change in unemp. rate\nper 1-SD shock", fontsize=10)
+        ax.set_xticks(h[::2] if max_h > 16 else h)
         ax.xaxis.set_major_formatter(
             mticker.FuncFormatter(lambda x, _: str(int(x))))
         ax.legend(fontsize=9, framealpha=0.85)
         ax.grid(axis="y", linewidth=0.4, alpha=0.4)
 
-        # Store peak for caption
         idx_peak = int(np.argmax(np.abs(beta)))
         peak_info[label] = {
-            "h":    int(h[idx_peak]),
-            "beta": float(beta[idx_peak]),
-            "sd":   instr_sds.get(label, np.nan) if instr_sds else np.nan,
+            "h": int(h[idx_peak]), "beta": float(beta[idx_peak]),
+            "isd": isd, "max_h": max_h,
         }
 
+    # Classify instruments: raw (rate units) vs. residualized (log-residual units).
+    labels_list = list(results.keys())
+    n_resid = sum("resid" in lbl.lower() for lbl in labels_list)
+    n_raw   = len(labels_list) - n_resid
+    if n_resid == 0:
+        instr_type  = "raw Bartik"
+        units_note  = ("All instruments are raw Bartik rates; "
+                       "1-SD units are directly comparable across panels.")
+    elif n_raw == 0:
+        instr_type  = "productivity-residualized Bartik"
+        units_note  = ("All instruments are residualized on $\\Delta\\log p_t$; "
+                       "1-SD units are directly comparable across panels.")
+    else:
+        instr_type  = "Bartik (mixed raw and residualized)"
+        units_note  = ("Raw instruments are in quarterly rate units; "
+                       "residualized instruments are in log-residual units. "
+                       "1-SD units are NOT directly comparable across raw and "
+                       "residualized panels — compare shapes, not magnitudes.")
+
+    labels_str = ", ".join(labels_list)
+    max_h_all  = max(v["max_h"] for v in peak_info.values()) if peak_info else 20
+
     fig.suptitle(
-        "Panel LP — Bartik δ and s shocks → unemployment rate  [Test A: baseline = t−1]\n"
-        "(state + time FEs; controls: u_{t-1}, log LF_{t-1}; "
-        "SEs clustered by state; outcomes capped 2019Q4)",
-        fontsize=11, y=1.01,
+        f"Panel LP — {instr_type} instruments → unemployment rate\n"
+        f"Shocks: {labels_str}  |  "
+        "State + time FEs; controls: $u_{{t-1}}$, $\\log LF_{{t-1}}$; "
+        "SEs clustered by state; outcomes capped 2019Q4",
+        fontsize=10, y=1.01,
     )
 
-    # -------------------------------------------------------------------
-    # Detailed caption
-    # -------------------------------------------------------------------
-    # Build 1-SD effect sentences for each shock if SD info available
-    sd_sentences = []
-    for label, info in peak_info.items():
-        if not np.isnan(info["sd"]):
-            effect_1sd = info["beta"] * info["sd"]
-            sd_sentences.append(
-                f"A 1-SD move in the {label} instrument ({info['sd']:.2f} pp) "
-                f"implies a peak effect of {effect_1sd:.2f} pp at h={info['h']}."
-            )
-
-    sd_text = "  ".join(sd_sentences) if sd_sentences else ""
+    # Peak-effect sentences — omit raw instrument SD (non-interpretable units).
+    peak_sentences = []
+    for lbl, info in peak_info.items():
+        peak_sentences.append(
+            f"{lbl}: peak {info['beta']:+.2f} pp at h={info['h']}."
+        )
 
     caption = (
-        "Notes: Each panel plots 17 coefficients $\\hat{{\\beta}}_h$, $h=0,\\ldots,16$, "
-        "from separate OLS regressions of $y_{{s,t+h}} - y_{{s,t-1}}$ (cumulative "
-        "change in the unemployment rate from one quarter before the shock) on the "
-        "Bartik instrument $B_{{s,t}}^{{(k)}}$, state fixed effects $\\alpha_s$, time "
-        "fixed effects $\\alpha_t$, lagged unemployment $u_{{s,t-1}}$, and lagged log "
-        "labor force $\\log(\\mathrm{{LF}}_{{s,t-1}})$.  "
-        "The baseline is $t-1$ rather than $t$: differencing from the shock quarter "
-        "$t$ itself is problematic because $y_{{s,t}}$ is contaminated by the "
-        "contemporaneous shock — states with larger $B_{{s,t}}$ already have elevated "
-        "unemployment within quarter $t$, causing the difference $y_{{s,t+h}}-y_{{s,t}}$ "
-        "to understate the early response and drift upward mechanically at long horizons. "
-        "Using $t-1$ as the baseline avoids this: unemployment one quarter before the "
-        "shock is predetermined with respect to $B_{{s,t}}$. Unlike the $y_{{s,t}}$ "
-        "baseline, $\\hat{{\\beta}}_0$ is not anchored at zero — it measures the "
-        "within-quarter impact of the shock.  "
-        "Outcome quarters are capped at 2019Q4 to exclude COVID (2020Q1–2021Q4), "
-        "which produces spurious jumps in $\\hat{{\\beta}}_h$ at the horizons where "
-        "COVID outcomes first enter the outcome window.  "
-        "The instrument is rescaled to percentage points (×100), so $\\hat{{\\beta}}_h$ "
-        "measures the cumulative change in the unemployment rate (in pp) per "
-        "1 pp increase in the Bartik-predicted shock rate.  "
-        "The $\\delta$ and $s$ instruments have different cross-sectional standard "
-        "deviations (after rescaling: "
-        f"SD($B^{{\\delta}}$) $\\approx$ {instr_sds.get('δ shock', float('nan')):.2f} pp, "
-        f"SD($B^{{s}}$) $\\approx$ {instr_sds.get('s shock', float('nan')):.2f} pp), "
-        "so coefficients are not directly comparable in magnitude across panels.  "
-        + (sd_text + "  " if sd_text else "")
-        + "Shaded bands: 90\\% CI; dashed lines: 95\\% CI.  "
-        "Standard errors clustered by state (50 clusters).  "
-        "$\\delta$ instrument sample: 1992Q3–2019Q4 (outcomes); "
-        "$s$ instrument sample: 2001Q1–2019Q4 (outcomes)."
+        f"Notes: Each panel plots $\\hat{{\\beta}}_h$, $h=0,\\ldots,{max_h_all}$, "
+        "from separate OLS regressions of $y_{{s,t+h}} - y_{{s,t-1}}$ on the "
+        f"{instr_type} instrument, state FEs, time FEs, $u_{{s,t-1}}$, "
+        "and $\\log LF_{{s,t-1}}$.  "
+        "Coefficients are scaled to 1-SD units (multiplied by the pooled "
+        "cross-sectional SD of the instrument), so $\\hat{{\\beta}}_h$ "
+        "measures the cumulative pp change in the unemployment rate per "
+        "1-SD increase in the Bartik instrument.  "
+        + units_note + "  "
+        "Baseline: $t-1$ (predetermined w.r.t. shock); "
+        "$\\hat{{\\beta}}_0$ measures the within-quarter impact.  "
+        "Outcome quarters capped at 2019Q4 to exclude COVID distortions.  "
+        + "  ".join(peak_sentences) + "  "
+        "Shaded bands: 90\\% CI; dashed lines: 95\\% CI.  "
+        "SEs clustered by state (50 clusters)."
     )
 
     fig.text(
         0.5, -0.04, caption,
-        ha="center", va="top",
-        fontsize=7.5,
-        wrap=True,
-        transform=fig.transFigure,
+        ha="center", va="top", fontsize=7.5,
+        wrap=True, transform=fig.transFigure,
         bbox=dict(boxstyle="round,pad=0.4", facecolor="#f9f9f9",
                   edgecolor="#cccccc", linewidth=0.8),
-        # Use a wide text width so caption wraps naturally
         multialignment="left",
     )
 
@@ -616,6 +606,56 @@ def plot_irf(results: dict[str, pd.DataFrame],
     fig.savefig(out_path, dpi=150, bbox_inches="tight")
     plt.close(fig)
     print(f"\nPlot saved: {out_path}")
+
+
+# ---------------------------------------------------------------------------
+# Overlay IRF plot — multiple series on a single panel
+# ---------------------------------------------------------------------------
+def overlay_plot_irf(
+    results  : dict,
+    out_path : Path,
+    title    : str = "",
+    ylabel   : str = "pp change in unemp. rate per 1-SD shock",
+) -> None:
+    """
+    Overlay multiple IRFs on one panel for direct shape comparison.
+    results: dict mapping label -> DataFrame from run_lp() (already 1-SD scaled).
+    """
+    PALETTE = [
+        ("#1f77b4", "-"),   # δ
+        ("#d62728", "-"),   # LD
+        ("#2ca02c", "-"),   # QU
+        ("#ff7f0e", "--"),  # TS
+        ("#9467bd", ":"),   # extra
+        ("#8c564b", "-."),  # extra
+    ]
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.axhline(0, color="black", linewidth=0.8)
+    for hh in [4, 8, 12, 16, 20]:
+        ax.axvline(hh, color="grey", linewidth=0.4, linestyle=":", alpha=0.5)
+
+    for idx, (label, df) in enumerate(results.items()):
+        if df is None or df.empty:
+            continue
+        color, ls = PALETTE[idx % len(PALETTE)]
+        h    = df["h"].values
+        beta = df["beta"].values
+        lo90 = df["ci90_lo"].values
+        hi90 = df["ci90_hi"].values
+        ax.fill_between(h, lo90, hi90, color=color, alpha=0.12)
+        ax.plot(h, beta, color=color, linewidth=2.0, linestyle=ls,
+                marker="o", markersize=3.0, label=label)
+
+    ax.set_xlabel("Horizon h (quarters)", fontsize=11)
+    ax.set_ylabel(ylabel, fontsize=11)
+    ax.set_title(title if title else "IRF comparison", fontsize=12)
+    ax.legend(fontsize=10, framealpha=0.85)
+    ax.grid(axis="y", linewidth=0.4, alpha=0.4)
+    fig.tight_layout()
+    fig.savefig(out_path, dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    print(f"  Plot saved: {out_path}")
+    _open_file(out_path)
 
 
 # ===========================================================================
@@ -790,82 +830,136 @@ if not irf_delta_post.empty:
 _open_file(RESULTS_DIR / "lp_irf_combined.png")
 
 # -----------------------------------------------------------------------
-# Residualized instruments — LP (if available)
+# Residualized instruments — LP (δ, TS, LD, QU — if available)
 # -----------------------------------------------------------------------
-if DELTA_RESID_INSTR_FILE.exists() and S_RESID_INSTR_FILE.exists():
-    print("\n[7] Running LPs with productivity-residualized instruments")
+_resid_files_present = all(p.exists() for p in [
+    DELTA_RESID_INSTR_FILE, S_RESID_INSTR_FILE,
+    LD_RESID_INSTR_FILE, QU_RESID_INSTR_FILE,
+])
 
-    delta_resid_raw = pd.read_csv(DELTA_RESID_INSTR_FILE,
-                                   dtype={"state_fips": str})
-    s_resid_raw     = pd.read_csv(S_RESID_INSTR_FILE,
-                                   dtype={"state_fips": str})
-    delta_resid_raw["state_fips"] = delta_resid_raw["state_fips"].str.zfill(2)
-    s_resid_raw["state_fips"]     = s_resid_raw["state_fips"].str.zfill(2)
+if _resid_files_present:
+    print("\n[7] Running LPs with productivity-residualized instruments "
+          "(δ, TS, LD, QU)")
 
-    # Residualized series are demeaned so the column name is the same;
-    # build_panel expects the instrument column to be named bartik_delta/bartik_s.
+    def _load_resid(path):
+        df = pd.read_csv(path, dtype={"state_fips": str})
+        df["state_fips"] = df["state_fips"].str.zfill(2)
+        return df
+
+    delta_resid_raw = _load_resid(DELTA_RESID_INSTR_FILE)
+    s_resid_raw     = _load_resid(S_RESID_INSTR_FILE)
+    ld_resid_raw    = _load_resid(LD_RESID_INSTR_FILE)
+    qu_resid_raw    = _load_resid(QU_RESID_INSTR_FILE)
+
+    # LD and QU CSVs use bartik_ld / bartik_qu column names.
+    # build_panel is generic — pass the correct instr_col for each.
     outcomes = load_outcomes()
     delta_resid_panel = build_panel(delta_resid_raw, "bartik_delta", outcomes)
     s_resid_panel     = build_panel(s_resid_raw,     "bartik_s",     outcomes)
+    ld_resid_panel    = build_panel(ld_resid_raw,    "bartik_ld",    outcomes)
+    qu_resid_panel    = build_panel(qu_resid_raw,    "bartik_qu",    outcomes)
 
-    # Restrict δ residualized to post-2001 for direct comparability with s.
+    # Restrict δ to post-2001 for direct comparability with s/LD/QU.
     delta_resid_post = delta_resid_panel[
         delta_resid_panel["quarter_label"] >= "2001Q1"
     ].copy()
 
+    # ── run LPs ──────────────────────────────────────────────────────────
     irf_delta_resid = run_lp(delta_resid_post, "bartik_delta",
                               "δ shock (resid, post-2001)")
     irf_s_resid     = run_lp(s_resid_panel,    "bartik_s",
-                              "s shock (resid)")
+                              "s-TS shock (resid)")
+    irf_ld_resid    = run_lp(ld_resid_panel,   "bartik_ld",
+                              "s-LD shock (resid)")
+    irf_qu_resid    = run_lp(qu_resid_panel,   "bartik_qu",
+                              "s-QU shock (resid)")
 
-    irf_delta_resid.to_csv(RESULTS_DIR / "lp_irf_delta_resid.csv", index=False)
-    irf_s_resid.to_csv(RESULTS_DIR     / "lp_irf_s_resid.csv",     index=False)
-    print(f"  Saved: {RESULTS_DIR / 'lp_irf_delta_resid.csv'}")
-    print(f"  Saved: {RESULTS_DIR / 'lp_irf_s_resid.csv'}")
+    # ── save ─────────────────────────────────────────────────────────────
+    for irf, fname in [
+        (irf_delta_resid, "lp_irf_delta_resid.csv"),
+        (irf_s_resid,     "lp_irf_s_resid.csv"),
+        (irf_ld_resid,    "lp_irf_ld_resid.csv"),
+        (irf_qu_resid,    "lp_irf_qu_resid.csv"),
+    ]:
+        irf.to_csv(RESULTS_DIR / fname, index=False)
+        print(f"  Saved: {RESULTS_DIR / fname}")
 
-    # Comparison plot: raw (post-2001) vs. residualized, δ and s side by side
-    instr_sds_resid = {
-        "δ raw (post-2001)":  float(delta_post2001["bartik_delta"].std()),
-        "δ residualized":     float(delta_resid_post["bartik_delta"].std()),
-        "s raw":              float(s_panel["bartik_s"].std()),
-        "s residualized":     float(s_resid_panel["bartik_s"].std()),
-    }
-
-    # δ comparison
+    # ── plots ─────────────────────────────────────────────────────────────
+    # Plot 1: δ raw (post-2001) vs δ residualized — side-by-side
     plot_irf(
         {"δ raw (post-2001)": irf_delta_post,
          "δ residualized":    irf_delta_resid},
         out_path=RESULTS_DIR / "lp_irf_delta_resid_comparison.png",
-        instr_sds=instr_sds_resid,
+        instr_sds={
+            "δ raw (post-2001)": float(delta_post2001["bartik_delta"].std()),
+            "δ residualized":    float(delta_resid_post["bartik_delta"].std()),
+        },
     )
     print(f"  Saved: {RESULTS_DIR / 'lp_irf_delta_resid_comparison.png'}")
 
-    # s comparison
-    plot_irf(
-        {"s raw":         irf_s,
-         "s residualized": irf_s_resid},
-        out_path=RESULTS_DIR / "lp_irf_s_resid_comparison.png",
-        instr_sds=instr_sds_resid,
+    # Plot 2 (CORE): δ vs LD vs QU residualized overlaid — asymmetry test
+    # Model prediction: δ destroys vacancies (sharper initial response),
+    # LD triggers reposting (more muted), QU is procyclical (different shape).
+    overlay_plot_irf(
+        {"δ residualized":  irf_delta_resid,
+         "LD residualized": irf_ld_resid,
+         "QU residualized": irf_qu_resid},
+        out_path=RESULTS_DIR / "lp_irf_delta_ld_qu_overlay.png",
+        title=(
+            r"IRF: $\delta$ vs Layoffs+Discharges vs Quits"
+            "\n(productivity-residualized, 1-SD scale, post-2001)"
+        ),
     )
-    print(f"  Saved: {RESULTS_DIR / 'lp_irf_s_resid_comparison.png'}")
 
-    _open_file(RESULTS_DIR / "lp_irf_delta_resid_comparison.png")
-    _open_file(RESULTS_DIR / "lp_irf_s_resid_comparison.png")
+    # Plot 3: LD vs QU vs TS residualized — s decomposition
+    overlay_plot_irf(
+        {"LD residualized": irf_ld_resid,
+         "QU residualized": irf_qu_resid,
+         "TS residualized": irf_s_resid},
+        out_path=RESULTS_DIR / "lp_irf_s_decomp_overlay.png",
+        title=(
+            "IRF: Layoffs+Discharges vs Quits vs Total Separations\n"
+            "(productivity-residualized, 1-SD scale)"
+        ),
+    )
 
 else:
     print("\n[7] Residualized instruments not found — skipping resid LP.")
-    print("    Run part3_resid_instruments.py first.")
+    print("    Run part2_shock_rates_s.py then part3_resid_instruments.py first.")
 
 # -----------------------------------------------------------------------
-# Summary table
+# Summary table — raw and residualized peaks
 # -----------------------------------------------------------------------
-print("\n[8] Summary — peak unemployment response")
-for lbl, df in [("δ", irf_delta), ("s", irf_s)]:
-    if df.empty:
+print("\n[8] Summary — peak unemployment response (1-SD standardized)")
+print(f"  {'Series':<32}  {'h_peak':>6}  {'β_peak':>8}  "
+      f"{'SE':>8}  {'p':>6}  {'partial-F':>10}")
+print(f"  {'-'*74}")
+
+raw_series = [
+    ("δ raw (full)",          irf_delta),
+    ("δ raw (post-2001)",     irf_delta_post),
+    ("s raw (TS)",            irf_s),
+]
+for lbl, df in raw_series:
+    if df is None or df.empty:
         continue
-    peak = df.loc[df["beta"].idxmax()]
-    print(f"\n  {lbl} shock peak:")
-    print(f"    h = {int(peak['h'])}  β = {peak['beta']:.4f}  "
-          f"SE = {peak['se']:.4f}  p = {peak['pval']:.3f}  "
-          f"N = {int(peak['nobs'])}")
-    print(f"    90% CI: [{peak['ci90_lo']:.4f}, {peak['ci90_hi']:.4f}]")
+    pk = df.loc[df["beta"].idxmax()]
+    print(f"  {lbl:<32}  {int(pk['h']):>6}  {pk['beta']:>8.4f}  "
+          f"{pk['se']:>8.4f}  {pk['pval']:>6.3f}  {pk['partial_f']:>10.2f}")
+
+try:
+    print(f"  {'':32}  {'':>6}")
+    resid_series = [
+        ("δ residualized (post-2001)",  irf_delta_resid),
+        ("LD residualized",             irf_ld_resid),
+        ("QU residualized",             irf_qu_resid),
+        ("TS residualized",             irf_s_resid),
+    ]
+    for lbl, df in resid_series:
+        if df is None or df.empty:
+            continue
+        pk = df.loc[df["beta"].idxmax()]
+        print(f"  {lbl:<32}  {int(pk['h']):>6}  {pk['beta']:>8.4f}  "
+              f"{pk['se']:>8.4f}  {pk['pval']:>6.3f}  {pk['partial_f']:>10.2f}")
+except NameError:
+    print("  (residualized LPs not run — run part3_resid_instruments.py first)")
