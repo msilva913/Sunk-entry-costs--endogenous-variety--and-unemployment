@@ -1,0 +1,5 @@
+,bartik_delta,bartik_s,bartik_ld,bartik_qu
+bartik_delta,1.0,0.4779,0.4758,0.1676
+bartik_s,0.4779,1.0,0.5632,0.7232
+bartik_ld,0.4758,0.5632,1.0,-0.1621
+bartik_qu,0.1676,0.7232,-0.1621,1.0
