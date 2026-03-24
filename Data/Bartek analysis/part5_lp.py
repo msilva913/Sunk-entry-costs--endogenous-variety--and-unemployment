@@ -177,13 +177,28 @@ def load_instruments() -> tuple[pd.DataFrame, pd.DataFrame]:
 
 
 def load_outcomes() -> pd.DataFrame:
-    """Load quarterly LAUS unemployment rates and labor force from part4."""
+    """
+    Load quarterly LAUS unemployment rates, labor force, and vacancies from part4.
+
+    Vacancies column is present when part4_outcomes.py has been run with BLS
+    API access.  It is NaN for quarters before 2001 and absent entirely if the
+    vacancy fetch failed; in the latter case downstream code falls back to
+    unemployment-only LPs (guarded by `if "vacancies" in outcomes.columns`).
+    """
     laus = pd.read_parquet(LAUS_FILE)
     laus["state_fips"] = laus["state_fips"].str.zfill(2)
     print(f"  LAUS: {laus.shape}  "
           f"({laus['quarter_label'].min()} – {laus['quarter_label'].max()})")
-    return laus[["state_fips", "state", "quarter_label",
-                 "unemp_rate", "labor_force"]]
+    # Pass through vacancies if present; downstream functions check for column.
+    keep_cols = ["state_fips", "state", "quarter_label", "unemp_rate", "labor_force"]
+    if "vacancies" in laus.columns:
+        keep_cols.append("vacancies")
+        n_vac = laus["vacancies"].notna().sum()
+        pct   = 100 * n_vac / len(laus)
+        print(f"  Vacancies: {n_vac:,} non-NaN rows ({pct:.0f}% coverage)")
+    else:
+        print("  Vacancies: column not present — run part4_outcomes.py to add")
+    return laus[keep_cols]
 
 
 def load_nfci() -> pd.DataFrame:
@@ -214,13 +229,20 @@ def build_panel(instr: pd.DataFrame, instr_col: str,
     to ensure they are predetermined with respect to the shock:
         u_{s,t-1}         — lagged unemployment rate
         log(LF_{s,t-1})   — lagged log labor force
+        log(v_{s,t-1})    — lagged log vacancies (if vacancies present in outcomes)
 
-    Returns a panel DataFrame indexed by (state_fips, quarter_label) with
-    columns: state, instr_col, unemp_rate, unemp_lag1, lf_log_lag1.
+    Returns a panel DataFrame with columns:
+        state, instr_col, unemp_rate, unemp_lag1, lf_log_lag1
+        [ + vacancies, log_v, log_v_lag1   if outcomes contains vacancies ]
     """
     # Merge instrument and outcomes on state × quarter
+    merge_cols = ["state_fips", "quarter_label", "unemp_rate", "labor_force"]
+    _has_vacancies = "vacancies" in outcomes.columns
+    if _has_vacancies:
+        merge_cols.append("vacancies")
+
     panel = instr[["state_fips", "state", "quarter_label", instr_col]].merge(
-        outcomes[["state_fips", "quarter_label", "unemp_rate", "labor_force"]],
+        outcomes[merge_cols],
         on=["state_fips", "quarter_label"],
         how="inner",
     )
@@ -243,6 +265,13 @@ def build_panel(instr: pd.DataFrame, instr_col: str,
         lambda x: np.log(x.shift(1))
     )
 
+    # Vacancy lags — only when vacancies are present
+    # log_v is log of vacancy level (thousands); log_v_lag1 is its one-quarter lag.
+    # We guard against zero/negative vacancies before taking logs (should be rare).
+    if _has_vacancies:
+        panel["log_v"] = np.log(panel["vacancies"].clip(lower=0.001))
+        panel["log_v_lag1"] = panel.groupby("state_fips")["log_v"].shift(1)
+
     # Verify lag is truly t-1 (not a gap across non-contiguous quarters)
     panel["prev_ql"] = panel.groupby("state_fips")["quarter_label"].shift(1)
     expected_prev    = quarter_shift(panel["quarter_label"], -1)
@@ -251,13 +280,21 @@ def build_panel(instr: pd.DataFrame, instr_col: str,
         n_bad = bad_lag.sum()
         print(f"  [warn] {n_bad} rows with non-contiguous quarter sequence — "
               f"lagged controls set to NaN for those rows")
-        panel.loc[bad_lag, ["unemp_lag1", "lf_log_lag1"]] = np.nan
+        lag_cols = ["unemp_lag1", "lf_log_lag1"]
+        if _has_vacancies:
+            lag_cols.append("log_v_lag1")
+        panel.loc[bad_lag, lag_cols] = np.nan
 
     panel = panel.drop(columns="prev_ql")
 
     n_states = panel["state_fips"].nunique()
     n_qtrs   = panel["quarter_label"].nunique()
-    print(f"  Panel: {len(panel):,} rows  ({n_states} states × {n_qtrs} quarters)")
+    vac_note = ""
+    if _has_vacancies:
+        n_vac = panel["log_v_lag1"].notna().sum()
+        vac_note = f"  vacancy lags: {n_vac:,} non-NaN"
+    print(f"  Panel: {len(panel):,} rows  ({n_states} states × {n_qtrs} quarters)"
+          + vac_note)
     return panel
 
 
@@ -266,56 +303,82 @@ def build_panel(instr: pd.DataFrame, instr_col: str,
 # ---------------------------------------------------------------------------
 def run_lp_horizon(base_panel: pd.DataFrame, h: int,
                    shock_col: str,
-                   include_nfci: bool = False) -> dict | None:
+                   include_nfci: bool = False,
+                   outcome: str = "unemp") -> dict | None:
     """
     Estimate the LP for a single horizon h.
 
-    Constructs Δy_{s,t,h} = y_{s,t+h} - y_{s,t-1}, merges with the
-    instrument at time t, and runs OLS with state + time FEs and
-    state-clustered standard errors.
+    Parameters
+    ----------
+    base_panel   : panel from build_panel() + attach_nfci_interaction()
+    h            : forecast horizon (quarters)
+    shock_col    : name of the instrument column (e.g. 'bartik_delta')
+    include_nfci : if True, add B_{s,t} × NFCI_risk_dm interaction
+    outcome      : "unemp" (default) or "vacancy"
+
+        "unemp"   — dep_var = u_{s,t+h} - u_{s,t-1}
+                    baseline control: unemp_lag1
+                    interpretation: pp change in unemployment rate
+
+        "vacancy" — dep_var = log(v_{s,t+h}) - log(v_{s,t-1})
+                    baseline control: log_v_lag1
+                    interpretation: log-point change in vacancy stock
+                    Requires 'log_v' and 'log_v_lag1' columns in base_panel
+                    (present when outcomes contained a 'vacancies' column).
 
     Returns a dict with point estimate, SEs, CIs, and diagnostics,
     or None if there are too few observations.
     """
+    if outcome not in ("unemp", "vacancy"):
+        raise ValueError(f"outcome must be 'unemp' or 'vacancy', got '{outcome}'")
+
     df = base_panel.copy()
 
     # --- Construct the h-quarter-ahead outcome ---
-    # For each (state, t), look up y_{s,t+h} by shifting the quarter label
     future_ql = quarter_shift(df["quarter_label"], h)
     df["future_ql"] = future_ql
 
-    outcomes_lookup = (
-        df[["state_fips", "quarter_label", "unemp_rate"]]
-        .rename(columns={"quarter_label": "future_ql",
-                         "unemp_rate":    "y_future"})
-    )
-    df = df.merge(outcomes_lookup, on=["state_fips", "future_ql"], how="left")
+    if outcome == "unemp":
+        # Look up unemployment rate at t+h
+        outcomes_lookup = (
+            df[["state_fips", "quarter_label", "unemp_rate"]]
+            .rename(columns={"quarter_label": "future_ql",
+                             "unemp_rate":    "y_future"})
+        )
+        df = df.merge(outcomes_lookup, on=["state_fips", "future_ql"], how="left")
 
-    # Drop observations where the outcome quarter falls in or after the COVID
-    # window. COVID (2020Q1–2021Q4) caused an aggregate unemployment spike
-    # completely unrelated to the Bartik instrument, contaminating β_h at
-    # the horizons where those quarters first enter the outcome window.
-    if MAX_OUTCOME_QUARTER is not None:
-        df = df[df["future_ql"] <= MAX_OUTCOME_QUARTER].copy()
+        if MAX_OUTCOME_QUARTER is not None:
+            df = df[df["future_ql"] <= MAX_OUTCOME_QUARTER].copy()
 
-    # Outcome: y_{s,t+h} - y_{s,t-1}  (Test A — baseline is t-1, not t)
-    #
-    # Motivation: y_{s,t} is contaminated by the shock itself — states with
-    # a large B_{s,t} already have elevated unemployment within quarter t.
-    # Differencing from t therefore understates the early response and
-    # mechanically produces upward drift in β_h as the cumulative effect
-    # accumulates above an already-elevated starting point.
-    #
-    # Using t-1 as baseline avoids this: unemployment one quarter before
-    # the shock is predetermined with respect to B_{s,t}. The cost is
-    # near-collinearity between the baseline and u_{s,t-1} (they differ
-    # only by one quarter), but this affects efficiency not identification.
-    # β_0 is no longer anchored at zero by construction — it now measures
-    # the within-quarter impact of the shock on unemployment.
-    df["dep_var"] = df["y_future"] - df["unemp_lag1"]
+        # Outcome: u_{s,t+h} - u_{s,t-1}
+        # Baseline t-1 is predetermined; see original note in prior version.
+        df["dep_var"]    = df["y_future"] - df["unemp_lag1"]
+        lag_control      = "unemp_lag1"
+
+    else:  # outcome == "vacancy"
+        # Require log_v columns — present only when vacancies were fetched.
+        if "log_v" not in df.columns or "log_v_lag1" not in df.columns:
+            print(f"    h={h:2d}: vacancy columns not in panel — skipping")
+            return None
+
+        # Look up log_v at t+h using the panel's own log_v column.
+        vac_lookup = (
+            df[["state_fips", "quarter_label", "log_v"]]
+            .rename(columns={"quarter_label": "future_ql",
+                             "log_v":         "log_v_future"})
+        )
+        df = df.merge(vac_lookup, on=["state_fips", "future_ql"], how="left")
+
+        if MAX_OUTCOME_QUARTER is not None:
+            df = df[df["future_ql"] <= MAX_OUTCOME_QUARTER].copy()
+
+        # Outcome: log(v_{s,t+h}) - log(v_{s,t-1})
+        # Baseline log_v_lag1 = log(v_{s,t-1}) is predetermined.
+        df["dep_var"] = df["log_v_future"] - df["log_v_lag1"]
+        lag_control   = "log_v_lag1"
 
     # Drop rows with missing dep_var or any regressor
-    required = ["dep_var", shock_col, "unemp_lag1", "lf_log_lag1"]
+    required = ["dep_var", shock_col, lag_control, "lf_log_lag1"]
     if include_nfci:
         required.append("instr_x_nfci")
     df = df.dropna(subset=required).copy()
@@ -325,31 +388,23 @@ def run_lp_horizon(base_panel: pd.DataFrame, h: int,
         return None
 
     # --- Build regressor matrix ---
-    # State and time dummies (drop_first avoids perfect multicollinearity)
-    state_dummies = pd.get_dummies(df["state_fips"],     prefix="st",
+    state_dummies = pd.get_dummies(df["state_fips"],    prefix="st",
                                    drop_first=True, dtype=float)
-    time_dummies  = pd.get_dummies(df["quarter_label"],  prefix="qt",
+    time_dummies  = pd.get_dummies(df["quarter_label"], prefix="qt",
                                    drop_first=True, dtype=float)
 
-    core_regressors = [shock_col, "unemp_lag1", "lf_log_lag1"]
+    core_regressors = [shock_col, lag_control, "lf_log_lag1"]
     if include_nfci:
-        # Note: the main effect of nfci_risk_dm is absorbed by time FEs
-        # (it varies only over time, not across states within a quarter),
-        # so only the interaction term enters as a cross-sectional regressor.
         core_regressors.append("instr_x_nfci")
 
     X = pd.concat(
-        [df[core_regressors],
-         state_dummies,
-         time_dummies],
+        [df[core_regressors], state_dummies, time_dummies],
         axis=1,
     )
     X = sm.add_constant(X, has_constant="add")
     y = df["dep_var"]
 
     # --- OLS with state-clustered SEs ---
-    # Clustering allows arbitrary within-state serial correlation, which
-    # is expected at long horizons due to overlapping observations
     model = sm.OLS(y, X).fit(
         cov_type="cluster",
         cov_kwds={"groups": df["state_fips"].values},
@@ -360,7 +415,6 @@ def run_lp_horizon(base_panel: pd.DataFrame, h: int,
     tstat = float(model.tvalues[shock_col])
     pval  = float(model.pvalues[shock_col])
 
-    # Interaction coefficient δ_h (None when include_nfci=False)
     if include_nfci:
         delta_h    = float(model.params["instr_x_nfci"])
         delta_h_se = float(model.bse["instr_x_nfci"])
@@ -369,8 +423,6 @@ def run_lp_horizon(base_panel: pd.DataFrame, h: int,
     else:
         delta_h = delta_h_se = delta_h_t = delta_h_p = None
 
-    # Partial F: squared t-stat on the instrument (equals partial F
-    # with one instrument under clustered SEs)
     partial_f = tstat ** 2
 
     return {
@@ -384,7 +436,6 @@ def run_lp_horizon(base_panel: pd.DataFrame, h: int,
         "ci90_hi":     beta + Z90 * se,
         "ci95_lo":     beta - Z95 * se,
         "ci95_hi":     beta + Z95 * se,
-        # Interaction coefficient δ_h (None when include_nfci=False)
         "delta_h":     delta_h,
         "delta_h_se":  delta_h_se,
         "delta_h_t":   delta_h_t,
@@ -393,6 +444,7 @@ def run_lp_horizon(base_panel: pd.DataFrame, h: int,
         "r2":          float(model.rsquared),
         "n_clusters":  df["state_fips"].nunique(),
         "qt_range":    f"{df['quarter_label'].min()}–{df['quarter_label'].max()}",
+        "outcome":     outcome,
     }
 
 
@@ -401,20 +453,23 @@ def run_lp_horizon(base_panel: pd.DataFrame, h: int,
 # ---------------------------------------------------------------------------
 def run_lp(base_panel: pd.DataFrame, shock_col: str,
            label: str,
-           include_nfci: bool = False) -> pd.DataFrame:
+           include_nfci: bool = False,
+           outcome: str = "unemp") -> pd.DataFrame:
     """
-    Run LP for all horizons 0..16 and return results as a DataFrame.
+    Run LP for all horizons 0..20 and return results as a DataFrame.
 
     Args:
         base_panel:   output of build_panel() with attach_nfci_interaction()
-        shock_col:    'bartik_delta' or 'bartik_s'
+        shock_col:    'bartik_delta', 'bartik_s', 'bartik_ld', etc.
         label:        human-readable label for printing (e.g. 'δ shock')
         include_nfci: if True, include B_{s,t} × NFCI_risk_dm interaction.
-                      The printed table gains a δ_h column.
+        outcome:      "unemp" (default) or "vacancy"
+                      "vacancy" requires log_v/log_v_lag1 columns in panel.
     """
-    nfci_tag = " [+NFCI interaction]" if include_nfci else ""
+    nfci_tag    = " [+NFCI interaction]" if include_nfci else ""
+    outcome_tag = " → log(vacancies)" if outcome == "vacancy" else " → unemp. rate"
     print(f"\n{'='*60}")
-    print(f"  LP — {label}{nfci_tag}  (h = 0 … {max(HORIZONS)})")
+    print(f"  LP — {label}{nfci_tag}{outcome_tag}  (h = 0 … {max(HORIZONS)})")
     print(f"{'='*60}")
     if include_nfci:
         print(f"  {'h':>3}  {'β_h':>10}  {'SE':>8}  {'t':>7}  {'p':>6}  "
@@ -427,7 +482,8 @@ def run_lp(base_panel: pd.DataFrame, shock_col: str,
     rows = []
     for h in HORIZONS:
         res = run_lp_horizon(base_panel, h, shock_col,
-                             include_nfci=include_nfci)
+                             include_nfci=include_nfci,
+                             outcome=outcome)
         if res is None:
             continue
         rows.append(res)
@@ -449,20 +505,19 @@ def run_lp(base_panel: pd.DataFrame, shock_col: str,
 
     # ── Standardize to unit-SD scale ───────────────────────────────────────
     # Multiply β_h, SE, and CIs by the instrument's cross-sectional SD so
-    # coefficients are in unemployment pp per 1-SD shock.  This makes raw
-    # and residualized IRFs directly comparable in magnitude despite being
-    # in different units (rate vs. log-residual).  The SD is computed from
-    # the full panel passed to this function (all horizons share the same
-    # instrument column, so one SD applies uniformly).
+    # coefficients are in per-1-SD-shock units.  Works identically for both
+    # unemployment and vacancy outcomes.
     instr_sd = float(base_panel[shock_col].std())
     scale_cols = ["beta", "se", "ci90_lo", "ci90_hi", "ci95_lo", "ci95_hi"]
     irf = pd.DataFrame(rows)
+    if irf.empty:
+        return irf
     irf[scale_cols] = irf[scale_cols] * instr_sd
-    # Also scale the interaction coefficient δ_h if present.
     if include_nfci:
         irf["delta_h"]    = irf["delta_h"]    * instr_sd
         irf["delta_h_se"] = irf["delta_h_se"] * instr_sd
-    irf["instr_sd"] = instr_sd   # store for reference in plots / tables
+    irf["instr_sd"] = instr_sd
+    irf["outcome"]  = outcome    # tag for plot labelling
     return irf
 
 
@@ -523,9 +578,16 @@ def plot_irf(results: dict[str, pd.DataFrame],
         for hh in range(4, max_h + 1, 4):
             ax.axvline(hh, color="grey", linewidth=0.5, linestyle=":", alpha=0.6)
 
+        # Detect outcome type from results DataFrame if tagged
+        _outcome_type = (df["outcome"].iloc[0]
+                         if "outcome" in df.columns else "unemp")
+        _ylabel = ("log-point change in vacancy stock\nper 1-SD shock"
+                   if _outcome_type == "vacancy"
+                   else "pp change in unemp. rate\nper 1-SD shock")
+
         ax.set_title(f"IRF — {label}", fontsize=11)
         ax.set_xlabel("Horizon h (quarters)", fontsize=10)
-        ax.set_ylabel("pp change in unemp. rate\nper 1-SD shock", fontsize=10)
+        ax.set_ylabel(_ylabel, fontsize=10)
         ax.set_xticks(h[::2] if max_h > 16 else h)
         ax.xaxis.set_major_formatter(
             mticker.FuncFormatter(lambda x, _: str(int(x))))
@@ -963,3 +1025,105 @@ try:
               f"{pk['se']:>8.4f}  {pk['pval']:>6.3f}  {pk['partial_f']:>10.2f}")
 except NameError:
     print("  (residualized LPs not run — run part3_resid_instruments.py first)")
+
+# -----------------------------------------------------------------------
+# [9] Vacancy outcome LPs — the core asymmetry test
+#
+# Model prediction (from vacancy law of motion):
+#   δ shock → δ_{e,t} rises → surviving unmatched vacancies + reposting
+#             BOTH collapse → vacancies FALL, unemployment RISES
+#             → Beveridge curve dynamics: UV move together, not counter
+#
+#   LD shock → s_{t-1} rises but δ_{e,t} unchanged → surviving firms
+#              repost → vacancies FLAT or RISE, unemployment RISES
+#              → positive UV co-movement (off the Beveridge curve)
+#
+# This is the single strongest direct test of the model's mechanism.
+# Vacancies require part4_outcomes.py to have been run with BLS API access.
+# -----------------------------------------------------------------------
+print("\n[9] Vacancy outcome LPs — core asymmetry test")
+
+_vac_available = "vacancies" in outcomes.columns and outcomes["vacancies"].notna().any()
+if not _vac_available:
+    print("  Vacancies not available — run part4_outcomes.py with BLS API access")
+    print("  Skipping vacancy LPs.")
+else:
+    n_vac_obs = outcomes["vacancies"].notna().sum()
+    vac_start = outcomes.loc[outcomes["vacancies"].notna(), "quarter_label"].min()
+    vac_end   = outcomes.loc[outcomes["vacancies"].notna(), "quarter_label"].max()
+    print(f"  Vacancies available: {n_vac_obs:,} obs  ({vac_start} – {vac_end})")
+
+    # --- Panels (re-merge to pick up vacancies; build_panel now includes them) ---
+    print("\n  Rebuilding panels with vacancy columns:")
+    print("    δ panel (post-2001, for comparability with s/LD):")
+    _delta_vac_raw   = _load_resid(DELTA_RESID_INSTR_FILE) if _resid_files_present \
+                       else delta_instr
+    _delta_col       = "bartik_delta"
+    _delta_vac_panel = build_panel(_delta_vac_raw, _delta_col, outcomes)
+    _delta_vac_post  = _delta_vac_panel[
+        _delta_vac_panel["quarter_label"] >= "2001Q1"
+    ].copy().reset_index(drop=True)
+    _delta_vac_post  = attach_nfci_interaction(_delta_vac_post, nfci, _delta_col)
+
+    print("    LD panel (primary s-type for vacancy test — reposting channel):")
+    _ld_col = "bartik_ld"
+    _ld_src = ld_resid_raw if _resid_files_present else \
+              pd.read_csv(INSTR_DIR / f"ld_instrument_base{BASE_YEAR}.csv",
+                          dtype={"state_fips": str}).assign(
+                              state_fips=lambda d: d["state_fips"].str.zfill(2))
+    _ld_vac_panel = build_panel(_ld_src, _ld_col, outcomes)
+    _ld_vac_panel = attach_nfci_interaction(_ld_vac_panel, nfci, _ld_col)
+
+    # Use the residualized instruments if available (preferred), raw otherwise
+    _instr_note = ("residualized" if _resid_files_present else "raw (run part3_resid_instruments.py for residualized)")
+    print(f"    Using {_instr_note} instruments for vacancy LPs")
+
+    # --- Run vacancy LPs ---
+    print()
+    irf_delta_vac = run_lp(_delta_vac_post, _delta_col,
+                            "δ shock — vacancies", outcome="vacancy")
+    irf_ld_vac    = run_lp(_ld_vac_panel,   _ld_col,
+                            "LD shock — vacancies", outcome="vacancy")
+
+    # Save
+    irf_delta_vac.to_csv(RESULTS_DIR / "lp_irf_delta_vacancy.csv", index=False)
+    irf_ld_vac.to_csv(   RESULTS_DIR / "lp_irf_ld_vacancy.csv",    index=False)
+    print(f"\n  Saved: {RESULTS_DIR / 'lp_irf_delta_vacancy.csv'}")
+    print(f"  Saved: {RESULTS_DIR / 'lp_irf_ld_vacancy.csv'}")
+
+    # --- Core asymmetry plot: δ vs LD vacancy IRFs side by side ---
+    # This is the key figure for the paper: if δ vacancies fall and LD vacancies
+    # are flat/rise, the model's reposting mechanism is empirically validated.
+    plot_irf(
+        {"δ shock → vacancies": irf_delta_vac,
+         "LD shock → vacancies": irf_ld_vac},
+        out_path=RESULTS_DIR / "lp_irf_vacancy_delta_ld.png",
+    )
+    print(f"  Saved: {RESULTS_DIR / 'lp_irf_vacancy_delta_ld.png'}")
+
+    # --- Unemployment and vacancy IRFs side by side for δ (4-panel figure) ---
+    # Combines unemployment (from [4]) and vacancy IRFs to show Beveridge dynamics
+    _delta_unemp_irf = irf_delta_resid if _resid_files_present else irf_delta_post
+    _ld_unemp_irf    = irf_ld_resid    if _resid_files_present else irf_s
+    plot_irf(
+        {"δ — unemployment": _delta_unemp_irf,
+         "δ — vacancies":    irf_delta_vac,
+         "LD — unemployment": _ld_unemp_irf,
+         "LD — vacancies":   irf_ld_vac},
+        out_path=RESULTS_DIR / "lp_irf_beveridge_asymmetry.png",
+    )
+    print(f"  Saved: {RESULTS_DIR / 'lp_irf_beveridge_asymmetry.png'}")
+
+    # --- Quick diagnostic: vacancy IRF peaks ---
+    print("\n  Vacancy LP summary:")
+    for lbl, vdf in [("δ shock → vacancies", irf_delta_vac),
+                     ("LD shock → vacancies", irf_ld_vac)]:
+        if vdf.empty:
+            print(f"    {lbl}: no results (insufficient vacancy obs)")
+            continue
+        pk  = vdf.loc[vdf["beta"].abs().idxmax()]
+        sig = ("***" if pk["pval"] < 0.01 else
+               "**"  if pk["pval"] < 0.05 else
+               "*"   if pk["pval"] < 0.10 else "(insig)")
+        print(f"    {lbl}: peak {pk['beta']:+.4f} log-pts at h={int(pk['h'])}  "
+              f"SE={pk['se']:.4f}  p={pk['pval']:.3f}  {sig}")

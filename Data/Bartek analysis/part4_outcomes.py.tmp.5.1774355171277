@@ -694,12 +694,9 @@ def _fill_panel(ax, pctile, wmean, color, ylabel, formatter=None):
 unemp_pctile, unemp_wmean = _dist_series(quarterly, "unemp_rate")
 
 # -----------------------------------------------------------------------
-# Determine whether vacancy data is available for panels 2 and 3.
+# Determine whether vacancy data is available for a second panel.
 # Compute vacancy RATE = vacancies / labor_force * 100  (analogous to
 # unemployment rate) so the lower panel is directly comparable in units.
-# vacancies is in thousands (JOLTS units); labor_force is in actual persons
-# (LAUS API returns persons, not thousands) — multiply vacancies by 1000
-# to convert to the same persons unit before forming the ratio.
 # -----------------------------------------------------------------------
 _vac_plot = (
     "vacancies" in quarterly.columns
@@ -707,47 +704,24 @@ _vac_plot = (
 )
 
 if _vac_plot:
+    # vacancy rate: job openings as % of labor force
     quarterly["vac_rate"] = (
-        quarterly["vacancies"] * 1000 / quarterly["labor_force"] * 100
+        quarterly["vacancies"] / quarterly["labor_force"] * 100
     )
     vac_pctile, vac_wmean = _dist_series(quarterly, "vac_rate")
 
-    # Market tightness: theta = V / U  (dimensionless ratio of stocks)
-    # = vac_rate / unemp_rate  (labor force cancels)
-    # Drop rows where either rate is zero or NaN to avoid div-by-zero.
-    quarterly["theta"] = quarterly["vac_rate"] / quarterly["unemp_rate"]
-    theta_pctile, _ = _dist_series(quarterly, "theta")
-
-    # Aggregate national theta = sum(V_actual) / sum(U_actual) by quarter.
-    # This is the economically correct aggregate (not LF-weighted mean of
-    # state-level theta values, which inflates small-state extreme ratios).
-    _vac_act = quarterly["vacancies"] * 1000               # persons
-    _u_act   = quarterly["unemp_rate"] / 100 * quarterly["labor_force"]  # persons
-    theta_agg = (
-        quarterly.assign(v_act=_vac_act, u_act=_u_act)
-        .dropna(subset=["v_act", "u_act"])
-        .groupby("quarter_label")
-        .apply(lambda g: g["v_act"].sum() / g["u_act"].sum(), include_groups=False)
-        .rename("theta")
-        .sort_index()
-    )
-    all_q_theta = pd.period_range(
-        start=theta_pctile.index[0], end=theta_pctile.index[-1], freq="Q"
-    ).strftime("%YQ%q").tolist()
-    theta_agg = theta_agg.reindex(all_q_theta)
-
 # -----------------------------------------------------------------------
-# Build figure: 3-panel (u + v + theta), 2-panel, or 1-panel fallback
+# Build figure: 2-panel (unemployment + vacancies) or 1-panel fallback
 # -----------------------------------------------------------------------
 if _vac_plot:
-    fig, (ax_u, ax_v, ax_t) = plt.subplots(
-        3, 1, figsize=(13, 13), sharex=False,
-        gridspec_kw={"hspace": 0.42},
+    fig, (ax_u, ax_v) = plt.subplots(
+        2, 1, figsize=(13, 9), sharex=False,
+        gridspec_kw={"hspace": 0.38},
     )
 else:
     fig, ax_u = plt.subplots(figsize=(13, 5))
 
-# ── Panel 1: unemployment ───────────────────────────────────────────────
+# ── Top panel: unemployment ─────────────────────────────────────────────
 _fill_panel(
     ax_u, unemp_pctile, unemp_wmean,
     color     = "#1f77b4",
@@ -760,8 +734,8 @@ ax_u.set_title(
     fontsize=11,
 )
 
+# ── Bottom panel: vacancy rate (conditional) ───────────────────────────
 if _vac_plot:
-    # ── Panel 2: vacancy rate ───────────────────────────────────────────
     _fill_panel(
         ax_v, vac_pctile, vac_wmean,
         color     = "#2ca02c",
@@ -774,25 +748,6 @@ if _vac_plot:
         fontsize=11,
     )
 
-    # ── Panel 3: market tightness theta = V/U (linear scale) ────────────
-    _fill_panel(
-        ax_t, theta_pctile, theta_agg,
-        color     = "#ff7f0e",
-        ylabel    = r"Tightness $\theta$ = V/U",
-        formatter = mticker.FuncFormatter(lambda x, _: f"{x:.2f}"),
-    )
-    ax_t.yaxis.set_major_locator(mticker.MultipleLocator(0.5))
-    ax_t.yaxis.set_minor_locator(mticker.MultipleLocator(0.25))
-    # Reference line: theta = 1 (one vacancy per unemployed worker)
-    ax_t.axhline(1.0, color="black", linewidth=0.8, linestyle="--",
-                 label=r"$\theta = 1$ (balanced)")
-    ax_t.legend(fontsize=9, framealpha=0.85, ncol=2)
-    ax_t.set_title(
-        r"Market tightness $\theta$ = V/U: cross-state distribution over time"
-        "\n(mean = aggregate national V/U; percentile bands are unweighted cross-state)",
-        fontsize=11,
-    )
-
 fig.tight_layout()
 
 outpath = OUTPUT_DIR / "outcomes_distribution.png"
@@ -800,41 +755,5 @@ fig.savefig(outpath, dpi=150)
 plt.close(fig)
 print(f"\nPlot saved: {outpath}")
 _open_file(outpath)
-
-# -----------------------------------------------------------------------
-# Separate figure: tightness on log scale (Shimer-style)
-# Explicit ticks at round values so labels are always legible.
-# -----------------------------------------------------------------------
-if _vac_plot:
-    _LOG_TICKS = [0.1, 0.2, 0.3, 0.5, 1.0, 2.0, 3.0, 5.0]
-
-    fig_log, ax_log = plt.subplots(figsize=(13, 5))
-    _fill_panel(
-        ax_log, theta_pctile, theta_agg,
-        color     = "#ff7f0e",
-        ylabel    = r"Tightness $\theta$ = V/U  (log scale)",
-        formatter = None,   # set manually below
-    )
-    ax_log.set_yscale("log")
-    ax_log.yaxis.set_major_locator(mticker.FixedLocator(_LOG_TICKS))
-    ax_log.yaxis.set_minor_locator(mticker.NullLocator())
-    ax_log.yaxis.set_major_formatter(
-        mticker.FuncFormatter(lambda x, _: f"{x:g}")
-    )
-    ax_log.axhline(1.0, color="black", linewidth=0.8, linestyle="--",
-                   label=r"$\theta = 1$ (balanced)")
-    ax_log.legend(fontsize=9, framealpha=0.85, ncol=2)
-    ax_log.set_title(
-        r"Market tightness $\theta$ = V/U: cross-state distribution over time  [log scale]"
-        "\n(mean = aggregate national V/U; percentile bands are unweighted cross-state)",
-        fontsize=11,
-    )
-    fig_log.tight_layout()
-
-    outpath_log = OUTPUT_DIR / "tightness_log.png"
-    fig_log.savefig(outpath_log, dpi=150)
-    plt.close(fig_log)
-    print(f"Plot saved: {outpath_log}")
-    _open_file(outpath_log)
 
 
