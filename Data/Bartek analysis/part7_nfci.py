@@ -86,15 +86,10 @@ from pathlib import Path
 
 try:
     os.chdir(Path(__file__).resolve().parent)
-except NameError:
-    os.chdir(
-        Path.home()
-        / "Documents"
-        / "GitHub"
-        / "Sunk-entry-costs--endogenous-variety--and-unemployment"
-        / "Data"
-        / "Bartek analysis"
-    )
+except (NameError, FileNotFoundError):
+    # Running interactively (Spyder, Jupyter, etc.) — fall back to cwd.
+    # Ensure your IDE working directory is set to "Bartek analysis".
+    pass
 
 # ---------------------------------------------------------------------------
 # Configuration

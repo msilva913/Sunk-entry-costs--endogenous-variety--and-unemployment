@@ -107,21 +107,18 @@ def _open_file(path):
 
 try:
     os.chdir(Path(__file__).resolve().parent)
-except NameError:
-    os.chdir(
-        Path.home()
-        / "Documents"
-        / "GitHub"
-        / "Sunk-entry-costs--endogenous-variety--and-unemployment"
-        / "Data"
-        / "Bartek analysis"
-    )
+except (NameError, FileNotFoundError):
+    # Running interactively (Spyder, Jupyter, etc.) — __file__ may be
+    # undefined or the hardcoded fallback path may not match this machine.
+    # Fall back to the current working directory; ensure your IDE is set
+    # to the "Bartek analysis" folder before running.
+    pass
 
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
 START_YEAR = 1990
-END_YEAR   = 2024   # update as needed
+END_YEAR   = 2026   # update as needed
 
 CACHE_DIR  = Path("data/cache")
 OUTPUT_DIR = Path("data/instruments")
@@ -151,13 +148,18 @@ FIPS_TO_STATE = {
 
 ALL_FIPS = sorted(FIPS_TO_STATE.keys())   # 50 entries
 
-# LAUS suffix codes
-_RATE_SUFFIX = "3"   # unemployment rate (%)
-_LF_SUFFIX   = "6"   # civilian labor force (thousands)
+# LAUS measure codes (2-digit, per BLS LAUS series format)
+# Series format: LA(2) + S(1) + area_code(15) + measure_code(2) = 20 chars total
+# area_code for states = ST(2) + fips(2) + 00000000000 (11 zeros)
+# e.g. Alabama rate → LASST010000000000003 (20 chars)
+_RATE_SUFFIX = "03"   # unemployment rate (%)
+_LF_SUFFIX   = "06"   # civilian labor force (thousands)
 
 
 def _laus_id(fips: str, suffix: str) -> str:
-    return f"LASST{fips}0000000000{suffix}"
+    sid = f"LASST{fips}00000000000{suffix}"
+    assert len(sid) == 20, f"LAUS series ID wrong length: {sid!r} ({len(sid)} chars)"
+    return sid
 
 
 def _year_chunks(start: int, end: int, size: int = 8):
@@ -233,14 +235,24 @@ def fetch_laus_monthly(
     """
     if cache_path.exists():
         cached = pd.read_parquet(cache_path)
-        # Validate cache has both columns — a partial fetch (e.g. after hitting
-        # the API request limit mid-run) would have cached only unemp_rate.
-        # Reject and re-fetch if labor_force is missing.
-        if "labor_force" in cached.columns:
-            print(f"  [cache hit] {cache_path}")
+        # Validate cache: must have both columns AND cover the requested end year.
+        # A partial fetch would be missing labor_force; a stale cache would end
+        # well before end_year.  Either condition triggers a full re-fetch.
+        _cache_max_year = cached["date"].max().year if "date" in cached.columns else 0
+        _cache_ok = (
+            "labor_force" in cached.columns
+            and _cache_max_year >= end_year - 1
+        )
+        if _cache_ok:
+            print(f"  [cache hit] {cache_path}  "
+                  f"(through {cached['date'].max().strftime('%Y-%m')})")
             return cached
         else:
-            print(f"  [cache invalid] {cache_path} is missing labor_force — re-fetching")
+            _reason = (
+                "missing labor_force" if "labor_force" not in cached.columns
+                else f"ends {cached['date'].max().strftime('%Y-%m')}, need ≥{end_year - 1}"
+            )
+            print(f"  [cache stale] {cache_path} — {_reason} — re-fetching")
             cache_path.unlink()
 
     print(f"  [fetch] LAUS rate + labor force  {start_year}–{end_year}  (50 states)")
@@ -284,8 +296,8 @@ def fetch_laus_monthly(
 
     # Extract FIPS (chars 5–6 of series ID: LASST{XX}...)
     raw_df["state_fips"] = raw_df["series_id"].str[5:7]
-    # Identify series type from trailing digit
-    raw_df["series_type"] = raw_df["series_id"].str[-1]
+    # Identify series type from trailing 2 chars (measure code: "03" or "06")
+    raw_df["series_type"] = raw_df["series_id"].str[-2:]
     raw_df["month"] = raw_df["period"].str[1:].astype(int)
     raw_df["date"]  = pd.to_datetime(raw_df[["year", "month"]].assign(day=1))
     raw_df["state"] = raw_df["state_fips"].map(FIPS_TO_STATE)
@@ -394,8 +406,16 @@ def fetch_jolts_vacancies_state(
     inspect the raw API response logged below.
     """
     if cache_path.exists():
-        print(f"  [cache hit] {cache_path}")
-        return pd.read_parquet(cache_path)
+        cached_vac = pd.read_parquet(cache_path)
+        # Validate coverage: if the cache ends before end_year - 1, re-fetch.
+        _vac_max_q = cached_vac["quarter_label"].max() if "quarter_label" in cached_vac.columns else ""
+        if _vac_max_q >= f"{end_year - 1}Q1":
+            print(f"  [cache hit] {cache_path}  (through {_vac_max_q})")
+            return cached_vac
+        else:
+            print(f"  [cache stale] {cache_path} ends {_vac_max_q}, "
+                  f"need ≥{end_year - 1}Q1 — re-fetching")
+            cache_path.unlink()
 
     print(f"  [fetch] JOLTS state vacancies  {start_year}–{end_year}  "
           f"({len(_VACANCY_FIPS)} states)")
@@ -691,6 +711,7 @@ def _fill_panel(ax, pctile, wmean, color, ylabel, formatter=None):
 # -----------------------------------------------------------------------
 # Build unemployment distribution series
 # -----------------------------------------------------------------------
+_vac_plot = False
 unemp_pctile, unemp_wmean = _dist_series(quarterly, "unemp_rate")
 
 # -----------------------------------------------------------------------
@@ -836,5 +857,9 @@ if _vac_plot:
     plt.close(fig_log)
     print(f"Plot saved: {outpath_log}")
     _open_file(outpath_log)
+
+
+
+
 
 
