@@ -1,16 +1,19 @@
 """
-part3_resid_instruments.py — Bartik instruments from productivity-residualized shocks
-======================================================================================
-Constructs productivity-residualized Bartik instruments for all four shock
-series produced by part2b_shock_comovement.py:
+part3_resid_instruments.py — Bartik instruments from residualized shocks
+=========================================================================
+Constructs residualized Bartik instruments for all four shock series
+produced by part2b_shock_comovement.py:
 
     B̃^δ_{s,t}  = Σ_j  ω_{s,j}  ν^δ_{j,t}    (product-line destruction)
     B̃^TS_{s,t} = Σ_j  ω_{s,j}  ν^TS_{j,t}   (total separations)
     B̃^LD_{s,t} = Σ_j  ω_{s,j}  ν^LD_{j,t}   (layoffs and discharges)
     B̃^QU_{s,t} = Σ_j  ω_{s,j}  ν^QU_{j,t}   (quits)
 
-where ν^k_{j,t} are residuals from:
-    log g^k_{j,t} = α_j + γ_k Δlog p_t + ν^k_{j,t}
+where ν^k_{j,t} are residuals from shock-specific regressions (see part2b):
+    log g^δ_{j,t}  = α_j + γ_δ  Δlog p_t                    + ν^δ_{j,t}
+    log g^TS_{j,t} = α_j + γ_TS Δlog p_t                    + ν^TS_{j,t}
+    log g^LD_{j,t} = α_j + γ_LD Δlog p_t + λ_LD log θ_t^nat + ν^LD_{j,t}
+    log g^QU_{j,t} = α_j + γ_QU Δlog p_t + λ_QU log θ_t^nat + ν^QU_{j,t}
 
 The employment shares ω_{s,j} are identical to those used in part3 and
 part3_instrument_s (base-year 2006 QCEW shares).
@@ -387,7 +390,9 @@ if RAW_D_PATH.exists() and RAW_S_PATH.exists():
         ax.axhline(0, color="black", linewidth=0.5)
         ax.axvline(0, color="black", linewidth=0.5)
         ax.grid(linewidth=0.4, alpha=0.4)
-    fig.suptitle("Raw vs. productivity-residualized Bartik instruments\n"
+    fig.suptitle("Raw vs. residualized Bartik instruments\n"
+                 r"($\delta$/TS: $\Delta\log p$ only — LD/QU: $\Delta\log p + \log\theta^{nat}$)"
+                 "\n"
                  "(each point = one state-quarter)", fontsize=11)
     fig.tight_layout()
     p = RESULTS_DIR / "instruments_resid_vs_raw_scatter.png"

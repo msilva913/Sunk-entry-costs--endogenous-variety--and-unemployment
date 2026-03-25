@@ -7,23 +7,38 @@ aggregation).
 Purpose
 -------
 In the model, δ and s are exogenous AR(1) processes independent of technology
-z.  In the data, both series contain an endogenous component driven by
-aggregate productivity: firms close and workers separate partly because
-productivity falls.  This file asks two questions:
+z.  In the data, both series contain endogenous components driven by aggregate
+productivity and/or labor-market tightness.  This file asks two questions:
 
   1. How much do g^δ and g^s co-move across industries and over time?
      High co-movement implies the Bartik instruments B^δ and B^s will be
      nearly collinear, undermining separate identification.
 
-  2. How much of that co-movement is explained by aggregate productivity?
-     We follow Coles-Kelishomi (2018), who find corr(p_t, δ_t) = −0.63,
-     and residualize each series on productivity to isolate the idiosyncratic
-     component.  The regressor is Δlog p_t (quarterly log-growth) rather
-     than log-levels, which have a trend and would produce spurious
-     coefficients.
+  2. How much of that co-movement is explained by aggregate productivity
+     and market tightness?  We residualize each series on the appropriate
+     aggregate controls to isolate the idiosyncratic component.
 
-Regression:
-    log g^k_{j,t} = α_j + γ_k Δlog p_t + ν^k_{j,t},   k ∈ {δ, s}
+Residualization strategy (shock-specific):
+    log g^δ_{j,t}  = α_j + γ_δ  Δlog p_t                     + ν^δ_{j,t}
+    log g^TS_{j,t} = α_j + γ_TS Δlog p_t                     + ν^TS_{j,t}
+    log g^LD_{j,t} = α_j + γ_LD Δlog p_t + λ_LD log θ_t^nat  + ν^LD_{j,t}
+    log g^QU_{j,t} = α_j + γ_QU Δlog p_t + λ_QU log θ_t^nat  + ν^QU_{j,t}
+
+Motivation:
+    δ    — endogenous product-line destruction driven by idiosyncratic
+            productivity draws; Δlog p_t is the appropriate control.
+    LD   — employer-initiated layoffs respond to both productivity and
+            aggregate demand (tightness raises retention costs); both
+            controls are included.
+    QU   — quit propensity is driven by outside options summarised by
+            market tightness θ = V/U; both controls are included.
+    TS   — total separations = LD + QU; productivity control only
+            (dominated by LD in recessions; tightness channel addressed
+            by the separate LD/QU decomposition).
+
+θ_t^nat = V_t^nat / U_t^nat: national JOLTS job openings ÷ civilian
+unemployment (both seasonally adjusted, levels).  log θ_t is stationary
+so it enters in log-levels; Δlog p_t is used because log p has a trend.
 
 The residuals ν^δ and ν^s are the closest empirical analog to the truly
 exogenous shocks in the model.
@@ -80,7 +95,8 @@ from construct_s_instrument import (
 )
 
 # ── paths ──────────────────────────────────────────────────────────────────
-PROD_CACHE    = DEFAULT_CACHE_DIR / "ophnfb_quarterly.parquet"
+PROD_CACHE      = DEFAULT_CACHE_DIR / "ophnfb_quarterly.parquet"
+TIGHTNESS_CACHE = DEFAULT_CACHE_DIR / "national_tightness_quarterly.parquet"
 RESID_D_PATH  = DEFAULT_OUTPUT_DIR / "shock_rates_delta_resid.parquet"
 RESID_S_PATH  = DEFAULT_OUTPUT_DIR / "shock_rates_s_resid.parquet"
 RESID_LD_PATH = DEFAULT_OUTPUT_DIR / "shock_rates_ld_resid.parquet"
@@ -207,6 +223,46 @@ nat = nat.merge(prod[["quarter_label", "dlog_p", "dlog_p_yoy"]],
                 on="quarter_label", how="inner")
 print(f"After merging productivity: {len(nat):,} industry-quarter obs")
 
+# ── 3b. national market tightness ──────────────────────────────────────────
+# θ_t^nat = V_t^nat / U_t^nat  (JOLTS job openings ÷ civilian unemployment,
+# both SA levels in thousands).  Monthly → quarterly by averaging within
+# quarter.  log θ is stationary so we use log-levels as the regressor.
+# JOLTS starts 2000M12; first complete quarter is 2001Q1 — which is already
+# the binding start of the overlapping sample.
+
+if TIGHTNESS_CACHE.exists():
+    tight = pd.read_parquet(TIGHTNESS_CACHE)
+    print(f"\nTightness: loaded from cache ({TIGHTNESS_CACHE})")
+else:
+    print("\nFetching national tightness (JTSJOL, UNEMPLOY) from FRED ...")
+    api_key = os.environ.get("FRED_API_KEY", "")
+    if not api_key:
+        raise EnvironmentError(
+            "FRED_API_KEY environment variable not set.\n"
+            "Register at https://fred.stlouisfed.org/docs/api/api_key.html "
+            "and set the variable before running."
+        )
+    fred    = Fred(api_key=api_key)
+    vac_m   = fred.get_series("JTSJOL")     # job openings, thousands, SA
+    unemp_m = fred.get_series("UNEMPLOY")   # unemployment, thousands, SA
+    tight_m = pd.DataFrame({"vac": vac_m, "unemp": unemp_m}).dropna()
+    tight_m.index = pd.to_datetime(tight_m.index)
+    tight_m["quarter_label"] = tight_m.index.map(_dt_to_ql)
+    tight = (tight_m.groupby("quarter_label")[["vac", "unemp"]]
+                    .mean().reset_index())
+    tight["theta"]     = tight["vac"] / tight["unemp"]
+    tight["log_theta"] = np.log(tight["theta"])
+    tight = tight[["quarter_label", "log_theta"]].copy()
+    tight.to_parquet(TIGHTNESS_CACHE, index=False)
+    print(f"  Saved: {TIGHTNESS_CACHE}")
+
+tight = tight.sort_values("quarter_label").reset_index(drop=True)
+print(f"  Tightness: {tight['quarter_label'].min()} – "
+      f"{tight['quarter_label'].max()}  ({len(tight)} quarters)")
+
+nat = nat.merge(tight, on="quarter_label", how="inner")
+print(f"After merging tightness: {len(nat):,} industry-quarter obs")
+
 # ── 4. residualization ─────────────────────────────────────────────────────
 # Regression:  log g^k_{j,t} = α_j + γ_k Δlog p_t + ν^k_{j,t}
 # Industry FEs absorbed via within-transformation (subtract industry means).
@@ -215,32 +271,43 @@ print(f"After merging productivity: {len(nat):,} industry-quarter obs")
 # residual as a named column.  We merge back into nat rather than assigning
 # into it directly, which is the most robust approach across pandas versions.
 
-def _residualize(df, dep_col, resid_col, prod_col="dlog_p"):
+def _residualize(df, dep_col, resid_col, reg_cols=("dlog_p",)):
     """
-    OLS of dep_col on industry FEs + prod_col.
-    Prints γ and within-R².
+    Within-industry OLS of dep_col on industry FEs + reg_cols.
+
+    reg_cols : tuple of column names to use as regressors alongside
+               industry fixed effects.  Homogeneous coefficients across
+               industries (single γ / λ per regressor).
 
     df must be sorted by [industry_code, quarter_label] with a clean
     0-based index (call nat.sort_values(...).reset_index(drop=True) first).
     Returns a DataFrame with the same row order as df and a column named
     resid_col containing the residuals as a numpy-backed float64 series.
     """
-    # Work on a fresh 0-based copy in the same row order as df.
-    work = df[["industry_code", dep_col, prod_col]].copy().reset_index(drop=True)
+    work = df[["industry_code", dep_col, *reg_cols]].copy().reset_index(drop=True)
 
-    # Within-transform: subtract each industry's mean.
+    # Within-transform: subtract each industry's time-mean.
     work["y_dm"] = (work[dep_col]
                     - work.groupby("industry_code")[dep_col].transform("mean"))
-    work["p_dm"] = (work[prod_col]
-                    - work.groupby("industry_code")[prod_col].transform("mean"))
+    dm_cols = []
+    for rc in reg_cols:
+        dc = f"_dm_{rc}"
+        work[dc] = (work[rc]
+                    - work.groupby("industry_code")[rc].transform("mean"))
+        dm_cols.append(dc)
 
-    gamma  = ((work["y_dm"] * work["p_dm"]).sum()
-              / (work["p_dm"] ** 2).sum())
-    resid  = (work["y_dm"] - gamma * work["p_dm"]).to_numpy()   # plain numpy array
-    ss_tot = (work["y_dm"] ** 2).sum()
+    X_dm   = work[dm_cols].to_numpy()          # (n, K)
+    y_dm   = work["y_dm"].to_numpy()           # (n,)
+    gammas = np.linalg.lstsq(X_dm, y_dm, rcond=None)[0]   # (K,)
+    resid  = y_dm - X_dm @ gammas
+
+    ss_tot = (y_dm ** 2).sum()
     r2     = 1 - (resid ** 2).sum() / ss_tot if ss_tot > 0 else np.nan
 
-    print(f"  {resid_col:<10}  γ = {gamma:+.4f}   R²(within) = {r2:.4f}")
+    coef_str = "  ".join(
+        f"γ({rc}) = {g:+.4f}" for rc, g in zip(reg_cols, gammas)
+    )
+    print(f"  {resid_col:<12}  {coef_str}   R²(within) = {r2:.4f}")
 
     out = df[["industry_code", "quarter_label"]].copy().reset_index(drop=True)
     out[resid_col] = resid
@@ -251,11 +318,17 @@ def _residualize(df, dep_col, resid_col, prod_col="dlog_p"):
 # row order, so returned arrays align positionally with nat's rows.
 nat = nat.sort_values(["industry_code", "quarter_label"]).reset_index(drop=True)
 
-print(f"\n--- Productivity regression  (\u0394log p_t, quarterly growth) ---")
-resid_d  = _residualize(nat, "log_g_delta", "nu_delta")
-resid_s  = _residualize(nat, "log_g_s",     "nu_s")
-resid_ld = _residualize(nat, "log_g_ld",    "nu_ld")
-resid_qu = _residualize(nat, "log_g_qu",    "nu_qu")
+print(f"\n--- Residualization (within-industry OLS) ---")
+print(f"  δ,  TS : regressors = [Δlog p_t]")
+print(f"  LD, QU : regressors = [Δlog p_t,  log θ_t^nat]")
+resid_d  = _residualize(nat, "log_g_delta", "nu_delta",
+                        reg_cols=("dlog_p",))
+resid_s  = _residualize(nat, "log_g_s",     "nu_s",
+                        reg_cols=("dlog_p",))
+resid_ld = _residualize(nat, "log_g_ld",    "nu_ld",
+                        reg_cols=("dlog_p", "log_theta"))
+resid_qu = _residualize(nat, "log_g_qu",    "nu_qu",
+                        reg_cols=("dlog_p", "log_theta"))
 
 nat["nu_delta"] = resid_d["nu_delta"].to_numpy()
 nat["nu_s"]     = resid_s["nu_s"].to_numpy()
@@ -365,11 +438,32 @@ print(f"\nPlot A saved: {p}")
 # ── plot B: cross-industry correlation heatmaps, 2×4 grid ─────────────────
 # Row 1: raw series; Row 2: residualized
 def _corr_matrix(df, col):
-    """Cross-industry Pearson r matrix (industries × industries)."""
-    wide = df.pivot_table(index="quarter_label",
-                          columns="industry_label",
-                          values=col, aggfunc="mean")
-    return wide.corr()
+    """Cross-industry Pearson r matrix (industries × industries).
+
+    Builds the quarter × industry matrix via direct numpy integer indexing,
+    completely bypassing pandas groupby / pivot_table / pivot — all of which
+    have version-specific bugs in pandas 2.x that silently drop the aggregated
+    column from the result (causing KeyError on the subsequent values lookup).
+
+    nat is already aggregated at (industry_code, quarter_label) level, so each
+    (quarter_label, industry_label) cell holds at most one value; if a
+    duplicate somehow exists the last row wins (harmless).
+    """
+    sub = (df[["quarter_label", "industry_label", col]]
+           .dropna(subset=[col])
+           .reset_index(drop=True))
+    quarters   = sorted(sub["quarter_label"].unique())
+    industries = sorted(sub["industry_label"].unique())
+    if not quarters or not industries:
+        return pd.DataFrame()
+    q_map = {q: i for i, q in enumerate(quarters)}
+    i_map = {ind: i for i, ind in enumerate(industries)}
+    mat = np.full((len(quarters), len(industries)), np.nan)
+    qi = sub["quarter_label"].map(q_map).to_numpy(dtype=int)
+    ii = sub["industry_label"].map(i_map).to_numpy(dtype=int)
+    mat[qi, ii] = sub[col].to_numpy()
+    wide = pd.DataFrame(mat, index=quarters, columns=industries)
+    return wide.dropna(how="all", axis=1).corr()
 
 hmap_panels = [
     (r"$\log g^\delta$ raw",  "log_g_delta"),
@@ -441,7 +535,9 @@ for col_idx, (lbl, rx, ry, nx, ny, rxl, ryl, nxl, nyl) in enumerate(scatter_pair
     ax.axvline(0, color="black", linewidth=0.5)
     ax.grid(linewidth=0.4, alpha=0.4)
 fig.suptitle(
-    r"δ vs each s-type: raw (top) and residualized on $\Delta\log p_t$ (bottom)",
+    r"δ vs each s-type: raw (top) vs residualized (bottom)"
+    "\n"
+    r"δ/TS: $\Delta\log p_t$ only — LD/QU: $\Delta\log p_t + \log\theta_t^{nat}$",
     fontsize=11,
 )
 fig.tight_layout()
