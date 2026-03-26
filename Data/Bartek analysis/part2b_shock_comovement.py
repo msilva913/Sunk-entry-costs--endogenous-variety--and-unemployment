@@ -224,35 +224,62 @@ nat = nat.merge(prod[["quarter_label", "dlog_p", "dlog_p_yoy"]],
 print(f"After merging productivity: {len(nat):,} industry-quarter obs")
 
 # ── 3b. national market tightness ──────────────────────────────────────────
-# θ_t^nat = V_t^nat / U_t^nat  (JOLTS job openings ÷ civilian unemployment,
-# both SA levels in thousands).  Monthly → quarterly by averaging within
-# quarter.  log θ is stationary so we use log-levels as the regressor.
-# JOLTS starts 2000M12; first complete quarter is 2001Q1 — which is already
-# the binding start of the overlapping sample.
+# θ_t^nat = V_t^nat / U_t^nat.
+# Primary source: FRED (JTSJOL ÷ UNEMPLOY, both SA thousands).
+# Fallback: sum JOLTS state vacancies (already cached) over sum LAUS state
+#   unemployment — avoids requiring FRED_API_KEY after the first run.
+# log θ is stationary so we use log-levels as the regressor.
+
+def _build_tightness_from_local() -> pd.DataFrame:
+    """Compute national log(V/U) from already-cached state-level data."""
+    # National vacancies: sum state JOLTS vacancies (units: thousands)
+    _vac_path = DEFAULT_CACHE_DIR / "jolts_vacancies_state_quarterly.parquet"
+    _laus_path = DEFAULT_CACHE_DIR / "laus_states_monthly.parquet"
+    if not _vac_path.exists() or not _laus_path.exists():
+        raise FileNotFoundError(
+            "Cannot build tightness from local data: missing "
+            f"{_vac_path} or {_laus_path}"
+        )
+    vac_df = pd.read_parquet(_vac_path)
+    nat_vac = (vac_df.groupby("quarter_label")["vacancies"]
+                     .sum().reset_index()
+                     .rename(columns={"vacancies": "vac_nat"}))
+    # National unemployment: mean-within-quarter of sum-state LAUS unemployment
+    laus_df = pd.read_parquet(_laus_path)
+    laus_df["date"] = pd.to_datetime(laus_df["date"])
+    laus_df["quarter_label"] = laus_df["date"].map(_dt_to_ql)
+    laus_df["unemp"] = laus_df["labor_force"] * laus_df["unemp_rate"] / 100
+    nat_unemp = (laus_df.groupby("quarter_label")["unemp"]
+                        .mean().reset_index()
+                        .rename(columns={"unemp": "unemp_nat"}))
+    t = nat_vac.merge(nat_unemp, on="quarter_label", how="inner")
+    # vac_nat in thousands, unemp_nat in persons → convert vacancies to persons
+    t["theta"]     = (t["vac_nat"] * 1000) / t["unemp_nat"]
+    t["log_theta"] = np.log(t["theta"])
+    return t[["quarter_label", "log_theta"]].copy()
 
 if TIGHTNESS_CACHE.exists():
     tight = pd.read_parquet(TIGHTNESS_CACHE)
     print(f"\nTightness: loaded from cache ({TIGHTNESS_CACHE})")
 else:
-    print("\nFetching national tightness (JTSJOL, UNEMPLOY) from FRED ...")
     api_key = os.environ.get("FRED_API_KEY", "")
-    if not api_key:
-        raise EnvironmentError(
-            "FRED_API_KEY environment variable not set.\n"
-            "Register at https://fred.stlouisfed.org/docs/api/api_key.html "
-            "and set the variable before running."
-        )
-    fred    = Fred(api_key=api_key)
-    vac_m   = fred.get_series("JTSJOL")     # job openings, thousands, SA
-    unemp_m = fred.get_series("UNEMPLOY")   # unemployment, thousands, SA
-    tight_m = pd.DataFrame({"vac": vac_m, "unemp": unemp_m}).dropna()
-    tight_m.index = pd.to_datetime(tight_m.index)
-    tight_m["quarter_label"] = tight_m.index.map(_dt_to_ql)
-    tight = (tight_m.groupby("quarter_label")[["vac", "unemp"]]
-                    .mean().reset_index())
-    tight["theta"]     = tight["vac"] / tight["unemp"]
-    tight["log_theta"] = np.log(tight["theta"])
-    tight = tight[["quarter_label", "log_theta"]].copy()
+    if api_key:
+        print("\nFetching national tightness (JTSJOL, UNEMPLOY) from FRED ...")
+        fred    = Fred(api_key=api_key)
+        vac_m   = fred.get_series("JTSJOL")     # job openings, thousands, SA
+        unemp_m = fred.get_series("UNEMPLOY")   # unemployment, thousands, SA
+        tight_m = pd.DataFrame({"vac": vac_m, "unemp": unemp_m}).dropna()
+        tight_m.index = pd.to_datetime(tight_m.index)
+        tight_m["quarter_label"] = tight_m.index.map(_dt_to_ql)
+        tight = (tight_m.groupby("quarter_label")[["vac", "unemp"]]
+                        .mean().reset_index())
+        tight["theta"]     = tight["vac"] / tight["unemp"]
+        tight["log_theta"] = np.log(tight["theta"])
+        tight = tight[["quarter_label", "log_theta"]].copy()
+    else:
+        print("\nFRED_API_KEY not set — building tightness from cached "
+              "state vacancy + LAUS data ...")
+        tight = _build_tightness_from_local()
     tight.to_parquet(TIGHTNESS_CACHE, index=False)
     print(f"  Saved: {TIGHTNESS_CACHE}")
 
