@@ -965,8 +965,8 @@ if _resid_files_present:
     # ── run LPs ──────────────────────────────────────────────────────────
     irf_delta_resid = run_lp(delta_resid_post, "bartik_delta",
                               "δ shock (resid, post-2001)")
-    irf_s_resid     = run_lp(s_resid_panel,    "bartik_s",
-                              "s-TS shock (resid)")
+    #irf_s_resid     = run_lp(s_resid_panel,    "bartik_s",
+     #                         "s-TS shock (resid)")
     irf_ld_resid    = run_lp(ld_resid_panel,   "bartik_ld",
                               "s-LD shock (resid)")
     irf_qu_resid    = run_lp(qu_resid_panel,   "bartik_qu",
@@ -1012,8 +1012,8 @@ if _resid_files_present:
     # Plot 3: LD vs QU vs TS residualized — s decomposition
     overlay_plot_irf(
         {"LD residualized": irf_ld_resid,
-         "QU residualized": irf_qu_resid,
-         "TS residualized": irf_s_resid},
+         "QU residualized": irf_qu_resid},
+         # "TS residualized": irf_s_resid},
         out_path=RESULTS_DIR / "lp_irf_s_decomp_overlay.png",
         title=(
             "IRF: Layoffs+Discharges vs Quits vs Total Separations\n"
@@ -1051,7 +1051,7 @@ try:
         ("δ residualized (post-2001)",  irf_delta_resid),
         ("LD residualized",             irf_ld_resid),
         ("QU residualized",             irf_qu_resid),
-        ("TS residualized",             irf_s_resid),
+       # ("TS residualized",             irf_s_resid),
     ]
     for lbl, df in resid_series:
         if df is None or df.empty:
@@ -1110,11 +1110,11 @@ else:
     _ld_vac_panel = build_panel(_ld_src, _ld_col, outcomes)
     _ld_vac_panel = attach_nfci_interaction(_ld_vac_panel, nfci, _ld_col)
 
-    print("    TS panel (total separations — vacancy outcome):")
-    _ts_col = "bartik_s"
-    _ts_src = s_resid_raw if _resid_files_present else s_instr
-    _ts_vac_panel = build_panel(_ts_src, _ts_col, outcomes)
-    _ts_vac_panel = attach_nfci_interaction(_ts_vac_panel, nfci, _ts_col)
+    # print("    TS panel (total separations — vacancy outcome):")
+    # _ts_col = "bartik_s"
+    # _ts_src = s_resid_raw if _resid_files_present else s_instr
+    # _ts_vac_panel = build_panel(_ts_src, _ts_col, outcomes)
+    # _ts_vac_panel = attach_nfci_interaction(_ts_vac_panel, nfci, _ts_col)
 
     print("    QU panel (quits — vacancy outcome):")
     _qu_col = "bartik_qu"
@@ -1135,19 +1135,19 @@ else:
                             "δ shock — vacancies", outcome="vacancy")
     irf_ld_vac    = run_lp(_ld_vac_panel,   _ld_col,
                             "LD shock — vacancies", outcome="vacancy")
-    irf_ts_vac    = run_lp(_ts_vac_panel,   _ts_col,
-                            "TS shock — vacancies", outcome="vacancy")
+    #irf_ts_vac    = run_lp(_ts_vac_panel,   _ts_col,
+               #             "TS shock — vacancies", outcome="vacancy")
     irf_qu_vac    = run_lp(_qu_vac_panel,   _qu_col,
                             "QU shock — vacancies", outcome="vacancy")
 
     # Save
     irf_delta_vac.to_csv(RESULTS_DIR / "lp_irf_delta_vacancy.csv", index=False)
     irf_ld_vac.to_csv(   RESULTS_DIR / "lp_irf_ld_vacancy.csv",    index=False)
-    irf_ts_vac.to_csv(   RESULTS_DIR / "lp_irf_ts_vacancy.csv",    index=False)
+    #irf_ts_vac.to_csv(   RESULTS_DIR / "lp_irf_ts_vacancy.csv",    index=False)
     irf_qu_vac.to_csv(   RESULTS_DIR / "lp_irf_qu_vacancy.csv",    index=False)
     print(f"\n  Saved: {RESULTS_DIR / 'lp_irf_delta_vacancy.csv'}")
     print(f"  Saved: {RESULTS_DIR / 'lp_irf_ld_vacancy.csv'}")
-    print(f"  Saved: {RESULTS_DIR / 'lp_irf_ts_vacancy.csv'}")
+    #print(f"  Saved: {RESULTS_DIR / 'lp_irf_ts_vacancy.csv'}")
     print(f"  Saved: {RESULTS_DIR / 'lp_irf_qu_vacancy.csv'}")
 
     # --- Core asymmetry plot: δ vs LD vacancy IRFs side by side ---
@@ -1171,8 +1171,8 @@ else:
     overlay_plot_irf(
         {"δ residualized":  irf_delta_vac,
          "LD residualized": irf_ld_vac,
-         "QU residualized": irf_qu_vac,
-         "TS residualized": irf_ts_vac},
+         "QU residualized": irf_qu_vac},
+        #  "TS residualized": irf_ts_vac},
         out_path=RESULTS_DIR / "lp_irf_vacancy_decomp_overlay.png",
         title=(
             r"Vacancy IRF: $\delta$ vs LD vs QU vs TS"
@@ -1198,7 +1198,7 @@ else:
     print("\n  Vacancy LP summary:")
     for lbl, vdf in [("δ shock → vacancies",  irf_delta_vac),
                      ("LD shock → vacancies", irf_ld_vac),
-                     ("TS shock → vacancies", irf_ts_vac),
+                   #  ("TS shock → vacancies", irf_ts_vac),
                      ("QU shock → vacancies", irf_qu_vac)]:
         if vdf.empty:
             print(f"    {lbl}: no results (insufficient vacancy obs)")
