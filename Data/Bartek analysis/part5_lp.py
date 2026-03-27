@@ -975,7 +975,7 @@ if _resid_files_present:
     # ── save ─────────────────────────────────────────────────────────────
     for irf, fname in [
         (irf_delta_resid, "lp_irf_delta_resid.csv"),
-        (irf_s_resid,     "lp_irf_s_resid.csv"),
+        #(irf_s_resid,     "lp_irf_s_resid.csv"),
         (irf_ld_resid,    "lp_irf_ld_resid.csv"),
         (irf_qu_resid,    "lp_irf_qu_resid.csv"),
     ]:
