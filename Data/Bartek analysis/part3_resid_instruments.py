@@ -4,22 +4,22 @@ part3_resid_instruments.py — Bartik instruments from residualized shocks
 Constructs residualized Bartik instruments for all four shock series
 produced by part2b_shock_comovement.py:
 
-    B̃^δ_{s,t}  = Σ_j  ω_{s,j}  ν^δ_{j,t}    (product-line destruction)
-    B̃^TS_{s,t} = Σ_j  ω_{s,j}  ν^TS_{j,t}   (total separations)
-    B̃^LD_{s,t} = Σ_j  ω_{s,j}  ν^LD_{j,t}   (layoffs and discharges)
-    B̃^QU_{s,t} = Σ_j  ω_{s,j}  ν^QU_{j,t}   (quits)
+    B~^δ_{s,t}  = Σ_j  ω_{s,j}  nu_delta_{j,t}    (product-line destruction)
+    B~^TS_{s,t} = Σ_j  ω_{s,j}  nu_TS_{j,t}   (total separations)
+    B~^LD_{s,t} = Σ_j  ω_{s,j}  nu_LD_{j,t}   (layoffs and discharges)
+    B~^QU_{s,t} = Σ_j  ω_{s,j}  nu_QU_{j,t}   (quits)
 
 where ν^k_{j,t} are residuals from shock-specific regressions (see part2b):
-    log g^δ_{j,t}  = α_j + γ_δ  Δlog p_t                    + ν^δ_{j,t}
-    log g^TS_{j,t} = α_j + γ_TS Δlog p_t                    + ν^TS_{j,t}
-    log g^LD_{j,t} = α_j + γ_LD Δlog p_t + λ_LD log θ_t^nat + ν^LD_{j,t}
-    log g^QU_{j,t} = α_j + γ_QU Δlog p_t + λ_QU log θ_t^nat + ν^QU_{j,t}
+    log g^δ_{j,t}  = α_j + γ_δ  Δlog p_t                    + nu_delta_{j,t}
+    log g^TS_{j,t} = α_j + γ_TS Δlog p_t                    + nu_TS_{j,t}
+    log g^LD_{j,t} = α_j + γ_LD Δlog p_t + λ_LD log θ_t^nat + nu_LD_{j,t}
+    log g^QU_{j,t} = α_j + γ_QU Δlog p_t + λ_QU log θ_t^nat + nu_QU_{j,t}
 
 The employment shares ω_{s,j} are identical to those used in part3 and
 part3_instrument_s (base-year 2006 QCEW shares).
 
 The key diagnostic is the cross-state instrument correlation matrix after
-residualization, especially r(B̃^δ, B̃^LD) and r(B̃^δ, B̃^QU), which
+residualization, especially r(B~^δ, B~^LD) and r(B~^δ, B~^QU), which
 should be substantially lower than the raw r(B^δ, B^TS) = 0.705 if the
 decomposition restores empirical distinctness of the two shock types.
 
@@ -130,16 +130,16 @@ for df in [shares, resid_d, resid_s, resid_ld, resid_qu]:
 print(f"\nShares:       {len(shares):,} rows  "
       f"({shares['state_fips'].nunique()} states, "
       f"{shares['industry_code'].nunique()} industries)")
-for lbl, df, col in [("ν^δ",  resid_d,  "nu_delta"),
-                      ("ν^TS", resid_s,  "nu_s"),
-                      ("ν^LD", resid_ld, "nu_ld"),
-                      ("ν^QU", resid_qu, "nu_qu")]:
+for lbl, df, col in [("nu_delta",  resid_d,  "nu_delta"),
+                      ("nu_TS", resid_s,  "nu_s"),
+                      ("nu_LD", resid_ld, "nu_ld"),
+                      ("nu_QU", resid_qu, "nu_qu")]:
     print(f"  {lbl:<6} {len(df):,} rows  "
           f"({df['quarter_label'].nunique()} quarters, "
           f"{df['industry_code'].nunique()} industries)")
 
 # ── Bartik aggregation ─────────────────────────────────────────────────────
-# B̃^k_{s,t} = Σ_j  ω_{s,j}  ν^k_{j,t}
+# B~^k_{s,t} = Σ_j  ω_{s,j}  ν^k_{j,t}
 
 def _build_resid_bartik(shares, resid, shock_col, bartik_col):
     """
@@ -195,7 +195,7 @@ for lbl, resid, shock_col, bartik_col, out_path in [
     ("LD (resid)", resid_ld, "nu_ld",    "bartik_ld",    OUT_LD_PATH),
     ("QU (resid)", resid_qu, "nu_qu",    "bartik_qu",    OUT_QU_PATH),
 ]:
-    print(f"[Bartik] aggregating B̃^{lbl} ...")
+    print(f"[Bartik] aggregating B~^{lbl} ...")
     instr = _build_resid_bartik(shares, resid, shock_col, bartik_col)
     instr.to_csv(out_path, index=False)
     instruments[lbl] = (instr, bartik_col)
@@ -210,7 +210,7 @@ instr_qu = instruments["QU (resid)"][0]
 
 # ── cross-state correlation matrix ────────────────────────────────────────
 # Merge all four residualized instruments on (state_fips, quarter_label).
-# Key diagnostic: r(B̃^δ, B̃^LD) and r(B̃^δ, B̃^QU) vs. baseline r(B^δ, B^TS).
+# Key diagnostic: r(B~^δ, B~^LD) and r(B~^δ, B~^QU) vs. baseline r(B^δ, B^TS).
 
 print("\n--- Residualized instrument correlation matrix (pooled, 2001Q1+) ---")
 
@@ -241,7 +241,7 @@ for (a, ca), (b, cb) in [
     (("LD","bartik_ld"),    ("QU", "bartik_qu")),
 ]:
     r = all_instr[ca].corr(all_instr[cb])
-    print(f"    r(B̃^{a}, B̃^{b}) = {r:+.4f}")
+    print(f"    r(B~^{a}, B~^{b}) = {r:+.4f}")
 
 # Compare with raw δ vs TS if available.
 if RAW_D_PATH.exists() and RAW_S_PATH.exists():
@@ -258,10 +258,10 @@ if RAW_D_PATH.exists() and RAW_S_PATH.exists():
     r_raw = both_raw["bartik_delta"].corr(both_raw["bartik_s"])
     r_resid_dts = all_instr["bartik_delta"].corr(all_instr["bartik_s"])
     print(f"\n  Baseline raw r(B^δ, B^TS):          {r_raw:+.4f}")
-    print(f"  Residualized r(B̃^δ, B̃^TS):         {r_resid_dts:+.4f}")
-    print(f"  Residualized r(B̃^δ, B̃^LD):         "
+    print(f"  Residualized r(B~^δ, B~^TS):         {r_resid_dts:+.4f}")
+    print(f"  Residualized r(B~^δ, B~^LD):         "
           f"{all_instr['bartik_delta'].corr(all_instr['bartik_ld']):+.4f}")
-    print(f"  Residualized r(B̃^δ, B̃^QU):         "
+    print(f"  Residualized r(B~^δ, B~^QU):         "
           f"{all_instr['bartik_delta'].corr(all_instr['bartik_qu']):+.4f}")
 
 # ── quarterly cross-sectional correlation time series ─────────────────────
@@ -321,40 +321,53 @@ p = RESULTS_DIR / "instruments_resid_quarterly_correlation.png"
 fig.savefig(p, dpi=150, bbox_inches="tight"); plt.close(fig); _open_file(p)
 print(f"\nPlot 1 saved: {p}")
 
-# ── plot 2: pooled correlation heatmap ────────────────────────────────────
-
-fig, axes = plt.subplots(1, 2, figsize=(13, 5))
+# ── plot 2: correlation heatmap — delta, LD, QU (the three key instruments)
+# This is the core diagnostic: shows whether residualization makes delta
+# empirically distinct from the two separation-type instruments.
 
 def _heatmap(ax, mat, title):
     im = ax.imshow(mat.values, vmin=-1, vmax=1, cmap="RdBu_r", aspect="auto")
     lbls = mat.columns.tolist()
-    ax.set_xticks(range(len(lbls))); ax.set_xticklabels(lbls, fontsize=10)
-    ax.set_yticks(range(len(lbls))); ax.set_yticklabels(lbls, fontsize=10)
+    ax.set_xticks(range(len(lbls))); ax.set_xticklabels(lbls, fontsize=11)
+    ax.set_yticks(range(len(lbls))); ax.set_yticklabels(lbls, fontsize=11)
     ax.set_title(title, fontsize=10)
     for i in range(len(lbls)):
         for j in range(len(lbls)):
             v = mat.values[i, j]
-            ax.text(j, i, f"{v:.2f}", ha="center", va="center",
-                    fontsize=9, color="white" if abs(v) > 0.6 else "black")
+            ax.text(j, i, f"{v:.3f}", ha="center", va="center",
+                    fontsize=10, color="white" if abs(v) > 0.6 else "black")
     plt.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
 
-_heatmap(axes[0], corr_resid, "Residualized instruments\n(pooled, 2001Q1+)")
+# 3x3 matrix: delta, LD, QU only
+cols_3  = ["bartik_delta", "bartik_ld", "bartik_qu"]
+lbls_3  = [r"$\delta$", "LD", "QU"]
+corr_3x3 = all_instr[cols_3].corr()
+corr_3x3.index   = lbls_3
+corr_3x3.columns = lbls_3
 
-# Raw correlation matrix for comparison (δ and TS only; LD/QU not available raw).
+fig, axes = plt.subplots(1, 2, figsize=(13, 5))
+
+_heatmap(axes[0], corr_3x3,
+         r"Residualized: $\delta$, LD, QU" + "\n(pooled cross-state, 2001Q1+)")
+
+# Right panel: full 4x4 residualized matrix for reference
+corr_resid.index   = [r"$\delta$", "TS", "LD", "QU"]
+corr_resid.columns = [r"$\delta$", "TS", "LD", "QU"]
+_heatmap(axes[1], corr_resid,
+         "All residualized instruments\n(pooled cross-state, 2001Q1+)")
+
+# Annotate with raw r(delta, TS) baseline if available
 if RAW_D_PATH.exists() and RAW_S_PATH.exists():
-    corr_raw_mat = pd.DataFrame(
-        [[1.0, r_raw], [r_raw, 1.0]],
-        index=["δ", "TS"], columns=["δ", "TS"]
+    fig.suptitle(
+        f"Residualized instrument correlations\n"
+        f"Raw baseline r(B^delta, B^TS) = {r_raw:.3f}  ->  "
+        f"r(B~^delta, B~^LD) = {all_instr['bartik_delta'].corr(all_instr['bartik_ld']):+.3f}  "
+        f"r(B~^delta, B~^QU) = {all_instr['bartik_delta'].corr(all_instr['bartik_qu']):+.3f}",
+        fontsize=10, y=1.02,
     )
-    _heatmap(axes[1], corr_raw_mat,
-             f"Raw instruments (δ vs TS)\nr = {r_raw:.3f}")
 else:
-    axes[1].axis("off")
-    axes[1].text(0.5, 0.5, "Raw instruments\nnot available",
-                 ha="center", va="center", fontsize=10)
+    fig.suptitle("Residualized instrument correlations", fontsize=11, y=1.01)
 
-fig.suptitle("Cross-state instrument correlation: raw vs. residualized",
-             fontsize=11, y=1.01)
 fig.tight_layout()
 p = RESULTS_DIR / "instruments_resid_corr_matrix.png"
 fig.savefig(p, dpi=150, bbox_inches="tight"); plt.close(fig); _open_file(p)
@@ -400,4 +413,3 @@ if RAW_D_PATH.exists() and RAW_S_PATH.exists():
     print(f"Plot 3 saved: {p}")
 
 print("\nDone.")
-
