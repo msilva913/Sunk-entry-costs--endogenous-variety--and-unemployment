@@ -117,8 +117,6 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 from fredapi import Fred
 BEA_API_KEY = "7878D119-FFC4-411E-969D-3B168F53A1E0"
-os.environ['BEA_API_KEY'] = BEA_API_KEY
-print(f"BEA_API_KEY set to: {os.environ.get('BEA_API_KEY')}")
 # -- working directory ------------------------------------------------------
 try:
     os.chdir(Path(__file__).resolve().parent)
@@ -522,21 +520,14 @@ def _build_bls_va(raw_bea: pd.DataFrame) -> pd.DataFrame:
 
 USE_BEA_VA = False   # updated below if fetch succeeds
 
-_bea_cache_ok = False
 if BEA_VA_CACHE.exists():
-    try:
-        bea_va = pd.read_parquet(BEA_VA_CACHE)
-        print(f"\nBEA VA: loaded from cache ({BEA_VA_CACHE})")
-        print(f"  Coverage: {bea_va['quarter_label'].min()} - "
-              f"{bea_va['quarter_label'].max()}, "
-              f"{bea_va['industry_code'].nunique()} BLS sectors")
-        USE_BEA_VA = True
-        _bea_cache_ok = True
-    except Exception as cache_err:
-        print(f"\nWARNING: BEA cache file exists but is unreadable ({cache_err}). "
-              "Will attempt fresh fetch or fall back to v1.")
-
-if not _bea_cache_ok:
+    bea_va = pd.read_parquet(BEA_VA_CACHE)
+    print(f"\nBEA VA: loaded from cache ({BEA_VA_CACHE})")
+    print(f"  Coverage: {bea_va['quarter_label'].min()} - "
+          f"{bea_va['quarter_label'].max()}, "
+          f"{bea_va['industry_code'].nunique()} BLS sectors")
+    USE_BEA_VA = True
+else:
     bea_key = os.environ.get("BEA_API_KEY", "")
     if not bea_key:
         print("\nWARNING: BEA_API_KEY not set.  Industry VA control will be "
@@ -839,4 +830,5 @@ fig.suptitle(
     fontsize=11,
 )
 fig.tight_layout()
-p
+p = RESULTS_DIR / "comovement_scatter.png"
+fig.savefig(p, dpi=120, bbox_inches="tight"); plt.close(fig)

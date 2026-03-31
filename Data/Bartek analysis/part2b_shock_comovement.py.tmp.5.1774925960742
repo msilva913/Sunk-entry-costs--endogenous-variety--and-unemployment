@@ -116,9 +116,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from pathlib import Path
 from fredapi import Fred
-BEA_API_KEY = "7878D119-FFC4-411E-969D-3B168F53A1E0"
-os.environ['BEA_API_KEY'] = BEA_API_KEY
-print(f"BEA_API_KEY set to: {os.environ.get('BEA_API_KEY')}")
+
 # -- working directory ------------------------------------------------------
 try:
     os.chdir(Path(__file__).resolve().parent)
@@ -331,22 +329,7 @@ nat = nat.merge(tight_lag, on="quarter_label", how="inner")
 print(f"After merging lagged tightness: {len(nat):,} industry-quarter obs")
 
 # -- 3c. BEA industry value-added (Dlog VA_{j,t-1}) -------------------------
-# Source: BEA GDPbyIndustry.
-#
-# TableID preference (in order):
-#   TableID=5  Current-dollar (nominal) VA, available from 1997Q1 onward.
-#              Preferred: covers full JOLTS sample (2001Q1+).
-#              Justification for using nominal growth rates: we compute
-#              Dlog VA_{j,t} = log VA_{j,t} - log VA_{j,t-1}.  Over a single
-#              quarter, Dlog VA_nominal = Dlog VA_real + Dlog P_{j,t}.  The
-#              industry price deflator term Dlog P_{j,t} is absorbed by the
-#              time FE (alpha_t) in the residualization regression, which
-#              already soaks up all aggregate price variation.  Within-industry
-#              relative price variation across quarters is negligible compared
-#              to quantity variation for our purposes.
-#   TableID=1  Real (chained-$) VA, available from 2005Q1 onward only.
-#              Used as fallback if TableID=5 fails.
-#
+# Source: BEA GDPbyIndustry, TableID=1 (real VA, quarterly, chained $).
 # NAICS -> BLS 2-digit supersector mapping.  Multi-code sectors are summed
 # before computing growth rates.
 #
@@ -355,145 +338,85 @@ print(f"After merging lagged tightness: {len(nat):,} industry-quarter obs")
 # residualization falls back to the v1 spec (no VA control).
 
 # Mapping: BLS industry_code -> list of BEA NAICS IndustryID strings
-# Verified against actual BEA GDPbyIndustry TableID=1 response (2026-03-31).
-# Notes:
-#   BLS 43: BEA uses "48TW" for Transport & Warehousing (not "48-49") + "22" Utilities
-#   BLS 55: BEA uses separate "52" and "53" (no combined "52-53" row exists)
-#   Real VA (chained $) available from 2005Q1 onward; earlier quarters not in TableID=1.
 BLS_TO_BEA = {
-    10: ["21"],             # Mining and logging
-    20: ["23"],             # Construction
-    30: ["31G"],            # Manufacturing
-    41: ["42"],             # Wholesale trade
-    42: ["44RT"],           # Retail trade
-    43: ["48TW", "22"],     # Transport/Warehousing + Utilities (sum)
-    50: ["51"],             # Information
-    55: ["52", "53"],       # Financial activities (Finance+Insurance + Real estate)
-    60: ["54", "55", "56"], # Professional & business services (sum)
-    65: ["61", "62"],       # Education & health services (sum)
-    70: ["71", "72"],       # Leisure & hospitality (sum)
-    80: ["81"],             # Other services
+    10: ["21"],            # Mining and logging
+    20: ["23"],            # Construction
+    30: ["31G"],           # Manufacturing
+    41: ["42"],            # Wholesale trade
+    42: ["44RT"],          # Retail trade
+    43: ["48-49", "22"],   # Transport/Warehousing + Utilities (sum)
+    50: ["51"],            # Information
+    55: ["52-53"],         # Financial activities
+    60: ["54", "55", "56"],# Professional & business services (sum)
+    65: ["61", "62"],      # Education & health services (sum)
+    70: ["71", "72"],      # Leisure & hospitality (sum)
+    80: ["81"],            # Other services
 }
 
 def _fetch_bea_va(bea_key: str) -> pd.DataFrame:
     """
-    Fetch quarterly value-added by industry from BEA GDPbyIndustry.
-    Tries TableID=5 (nominal, from 1997) first; falls back to TableID=1
-    (real chained $, from 2005) if TableID=5 fails.
-    Returns a DataFrame with columns: bea_industry, quarter_label, DataValue.
+    Fetch real quarterly value-added by industry from BEA GDPbyIndustry.
+    Returns a DataFrame with columns: quarter_label, bea_industry, DataValue.
+    Raises ValueError with the BEA error message if the API returns an error.
     """
     import requests
-
-    import json
-
-    def _parse_bea_response(data: dict, label: str) -> pd.DataFrame:
-        """Parse a BEA JSON response into a tidy DataFrame, or raise on error."""
-        beaapi = data.get("BEAAPI", data)
-        if "Error" in beaapi:
-            raise ValueError(f"BEA API error ({label}): {beaapi['Error']}")
-        results = beaapi.get("Results", {})
-        if isinstance(results, list):
-            results = results[0] if results else {}
-        if isinstance(results, dict) and "Error" in results:
-            raise ValueError(f"BEA API error ({label}): {results['Error']}")
-        rows = results.get("Data") if isinstance(results, dict) else None
-        if rows is None:
-            raise ValueError(
-                f"BEA response missing 'Data' ({label}). "
-                f"beaapi keys={list(beaapi.keys())}. "
-                f"Response (truncated):\n{json.dumps(data, indent=2)[:1000]}"
-            )
-        df = pd.DataFrame(rows)
-        # Time is split across "Year" + "Quarter" (Roman numerals I–IV)
-        roman = {"I": "1", "II": "2", "III": "3", "IV": "4"}
-        df["quarter_label"] = (
-            df["Year"].astype(str) + "Q" +
-            df["Quarter"].astype(str).str.strip().map(roman)
-        )
-        if df["quarter_label"].isna().any():
-            bad = df.loc[df["quarter_label"].isna(), "Quarter"].unique()
-            raise ValueError(f"Unrecognised BEA Quarter values: {bad}")
-        df = df.rename(columns={"Industry": "bea_industry"})
-        df["DataValue"] = pd.to_numeric(
-            df["DataValue"].astype(str).str.replace(",", ""), errors="coerce"
-        )
-        df = df[["bea_industry", "quarter_label", "DataValue"]].dropna(
-            subset=["DataValue"]
-        ).copy()
-        print(f"  BEA ({label}): {len(df):,} rows, "
-              f"{df['bea_industry'].nunique()} industries, "
-              f"quarters {df['quarter_label'].min()}–{df['quarter_label'].max()}")
-        return df
-
     url = "https://apps.bea.gov/api/data"
-    last_exc = None
-    # TableID preference order (first success wins):
-    #   9  = Pct Changes in Chain-Type Qty Indexes for VA (A)(Q)
-    #        Values ARE Dlog VA × 100 (quarterly pct change, real).
-    #        Expected start: ~1997Q2 (first difference of indexes).
-    #        is_pct_change=True: divide by 100 to get log-growth rate.
-    #   10 = Real VA by Industry (A)(Q)
-    #        Expected start: ~1997Q1 (same vintage as quarterly accounts).
-    #   5  = Nominal VA by Industry (A)(Q)
-    #        Expected start: ~1997Q1.  Price term absorbed by time FE.
-    #   1  = Real VA (older table, confirmed 2005Q1 start — last resort).
-    table_candidates = [
-        ("9",  "pct-change real qty index, TableID=9",  True),
-        ("10", "real VA levels, TableID=10",             False),
-        ("5",  "nominal VA levels, TableID=5",           False),
-        ("1",  "real VA levels, TableID=1 (2005+)",      False),
-    ]
-    for table_id, label, is_pct_change in table_candidates:
-        print(f"  Fetching BEA GDPbyIndustry ({label}) ...")
-        try:
-            params = {
-                "UserID": bea_key,
-                "method": "GetData",
-                "DataSetName": "GDPbyIndustry",
-                "TableID": table_id,
-                "Frequency": "Q",
-                "Year": "ALL",
-                "Industry": "ALL",
-                "ResultFormat": "JSON",
-            }
-            r = requests.get(url, params=params, timeout=60)
-            r.raise_for_status()
-            df = _parse_bea_response(r.json(), label)
-            # Tag whether values are already pct changes (TableID=9)
-            # so _build_bls_va knows whether to log-diff or just rescale.
-            df["_is_pct_change"] = is_pct_change
-            # Reject if coverage is too short (< 2001Q1 overlap needed)
-            if df["quarter_label"].min() > "2002Q1":
-                print(f"  TableID={table_id} starts {df['quarter_label'].min()}"
-                      f" — too late, trying next.")
-                last_exc = ValueError(f"Coverage starts {df['quarter_label'].min()}")
-                continue
-            print(f"  Using TableID={table_id} ({label}).")
-            return df
-        except Exception as e:
-            print(f"  TableID={table_id} failed: {e}")
-            last_exc = e
-            continue
-    raise ValueError(
-        f"All BEA TableIDs failed or have insufficient coverage. "
-        f"Last error: {last_exc}"
+    params = {
+        "UserID": bea_key,
+        "method": "GetData",
+        "DataSetName": "GDPbyIndustry",
+        "TableID": "1",        # Value Added, real
+        "Frequency": "Q",
+        "Year": "ALL",
+        "Industry": "ALL",
+        "ResultFormat": "JSON",
+    }
+    print("  Fetching BEA GDPbyIndustry (real VA, all quarters, all industries) ...")
+    r = requests.get(url, params=params, timeout=60)
+    r.raise_for_status()
+    data = r.json()
+
+    # Defensive parse: BEA returns errors inside BEAAPI.Results.Error
+    beaapi  = data.get("BEAAPI", data)
+    results = beaapi.get("Results", {})
+
+    # Error response
+    if "Error" in results:
+        err = results["Error"]
+        raise ValueError(f"BEA API error: {err}")
+
+    # Some error responses use a top-level "Error" key instead
+    if "Error" in beaapi:
+        err = beaapi["Error"]
+        raise ValueError(f"BEA API error: {err}")
+
+    rows = results.get("Data")
+    if rows is None:
+        import json
+        raise ValueError(
+            f"BEA response missing 'Data' key. Full response:\n"
+            f"{json.dumps(data, indent=2)[:1000]}"
+        )
+
+    df = pd.DataFrame(rows)
+    # Relevant columns: Industry, TimePeriod (e.g. '2006Q1'), DataValue
+    df = df[["Industry", "TimePeriod", "DataValue"]].copy()
+    df["DataValue"] = pd.to_numeric(
+        df["DataValue"].astype(str).str.replace(",", ""), errors="coerce"
     )
+    df = df.dropna(subset=["DataValue"])
+    df = df.rename(columns={"TimePeriod": "quarter_label",
+                             "Industry": "bea_industry"})
+    print(f"  BEA: {len(df):,} rows, "
+          f"{df['bea_industry'].nunique()} industries, "
+          f"{df['quarter_label'].nunique()} quarters")
+    return df
 
 def _build_bls_va(raw_bea: pd.DataFrame) -> pd.DataFrame:
     """
     Aggregate BEA NAICS-level VA to BLS supersectors, compute Dlog VA.
     Returns: quarter_label, industry_code (BLS), dlog_va
-
-    If raw_bea._is_pct_change is True (TableID=9), DataValue is already
-    a quarterly percent change → divide by 100 to get log-growth rate.
-    For multi-code sectors (e.g. BLS 43 = 48TW + 22), we average the
-    pct changes (weighted equally) rather than summing levels, since
-    we cannot sum index percent changes directly.
-    If raw_bea._is_pct_change is False, DataValue is a level → log-diff.
     """
-    is_pct = bool(raw_bea["_is_pct_change"].iloc[0])
-    raw_bea = raw_bea.drop(columns=["_is_pct_change"])
-
     records = []
     for bls_code, bea_ids in BLS_TO_BEA.items():
         sub = raw_bea[raw_bea["bea_industry"].isin(bea_ids)].copy()
@@ -501,43 +424,27 @@ def _build_bls_va(raw_bea: pd.DataFrame) -> pd.DataFrame:
             print(f"  WARNING: no BEA data for BLS {bls_code} "
                   f"(BEA ids: {bea_ids})")
             continue
-        if is_pct:
-            # Values are quarterly pct changes; average across sub-sectors
-            agg = (sub.groupby("quarter_label")["DataValue"]
-                      .mean().reset_index()
-                      .rename(columns={"DataValue": "dlog_va_pct"}))
-            agg = agg.sort_values("quarter_label").reset_index(drop=True)
-            agg["dlog_va"] = agg["dlog_va_pct"] / 100.0
-        else:
-            # Values are levels; sum sub-sectors then log-diff
-            agg = (sub.groupby("quarter_label")["DataValue"]
-                      .sum().reset_index()
-                      .rename(columns={"DataValue": "va"}))
-            agg = agg.sort_values("quarter_label").reset_index(drop=True)
-            agg["log_va"]  = np.log(agg["va"].replace(0, np.nan))
-            agg["dlog_va"] = agg["log_va"].diff()
+        agg = (sub.groupby("quarter_label")["DataValue"]
+                  .sum().reset_index()
+                  .rename(columns={"DataValue": "va"}))
+        agg = agg.sort_values("quarter_label").reset_index(drop=True)
+        agg["log_va"]  = np.log(agg["va"].replace(0, np.nan))
+        agg["dlog_va"] = agg["log_va"].diff()
         agg["industry_code"] = bls_code
         records.append(agg[["quarter_label", "industry_code", "dlog_va"]].dropna())
     return pd.concat(records, ignore_index=True)
 
 USE_BEA_VA = False   # updated below if fetch succeeds
 
-_bea_cache_ok = False
 if BEA_VA_CACHE.exists():
-    try:
-        bea_va = pd.read_parquet(BEA_VA_CACHE)
-        print(f"\nBEA VA: loaded from cache ({BEA_VA_CACHE})")
-        print(f"  Coverage: {bea_va['quarter_label'].min()} - "
-              f"{bea_va['quarter_label'].max()}, "
-              f"{bea_va['industry_code'].nunique()} BLS sectors")
-        USE_BEA_VA = True
-        _bea_cache_ok = True
-    except Exception as cache_err:
-        print(f"\nWARNING: BEA cache file exists but is unreadable ({cache_err}). "
-              "Will attempt fresh fetch or fall back to v1.")
-
-if not _bea_cache_ok:
-    bea_key = os.environ.get("BEA_API_KEY", "")
+    bea_va = pd.read_parquet(BEA_VA_CACHE)
+    print(f"\nBEA VA: loaded from cache ({BEA_VA_CACHE})")
+    print(f"  Coverage: {bea_va['quarter_label'].min()} - "
+          f"{bea_va['quarter_label'].max()}, "
+          f"{bea_va['industry_code'].nunique()} BLS sectors")
+    USE_BEA_VA = True
+else:
+    bea_key = os.environ.get("BEA_API_KEY", "7878D119-FFC4-411E-969D-3B168F53A1E0")
     if not bea_key:
         print("\nWARNING: BEA_API_KEY not set.  Industry VA control will be "
               "OMITTED from residualization (v1 fallback).")
@@ -564,11 +471,10 @@ if USE_BEA_VA:
     bea_va_lag = (bea_va_sorted[["industry_code", "quarter_label", "dlog_va_lag"]]
                   .dropna()
                   .copy())
-    # Force both sides to the same dtype (int) before merging
-    bea_va_lag["industry_code"] = bea_va_lag["industry_code"].astype(int)
-    nat["industry_code"] = nat["industry_code"].astype(int)
-    print(f"  BEA VA industry codes: {sorted(bea_va_lag['industry_code'].unique())}")
-    print(f"  nat  industry codes:   {sorted(nat['industry_code'].unique())}")
+    # industry_code may be int in BEA data; match dtype with nat
+    bea_va_lag["industry_code"] = bea_va_lag["industry_code"].astype(
+        nat["industry_code"].dtype
+    )
     nat = nat.merge(bea_va_lag, on=["industry_code", "quarter_label"], how="inner")
     n_missing_va = nat["dlog_va_lag"].isna().sum()
     if n_missing_va:
@@ -658,9 +564,8 @@ def _pooled_r(df, col1, col2):
 
 def _by_industry_r(df, col1, col2):
     return (
-        df.groupby("industry_label")
-          .apply(lambda g: pd.Series({"r": g[col1].corr(g[col2])}),
-                 include_groups=False)
+        df.groupby("industry_label", group_keys=False)
+          .apply(lambda g: pd.Series({"r": g[col1].corr(g[col2])}))
           .reset_index()
           .sort_values("r")
     )
@@ -839,4 +744,6 @@ fig.suptitle(
     fontsize=11,
 )
 fig.tight_layout()
-p
+p = RESULTS_DIR / "comovement_scatter.png"
+fig.savefig(p, dpi=120, bbox_inches="tight"); plt.close(fig); _open_file(p)
+print(f"Pl
