@@ -1,6 +1,6 @@
 # CLAUDE.md — Empirical LP Project (Firm Entry/Exit DSGE)
 
-**Last updated:** March 27, 2026
+**Last updated:** March 31, 2026
 **Author:** Mario Silva
 **Purpose:** Persistent project context for fresh Cowork sessions. Paste this into any new session to restore full project state.
 
@@ -408,4 +408,3 @@ The declining vacancy IRF after LD (despite model predicting flat/rising) was in
 - Endogenous exit feedback — now seen as IMPLAUSIBLE for LD timing reasons
 
 **The new leading explanation:** demand contamination in the LD instrument causes states hit by industry demand shocks to show both high LD and falling vacancies, even though the structural reposting channel would predict rising vacancies. The enriched residualization test will resolve this.
-
