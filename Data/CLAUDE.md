@@ -272,3 +272,140 @@ NFCI_risk_dm_t demeaned within estimation sample so β_h = IRF at average financ
 8. **State FIPS as zero-padded 2-digit strings** throughout.
 9. **Vacancy aggregation = average** (stock measure), not sum. Separation aggregation = sum (flow measure).
 10. **The δ financial state-dependence and the s monotonic rise are puzzles**, not confirmations. Flag them in the paper text.
+
+---
+
+## 10. New Insights from Session — March 31, 2026
+
+### 10.1 Demand Contamination Diagnosis (CRITICAL)
+
+The most important new finding is that both δ and LD instruments are likely contaminated by **industry-specific demand shocks** that survive productivity residualization. This is now the leading explanation for why both instruments show declining vacancies and similar unemployment IRFs, contrary to the model's predicted asymmetry.
+
+**The mechanism:**
+When a demand contraction hits a specific industry nationally (e.g., manufacturing), three things happen simultaneously: establishment closings rise (raising g^δ), layoffs at surviving firms rise (raising g^LD), and firms in that industry reduce vacancy posting. States with high exposure to that industry receive large Bartik values for both instruments in the same quarter when their vacancies are falling for demand reasons.
+
+**Two clarifications on this channel:**
+1. Contamination does NOT require the shock to be state-concentrated — it only needs to be industry-specific. The industry dimension alone suffices because the Bartik construction weights states by industry composition.
+2. The contamination applies symmetrically to both δ and LD because they share identical employment weights and both underlying series respond to industry demand conditions. Aggregate productivity residualization does not remove industry-specific demand because it only controls for the aggregate nonfarm component.
+
+This explains why δ and LD remain correlated at r=0.44 after productivity residualization — the shared industry-specific demand component survives.
+
+**Implication:** The similar IRFs for δ and LD likely reflect both instruments predominantly identifying the effect of industry-specific demand contractions on state labor markets, which directly suppress vacancy creation and raise unemployment regardless of the structural δ vs. LD distinction.
+
+---
+
+### 10.2 Decision: Drop TS as Primary Instrument
+
+**Total separations (TS) should be removed from primary LP analysis** and retained only as:
+- A robustness/comparability specification (to connect to earlier results)
+- An internal consistency check (TS ≈ LD + QU + other in the pipeline)
+- A bridge to pre-2001 data if needed later
+
+**Reason:** TS = LD + QU + other separations. Since LD and QU are nearly orthogonal after residualization (r = −0.035) and have structurally distinct implications for the vacancy channel, running TS averages two mechanically opposite signals. The LD and QU instruments separately dominate TS.
+
+**Primary instrument set going forward:**
+- δ (residualized) — product-line destruction
+- LD (residualized) — layoffs and discharges at continuing establishments
+- QU (residualized) — quits (placebo; no reposting prediction in model)
+
+---
+
+### 10.3 Enriched Residualization Specification (NEXT TASK)
+
+The current residualization in part2b uses only aggregate productivity growth:
+```
+log g^k_{j,t} = α_j + γ_k Δlog p_t + ν^k_{j,t}
+```
+
+**The new specification adds lagged industry value-added growth and lagged market tightness:**
+```
+log g^k_{j,t} = α_j + γ_k Δlog p_t + λ_k Δlog VA_{j,t-1} + μ_k log θ_{t-1} + ν^k_{j,t}
+```
+
+where:
+- `Δlog VA_{j,t-1}` = real quarterly value-added growth in BEA industry j, **lagged one quarter** (predetermined w.r.t. current shock)
+- `log θ_{t-1}` = national market tightness (v/u), **lagged one quarter**
+- Both regressors lagged to ensure predetermination — contemporaneous values are endogenous to the shock
+
+**Why each control:**
+- `Δlog p_t`: aggregate macro cycle (common to all industries)
+- `Δlog VA_{j,t-1}`: industry-specific demand conditions — the KEY new addition to purge demand contamination
+- `log θ_{t-1}`: aggregate labor market conditions affecting exit decisions and layoff propensity; especially important for QU (quits are primarily driven by tightness)
+
+**Why NOT use per capita GDP:** Industry GDP has no natural population denominator; total real chained-dollar value-added growth is the right measure.
+
+---
+
+### 10.4 BEA Industry GDP Data: Confirmed Feasible
+
+BEA's `GDPbyIndustry` dataset provides **quarterly real value-added** for all 12 BLS supersectors, available from 1987 onward via free API (requires registration at apps.bea.gov).
+
+**NAICS → BLS supersector mapping:**
+| BLS Supersector | BEA NAICS Code |
+|---|---|
+| Mining (10) | 21 |
+| Construction (20) | 23 |
+| Manufacturing (30) | 31G |
+| Wholesale trade (41) | 42 |
+| Retail trade (42) | 44RT |
+| Transport/Warehousing/Utilities (43) | 48-49 + 22 (sum) |
+| Information (50) | 51 |
+| Financial activities (55) | 52-53 |
+| Professional & business services (60) | 54+55+56 |
+| Education & health (65) | 61+62 |
+| Leisure & hospitality (70) | 71+72 |
+| Other services (80) | 81 |
+
+Note: Transport/Warehousing/Utilities requires summing two BEA codes. All others are one-to-one.
+
+**API access:** Dataset=`GDPbyIndustry`, TableID=1 (value added), Frequency=`Q`, Industry=ALL. Fetch pattern identical to OPHNFB from FRED; add to part2b as new data source.
+
+---
+
+### 10.5 Implementation Plan for Next Session
+
+**Step 1:** Add BEA industry GDP fetch to `part2b_shock_comovement.py`
+- Fetch real quarterly value-added by NAICS industry
+- Construct `Δlog VA_{j,t}` for each of the 12 supersectors
+- Cache as `data/cache/bea_va_quarterly_12ind.parquet`
+
+**Step 2:** Update residualization regression in `part2b_shock_comovement.py`
+- Add `Δlog VA_{j,t-1}` and `log θ_{t-1}` as additional regressors
+- Requires national market tightness series (v/u from JOLTS national data, already available)
+- Save new residuals as updated parquets (overwrite existing or use new names with `_v2` suffix)
+
+**Step 3:** Re-run `part3_resid_instruments.py`
+- Rebuild B~^δ, B~^LD, B~^QU from updated residuals
+- Check whether new cross-instrument correlations are lower (especially r(δ,LD))
+- If r(δ,LD) drops substantially from 0.44, the demand contamination hypothesis is confirmed
+
+**Step 4:** Re-run `part5_lp.py`
+- Re-estimate all IRFs with the cleaner instruments
+- Key question: do δ and LD vacancy IRFs now diverge? (δ down, LD flat/up = model confirmed)
+
+---
+
+### 10.6 Interpretation Framework for Paper
+
+The emerging interpretation:
+
+1. **Endogenous exit feedback is NOT the main explanation for similar LD IRFs.** Endogenous exit requires surviving firms to have depressed continuation values — but LD firms have already survived. The timing is wrong for endogenous exit to dominate reposting.
+
+2. **Demand contamination IS the leading explanation.** Both instruments pick up industry-specific demand contractions. The enriched residualization (adding lagged industry VA growth) is designed to test and address this.
+
+3. **The δ–LD vacancy asymmetry IS visible but partial.** δ: persistent significant decline; LD: moderate decline, fading after h=8. This partial asymmetry is consistent with reposting being real but weaker than the model implies, possibly because firms in recession-adjacent industries do not fully repost even when they survive.
+
+4. **If enriched residualization sharpens the δ–LD vacancy asymmetry** (δ down, LD flat/up), this is the paper's key empirical finding: the δ/s decomposition matters, and the demand channel was obscuring it.
+
+5. **If enriched residualization does NOT sharpen the asymmetry**, the reposting channel is genuinely weak quantitatively at empirically relevant parameter values — also a publishable finding that disciplines the model's calibration.
+
+---
+
+### 10.7 Vacancy IRF Interpretation (Updated)
+
+The declining vacancy IRF after LD (despite model predicting flat/rising) was initially attributed to:
+- Instrument collinearity (r=0.44 with δ) — now seen as INSUFFICIENT at this correlation level
+- Endogenous exit feedback — now seen as IMPLAUSIBLE for LD timing reasons
+
+**The new leading explanation:** demand contamination in the LD instrument causes states hit by industry demand shocks to show both high LD and falling vacancies, even though the structural reposting channel would predict rising vacancies. The enriched residualization test will resolve this.
+
