@@ -31,13 +31,13 @@ from pathlib import Path
 
 SCRIPTS = ["part2b_shock_comovement.py", "part3_resid_instruments.py", "part5_lp.py"]
 
+from dotenv import load_dotenv
+load_dotenv()  # Loads variables from .env into os.environ
+key = os.getenv('FRED_API_KEY')
+
 def check_prereqs():
-    key = os.environ.get("FRED_API_KEY", "")
     if not key:
         print("ERROR: FRED_API_KEY not set.")
-        print("  Register free at https://fred.stlouisfed.org/docs/api/api_key.html")
-        print("  Mac/Linux: export FRED_API_KEY=<your-key>")
-        print("  Windows:   $env:FRED_API_KEY = \"<your-key>\"")
         sys.exit(1)
     print(f"FRED_API_KEY: {key[:8]}... (set)")
 

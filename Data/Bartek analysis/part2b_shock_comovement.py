@@ -6,106 +6,57 @@ aggregation).
 
 Purpose
 -------
-In the model, delta and s are exogenous AR(1) processes independent of technology
-z.  In the data, both series contain endogenous components driven by aggregate
-productivity and/or labor-market tightness.  This file asks two questions:
+Residualize four shock series on predetermined controls to isolate the
+idiosyncratic component that is the closest empirical analog to the truly
+exogenous shocks in the model.
 
-  1. How much do g^delta and g^s co-move across industries and over time?
-     High co-movement implies the Bartik instruments B^delta and B^s will be
-     nearly collinear, undermining separate identification.
+Residualization specifications
+-------------------------------
+  v2 (enriched, requires FRED_API_KEY):
+    delta, TS : log g^k_{j,t} = a_j + gamma*Dlog(p_t) + lambda*Dlog(VA_{j,t-1}) + nu
+    LD, QU    : same + mu*log(theta_{t-1})
 
-  2. How much of that co-movement is explained by aggregate productivity,
-     industry-specific demand conditions, and market tightness?  We
-     residualize each series on predetermined controls to isolate the
-     idiosyncratic component.
+  v1 fallback (no FRED key or VA fetch fails):
+    delta, TS : log g^k_{j,t} = a_j + gamma*Dlog(p_t) + nu
+    LD, QU    : same + mu*log(theta_{t-1})
 
-Residualization strategy -- v2 (enriched, 2026-03-31):
-    log g^delta_{j,t} = a_j + gamma_delta Dlog p_t
-                             + lambda_delta Dlog VA_{j,t-1}
-                             + nu^delta_{j,t}
+Regressors
+----------
+  Dlog(p_t)         aggregate nonfarm productivity growth (FRED: OPHNFB)
+  Dlog(VA_{j,t-1})  industry real value-added growth, lagged 1Q (BEA via FRED)
+  log(theta_{t-1})  national log market tightness V/U, lagged 1Q (FRED: JTSJOL/UNEMPLOY)
 
-    log g^TS_{j,t}    = a_j + gamma_TS Dlog p_t
-                             + lambda_TS Dlog VA_{j,t-1}
-                             + nu^TS_{j,t}
+All regressors lagged (or aggregate) to ensure predetermination w.r.t. the
+current period's shock draw.
 
-    log g^LD_{j,t}    = a_j + gamma_LD Dlog p_t
-                             + lambda_LD Dlog VA_{j,t-1}
-                             + mu_LD log theta_{t-1}
-                             + nu^LD_{j,t}
+Industry VA: FRED series IDs
+-----------------------------
+  BLS 10 -> RVAM               Mining
+  BLS 20 -> RVAC               Construction
+  BLS 30 -> RVAMA              Manufacturing
+  BLS 41 -> RVAW               Wholesale Trade
+  BLS 42 -> RVAR               Retail Trade
+  BLS 43 -> RVAT + RVAU        Transport+Warehousing + Utilities (summed)
+  BLS 50 -> RVAI               Information
+  BLS 55 -> RVAFI + RVARL      Finance+Insurance + Real Estate (summed)
+  BLS 60 -> RVAPBS             Professional & Business Services
+  BLS 65 -> RVAES + RVAHC      Education + Health & Social Assistance (summed)
+  BLS 70 -> RVAER + RVAAF      Arts/Entertainment + Accommodation/Food (summed)
+  BLS 80 -> RVAOSEG            Other Services
 
-    log g^QU_{j,t}    = a_j + gamma_QU Dlog p_t
-                             + lambda_QU Dlog VA_{j,t-1}
-                             + mu_QU log theta_{t-1}
-                             + nu^QU_{j,t}
-
-Regressors:
-    Dlog p_t             -- aggregate nonfarm business productivity growth
-                            (common to all industries; controls macro cycle)
-    Dlog VA_{j,t-1}      -- real value-added growth in BEA industry j,
-                            LAGGED one quarter to ensure predetermination.
-                            KEY new addition: purges industry-specific demand
-                            contamination that survives aggregate productivity
-                            residualization.
-    log theta_{t-1}      -- national log market tightness (V/U), LAGGED one
-                            quarter.  Predetermination argument: contemporaneous
-                            tightness is endogenous to current δ/LD/QU shocks.
-                            Added for LD (retention costs) and QU (outside
-                            option) only; delta is driven by firm-level
-                            idiosyncratic draws, not aggregate tightness.
-
-Motivation for lagging:
-    Contemporaneous Dlog VA_{j,t} and log theta_t are endogenous to the
-    shock realization in period t.  Using t-1 values ensures regressors
-    are predetermined w.r.t. the current period's shock draw.
-
-    Why NOT per-capita industry GDP: industry output has no natural
-    population denominator; total real chained-dollar VA growth is the
-    correct measure.
-
-Industry VA data source:
-    BEA Real Value Added by Industry (Chained 2017 $, SAAR, Q) as hosted
-    on FRED.  Requires FRED_API_KEY environment variable (free at
-    fred.stlouisfed.org).  Cached to data/cache/bea_va_quarterly_12ind.parquet
-    after first fetch; subsequent runs use cache.  Coverage: 2005Q1 onward.
-
-FRED series -> BLS supersector mapping:
-    BLS 10 (Mining)                  -> RVAM
-    BLS 20 (Construction)            -> RVAC
-    BLS 30 (Manufacturing)           -> RVAMA
-    BLS 41 (Wholesale trade)         -> RVAW
-    BLS 42 (Retail trade)            -> RVAR
-    BLS 43 (Trans/Warehousing/Util)  -> RVAT + RVAU (summed)
-    BLS 50 (Information)             -> RVAI
-    BLS 55 (Financial activities)    -> RVAFI + RVARL (summed)
-    BLS 60 (Prof & business svcs)    -> RVAPBS (aggregate)
-    BLS 65 (Education & health)      -> RVAES + RVAHC (summed)
-    BLS 70 (Leisure & hospitality)   -> RVAER + RVAAF (summed)
-    BLS 80 (Other services)          -> RVAOSEG
-
-Outputs
--------
-    data/instruments/shock_rates_delta_resid.parquet   residualized delta (v2)
-    data/instruments/shock_rates_s_resid.parquet       residualized TS (v2)
-    data/instruments/shock_rates_ld_resid.parquet      residualized LD (v2)
-    data/instruments/shock_rates_qu_resid.parquet      residualized QU (v2)
-    data/cache/bea_va_quarterly_12ind.parquet          BEA industry VA cache
-    data/results/comovement_raw_series.png
-    data/results/comovement_correlation_heatmaps.png
-    data/results/comovement_scatter.png
+Coverage: all FRED RVA series start 2005Q1.  v2 sample is 2005Q2+ (one lag).
 
 Run
 ---
-    FRED_API_KEY=<your_key> python part2b_shock_comovement.py
+  FRED_API_KEY=<key> python part2b_shock_comovement.py
 
-    On subsequent runs the industry VA cache is used and FRED_API_KEY is not needed.
-    FRED API keys are free: https://fred.stlouisfed.org/docs/api/api_key.html
+  On subsequent runs the caches are used and FRED_API_KEY is not needed.
+  Free API key: https://fred.stlouisfed.org/docs/api/api_key.html
 
 Prerequisites
 -------------
-    python part2_shock_rates.py
-    python part2_shock_rates_s.py
-    Internet access on first run (fetches OPHNFB from FRED and industry VA;
-    cached thereafter).
+  python part2_shock_rates.py
+  python part2_shock_rates_s.py
 """
 
 import os
@@ -116,7 +67,8 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from pathlib import Path
-# -- working directory ------------------------------------------------------
+
+# ── working directory ────────────────────────────────────────────────────────
 try:
     os.chdir(Path(__file__).resolve().parent)
 except NameError:
@@ -127,32 +79,51 @@ except NameError:
     )
 
 from construct_delta_instrument import (
-    DEFAULT_CACHE_DIR,
-    DEFAULT_OUTPUT_DIR,
-    SHOCK_RATES_PATH,
-    INDUSTRY_LABELS,
+    DEFAULT_CACHE_DIR, DEFAULT_OUTPUT_DIR, SHOCK_RATES_PATH, INDUSTRY_LABELS,
 )
 from construct_s_instrument import (
-    SHOCK_RATES_S_PATH,
-    SHOCK_RATES_LD_PATH,
-    SHOCK_RATES_QU_PATH,
+    SHOCK_RATES_S_PATH, SHOCK_RATES_LD_PATH, SHOCK_RATES_QU_PATH,
 )
 
-# -- paths ------------------------------------------------------------------
+# ── paths ────────────────────────────────────────────────────────────────────
 PROD_CACHE      = DEFAULT_CACHE_DIR / "ophnfb_quarterly.parquet"
 TIGHTNESS_CACHE = DEFAULT_CACHE_DIR / "national_tightness_quarterly.parquet"
 BEA_VA_CACHE    = DEFAULT_CACHE_DIR / "bea_va_quarterly_12ind.parquet"
-RESID_D_PATH  = DEFAULT_OUTPUT_DIR / "shock_rates_delta_resid.parquet"
-RESID_S_PATH  = DEFAULT_OUTPUT_DIR / "shock_rates_s_resid.parquet"
-RESID_LD_PATH = DEFAULT_OUTPUT_DIR / "shock_rates_ld_resid.parquet"
-RESID_QU_PATH = DEFAULT_OUTPUT_DIR / "shock_rates_qu_resid.parquet"
-RESULTS_DIR   = Path("data/results")
+RESID_D_PATH    = DEFAULT_OUTPUT_DIR / "shock_rates_delta_resid.parquet"
+RESID_S_PATH    = DEFAULT_OUTPUT_DIR / "shock_rates_s_resid.parquet"
+RESID_LD_PATH   = DEFAULT_OUTPUT_DIR / "shock_rates_ld_resid.parquet"
+RESID_QU_PATH   = DEFAULT_OUTPUT_DIR / "shock_rates_qu_resid.parquet"
+RESULTS_DIR     = Path("data/results")
 
-DEFAULT_CACHE_DIR.mkdir(parents=True, exist_ok=True)
-DEFAULT_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+for d in [DEFAULT_CACHE_DIR, DEFAULT_OUTPUT_DIR, RESULTS_DIR]:
+    d.mkdir(parents=True, exist_ok=True)
 
-# -- helpers ----------------------------------------------------------------
+# ── FRED API key — read ONCE here, used everywhere ───────────────────────────
+# Set via:  export FRED_API_KEY=<your_key>   (Linux/macOS)
+#           $env:FRED_API_KEY = "<your_key>" (Windows PowerShell)
+
+from dotenv import load_dotenv
+load_dotenv()  # Loads variables from .env into os.environ
+FRED_API_KEY = os.getenv('FRED_API_KEY')
+
+# ── FRED series -> BLS supersector mapping ───────────────────────────────────
+# Multi-component sectors are summed at the level before log-differencing.
+BLS_TO_FRED = {
+    10: ["RVAM"],
+    20: ["RVAC"],
+    30: ["RVAMA"],
+    41: ["RVAW"],
+    42: ["RVAR"],
+    43: ["RVAT", "RVAU"],
+    50: ["RVAI"],
+    55: ["RVAFI", "RVARL"],
+    60: ["RVAPBS"],
+    65: ["RVAES", "RVAHC"],
+    70: ["RVAER", "RVAAF"],
+    80: ["RVAOSEG"],
+}
+
+# ── helpers ───────────────────────────────────────────────────────────────────
 def _ql_to_dt(ql):
     y, q = ql.split("Q")
     return pd.Timestamp(year=int(y), month=int(q) * 3 - 2, day=1)
@@ -172,115 +143,150 @@ REC_SPANS = [("2001-03-01", "2001-11-01"),
 
 def _add_recessions(ax):
     for start, end in REC_SPANS:
-        ax.axvspan(pd.Timestamp(start), pd.Timestamp(end),
-                   alpha=0.10, color="grey")
+        ax.axvspan(pd.Timestamp(start), pd.Timestamp(end), alpha=0.10, color="grey")
 
-# -- 1. check inputs --------------------------------------------------------
-print("=" * 65)
-print("Part 2b  -- Shock-productivity decomposition and comovement (v2)")
-print("=" * 65)
 
-_missing = [p for p in [SHOCK_RATES_PATH, SHOCK_RATES_S_PATH,
-                        SHOCK_RATES_LD_PATH, SHOCK_RATES_QU_PATH]
-            if not p.exists()]
-if _missing:
-    msg = "Missing required shock rate files:\n"
-    msg += "\n".join(f"  {p}" for p in _missing)
-    msg += "\nRun part2_shock_rates.py and part2_shock_rates_s.py first."
-    raise FileNotFoundError(msg)
+# ── FRED fetch helpers ────────────────────────────────────────────────────────
 
-# -- 2. national industry series --------------------------------------------
-raw_d  = pd.read_parquet(SHOCK_RATES_PATH)
-raw_s  = pd.read_parquet(SHOCK_RATES_S_PATH)
-raw_ld = pd.read_parquet(SHOCK_RATES_LD_PATH)
-raw_qu = pd.read_parquet(SHOCK_RATES_QU_PATH)
+def _get_fred_client():
+    """Return a Fred client using the module-level API key, or raise clearly."""
+    if not FRED_API_KEY:
+        raise EnvironmentError(
+            "FRED_API_KEY environment variable is not set.\n"
+            "  Register free at https://fred.stlouisfed.org/docs/api/api_key.html\n"
+            "  Then: export FRED_API_KEY=<your_key>"
+        )
+    from fredapi import Fred
+    return Fred(api_key=FRED_API_KEY)
 
-def _nat_series(raw, col, new_col):
-    return (raw.groupby(["industry_code", "quarter_label"])[col]
-               .mean().reset_index()
-               .rename(columns={col: new_col}))
 
-nat_d  = _nat_series(raw_d,  "g_delta_loo", "g_delta")
-nat_s  = _nat_series(raw_s,  "g_s_loo",     "g_s")
-nat_ld = _nat_series(raw_ld, "g_ld_loo",    "g_ld")
-nat_qu = _nat_series(raw_qu, "g_qu_loo",    "g_qu")
+def _fetch_fred_series(fred_client, sid: str) -> pd.Series:
+    """
+    Fetch a single FRED quarterly series, resampled to quarter-start dates.
+    Raises with a clear message if the series is unavailable.
+    """
+    try:
+        s = fred_client.get_series(sid, observation_start="2004-10-01")
+        s = s.resample("QS").first()
+        if s.empty:
+            raise ValueError(f"Series {sid} returned no data after resampling.")
+        return s
+    except Exception as e:
+        raise ValueError(
+            f"FRED series '{sid}' could not be fetched: {e}\n"
+            f"  Verify the series ID at https://fred.stlouisfed.org/series/{sid}"
+        ) from e
 
-for lbl, df in [("delta",   nat_d),  ("s (TS)", nat_s),
-                ("s (LD)",  nat_ld), ("s (QU)", nat_qu)]:
-    print(f"  {lbl}: {df['quarter_label'].nunique()} quarters, "
-          f"{df['industry_code'].nunique()} industries")
 
-nat = nat_d.merge(nat_s,  on=["industry_code", "quarter_label"], how="inner")
-nat = nat.merge(nat_ld, on=["industry_code", "quarter_label"], how="inner")
-nat = nat.merge(nat_qu, on=["industry_code", "quarter_label"], how="inner")
-print(f"Overlapping sample: {nat['quarter_label'].min()}  - "
-      f"{nat['quarter_label'].max()}  "
-      f"({nat['quarter_label'].nunique()} quarters, "
-      f"{nat['industry_code'].nunique()} industries, "
-      f"{len(nat):,} obs)")
+def _fetch_fred_va() -> pd.DataFrame:
+    """
+    Fetch quarterly real value-added by BLS supersector from FRED.
+    Returns DataFrame: quarter_label (str), industry_code (int), dlog_va (float).
 
-pos = ((nat["g_delta"] > 0) & (nat["g_s"] > 0) &
-       (nat["g_ld"]   > 0) & (nat["g_qu"] > 0))
-nat = nat[pos].copy()
-nat["log_g_delta"] = np.log(nat["g_delta"])
-nat["log_g_s"]     = np.log(nat["g_s"])
-nat["log_g_ld"]    = np.log(nat["g_ld"])
-nat["log_g_qu"]    = np.log(nat["g_qu"])
-nat["industry_label"] = nat["industry_code"].map(INDUSTRY_LABELS).fillna(
-                            nat["industry_code"].astype(str))
-nat = nat.sort_values(["industry_code", "quarter_label"]).reset_index(drop=True)
+    Fails loudly with a clear diagnosis if any individual series is unavailable,
+    listing the exact series ID and a link to verify it.
+    """
+    fred_client = _get_fred_client()
+    records = []
+    failed  = []
 
-# -- 3. aggregate productivity ----------------------------------------------
-if PROD_CACHE.exists():
-    prod = pd.read_parquet(PROD_CACHE)
-    print(f"\nProductivity: loaded from cache ({PROD_CACHE})")
-else:
-    print("\nFetching OPHNFB from FRED via fredapi ...")
-    api_key = os.environ.get("FRED_API_KEY", "")
-    if not api_key:
-        sys.exit("ERROR: set FRED_API_KEY environment variable before running.")
-    fred  = Fred(api_key=api_key)
-    s     = fred.get_series("OPHNFB")
-    prod  = (s.rename("productivity")
-              .reset_index()
-              .rename(columns={"index": "date"}))
-    prod["quarter_label"] = prod["date"].map(_dt_to_ql)
-    prod  = prod[["quarter_label", "productivity"]].dropna().copy()
-    prod.to_parquet(PROD_CACHE, index=False)
-    print(f"Saved: {PROD_CACHE}")
+    for bls_code, series_ids in BLS_TO_FRED.items():
+        # Fetch each component; collect failures before deciding what to do.
+        component_series = {}
+        for sid in series_ids:
+            try:
+                component_series[sid] = _fetch_fred_series(fred_client, sid)
+                print(f"    {sid}: {len(component_series[sid])} obs  OK")
+            except ValueError as e:
+                print(f"    {sid}: FAILED — {e}")
+                failed.append((bls_code, sid, str(e)))
 
-prod = prod.sort_values("quarter_label").reset_index(drop=True)
-prod["log_p"]      = np.log(prod["productivity"])
-prod["dlog_p"]     = prod["log_p"].diff()
-prod["dlog_p_yoy"] = prod["log_p"].diff(4)
-prod = prod.dropna(subset=["dlog_p"])
+        if len(component_series) < len(series_ids):
+            # Some components missing — skip this sector and record for summary
+            missing = [s for s in series_ids if s not in component_series]
+            print(f"  BLS {bls_code}: SKIPPED (missing: {missing})")
+            continue
 
-nat = nat.merge(prod[["quarter_label", "dlog_p", "dlog_p_yoy"]],
-                on="quarter_label", how="inner")
-print(f"After merging productivity: {len(nat):,} industry-quarter obs")
+        # Sum components at level, then log-diff
+        combined = pd.concat(list(component_series.values()), axis=1)
+        va_total = combined.sum(axis=1, min_count=len(series_ids))
+        va_total.index = va_total.index.to_period("Q").strftime("%YQ%q")
+        va_total.name  = "va"
 
-# -- 3b. national market tightness (LAGGED) ---------------------------------
-# theta_{t-1}: national V/U, lagged one quarter.
-# Lagging ensures predetermination w.r.t. the current period's shock draw.
-# log theta is stationary -> log-levels.
+        df = (va_total.dropna()
+                      .reset_index()
+                      .rename(columns={"index": "quarter_label"})
+                      .sort_values("quarter_label")
+                      .reset_index(drop=True))
+        df["log_va"]       = np.log(df["va"].replace(0, np.nan))
+        df["dlog_va"]      = df["log_va"].diff()
+        df["industry_code"] = int(bls_code)
+        records.append(df[["quarter_label", "industry_code", "dlog_va"]].dropna())
+
+    if failed:
+        print(f"\n  FRED VA: {len(failed)} series failed:")
+        for bls_code, sid, msg in failed:
+            print(f"    BLS {bls_code} / {sid}: {msg}")
+
+    if not records:
+        raise ValueError(
+            "FRED VA fetch returned no data for any sector.\n"
+            "Check all series IDs in BLS_TO_FRED are valid FRED identifiers."
+        )
+
+    result = pd.concat(records, ignore_index=True)
+    n_sec  = result["industry_code"].nunique()
+    print(f"\n  FRED VA fetch complete: {n_sec}/12 sectors, "
+          f"{result['quarter_label'].min()}–{result['quarter_label'].max()}, "
+          f"{len(result):,} rows")
+    if n_sec < 12:
+        missing_codes = set(BLS_TO_FRED) - set(result["industry_code"].unique())
+        print(f"  WARNING: missing BLS codes {sorted(missing_codes)}. "
+              "Enriched residualization will exclude these sectors.")
+    return result
+
+
+def _fetch_fred_tightness() -> pd.DataFrame:
+    """
+    Fetch national market tightness (V/U) from FRED: JTSJOL / UNEMPLOY.
+    Returns DataFrame: quarter_label, log_theta.
+    """
+    fred_client = _get_fred_client()
+    print("  Fetching JTSJOL (job openings) ...")
+    vac_m   = _fetch_fred_series(fred_client, "JTSJOL")
+    print("  Fetching UNEMPLOY (unemployment level) ...")
+    unemp_m = _fetch_fred_series(fred_client, "UNEMPLOY")
+
+    tight_m = pd.DataFrame({"vac": vac_m, "unemp": unemp_m}).dropna()
+    tight_m.index = pd.to_datetime(tight_m.index)
+    tight_m["quarter_label"] = tight_m.index.map(_dt_to_ql)
+    tight = (tight_m.groupby("quarter_label")[["vac", "unemp"]]
+                    .mean().reset_index())
+    tight["theta"]     = tight["vac"] / tight["unemp"]
+    tight["log_theta"] = np.log(tight["theta"])
+    return tight[["quarter_label", "log_theta"]].copy()
+
 
 def _build_tightness_from_local() -> pd.DataFrame:
-    """Compute national log(V/U) from already-cached state-level data."""
-    _vac_path  = DEFAULT_CACHE_DIR / "jolts_vacancies_state_quarterly.parquet"
-    _laus_path = DEFAULT_CACHE_DIR / "laus_states_monthly.parquet"
-    if not _vac_path.exists() or not _laus_path.exists():
+    """
+    Fallback: compute national log(V/U) from already-cached state-level data.
+    Used when FRED_API_KEY is not set but caches already exist from part4.
+    """
+    vac_path  = DEFAULT_CACHE_DIR / "jolts_vacancies_state_quarterly.parquet"
+    laus_path = DEFAULT_CACHE_DIR / "laus_states_monthly.parquet"
+    if not vac_path.exists() or not laus_path.exists():
         raise FileNotFoundError(
-            "Cannot build tightness from local data: missing "
-            f"{_vac_path} or {_laus_path}"
+            f"Cannot build tightness from local data: missing {vac_path} "
+            f"or {laus_path}. Either set FRED_API_KEY or run part4_outcomes.py first."
         )
-    vac_df  = pd.read_parquet(_vac_path)
+    vac_df  = pd.read_parquet(vac_path)
     nat_vac = (vac_df.groupby("quarter_label")["vacancies"]
                      .sum().reset_index()
                      .rename(columns={"vacancies": "vac_nat"}))
-    laus_df = pd.read_parquet(_laus_path)
-    laus_df["date"] = pd.to_datetime(laus_df["date"])
+    laus_df = pd.read_parquet(laus_path)
+    laus_df["date"]          = pd.to_datetime(laus_df["date"])
     laus_df["quarter_label"] = laus_df["date"].map(_dt_to_ql)
-    laus_df["unemp"] = laus_df["labor_force"] * laus_df["unemp_rate"] / 100
+    laus_df["unemp"]         = laus_df["labor_force"] * laus_df["unemp_rate"] / 100
     nat_unemp = (laus_df.groupby("quarter_label")["unemp"]
                         .mean().reset_index()
                         .rename(columns={"unemp": "unemp_nat"}))
@@ -289,347 +295,273 @@ def _build_tightness_from_local() -> pd.DataFrame:
     t["log_theta"] = np.log(t["theta"])
     return t[["quarter_label", "log_theta"]].copy()
 
-if TIGHTNESS_CACHE.exists():
-    tight = pd.read_parquet(TIGHTNESS_CACHE)
-    print(f"\nTightness: loaded from cache ({TIGHTNESS_CACHE})")
-else:
-    api_key = os.environ.get("FRED_API_KEY", "")
-    if api_key:
-        print("\nFetching national tightness (JTSJOL, UNEMPLOY) from FRED ...")
-        fred    = Fred(api_key=api_key)
-        vac_m   = fred.get_series("JTSJOL")
-        unemp_m = fred.get_series("UNEMPLOY")
-        tight_m = pd.DataFrame({"vac": vac_m, "unemp": unemp_m}).dropna()
-        tight_m.index = pd.to_datetime(tight_m.index)
-        tight_m["quarter_label"] = tight_m.index.map(_dt_to_ql)
-        tight = (tight_m.groupby("quarter_label")[["vac", "unemp"]]
-                        .mean().reset_index())
-        tight["theta"]     = tight["vac"] / tight["unemp"]
-        tight["log_theta"] = np.log(tight["theta"])
-        tight = tight[["quarter_label", "log_theta"]].copy()
-    else:
-        print("\nFRED_API_KEY not set -- building tightness from cached "
-              "state vacancy + LAUS data ...")
-        tight = _build_tightness_from_local()
-    tight.to_parquet(TIGHTNESS_CACHE, index=False)
-    print(f"  Saved: {TIGHTNESS_CACHE}")
 
-tight = tight.sort_values("quarter_label").reset_index(drop=True)
-print(f"  Tightness: {tight['quarter_label'].min()} - "
-      f"{tight['quarter_label'].max()} ({len(tight)} quarters)")
-
-# Lag log_theta by one quarter: merge as log_theta_lag
-tight_sorted = tight.sort_values("quarter_label").reset_index(drop=True)
-tight_lag = tight_sorted.copy()
-tight_lag["log_theta_lag"] = tight_lag["log_theta"].shift(1)
-tight_lag = tight_lag[["quarter_label", "log_theta_lag"]].dropna()
-
-nat = nat.merge(tight_lag, on="quarter_label", how="inner")
-print(f"After merging lagged tightness: {len(nat):,} industry-quarter obs")
-
-# -- 3c. Industry value-added (Dlog VA_{j,t-1}) via FRED ---------------------
-# Source: BEA Real Value Added by Industry (Chained 2017 $, SAAR, Quarterly)
-# as hosted on FRED.  Covers 2005Q1 onward (same BEA vintage limitation as
-# the direct BEA API; no pre-2005 quarterly NAICS industry VA exists).
-#
-# Requires: FRED_API_KEY environment variable (free at fred.stlouisfed.org).
-# If not set, falls back to v1 spec (aggregate productivity only).
-#
-# FRED series IDs — hardcoded to avoid fragile search-ranking logic.
-# Mapping: BLS supersector code -> list of FRED series IDs
-# Multi-component sectors: sum levels then log-diff.
-#
-# Coverage note: All FRED RVA series start 2005Q1.  The v2 residualization
-# sample is therefore 2005Q2 onward (one lag).  v1 results (full 2001Q1+
-# sample, aggregate controls only) are always printed for comparison.
-
-BLS_TO_FRED = {
-    10: ["RVAM"],              # Mining, Quarrying & Oil and Gas Extraction
-    20: ["RVAC"],              # Construction
-    30: ["RVAMA"],             # Manufacturing
-    41: ["RVAW"],              # Wholesale Trade
-    42: ["RVAR"],              # Retail Trade
-    43: ["RVAT", "RVAU"],      # Transportation & Warehousing + Utilities
-    50: ["RVAI"],              # Information
-    55: ["RVAFI", "RVARL"],    # Finance & Insurance + Real Estate & Rental
-    60: ["RVAPBS"],            # Professional & Business Services (aggregate)
-    65: ["RVAES", "RVAHC"],    # Educational Services + Health Care & Social Asst
-    70: ["RVAER", "RVAAF"],    # Arts/Entertainment/Recreation + Accommodation/Food
-    80: ["RVAOSEG"],           # Other Services (except Government)
-}
-
-def _fetch_fred_va(fred_key: str) -> pd.DataFrame:
-    """
-    Fetch quarterly real value-added by BLS supersector from FRED.
-    Returns DataFrame: quarter_label, industry_code (BLS int), dlog_va.
-    Data starts 2005Q1 (BEA quarterly NAICS vintage limitation).
-    """
-    from fredapi import Fred
-    fred_client = Fred(api_key=fred_key)
-
-    records = []
-    for bls_code, series_ids in BLS_TO_FRED.items():
-        level_frames = []
-        for sid in series_ids:
-            try:
-                s = fred_client.get_series(sid, observation_start="2004-10-01")
-                s.name = sid
-                # FRED quarterly series have month-start dates; resample to QS
-                s = s.resample("QS").first()
-                level_frames.append(s)
-                print(f"    {sid}: {len(s)} obs, {s.index[0].strftime('%YQ%q')}–"
-                      f"{s.index[-1].strftime('%YQ%q')}", flush=True)
-            except Exception as e:
-                print(f"  WARNING: FRED series {sid} (BLS {bls_code}) failed: {e}")
-                level_frames.append(None)
-
-        # Skip sector if any component failed to fetch
-        if any(f is None for f in level_frames):
-            missing = [sid for sid, f in zip(series_ids, level_frames) if f is None]
-            print(f"  SKIPPING BLS {bls_code}: missing series {missing}")
-            continue
-
-        # Sum component levels; min_count ensures NaN propagates if any missing
-        combined = pd.concat(level_frames, axis=1)
-        va_total = combined.sum(axis=1, min_count=len(level_frames))
-
-        # Convert DatetimeIndex -> quarter_label (e.g. "2005Q1")
-        va_total.index = va_total.index.to_period("Q").strftime("%YQ%q")
-        va_total.name = "va"
-        df = va_total.dropna().reset_index()
-        df.columns = ["quarter_label", "va"]
-        df = df.sort_values("quarter_label").reset_index(drop=True)
-
-        # Log-difference
-        df["log_va"]  = np.log(df["va"].replace(0, np.nan))
-        df["dlog_va"] = df["log_va"].diff()
-        df["industry_code"] = int(bls_code)
-        records.append(df[["quarter_label", "industry_code", "dlog_va"]].dropna())
-
-    if not records:
-        raise ValueError("FRED VA fetch returned no data for any sector.")
-
-    result = pd.concat(records, ignore_index=True)
-    n_sec = result["industry_code"].nunique()
-    print(f"  FRED VA: {n_sec} sectors, "
-          f"{result['quarter_label'].min()}–{result['quarter_label'].max()}, "
-          f"{len(result):,} rows")
-    if n_sec < 10:
-        print(f"  WARNING: only {n_sec}/12 sectors fetched — check FRED series IDs above.")
-    return result
-
-USE_BEA_VA = False   # updated below if fetch succeeds
-
-_va_cache_ok = False
-if BEA_VA_CACHE.exists():
-    try:
-        bea_va = pd.read_parquet(BEA_VA_CACHE)
-        print(f"\nIndustry VA: loaded from cache ({BEA_VA_CACHE})")
-        print(f"  Coverage: {bea_va['quarter_label'].min()} - "
-              f"{bea_va['quarter_label'].max()}, "
-              f"{bea_va['industry_code'].nunique()} BLS sectors")
-        USE_BEA_VA = True
-        _va_cache_ok = True
-    except Exception as cache_err:
-        print(f"\nWARNING: Industry VA cache exists but is unreadable ({cache_err}). "
-              "Will attempt fresh FRED fetch or fall back to v1.")
-
-if not _va_cache_ok:
-    fred_key = os.environ.get("FRED_API_KEY", "")
-    if not fred_key:
-        print("\nWARNING: FRED_API_KEY not set.  Industry VA control OMITTED (v1 fallback).")
-        print("  Register free at https://fred.stlouisfed.org/docs/api/api_key.html")
-        print("  Then: export FRED_API_KEY=<your_key>  (or set in Windows env vars)")
-    else:
-        try:
-            print(f"\nFetching industry VA from FRED (key: {fred_key[:8]}...)...")
-            bea_va = _fetch_fred_va(fred_key)
-            bea_va.to_parquet(BEA_VA_CACHE, index=False)
-            print(f"  Cached: {BEA_VA_CACHE}")
-            USE_BEA_VA = True
-        except Exception as e:
-            print(f"\nWARNING: FRED VA fetch failed ({e}).  Falling back to v1 spec.")
-            USE_BEA_VA = False
-
-
-# Merge lagged Dlog VA into nat (lag = shift by one quarter within industry)
-if USE_BEA_VA:
-    # Build lagged version: dlog_va_{j,t-1}
-    bea_va_sorted = bea_va.sort_values(["industry_code", "quarter_label"]).reset_index(drop=True)
-    bea_va_sorted["dlog_va_lag"] = (
-        bea_va_sorted.groupby("industry_code")["dlog_va"].shift(1)
-    )
-    bea_va_lag = (bea_va_sorted[["industry_code", "quarter_label", "dlog_va_lag"]]
-                  .dropna()
-                  .copy())
-    # Force both sides to the same dtype (int) before merging
-    bea_va_lag["industry_code"] = bea_va_lag["industry_code"].astype(int)
-    nat["industry_code"] = nat["industry_code"].astype(int)
-    print(f"  BEA VA industry codes: {sorted(bea_va_lag['industry_code'].unique())}")
-    print(f"  nat  industry codes:   {sorted(nat['industry_code'].unique())}")
-    nat = nat.merge(bea_va_lag, on=["industry_code", "quarter_label"], how="inner")
-    n_missing_va = nat["dlog_va_lag"].isna().sum()
-    if n_missing_va:
-        print(f"  WARNING: {n_missing_va} missing dlog_va_lag values; "
-              "affected rows dropped before residualization.")
-        nat = nat.dropna(subset=["dlog_va_lag"])
-    print(f"After merging lagged industry VA: {len(nat):,} industry-quarter obs")
-else:
-    nat["dlog_va_lag"] = np.nan   # placeholder; won't be used in residualization
-
-# -- 4. residualization -----------------------------------------------------
-# v2: adds Dlog VA_{j,t-1} (industry demand control) to all four regressions.
-#     Uses log_theta_{t-1} (lagged) instead of contemporaneous log_theta.
-#     Falls back to v1 spec if BEA VA not available.
-#
-# Returns a DataFrame keyed by (industry_code, quarter_label) with the
-# residual as a named column.
+# ── residualization ───────────────────────────────────────────────────────────
 
 def _residualize(df, dep_col, resid_col, reg_cols):
     """
     Within-industry OLS of dep_col on industry FEs + reg_cols.
-    Homogeneous slope coefficients across industries.
+    Slopes are homogeneous across industries (pooled within estimator).
     df must be sorted by [industry_code, quarter_label] with 0-based index.
+    Returns DataFrame with columns [industry_code, quarter_label, resid_col].
     """
     work = df[["industry_code", dep_col, *reg_cols]].copy().reset_index(drop=True)
 
-    work["y_dm"] = (work[dep_col]
-                    - work.groupby("industry_code")[dep_col].transform("mean"))
+    # Within-transform: subtract industry means from dependent and each regressor
+    work["y_dm"] = work[dep_col] - work.groupby("industry_code")[dep_col].transform("mean")
     dm_cols = []
     for rc in reg_cols:
         dc = f"_dm_{rc}"
-        work[dc] = (work[rc]
-                    - work.groupby("industry_code")[rc].transform("mean"))
+        work[dc] = work[rc] - work.groupby("industry_code")[rc].transform("mean")
         dm_cols.append(dc)
 
-    X_dm   = work[dm_cols].to_numpy()
-    y_dm   = work["y_dm"].to_numpy()
-    gammas = np.linalg.lstsq(X_dm, y_dm, rcond=None)[0]
-    resid  = y_dm - X_dm @ gammas
+    X  = work[dm_cols].to_numpy()
+    y  = work["y_dm"].to_numpy()
+    gammas = np.linalg.lstsq(X, y, rcond=None)[0]
+    resid  = y - X @ gammas
 
-    ss_tot = (y_dm ** 2).sum()
-    r2     = 1 - (resid ** 2).sum() / ss_tot if ss_tot > 0 else np.nan
-
-    coef_str = "  ".join(
-        f"gamma({rc}) = {g:+.4f}" for rc, g in zip(reg_cols, gammas)
-    )
-    print(f"  {resid_col:<12}  {coef_str}   R^2(within) = {r2:.4f}")
+    r2 = 1 - (resid ** 2).sum() / (y ** 2).sum()
+    coef_str = "  ".join(f"{rc}={g:+.4f}" for rc, g in zip(reg_cols, gammas))
+    print(f"  {resid_col:<12}  {coef_str}   R2={r2:.4f}")
 
     out = df[["industry_code", "quarter_label"]].copy().reset_index(drop=True)
     out[resid_col] = resid
     return out
 
-nat = nat.sort_values(["industry_code", "quarter_label"]).reset_index(drop=True)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  MAIN PIPELINE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+print("=" * 65)
+print("Part 2b  -- Shock-productivity decomposition and comovement")
+print("=" * 65)
+if not FRED_API_KEY:
+    sys.exit(
+        "ERROR: FRED_API_KEY is not set.  v2 enriched residualization requires it.\n"
+        "  Register free at https://fred.stlouisfed.org/docs/api/api_key.html\n"
+        "  Then set it before running:\n"
+        "    Windows PowerShell:  $env:FRED_API_KEY = '<your_key>'\n"
+        "    Linux/macOS:         export FRED_API_KEY=<your_key>"
+    )
+print(f"FRED_API_KEY: set ({FRED_API_KEY[:8]}...)")
+
+# ── 1. check inputs ──────────────────────────────────────────────────────────
+missing = [p for p in [SHOCK_RATES_PATH, SHOCK_RATES_S_PATH,
+                        SHOCK_RATES_LD_PATH, SHOCK_RATES_QU_PATH]
+           if not p.exists()]
+if missing:
+    sys.exit("Missing shock rate files:\n" +
+             "\n".join(f"  {p}" for p in missing) +
+             "\nRun part2_shock_rates.py and part2_shock_rates_s.py first.")
+
+# ── 2. national industry series ──────────────────────────────────────────────
+def _nat_series(raw, col, new_col):
+    return (raw.groupby(["industry_code", "quarter_label"])[col]
+               .mean().reset_index()
+               .rename(columns={col: new_col}))
+
+nat_d  = _nat_series(pd.read_parquet(SHOCK_RATES_PATH),    "g_delta_loo", "g_delta")
+nat_s  = _nat_series(pd.read_parquet(SHOCK_RATES_S_PATH),  "g_s_loo",     "g_s")
+nat_ld = _nat_series(pd.read_parquet(SHOCK_RATES_LD_PATH), "g_ld_loo",    "g_ld")
+nat_qu = _nat_series(pd.read_parquet(SHOCK_RATES_QU_PATH), "g_qu_loo",    "g_qu")
+
+nat = (nat_d
+       .merge(nat_s,  on=["industry_code", "quarter_label"], how="inner")
+       .merge(nat_ld, on=["industry_code", "quarter_label"], how="inner")
+       .merge(nat_qu, on=["industry_code", "quarter_label"], how="inner"))
+nat = nat[(nat["g_delta"] > 0) & (nat["g_s"] > 0) &
+          (nat["g_ld"]   > 0) & (nat["g_qu"] > 0)].copy()
+for col, label in [("g_delta","log_g_delta"),("g_s","log_g_s"),
+                   ("g_ld","log_g_ld"),("g_qu","log_g_qu")]:
+    nat[label] = np.log(nat[col])
+nat["industry_label"] = (nat["industry_code"].map(INDUSTRY_LABELS)
+                                              .fillna(nat["industry_code"].astype(str)))
+nat = nat.sort_values(["industry_code","quarter_label"]).reset_index(drop=True)
+print(f"\nShock panel: {nat['quarter_label'].min()} – {nat['quarter_label'].max()}, "
+      f"{nat['industry_code'].nunique()} industries, {len(nat):,} obs")
+
+# ── 3. aggregate productivity ────────────────────────────────────────────────
+print("\n--- Aggregate productivity (OPHNFB) ---")
+if PROD_CACHE.exists():
+    prod = pd.read_parquet(PROD_CACHE)
+    print(f"  Loaded from cache")
+else:
+    print("  Fetching from FRED ...")
+    fred_client = _get_fred_client()
+    s = fred_client.get_series("OPHNFB")
+    prod = (s.rename("productivity").reset_index()
+             .rename(columns={"index": "date"}))
+    prod["quarter_label"] = prod["date"].map(_dt_to_ql)
+    prod = prod[["quarter_label", "productivity"]].dropna()
+    prod.to_parquet(PROD_CACHE, index=False)
+    print(f"  Saved: {PROD_CACHE}")
+
+prod = prod.sort_values("quarter_label").reset_index(drop=True)
+prod["log_p"]  = np.log(prod["productivity"])
+prod["dlog_p"] = prod["log_p"].diff()
+prod = prod.dropna(subset=["dlog_p"])
+nat = nat.merge(prod[["quarter_label","dlog_p"]], on="quarter_label", how="inner")
+print(f"  After merging productivity: {len(nat):,} obs")
+
+# ── 4. market tightness (lagged) ─────────────────────────────────────────────
+print("\n--- Market tightness log(V/U) ---")
+if TIGHTNESS_CACHE.exists():
+    tight = pd.read_parquet(TIGHTNESS_CACHE)
+    print(f"  Loaded from cache")
+else:
+    if FRED_API_KEY:
+        print("  Fetching from FRED ...")
+        tight = _fetch_fred_tightness()
+    else:
+        print("  FRED key not set — building from local part4 cache ...")
+        tight = _build_tightness_from_local()
+    tight.to_parquet(TIGHTNESS_CACHE, index=False)
+    print(f"  Saved: {TIGHTNESS_CACHE}")
+
+# Lag by one quarter
+tight = tight.sort_values("quarter_label").reset_index(drop=True)
+tight["log_theta_lag"] = tight["log_theta"].shift(1)
+nat = nat.merge(tight[["quarter_label","log_theta_lag"]].dropna(),
+                on="quarter_label", how="inner")
+print(f"  After merging lagged tightness: {len(nat):,} obs")
+
+# ── 5. industry value-added (lagged) ─────────────────────────────────────────
+print("\n--- Industry real value-added (BEA via FRED) ---")
+USE_BEA_VA = False
+
+if BEA_VA_CACHE.exists():
+    try:
+        bea_va = pd.read_parquet(BEA_VA_CACHE)
+        print(f"  Loaded from cache: {bea_va['industry_code'].nunique()} sectors, "
+              f"{bea_va['quarter_label'].min()}–{bea_va['quarter_label'].max()}")
+        USE_BEA_VA = True
+    except Exception as e:
+        print(f"  Cache unreadable ({e}) — will re-fetch.")
+
+if not USE_BEA_VA:
+    print(f"  Fetching from FRED ...")
+    try:
+        bea_va = _fetch_fred_va()
+        bea_va.to_parquet(BEA_VA_CACHE, index=False)
+        print(f"  Saved: {BEA_VA_CACHE}")
+        USE_BEA_VA = True
+    except Exception as e:
+        sys.exit(
+            f"ERROR: FRED industry VA fetch failed: {e}\n"
+            "  Cannot proceed without industry VA — v1 fallback is disabled.\n"
+            "  Check your FRED_API_KEY and network connection."
+        )
 
 if USE_BEA_VA:
-    print(f"\n--- Residualization v2 (within-industry OLS) ---")
-    print(f"  delta, TS : regressors = [Dlog p_t, Dlog VA_{{j,t-1}}]")
-    print(f"  LD, QU    : regressors = [Dlog p_t, Dlog VA_{{j,t-1}}, log theta_{{t-1}}]")
-    reg_base  = ("dlog_p", "dlog_va_lag")
-    reg_tight = ("dlog_p", "dlog_va_lag", "log_theta_lag")
+    # Lag by one quarter within each industry
+    bea_va = bea_va.sort_values(["industry_code","quarter_label"]).reset_index(drop=True)
+    bea_va["dlog_va_lag"] = bea_va.groupby("industry_code")["dlog_va"].shift(1)
+    bea_lag = bea_va[["industry_code","quarter_label","dlog_va_lag"]].dropna().copy()
+    bea_lag["industry_code"] = bea_lag["industry_code"].astype(int)
+    nat["industry_code"]     = nat["industry_code"].astype(int)
+    nat = nat.merge(bea_lag, on=["industry_code","quarter_label"], how="inner")
+    nat = nat.dropna(subset=["dlog_va_lag"])
+    print(f"  After merging lagged industry VA: {len(nat):,} obs "
+          f"({nat['quarter_label'].min()}–{nat['quarter_label'].max()})")
 else:
-    print(f"\n--- Residualization v1 fallback (no industry VA) ---")
-    print(f"  delta, TS : regressors = [Dlog p_t]")
-    print(f"  LD, QU    : regressors = [Dlog p_t, log theta_{{t-1}}]")
-    reg_base  = ("dlog_p",)
-    reg_tight = ("dlog_p", "log_theta_lag")
+    nat["dlog_va_lag"] = np.nan
 
-resid_d  = _residualize(nat, "log_g_delta", "nu_delta", reg_cols=reg_base)
-resid_s  = _residualize(nat, "log_g_s",     "nu_s",     reg_cols=reg_base)
-resid_ld = _residualize(nat, "log_g_ld",    "nu_ld",    reg_cols=reg_tight)
-resid_qu = _residualize(nat, "log_g_qu",    "nu_qu",    reg_cols=reg_tight)
+# ── 6. residualization ────────────────────────────────────────────────────────
+nat = nat.sort_values(["industry_code","quarter_label"]).reset_index(drop=True)
+
+# USE_BEA_VA is guaranteed True here (script exits above if fetch fails).
+spec      = "v2: Dlog(p) + Dlog(VA_lag)"
+reg_base  = ("dlog_p", "dlog_va_lag")
+reg_tight = ("dlog_p", "dlog_va_lag", "log_theta_lag")
+
+print(f"\n--- Residualization [{spec}] ---")
+print(f"  delta, TS : {reg_base}")
+print(f"  LD, QU    : {reg_tight}")
+
+resid_d  = _residualize(nat, "log_g_delta", "nu_delta", reg_base)
+resid_s  = _residualize(nat, "log_g_s",     "nu_s",     reg_base)
+resid_ld = _residualize(nat, "log_g_ld",    "nu_ld",    reg_tight)
+resid_qu = _residualize(nat, "log_g_qu",    "nu_qu",    reg_tight)
 
 nat["nu_delta"] = resid_d["nu_delta"].to_numpy()
 nat["nu_s"]     = resid_s["nu_s"].to_numpy()
 nat["nu_ld"]    = resid_ld["nu_ld"].to_numpy()
 nat["nu_qu"]    = resid_qu["nu_qu"].to_numpy()
 
-for col in ["nu_delta", "nu_s", "nu_ld", "nu_qu"]:
+for col in ["nu_delta","nu_s","nu_ld","nu_qu"]:
     n_null = nat[col].isna().sum()
-    status = f"WARNING: {n_null} nulls" if n_null else f"OK ({len(nat):,} obs)"
-    print(f"  {col}: {status}")
+    print(f"  {col}: {'WARNING: '+str(n_null)+' nulls' if n_null else 'OK'}")
 
-# -- 5. comovement diagnostics ----------------------------------------------
+# ── 7. comovement diagnostics ─────────────────────────────────────────────────
+def _pooled_r(df, c1, c2):
+    return df[c1].corr(df[c2])
 
-def _pooled_r(df, col1, col2):
-    return df[col1].corr(df[col2])
-
-def _by_industry_r(df, col1, col2):
-    return (
-        df.groupby("industry_label")
-          .apply(lambda g: pd.Series({"r": g[col1].corr(g[col2])}),
-                 include_groups=False)
-          .reset_index()
-          .sort_values("r")
-    )
+def _by_industry_r(df, c1, c2):
+    return (df.groupby("industry_label", group_keys=False)
+              .apply(lambda g: pd.Series({"r": g[c1].corr(g[c2])}),
+                     include_groups=False)
+              .reset_index().sort_values("r"))
 
 pairs = [
-    ("delta vs TS", "log_g_delta", "log_g_s",  "nu_delta", "nu_s"),
-    ("delta vs LD", "log_g_delta", "log_g_ld", "nu_delta", "nu_ld"),
-    ("delta vs QU", "log_g_delta", "log_g_qu", "nu_delta", "nu_qu"),
-    ("LD vs QU",    "log_g_ld",   "log_g_qu", "nu_ld",    "nu_qu"),
-    ("TS vs LD",    "log_g_s",    "log_g_ld", "nu_s",     "nu_ld"),
-    ("TS vs QU",    "log_g_s",    "log_g_qu", "nu_s",     "nu_qu"),
+    ("delta vs TS", "log_g_delta","log_g_s",  "nu_delta","nu_s"),
+    ("delta vs LD", "log_g_delta","log_g_ld", "nu_delta","nu_ld"),
+    ("delta vs QU", "log_g_delta","log_g_qu", "nu_delta","nu_qu"),
+    ("LD vs QU",    "log_g_ld",  "log_g_qu", "nu_ld",   "nu_qu"),
+    ("TS vs LD",    "log_g_s",   "log_g_ld", "nu_s",    "nu_ld"),
+    ("TS vs QU",    "log_g_s",   "log_g_qu", "nu_s",    "nu_qu"),
 ]
 
-spec_label = "v2 (Dlog p + Dlog VA_lag)" if USE_BEA_VA else "v1 fallback (Dlog p only)"
-print(f"\n--- Pooled cross-series correlations [{spec_label}] ---")
-print(f"  {'Pair':<12}  {'r raw':>8}  {'r resid':>8}  {'reduction':>10}")
-print(f"  {'-'*46}")
-for label, rc1, rc2, rc3, rc4 in pairs:
+print(f"\n--- Pooled cross-series correlations [{spec}] ---")
+print(f"  {'Pair':<14}  {'r raw':>8}  {'r resid':>8}  {'reduction':>10}")
+print(f"  {'-'*48}")
+for lbl, rc1, rc2, rc3, rc4 in pairs:
     r_raw_p   = _pooled_r(nat, rc1, rc2)
     r_resid_p = _pooled_r(nat, rc3, rc4)
-    print(f"  {label:<12}  {r_raw_p:>+8.4f}  {r_resid_p:>+8.4f}  "
+    print(f"  {lbl:<14}  {r_raw_p:>+8.4f}  {r_resid_p:>+8.4f}  "
           f"{r_raw_p-r_resid_p:>+10.4f}")
 
 print(f"\n--- Per-industry corr(delta vs LD) and corr(delta vs QU) ---")
-by_dld_raw   = _by_industry_r(nat, "log_g_delta", "log_g_ld").rename(columns={"r": "r_dLD_raw"})
-by_dld_resid = _by_industry_r(nat, "nu_delta",    "nu_ld"   ).rename(columns={"r": "r_dLD_resid"})
-by_dqu_raw   = _by_industry_r(nat, "log_g_delta", "log_g_qu").rename(columns={"r": "r_dQU_raw"})
-by_dqu_resid = _by_industry_r(nat, "nu_delta",    "nu_qu"   ).rename(columns={"r": "r_dQU_resid"})
-by_ind = (by_dld_raw
-          .merge(by_dld_resid, on="industry_label")
-          .merge(by_dqu_raw,   on="industry_label")
-          .merge(by_dqu_resid, on="industry_label")
-          .sort_values("r_dLD_raw"))
+by_ind = (_by_industry_r(nat,"log_g_delta","log_g_ld").rename(columns={"r":"r_dLD_raw"})
+           .merge(_by_industry_r(nat,"nu_delta","nu_ld").rename(columns={"r":"r_dLD_resid"}),
+                  on="industry_label")
+           .merge(_by_industry_r(nat,"log_g_delta","log_g_qu").rename(columns={"r":"r_dQU_raw"}),
+                  on="industry_label")
+           .merge(_by_industry_r(nat,"nu_delta","nu_qu").rename(columns={"r":"r_dQU_resid"}),
+                  on="industry_label")
+           .sort_values("r_dLD_raw"))
 print(by_ind.to_string(index=False))
 
+# Keep for plot titles
 r_raw   = _pooled_r(nat, "log_g_delta", "log_g_s")
 r_resid = _pooled_r(nat, "nu_delta",    "nu_s")
 
-# -- 6. save residualized series --------------------------------------------
-
-nat[["industry_code", "quarter_label", "nu_delta"]].to_parquet(RESID_D_PATH,  index=False)
-nat[["industry_code", "quarter_label", "nu_s"]    ].to_parquet(RESID_S_PATH,  index=False)
-nat[["industry_code", "quarter_label", "nu_ld"]   ].to_parquet(RESID_LD_PATH, index=False)
-nat[["industry_code", "quarter_label", "nu_qu"]   ].to_parquet(RESID_QU_PATH, index=False)
+# ── 8. save residualized series ───────────────────────────────────────────────
+nat[["industry_code","quarter_label","nu_delta"]].to_parquet(RESID_D_PATH,  index=False)
+nat[["industry_code","quarter_label","nu_s"]    ].to_parquet(RESID_S_PATH,  index=False)
+nat[["industry_code","quarter_label","nu_ld"]   ].to_parquet(RESID_LD_PATH, index=False)
+nat[["industry_code","quarter_label","nu_qu"]   ].to_parquet(RESID_QU_PATH, index=False)
 for p in [RESID_D_PATH, RESID_S_PATH, RESID_LD_PATH, RESID_QU_PATH]:
     print(f"Saved: {p}")
+print(f"\nResiduals saved [{spec}].")
 
-va_note = ("v2: Dlog p + Dlog VA_lag" + (" + log theta_lag (LD/QU)" if True else "")
-           if USE_BEA_VA else "v1 fallback: Dlog p only (+ log theta_lag for LD/QU)")
-print(f"\nResiduals saved ({va_note}).")
-
-# -- 7. plots ---------------------------------------------------------------
-
+# ── 9. plots ──────────────────────────────────────────────────────────────────
 industries = sorted(nat["industry_label"].unique())
 quarters   = sorted(nat["quarter_label"].unique())
 dates      = [_ql_to_dt(q) for q in quarters]
 n_ind      = len(industries)
 
-# -- plot A: raw log series by industry ------------------------------------
+# Plot A: raw log series by industry (4 columns)
 series_cols = [
-    ("log_g_delta", r"$\log g^\delta$",  "#1f77b4"),
-    ("log_g_s",     r"$\log g^{TS}$",    "#d62728"),
-    ("log_g_ld",    r"$\log g^{LD}$",    "#2ca02c"),
-    ("log_g_qu",    r"$\log g^{QU}$",    "#ff7f0e"),
+    ("log_g_delta", r"$\log g^\delta$", "#1f77b4"),
+    ("log_g_s",     r"$\log g^{TS}$",   "#d62728"),
+    ("log_g_ld",    r"$\log g^{LD}$",   "#2ca02c"),
+    ("log_g_qu",    r"$\log g^{QU}$",   "#ff7f0e"),
 ]
 fig, axes = plt.subplots(n_ind, 4, figsize=(20, 2.0 * n_ind),
                          sharex=True, squeeze=False)
 for i, ind in enumerate(industries):
-    sub = (nat[nat["industry_label"] == ind]
-           .set_index("quarter_label")
-           .reindex(quarters))
+    sub = nat[nat["industry_label"] == ind].set_index("quarter_label").reindex(quarters)
     for j, (col, _, color) in enumerate(series_cols):
         ax = axes[i, j]
         ax.plot(dates, sub[col].values, color=color, linewidth=1.1)
@@ -638,103 +570,89 @@ for i, ind in enumerate(industries):
         ax.grid(axis="y", linewidth=0.4, alpha=0.4)
 for j, (_, title, _) in enumerate(series_cols):
     axes[0, j].set_title(title, fontsize=10)
-fig.suptitle("National industry shock rates by supersector (raw log)",
-             fontsize=11, y=1.005)
+fig.suptitle("National industry shock rates by supersector (raw log)", fontsize=11, y=1.005)
 fig.tight_layout()
 p = RESULTS_DIR / "comovement_raw_series.png"
 fig.savefig(p, dpi=120, bbox_inches="tight"); plt.close(fig); _open_file(p)
 print(f"\nPlot A saved: {p}")
 
-# -- plot B: cross-industry correlation heatmaps ---------------------------
+# Plot B: 2×4 cross-industry correlation heatmaps
 def _corr_matrix(df, col):
-    sub = (df[["quarter_label", "industry_label", col]]
-           .dropna(subset=[col])
-           .reset_index(drop=True))
-    quarters_   = sorted(sub["quarter_label"].unique())
-    industries_ = sorted(sub["industry_label"].unique())
-    if not quarters_ or not industries_:
+    sub = df[["quarter_label","industry_label",col]].dropna(subset=[col]).reset_index(drop=True)
+    q_list = sorted(sub["quarter_label"].unique())
+    i_list = sorted(sub["industry_label"].unique())
+    if not q_list or not i_list:
         return pd.DataFrame()
-    q_map = {q: i for i, q in enumerate(quarters_)}
-    i_map = {ind: i for i, ind in enumerate(industries_)}
-    mat = np.full((len(quarters_), len(industries_)), np.nan)
-    qi = sub["quarter_label"].map(q_map).to_numpy(dtype=int)
-    ii = sub["industry_label"].map(i_map).to_numpy(dtype=int)
+    mat = np.full((len(q_list), len(i_list)), np.nan)
+    qi = sub["quarter_label"].map({q:i for i,q in enumerate(q_list)}).to_numpy(dtype=int)
+    ii = sub["industry_label"].map({v:i for i,v in enumerate(i_list)}).to_numpy(dtype=int)
     mat[qi, ii] = sub[col].to_numpy()
-    wide = pd.DataFrame(mat, index=quarters_, columns=industries_)
-    return wide.dropna(how="all", axis=1).corr()
+    return pd.DataFrame(mat, index=q_list, columns=i_list).dropna(how="all", axis=1).corr()
 
 hmap_panels = [
-    (r"$\log g^\delta$ raw",   "log_g_delta"),
-    (r"$\log g^{TS}$ raw",     "log_g_s"),
-    (r"$\log g^{LD}$ raw",     "log_g_ld"),
-    (r"$\log g^{QU}$ raw",     "log_g_qu"),
-    (r"$\nu^\delta$ resid",    "nu_delta"),
-    (r"$\nu^{TS}$ resid",      "nu_s"),
-    (r"$\nu^{LD}$ resid",      "nu_ld"),
-    (r"$\nu^{QU}$ resid",      "nu_qu"),
+    (r"$\log g^\delta$ raw",  "log_g_delta"),
+    (r"$\log g^{TS}$ raw",    "log_g_s"),
+    (r"$\log g^{LD}$ raw",    "log_g_ld"),
+    (r"$\log g^{QU}$ raw",    "log_g_qu"),
+    (r"$\nu^\delta$ resid",   "nu_delta"),
+    (r"$\nu^{TS}$ resid",     "nu_s"),
+    (r"$\nu^{LD}$ resid",     "nu_ld"),
+    (r"$\nu^{QU}$ resid",     "nu_qu"),
 ]
 fig, axes = plt.subplots(2, 4, figsize=(22, 11))
 for idx, (title, col) in enumerate(hmap_panels):
     ax  = axes[idx // 4, idx % 4]
     mat = _corr_matrix(nat, col)
     im  = ax.imshow(mat.values, vmin=-1, vmax=1, cmap="RdBu_r", aspect="auto")
-    labels = mat.columns.tolist()
-    ax.set_xticks(range(len(labels)))
-    ax.set_xticklabels(labels, rotation=45, ha="right", fontsize=6)
-    ax.set_yticks(range(len(labels)))
-    ax.set_yticklabels(labels, fontsize=6)
+    lbls = mat.columns.tolist()
+    ax.set_xticks(range(len(lbls))); ax.set_xticklabels(lbls, rotation=45, ha="right", fontsize=6)
+    ax.set_yticks(range(len(lbls))); ax.set_yticklabels(lbls, fontsize=6)
     ax.set_title(title, fontsize=9)
-    for ii in range(len(labels)):
-        for jj in range(len(labels)):
+    for ii in range(len(lbls)):
+        for jj in range(len(lbls)):
             v = mat.values[ii, jj]
             ax.text(jj, ii, f"{v:.2f}", ha="center", va="center",
                     fontsize=5, color="white" if abs(v) > 0.7 else "black")
     plt.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
-fig.suptitle(
-    f"Cross-industry correlation matrices: raw vs. residualized [{spec_label}]",
-    fontsize=11, y=1.01,
-)
+fig.suptitle(f"Cross-industry correlation matrices: raw vs. residualized [{spec}]",
+             fontsize=11, y=1.01)
 fig.tight_layout()
 p = RESULTS_DIR / "comovement_correlation_heatmaps.png"
 fig.savefig(p, dpi=120, bbox_inches="tight"); plt.close(fig); _open_file(p)
 print(f"Plot B saved: {p}")
 
-# -- plot C: delta vs each s-type scatter ----------------------------------
+# Plot C: delta vs each s-type scatter (2 rows × 3 cols)
 scatter_pairs = [
-    ("delta vs TS", "log_g_delta", "log_g_s",  "nu_delta", "nu_s",
-     r"$\log g^\delta$", r"$\log g^{TS}$",
-     r"$\nu^\delta$",    r"$\nu^{TS}$"),
-    ("delta vs LD", "log_g_delta", "log_g_ld", "nu_delta", "nu_ld",
-     r"$\log g^\delta$", r"$\log g^{LD}$",
-     r"$\nu^\delta$",    r"$\nu^{LD}$"),
-    ("delta vs QU", "log_g_delta", "log_g_qu", "nu_delta", "nu_qu",
-     r"$\log g^\delta$", r"$\log g^{QU}$",
-     r"$\nu^\delta$",    r"$\nu^{QU}$"),
+    ("delta vs TS", "log_g_delta","log_g_s",  "nu_delta","nu_s",
+     r"$\log g^\delta$",r"$\log g^{TS}$",r"$\nu^\delta$",r"$\nu^{TS}$"),
+    ("delta vs LD", "log_g_delta","log_g_ld", "nu_delta","nu_ld",
+     r"$\log g^\delta$",r"$\log g^{LD}$",r"$\nu^\delta$",r"$\nu^{LD}$"),
+    ("delta vs QU", "log_g_delta","log_g_qu", "nu_delta","nu_qu",
+     r"$\log g^\delta$",r"$\log g^{QU}$",r"$\nu^\delta$",r"$\nu^{QU}$"),
 ]
 fig, axes = plt.subplots(2, 3, figsize=(15, 9))
-for col_idx, (lbl, rx, ry, nx, ny, rxl, ryl, nxl, nyl) in enumerate(scatter_pairs):
+for ci, (lbl, rx, ry, nx, ny, rxl, ryl, nxl, nyl) in enumerate(scatter_pairs):
     r_r = nat[rx].corr(nat[ry])
     r_n = nat[nx].corr(nat[ny])
-    ax = axes[0, col_idx]
-    ax.scatter(nat[rx], nat[ry], s=5, alpha=0.35, color="#555")
-    ax.set_xlabel(rxl, fontsize=9); ax.set_ylabel(ryl, fontsize=9)
-    ax.set_title(f"{lbl}  -- raw  (r = {r_r:.3f})", fontsize=9)
-    ax.axhline(0, color="black", linewidth=0.5)
-    ax.axvline(0, color="black", linewidth=0.5)
-    ax.grid(linewidth=0.4, alpha=0.4)
-    ax = axes[1, col_idx]
-    ax.scatter(nat[nx], nat[ny], s=5, alpha=0.35, color="#1f77b4")
-    ax.set_xlabel(nxl, fontsize=9); ax.set_ylabel(nyl, fontsize=9)
-    ax.set_title(f"{lbl}  -- residualized  (r = {r_n:.3f})", fontsize=9)
-    ax.axhline(0, color="black", linewidth=0.5)
-    ax.axvline(0, color="black", linewidth=0.5)
-    ax.grid(linewidth=0.4, alpha=0.4)
+    for row, (cx, cy, xl, yl, color, r_val) in enumerate([
+        (rx, ry, rxl, ryl, "#555",     r_r),
+        (nx, ny, nxl, nyl, "#1f77b4",  r_n),
+    ]):
+        ax = axes[row, ci]
+        ax.scatter(nat[cx], nat[cy], s=5, alpha=0.35, color=color)
+        ax.set_xlabel(xl, fontsize=9); ax.set_ylabel(yl, fontsize=9)
+        ax.set_title(f"{lbl}  {'raw' if row==0 else 'residualized'}  (r={r_val:.3f})",
+                     fontsize=9)
+        ax.axhline(0, color="black", linewidth=0.5)
+        ax.axvline(0, color="black", linewidth=0.5)
+        ax.grid(linewidth=0.4, alpha=0.4)
 fig.suptitle(
-    rf"delta vs each s-type: raw (top) vs residualized (bottom) [{spec_label}]"
-    "\n"
-    r"delta/TS: $\Delta\log p_t + \Delta\log VA_{{j,t-1}}$  -- "
-    r"LD/QU: same + $\log\theta_{{t-1}}$",
+    rf"$\delta$ vs each s-type: raw (top) vs residualized (bottom) [{spec}]",
     fontsize=11,
 )
 fig.tight_layout()
-p
+p = RESULTS_DIR / "comovement_scatter.png"
+fig.savefig(p, dpi=120, bbox_inches="tight"); plt.close(fig); _open_file(p)
+print(f"Plot C saved: {p}")
+
+print("\nDone.")
