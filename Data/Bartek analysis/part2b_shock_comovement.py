@@ -62,25 +62,25 @@ Motivation for lagging:
     population denominator; total real chained-dollar VA growth is the
     correct measure.
 
-BEA data source:
-    GDPbyIndustry dataset, TableID=1 (value added, real), Frequency=Q.
-    Requires BEA_API_KEY environment variable (free registration at
-    apps.bea.gov).  Cached to data/cache/bea_va_quarterly_12ind.parquet
-    after first fetch; subsequent runs use cache.
+Industry VA data source:
+    BEA Real Value Added by Industry (Chained 2017 $, SAAR, Q) as hosted
+    on FRED.  Requires FRED_API_KEY environment variable (free at
+    fred.stlouisfed.org).  Cached to data/cache/bea_va_quarterly_12ind.parquet
+    after first fetch; subsequent runs use cache.  Coverage: 2005Q1 onward.
 
-NAICS -> BLS supersector mapping used here:
-    BLS 10 (Mining)                  -> BEA 21
-    BLS 20 (Construction)            -> BEA 23
-    BLS 30 (Manufacturing)           -> BEA 31G
-    BLS 41 (Wholesale trade)         -> BEA 42
-    BLS 42 (Retail trade)            -> BEA 44RT
-    BLS 43 (Trans/Warehousing/Util)  -> BEA 48-49 + 22 (summed)
-    BLS 50 (Information)             -> BEA 51
-    BLS 55 (Financial activities)    -> BEA 52-53
-    BLS 60 (Prof & business svcs)    -> BEA 54+55+56 (summed)
-    BLS 65 (Education & health)      -> BEA 61+62 (summed)
-    BLS 70 (Leisure & hospitality)   -> BEA 71+72 (summed)
-    BLS 80 (Other services)          -> BEA 81
+FRED series -> BLS supersector mapping:
+    BLS 10 (Mining)                  -> RVAM
+    BLS 20 (Construction)            -> RVAC
+    BLS 30 (Manufacturing)           -> RVAMA
+    BLS 41 (Wholesale trade)         -> RVAW
+    BLS 42 (Retail trade)            -> RVAR
+    BLS 43 (Trans/Warehousing/Util)  -> RVAT + RVAU (summed)
+    BLS 50 (Information)             -> RVAI
+    BLS 55 (Financial activities)    -> RVAFI + RVARL (summed)
+    BLS 60 (Prof & business svcs)    -> RVAPBS (aggregate)
+    BLS 65 (Education & health)      -> RVAES + RVAHC (summed)
+    BLS 70 (Leisure & hospitality)   -> RVAER + RVAAF (summed)
+    BLS 80 (Other services)          -> RVAOSEG
 
 Outputs
 -------
@@ -95,15 +95,16 @@ Outputs
 
 Run
 ---
-    BEA_API_KEY=<your_key> python part2b_shock_comovement.py
+    FRED_API_KEY=<your_key> python part2b_shock_comovement.py
 
-    On subsequent runs the BEA cache is used and BEA_API_KEY is not needed.
+    On subsequent runs the industry VA cache is used and FRED_API_KEY is not needed.
+    FRED API keys are free: https://fred.stlouisfed.org/docs/api/api_key.html
 
 Prerequisites
 -------------
     python part2_shock_rates.py
     python part2_shock_rates_s.py
-    Internet access on first run (fetches OPHNFB from FRED and BEA VA;
+    Internet access on first run (fetches OPHNFB from FRED and industry VA;
     cached thereafter).
 """
 
@@ -115,10 +116,6 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from pathlib import Path
-from fredapi import Fred
-BEA_API_KEY = "7878D119-FFC4-411E-969D-3B168F53A1E0"
-os.environ['BEA_API_KEY'] = BEA_API_KEY
-print(f"BEA_API_KEY set to: {os.environ.get('BEA_API_KEY')}")
 # -- working directory ------------------------------------------------------
 try:
     os.chdir(Path(__file__).resolve().parent)
@@ -330,229 +327,130 @@ tight_lag = tight_lag[["quarter_label", "log_theta_lag"]].dropna()
 nat = nat.merge(tight_lag, on="quarter_label", how="inner")
 print(f"After merging lagged tightness: {len(nat):,} industry-quarter obs")
 
-# -- 3c. BEA industry value-added (Dlog VA_{j,t-1}) -------------------------
-# Source: BEA GDPbyIndustry.
+# -- 3c. Industry value-added (Dlog VA_{j,t-1}) via FRED ---------------------
+# Source: BEA Real Value Added by Industry (Chained 2017 $, SAAR, Quarterly)
+# as hosted on FRED.  Covers 2005Q1 onward (same BEA vintage limitation as
+# the direct BEA API; no pre-2005 quarterly NAICS industry VA exists).
 #
-# TableID preference (in order):
-#   TableID=5  Current-dollar (nominal) VA, available from 1997Q1 onward.
-#              Preferred: covers full JOLTS sample (2001Q1+).
-#              Justification for using nominal growth rates: we compute
-#              Dlog VA_{j,t} = log VA_{j,t} - log VA_{j,t-1}.  Over a single
-#              quarter, Dlog VA_nominal = Dlog VA_real + Dlog P_{j,t}.  The
-#              industry price deflator term Dlog P_{j,t} is absorbed by the
-#              time FE (alpha_t) in the residualization regression, which
-#              already soaks up all aggregate price variation.  Within-industry
-#              relative price variation across quarters is negligible compared
-#              to quantity variation for our purposes.
-#   TableID=1  Real (chained-$) VA, available from 2005Q1 onward only.
-#              Used as fallback if TableID=5 fails.
+# Requires: FRED_API_KEY environment variable (free at fred.stlouisfed.org).
+# If not set, falls back to v1 spec (aggregate productivity only).
 #
-# NAICS -> BLS 2-digit supersector mapping.  Multi-code sectors are summed
-# before computing growth rates.
+# FRED series IDs — hardcoded to avoid fragile search-ranking logic.
+# Mapping: BLS supersector code -> list of FRED series IDs
+# Multi-component sectors: sum levels then log-diff.
 #
-# Environment variable: BEA_API_KEY  (register free at apps.bea.gov).
-# If BEA_API_KEY is not set, a warning is printed and the enriched
-# residualization falls back to the v1 spec (no VA control).
+# Coverage note: All FRED RVA series start 2005Q1.  The v2 residualization
+# sample is therefore 2005Q2 onward (one lag).  v1 results (full 2001Q1+
+# sample, aggregate controls only) are always printed for comparison.
 
-# Mapping: BLS industry_code -> list of BEA NAICS IndustryID strings
-# Verified against actual BEA GDPbyIndustry TableID=1 response (2026-03-31).
-# Notes:
-#   BLS 43: BEA uses "48TW" for Transport & Warehousing (not "48-49") + "22" Utilities
-#   BLS 55: BEA uses separate "52" and "53" (no combined "52-53" row exists)
-#   Real VA (chained $) available from 2005Q1 onward; earlier quarters not in TableID=1.
-BLS_TO_BEA = {
-    10: ["21"],             # Mining and logging
-    20: ["23"],             # Construction
-    30: ["31G"],            # Manufacturing
-    41: ["42"],             # Wholesale trade
-    42: ["44RT"],           # Retail trade
-    43: ["48TW", "22"],     # Transport/Warehousing + Utilities (sum)
-    50: ["51"],             # Information
-    55: ["52", "53"],       # Financial activities (Finance+Insurance + Real estate)
-    60: ["54", "55", "56"], # Professional & business services (sum)
-    65: ["61", "62"],       # Education & health services (sum)
-    70: ["71", "72"],       # Leisure & hospitality (sum)
-    80: ["81"],             # Other services
+BLS_TO_FRED = {
+    10: ["RVAM"],              # Mining, Quarrying & Oil and Gas Extraction
+    20: ["RVAC"],              # Construction
+    30: ["RVAMA"],             # Manufacturing
+    41: ["RVAW"],              # Wholesale Trade
+    42: ["RVAR"],              # Retail Trade
+    43: ["RVAT", "RVAU"],      # Transportation & Warehousing + Utilities
+    50: ["RVAI"],              # Information
+    55: ["RVAFI", "RVARL"],    # Finance & Insurance + Real Estate & Rental
+    60: ["RVAPBS"],            # Professional & Business Services (aggregate)
+    65: ["RVAES", "RVAHC"],    # Educational Services + Health Care & Social Asst
+    70: ["RVAER", "RVAAF"],    # Arts/Entertainment/Recreation + Accommodation/Food
+    80: ["RVAOSEG"],           # Other Services (except Government)
 }
 
-def _fetch_bea_va(bea_key: str) -> pd.DataFrame:
+def _fetch_fred_va(fred_key: str) -> pd.DataFrame:
     """
-    Fetch quarterly value-added by industry from BEA GDPbyIndustry.
-    Tries TableID=5 (nominal, from 1997) first; falls back to TableID=1
-    (real chained $, from 2005) if TableID=5 fails.
-    Returns a DataFrame with columns: bea_industry, quarter_label, DataValue.
+    Fetch quarterly real value-added by BLS supersector from FRED.
+    Returns DataFrame: quarter_label, industry_code (BLS int), dlog_va.
+    Data starts 2005Q1 (BEA quarterly NAICS vintage limitation).
     """
-    import requests
-
-    import json
-
-    def _parse_bea_response(data: dict, label: str) -> pd.DataFrame:
-        """Parse a BEA JSON response into a tidy DataFrame, or raise on error."""
-        beaapi = data.get("BEAAPI", data)
-        if "Error" in beaapi:
-            raise ValueError(f"BEA API error ({label}): {beaapi['Error']}")
-        results = beaapi.get("Results", {})
-        if isinstance(results, list):
-            results = results[0] if results else {}
-        if isinstance(results, dict) and "Error" in results:
-            raise ValueError(f"BEA API error ({label}): {results['Error']}")
-        rows = results.get("Data") if isinstance(results, dict) else None
-        if rows is None:
-            raise ValueError(
-                f"BEA response missing 'Data' ({label}). "
-                f"beaapi keys={list(beaapi.keys())}. "
-                f"Response (truncated):\n{json.dumps(data, indent=2)[:1000]}"
-            )
-        df = pd.DataFrame(rows)
-        # Time is split across "Year" + "Quarter" (Roman numerals I–IV)
-        roman = {"I": "1", "II": "2", "III": "3", "IV": "4"}
-        df["quarter_label"] = (
-            df["Year"].astype(str) + "Q" +
-            df["Quarter"].astype(str).str.strip().map(roman)
-        )
-        if df["quarter_label"].isna().any():
-            bad = df.loc[df["quarter_label"].isna(), "Quarter"].unique()
-            raise ValueError(f"Unrecognised BEA Quarter values: {bad}")
-        df = df.rename(columns={"Industry": "bea_industry"})
-        df["DataValue"] = pd.to_numeric(
-            df["DataValue"].astype(str).str.replace(",", ""), errors="coerce"
-        )
-        df = df[["bea_industry", "quarter_label", "DataValue"]].dropna(
-            subset=["DataValue"]
-        ).copy()
-        print(f"  BEA ({label}): {len(df):,} rows, "
-              f"{df['bea_industry'].nunique()} industries, "
-              f"quarters {df['quarter_label'].min()}–{df['quarter_label'].max()}")
-        return df
-
-    url = "https://apps.bea.gov/api/data"
-    last_exc = None
-    # TableID preference order (first success wins):
-    #   9  = Pct Changes in Chain-Type Qty Indexes for VA (A)(Q)
-    #        Values ARE Dlog VA × 100 (quarterly pct change, real).
-    #        Expected start: ~1997Q2 (first difference of indexes).
-    #        is_pct_change=True: divide by 100 to get log-growth rate.
-    #   10 = Real VA by Industry (A)(Q)
-    #        Expected start: ~1997Q1 (same vintage as quarterly accounts).
-    #   5  = Nominal VA by Industry (A)(Q)
-    #        Expected start: ~1997Q1.  Price term absorbed by time FE.
-    #   1  = Real VA (older table, confirmed 2005Q1 start — last resort).
-    table_candidates = [
-        ("9",  "pct-change real qty index, TableID=9",  True),
-        ("10", "real VA levels, TableID=10",             False),
-        ("5",  "nominal VA levels, TableID=5",           False),
-        ("1",  "real VA levels, TableID=1 (2005+)",      False),
-    ]
-    for table_id, label, is_pct_change in table_candidates:
-        print(f"  Fetching BEA GDPbyIndustry ({label}) ...")
-        try:
-            params = {
-                "UserID": bea_key,
-                "method": "GetData",
-                "DataSetName": "GDPbyIndustry",
-                "TableID": table_id,
-                "Frequency": "Q",
-                "Year": "ALL",
-                "Industry": "ALL",
-                "ResultFormat": "JSON",
-            }
-            r = requests.get(url, params=params, timeout=60)
-            r.raise_for_status()
-            df = _parse_bea_response(r.json(), label)
-            # Tag whether values are already pct changes (TableID=9)
-            # so _build_bls_va knows whether to log-diff or just rescale.
-            df["_is_pct_change"] = is_pct_change
-            # Reject if coverage is too short (< 2001Q1 overlap needed)
-            if df["quarter_label"].min() > "2002Q1":
-                print(f"  TableID={table_id} starts {df['quarter_label'].min()}"
-                      f" — too late, trying next.")
-                last_exc = ValueError(f"Coverage starts {df['quarter_label'].min()}")
-                continue
-            print(f"  Using TableID={table_id} ({label}).")
-            return df
-        except Exception as e:
-            print(f"  TableID={table_id} failed: {e}")
-            last_exc = e
-            continue
-    raise ValueError(
-        f"All BEA TableIDs failed or have insufficient coverage. "
-        f"Last error: {last_exc}"
-    )
-
-def _build_bls_va(raw_bea: pd.DataFrame) -> pd.DataFrame:
-    """
-    Aggregate BEA NAICS-level VA to BLS supersectors, compute Dlog VA.
-    Returns: quarter_label, industry_code (BLS), dlog_va
-
-    If raw_bea._is_pct_change is True (TableID=9), DataValue is already
-    a quarterly percent change → divide by 100 to get log-growth rate.
-    For multi-code sectors (e.g. BLS 43 = 48TW + 22), we average the
-    pct changes (weighted equally) rather than summing levels, since
-    we cannot sum index percent changes directly.
-    If raw_bea._is_pct_change is False, DataValue is a level → log-diff.
-    """
-    is_pct = bool(raw_bea["_is_pct_change"].iloc[0])
-    raw_bea = raw_bea.drop(columns=["_is_pct_change"])
+    from fredapi import Fred
+    fred_client = Fred(api_key=fred_key)
 
     records = []
-    for bls_code, bea_ids in BLS_TO_BEA.items():
-        sub = raw_bea[raw_bea["bea_industry"].isin(bea_ids)].copy()
-        if sub.empty:
-            print(f"  WARNING: no BEA data for BLS {bls_code} "
-                  f"(BEA ids: {bea_ids})")
+    for bls_code, series_ids in BLS_TO_FRED.items():
+        level_frames = []
+        for sid in series_ids:
+            try:
+                s = fred_client.get_series(sid, observation_start="2004-10-01")
+                s.name = sid
+                # FRED quarterly series have month-start dates; resample to QS
+                s = s.resample("QS").first()
+                level_frames.append(s)
+                print(f"    {sid}: {len(s)} obs, {s.index[0].strftime('%YQ%q')}–"
+                      f"{s.index[-1].strftime('%YQ%q')}", flush=True)
+            except Exception as e:
+                print(f"  WARNING: FRED series {sid} (BLS {bls_code}) failed: {e}")
+                level_frames.append(None)
+
+        # Skip sector if any component failed to fetch
+        if any(f is None for f in level_frames):
+            missing = [sid for sid, f in zip(series_ids, level_frames) if f is None]
+            print(f"  SKIPPING BLS {bls_code}: missing series {missing}")
             continue
-        if is_pct:
-            # Values are quarterly pct changes; average across sub-sectors
-            agg = (sub.groupby("quarter_label")["DataValue"]
-                      .mean().reset_index()
-                      .rename(columns={"DataValue": "dlog_va_pct"}))
-            agg = agg.sort_values("quarter_label").reset_index(drop=True)
-            agg["dlog_va"] = agg["dlog_va_pct"] / 100.0
-        else:
-            # Values are levels; sum sub-sectors then log-diff
-            agg = (sub.groupby("quarter_label")["DataValue"]
-                      .sum().reset_index()
-                      .rename(columns={"DataValue": "va"}))
-            agg = agg.sort_values("quarter_label").reset_index(drop=True)
-            agg["log_va"]  = np.log(agg["va"].replace(0, np.nan))
-            agg["dlog_va"] = agg["log_va"].diff()
-        agg["industry_code"] = bls_code
-        records.append(agg[["quarter_label", "industry_code", "dlog_va"]].dropna())
-    return pd.concat(records, ignore_index=True)
+
+        # Sum component levels; min_count ensures NaN propagates if any missing
+        combined = pd.concat(level_frames, axis=1)
+        va_total = combined.sum(axis=1, min_count=len(level_frames))
+
+        # Convert DatetimeIndex -> quarter_label (e.g. "2005Q1")
+        va_total.index = va_total.index.to_period("Q").strftime("%YQ%q")
+        va_total.name = "va"
+        df = va_total.dropna().reset_index()
+        df.columns = ["quarter_label", "va"]
+        df = df.sort_values("quarter_label").reset_index(drop=True)
+
+        # Log-difference
+        df["log_va"]  = np.log(df["va"].replace(0, np.nan))
+        df["dlog_va"] = df["log_va"].diff()
+        df["industry_code"] = int(bls_code)
+        records.append(df[["quarter_label", "industry_code", "dlog_va"]].dropna())
+
+    if not records:
+        raise ValueError("FRED VA fetch returned no data for any sector.")
+
+    result = pd.concat(records, ignore_index=True)
+    n_sec = result["industry_code"].nunique()
+    print(f"  FRED VA: {n_sec} sectors, "
+          f"{result['quarter_label'].min()}–{result['quarter_label'].max()}, "
+          f"{len(result):,} rows")
+    if n_sec < 10:
+        print(f"  WARNING: only {n_sec}/12 sectors fetched — check FRED series IDs above.")
+    return result
 
 USE_BEA_VA = False   # updated below if fetch succeeds
 
-_bea_cache_ok = False
+_va_cache_ok = False
 if BEA_VA_CACHE.exists():
     try:
         bea_va = pd.read_parquet(BEA_VA_CACHE)
-        print(f"\nBEA VA: loaded from cache ({BEA_VA_CACHE})")
+        print(f"\nIndustry VA: loaded from cache ({BEA_VA_CACHE})")
         print(f"  Coverage: {bea_va['quarter_label'].min()} - "
               f"{bea_va['quarter_label'].max()}, "
               f"{bea_va['industry_code'].nunique()} BLS sectors")
         USE_BEA_VA = True
-        _bea_cache_ok = True
+        _va_cache_ok = True
     except Exception as cache_err:
-        print(f"\nWARNING: BEA cache file exists but is unreadable ({cache_err}). "
-              "Will attempt fresh fetch or fall back to v1.")
+        print(f"\nWARNING: Industry VA cache exists but is unreadable ({cache_err}). "
+              "Will attempt fresh FRED fetch or fall back to v1.")
 
-if not _bea_cache_ok:
-    bea_key = os.environ.get("BEA_API_KEY", "")
-    if not bea_key:
-        print("\nWARNING: BEA_API_KEY not set.  Industry VA control will be "
-              "OMITTED from residualization (v1 fallback).")
-        print("  To enable enriched residualization (v2), register at "
-              "apps.bea.gov and set BEA_API_KEY=<your_key>.")
+if not _va_cache_ok:
+    fred_key = os.environ.get("FRED_API_KEY", "")
+    if not fred_key:
+        print("\nWARNING: FRED_API_KEY not set.  Industry VA control OMITTED (v1 fallback).")
+        print("  Register free at https://fred.stlouisfed.org/docs/api/api_key.html")
+        print("  Then: export FRED_API_KEY=<your_key>  (or set in Windows env vars)")
     else:
         try:
-            raw_bea = _fetch_bea_va(bea_key)
-            bea_va  = _build_bls_va(raw_bea)
+            print(f"\nFetching industry VA from FRED (key: {fred_key[:8]}...)...")
+            bea_va = _fetch_fred_va(fred_key)
             bea_va.to_parquet(BEA_VA_CACHE, index=False)
-            print(f"  Saved: {BEA_VA_CACHE}")
+            print(f"  Cached: {BEA_VA_CACHE}")
             USE_BEA_VA = True
         except Exception as e:
-            print(f"\nWARNING: BEA fetch failed ({e}).  Falling back to v1 spec.")
+            print(f"\nWARNING: FRED VA fetch failed ({e}).  Falling back to v1 spec.")
             USE_BEA_VA = False
+
 
 # Merge lagged Dlog VA into nat (lag = shift by one quarter within industry)
 if USE_BEA_VA:

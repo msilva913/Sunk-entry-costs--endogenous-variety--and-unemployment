@@ -1,6 +1,6 @@
 # CLAUDE.md — Empirical LP Project (Firm Entry/Exit DSGE)
 
-**Last updated:** March 31, 2026
+**Last updated:** April 1, 2026
 **Author:** Mario Silva
 **Purpose:** Persistent project context for fresh Cowork sessions. Paste this into any new session to restore full project state.
 
@@ -56,6 +56,13 @@ data/results/        — LP output CSVs and all IRF plots
 - **Priority 2 completed:** JOLTS decomposed into layoffs+discharges (LD) and quits (quits) via `part2_shock_rates_s.py` and `part3_resid_instruments.py`. Separate Bartik instruments built and residualized for each.
 - **Vacancy LP outcome** added to `part5_lp.py` via `outcome="vacancy"` parameter. Uses log-change specification; lagged log vacancies replace lagged unemployment rate as control.
 
+### Notable additions in April 1, 2026 session:
+- **part2b rewritten** to use FRED as data source for industry VA (BEA direct API confirmed blocked; FRED RVAM/RVAC/... series confirmed as only available source, starting 2005Q1).
+- **v1 residualization** (fallback, currently active) runs successfully: δ on `(dlog_p,)`, LD and QU on `(dlog_p, log_theta_lag)`.
+- **v2 enriched residualization** code is complete in part2b; awaits local run with `FRED_API_KEY` set.
+- **`run_v2_locally.py`** written to orchestrate part2b → part3 → part5 in sequence with FRED fetch. Run from `Data/Bartek analysis/` with `$env:FRED_API_KEY = "<key>"` set.
+- **CRITICAL NEW FINDING:** QU placebo fails completely. All three instruments produce nearly identical IRFs (see section 11).
+
 ---
 
 ## 4. Key Empirical Findings
@@ -90,45 +97,44 @@ data/results/        — LP output CSVs and all IRF plots
 - δ_h also significant but smaller
 - Monotonically rising s IRF **survives** the interaction — not explained by financial amplification
 
-### 4.4 Residualized Instruments (part2b + part3)
+### 4.4 Residualized Instruments (part2b + part3) — UPDATED April 1
 
-- After purging Δlog(productivity) comovement, δ and s IRFs are on similar orders of magnitude
-- Productivity component was inflating raw δ estimates
-- Cross-instrument correlation: raw δ vs. s ≈ 0.54; reduced but remains meaningfully positive after residualization
-- LD (layoffs+discharges) and δ more correlated than quits and δ, as expected from cyclicality
+**v1 residualization (currently active):**
+- r(δ, LD) = **0.389** (down from raw ~0.54)
+- r(δ, QU) = **−0.004**
+- r(LD, QU) = **−0.492**
+- instr_sd: δ = 13.34, LD = 17.02, QU = 8.995
 
-### 4.5 JOLTS Decomposition — LD vs. Quits (Priority 2 — NEW)
+Note: r(δ,LD) = 0.389 after v1 residualization; target is to drive this further down with v2 (adding lagged industry VA growth).
 
-Three unemployment LP specifications now available:
-1. **Total separations (s, baseline):** Monotonically rising IRF anomaly (as above)
-2. **Layoffs+discharges (LD):** Primary specification; closest to model's s_t. IRF shape closer to economic prior.
-3. **Quits (placebo):** Model predicts different profile. Use as identification check.
+### 4.5 JOLTS Decomposition — LD vs. Quits (Updated April 1 — PLACEBO FAILS)
 
-Cross-instrument correlations and productivity loadings now available from `part2b` — LD and δ share countercyclical variation; quits load positively on productivity (as expected).
+**⚠️ CRITICAL: QU placebo fails completely.** All three instruments produce nearly identical unemployment and vacancy IRFs (see section 11 for details). This is a smoking gun for demand contamination, not structural δ/LD/QU differences.
 
-### 4.6 Vacancy IRFs (Priority 1 — NEW, KEY RESULTS)
+Three unemployment LP specifications (v1 residualized):
+1. **δ (residualized):** Peak β ≈ +1.57 pp at h=19, significant throughout h=0–20
+2. **LD (residualized):** Peak β ≈ +1.68 pp at h=17, significant throughout h=0–20
+3. **QU (residualized, placebo):** Peak β ≈ +1.32 pp at h=15, **significant from h=4 onward** — PLACEBO FAILURE
 
-**δ shock → vacancies (residualized instrument, `lp_irf_delta_vacancy.csv`):**
-- Vacancies fall **persistently and significantly** from h=1 onward
-- β grows in magnitude: h=1: −0.111, h=4: −0.260, h=8: −0.314, h=12: −0.423, h=16: −0.422 log points per 1-SD shock
-- All statistically significant (p<0.01 from h=2 onward; p<0.05 at h=1)
-- ✅ **Confirms model prediction:** δ destroys vacancies persistently
+LD is primary s-type instrument. QU should be placebo (flat/zero IRF) but is not — see section 11.
 
-**LD shock → vacancies (residualized, `lp_irf_ld_vacancy.csv`):**
-- Vacancies also fall, significantly (h=0: −0.095, h=5: −0.253, h=6: −0.295)
-- Effect weakens after h=8 and becomes less significant at longer horizons
-- ⚠️ **Mixed finding:** Model predicts flat or rising vacancies after LD (reposting channel). Empirically vacancies fall, though less persistently than after δ.
-- Possible interpretation: reposting is partial, not full. Or LD instrument still captures some product-line destruction.
+### 4.6 Vacancy IRFs (v1 residualized) — UPDATED April 1
 
-**Quits shock → vacancies (`lp_irf_qu_vacancy.csv`):**
-- Coefficients small and mostly insignificant
-- ✅ **Consistent with placebo role:** quits do not strongly move vacancies
+**δ shock → vacancies (`lp_irf_delta_vacancy.csv`, instr_sd=13.34):**
+- Vacancies fall persistently: h=1: −0.121, h=4: −0.253, h=8: −0.305, h=12: −0.409, h=14: −0.426 (peak)
+- Significant from h=1 onward (p<0.01 from h=2)
 
-**Total separations (s) → vacancies (`lp_irf_ts_vacancy.csv`):**
-- Negative and significant through h=3–8; similar to LD pattern
-- Confirms contamination from quits reduces the signal
+**LD shock → vacancies (`lp_irf_ld_vacancy.csv`, instr_sd=17.02):**
+- Peak β = −0.445 at h=20; significant through h=0–11, fades h=12–15, returns h=16–20
+- Pattern similar to δ, not the flat/rising profile the model predicts
 
-**Key plot:** `data/results/lp_irf_vacancy_delta_ld.png` — side-by-side δ vs. LD vacancy IRFs (the core asymmetry test)
+**QU shock → vacancies (`lp_irf_qu_vacancy.csv`, instr_sd=8.995, PLACEBO — FAILS):**
+- Peak β = −0.440 at h=15, **significant from h=7–8 onward, rising monotonically** through h=15
+- **QU placebo fails for vacancies too** — near-identical magnitude to δ and LD
+
+**Smoking gun:** corr(QU unemployment betas h=0..20, QU vacancy betas h=0..20) = −0.971. Same for δ: −0.948. Both instruments move unemployment up and vacancies down with nearly perfect mechanical proportionality — characteristic of demand contamination, not structural identification.
+
+**Key plot:** `data/results/lp_irf_vacancy_delta_ld.png` — core asymmetry test (δ vs. LD vacancy IRFs)
 
 ### 4.7 Central Tension (unchanged from prior sessions)
 
@@ -263,8 +269,8 @@ NFCI_risk_dm_t demeaned within estimation sample so β_h = IRF at average financ
 ## 9. Principles for Any Agent Working on This Project
 
 1. **δ vs. s asymmetry is the core.** Every empirical choice should be evaluated against testing this asymmetry.
-2. **Vacancy LP is now available.** Use it. The δ vacancy decline is the strongest confirmation of the model's mechanism; the LD partial decline is a puzzle to address.
-3. **LD is the primary s-type instrument** (not total separations). Quits are placebo.
+2. **Vacancy LP is now available.** Use it. But as of April 1, QU placebo fails — vacancy IRFs not yet separately identified across instruments.
+3. **LD is the primary s-type instrument** (not total separations). QU is placebo — but QU currently fails the placebo test (see section 11).
 4. **No financial frictions in the model.** Do not introduce them beyond the NFCI interaction term.
 5. **LOO always.** National shock rates must leave out the state being instrumented.
 6. **COVID cap: 2019Q4** for all LP outcomes. Instruments can extend further.
@@ -272,6 +278,8 @@ NFCI_risk_dm_t demeaned within estimation sample so β_h = IRF at average financ
 8. **State FIPS as zero-padded 2-digit strings** throughout.
 9. **Vacancy aggregation = average** (stock measure), not sum. Separation aggregation = sum (flow measure).
 10. **The δ financial state-dependence and the s monotonic rise are puzzles**, not confirmations. Flag them in the paper text.
+11. **QU placebo failure is now the leading diagnostic.** Until QU vacancy IRF is flat/insignificant, instrument identification is not established. v2 enriched residualization is the proposed fix.
+12. **Data source for industry VA is FRED** (`FRED_API_KEY` env var). BEA direct API is blocked. Coverage starts 2005Q1 — v2 LP sample will be shorter than v1.
 
 ---
 
@@ -336,52 +344,54 @@ where:
 
 ---
 
-### 10.4 BEA Industry GDP Data: Confirmed Feasible
+### 10.4 Industry VA Data Source: FRED (BEA Direct API Blocked)
 
-BEA's `GDPbyIndustry` dataset provides **quarterly real value-added** for all 12 BLS supersectors, available from 1987 onward via free API (requires registration at apps.bea.gov).
+**BEA direct API (`apps.bea.gov`) is blocked** — confirmed both in the Cowork sandbox AND on the user's local machine. Switched to FRED as data source.
 
-**NAICS → BLS supersector mapping:**
-| BLS Supersector | BEA NAICS Code |
-|---|---|
-| Mining (10) | 21 |
-| Construction (20) | 23 |
-| Manufacturing (30) | 31G |
-| Wholesale trade (41) | 42 |
-| Retail trade (42) | 44RT |
-| Transport/Warehousing/Utilities (43) | 48-49 + 22 (sum) |
-| Information (50) | 51 |
-| Financial activities (55) | 52-53 |
-| Professional & business services (60) | 54+55+56 |
-| Education & health (65) | 61+62 |
-| Leisure & hospitality (70) | 71+72 |
-| Other services (80) | 81 |
+**FRED series IDs for BLS supersectors (BLS_TO_FRED mapping in part2b):**
+| BLS Code | FRED Series IDs | Description |
+|---|---|---|
+| 10 | RVAM | Mining |
+| 20 | RVAC | Construction |
+| 30 | RVAMA | Manufacturing |
+| 41 | RVAW | Wholesale trade |
+| 42 | RVAR | Retail trade |
+| 43 | RVAT, RVAU | Transport+Warehousing + Utilities (sum) |
+| 50 | RVAI | Information |
+| 55 | RVAFI, RVARL | Finance+Insurance + Real estate (sum) |
+| 60 | RVAPBS | Professional & business services |
+| 65 | RVAES, RVAHC | Education + Health & social assistance (sum) |
+| 70 | RVAER, RVAAF | Entertainment/recreation + Accommodation/food (sum) |
+| 80 | RVAOSEG | Other services |
 
-Note: Transport/Warehousing/Utilities requires summing two BEA codes. All others are one-to-one.
+**Critical limitation:** All FRED BEA Real VA series start **2005Q1** — no quarterly industry VA available before 2005 from any accessible source. This limits v2 residualization sample to 2005Q2 onward (one lag needed).
 
-**API access:** Dataset=`GDPbyIndustry`, TableID=1 (value added), Frequency=`Q`, Industry=ALL. Fetch pattern identical to OPHNFB from FRED; add to part2b as new data source.
+**v2 sample implication:** v2 residuals cover 2005Q2–2023Q1 (JOLTS end). LP sample will be 2005Q2–2019Q4 for v2 specifications. Shorter than v1 (2001Q3–2019Q4) but still covers GFC and post-GFC period.
 
 ---
 
-### 10.5 Implementation Plan for Next Session
+### 10.5 Current Pipeline Status (April 1, 2026)
 
-**Step 1:** Add BEA industry GDP fetch to `part2b_shock_comovement.py`
-- Fetch real quarterly value-added by NAICS industry
-- Construct `Δlog VA_{j,t}` for each of the 12 supersectors
-- Cache as `data/cache/bea_va_quarterly_12ind.parquet`
+**What is complete and working:**
+- `part2b_shock_comovement.py` — rewritten to use FRED fetch (`_fetch_fred_va()`). v1 fallback (no FRED key) and v2 path (with FRED key) both coded. File uses `FRED_API_KEY` env var (not BEA key).
+- `part3_resid_instruments.py` — runs on existing v1 parquets, produces valid instrument CSVs.
+- `part5_lp.py` — runs successfully, produces all 6 key IRF CSVs.
+- `run_v2_locally.py` — orchestrator script written; runs part2b → part3 → part5 with FRED fetch.
 
-**Step 2:** Update residualization regression in `part2b_shock_comovement.py`
-- Add `Δlog VA_{j,t-1}` and `log θ_{t-1}` as additional regressors
-- Requires national market tightness series (v/u from JOLTS national data, already available)
-- Save new residuals as updated parquets (overwrite existing or use new names with `_v2` suffix)
+**What requires a local run to complete:**
+- v2 enriched residualization: requires `FRED_API_KEY` env var set locally.
+- Run from `Data/Bartek analysis/` in PowerShell:
+  ```
+  $env:FRED_API_KEY = "<your_key>"
+  python run_v2_locally.py
+  ```
+- Free FRED API key: https://fred.stlouisfed.org/docs/api/api_key.html
+- After first run, `data/cache/bea_va_quarterly_12ind.parquet` is cached; FRED key not needed again.
 
-**Step 3:** Re-run `part3_resid_instruments.py`
-- Rebuild B~^δ, B~^LD, B~^QU from updated residuals
-- Check whether new cross-instrument correlations are lower (especially r(δ,LD))
-- If r(δ,LD) drops substantially from 0.44, the demand contamination hypothesis is confirmed
-
-**Step 4:** Re-run `part5_lp.py`
-- Re-estimate all IRFs with the cleaner instruments
-- Key question: do δ and LD vacancy IRFs now diverge? (δ down, LD flat/up = model confirmed)
+**Key tests once v2 runs:**
+1. Does r(δ,LD) drop below 0.39? (demand contamination confirmation)
+2. Is QU vacancy IRF now flat/insignificant? (instrument non-identification resolved)
+3. Do δ and LD vacancy IRFs diverge? (δ down, LD flat/up = model prediction confirmed)
 
 ---
 
@@ -408,3 +418,67 @@ The declining vacancy IRF after LD (despite model predicting flat/rising) was in
 - Endogenous exit feedback — now seen as IMPLAUSIBLE for LD timing reasons
 
 **The new leading explanation:** demand contamination in the LD instrument causes states hit by industry demand shocks to show both high LD and falling vacancies, even though the structural reposting channel would predict rising vacancies. The enriched residualization test will resolve this.
+
+---
+
+## 11. New Findings from Session — April 1, 2026
+
+### 11.1 Instrument Non-Identification (CRITICAL NEW FINDING)
+
+**The three instruments (δ, LD, QU) produce nearly identical IRFs in both unemployment and vacancy dimensions.** This is the most important empirical finding of the April 1 session.
+
+**Unemployment IRFs (v1 residualized, peak β per 1-SD shock):**
+- δ: peak +1.57 pp at h=19 (significant throughout)
+- LD: peak +1.68 pp at h=17 (significant throughout)
+- QU: peak +1.32 pp at h=15 (**significant from h=4 — PLACEBO FAILS**)
+
+**Vacancy IRFs (v1 residualized, peak β per 1-SD shock):**
+- δ: peak −0.426 pp at h=14 (significant h=1–20)
+- LD: peak −0.445 pp at h=20 (significant, fades then returns)
+- QU: peak −0.440 pp at h=15 (**significant from h=7–8 — PLACEBO FAILS**)
+
+The QU instrument was intended as a structural placebo — quits are voluntary separations that should trigger immediate reposting. Both the theoretical prior and the model predict a flat or positive vacancy response to QU. Empirically QU produces a vacancy IRF indistinguishable from δ. This is not consistent with QU identifying a distinct structural margin.
+
+### 11.2 Smoking Gun for Demand Contamination
+
+**Within-instrument correlation between unemployment and vacancy IRF coefficients across horizons:**
+- QU: corr(β_unemp_h, β_vac_h) for h=0..20 = **−0.971**
+- δ: corr(β_unemp_h, β_vac_h) for h=0..20 = **−0.948**
+
+When unemployment goes up by x pp at horizon h, vacancies go down by approximately proportional amount — with near-perfect mechanical consistency. This is the signature of instruments that primarily identify **demand-side labor market contractions** (which simultaneously raise unemployment and lower vacancies through the Beveridge curve) rather than distinct structural shocks with different vacancy implications.
+
+This pattern is inconsistent with structural identification of δ vs. s vs. quits. It is consistent with all three instruments being correlated with industry-specific demand conditions in the overlapping employment-share weighted states.
+
+### 11.3 Updated Instrument Correlations (v1 Spec)
+
+| Pair | Correlation |
+|------|-------------|
+| r(δ, LD) | 0.389 |
+| r(δ, QU) | −0.004 |
+| r(LD, QU) | −0.492 |
+
+The near-zero r(δ,QU) and strongly negative r(LD,QU) suggest partial separation by construction, but the QU IRF non-flatness shows correlation ≠ identification.
+
+### 11.4 Revised Interpretation of Prior "Asymmetry" Finding
+
+The earlier finding that "δ vacancy IRF is more persistent than LD" (section 4.6, 10.7) likely reflects a difference in **demand shock exposure** rather than structural reposting behavior:
+- δ instrument loads more heavily on industries prone to long-lived demand contractions (durable manufacturing, construction)
+- LD instrument has broader sectoral coverage, diluting the persistent demand effects
+
+The v2 enriched residualization (lagged industry VA growth) is specifically designed to remove this industry-specific demand component and test whether any instrument-specific structural signal survives.
+
+### 11.5 Data Source Note (part2b)
+
+The `part2b_shock_comovement.py` script now uses:
+- `FRED_API_KEY` (not `BEA_API_KEY`) for industry VA fetch
+- Hardcoded `BLS_TO_FRED` dictionary with series IDs listed in section 10.4
+- `fredapi` Python package (`pip install fredapi`)
+- Cache path: `data/cache/bea_va_quarterly_12ind.parquet`
+- v1 fallback activates automatically if FRED fetch fails or key is absent
+
+### 11.6 Priority Order for Next Session
+
+1. **Run v2 locally** (see section 10.5) — this is the critical pending step
+2. If v2 sharpens asymmetry: draft paper text on demand contamination and cleaned identification
+3. If v2 does NOT sharpen asymmetry: consider pre-GFC sample restriction (Priority 4c) and wild bootstrap (Priority 4b) as next diagnostic steps
+4. SLOOS interaction (Priority 3) and recession-severity placebo (Priority 4a) remain pending regardless of v2 outcome

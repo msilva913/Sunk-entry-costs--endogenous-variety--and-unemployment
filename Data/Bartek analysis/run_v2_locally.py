@@ -1,22 +1,26 @@
 """
 run_v2_locally.py
 =================
-Run this script on your LOCAL machine (not in the Cowork sandbox) to:
+Run this script on your LOCAL machine to execute the v2 enriched residualization:
 
-  1. Fetch BEA quarterly industry value-added data (requires BEA_API_KEY env var)
-  2. Re-run part2b with the enriched v2 residualization
-  3. Re-run part3 to rebuild Bartik instruments
-  4. Re-run part5 to get updated IRFs
+  1. Fetch BEA Real VA by Industry from FRED (requires FRED_API_KEY env var)
+  2. part2b: enriched residualization (dlog_va_lag + log_theta_lag)
+  3. part3: rebuild Bartik instruments from v2 residuals
+  4. part5: updated IRFs
 
-Prerequisites:
-  - pip install pandas pyarrow requests matplotlib statsmodels linearmodels
-  - export BEA_API_KEY=<your key from apps.bea.gov>  (or set in Windows env vars)
-  - Run from the project working directory:
-      cd "Data/Bartek analysis"
-      python run_v2_locally.py
+FRED API keys are FREE: https://fred.stlouisfed.org/docs/api/api_key.html
 
-This script does NOT modify any code — it calls the existing pipeline scripts
-in sequence and prints a summary of cross-instrument correlations and IRF peaks.
+Usage (Mac/Linux):
+    cd "Data/Bartek analysis"
+    export FRED_API_KEY=<your_key>
+    python run_v2_locally.py
+
+Usage (Windows PowerShell):
+    cd "Data\\Bartek analysis"
+    $env:FRED_API_KEY = "<your_key>"
+    python run_v2_locally.py
+
+After first run the industry VA is cached; FRED_API_KEY not needed again.
 """
 
 import subprocess
@@ -26,101 +30,81 @@ import pandas as pd
 from pathlib import Path
 
 SCRIPTS = ["part2b_shock_comovement.py", "part3_resid_instruments.py", "part5_lp.py"]
-key = "7878D119-FFC4-411E-969D-3B168F53A1E0"
-#key = os.environ["BEA_API_KEY"]
-def check_prereqs():
-    #key = os.environ.get("BEA_API_KEY", "")
-    if not key:
-        print("ERROR: BEA_API_KEY environment variable not set.")
-        print("  Register at https://apps.bea.gov/API/signup/ (free, instant approval)")
-        print("  Then: export BEA_API_KEY=<your-key>   (or set in Windows env vars)")
-        sys.exit(1)
-    print(f"BEA_API_KEY: {key[:8]}... (set)")
 
-    bea_cache = Path("data/cache/bea_va_quarterly_12ind.parquet")
-    if bea_cache.exists():
+def check_prereqs():
+    key = os.environ.get("FRED_API_KEY", "")
+    if not key:
+        print("ERROR: FRED_API_KEY not set.")
+        print("  Register free at https://fred.stlouisfed.org/docs/api/api_key.html")
+        print("  Mac/Linux: export FRED_API_KEY=<your-key>")
+        print("  Windows:   $env:FRED_API_KEY = \"<your-key>\"")
+        sys.exit(1)
+    print(f"FRED_API_KEY: {key[:8]}... (set)")
+
+    cache = Path("data/cache/bea_va_quarterly_12ind.parquet")
+    if cache.exists():
         try:
-            df = pd.read_parquet(bea_cache)
-            coverage_start = df["quarter_label"].min()
-            print(f"BEA cache exists, starts {coverage_start}.")
-            if coverage_start > "2002Q1":
-                print("  WARNING: BEA cache starts after 2002Q1 — this is the 2005-start limitation.")
-                print("  The v2 spec will run but cover only 2005Q2 onward.")
-                print("  v1 spec (full sample) will be run as primary robustness check.")
-            else:
-                print(f"  Coverage is sufficient (starts {coverage_start}).")
+            df = pd.read_parquet(cache)
+            start = df["quarter_label"].min()
+            end   = df["quarter_label"].max()
+            nsec  = df["industry_code"].nunique()
+            print(f"Industry VA cache: {start}-{end}, {nsec} sectors.")
+            print("  v2 residualization sample: 2005Q2 onward (one lag).")
         except Exception as e:
-            print(f"  BEA cache is corrupted ({e}). Will delete and re-fetch.")
-            bea_cache.unlink()
+            print(f"  Cache corrupted ({e}). Will re-fetch.")
+            cache.unlink()
+    else:
+        print("No cache found -- will fetch from FRED.")
 
 def run_script(script):
-    print(f"\n{'='*60}")
-    print(f"Running {script} ...")
-    print('='*60)
-    result = subprocess.run(
-        [sys.executable, script],
-        capture_output=False,
-        text=True
-    )
+    print(f"\n{'='*60}\nRunning {script}\n{'='*60}")
+    result = subprocess.run([sys.executable, script])
     if result.returncode != 0:
-        print(f"\nERROR: {script} exited with code {result.returncode}")
-        print("Fix the error above before continuing.")
+        print(f"\nERROR: {script} failed (code {result.returncode})")
         sys.exit(result.returncode)
-    print(f"\n{script} completed successfully.")
+    print(f"\n{script} OK.")
 
 def print_summary():
     print("\n" + "="*60)
-    print("SUMMARY: Key results from v2 run")
+    print("SUMMARY")
     print("="*60)
-
-    # Instrument correlations from part3
-    corr_plot = Path("data/results/instruments_resid_corr_matrix.png")
-    if corr_plot.exists():
-        print(f"\nInstrument correlation matrix plot: {corr_plot}")
-
-    # Key IRF peaks from part5
     results_dir = Path("data/results")
     for fname, label in [
-        ("lp_irf_delta_vacancy.csv", "δ → vacancies"),
-        ("lp_irf_ld_vacancy.csv",    "LD → vacancies"),
-        ("lp_irf_qu_vacancy.csv",    "QU → vacancies (placebo)"),
+        ("lp_irf_delta_vacancy.csv",  "delta -> vacancies"),
+        ("lp_irf_ld_vacancy.csv",     "LD    -> vacancies"),
+        ("lp_irf_qu_vacancy.csv",     "QU    -> vacancies (placebo)"),
+        ("lp_irf_delta_resid.csv",    "delta -> unemployment"),
+        ("lp_irf_ld_resid.csv",       "LD    -> unemployment"),
+        ("lp_irf_qu_resid.csv",       "QU    -> unemployment (placebo)"),
     ]:
         fpath = results_dir / fname
-        if fpath.exists():
-            df = pd.read_csv(fpath)
-            peak_idx = df["beta"].abs().idxmax()
-            peak = df.loc[peak_idx]
-            sig = "***" if peak["pval"] < 0.01 else "**" if peak["pval"] < 0.05 else "*" if peak["pval"] < 0.1 else ""
-            std_beta = peak["beta"] * peak["instr_sd"]
-            print(f"  {label}: peak β={std_beta:+.3f} pp at h={int(peak['h'])} (p={peak['pval']:.3f}) {sig}")
+        if not fpath.exists():
+            continue
+        df = pd.read_csv(fpath)
+        pk = df.loc[df["beta"].abs().idxmax()]
+        sig = "***" if pk["pval"] < 0.01 else "**" if pk["pval"] < 0.05 else "*" if pk["pval"] < 0.1 else ""
+        print(f"  {label}: peak={pk['beta']:+.3f} pp at h={int(pk['h'])} (p={pk['pval']:.3f}) {sig}")
 
-    # Check if v2 or v1 was used
-    bea_cache = Path("data/cache/bea_va_quarterly_12ind.parquet")
-    if bea_cache.exists():
-        df = pd.read_parquet(bea_cache)
-        print(f"\nResidual spec: v2 (BEA industry VA, {df['quarter_label'].min()}–{df['quarter_label'].max()})")
-        print("  Compare with v1 (Dlog p only) for robustness.")
-        print("  Key test: did r(δ,LD) drop further from the v1 value of 0.39?")
+    cache = Path("data/cache/bea_va_quarterly_12ind.parquet")
+    if cache.exists():
+        df = pd.read_parquet(cache)
+        print(f"\nSpec: v2 (FRED industry VA, {df['quarter_label'].min()}-{df['quarter_label'].max()})")
+        print("Key question: did r(delta,LD) drop below 0.39?")
+        print("Key question: is QU vacancy IRF now flat/insignificant?")
     else:
-        print("\nResidual spec: v1 fallback (BEA fetch failed — check API key/network)")
+        print("\nSpec: v1 fallback (FRED fetch failed)")
 
-    print(f"\nAll plots saved to: data/results/")
-    print("Key plot: data/results/lp_irf_vacancy_delta_ld.png")
-
+    print("\nPlots: data/results/lp_irf_vacancy_decomp_overlay.png")
 
 if __name__ == "__main__":
-    print("Track B: v2 BEA-enriched residualization pipeline")
+    print("v2 enriched residualization pipeline")
     print("="*60)
     check_prereqs()
-
-    for script in SCRIPTS:
-        if not Path(script).exists():
-            print(f"ERROR: {script} not found in current directory.")
-            print("Make sure you are running from: Data/Bartek analysis/")
+    for s in SCRIPTS:
+        if not Path(s).exists():
+            print(f"ERROR: {s} not found. Run from Data/Bartek analysis/")
             sys.exit(1)
-
-    for script in SCRIPTS:
-        run_script(script)
-
+    for s in SCRIPTS:
+        run_script(s)
     print_summary()
-    print("\nDone. Check data/results/ for updated IRF plots and CSVs.")
+    print("\nDone.")
