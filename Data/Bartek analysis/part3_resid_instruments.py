@@ -9,11 +9,15 @@ produced by part2b_shock_comovement.py:
     B~^LD_{s,t} = Σ_j  ω_{s,j}  nu_LD_{j,t}   (layoffs and discharges)
     B~^QU_{s,t} = Σ_j  ω_{s,j}  nu_QU_{j,t}   (quits)
 
-where ν^k_{j,t} are residuals from shock-specific regressions (see part2b):
-    log g^δ_{j,t}  = α_j + γ_δ  Δlog p_t                    + nu_delta_{j,t}
-    log g^TS_{j,t} = α_j + γ_TS Δlog p_t                    + nu_TS_{j,t}
-    log g^LD_{j,t} = α_j + γ_LD Δlog p_t + λ_LD log θ_t^nat + nu_LD_{j,t}
-    log g^QU_{j,t} = α_j + γ_QU Δlog p_t + λ_QU log θ_t^nat + nu_QU_{j,t}
+where ν^k_{j,t} are residuals from the v2 enriched regression in part2b:
+    log g^k_{j,t} = α_j + γ_k Δlog p_t + λ_k Δlog VA_{j,t-1} + μ_k log θ_{t-1} + ν^k_{j,t}
+
+    Δlog p_t       = aggregate productivity growth (OPHNFB, quarterly)
+    Δlog VA_{j,t-1}= lagged real value-added growth in supersector j (BEA via FRED)
+    log θ_{t-1}    = lagged national market tightness log(V/U)
+
+    The VA and tightness regressors are included for all shock types.
+    Both are lagged one quarter to ensure predetermination w.r.t. g^k_{j,t}.
 
 The employment shares ω_{s,j} are identical to those used in part3 and
 part3_instrument_s (base-year 2006 QCEW shares).
@@ -141,22 +145,56 @@ for lbl, df, col in [("nu_delta",  resid_d,  "nu_delta"),
 # ── Bartik aggregation ─────────────────────────────────────────────────────
 # B~^k_{s,t} = Σ_j  ω_{s,j}  ν^k_{j,t}
 
-def _build_resid_bartik(shares, resid, shock_col, bartik_col):
+def _build_resid_bartik(shares, resid, shock_col, bartik_col,
+                        weight_warn_threshold=0.80):
     """
     Aggregate residualized national industry shocks to state-quarter Bartik.
 
     Parameters
     ----------
-    shares     : state_fips, industry_code, share
-    resid      : industry_code, quarter_label, shock_col
-    shock_col  : residual column name (e.g. "nu_delta")
-    bartik_col : output instrument column name
+    shares                : state_fips, industry_code, share
+    resid                 : industry_code, quarter_label, shock_col
+    shock_col             : residual column name (e.g. "nu_delta")
+    bartik_col            : output instrument column name
+    weight_warn_threshold : print warning if weight_sum < this (default 0.80)
 
     Returns
     -------
     DataFrame: state, state_fips, quarter_label, bartik_col,
                weight_sum, n_supersectors
+
+    Notes
+    -----
+    Weight coverage can fall below 1.0 when the residual parquet is missing
+    data for some industries (e.g. JOLTS suppresses quits for thin-sample
+    supersectors like Mining or Information).  The diagnostic block below
+    identifies which industries are missing so the caller can decide whether
+    coverage is adequate for the intended instrument.
     """
+    # ── coverage diagnostic ───────────────────────────────────────────────
+    # Report which industries have ANY non-null residuals vs. which are
+    # completely absent.  A missing industry lowers weight_sum for every
+    # state that has employment in it.
+    all_inds   = set(shares["industry_code"].unique())
+    resid_inds = set(resid.dropna(subset=[shock_col])["industry_code"].unique())
+    missing_inds = all_inds - resid_inds
+    if missing_inds:
+        # Compute the average employment share of missing industries
+        # (approximates how much weight_sum will be depressed on average)
+        avg_missing_share = (
+            shares[shares["industry_code"].isin(missing_inds)]
+            .groupby("state_fips")["share"].sum()
+            .mean()
+        )
+        print(f"    Coverage: {len(resid_inds)}/{len(all_inds)} industries "
+              f"have {shock_col} data.")
+        print(f"    Missing industries: {sorted(missing_inds)}")
+        print(f"    Average missing employment share per state: "
+              f"{avg_missing_share:.3f}  "
+              f"(→ expected mean weight_sum ≈ {1 - avg_missing_share:.3f})")
+    else:
+        print(f"    Coverage: all {len(all_inds)} industries present.")
+
     merged = (
         resid.dropna(subset=[shock_col])
         .merge(shares[["state_fips", "industry_code", "share"]],
@@ -173,13 +211,18 @@ def _build_resid_bartik(shares, resid, shock_col, bartik_col):
     instr = (
         merged
         .groupby(["state_fips", "quarter_label"], group_keys=False)
-        .apply(_agg)
+        .apply(_agg, include_groups=False)
         .reset_index()
     )
 
-    low = instr["weight_sum"] < 0.80
+    low = instr["weight_sum"] < weight_warn_threshold
     if low.any():
-        print(f"    WARNING: {low.sum()} cells with weight coverage < 80%")
+        print(f"    NOTE: {low.sum()} of {len(instr):,} cells have "
+              f"weight_sum < {weight_warn_threshold:.0%} "
+              f"(mean weight = {instr['weight_sum'].mean():.3f}, "
+              f"min = {instr['weight_sum'].min():.3f}).  "
+              f"Interpret instrument with caution if missing industries "
+              f"are economically large.")
 
     instr["state_fips"] = instr["state_fips"].astype(int)
     instr["state"]      = instr["state_fips"].map(FIPS2D_TO_STATE)
@@ -269,7 +312,7 @@ if RAW_D_PATH.exists() and RAW_S_PATH.exists():
 def _quarterly_r(df, col1, col2):
     return (
         df.groupby("quarter_label")
-        .apply(lambda g: g[col1].corr(g[col2]))
+        .apply(lambda g: g[col1].corr(g[col2]), include_groups=False)
         .rename("r_cross").reset_index()
         .sort_values("quarter_label")
         .assign(date=lambda d: d["quarter_label"].map(_ql_to_dt))
@@ -282,40 +325,40 @@ r_dqu  = _quarterly_r(all_instr, "bartik_delta", "bartik_qu")
 # ── plot 1: quarterly cross-sectional correlation ─────────────────────────
 
 fig, ax = plt.subplots(figsize=(12, 4))
-ax.axhline(0,    color="black", linewidth=0.7)
-ax.axhline(0.50, color="grey",  linewidth=0.5, linestyle="--", alpha=0.5,
+_ = ax.axhline(0,    color="black", linewidth=0.7)
+_ = ax.axhline(0.50, color="grey",  linewidth=0.5, linestyle="--", alpha=0.5,
            label="r = 0.50")
-ax.axhline(0.70, color="grey",  linewidth=0.5, linestyle=":",  alpha=0.5,
+_ = ax.axhline(0.70, color="grey",  linewidth=0.5, linestyle=":",  alpha=0.5,
            label="r = 0.70")
 
 colors = {"δ vs TS": "#1f77b4", "δ vs LD": "#d62728", "δ vs QU": "#2ca02c"}
 for r_df, lbl in [(r_dts, "δ vs TS"), (r_dld, "δ vs LD"), (r_dqu, "δ vs QU")]:
-    ax.plot(r_df["date"], r_df["r_cross"],
+    _ = ax.plot(r_df["date"], r_df["r_cross"],
             linewidth=1.6, label=lbl, color=colors[lbl])
 
 # Overlay raw δ vs TS if available.
 if RAW_D_PATH.exists() and RAW_S_PATH.exists() and "both_raw" in dir():
     r_raw_qt = _quarterly_r(both_raw, "bartik_delta", "bartik_s")
-    ax.plot(r_raw_qt["date"], r_raw_qt["r_cross"],
+    _ = ax.plot(r_raw_qt["date"], r_raw_qt["r_cross"],
             color="#1f77b4", linewidth=1.6, linestyle="--", alpha=0.5,
             label="δ vs TS (raw)")
 
 for start, end in REC_SPANS:
-    ax.axvspan(pd.Timestamp(start), pd.Timestamp(end),
+    _ = ax.axvspan(pd.Timestamp(start), pd.Timestamp(end),
                alpha=0.10, color="grey",
                label="NBER recessions" if start == "2001-03-01" else "_nolegend_")
 
-ax.set_title(
+_ = ax.set_title(
     r"Quarterly cross-sectional correlation with $\tilde{B}^\delta$"
     "\n"
     r"Each point = Pearson $r$ across ~51 states in quarter $t$",
     fontsize=11,
 )
-ax.set_ylabel("Cross-sectional r", fontsize=10)
-ax.set_ylim(-0.55, 1.05)
+_ = ax.set_ylabel("Cross-sectional r", fontsize=10)
+_ = ax.set_ylim(-0.55, 1.05)
 ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f"{x:.2f}"))
-ax.legend(fontsize=9, framealpha=0.85, ncol=2)
-ax.grid(axis="y", linewidth=0.4, alpha=0.4)
+_ = ax.legend(fontsize=9, framealpha=0.85, ncol=2)
+_ = ax.grid(axis="y", linewidth=0.4, alpha=0.4)
 fig.tight_layout()
 p = RESULTS_DIR / "instruments_resid_quarterly_correlation.png"
 fig.savefig(p, dpi=150, bbox_inches="tight"); plt.close(fig); _open_file(p)
@@ -328,15 +371,15 @@ print(f"\nPlot 1 saved: {p}")
 def _heatmap(ax, mat, title):
     im = ax.imshow(mat.values, vmin=-1, vmax=1, cmap="RdBu_r", aspect="auto")
     lbls = mat.columns.tolist()
-    ax.set_xticks(range(len(lbls))); ax.set_xticklabels(lbls, fontsize=11)
-    ax.set_yticks(range(len(lbls))); ax.set_yticklabels(lbls, fontsize=11)
-    ax.set_title(title, fontsize=10)
+    _ = ax.set_xticks(range(len(lbls))); ax.set_xticklabels(lbls, fontsize=11)
+    _ = ax.set_yticks(range(len(lbls))); ax.set_yticklabels(lbls, fontsize=11)
+    _ = ax.set_title(title, fontsize=10)
     for i in range(len(lbls)):
         for j in range(len(lbls)):
             v = mat.values[i, j]
-            ax.text(j, i, f"{v:.3f}", ha="center", va="center",
+            _ = ax.text(j, i, f"{v:.3f}", ha="center", va="center",
                     fontsize=10, color="white" if abs(v) > 0.6 else "black")
-    plt.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
+    _ = plt.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
 
 # 3x3 matrix: delta, LD, QU only
 cols_3  = ["bartik_delta", "bartik_ld", "bartik_qu"]
@@ -397,16 +440,18 @@ if RAW_D_PATH.exists() and RAW_S_PATH.exists():
     ]:
         r = comp["raw"].corr(comp["resid"])
         ax.scatter(comp["raw"], comp["resid"], s=4, alpha=0.3, color=color)
-        ax.set_xlabel("Raw Bartik", fontsize=10)
-        ax.set_ylabel("Residualized Bartik", fontsize=10)
-        ax.set_title(f"{title}  (r = {r:.3f})", fontsize=10)
-        ax.axhline(0, color="black", linewidth=0.5)
+        _ = ax.set_xlabel("Raw Bartik", fontsize=10)
+        _ = ax.set_ylabel("Residualized Bartik", fontsize=10)
+        _ = ax.set_title(f"{title}  (r = {r:.3f})", fontsize=10)
+        _ = ax.axhline(0, color="black", linewidth=0.5)
         ax.axvline(0, color="black", linewidth=0.5)
-        ax.grid(linewidth=0.4, alpha=0.4)
-    fig.suptitle("Raw vs. residualized Bartik instruments\n"
-                 r"($\delta$/TS: $\Delta\log p$ only — LD/QU: $\Delta\log p + \log\theta^{nat}$)"
-                 "\n"
-                 "(each point = one state-quarter)", fontsize=11)
+        _ = ax.grid(linewidth=0.4, alpha=0.4)
+    fig.suptitle(
+        "Raw vs. residualized Bartik instruments (each point = one state-quarter)\n"
+        r"v2 spec: $\log g^k_{j,t} = \alpha_j + \gamma_k \Delta\log p_t"
+        r"+ \lambda_k \Delta\log VA_{j,t-1} + \mu_k \log\theta_{t-1} + \nu^k_{j,t}$",
+        fontsize=10,
+    )
     fig.tight_layout()
     p = RESULTS_DIR / "instruments_resid_vs_raw_scatter.png"
     fig.savefig(p, dpi=150, bbox_inches="tight"); plt.close(fig); _open_file(p)

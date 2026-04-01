@@ -410,12 +410,15 @@ if TIGHTNESS_CACHE.exists():
     tight = pd.read_parquet(TIGHTNESS_CACHE)
     print(f"  Loaded from cache")
 else:
-    if FRED_API_KEY:
-        print("  Fetching from FRED ...")
+    print("  Fetching from FRED ...")
+    try:
         tight = _fetch_fred_tightness()
-    else:
-        print("  FRED key not set — building from local part4 cache ...")
-        tight = _build_tightness_from_local()
+    except Exception as e:
+        sys.exit(
+            f"ERROR: FRED tightness fetch failed: {e}\n"
+            "  Cannot proceed without market tightness — v1 fallback is disabled.\n"
+            "  Check your FRED_API_KEY and network connection."
+        )
     tight.to_parquet(TIGHTNESS_CACHE, index=False)
     print(f"  Saved: {TIGHTNESS_CACHE}")
 
@@ -453,19 +456,16 @@ if not USE_BEA_VA:
             "  Check your FRED_API_KEY and network connection."
         )
 
-if USE_BEA_VA:
-    # Lag by one quarter within each industry
-    bea_va = bea_va.sort_values(["industry_code","quarter_label"]).reset_index(drop=True)
-    bea_va["dlog_va_lag"] = bea_va.groupby("industry_code")["dlog_va"].shift(1)
-    bea_lag = bea_va[["industry_code","quarter_label","dlog_va_lag"]].dropna().copy()
-    bea_lag["industry_code"] = bea_lag["industry_code"].astype(int)
-    nat["industry_code"]     = nat["industry_code"].astype(int)
-    nat = nat.merge(bea_lag, on=["industry_code","quarter_label"], how="inner")
-    nat = nat.dropna(subset=["dlog_va_lag"])
-    print(f"  After merging lagged industry VA: {len(nat):,} obs "
-          f"({nat['quarter_label'].min()}–{nat['quarter_label'].max()})")
-else:
-    nat["dlog_va_lag"] = np.nan
+# USE_BEA_VA guaranteed True here (script exits above if fetch fails).
+bea_va = bea_va.sort_values(["industry_code","quarter_label"]).reset_index(drop=True)
+bea_va["dlog_va_lag"] = bea_va.groupby("industry_code")["dlog_va"].shift(1)
+bea_lag = bea_va[["industry_code","quarter_label","dlog_va_lag"]].dropna().copy()
+bea_lag["industry_code"] = bea_lag["industry_code"].astype(int)
+nat["industry_code"]     = nat["industry_code"].astype(int)
+nat = nat.merge(bea_lag, on=["industry_code","quarter_label"], how="inner")
+nat = nat.dropna(subset=["dlog_va_lag"])
+print(f"  After merging lagged industry VA: {len(nat):,} obs "
+      f"({nat['quarter_label'].min()}–{nat['quarter_label'].max()})")
 
 # ── 6. residualization ────────────────────────────────────────────────────────
 nat = nat.sort_values(["industry_code","quarter_label"]).reset_index(drop=True)
@@ -577,49 +577,49 @@ fig.savefig(p, dpi=120, bbox_inches="tight"); plt.close(fig); _open_file(p)
 print(f"\nPlot A saved: {p}")
 
 # Plot B: 2×4 cross-industry correlation heatmaps
-def _corr_matrix(df, col):
-    sub = df[["quarter_label","industry_label",col]].dropna(subset=[col]).reset_index(drop=True)
-    q_list = sorted(sub["quarter_label"].unique())
-    i_list = sorted(sub["industry_label"].unique())
-    if not q_list or not i_list:
-        return pd.DataFrame()
-    mat = np.full((len(q_list), len(i_list)), np.nan)
-    qi = sub["quarter_label"].map({q:i for i,q in enumerate(q_list)}).to_numpy(dtype=int)
-    ii = sub["industry_label"].map({v:i for i,v in enumerate(i_list)}).to_numpy(dtype=int)
-    mat[qi, ii] = sub[col].to_numpy()
-    return pd.DataFrame(mat, index=q_list, columns=i_list).dropna(how="all", axis=1).corr()
+# def _corr_matrix(df, col):
+#     sub = df[["quarter_label","industry_label",col]].dropna(subset=[col]).reset_index(drop=True)
+#     q_list = sorted(sub["quarter_label"].unique())
+#     i_list = sorted(sub["industry_label"].unique())
+#     if not q_list or not i_list:
+#         return pd.DataFrame()
+#     mat = np.full((len(q_list), len(i_list)), np.nan)
+#     qi = sub["quarter_label"].map({q:i for i,q in enumerate(q_list)}).to_numpy(dtype=int)
+#     ii = sub["industry_label"].map({v:i for i,v in enumerate(i_list)}).to_numpy(dtype=int)
+#     mat[qi, ii] = sub[col].to_numpy()
+#     return pd.DataFrame(mat, index=q_list, columns=i_list).dropna(how="all", axis=1).corr()
 
-hmap_panels = [
-    (r"$\log g^\delta$ raw",  "log_g_delta"),
-    (r"$\log g^{TS}$ raw",    "log_g_s"),
-    (r"$\log g^{LD}$ raw",    "log_g_ld"),
-    (r"$\log g^{QU}$ raw",    "log_g_qu"),
-    (r"$\nu^\delta$ resid",   "nu_delta"),
-    (r"$\nu^{TS}$ resid",     "nu_s"),
-    (r"$\nu^{LD}$ resid",     "nu_ld"),
-    (r"$\nu^{QU}$ resid",     "nu_qu"),
-]
-fig, axes = plt.subplots(2, 4, figsize=(22, 11))
-for idx, (title, col) in enumerate(hmap_panels):
-    ax  = axes[idx // 4, idx % 4]
-    mat = _corr_matrix(nat, col)
-    im  = ax.imshow(mat.values, vmin=-1, vmax=1, cmap="RdBu_r", aspect="auto")
-    lbls = mat.columns.tolist()
-    ax.set_xticks(range(len(lbls))); ax.set_xticklabels(lbls, rotation=45, ha="right", fontsize=6)
-    ax.set_yticks(range(len(lbls))); ax.set_yticklabels(lbls, fontsize=6)
-    ax.set_title(title, fontsize=9)
-    for ii in range(len(lbls)):
-        for jj in range(len(lbls)):
-            v = mat.values[ii, jj]
-            ax.text(jj, ii, f"{v:.2f}", ha="center", va="center",
-                    fontsize=5, color="white" if abs(v) > 0.7 else "black")
-    plt.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
-fig.suptitle(f"Cross-industry correlation matrices: raw vs. residualized [{spec}]",
-             fontsize=11, y=1.01)
-fig.tight_layout()
-p = RESULTS_DIR / "comovement_correlation_heatmaps.png"
-fig.savefig(p, dpi=120, bbox_inches="tight"); plt.close(fig); _open_file(p)
-print(f"Plot B saved: {p}")
+# hmap_panels = [
+#     (r"$\log g^\delta$ raw",  "log_g_delta"),
+#     (r"$\log g^{TS}$ raw",    "log_g_s"),
+#     (r"$\log g^{LD}$ raw",    "log_g_ld"),
+#     (r"$\log g^{QU}$ raw",    "log_g_qu"),
+#     (r"$\nu^\delta$ resid",   "nu_delta"),
+#     (r"$\nu^{TS}$ resid",     "nu_s"),
+#     (r"$\nu^{LD}$ resid",     "nu_ld"),
+#     (r"$\nu^{QU}$ resid",     "nu_qu"),
+# ]
+# fig, axes = plt.subplots(2, 4, figsize=(22, 11))
+# for idx, (title, col) in enumerate(hmap_panels):
+#     ax  = axes[idx // 4, idx % 4]
+#     mat = _corr_matrix(nat, col)
+#     im  = ax.imshow(mat.values, vmin=-1, vmax=1, cmap="RdBu_r", aspect="auto")
+#     lbls = mat.columns.tolist()
+#     ax.set_xticks(range(len(lbls))); ax.set_xticklabels(lbls, rotation=45, ha="right", fontsize=6)
+#     ax.set_yticks(range(len(lbls))); ax.set_yticklabels(lbls, fontsize=6)
+#     ax.set_title(title, fontsize=9)
+#     for ii in range(len(lbls)):
+#         for jj in range(len(lbls)):
+#             v = mat.values[ii, jj]
+#             ax.text(jj, ii, f"{v:.2f}", ha="center", va="center",
+#                     fontsize=5, color="white" if abs(v) > 0.7 else "black")
+#     plt.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
+# fig.suptitle(f"Cross-industry correlation matrices: raw vs. residualized [{spec}]",
+#              fontsize=11, y=1.01)
+# fig.tight_layout()
+# p = RESULTS_DIR / "comovement_correlation_heatmaps.png"
+# fig.savefig(p, dpi=120, bbox_inches="tight"); plt.close(fig); _open_file(p)
+# print(f"Plot B saved: {p}")
 
 # Plot C: delta vs each s-type scatter (2 rows × 3 cols)
 scatter_pairs = [
