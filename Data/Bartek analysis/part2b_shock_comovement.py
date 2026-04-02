@@ -109,18 +109,18 @@ FRED_API_KEY = os.getenv('FRED_API_KEY')
 # ── FRED series -> BLS supersector mapping ───────────────────────────────────
 # Multi-component sectors are summed at the level before log-differencing.
 BLS_TO_FRED = {
-    10: ["RVAM"],
-    20: ["RVAC"],
-    30: ["RVAMA"],
-    41: ["RVAW"],
-    42: ["RVAR"],
-    43: ["RVAT", "RVAU"],
-    50: ["RVAI"],
-    55: ["RVAFI", "RVARL"],
-    60: ["RVAPBS"],
-    65: ["RVAES", "RVAHC"],
-    70: ["RVAER", "RVAAF"],
-    80: ["RVAOSEG"],
+10: ["RVAM"], # Mining, quarrying, and oil and gas extraction
+20: ["RVAC"], # Construction
+30: ["RVAMA"], # Manufacturing
+41: ["RVAW"], # Wholesale trade
+42: ["RVAR"], # Retail trade
+43: ["RVAT", "RVAU"], # Transportation and warehousing; Utilities (sum to approximate BLS 43)
+50: ["RVAI"], # Information
+55: ["RVAFI", "RVARL"], # Finance and insurance; Real estate and rental and leasing (sum for BLS 55)
+60: ["RVAPBS"], # Professional and business services (aggregate of 54, 55, 56)
+65: ["RVAES"], # Educational services; Health care and social assistance (aggregate)
+70: ["RVAAF"], # Arts, entertainment, and recreation; Accommodation and food services (aggregate) (Arts and Entertainment part of RVAAF)
+80: ["RVAOSEG"], # Other services (except government)
 }
 
 # ── helpers ───────────────────────────────────────────────────────────────────
