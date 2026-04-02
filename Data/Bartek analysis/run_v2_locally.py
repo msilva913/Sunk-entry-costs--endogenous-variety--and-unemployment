@@ -10,15 +10,6 @@ Run this script on your LOCAL machine to execute the v2 enriched residualization
 
 FRED API keys are FREE: https://fred.stlouisfed.org/docs/api/api_key.html
 
-Usage (Mac/Linux):
-    cd "Data/Bartek analysis"
-    export FRED_API_KEY=<your_key>
-    python run_v2_locally.py
-
-Usage (Windows PowerShell):
-    cd "Data\\Bartek analysis"
-    $env:FRED_API_KEY = "<your_key>"
-    python run_v2_locally.py
 
 After first run the industry VA is cached; FRED_API_KEY not needed again.
 """

@@ -75,7 +75,7 @@ Z90       = 1.645
 Z95       = 1.960
 
 # Cap outcome quarter at 2019Q4 to exclude COVID from the outcome window.
-MAX_OUTCOME_QUARTER = "2019Q4"
+MAX_OUTCOME_QUARTER = "2025Q4"
 
 INSTR_DIR   = Path("data/instruments")
 RESULTS_DIR = Path("data/results")
@@ -270,6 +270,7 @@ def run_lp_horizon(base_panel, h, shock_col,
         cov_type="cluster",
         cov_kwds={"groups": df["state_fips"].values}
     )
+    
     beta  = float(model.params[shock_col])
     se    = float(model.bse[shock_col])
     tstat = float(model.tvalues[shock_col])
