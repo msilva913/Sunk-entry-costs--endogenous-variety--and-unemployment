@@ -3,7 +3,7 @@
 **Last updated:** April 1, 2026
 **Author:** Mario Silva
 **Purpose:** Persistent project context for fresh Cowork sessions. Paste this into any new session to restore full project state.
-
+**Code structure:** clean, succinct code easily interpretable by empirical macroeconomist.
 ---
 
 ## 1. Project Overview
