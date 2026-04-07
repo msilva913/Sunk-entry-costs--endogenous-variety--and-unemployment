@@ -1,6 +1,6 @@
 # CLAUDE.md — Empirical LP Project (Firm Entry/Exit DSGE)
 
-**Last updated:** April 1, 2026
+**Last updated:** April 7, 2026
 **Author:** Mario Silva
 **Purpose:** Persistent project context for fresh Cowork sessions. Paste this into any new session to restore full project state.
 **Code structure:** clean, succinct code easily interpretable by empirical macroeconomist.
@@ -50,11 +50,17 @@ data/results/        — LP output CSVs and all IRF plots
 | `part5_lp.py` | All panel LP regressions: unemployment + vacancy outcomes, δ/s/LD/quits | ✅ Complete | IRF CSVs + plots in `data/results/` |
 | `part6_shock_persistence.py` | AR(1) estimation of shock persistence | ✅ Complete | `data/results/shock_persistence.csv` |
 | `part7_nfci.py` | Chicago Fed NFCI → quarterly, headline + risk subindex | ✅ Complete | `data/cache/nfci_quarterly.parquet` |
+| `part2c_granger_lp.py` | Panel LP Granger causality: δ vs LD (raw + residualized) | ✅ Complete | `data/results/granger_lp_*.png` |
+| `part2d_var_calibration.py` | Bivariate panel VAR(L) on (ν^δ, ν^{LD}): companion matrix, Σ, Cholesky IRFs | ✅ Complete | `data/results/var_calibration.csv`, `var_irf_chol.png` |
 
 ### Notable additions in March 2026 session:
 - **Priority 1 completed:** `part4_outcomes.py` now fetches JOLTS state-level job openings (SA, stock → quarterly average). Series ID format verified: `JTS000000{ST}0000000JOL` (21 chars). Data available from Dec 2000 for all 50 states.
 - **Priority 2 completed:** JOLTS decomposed into layoffs+discharges (LD) and quits (quits) via `part2_shock_rates_s.py` and `part3_resid_instruments.py`. Separate Bartik instruments built and residualized for each.
 - **Vacancy LP outcome** added to `part5_lp.py` via `outcome="vacancy"` parameter. Uses log-change specification; lagged log vacancies replace lagged unemployment rate as control.
+
+### Notable additions in April 7, 2026 session:
+- **`part2c_granger_lp.py`** completed: panel LP Granger causality (δ vs LD, raw + residualized specs). Key finding: δ → LD F-stats = 4.9–8.9 throughout h=0–12; LD → δ fades to 1.1–1.8 by h=8–12 (see section 12).
+- **`part2d_var_calibration.py`** completed: bivariate panel VAR(1) on (ν^δ, ν^{LD}) recovering companion matrix, innovation covariance, Cholesky IRFs. Key calibration targets (see section 12): ρ_δ=0.600, ρ_LD=0.510, β(endex)=0.228, corr(u^δ,u^{LD})=0.229.
 
 ### Notable additions in April 1, 2026 session:
 - **part2b rewritten** to use FRED as data source for industry VA (BEA direct API confirmed blocked; FRED RVAM/RVAC/... series confirmed as only available source, starting 2005Q1).
@@ -482,3 +488,67 @@ The `part2b_shock_comovement.py` script now uses:
 2. If v2 sharpens asymmetry: draft paper text on demand contamination and cleaned identification
 3. If v2 does NOT sharpen asymmetry: consider pre-GFC sample restriction (Priority 4c) and wild bootstrap (Priority 4b) as next diagnostic steps
 4. SLOOS interaction (Priority 3) and recession-severity placebo (Priority 4a) remain pending regardless of v2 outcome
+
+---
+
+## 12. New Findings from Session — April 7, 2026
+
+### 12.1 Panel LP Granger Causality (part2c)
+
+Tests whether δ and LD are causally ordered or jointly endogenous, conditional on productivity variation. Two-way within panel (industry + time FEs). HC1 robust SEs. Joint Wald F-test on 4 cross-lags at each horizon h=0..12. Sample: residualized spec 2005Q3–2021Q4.
+
+**Key results (preferred residualized spec, F-statistics):**
+
+| Horizon | δ → LD | LD → δ |
+|---------|--------|--------|
+| h=0  | 4.89 | 4.68 |
+| h=2  | 7.40 | 5.96 |
+| h=4  | 8.08 | 3.43 |
+| h=8  | 8.89 | 1.82 |
+| h=12 | 3.42 | 1.07 |
+
+10% critical value ≈ 2.0–2.5 for joint F(4) test.
+
+**Interpretation:** δ → LD is persistent and significant at ALL horizons through h=12. LD → δ is initially significant (h=0–4) but fades below critical value by h=8–12 and collapses to F=1.07 at h=12. This supports δ as the more primitive shock: establishment exits drive future layoffs (endogenous exit mechanism), but lagged layoffs do not predict future exit rates once shocks have had time to dissipate.
+
+### 12.2 Bivariate Panel VAR Calibration (part2d)
+
+**Specification:** Bivariate panel VAR(L) on (ν^δ_{j,t}, ν^{LD}_{j,t}) with industry + time FEs, two-way within transformation. Cholesky identification with δ ordered first (justified by part2c). Sample: 2005Q3–2021Q4, 12 industries, N=780 obs at L=1.
+
+**Lag selection:** AIC selects L=4; BIC selects L=2. Disagreement → fall back to L=1 for parsimony and interpretability. (AIC/BIC gap is small: all log|Σ| values in range −8.62 to −8.73.)
+
+**Companion matrix A_1 at selected VAR(1):**
+
+|            | lag ν^δ | lag ν^{LD} |
+|------------|---------|----------|
+| ν^δ eq     | +0.600  | +0.132   |
+| ν^{LD} eq  | +0.228  | +0.510   |
+
+**Calibration parameters:**
+- ρ_δ = **0.600** (model default from part6 aggregate: 0.617 — close match)
+- ρ_LD = **0.510** (model default from part6 aggregate: 0.751 — significantly lower in industry-level within-estimator)
+- β (LD←δ lag-1, endogenous exit) = **+0.228**
+- α (δ←LD lag-1, reverse) = **+0.132**
+- β/α ratio = 1.7× (δ → LD cross-persistence exceeds reverse; VAR evidence directionally consistent with part2c)
+
+**Innovation covariance:**
+- corr(u^δ, u^{LD}) = **+0.229** — model zero-correlation assumption is violated
+- SD(u^δ) = 0.091, SD(u^{LD}) = 0.150
+
+**Cholesky (δ first):**
+- SD(ε^δ structural) = 0.091
+- Loading of LD on δ shock (contemporaneous): 0.034
+- SD(ε^{LD} orthogonal) = 0.146
+
+**Structural IRFs on shock series:** Both shocks are transitory. ε^δ own-response starts at 0.091, decays to 0.006 by h=8 (half-life ≈ 2 quarters). ε^{LD} own-response starts at 0.146, decays similarly. Cross-response of LD to ε^δ is non-negligible through h=4 (0.034→0.026→0.013), consistent with endogenous exit mechanism.
+
+**Note on ρ_LD discrepancy (0.510 vs 0.751):**
+The industry-level panel estimator uses within-industry variation after two-way demeaning, which removes industry and aggregate time effects. The aggregate part6 AR(1) reflects national time-series persistence, which includes aggregate LD cycles. The within-estimator likely understates true persistence because aggregate macro cycles (which generate the most autocorrelation) are absorbed by time FEs. The part6 aggregate estimates remain the preferred calibration target for the model's AR(1) assumption; the panel VAR provides the cross-dynamics β, α, and the innovation correlation.
+
+### 12.3 Priority Order for Next Session
+
+1. **Run v2 locally** (see section 10.5) — still the critical pending step if not yet done
+2. **SLOOS interaction** (Priority 3): `part7b_sloos.py`
+3. **Recession-severity placebo** (Priority 4a): extend `part5_lp.py`
+4. **Wild cluster bootstrap** (Priority 4b): supplement LP SEs
+5. **Pre-GFC sample restriction** (Priority 4c): add `max_qt` option to `run_lp()`

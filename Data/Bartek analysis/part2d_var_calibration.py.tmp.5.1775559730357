@@ -1,0 +1,659 @@
+"""
+part2d_var_calibration.py  --  Bivariate Panel VAR Calibration
+==============================================================
+Estimates a bivariate panel VAR on the residualized shock series
+(ν^δ, ν^{LD}) at the industry level to:
+
+  (1) Recover the full joint persistence structure of the two shocks —
+      replacing the model's two independent AR(1) assumptions with a richer
+      correlated bivariate process.
+
+  (2) Characterize the innovation covariance, motivating the model's
+      cross-shock correlation parameter.
+
+  (3) Produce Cholesky-identified structural IRFs on the shock series
+      themselves (not on macro outcomes).  δ is ordered first, consistent
+      with the causal ordering established in part2c: δ → LD is persistent
+      and significant at all horizons; LD → δ fades by h=8.
+
+Economic motivation
+-------------------
+The model (Gabrovski-Silva) assumes:
+
+    δ_t = ρ_δ δ_{t-1} + ε^δ_t
+    s_t = ρ_s s_{t-1} + ε^s_t
+    Cov(ε^δ, ε^s) = 0
+
+This is convenient but arbitrary.  In practice:
+
+  · Aggregate downturns simultaneously raise exit rates and layoff rates,
+    so ε^δ and ε^s are positively correlated.
+  · The model's endogenous-exit mechanism implies LD feeds back into δ
+    with a delay — so ρ_δ^{endogenous} > ρ_δ^{exogenous}.
+  · The two shocks likely have different own-persistence (Granger evidence
+    from part2c supports this: ρ_δ < ρ_s at the industry level).
+
+The VAR recovers all these quantities jointly.
+
+Mathematical objects
+--------------------
+Let y_{j,t} = (ν^δ_{j,t}, ν^{LD}_{j,t})' be the 2×1 vector of
+residualized industry-level shock rates for industry j at quarter t.
+
+Reduced-form panel VAR(L):
+
+    y_{j,t} = μ_j + φ_t + A_1 y_{j,t-1} + ... + A_L y_{j,t-L} + u_{j,t}
+
+where:
+  · μ_j  : industry fixed effects (2-vector, one per series)
+  · φ_t  : time fixed effects (2-vector), absorbing aggregate macro cycles
+  · A_l  : 2×2 coefficient matrix at lag l; stacked into companion matrix A
+  · u_{j,t} : reduced-form innovations, u ~ iid(0, Σ)
+
+Companion matrix (for VAR(1) representation of VAR(L)):
+  Stack Y_t = (y_t', ..., y_{t-L+1}')' as a 2L×1 vector.
+  The VAR(L) becomes Y_t = A_comp Y_{t-1} + U_t, where A_comp is (2L×2L).
+  The top-left 2×2 block of A_comp is A_1 (one-period persistence).
+
+Key quantities extracted:
+
+  A_1[0,0] = ρ_δ  (own-persistence of δ at lag 1)
+  A_1[1,1] = ρ_s  (own-persistence of LD at lag 1)
+  A_1[1,0] = β    (response of LD to one lag of δ — endogenous exit)
+  A_1[0,1] = α    (response of δ to one lag of LD — weak if δ is primitive)
+
+Innovation covariance Σ:
+  Σ[0,0] = Var(u^δ)
+  Σ[1,1] = Var(u^{LD})
+  Σ[0,1] = Cov(u^δ, u^{LD})  →  corr(ε^δ, ε^{LD}) = Σ[0,1]/sqrt(Σ[0,0]*Σ[1,1])
+
+Cholesky identification:
+  Let P = chol(Σ) (lower triangular), so Σ = P P'.
+  Structural shocks: ε_t = P^{-1} u_t.
+  With δ ordered first: P is lower triangular, so ε^δ = u^δ / P[0,0].
+  The second structural shock ε^{LD} = (u^{LD} - P[1,0] ε^δ) / P[1,1]
+  captures LD variation orthogonal to the contemporaneous δ innovation.
+
+  Justification for δ-first ordering: part2c shows δ Granger-causes LD
+  persistently at all horizons (F=4.9–8.9), while LD→δ fades by h=8.
+  Ordering δ first means ε^δ is the 'more primitive' disturbance.
+
+Structural IRFs on the shock series (NOT on unemployment/vacancies):
+  These answer: after a 1-SD structural δ shock, how do ν^δ and ν^{LD}
+  evolve over the next L quarters?  This directly disciplines:
+    · ρ_δ calibration (from the ν^δ own-response)
+    · Endogenous exit magnitude (from the ν^{LD} cross-response)
+
+Lag selection: AIC and BIC evaluated at L = 1, 2, 3, 4.
+
+Output
+------
+  data/results/var_calibration.csv     -- calibration parameter table
+  data/results/var_irf_chol.png        -- structural IRFs (4 panels)
+  data/results/var_lag_selection.csv   -- AIC/BIC across lag lengths
+
+Run
+---
+    python part2d_var_calibration.py
+
+Prerequisites
+-------------
+    python part2_shock_rates.py
+    python part2_shock_rates_s.py
+    python part2b_shock_comovement.py  (populates BEA VA cache)
+"""
+
+import os
+import sys
+import numpy as np
+import pandas as pd
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+from pathlib import Path
+
+# ── working directory ─────────────────────────────────────────────────────────
+try:
+    os.chdir(Path(__file__).resolve().parent)
+except NameError:
+    os.chdir(
+        Path.home()
+        / "Documents/GitHub/Sunk_entry_costs_endogenous_variety_unemployment"
+        / "Data/Bartek analysis"
+    )
+
+from construct_delta_instrument import (
+    DEFAULT_CACHE_DIR, SHOCK_RATES_PATH, INDUSTRY_LABELS,
+)
+from construct_s_instrument import SHOCK_RATES_LD_PATH
+
+RESULTS_DIR = Path("data/results")
+RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+
+# ── parameters ────────────────────────────────────────────────────────────────
+MAX_LAGS = 4    # maximum lag length considered in AIC/BIC search
+N_IRF    = 12   # number of quarters in structural IRF
+CI_LEVEL = 0.90
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  DATA
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def _build_panel() -> pd.DataFrame:
+    """
+    Build the residualized industry-quarter panel (ν^δ, ν^{LD}).
+
+    Loads raw shock rates from cache, attaches controls (aggregate productivity,
+    lagged market tightness, lagged industry VA growth), and residualizes each
+    series within industry.  Residualization is performed in-process from the
+    read-only cache parquets to avoid NTFS-mount corruption of any previously
+    written instrument files.
+
+    Returns a DataFrame with columns:
+      industry_code, quarter_label, industry_label,
+      log_g_delta, log_g_ld,    -- raw log shock rates
+      nu_delta, nu_ld            -- residualized series (ν^k)
+    """
+    # ── check inputs ──────────────────────────────────────────────────────────
+    for p in [SHOCK_RATES_PATH, SHOCK_RATES_LD_PATH]:
+        if not p.exists():
+            sys.exit(f"Missing shock rate file: {p}\nRun part2_shock_rates.py first.")
+
+    required_caches = [
+        DEFAULT_CACHE_DIR / "ophnfb_quarterly.parquet",
+        DEFAULT_CACHE_DIR / "national_tightness_quarterly.parquet",
+        DEFAULT_CACHE_DIR / "bea_va_quarterly_12ind.parquet",
+    ]
+    missing = [p for p in required_caches if not p.exists()]
+    if missing:
+        msg = "\n".join(f"  {p}" for p in missing)
+        sys.exit(f"Missing cache files:\n{msg}\n"
+                 "Run part2b_shock_comovement.py with FRED_API_KEY set first.")
+
+    # ── raw shock rates: average LOO rates across states ──────────────────────
+    def _nat_avg(path, col, new_col):
+        df = pd.read_parquet(path)
+        return (df.groupby(["industry_code", "quarter_label"])[col]
+                  .mean().reset_index().rename(columns={col: new_col}))
+
+    nat = (_nat_avg(SHOCK_RATES_PATH,    "g_delta_loo", "g_delta")
+           .merge(_nat_avg(SHOCK_RATES_LD_PATH, "g_ld_loo", "g_ld"),
+                  on=["industry_code", "quarter_label"], how="inner"))
+    nat = nat[(nat.g_delta > 0) & (nat.g_ld > 0)].copy()
+    nat["log_g_delta"]  = np.log(nat["g_delta"])
+    nat["log_g_ld"]     = np.log(nat["g_ld"])
+    nat["industry_code"] = nat["industry_code"].astype(int)
+
+    print(f"  Raw panel: {nat['quarter_label'].min()}–{nat['quarter_label'].max()}, "
+          f"{nat['industry_code'].nunique()} industries, {len(nat):,} obs")
+
+    # ── attach controls ───────────────────────────────────────────────────────
+    # Aggregate productivity growth: Δlog p_t
+    prod = pd.read_parquet(DEFAULT_CACHE_DIR / "ophnfb_quarterly.parquet")
+    prod = prod.sort_values("quarter_label").reset_index(drop=True)
+    prod["dlog_p"] = np.log(prod["productivity"]).diff()
+
+    # Lagged market tightness: log θ_{t-1}
+    tight = pd.read_parquet(DEFAULT_CACHE_DIR / "national_tightness_quarterly.parquet")
+    tight = tight.sort_values("quarter_label").reset_index(drop=True)
+    tight["log_theta_lag"] = tight["log_theta"].shift(1)
+
+    # Lagged industry VA growth: Δlog VA_{j,t-1}
+    bea = pd.read_parquet(DEFAULT_CACHE_DIR / "bea_va_quarterly_12ind.parquet")
+    bea = bea.sort_values(["industry_code", "quarter_label"]).reset_index(drop=True)
+    bea["dlog_va_lag"] = bea.groupby("industry_code")["dlog_va"].shift(1)
+    bea_lag = bea[["industry_code", "quarter_label", "dlog_va_lag"]].dropna().copy()
+    bea_lag["industry_code"] = bea_lag["industry_code"].astype(int)
+
+    nat = (nat
+           .merge(prod[["quarter_label", "dlog_p"]].dropna(),
+                  on="quarter_label", how="inner")
+           .merge(tight[["quarter_label", "log_theta_lag"]].dropna(),
+                  on="quarter_label", how="inner")
+           .merge(bea_lag, on=["industry_code", "quarter_label"], how="inner"))
+    nat = nat.dropna().sort_values(["industry_code", "quarter_label"]).reset_index(drop=True)
+
+    print(f"  After controls: {nat['quarter_label'].min()}–{nat['quarter_label'].max()}, "
+          f"{nat['industry_code'].nunique()} industries, {len(nat):,} obs")
+
+    # ── within-industry residualization ───────────────────────────────────────
+    # Project log g^k on industry FEs + controls; retain residuals ν^k.
+    # Estimator: demean within industry, then OLS on demeaned regressors.
+    def _residualize(df, dep_col, resid_col, reg_cols):
+        """
+        Estimates (dep - mean_j(dep)) = Σ_k γ_k (reg_k - mean_j(reg_k)) + ν
+        Returns df with resid_col added.
+        """
+        work = df[["industry_code", dep_col, *reg_cols]].copy().reset_index(drop=True)
+        work["y_dm"] = (work[dep_col]
+                        - work.groupby("industry_code")[dep_col].transform("mean"))
+        dm_cols = []
+        for rc in reg_cols:
+            dc = f"_dm_{rc}"
+            work[dc] = work[rc] - work.groupby("industry_code")[rc].transform("mean")
+            dm_cols.append(dc)
+        X      = work[dm_cols].to_numpy()
+        y      = work["y_dm"].to_numpy()
+        gammas = np.linalg.lstsq(X, y, rcond=None)[0]
+        resid  = y - X @ gammas
+        r2     = 1 - (resid ** 2).sum() / max((y ** 2).sum(), 1e-12)
+        coef_str = "  ".join(f"{rc}={g:+.4f}" for rc, g in zip(reg_cols, gammas))
+        print(f"    {resid_col:<12}  {coef_str}   R²={r2:.4f}")
+        out = df.copy()
+        out[resid_col] = resid
+        return out
+
+    print("\n  Residualizing:")
+    # δ: productivity + industry demand; LD: add tightness (quits respond to θ)
+    nat = _residualize(nat, "log_g_delta", "nu_delta",
+                       ("dlog_p", "dlog_va_lag"))
+    nat = _residualize(nat, "log_g_ld",    "nu_ld",
+                       ("dlog_p", "dlog_va_lag", "log_theta_lag"))
+
+    nat["industry_label"] = nat["industry_code"].map(INDUSTRY_LABELS)
+
+    r_raw   = nat["log_g_delta"].corr(nat["log_g_ld"])
+    r_resid = nat["nu_delta"].corr(nat["nu_ld"])
+    print(f"\n  r(δ, LD): raw={r_raw:+.3f}  →  residualized={r_resid:+.3f}")
+
+    return nat
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  VAR ESTIMATOR
+#  Two-way within transformation absorbs industry + time FEs, then OLS
+#  equation by equation.  Numerically equivalent to absorbing FEs via
+#  Frisch-Waugh-Lovell.
+#
+#  Bias note: Nickell (1981) bias is O(1/T).  With T ≈ 65 quarters, bias ≈
+#  1.5% — small relative to economic magnitudes; no Kiviet correction applied.
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def _two_way_demean(df, series_cols,
+                    ind_col="industry_code", time_col="quarter_label"):
+    """
+    Standard two-way within transformation: subtract industry means, time
+    means, and add back the grand mean.  Returns df with demeaned series.
+    """
+    out = df.copy()
+    grand      = {c: df[c].mean() for c in series_cols}
+    ind_means  = df.groupby(ind_col)[series_cols].transform("mean")
+    time_means = df.groupby(time_col)[series_cols].transform("mean")
+    for c in series_cols:
+        out[c] = df[c] - ind_means[c] - time_means[c] + grand[c]
+    return out
+
+
+def _build_var_data(df, y_cols, n_lags,
+                    ind_col="industry_code", time_col="quarter_label"):
+    """
+    Stack the VAR regression matrices across industries.
+
+    For each industry j with T_j observations, creates rows t = n_lags,...,T_j-1:
+      Y[t] = y_{j,t}                          (K-vector, contemporaneous)
+      X[t] = [y_{j,t-1}', ..., y_{j,t-L}']   (K*L-vector, lagged block)
+
+    Returns:
+      Y    : (N, K) array of contemporaneous observations
+      X    : (N, K*L) array of stacked lags
+      meta : DataFrame aligning each row to (industry_code, quarter_label)
+    """
+    K = len(y_cols)
+    Y_list, X_list, meta_list = [], [], []
+    for ind, grp in df.groupby(ind_col):
+        grp  = grp.sort_values(time_col).reset_index(drop=True)
+        vals = grp[y_cols].to_numpy()   # T_j × K
+        for t in range(n_lags, len(grp)):
+            X_list.append(np.concatenate([vals[t - l] for l in range(1, n_lags + 1)]))
+            Y_list.append(vals[t])
+            meta_list.append({ind_col: ind, time_col: grp[time_col].iloc[t]})
+    return np.array(Y_list), np.array(X_list), pd.DataFrame(meta_list)
+
+
+def _estimate_var(df, y_cols, n_lags,
+                  ind_col="industry_code", time_col="quarter_label"):
+    """
+    Estimate panel VAR(n_lags) by two-way within OLS.
+
+    Returns:
+      A_list : [A_1, ..., A_L], each K×K; A_l[i,j] = response of i to lag-l of j
+      Sigma  : K×K innovation covariance (df-corrected)
+      meta   : row-alignment DataFrame
+      resid  : (N, K) OLS residuals
+      Y_dm   : (N, K) demeaned LHS
+    """
+    K     = len(y_cols)
+    df_dm = _two_way_demean(df, y_cols, ind_col=ind_col, time_col=time_col)
+    Y_dm, X_dm, meta = _build_var_data(df_dm, y_cols, n_lags, ind_col, time_col)
+    N     = len(Y_dm)
+
+    # Equation-by-equation OLS: lstsq returns (K*L × K); transpose to (K × K*L)
+    B = np.linalg.lstsq(X_dm, Y_dm, rcond=None)[0].T
+    resid = Y_dm - X_dm @ B.T   # (N, K)
+
+    # Unbiased Σ: degrees of freedom = N - K*L params per equation
+    Sigma = (resid.T @ resid) / (N - K * n_lags)
+
+    # Extract A_l: B[:, l*K:(l+1)*K] for l = 0,...,L-1
+    A_list = [B[:, l * K : (l + 1) * K] for l in range(n_lags)]
+
+    return A_list, Sigma, meta, resid, Y_dm
+
+
+def _aic_bic(Sigma, N, K, n_lags):
+    """
+    Multivariate AIC and BIC based on log|Σ|.
+
+    AIC = log|Σ| + 2 * K^2 * L / N
+    BIC = log|Σ| + log(N) * K^2 * L / N
+    FEs are concentrated out and not penalized.
+    """
+    log_det = np.log(np.linalg.det(Sigma))
+    n_free  = K ** 2 * n_lags
+    return (log_det + 2 * n_free / N,
+            log_det + np.log(N) * n_free / N)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  STRUCTURAL IRFs
+#  Cholesky identification with δ ordered first.  IRFs computed via companion-
+#  form recursion; bootstrap CIs via residual resampling.
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def _companion_matrix(A_list, K):
+    """
+    Build (K*L × K*L) companion matrix from [A_1,...,A_L].
+
+    Top K rows: [A_1 | A_2 | ... | A_L]
+    Lower rows: shift identity [I_{K*(L-1)} | 0]
+    """
+    L, KL = len(A_list), K * len(A_list)
+    comp  = np.zeros((KL, KL))
+    for l, Al in enumerate(A_list):
+        comp[:K, l * K : (l + 1) * K] = Al
+    if L > 1:
+        comp[K:, : K * (L - 1)] = np.eye(K * (L - 1))
+    return comp
+
+
+def _compute_structural_irfs(A_list, P, K, n_irf):
+    """
+    Structural IRFs via companion-form recursion.
+
+    For each structural shock i (Cholesky column i, 1-SD impulse):
+      · Initialize state = [P[:,i], 0,...,0] in companion space.
+      · Iterate Y_{h+1} = A_comp Y_h for h = 0,...,n_irf.
+      · Extract first K elements at each horizon.
+
+    Returns dict: key = '{shock}_to_{series}', value = (n_irf+1,) array.
+    Shock ordering: delta (i=0), ld (i=1), matching y_cols = [nu_delta, nu_ld].
+    """
+    comp   = _companion_matrix(A_list, K)
+    KL     = comp.shape[0]
+    labels = ["delta", "ld"]
+    irfs   = {}
+
+    for i, shock in enumerate(labels):
+        state             = np.zeros(KL)
+        state[:K]         = P[:, i]                  # Cholesky column i
+        responses         = np.zeros((n_irf + 1, K))
+        responses[0]      = state[:K]                # h=0: contemporaneous
+        for h in range(1, n_irf + 1):
+            state        = comp @ state
+            responses[h] = state[:K]
+        for j, series in enumerate(labels):
+            irfs[f"{shock}_to_{series}"] = responses[:, j]
+
+    return irfs
+
+
+def _bootstrap_irfs(df, y_cols, n_lags, K, n_irf, B=500, seed=42):
+    """
+    Residual bootstrap for VAR structural IRF confidence bands.
+
+    Each replication: draw N residuals with replacement, add to fitted values,
+    re-estimate VAR + Cholesky, record IRFs.  Returns (ci_lo, ci_hi) dicts.
+    """
+    rng = np.random.default_rng(seed)
+    A0, S0, meta0, res0, Ydm0 = _estimate_var(df, y_cols, n_lags)
+    Y_hat = Ydm0 - res0
+    N0    = len(res0)
+
+    irf_boots = {k: [] for k in _compute_structural_irfs(A0, np.linalg.cholesky(S0), K, n_irf)}
+
+    for _ in range(B):
+        idx    = rng.integers(0, N0, size=N0)
+        Y_b    = Y_hat + res0[idx]
+        df_b   = df.copy()
+        tmp    = meta0.copy()
+        tmp[y_cols[0] + "_b"] = Y_b[:, 0]
+        tmp[y_cols[1] + "_b"] = Y_b[:, 1]
+        df_b   = df_b.merge(tmp, on=["industry_code", "quarter_label"], how="left")
+        mask   = df_b[y_cols[0] + "_b"].notna()
+        for j, c in enumerate(y_cols):
+            df_b.loc[mask, c] = df_b.loc[mask, c + "_b"]
+        df_b   = df_b.drop(columns=[c + "_b" for c in y_cols])
+        try:
+            Ab, Sb, _, _, _ = _estimate_var(df_b, y_cols, n_lags)
+            irfs_b = _compute_structural_irfs(Ab, np.linalg.cholesky(Sb), K, n_irf)
+            for k in irf_boots:
+                irf_boots[k].append(irfs_b[k])
+        except (np.linalg.LinAlgError, ValueError):
+            continue
+
+    alpha = (1 - CI_LEVEL) / 2
+    ci_lo = {k: np.quantile(np.array(v), alpha,     axis=0) for k, v in irf_boots.items() if v}
+    ci_hi = {k: np.quantile(np.array(v), 1 - alpha, axis=0) for k, v in irf_boots.items() if v}
+    return ci_lo, ci_hi
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  OUTPUT
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def _save_output(A_list, Sigma, P, irfs_point, ci_lo, ci_hi,
+                 n_ind, t_span, N_est, selected_lags):
+    """Save IRF plot and calibration CSV; print summary."""
+    K  = 2
+    A1 = A_list[0]
+
+    rho_delta  = A1[0, 0]
+    rho_ld     = A1[1, 1]
+    beta_endex = A1[1, 0]
+    alpha_rev  = A1[0, 1]
+    corr_innov = Sigma[0, 1] / np.sqrt(Sigma[0, 0] * Sigma[1, 1])
+    cum_delta  = irfs_point["delta_to_delta"].sum()
+    cum_ld     = irfs_point["ld_to_ld"].sum()
+    HORIZONS   = list(range(N_IRF + 1))
+
+    # ── IRF plot ──────────────────────────────────────────────────────────────
+    fig, axes = plt.subplots(2, 2, figsize=(10, 7))
+    fig.suptitle(
+        "Bivariate Panel VAR: Structural IRFs on Shock Series\n"
+        f"(VAR({selected_lags}), residualized ν, industry+time FEs, "
+        f"{int(CI_LEVEL*100)}% bootstrap CIs)",
+        fontsize=11
+    )
+    panel_info = [
+        (0, 0, "delta_to_delta", "ε^δ shock",   "ν^δ (est. closings)",  "#1f77b4"),
+        (0, 1, "delta_to_ld",    "ε^δ shock",   "ν^{LD} (layoffs)",     "#d62728"),
+        (1, 0, "ld_to_delta",    "ε^{LD} shock", "ν^δ (est. closings)", "#1f77b4"),
+        (1, 1, "ld_to_ld",       "ε^{LD} shock", "ν^{LD} (layoffs)",    "#d62728"),
+    ]
+    for row, col, key, shock_lbl, resp_lbl, color in panel_info:
+        ax = axes[row, col]
+        pt = irfs_point[key]
+        lo = ci_lo.get(key, pt)
+        hi = ci_hi.get(key, pt)
+        ax.fill_between(HORIZONS, lo, hi, alpha=0.20, color=color,
+                        label=f"{int(CI_LEVEL*100)}% CI")
+        ax.plot(HORIZONS, pt, color=color, lw=2, label="Point estimate")
+        ax.axhline(0, color="black", lw=0.8, ls="--")
+        ax.set_title(f"Response of {resp_lbl}\nto 1-SD {shock_lbl}", fontsize=9)
+        ax.set_xlabel("Quarters", fontsize=8)
+        ax.set_ylabel("Log rate response", fontsize=8)
+        ax.tick_params(labelsize=8)
+        ax.legend(fontsize=7)
+    plt.tight_layout()
+    p_irf = RESULTS_DIR / "var_irf_chol.png"
+    fig.savefig(p_irf, dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    print(f"  IRF plot saved: {p_irf}")
+
+    # ── calibration CSV ───────────────────────────────────────────────────────
+    P_inv = np.linalg.inv(P)
+    calib = pd.DataFrame([
+        {"Parameter": "rho_delta_lag1",  "Value": round(rho_delta, 4),
+         "Interpretation": "Own-persistence of δ at lag 1 (≈ AR(1) rho_δ)"},
+        {"Parameter": "rho_ld_lag1",     "Value": round(rho_ld, 4),
+         "Interpretation": "Own-persistence of LD at lag 1 (≈ AR(1) rho_s)"},
+        {"Parameter": "beta_endex",      "Value": round(beta_endex, 4),
+         "Interpretation": "LD response to 1-lag δ (endogenous exit channel)"},
+        {"Parameter": "alpha_reverse",   "Value": round(alpha_rev, 4),
+         "Interpretation": "δ response to 1-lag LD (should be ~0 if δ is primitive)"},
+        {"Parameter": "corr_innov",      "Value": round(corr_innov, 4),
+         "Interpretation": "Corr(u^δ, u^LD) — reduced-form innovation correlation"},
+        {"Parameter": "corr_structural",
+         "Value": round(P_inv[0, :] @ P[:, 1]
+                        / np.sqrt(P_inv[0, :] @ P_inv[0, :].T), 4),
+         "Interpretation": "Cross-shock correlation after Cholesky (0 by construction)"},
+        {"Parameter": "sd_innov_delta",  "Value": round(np.sqrt(Sigma[0, 0]), 4),
+         "Interpretation": "SD of reduced-form δ innovation"},
+        {"Parameter": "sd_innov_ld",     "Value": round(np.sqrt(Sigma[1, 1]), 4),
+         "Interpretation": "SD of reduced-form LD innovation"},
+        {"Parameter": "sd_struct_delta", "Value": round(P[0, 0], 4),
+         "Interpretation": "SD of structural δ shock (Cholesky)"},
+        {"Parameter": "sd_struct_ld",    "Value": round(P[1, 1], 4),
+         "Interpretation": "SD of structural LD shock (Cholesky, orth. component)"},
+        {"Parameter": "cum_irf_delta",   "Value": round(cum_delta, 4),
+         "Interpretation": "Cumulative ε^δ → ν^δ IRF (h=0..12) — total persistence"},
+        {"Parameter": "cum_irf_ld",      "Value": round(cum_ld, 4),
+         "Interpretation": "Cumulative ε^LD → ν^LD IRF (h=0..12) — total persistence"},
+        {"Parameter": "selected_lags",   "Value": selected_lags,
+         "Interpretation": "Lag length selected by AIC/BIC"},
+        {"Parameter": "N_obs",           "Value": N_est,
+         "Interpretation": "Estimation sample size (industry-quarter obs)"},
+        {"Parameter": "N_industries",    "Value": n_ind,
+         "Interpretation": "Number of industries"},
+        {"Parameter": "sample_span",     "Value": t_span,
+         "Interpretation": "Residualized panel sample"},
+    ])
+    p_calib = RESULTS_DIR / "var_calibration.csv"
+    calib.to_csv(p_calib, index=False)
+    print(f"  Calibration table saved: {p_calib}")
+
+    # ── console summary ───────────────────────────────────────────────────────
+    print(f"\n  {'='*60}")
+    print(f"  CALIBRATION SUMMARY")
+    print(f"  {'='*60}")
+    print(f"  Companion matrix A_1  (2×2):")
+    print(f"                  lag δ        lag LD")
+    print(f"    δ  equation:  {A1[0,0]:+.4f}       {A1[0,1]:+.4f}")
+    print(f"    LD equation:  {A1[1,0]:+.4f}       {A1[1,1]:+.4f}")
+    print(f"\n  ρ_δ  = {rho_delta:+.4f}  (model default: 0.617 from part6)")
+    print(f"  ρ_LD = {rho_ld:+.4f}  (model default: 0.751 from part6)")
+    print(f"  β (endogenous exit, LD←δ lag-1)  = {beta_endex:+.4f}")
+    print(f"  α (reverse,        δ←LD lag-1)   = {alpha_rev:+.4f}")
+    print(f"  corr(u^δ, u^LD) = {corr_innov:+.4f}")
+    print(f"\n  Cholesky factor P:")
+    print(f"    [[{P[0,0]:.4f},  0      ],")
+    print(f"     [{P[1,0]:.4f}, {P[1,1]:.4f}]]")
+
+    ratio = abs(beta_endex) / max(abs(alpha_rev), 1e-6)
+    print(f"\n  INTERPRETATION:")
+    if ratio > 1.5:
+        print(f"  ✓ β ({beta_endex:+.4f}) > α ({alpha_rev:+.4f}), ratio={ratio:.1f}×.")
+        print("    δ → LD cross-persistence exceeds LD → δ reverse.")
+        print("    Consistent with δ as primitive shock (endogenous exit mechanism).")
+        print("    See part2c LP Granger results for stronger horizon-by-horizon evidence.")
+    else:
+        print(f"  ! β ({beta_endex:+.4f}) ≈ α ({alpha_rev:+.4f}), ratio={ratio:.1f}×.")
+        print("    VAR alone does not establish clear causal ordering at lag 1.")
+        print("    Refer to part2c LP Granger results.")
+
+    if abs(rho_delta - 0.617) > 0.10:
+        print(f"\n  Note: ρ_δ={rho_delta:.3f} vs part6 aggregate (0.617). Difference is")
+        print("  expected: time FEs absorb aggregate cycles; within-estimator reflects")
+        print("  industry-specific variation only.")
+
+    print(f"\n  Output: {p_irf}")
+    print(f"          {p_calib}")
+    print(f"          {RESULTS_DIR / 'var_lag_selection.csv'}")
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  MAIN
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def main():
+    print("=" * 65)
+    print("Part 2d  --  Bivariate Panel VAR Calibration")
+    print("=" * 65)
+
+    # ── 1. Panel ──────────────────────────────────────────────────────────────
+    print("\n--- Section 1: Build residualized panel ---")
+    nat = _build_panel()
+    n_ind  = nat["industry_code"].nunique()
+    t_span = f"{nat['quarter_label'].min()}–{nat['quarter_label'].max()}"
+    K      = 2
+    y_cols = ["nu_delta", "nu_ld"]
+
+    # ── 2. Lag selection ──────────────────────────────────────────────────────
+    print("\n--- Section 2: Lag selection (AIC / BIC) ---")
+    lag_sel = []
+    for L in range(1, MAX_LAGS + 1):
+        A_list, Sigma, _, _, Y_dm = _estimate_var(nat, y_cols, L)
+        N   = len(Y_dm)
+        aic, bic = _aic_bic(Sigma, N, K, L)
+        lag_sel.append({"L": L, "N": N, "AIC": aic, "BIC": bic})
+        print(f"  L={L}  N={N}  AIC={aic:.5f}  BIC={bic:.5f}")
+
+    lag_df = pd.DataFrame(lag_sel)
+    lag_df.to_csv(RESULTS_DIR / "var_lag_selection.csv", index=False)
+
+    best_aic = int(lag_df.loc[lag_df["AIC"].idxmin(), "L"])
+    best_bic = int(lag_df.loc[lag_df["BIC"].idxmin(), "L"])
+    # Disagrement → fall back to L=1 for parsimony and interpretability
+    selected_lags = best_aic if best_aic == best_bic else 1
+    print(f"\n  AIC best: L={best_aic}  |  BIC best: L={best_bic}"
+          f"  →  selected: L={selected_lags}"
+          + ("" if best_aic == best_bic else "  (disagree → L=1 for parsimony)"))
+
+    # ── 3. Main VAR estimation ────────────────────────────────────────────────
+    print(f"\n--- Section 3: VAR({selected_lags}) estimation ---")
+    A_list, Sigma, _, _, Y_dm = _estimate_var(nat, y_cols, selected_lags)
+    N_est = len(Y_dm)
+    P     = np.linalg.cholesky(Sigma)
+
+    corr_innov = Sigma[0, 1] / np.sqrt(Sigma[0, 0] * Sigma[1, 1])
+    print(f"  N={N_est}  Var(u^δ)={Sigma[0,0]:.6f}  Var(u^LD)={Sigma[1,1]:.6f}"
+          f"  Corr(u^δ,u^LD)={corr_innov:+.4f}")
+
+    # ── 4. Structural IRFs ────────────────────────────────────────────────────
+    print("\n--- Section 4: Structural IRFs and bootstrap CIs ---")
+    irfs_point = _compute_structural_irfs(A_list, P, K, N_IRF)
+
+    print(f"  {'Horizon':<8}  {'ε^δ→δ':>10}  {'ε^δ→LD':>10}"
+          f"  {'ε^LD→δ':>10}  {'ε^LD→LD':>10}")
+    for h in range(N_IRF + 1):
+        print(f"  h={h:<6}  "
+              f"{irfs_point['delta_to_delta'][h]:>10.4f}  "
+              f"{irfs_point['delta_to_ld'][h]:>10.4f}  "
+              f"{irfs_point['ld_to_delta'][h]:>10.4f}  "
+              f"{irfs_point['ld_to_ld'][h]:>10.4f}")
+
+    print(f"\n  Bootstrap CIs ({int(CI_LEVEL*100)}%, B=500)...")
+    ci_lo, ci_hi = _bootstrap_irfs(nat, y_cols, selected_lags, K, N_IRF, B=500)
+    print("  Bootstrap complete.")
+
+    # ── 5. Output ─────────────────────────────────────────────────────────────
+    print("\n--- Section 5: Output ---")
+    _save_output(A_list, Sigma, P, irfs_point, ci_lo, ci_hi,
+                 n_ind, t_span, N_est, selected_lags)
+
+    print("\nDone.")
+
+
+if __name__ == "__main__":
+    main()

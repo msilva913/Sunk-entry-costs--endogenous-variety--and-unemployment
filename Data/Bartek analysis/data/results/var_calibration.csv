@@ -1,0 +1,17 @@
+Parameter,Value,Interpretation
+rho_delta_lag1,0.6004,Own-persistence of δ at lag 1 (≈ AR(1) rho_δ)
+rho_ld_lag1,0.5096,Own-persistence of LD at lag 1 (≈ AR(1) rho_s)
+beta_endex,0.2279,LD response to 1-lag δ (endogenous exit channel)
+alpha_reverse,0.1322,δ response to 1-lag LD (should be ~0 if δ is primitive)
+corr_innov,0.2289,"Corr(u^δ, u^LD) — reduced-form innovation correlation"
+corr_structural,0.0,Cross-shock correlation after Cholesky (0 by construction)
+sd_innov_delta,0.0912,SD of reduced-form δ innovation
+sd_innov_ld,0.1504,SD of reduced-form LD innovation
+sd_struct_delta,0.0912,SD of structural δ shock (Cholesky)
+sd_struct_ld,0.1464,"SD of structural LD shock (Cholesky, orth. component)"
+cum_irf_delta,0.2924,Cumulative ε^δ → ν^δ IRF (h=0..12) — total persistence
+cum_irf_ld,0.349,Cumulative ε^LD → ν^LD IRF (h=0..12) — total persistence
+selected_lags,1,Lag length selected by AIC/BIC
+N_obs,780,Estimation sample size (industry-quarter obs)
+N_industries,12,Number of industries
+sample_span,2005Q3–2021Q4,Residualized panel sample
