@@ -508,10 +508,10 @@ for row_i, (y_raw, x_raw, y_res, x_res, y_lbl, x_lbl, title) in enumerate(PAIRS)
             ax.scatter(hs[sig_mask.values], vals[sig_mask.values],
                        color=color, s=55, zorder=5)
 
-        ax.set_title(f"{title}\n[{tag}]", fontsize=9, fontweight="bold")
-        ax.set_xlabel("Horizon h (quarters)", fontsize=8)
+        ax.set_title(f"{title}\n[{tag}]", fontsize=11, fontweight="bold")
+        ax.set_xlabel("Horizon h (quarters)", fontsize=11)
         ax.set_ylabel("Response in log shock rate\n(1-SD impulse in X_{t-1})",
-                      fontsize=7)
+                      fontsize=11)
         ax.grid(axis="y", linewidth=0.4, alpha=0.4)
         ax.set_xticks(range(0, max(HORIZONS)+1, 2))
 
@@ -520,7 +520,7 @@ fig.suptitle(
     f"|  L={N_LAGS} own+cross lags  |  Industry + time FEs\n"
     "Filled markers = significant at 10%  |  "
     "Preferred spec conditions on Δlog p, Δlog VA lag, log θ lag",
-    fontsize=10, y=1.01,
+    fontsize=12, y=1.01,
 )
 fig.tight_layout()
 p = RESULTS_DIR / "granger_lp_irf_grid.png"
