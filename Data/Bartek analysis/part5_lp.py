@@ -89,7 +89,14 @@ QU_RESID_INSTR_FILE    = INSTR_DIR / f"qu_instrument_resid_base{BASE_YEAR}.csv"
 LAUS_FILE              = INSTR_DIR / "laus_quarterly.parquet"
 NFCI_FILE              = Path("data/cache") / "nfci_quarterly.parquet"
 
-
+# Initialize joint IRF outputs -- set to None until computed
+irf_delta_joint_u = None
+irf_ld_joint_u    = None
+irf_qu_joint_u    = None
+irf_delta_joint_v = None
+irf_ld_joint_v    = None
+irf_qu_joint_v    = None
+joint_panel       = None
 # ---------------------------------------------------------------------------
 # Quarter arithmetic
 # ---------------------------------------------------------------------------
@@ -188,6 +195,56 @@ def build_panel(instr: pd.DataFrame, instr_col: str,
           f"{panel['quarter_label'].nunique()} quarters = {len(panel):,} rows")
     return panel
 
+def build_joint_panel(instr_delta: pd.DataFrame,
+                      instr_ld:    pd.DataFrame,
+                      instr_qu:    pd.DataFrame,
+                      outcomes:    pd.DataFrame) -> pd.DataFrame:
+    """
+    Merge all three residualized instruments into a single panel for
+    the joint LP specification:
+
+        Δy_{s,t+h} = a_s + a_t + β^δ B~^δ + β^LD B~^LD + β^QU B~^QU + ε
+
+    The three instrument columns (bartik_delta, bartik_ld, bartik_qu)
+    are all present in the returned panel alongside the outcome and
+    control variables.
+
+    Uses the intersection of quarters covered by all three instruments
+    (effectively 2005Q3 onward given BEA VA sample constraint).
+    """
+    # Build each single-instrument panel using existing function
+    p_d  = build_panel(instr_delta, "bartik_delta", outcomes)
+    p_ld = build_panel(instr_ld,    "bartik_ld",    outcomes)
+    p_qu = build_panel(instr_qu,    "bartik_qu",    outcomes)
+
+    # Keep only the instrument column from ld and qu panels
+    # (all other columns — outcomes, lags, controls — come from p_d)
+    p_ld_slim = p_ld[["state_fips", "quarter_label", "bartik_ld"]]
+    p_qu_slim = p_qu[["state_fips", "quarter_label", "bartik_qu"]]
+
+    panel = (p_d
+             .merge(p_ld_slim, on=["state_fips", "quarter_label"], how="inner")
+             .merge(p_qu_slim, on=["state_fips", "quarter_label"], how="inner"))
+
+    # Scale instruments to pp (build_panel already scales bartik_delta;
+    # need to apply same scaling to ld and qu)
+    panel["bartik_ld"] = panel["bartik_ld"] * 100
+    panel["bartik_qu"] = panel["bartik_qu"] * 100
+
+    print(f"  Joint panel: {panel['state_fips'].nunique()} states x "
+          f"{panel['quarter_label'].nunique()} quarters = {len(panel):,} rows")
+    print(f"  Quarter range: {panel['quarter_label'].min()} - "
+          f"{panel['quarter_label'].max()}")
+
+    # Report pairwise correlations of instruments within panel
+    r_dld = panel["bartik_delta"].corr(panel["bartik_ld"])
+    r_dqu = panel["bartik_delta"].corr(panel["bartik_qu"])
+    r_ldqu = panel["bartik_ld"].corr(panel["bartik_qu"])
+    print(f"  In-sample instrument correlations:")
+    print(f"    r(δ, LD) = {r_dld:+.4f}   "
+          f"r(δ, QU) = {r_dqu:+.4f}   "
+          f"r(LD, QU) = {r_ldqu:+.4f}")
+    return panel
 
 def attach_nfci_interaction(panel: pd.DataFrame, nfci: pd.DataFrame,
                             instr_col: str) -> pd.DataFrame:
@@ -294,7 +351,130 @@ def run_lp_horizon(base_panel, h, shock_col,
         })
     return row
 
+def run_lp_horizon_joint(base_panel, h, outcome="unemp"):
+    """
+    Estimate the joint LP at horizon h with all three instruments
+    simultaneously:
 
+        Δy_{s,t+h} = a_s + a_t + β^δ B~^δ + β^LD B~^LD + β^QU B~^QU
+                     + γ_1 y_{s,t-1} + γ_2 log(LF_{s,t-1}) + ε
+
+    Returns a dict keyed by shock name, each containing the coefficient
+    and inference for that shock at this horizon.
+    """
+    df = base_panel.copy()
+    df["future_ql"] = quarter_shift(df["quarter_label"], h)
+
+    if outcome == "unemp":
+        lookup = (df[["state_fips", "quarter_label", "unemp_rate"]]
+                  .rename(columns={"quarter_label": "future_ql",
+                                   "unemp_rate": "y_future"}))
+        df = df.merge(lookup, on=["state_fips", "future_ql"], how="left")
+        if MAX_OUTCOME_QUARTER:
+            df = df[df["future_ql"] <= MAX_OUTCOME_QUARTER].copy()
+        df["dep_var"] = df["y_future"] - df["unemp_lag1"]
+        lag_control   = "unemp_lag1"
+
+    else:  # vacancy
+        if "vac_rate" not in df.columns:
+            return None
+        lookup = (df[["state_fips", "quarter_label", "vac_rate"]]
+                  .rename(columns={"quarter_label": "future_ql",
+                                   "vac_rate": "vac_future"}))
+        df = df.merge(lookup, on=["state_fips", "future_ql"], how="left")
+        if MAX_OUTCOME_QUARTER:
+            df = df[df["future_ql"] <= MAX_OUTCOME_QUARTER].copy()
+        df["dep_var"] = df["vac_future"] - df["vac_rate_lag1"]
+        lag_control   = "vac_rate_lag1"
+
+    shock_cols = ["bartik_delta", "bartik_ld", "bartik_qu"]
+    required   = ["dep_var", lag_control, "lf_log_lag1"] + shock_cols
+    df = df.dropna(subset=required).copy()
+
+    if len(df) < 100:
+        return None
+
+    state_dummies = pd.get_dummies(df["state_fips"],    prefix="st",
+                                   drop_first=True, dtype=float)
+    time_dummies  = pd.get_dummies(df["quarter_label"], prefix="qt",
+                                   drop_first=True, dtype=float)
+
+    core = shock_cols + [lag_control, "lf_log_lag1"]
+    X = sm.add_constant(
+        pd.concat([df[core], state_dummies, time_dummies], axis=1),
+        has_constant="add"
+    )
+    model = sm.OLS(df["dep_var"], X).fit(
+        cov_type="cluster",
+        cov_kwds={"groups": df["state_fips"].values}
+    )
+
+    results = {}
+    for sc in shock_cols:
+        beta  = float(model.params[sc])
+        se    = float(model.bse[sc])
+        tstat = float(model.tvalues[sc])
+        pval  = float(model.pvalues[sc])
+        results[sc] = {
+            "h": h, "beta": beta, "se": se, "tstat": tstat, "pval": pval,
+            "partial_f":  tstat**2,
+            "ci90_lo": beta - Z90*se, "ci90_hi": beta + Z90*se,
+            "ci95_lo": beta - Z95*se, "ci95_hi": beta + Z95*se,
+            "nobs": int(model.nobs), "r2": float(model.rsquared),
+            "n_clusters": df["state_fips"].nunique(),
+            "qt_range": f"{df['quarter_label'].min()}-{df['quarter_label'].max()}",
+            "outcome": outcome,
+        }
+    return results
+
+def run_lp_joint(panel, label, outcome="unemp"):
+    """
+    Run joint LP across all horizons. Returns three IRF DataFrames,
+    one per instrument, each already scaled to 1-SD units.
+    """
+    outcome_tag = "-> vacancy rate" if outcome == "vacancy" else "-> unemp rate"
+    print(f"\n  Joint LP: {label}  {outcome_tag}  h=0..{max(HORIZONS)}")
+    print(f"  {'h':>3}  {'β^δ':>9}  {'p':>6}  "
+          f"{'β^LD':>9}  {'p':>6}  "
+          f"{'β^QU':>9}  {'p':>6}  {'N':>6}")
+
+    rows_d, rows_ld, rows_qu = [], [], []
+
+    for h in HORIZONS:
+        res = run_lp_horizon_joint(panel, h, outcome=outcome)
+        if res is None:
+            continue
+
+        rows_d.append(res["bartik_delta"])
+        rows_ld.append(res["bartik_ld"])
+        rows_qu.append(res["bartik_qu"])
+
+        def _sig(p):
+            return "***" if p < .01 else "**" if p < .05 else "*" if p < .10 else ""
+
+        print(f"  {h:3d}  "
+              f"{res['bartik_delta']['beta']:9.4f}  "
+              f"{res['bartik_delta']['pval']:6.3f}{_sig(res['bartik_delta']['pval'])}  "
+              f"{res['bartik_ld']['beta']:9.4f}  "
+              f"{res['bartik_ld']['pval']:6.3f}{_sig(res['bartik_ld']['pval'])}  "
+              f"{res['bartik_qu']['beta']:9.4f}  "
+              f"{res['bartik_qu']['pval']:6.3f}{_sig(res['bartik_qu']['pval'])}  "
+              f"{res['bartik_delta']['nobs']:6d}")
+
+    def _to_irf(rows, shock_col):
+        irf = pd.DataFrame(rows)
+        if irf.empty:
+            return irf
+        sd = float(panel[shock_col].std())
+        for col in ["beta", "se", "ci90_lo", "ci90_hi", "ci95_lo", "ci95_hi"]:
+            irf[col] = irf[col] * sd
+        irf["instr_sd"] = sd
+        irf["outcome"]  = outcome
+        return irf
+
+    return (_to_irf(rows_d,  "bartik_delta"),
+            _to_irf(rows_ld, "bartik_ld"),
+            _to_irf(rows_qu, "bartik_qu"))
 # ---------------------------------------------------------------------------
 # LP estimation -- all horizons
 # ---------------------------------------------------------------------------
@@ -576,6 +756,30 @@ else:
     print("\n[4] Residualized instruments not found -- skipping.")
     print("    Run part2b_shock_comovement.py then part3_resid_instruments.py")
 
+print("\n[4b] Joint LP diagnostic")
+print(f"  resid_ok       = {resid_ok}")
+print(f"  vac_ok         = {vac_ok}")
+print(f"  DELTA_RESID exists = {DELTA_RESID_INSTR_FILE.exists()}")
+print(f"  LD_RESID exists    = {LD_RESID_INSTR_FILE.exists()}")
+print(f"  QU_RESID exists    = {QU_RESID_INSTR_FILE.exists()}")
+
+# ── Joint LP: unemployment outcome ────────────────────────────────────────
+if resid_ok:
+    print("\n[4b] Joint LP -- unemployment outcome")
+    try:
+        joint_panel = build_joint_panel(
+            load_resid(DELTA_RESID_INSTR_FILE),
+            load_resid(LD_RESID_INSTR_FILE),
+            load_resid(QU_RESID_INSTR_FILE),
+            outcomes
+        )
+        (irf_delta_joint_u,
+         irf_ld_joint_u,
+         irf_qu_joint_u) = run_lp_joint(joint_panel, "δ+LD+QU joint", outcome="unemp")
+    except Exception as e:
+        print(f"  ERROR in joint LP (unemp): {e}")
+        import traceback; traceback.print_exc()
+
 # ---------------------------------------------------------------------------
 # [5] Residualized vacancy LPs -- reuse panels built in [2]
 # ---------------------------------------------------------------------------
@@ -592,9 +796,26 @@ elif vac_ok and not resid_ok:
 else:
     print("\n[5] Vacancy LPs skipped -- vacancy data not available.")
 
+# ── Joint LP: vacancy outcome ──────────────────────────────────────────────
+if resid_ok and vac_ok and joint_panel is not None:
+    print("\n[5b] Joint LP -- vacancy outcome")
+    try:
+        joint_vac_results = run_lp_joint(
+            joint_panel, "δ+LD+QU joint", outcome="vacancy"
+        )
+        irf_delta_joint_v = joint_vac_results[0]
+        irf_ld_joint_v    = joint_vac_results[1]
+        irf_qu_joint_v    = joint_vac_results[2]
+        print(f"  Joint vacancy IRFs computed successfully.")
+        print(f"  irf_delta_joint_v: {len(irf_delta_joint_v)} horizons")
+        print(f"  irf_ld_joint_v:    {len(irf_ld_joint_v)} horizons")
+        print(f"  irf_qu_joint_v:    {len(irf_qu_joint_v)} horizons")
+    except Exception as e:
+        print(f"  ERROR in joint LP (vacancy): {e}")
+        import traceback; traceback.print_exc()
 # ---------------------------------------------------------------------------
 # [6] Save results
-# ---------------------------------------------------------------------------
+# --(-------------------------------------------------------------------------
 print("\n[6] Saving results")
 
 def _save(irf, fname):
@@ -619,6 +840,23 @@ if resid_ok and vac_ok:
     _save(irf_ld_vac,    "lp_irf_ld_vacancy.csv")
     _save(irf_qu_vac,    "lp_irf_qu_vacancy.csv")
 
+if (irf_delta_joint_u is not None and
+    irf_ld_joint_u    is not None and
+    irf_qu_joint_u    is not None):
+    _save(irf_delta_joint_u, "lp_irf_delta_joint_unemp.csv")
+    _save(irf_ld_joint_u,    "lp_irf_ld_joint_unemp.csv")
+    _save(irf_qu_joint_u,    "lp_irf_qu_joint_unemp.csv")
+else:
+    print("  Joint unemployment IRFs not available -- skipping save.")
+
+if (irf_delta_joint_v is not None and
+    irf_ld_joint_v    is not None and
+    irf_qu_joint_v    is not None):
+    _save(irf_delta_joint_v, "lp_irf_delta_joint_vacancy.csv")
+    _save(irf_ld_joint_v,    "lp_irf_ld_joint_vacancy.csv")
+    _save(irf_qu_joint_v,    "lp_irf_qu_joint_vacancy.csv")
+else:
+    print("  Joint vacancy IRFs not available -- skipping save.")
 # ---------------------------------------------------------------------------
 # [7] Plots
 # ---------------------------------------------------------------------------
@@ -677,6 +915,75 @@ if resid_ok and vac_ok:
         out_path = RESULTS_DIR / "lp_irf_beveridge_path.png",
     )
 
+if (irf_delta_joint_v is not None and
+    irf_ld_joint_v    is not None and
+    irf_qu_joint_v    is not None and
+    irf_delta_vac     is not None):
+    # Separate vs joint -- delta vacancy IRF
+    plot_irf(
+        {"δ separate": irf_delta_vac,
+         "δ joint":    irf_delta_joint_v},
+        RESULTS_DIR / "lp_irf_delta_separate_vs_joint_vacancy.png"
+    )
+    # Joint LP three-way overlay for vacancies
+    overlay_plot_irf(
+        {"δ (joint)":  irf_delta_joint_v,
+         "LD (joint)": irf_ld_joint_v,
+         "QU (joint)": irf_qu_joint_v},
+        out_path = RESULTS_DIR / "lp_irf_vacancy_joint_overlay.png",
+        title    = (r"Vacancy IRF: Joint LP  ($\delta$, LD, QU simultaneously)"
+                    "\n(residualized instruments, 1-SD scale, post-2005)"),
+        ylabel   = "pp change in vacancy rate per 1-SD shock",
+    )
+else:
+    print("  Joint vacancy plots skipped -- joint IRFs not available.")
+    print(f"  irf_delta_joint_v = {type(irf_delta_joint_v)}")
+    print(f"  irf_ld_joint_v    = {type(irf_ld_joint_v)}")
+    print(f"  irf_qu_joint_v    = {type(irf_qu_joint_v)}")
+
+# ── LD separate vs joint vacancy IRF ───────────────────────────────────────
+if (irf_ld_joint_v is not None and
+    hasattr(irf_ld_joint_v, "empty") and
+    not irf_ld_joint_v.empty and
+    irf_ld_vac is not None):
+    overlay_plot_irf(
+        {"LD separate (bivariate)":      irf_ld_vac,
+         "LD joint (controlling for δ)": irf_ld_joint_v},
+        out_path = RESULTS_DIR / "lp_irf_ld_separate_vs_joint_vacancy.png",
+        title    = ("Layoff shock: vacancy IRF before and after controlling for δ\n"
+                    "Separate LP conflates LD with firm destruction; "
+                    "joint LP isolates pure separation effect"),
+        ylabel   = "pp change in vacancy rate per 1-SD shock",
+    )
+else:
+    print(f"  LD separate vs joint plot skipped.")
+    print(f"  irf_ld_joint_v type: {type(irf_ld_joint_v)}")
+    print(f"  irf_ld_vac type:     {type(irf_ld_vac)}")
+
+# ── Three-way comparison ────────────────────────────────────────────────────
+if (irf_delta_joint_v is not None and
+    hasattr(irf_delta_joint_v, "empty") and
+    not irf_delta_joint_v.empty and
+    irf_ld_joint_v is not None and
+    hasattr(irf_ld_joint_v, "empty") and
+    not irf_ld_joint_v.empty and
+    irf_ld_vac is not None):
+    overlay_plot_irf(
+        {"δ (joint)":                    irf_delta_joint_v,
+         "LD separate (bivariate)":      irf_ld_vac,
+         "LD joint (controlling for δ)": irf_ld_joint_v},
+        out_path = RESULTS_DIR / "lp_irf_identification_decomp_vacancy.png",
+        title    = (r"Vacancy IRF: identifying the $\delta$ vs LD distinction"
+                    "\n"
+                    r"LD separate conflates firm destruction; "
+                    r"LD joint isolates pure separation shock"),
+        ylabel   = "pp change in vacancy rate per 1-SD shock",
+    )
+else:
+    print(f"  Three-way plot skipped.")
+    print(f"  irf_delta_joint_v type: {type(irf_delta_joint_v)}")
+    print(f"  irf_ld_joint_v type:    {type(irf_ld_joint_v)}")
+    print(f"  irf_ld_vac type:        {type(irf_ld_vac)}")
 # ---------------------------------------------------------------------------
 # [8] Summary table
 # ---------------------------------------------------------------------------

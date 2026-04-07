@@ -306,35 +306,101 @@ def _build_tightness_from_local() -> pd.DataFrame:
 #  SECTION 2: RESIDUALIZATION
 # ═══════════════════════════════════════════════════════════════════════════════
 
-def _residualize(df, dep_col, resid_col, reg_cols):
+def _residualize(df, dep_col, resid_col, reg_cols, heterogeneous_slopes=True):
     """
-    Within-industry OLS of dep_col on industry FEs + reg_cols.
-    Slopes are homogeneous across industries (pooled within estimator).
+    Residualize dep_col on industry FEs + reg_cols.
+
+    If heterogeneous_slopes=True (default): runs separate OLS within each
+    industry, allowing every slope coefficient to differ across industries.
+    This absorbs industry-specific sensitivity to aggregate and demand
+    controls, leaving residuals that reflect structural shock variation.
+
+    If heterogeneous_slopes=False: pools all industries after within-demeaning
+    (original behavior — one set of slope coefficients for all industries).
+
     Returns DataFrame with [industry_code, quarter_label, resid_col].
     """
-    work = df[["industry_code", dep_col, *reg_cols]].copy().reset_index(drop=True)
+    work = df[["industry_code", "quarter_label", dep_col, *list(reg_cols)]].copy().reset_index(drop=True)
+    industries = sorted(work["industry_code"].unique())
 
-    # Demean within industry
-    work["y_dm"] = work[dep_col] - work.groupby("industry_code")[dep_col].transform("mean")
-    dm_cols = []
-    for rc in reg_cols:
-        dc = f"_dm_{rc}"
-        work[dc] = work[rc] - work.groupby("industry_code")[rc].transform("mean")
-        dm_cols.append(dc)
+    if heterogeneous_slopes:
+        # ── separate OLS per industry ──────────────────────────────────────
+        records = []
+        coef_rows = []
 
-    X      = work[dm_cols].to_numpy()
-    y      = work["y_dm"].to_numpy()
-    # OLS coefficients and residuals
-    gammas = np.linalg.lstsq(X, y, rcond=None)[0]
-    resid  = y - X @ gammas
-    
-    #R²
-    r2 = 1 - (resid ** 2).sum() / (y ** 2).sum()
-    coef_str = "  ".join(f"{rc}={g:+.4f}" for rc, g in zip(reg_cols, gammas))
-    print(f"  {resid_col:<12}  {coef_str}   R²={r2:.4f}")
+        for ind in industries:
+            sub = work[work["industry_code"] == ind].copy()
 
-    out = df[["industry_code", "quarter_label"]].copy().reset_index(drop=True)
-    out[resid_col] = resid
+            # Drop rows with any missing values in this industry
+            sub = sub.dropna(subset=[dep_col] + list(reg_cols))
+            if len(sub) <= len(reg_cols) + 1:
+                print(f"  WARNING: {ind} has only {len(sub)} obs — skipping")
+                continue
+
+            y = sub[dep_col].to_numpy()
+            X = np.column_stack([np.ones(len(sub)), sub[list(reg_cols)].to_numpy()])
+
+            # OLS: [intercept, γ_j, λ_j, μ_j, ...]
+            coeffs, _, _, _ = np.linalg.lstsq(X, y, rcond=None)
+            resid = y - X @ coeffs
+
+            # R² within this industry
+            r2 = 1 - (resid ** 2).sum() / ((y - y.mean()) ** 2).sum()
+
+            coef_str = "  ".join(
+                f"{rc}={c:+.4f}" for rc, c in zip(reg_cols, coeffs[1:])
+            )
+            print(f"  {resid_col:<12}  industry={str(ind):<6}  "
+                  f"{coef_str}  R²={r2:.4f}")
+
+            coef_rows.append({
+                "resid_col":    resid_col,
+                "industry_code": ind,
+                **{rc: c for rc, c in zip(reg_cols, coeffs[1:])},
+                "R2": r2,
+            })
+
+            sub = sub.copy()
+            sub[resid_col] = resid
+            records.append(sub[["industry_code", "quarter_label", resid_col]])
+
+        out = pd.concat(records, ignore_index=True)
+
+        # Print cross-industry coefficient summary
+        coef_df = pd.DataFrame(coef_rows)
+        print(f"\n  --- Cross-industry coefficient ranges [{resid_col}] ---")
+        for rc in reg_cols:
+            print(f"    {rc:<20}  "
+                  f"mean={coef_df[rc].mean():+.4f}  "
+                  f"min={coef_df[rc].min():+.4f}  "
+                  f"max={coef_df[rc].max():+.4f}  "
+                  f"std={coef_df[rc].std():.4f}")
+
+    else:
+        # ── original pooled within estimator ──────────────────────────────
+        work["y_dm"] = (work[dep_col]
+                        - work.groupby("industry_code")[dep_col].transform("mean"))
+        dm_cols = []
+        for rc in reg_cols:
+            dc = f"_dm_{rc}"
+            work[dc] = (work[rc]
+                        - work.groupby("industry_code")[rc].transform("mean"))
+            dm_cols.append(dc)
+
+        X      = work[dm_cols].to_numpy()
+        y      = work["y_dm"].to_numpy()
+        gammas = np.linalg.lstsq(X, y, rcond=None)[0]
+        resid  = y - X @ gammas
+
+        r2 = 1 - (resid ** 2).sum() / (y ** 2).sum()
+        coef_str = "  ".join(
+            f"{rc}={g:+.4f}" for rc, g in zip(reg_cols, gammas)
+        )
+        print(f"  {resid_col:<12}  {coef_str}   R²={r2:.4f}")
+
+        out = df[["industry_code", "quarter_label"]].copy().reset_index(drop=True)
+        out[resid_col] = resid
+
     return out
 
 
