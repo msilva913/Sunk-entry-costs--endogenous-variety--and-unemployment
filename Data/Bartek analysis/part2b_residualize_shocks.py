@@ -82,6 +82,7 @@ import os
 import sys
 import numpy as np
 import pandas as pd
+pd.set_option('display.max_columns', 8)
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -323,9 +324,11 @@ def _residualize(df, dep_col, resid_col, reg_cols):
 
     X      = work[dm_cols].to_numpy()
     y      = work["y_dm"].to_numpy()
+    # OLS coefficients and residuals
     gammas = np.linalg.lstsq(X, y, rcond=None)[0]
     resid  = y - X @ gammas
-
+    
+    #R²
     r2 = 1 - (resid ** 2).sum() / (y ** 2).sum()
     coef_str = "  ".join(f"{rc}={g:+.4f}" for rc, g in zip(reg_cols, gammas))
     print(f"  {resid_col:<12}  {coef_str}   R²={r2:.4f}")
@@ -485,7 +488,8 @@ print(f"FRED_API_KEY: set ({FRED_API_KEY[:8]}...)")
 
 # ── 1. assemble controls panel ────────────────────────────────────────────────
 nat = _load_controls()
-
+#Inspect
+nat.groupby(['industry_code']).head(5)
 # ── 2. residualize ────────────────────────────────────────────────────────────
 SPEC      = "v2: Δlog(p) + Δlog(VA_lag) + log(θ_lag) [LD/QU only]"
 reg_base  = ("dlog_p", "dlog_va_lag")

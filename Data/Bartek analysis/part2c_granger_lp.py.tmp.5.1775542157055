@@ -1,0 +1,506 @@
+"""
+part2c_granger_lp.py  --  Panel LP Granger causality between shock series
+==========================================================================
+Examines whether the establishment-closing shock (δ) and the separation
+shock (LD) are causally ordered or reflect independent structural disturbances.
+
+Economic motivation
+-------------------
+The model requires both δ (product-line destruction) and s (match separation)
+as primitive structural shocks.  δ might instead be largely endogenous —
+rising as a lagged response when s has been high and firms have been losing
+workers.  If so, it would be redundant to include both shocks, and the
+model's prediction of a distinct δ transmission mechanism would be an
+artifact of the specification.
+
+We test this using a panel LP Granger causality design.  For each pair of
+series (X, Y) we ask: do lags of X help predict Y above and beyond Y's own
+lags, conditional on industry and time fixed effects?  The key questions are:
+
+  (1) Does LD Granger-cause δ?
+      If yes: closings are partly an endogenous response to prior separations.
+      If no: δ is not forecastable from the history of s — consistent with
+             it being driven by an independent structural disturbance.
+
+  (2) Does δ Granger-cause LD?
+      If yes and (1) is rejected: δ is the primitive shock, and separations
+             at surviving firms follow as an endogenous consequence — exactly
+             the mechanism the model has in mind for endogenous exit.
+      If both directions are significant: shocks are jointly determined,
+             and the structural interpretation requires a richer model.
+
+Specification
+-------------
+For each pair (Y, X) and each horizon h = 0, ..., H we estimate:
+
+    Y_{j,t+h} = α_j + α_t + Σ_{l=1}^{L} β_l Y_{j,t-l}
+                            + Σ_{l=1}^{L} γ_l X_{j,t-l}  +  ε_{j,t+h}
+
+where j indexes industries, t indexes quarters, and the fixed effects absorb
+common time variation (aggregate cycle) and industry-level means.
+
+β_l captures own-series predictability; γ_l captures cross-series Granger
+predictability.  At h=0, Y_{j,t} is regressed on lags only — so the
+contemporaneous relationship does not enter.
+
+We report:
+  - γ_l coefficients (cross-series lags) at each horizon
+  - Joint F-test (Wald) on {γ_1, ..., γ_L}: can we reject that cross-series
+    lags are jointly zero?
+  - Cumulative IRF of Y to a 1-SD shock in X_{t-1}, tracing how a past
+    X shock propagates into Y over the next H quarters
+
+Run
+---
+    python part2c_granger_lp.py
+
+Prerequisites
+-------------
+    python part2_shock_rates.py
+    python part2_shock_rates_s.py
+"""
+
+import os
+import sys
+import numpy as np
+import pandas as pd
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+from pathlib import Path
+
+# ── working directory ─────────────────────────────────────────────────────────
+try:
+    os.chdir(Path(__file__).resolve().parent)
+except NameError:
+    os.chdir(
+        Path.home()
+        / "Documents/GitHub/Sunk_entry_costs_endogenous_variety_unemployment"
+        / "Data/Bartek analysis"
+    )
+
+from construct_delta_instrument import (
+    SHOCK_RATES_PATH, INDUSTRY_LABELS, DEFAULT_OUTPUT_DIR,
+)
+from construct_s_instrument import (
+    SHOCK_RATES_LD_PATH, SHOCK_RATES_QU_PATH,
+)
+
+RESULTS_DIR = Path("data/results")
+RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+
+# ── parameters ────────────────────────────────────────────────────────────────
+N_LAGS    = 4   # L: number of own + cross lags included as regressors
+HORIZONS  = list(range(0, 13))  # h: LP forecast horizons
+CI_LEVEL  = 0.90                # confidence band level
+
+# ── helpers ───────────────────────────────────────────────────────────────────
+REC_SPANS = [("2001-03-01", "2001-11-01"),
+             ("2007-12-01", "2009-06-01"),
+             ("2020-01-01", "2020-07-01")]
+
+def _ql_to_dt(ql):
+    y, q = ql.split("Q")
+    return pd.Timestamp(year=int(y), month=int(q) * 3 - 2, day=1)
+
+def _add_recessions(ax):
+    for s, e in REC_SPANS:
+        ax.axvspan(pd.Timestamp(s), pd.Timestamp(e), alpha=0.10, color="grey")
+
+def _open_file(path):
+    try:
+        os.startfile(path)
+    except AttributeError:
+        pass
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  SECTION 1: BUILD NATIONAL INDUSTRY PANEL
+# ═══════════════════════════════════════════════════════════════════════════════
+
+print("=" * 65)
+print("Part 2c  --  Panel LP Granger causality between shock series")
+print("=" * 65)
+
+missing = [p for p in [SHOCK_RATES_PATH, SHOCK_RATES_LD_PATH, SHOCK_RATES_QU_PATH]
+           if not p.exists()]
+if missing:
+    sys.exit("Missing shock rate files:\n" + "\n".join(f"  {p}" for p in missing) +
+             "\nRun part2_shock_rates.py and part2_shock_rates_s.py first.")
+
+def _nat(path, col, new_col):
+    """Average LOO rates across states to get national industry-quarter series."""
+    df = pd.read_parquet(path)
+    return (df.groupby(["industry_code", "quarter_label"])[col]
+              .mean().reset_index()
+              .rename(columns={col: new_col}))
+
+nat_d  = _nat(SHOCK_RATES_PATH,    "g_delta_loo", "g_delta")
+nat_ld = _nat(SHOCK_RATES_LD_PATH, "g_ld_loo",   "g_ld")
+nat_qu = _nat(SHOCK_RATES_QU_PATH, "g_qu_loo",   "g_qu")
+
+nat = (nat_d.merge(nat_ld, on=["industry_code","quarter_label"], how="inner")
+            .merge(nat_qu, on=["industry_code","quarter_label"], how="inner"))
+nat = nat[(nat.g_delta > 0) & (nat.g_ld > 0) & (nat.g_qu > 0)].copy()
+
+for raw, log in [("g_delta","log_g_delta"), ("g_ld","log_g_ld"), ("g_qu","log_g_qu")]:
+    nat[log] = np.log(nat[raw])
+
+nat["industry_label"] = nat["industry_code"].map(INDUSTRY_LABELS)
+nat = nat.sort_values(["industry_code","quarter_label"]).reset_index(drop=True)
+print(f"\nPanel: {nat['quarter_label'].min()}–{nat['quarter_label'].max()}, "
+      f"{nat['industry_code'].nunique()} industries, {len(nat):,} obs")
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  SECTION 2: PANEL LP GRANGER ESTIMATOR
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def _build_lag_matrix(df, y_col, x_col, n_lags, h, industry_col="industry_code",
+                      time_col="quarter_label"):
+    """
+    For each observation (j, t), construct:
+      - dependent: Y_{j, t+h}
+      - own lags:  Y_{j, t-1}, ..., Y_{j, t-L}
+      - cross lags: X_{j, t-1}, ..., X_{j, t-L}
+      - industry dummies and time dummies
+
+    Returns (X_mat, y_vec, industry_ids, time_ids) with no NaN rows.
+    """
+    industries = sorted(df[industry_col].unique())
+    quarters   = sorted(df[time_col].unique())
+    q_index    = {q: i for i, q in enumerate(quarters)}
+    ind_index  = {ind: i for i, ind in enumerate(industries)}
+
+    rows = []
+    for ind in industries:
+        sub = df[df[industry_col] == ind].sort_values(time_col).reset_index(drop=True)
+        T = len(sub)
+        for t_idx in range(n_lags, T - h):
+            # dependent variable: Y_{j, t+h}
+            y_val = sub.loc[t_idx + h, y_col]
+            # own lags: Y_{j, t-1}, ..., Y_{j, t-L}
+            own = [sub.loc[t_idx - l, y_col] for l in range(1, n_lags + 1)]
+            # cross lags: X_{j, t-1}, ..., X_{j, t-L}
+            cross = [sub.loc[t_idx - l, x_col] for l in range(1, n_lags + 1)]
+
+            qt = sub.loc[t_idx, time_col]
+            rows.append({
+                "y": y_val,
+                **{f"own_lag{l}": own[l-1] for l in range(1, n_lags+1)},
+                **{f"cross_lag{l}": cross[l-1] for l in range(1, n_lags+1)},
+                "industry_id": ind_index[ind],
+                "time_id":     q_index[qt],
+                "industry":    ind,
+                "quarter":     qt,
+            })
+
+    data = pd.DataFrame(rows).dropna()
+    return data
+
+
+def _within_transform(data, group_col, cols):
+    """Subtract group means (within transformation) from specified columns."""
+    out = data.copy()
+    for col in cols:
+        out[col] = out[col] - out.groupby(group_col)[col].transform("mean")
+    return out
+
+
+def _ols_with_f(X, y, n_cross_lags):
+    """
+    OLS returning coefficients, HC1 standard errors, and a Wald F-statistic
+    for the joint significance of the last n_cross_lags regressors.
+    HC1 = heteroskedasticity-robust (White), no clustering (industry n=12 too small).
+    """
+    n, k = X.shape
+    if n <= k:
+        return None
+
+    XtX_inv = np.linalg.pinv(X.T @ X)
+    beta    = XtX_inv @ X.T @ y
+    resid   = y - X @ beta
+    df_res  = n - k
+
+    # HC1 covariance
+    scale   = n / df_res
+    meat    = (X * resid[:, None]).T @ (X * resid[:, None])
+    V_hc1   = scale * XtX_inv @ meat @ XtX_inv
+
+    se      = np.sqrt(np.diag(V_hc1))
+    tstat   = beta / np.where(se > 0, se, np.nan)
+    pval    = 2 * (1 - _norm_cdf(np.abs(tstat)))
+
+    # Wald F on last n_cross_lags coefficients (cross-series lags)
+    idx_cross = list(range(k - n_cross_lags, k))
+    R = np.zeros((n_cross_lags, k))
+    for i, j in enumerate(idx_cross):
+        R[i, j] = 1.0
+    Rb    = R @ beta
+    RVR   = R @ V_hc1 @ R.T
+    try:
+        f_stat = (Rb @ np.linalg.solve(RVR, Rb)) / n_cross_lags
+    except np.linalg.LinAlgError:
+        f_stat = np.nan
+
+    return {
+        "beta":   beta,
+        "se":     se,
+        "tstat":  tstat,
+        "pval":   pval,
+        "f_stat": f_stat,
+        "nobs":   n,
+        "df_res": df_res,
+    }
+
+
+def _norm_cdf(x):
+    """Standard normal CDF via error function."""
+    from math import erf, sqrt
+    return np.array([0.5 * (1 + erf(xi / sqrt(2))) for xi in np.atleast_1d(x)])
+
+
+def run_granger_lp(nat, y_col, x_col, y_label, x_label,
+                   n_lags=N_LAGS, horizons=HORIZONS):
+    """
+    Panel LP Granger causality: does X Granger-cause Y?
+
+    At each horizon h, estimates:
+        Y_{j,t+h} = α_j + α_t + Σ_l β_l Y_{j,t-l} + Σ_l γ_l X_{j,t-l} + ε
+
+    Returns DataFrame with one row per horizon: h, gamma coefficients,
+    their SEs and p-values, the joint F-stat on all γ_l, and cumulative IRF.
+    """
+    print(f"\n  [{y_label} ~ lags({y_label}) + lags({x_label})]")
+    print(f"  {'h':>3}  {'γ_1':>8}  {'p(γ_1)':>7}  {'joint F':>8}  {'N':>6}")
+
+    results = []
+    for h in horizons:
+        data = _build_lag_matrix(nat, y_col, x_col, n_lags, h)
+        if len(data) < 30:
+            continue
+
+        # Absorb two-way FEs: within-industry then within-time on residuals
+        all_cols = ["y"] + [f"own_lag{l}" for l in range(1, n_lags+1)] \
+                         + [f"cross_lag{l}" for l in range(1, n_lags+1)]
+        dm = _within_transform(data, "industry", all_cols)
+        dm = _within_transform(dm,   "quarter",  all_cols)
+
+        X_mat = dm[[f"own_lag{l}" for l in range(1, n_lags+1)] +
+                   [f"cross_lag{l}" for l in range(1, n_lags+1)]].to_numpy()
+        y_vec = dm["y"].to_numpy()
+
+        res = _ols_with_f(X_mat, y_vec, n_cross_lags=n_lags)
+        if res is None:
+            continue
+
+        # Cross-lag coefficients are the last n_lags entries of beta/se/pval
+        gammas = res["beta"][-n_lags:]
+        gamma_ses  = res["se"][-n_lags:]
+        gamma_pval = res["pval"][-n_lags:]
+        betas  = res["beta"][:n_lags]
+
+        sig = ("***" if res["pval"][-n_lags] < .01 else
+               "**"  if res["pval"][-n_lags] < .05 else
+               "*"   if res["pval"][-n_lags] < .10 else "")
+        print(f"  {h:3d}  {gammas[0]:+8.4f}  {gamma_pval[0]:7.4f}  "
+              f"{res['f_stat']:8.3f}  {res['nobs']:6d}  {sig}")
+
+        row = {"h": h, "f_stat": res["f_stat"], "nobs": res["nobs"]}
+        for l in range(1, n_lags+1):
+            row[f"gamma_{l}"]    = gammas[l-1]
+            row[f"gamma_{l}_se"] = gamma_ses[l-1]
+            row[f"gamma_{l}_p"]  = gamma_pval[l-1]
+            row[f"beta_{l}"]     = betas[l-1]
+        results.append(row)
+
+    return pd.DataFrame(results)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  SECTION 3: CUMULATIVE IRF
+#  Traces how a 1-SD impulse in X_{t-1} propagates into Y over subsequent
+#  quarters, accounting for both the direct cross-lag effect and the
+#  persistence of Y's own dynamics.
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def _cumulative_irf(nat, y_col, x_col, n_lags=N_LAGS, H=max(HORIZONS)):
+    """
+    Simulate cumulative IRF of Y to a 1-SD shock in X at t=0,
+    using the LP coefficients from a single-horizon regression (h=0)
+    to get the companion matrix, then iterating forward.
+
+    Because LP coefficients vary by h (they're not constrained to be
+    VAR-consistent), we instead report the direct LP estimate at each h:
+    this is simply gamma_1(h) * SD(X) -- the coefficient on X_{t-1}
+    in the h-step-ahead regression, scaled to a 1-SD X shock.
+    This is the LP analog of an MA coefficient at lag h+1.
+    """
+    sd_x = nat[x_col].std()
+    rows = []
+    for h in range(0, H + 1):
+        data = _build_lag_matrix(nat, y_col, x_col, n_lags, h)
+        if len(data) < 30:
+            continue
+        all_cols = ["y"] + [f"own_lag{l}" for l in range(1, n_lags+1)] \
+                         + [f"cross_lag{l}" for l in range(1, n_lags+1)]
+        dm = _within_transform(data, "industry", all_cols)
+        dm = _within_transform(dm,   "quarter",  all_cols)
+        X_mat = dm[[f"own_lag{l}" for l in range(1, n_lags+1)] +
+                   [f"cross_lag{l}" for l in range(1, n_lags+1)]].to_numpy()
+        y_vec = dm["y"].to_numpy()
+        res   = _ols_with_f(X_mat, y_vec, n_cross_lags=n_lags)
+        if res is None:
+            continue
+        gamma_1    = res["beta"][-n_lags]        # coefficient on X_{t-1}
+        gamma_1_se = res["se"][-n_lags]
+        irf_val    = gamma_1 * sd_x
+        irf_se     = gamma_1_se * sd_x
+        rows.append({"h": h, "irf": irf_val, "irf_se": irf_se,
+                     "gamma_1": gamma_1, "pval": res["pval"][-n_lags]})
+    return pd.DataFrame(rows)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  SECTION 4: RUN ALL GRANGER TESTS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+pairs = [
+    ("log_g_ld",    "log_g_delta", "LD",    "δ",  "Does δ Granger-cause LD?"),
+    ("log_g_delta", "log_g_ld",    "δ",     "LD", "Does LD Granger-cause δ?"),
+    ("log_g_qu",    "log_g_delta", "QU",    "δ",  "Does δ Granger-cause QU?"),
+    ("log_g_delta", "log_g_qu",    "δ",     "QU", "Does QU Granger-cause δ?"),
+    ("log_g_qu",    "log_g_ld",    "QU",    "LD", "Does LD Granger-cause QU?"),
+    ("log_g_ld",    "log_g_qu",    "LD",    "QU", "Does QU Granger-cause LD?"),
+]
+
+granger_results = {}
+irf_results     = {}
+
+for y_col, x_col, y_lbl, x_lbl, title in pairs:
+    print(f"\n{'='*65}")
+    print(f"{title}  (L={N_LAGS} lags, h=0..{max(HORIZONS)})")
+    print(f"  Y = {y_lbl}  |  X = {x_lbl}")
+    gr = run_granger_lp(nat, y_col, x_col, y_lbl, x_lbl)
+    granger_results[(y_lbl, x_lbl)] = gr
+    irf = _cumulative_irf(nat, y_col, x_col)
+    irf_results[(y_lbl, x_lbl)] = irf
+
+# ── summary table: joint F-stats across horizons ──────────────────────────────
+print(f"\n{'='*65}")
+print("JOINT F-STATS  (H0: all cross-series lags jointly = 0)")
+print(f"  {'Direction':<22}  {'h=0':>7}  {'h=1':>7}  {'h=2':>7}  {'h=4':>7}  {'h=8':>7}  {'h=12':>7}")
+print(f"  {'-'*65}")
+for y_lbl, x_lbl, title in [(p[2],p[3],p[4]) for p in pairs]:
+    gr = granger_results[(y_lbl, x_lbl)]
+    if gr.empty:
+        continue
+    vals = []
+    for h in [0, 1, 2, 4, 8, 12]:
+        row = gr[gr["h"] == h]
+        vals.append(f"{row['f_stat'].values[0]:7.2f}" if len(row) else "    N/A")
+    print(f"  {title:<22}  {'  '.join(vals)}")
+
+print(f"\n  Note: F-stat based on HC1 (White) robust SEs.")
+print(f"  Industry and time FEs absorbed via two-way within transformation.")
+print(f"  n_industries={nat['industry_code'].nunique()}, "
+      f"n_quarters≈{nat['quarter_label'].nunique()}, L={N_LAGS} lags.")
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  SECTION 5: PLOTS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ── Plot 1: IRFs of Y to a 1-SD shock in X_{t-1} ─────────────────────────────
+# Four panels: δ→LD, LD→δ, δ→QU, QU→δ
+# This directly addresses: does a past δ disturbance cause future separations?
+# And: do past separations predict future closings (endogenous exit)?
+
+fig, axes = plt.subplots(2, 3, figsize=(16, 9), sharey=False)
+axes = axes.flatten()
+
+plot_pairs = [
+    ("LD",  "δ",  "δ → LD\n(Does destruction cause separations?)",  "#1f77b4"),
+    ("δ",   "LD", "LD → δ\n(Do separations cause future closings?)", "#d62728"),
+    ("QU",  "δ",  "δ → QU\n(Does destruction cause quits?)",         "#2ca02c"),
+    ("δ",   "QU", "QU → δ\n(Do quits predict future closings?)",     "#ff7f0e"),
+    ("QU",  "LD", "LD → QU",                                          "#9467bd"),
+    ("LD",  "QU", "QU → LD",                                          "#8c564b"),
+]
+
+z_ci = 1.645 if CI_LEVEL == 0.90 else 1.960
+
+for ax, (y_lbl, x_lbl, title, color) in zip(axes, plot_pairs):
+    irf = irf_results.get((y_lbl, x_lbl), pd.DataFrame())
+    if irf.empty:
+        ax.set_visible(False)
+        continue
+
+    hs      = irf["h"].values
+    vals    = irf["irf"].values
+    ci_lo   = vals - z_ci * irf["irf_se"].values
+    ci_hi   = vals + z_ci * irf["irf_se"].values
+
+    ax.axhline(0, color="black", linewidth=0.8)
+    ax.fill_between(hs, ci_lo, ci_hi, alpha=0.20, color=color)
+    ax.plot(hs, vals, color=color, linewidth=2.0, marker="o", markersize=4)
+
+    # Mark significant horizons (p<0.10 on gamma_1)
+    sig_mask = irf["pval"] < 0.10
+    if sig_mask.any():
+        ax.scatter(hs[sig_mask.values], vals[sig_mask.values],
+                   color=color, s=50, zorder=5)
+
+    ax.set_title(title, fontsize=10, fontweight="bold")
+    ax.set_xlabel("Horizon h (quarters)", fontsize=9)
+    ax.set_ylabel("Response in log shock rate\n(per 1-SD impulse in X_{t-1})", fontsize=8)
+    ax.grid(axis="y", linewidth=0.4, alpha=0.4)
+    ax.set_xticks(range(0, max(HORIZONS)+1, 2))
+
+fig.suptitle(
+    f"Panel LP Granger causality between shock series\n"
+    f"Response of Y to lagged 1-SD X shock  |  {CI_LEVEL:.0%} CI  "
+    f"|  L={N_LAGS} own+cross lags  |  Industry + time FEs",
+    fontsize=11, y=1.01,
+)
+fig.tight_layout()
+p = RESULTS_DIR / "granger_lp_irf_grid.png"
+fig.savefig(p, dpi=150, bbox_inches="tight"); plt.close(fig); _open_file(p)
+print(f"\nPlot 1 saved: {p}")
+
+# ── Plot 2: F-stat time series — δ→LD vs LD→δ (the key asymmetry) ────────────
+fig, axes = plt.subplots(1, 2, figsize=(13, 5))
+
+key_pairs = [
+    ("LD", "δ",  "δ → LD (δ Granger-causes LD)", "#1f77b4"),
+    ("δ",  "LD", "LD → δ (LD Granger-causes δ)", "#d62728"),
+]
+for ax, (y_lbl, x_lbl, title, color) in zip(axes, key_pairs):
+    gr = granger_results.get((y_lbl, x_lbl), pd.DataFrame())
+    if gr.empty:
+        continue
+    ax.bar(gr["h"], gr["f_stat"], color=color, alpha=0.75, width=0.7)
+    # Approximate 10% critical value for F(L, N-k): roughly 2.0 for large N
+    ax.axhline(2.0, color="black", linewidth=1.0, linestyle="--",
+               label="F crit ≈ 2.0 (10%)")
+    ax.axhline(3.0, color="black", linewidth=1.0, linestyle=":",
+               label="F crit ≈ 3.0 (5%)")
+    ax.set_title(title, fontsize=11, fontweight="bold")
+    ax.set_xlabel("Horizon h", fontsize=10)
+    ax.set_ylabel(f"Joint F-stat on {N_LAGS} cross-series lags", fontsize=9)
+    ax.legend(fontsize=8)
+    ax.grid(axis="y", linewidth=0.4, alpha=0.4)
+    ax.set_xticks(range(0, max(HORIZONS)+1, 2))
+
+fig.suptitle(
+    "Joint Granger F-statistics: δ vs LD\n"
+    f"H0: all {N_LAGS} cross-series lags jointly = 0  |  HC1 robust SEs  "
+    "|  Industry + time FEs",
+    fontsize=11,
+)
+fig.tight_layout()
+p = RESULTS_DIR / "granger_lp_fstat_delta_ld.png"
+fig.savefig(p, dpi=150, bbox_inches="tight"); plt.close(fig); _open_file(p)
+print(f"Plot 2 saved: {p}")
+
+print("\nDone.")
