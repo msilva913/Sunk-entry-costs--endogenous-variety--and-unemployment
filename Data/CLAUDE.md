@@ -74,9 +74,20 @@ data/results/        — LP output CSVs and all IRF plots
 ## 4. Key Empirical Findings
 
 ### 4.1 Shock Persistence (part6)
-- **ρ_δ = 0.617** (half-life ≈ 1.44 quarters)
-- **ρ_s = 0.751** (half-life ≈ 2.42 quarters)
-- Both shocks essentially dissipate by h=10 quarters
+
+**Raw rates (contaminated by demand/productivity):**
+- ρ_δ = 0.617 (half-life 1.44 qtrs, N=117, 1992Q4–2021Q4)
+- ρ_LD = 0.489 (half-life 0.97 qtrs, N=88, 2001Q2–2023Q1)
+
+**Residualized rates (preferred calibration targets):**
+- ρ_δ = 0.479 (half-life 0.94 qtrs, N=65, 2005Q4–2021Q4)
+- ρ_LD = 0.288 (half-life 0.56 qtrs, N=65, 2005Q4–2021Q4)
+- Bias from demand/productivity contamination: Δρ_δ = +0.138, Δρ_LD = +0.202
+
+**Innovation correlation (both specs):**
+- corr(η^δ, η^{LD}) = +0.397 (raw), +0.444 (residualized)
+- Model zero-correlation assumption is violated in both specs
+- Motivates allowing corr(ε^δ, ε^s) ≠ 0 akin to Coles-Kelishomi (2018)
 
 ### 4.2 Unemployment IRFs (baseline, part5)
 

@@ -1,53 +1,73 @@
 """
 part6_shock_persistence.py — Aggregate AR(1) persistence of δ and s shocks
 ===========================================================================
-Estimates the persistence of the aggregate national job-destruction (δ) and
-separation (s) shock rates, which the structural model treats as AR(1)
-processes. The estimated AR(1) coefficients discipline interpretation of the
-local projection IRFs in part5: a highly persistent shock should produce a
-slowly-reverting IRF, so the empirical IRF shape can be compared against the
-model-predicted IRF given these parameters.
+Estimates AR(1) persistence for the δ (establishment closings) and LD
+(layoffs/discharges) shock processes at the aggregate national level, using
+both raw and residualized shock rates.
+
+Why residualized rates matter for calibration
+---------------------------------------------
+- The structural model treats δ and s as AR(1) processes whose innovations are
+primitive disturbances. 
+- The raw shock rates g^δ and g^{LD} conflate this
+structural variation with demand and productivity shocks that are explicitly
+purged in the Bartik instrument construction. 
+- Estimating AR(1) on raw rates therefore overstates structural persistence: if a demand contraction is itself
+persistent, g^δ will be persistent partly because demand is persistent, not
+because the structural process is. 
+- The residualized rates ν^δ and ν^{LD}
+(from part2b) remove aggregate productivity growth, lagged industry VA growth,
+and lagged market tightness before Bartik aggregation — they are the correct
+object for calibrating the model's AR(1) shock processes.
+
+We therefore report two sets of estimates:
+
+  Raw:          AR(1) on ḡ_t^(k) = Σ_j ω_j · g^(k)_{j,t}
+                (employment-weighted average of raw LOO shock rates)
+
+  Residualized: AR(1) on ν̄_t^(k) = Σ_j ω_j · ν^(k)_{j,t}
+                (employment-weighted average of residualized shock rates)
+
+The residualized series is shorter (2005Q3 onward, limited by BEA VA data)
+but is the conceptually preferred calibration target. The comparison between
+raw and residualized ρ estimates quantifies how much measured persistence
+reflects structural shock dynamics vs. demand/productivity contamination.
+
+Innovation covariance across shocks
+------------------------------------
+Coles and Kelishomi (2018, AEJ Macro) allow the innovations to their
+productivity and separation shocks to be correlated. The analogous object
+here is corr(η^δ_t, η^{LD}_t) — the contemporaneous correlation of AR(1)
+residuals across the two shock processes. Even if we do not model cross-
+persistence dynamics (which have unclear structural interpretation, per the
+discussion in part2d), allowing correlated innovations is both empirically
+motivated and straightforward to incorporate in the model.
+
+We estimate this innovation correlation in both the raw and residualized
+specifications and report it as a calibration target alongside ρ̂.
 
 Aggregate shock construction
 -----------------------------
-The aggregate national shock rate in quarter t is the national employment-
-weighted average of the industry-level LOO shock rates:
+    ḡ_t^(k)  = Σ_j ω_j · ḡ_{j,t}^(k)   (raw)
+    ν̄_t^(k)  = Σ_j ω_j · ν^(k)_{j,t}   (residualized)
 
-    ḡ_t^(k) = Σ_j ω_j · ḡ_{j,t}^(k)
-
-where ω_j = emp_nat_j / Σ_j emp_nat_j  (national employment share of
-industry j at base year), and ḡ_{j,t}^(k) is the national (non-LOO) shock
-rate for industry j in quarter t.
-
-Note on LOO vs. national rates
---------------------------------
-The LOO rates g_{-s,j,t} used in the Bartik instrument are state-specific.
-For the aggregate time series we want the pure national rate — the simple
-employment-weighted average across industries with no LOO adjustment. We
-recover this by averaging the LOO rates across states (the state-specific
-adjustment is small and averages out), or equivalently by weighting the
-industry-level shock rates directly.
+where ω_j = national employment share of industry j at base year 2006.
+Industry-level rates are obtained by averaging LOO rates across states (the
+state-specific LOO adjustment is small and averages out in the aggregate).
+Residualized series ν^(k)_{j,t} are built in-process from cache parquets
+using the same estimator as part2b, to avoid NTFS-mount parquet corruption.
 
 AR(1) specification
 --------------------
-    ḡ_t^(k) = μ^(k) + ρ^(k) · ḡ_{t-1}^(k) + η_t^(k)
+    x_t^(k) = μ^(k) + ρ^(k) · x^(k)_{t-1} + η^(k)_t
 
-Estimated by OLS with HC3 robust standard errors (time series, n~80-120).
-The intercept μ = (1 - ρ) · ḡ̄ pins the unconditional mean.
+Estimated by OLS with HC3 robust standard errors. #refined version of Huber-White
 
-Impulse response
------------------
-Given ρ̂, the theoretical IRF of the shock rate itself to a unit innovation
-at h=0 is simply:
-
-    IRF_h^(k) = ρ̂^h,  h = 0, 1, ..., H
-
-This is plotted alongside the OLS fit and the raw time series.
-
-Outputs
--------
-    data/results/shock_persistence.csv    — ρ̂, SE, CI, unconditional mean
-    data/results/shock_persistence.png    — time series + AR(1) fit + IRF
+Output
+------
+    data/results/shock_persistence.csv      — ρ̂ table (raw + residualized)
+    data/results/shock_persistence_raw.png  — raw rates: time series + scatter + IRF
+    data/results/shock_persistence_resid.png — residualized rates: same layout
 
 Run
 ---
@@ -55,377 +75,548 @@ Run
 
 Prerequisites
 -------------
-    python part1_shares.py
-    python part2_shock_rates.py       (δ shock rates)
-    python part2_shock_rates_s.py     (s shock rates)
+    python part2_shock_rates.py
+    python part2_shock_rates_s.py
+    python part2b_shock_comovement.py   (populates BEA VA cache)
 """
 
 import os
+import sys
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-import matplotlib.ticker as mticker
 from pathlib import Path
-
-def _open_file(path):
-    os.startfile(path)
 
 try:
     os.chdir(Path(__file__).resolve().parent)
 except NameError:
     os.chdir(
         Path.home()
-        / "Documents"
-        / "GitHub"
-        / "Sunk-entry-costs--endogenous-variety--and-unemployment"
-        / "Data"
-        / "Bartek analysis"
+        / "Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unemployment"
+        / "Data/Bartek analysis"
     )
 
-# ---------------------------------------------------------------------------
-# Configuration
-# ---------------------------------------------------------------------------
-BASE_YEAR  = 2006
-IRF_H      = 20       # horizons for theoretical AR(1) IRF plot
+from construct_delta_instrument import (
+    DEFAULT_CACHE_DIR, SHOCK_RATES_PATH, INDUSTRY_LABELS,
+)
+from construct_s_instrument import SHOCK_RATES_LD_PATH
 
-INSTR_DIR  = Path("data/instruments")
+# ── parameters ────────────────────────────────────────────────────────────────
+BASE_YEAR   = 2006
+IRF_H       = 20
 RESULTS_DIR = Path("data/results")
+INSTR_DIR   = Path("data/instruments")
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
-SHARES_FILE      = INSTR_DIR / f"shares_base{BASE_YEAR}.parquet"
-DELTA_RATES_FILE = INSTR_DIR / "shock_rates_1992Q3_2023Q1.parquet"
-S_RATES_FILE     = INSTR_DIR / "shock_rates_s_2001Q1_2023Q1.parquet"
+SHARES_FILE = INSTR_DIR / f"shares_base{BASE_YEAR}.parquet"
 
 
-# ---------------------------------------------------------------------------
-# Step 1: Load shares — national employment weights ω_j
-# ---------------------------------------------------------------------------
-def load_national_weights(shares_path: Path) -> pd.Series:
+# ═══════════════════════════════════════════════════════════════════════════════
+#  DATA HELPERS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def _load_weights() -> pd.Series:
     """
-    Compute national industry employment weights from the shares parquet.
+    National employment weights ω_j from base-year shares parquet.
     Returns a Series indexed by industry_code, summing to 1.
     """
-    shares = pd.read_parquet(shares_path)
-    # National employment by industry: sum emp_state_ind across all states
-    nat_emp = (
-        shares.groupby("industry_code")["emp_state_ind"]
-        .sum()
-    )
-    weights = nat_emp / nat_emp.sum()
-    print(f"  National weights: {len(weights)} industries, sum={weights.sum():.6f}")
-    return weights
+    shares  = pd.read_parquet(SHARES_FILE)
+    nat_emp = shares.groupby("industry_code")["emp_state_ind"].sum()
+    return nat_emp / nat_emp.sum()
 
 
-# ---------------------------------------------------------------------------
-# Step 2: Construct aggregate time series ḡ_t^(k)
-# ---------------------------------------------------------------------------
-def build_aggregate_shock(rates: pd.DataFrame,
-                          rate_col: str,
-                          weights: pd.Series) -> pd.Series:
+def _nat_avg(path, col):
+    """Average LOO rates across states → industry × quarter DataFrame."""
+    df = pd.read_parquet(path)
+    return (df.groupby(["industry_code", "quarter_label"])[col]
+              .mean().reset_index())
+
+
+def _weighted_agg(ind_qt: pd.DataFrame, rate_col: str,
+                  weights: pd.Series) -> pd.Series:
     """
-    Construct the aggregate national shock rate as the employment-weighted
-    average of industry-level LOO rates across states.
+    Employment-weighted average across industries within each quarter.
 
-    For the aggregate time series we average LOO rates across states first
-    (recovering approximately the national rate), then weight by industry.
+    ḡ_t = Σ_j ω_j · g_{j,t}
 
     Returns a Series indexed by quarter_label, sorted chronologically.
     """
-    # Average LOO rates across states within each (industry, quarter)
-    # — the state-specific LOO adjustment is small and averages out
-    nat_by_ind_qt = (
-        rates.groupby(["industry_code", "quarter_label"])[rate_col]
-        .mean()
-        .reset_index()
-    )
-
-    # Merge national weights
-    nat_by_ind_qt = nat_by_ind_qt.merge(
-        weights.rename("weight").reset_index(),
-        on="industry_code",
-        how="inner",
-    )
-
-    # Weighted average across industries within each quarter
-    agg = (
-        nat_by_ind_qt.groupby("quarter_label")
-        .apply(lambda g: np.average(g[rate_col], weights=g["weight"]))
-        .rename("agg_rate")
-        .sort_index()
-    )
-
-    print(f"  Aggregate series: {len(agg)} quarters  "
-          f"({agg.index[0]} – {agg.index[-1]})")
-    print(f"  Mean={agg.mean():.5f}  SD={agg.std():.5f}  "
-          f"Min={agg.min():.5f}  Max={agg.max():.5f}")
+    w_df = weights.rename("weight").reset_index()
+    w_df["industry_code"] = w_df["industry_code"].astype(
+        ind_qt["industry_code"].dtype)
+    merged = ind_qt.merge(w_df, on="industry_code", how="inner")
+    agg = (merged.groupby("quarter_label")
+                 .apply(lambda g: np.average(g[rate_col], weights=g["weight"]),
+                        include_groups=False)
+                 .rename("agg_rate")
+                 .sort_index())
     return agg
 
 
-# ---------------------------------------------------------------------------
-# Step 3: AR(1) OLS estimation
-# ---------------------------------------------------------------------------
+def _build_residualized_panel() -> pd.DataFrame:
+    """
+    Build residualized industry-quarter shock rates ν^δ and ν^{LD} in-process,
+    replicating the part2b v2 spec to avoid NTFS-mount parquet corruption.
+
+    Returns DataFrame with columns:
+      industry_code, quarter_label, nu_delta, nu_ld
+    """
+    required = [
+        DEFAULT_CACHE_DIR / "ophnfb_quarterly.parquet",
+        DEFAULT_CACHE_DIR / "national_tightness_quarterly.parquet",
+        DEFAULT_CACHE_DIR / "bea_va_quarterly_12ind.parquet",
+    ]
+    missing = [p for p in required if not p.exists()]
+    if missing:
+        return None   # caller handles gracefully
+
+    # Raw log shock rates
+    nat_d  = _nat_avg(SHOCK_RATES_PATH,    "g_delta_loo")
+    nat_ld = _nat_avg(SHOCK_RATES_LD_PATH, "g_ld_loo")
+    nat_d.columns  = ["industry_code", "quarter_label", "g_delta"]
+    nat_ld.columns = ["industry_code", "quarter_label", "g_ld"]
+
+    nat = nat_d.merge(nat_ld, on=["industry_code", "quarter_label"], how="inner")
+    nat = nat[(nat.g_delta > 0) & (nat.g_ld > 0)].copy()
+    nat["log_g_delta"] = np.log(nat["g_delta"])
+    nat["log_g_ld"]    = np.log(nat["g_ld"])
+    nat["industry_code"] = nat["industry_code"].astype(int)
+
+    # Controls
+    prod = pd.read_parquet(DEFAULT_CACHE_DIR / "ophnfb_quarterly.parquet")
+    prod = prod.sort_values("quarter_label").reset_index(drop=True)
+    prod["dlog_p"] = np.log(prod["productivity"]).diff()
+
+    tight = pd.read_parquet(DEFAULT_CACHE_DIR / "national_tightness_quarterly.parquet")
+    tight = tight.sort_values("quarter_label").reset_index(drop=True)
+    tight["log_theta_lag"] = tight["log_theta"].shift(1)
+
+    bea = pd.read_parquet(DEFAULT_CACHE_DIR / "bea_va_quarterly_12ind.parquet")
+    bea = bea.sort_values(["industry_code", "quarter_label"]).reset_index(drop=True)
+    bea["dlog_va_lag"] = bea.groupby("industry_code")["dlog_va"].shift(1)
+    bea_lag = bea[["industry_code", "quarter_label", "dlog_va_lag"]].dropna().copy()
+    bea_lag["industry_code"] = bea_lag["industry_code"].astype(int)
+
+    nat = (nat
+           .merge(prod[["quarter_label", "dlog_p"]].dropna(),
+                  on="quarter_label", how="inner")
+           .merge(tight[["quarter_label", "log_theta_lag"]].dropna(),
+                  on="quarter_label", how="inner")
+           .merge(bea_lag, on=["industry_code", "quarter_label"], how="inner"))
+    nat = nat.dropna().sort_values(
+        ["industry_code", "quarter_label"]).reset_index(drop=True)
+
+    def _residualize(df, dep_col, resid_col, reg_cols):
+        work = df[["industry_code", dep_col, *reg_cols]].copy().reset_index(drop=True)
+        work["y_dm"] = (work[dep_col]
+                        - work.groupby("industry_code")[dep_col].transform("mean"))
+        dm_cols = []
+        for rc in reg_cols:
+            dc = f"_dm_{rc}"
+            work[dc] = work[rc] - work.groupby("industry_code")[rc].transform("mean")
+            dm_cols.append(dc)
+        X      = work[dm_cols].to_numpy()
+        y      = work["y_dm"].to_numpy()
+        gammas = np.linalg.lstsq(X, y, rcond=None)[0]
+        resid  = y - X @ gammas
+        out    = df.copy()
+        out[resid_col] = resid
+        return out
+
+    nat = _residualize(nat, "log_g_delta", "nu_delta",
+                       ("dlog_p", "dlog_va_lag"))
+    nat = _residualize(nat, "log_g_ld",    "nu_ld",
+                       ("dlog_p", "dlog_va_lag", "log_theta_lag"))
+
+    return nat[["industry_code", "quarter_label", "nu_delta", "nu_ld"]]
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  AR(1) ESTIMATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
 def estimate_ar1(series: pd.Series, label: str) -> dict:
     """
-    Estimate ḡ_t = μ + ρ · ḡ_{t-1} + η_t by OLS with HC3 robust SEs.
+    Estimate x_t = μ + ρ · x_{t-1} + η_t by OLS with HC3 robust SEs.
 
-    Returns dict with ρ̂, SE, 95% CI, unconditional mean, half-life.
+    Returns dict with ρ̂, SE, 95% CI, half-life, residuals, and fit objects.
     """
-    df = pd.DataFrame({"y": series, "y_lag": series.shift(1)}).dropna()
+    df    = pd.DataFrame({"y": series, "y_lag": series.shift(1)}).dropna()
+    X     = sm.add_constant(df["y_lag"], has_constant="add")
+    model = sm.OLS(df["y"], X).fit(cov_type="HC3")
 
-    X = sm.add_constant(df["y_lag"], has_constant="add")
-    y = df["y"]
-
-    model = sm.OLS(y, X).fit(cov_type="HC3")
-
-    mu  = float(model.params["const"])
-    rho = float(model.params["y_lag"])
-    se  = float(model.bse["y_lag"])
-    ci  = model.conf_int(alpha=0.05).loc["y_lag"].values
-
-    # Unconditional mean = μ / (1 - ρ)
-    uncond_mean = mu / (1 - rho) if abs(1 - rho) > 1e-6 else np.nan
-
-    # Half-life: ρ^h = 0.5 → h = log(0.5) / log(ρ)
+    mu        = float(model.params["const"])
+    rho       = float(model.params["y_lag"])
+    se        = float(model.bse["y_lag"])
+    ci        = model.conf_int(alpha=0.05).loc["y_lag"].values
+    uncond    = mu / (1 - rho) if abs(1 - rho) > 1e-6 else np.nan
+    # half life: (1/2)=phi^h
     half_life = np.log(0.5) / np.log(rho) if 0 < rho < 1 else np.nan
 
-    print(f"\n  {label} AR(1):")
-    print(f"    ρ̂  = {rho:.4f}  SE={se:.4f}  "
-          f"95% CI=[{ci[0]:.4f}, {ci[1]:.4f}]")
-    print(f"    μ  = {mu:.6f}")
-    print(f"    Unconditional mean = {uncond_mean:.5f}")
-    print(f"    Half-life          = {half_life:.1f} quarters")
-    print(f"    R²                 = {model.rsquared:.4f}")
-    print(f"    N                  = {int(model.nobs)}")
-
     return {
-        "label":        label,
-        "rho":          rho,
-        "se":           se,
-        "ci95_lo":      ci[0],
-        "ci95_hi":      ci[1],
-        "mu":           mu,
-        "uncond_mean":  uncond_mean,
-        "half_life":    half_life,
-        "r2":           float(model.rsquared),
-        "nobs":         int(model.nobs),
-        "fitted":       model.fittedvalues,
-        "resid":        model.resid,
-        "y":            y,
-        "y_lag":        df["y_lag"],
+        "label":       label,
+        "rho":         rho,
+        "se":          se,
+        "ci95_lo":     ci[0],
+        "ci95_hi":     ci[1],
+        "mu":          mu,
+        "uncond_mean": uncond,
+        "half_life":   half_life,
+        "r2":          float(model.rsquared),
+        "nobs":        int(model.nobs),
+        "fitted":      model.fittedvalues,
+        "resid":       model.resid,
+        "y":           df["y"],
+        "y_lag":       df["y_lag"],
     }
 
 
-# ---------------------------------------------------------------------------
-# Step 4: Theoretical AR(1) IRF
-# ---------------------------------------------------------------------------
+def innovation_correlation(res_a: dict, res_b: dict) -> float:
+    """
+    Pearson correlation between AR(1) residuals η^a and η^b,
+    aligned on their common quarters.
+
+    This is corr(η^δ_t, η^{LD}_t) — the contemporaneous innovation
+    correlation across shock processes.  Even without cross-persistence
+    dynamics in A_1, allowing this to be nonzero (as Coles and Kelishomi
+    2018 do for their productivity-separation shock pair) is empirically
+    motivated and easy to incorporate in the model's shock calibration.
+    """
+    df = pd.DataFrame({"a": res_a["resid"], "b": res_b["resid"]}).dropna()
+    return float(df["a"].corr(df["b"]))
+
+
 def ar1_irf(rho: float, H: int = IRF_H) -> np.ndarray:
-    """
-    Theoretical IRF of the shock rate to a unit innovation at h=0.
-    IRF_h = ρ^h for h = 0, 1, ..., H.
-    """
+    """Theoretical shock-rate IRF to a unit innovation: IRF_h = ρ^h."""
     return np.array([rho ** h for h in range(H + 1)])
 
 
-# ---------------------------------------------------------------------------
-# Step 5: Plot
-# ---------------------------------------------------------------------------
-def plot_persistence(results: dict[str, dict], out_path: Path) -> None:
-    """
-    Three-panel figure for each shock:
-      Left:   Raw aggregate shock rate time series + AR(1) fitted values
-      Middle: Scatter of g_t vs g_{t-1} with OLS line
-      Right:  Theoretical AR(1) IRF given ρ̂
+# ═══════════════════════════════════════════════════════════════════════════════
+#  PRINTING
+# ═══════════════════════════════════════════════════════════════════════════════
 
-    Two rows — one per shock (δ top, s bottom).
+def _print_ar1(res: dict) -> None:
+    print(f"    ρ̂  = {res['rho']:.4f}  SE={res['se']:.4f}  "
+          f"95% CI=[{res['ci95_lo']:.4f}, {res['ci95_hi']:.4f}]")
+    print(f"    Half-life = {res['half_life']:.2f} qtrs  "
+          f"R² = {res['r2']:.4f}  N = {res['nobs']}")
+
+
+def _print_comparison(label_a: str, raw: dict, resid: dict) -> None:
+    """Side-by-side comparison of raw vs. residualized AR(1) for one shock."""
+    print(f"\n  {label_a}:")
+    print(f"    {'':30s}  {'Raw':>10}  {'Residualized':>14}")
+    print(f"    {'ρ̂':30s}  {raw['rho']:>10.4f}  {resid['rho']:>14.4f}")
+    print(f"    {'SE':30s}  {raw['se']:>10.4f}  {resid['se']:>14.4f}")
+    print(f"    {'Half-life (qtrs)':30s}  {raw['half_life']:>10.2f}  "
+          f"{resid['half_life']:>14.2f}")
+    print(f"    {'N':30s}  {raw['nobs']:>10d}  {resid['nobs']:>14d}")
+    print(f"    {'Sample start':30s}  {raw['y'].index[0]:>10}  "
+          f"{resid['y'].index[0]:>14}")
+    bias = raw['rho'] - resid['rho']
+    print(f"    {'Δρ (raw − resid)':30s}  {bias:>+10.4f}"
+          f"  ← demand/productivity bias in raw ρ̂")
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  PLOTTING
+# ═══════════════════════════════════════════════════════════════════════════════
+
+REC_SPANS = [("1990-07-01", "1991-03-01"),
+             ("2001-03-01", "2001-11-01"),
+             ("2007-12-01", "2009-06-01")]
+
+
+def _plot_persistence(results: dict, spec_label: str, out_path: Path) -> None:
+    """
+    Two-row figure (δ top, LD bottom), three panels each:
+      Left:   Aggregate shock rate time series + AR(1) fitted values
+      Middle: Scatter g_t vs g_{t-1} with OLS line
+      Right:  Theoretical AR(1) IRF given ρ̂
     """
     shocks = list(results.keys())
-    n = len(shocks)
-    fig, axes = plt.subplots(n, 3, figsize=(15, 4.5 * n))
-    if n == 1:
+    colors = {"δ": "#1f77b4", "LD": "#d62728"}
+    fig, axes = plt.subplots(len(shocks), 3, figsize=(15, 4.5 * len(shocks)))
+    if len(shocks) == 1:
         axes = axes[np.newaxis, :]
 
-    colors = {"δ": "#1f77b4", "s": "#d62728"}
-
-    for row, label in enumerate(shocks):
-        res   = results[label]
-        rho   = res["rho"]
-        color = colors.get(label, "#2ca02c")
-        irf   = ar1_irf(rho, IRF_H)
+    for row, lbl in enumerate(shocks):
+        res   = results[lbl]
+        color = colors.get(lbl, "#2ca02c")
+        irf   = ar1_irf(res["rho"], IRF_H)
         h_arr = np.arange(IRF_H + 1)
 
-        # --- Panel 1: Time series ---
-        ax1 = axes[row, 0]
-        # Convert quarter labels to approximate dates for x-axis
-        qs  = res["y"].index.tolist()
-        dts = [pd.Period(q, freq="Q").to_timestamp() for q in qs]
-        fit_dts = [pd.Period(q, freq="Q").to_timestamp()
-                   for q in res["fitted"].index]
-
+        # Panel 1: time series
+        ax1  = axes[row, 0]
+        qs   = res["y"].index.tolist()
+        dts  = [pd.Period(q, freq="Q").to_timestamp() for q in qs]
+        fdts = [pd.Period(q, freq="Q").to_timestamp()
+                for q in res["fitted"].index]
         ax1.plot(dts, res["y"].values * 100, color=color,
-                 linewidth=1.2, alpha=0.8, label="Observed")
-        ax1.plot(fit_dts, res["fitted"].values * 100,
-                 color="black", linewidth=1.0, linestyle="--",
-                 alpha=0.7, label="AR(1) fit")
-
-        # NBER recession shading
-        for rs, re in [("1990-07-01","1991-03-01"),
-                       ("2001-03-01","2001-11-01"),
-                       ("2007-12-01","2009-06-01")]:
+                 lw=1.2, alpha=0.8, label="Observed")
+        ax1.plot(fdts, res["fitted"].values * 100,
+                 color="black", lw=1.0, ls="--", alpha=0.7, label="AR(1) fit")
+        for rs, re in REC_SPANS:
             ax1.axvspan(pd.Timestamp(rs), pd.Timestamp(re),
                         alpha=0.10, color="grey")
-
-        ax1.set_title(f"{label} shock — aggregate rate over time", fontsize=10)
-        ax1.set_ylabel("Shock rate (×100, %)", fontsize=9)
+        ax1.set_title(f"{lbl} — {spec_label} rate", fontsize=10)
+        ax1.set_ylabel("Shock rate (×100)", fontsize=9)
         ax1.legend(fontsize=8)
-        ax1.grid(axis="y", linewidth=0.4, alpha=0.4)
+        ax1.grid(axis="y", lw=0.4, alpha=0.4)
 
-        # --- Panel 2: Scatter g_t vs g_{t-1} ---
-        ax2 = axes[row, 1]
+        # Panel 2: scatter
+        ax2  = axes[row, 1]
         x_sc = res["y_lag"].values * 100
         y_sc = res["y"].values * 100
         ax2.scatter(x_sc, y_sc, color=color, alpha=0.4, s=12)
-
-        # OLS line
         x_line = np.linspace(x_sc.min(), x_sc.max(), 100)
-        mu_pct  = res["mu"] * 100
-        rho_val = res["rho"]
-        ax2.plot(x_line, mu_pct + rho_val * x_line,
-                 color="black", linewidth=1.2,
-                 label=f"ρ̂ = {rho_val:.3f}")
-        ax2.set_xlabel(r"$\bar{g}_{t-1}$ (×100)", fontsize=9)
-        ax2.set_ylabel(r"$\bar{g}_t$ (×100)", fontsize=9)
-        ax2.set_title(f"{label} shock — AR(1) scatter", fontsize=10)
+        ax2.plot(x_line, res["mu"] * 100 + res["rho"] * x_line,
+                 color="black", lw=1.2, label=f"ρ̂ = {res['rho']:.3f}")
+        ax2.set_xlabel(r"$x_{t-1}$ (×100)", fontsize=9)
+        ax2.set_ylabel(r"$x_t$ (×100)", fontsize=9)
+        ax2.set_title(f"{lbl} — AR(1) scatter", fontsize=10)
         ax2.legend(fontsize=9)
-        ax2.grid(linewidth=0.4, alpha=0.4)
+        ax2.grid(lw=0.4, alpha=0.4)
 
-        # --- Panel 3: Theoretical IRF ---
+        # Panel 3: IRF
         ax3 = axes[row, 2]
-        ax3.plot(h_arr, irf, color=color, linewidth=2.0,
-                 marker="o", markersize=3.5,
-                 label=f"ρ̂ = {rho:.3f}")
-        ax3.axhline(0, color="black", linewidth=0.8)
-        ax3.axhline(0.5, color="grey", linewidth=0.6,
-                    linestyle=":", alpha=0.7,
+        ax3.plot(h_arr, irf, color=color, lw=2.0, marker="o", ms=3.5,
+                 label=f"ρ̂ = {res['rho']:.3f}")
+        ax3.axhline(0,   color="black", lw=0.8)
+        ax3.axhline(0.5, color="grey",  lw=0.6, ls=":",
                     label=f"Half-life ≈ {res['half_life']:.1f} qtrs")
-        for hh in [4, 8, 12, 16, 20]:
-            ax3.axvline(hh, color="grey", linewidth=0.4,
-                        linestyle=":", alpha=0.5)
-        ax3.set_title(f"{label} shock — theoretical AR(1) IRF\n"
-                      f"(response of shock rate to unit innovation)",
-                      fontsize=10)
+        ax3.set_title(f"{lbl} — theoretical IRF  (ρ̂ʰ)", fontsize=10)
         ax3.set_xlabel("Horizon h (quarters)", fontsize=9)
         ax3.set_ylabel("IRF = ρ̂ʰ", fontsize=9)
         ax3.set_xticks(h_arr)
         ax3.legend(fontsize=9)
-        ax3.grid(axis="y", linewidth=0.4, alpha=0.4)
-
-    # Caption
-    caption = (
-        "Notes: Left panels show the aggregate national shock rate "
-        r"$\bar{g}_t^{(k)} = \sum_j \omega_j \bar{g}_{j,t}^{(k)}$"
-        " (employment-weighted average across industries, ×100) "
-        "with the AR(1) fitted values overlaid. Grey shading marks NBER recessions.  "
-        "Middle panels show the AR(1) scatter of $\\bar{g}_t$ on $\\bar{g}_{t-1}$ "
-        "with the OLS regression line; $\\hat{\\rho}$ is estimated by OLS with HC3 "
-        "robust standard errors.  "
-        "Right panels show the theoretical impulse response of the shock rate "
-        "to a unit innovation at $h=0$: $\\mathrm{IRF}_h = \\hat{\\rho}^h$. "
-        "The dashed grey line marks the half-life (IRF = 0.5). "
-        "These persistence estimates discipline interpretation of the LP IRFs "
-        "in part5: an empirical unemployment IRF that does not revert within "
-        "16 quarters is consistent with a structural shock whose own IRF "
-        "(right panel) also remains well above zero at that horizon."
-    )
-    fig.text(0.5, -0.03, caption, ha="center", va="top", fontsize=7.5,
-             wrap=True, transform=fig.transFigure,
-             bbox=dict(boxstyle="round,pad=0.4", facecolor="#f9f9f9",
-                       edgecolor="#cccccc", linewidth=0.8),
-             multialignment="left")
+        ax3.grid(axis="y", lw=0.4, alpha=0.4)
 
     fig.suptitle(
-        "Aggregate AR(1) shock persistence — δ and s shock rates\n"
-        f"(base year {BASE_YEAR} employment weights; OLS with HC3 SEs)",
-        fontsize=12, y=1.01,
+        f"Aggregate AR(1) shock persistence — {spec_label} rates\n"
+        f"(base-year {BASE_YEAR} employment weights; OLS with HC3 SEs)",
+        fontsize=12, y=1.01
     )
     fig.tight_layout()
     fig.savefig(out_path, dpi=150, bbox_inches="tight")
     plt.close(fig)
-    print(f"\nPlot saved: {out_path}")
+    print(f"  Plot saved: {out_path}")
 
 
-# ===========================================================================
-# Main
-# ===========================================================================
-print("\n" + "=" * 60)
-print("Part 6 — Aggregate Shock Persistence (AR(1))")
-print("=" * 60)
+def _plot_irf_comparison(raw_results: dict, resid_results: dict,
+                         out_path: Path) -> None:
+    """
+    Overlay raw vs. residualized theoretical IRFs for each shock.
+    One panel per shock (δ left, LD right).
+    """
+    shocks = list(raw_results.keys())
+    colors_raw   = {"δ": "#1f77b4", "LD": "#d62728"}
+    colors_resid = {"δ": "#aec7e8", "LD": "#f7b6b2"}
+    h_arr = np.arange(IRF_H + 1)
 
-# -----------------------------------------------------------------------
-# Load
-# -----------------------------------------------------------------------
-print("\n[1] Loading national employment weights")
-weights = load_national_weights(SHARES_FILE)
+    fig, axes = plt.subplots(1, len(shocks), figsize=(7 * len(shocks), 4))
+    if len(shocks) == 1:
+        axes = [axes]
 
-print("\n[2] Loading shock rate panels")
-delta_rates = pd.read_parquet(DELTA_RATES_FILE)
-s_rates     = pd.read_parquet(S_RATES_FILE)
-print(f"  δ rates: {delta_rates.shape}")
-print(f"  s rates: {s_rates.shape}")
+    for ax, lbl in zip(axes, shocks):
+        rho_r  = raw_results[lbl]["rho"]
+        rho_re = resid_results[lbl]["rho"]
+        ax.plot(h_arr, ar1_irf(rho_r,  IRF_H), color=colors_raw[lbl],
+                lw=2, label=f"Raw  ρ̂={rho_r:.3f}")
+        ax.plot(h_arr, ar1_irf(rho_re, IRF_H), color=colors_resid[lbl],
+                lw=2, ls="--", label=f"Residualized  ρ̂={rho_re:.3f}")
+        ax.axhline(0, color="black", lw=0.8)
+        ax.set_title(f"{lbl} shock — IRF comparison", fontsize=10)
+        ax.set_xlabel("Horizon h (quarters)", fontsize=9)
+        ax.set_ylabel("IRF = ρ̂ʰ", fontsize=9)
+        ax.legend(fontsize=9)
+        ax.grid(axis="y", lw=0.4, alpha=0.4)
 
-# -----------------------------------------------------------------------
-# Build aggregate time series
-# -----------------------------------------------------------------------
-print("\n[3] Constructing aggregate shock rates")
-print("  δ:")
-agg_delta = build_aggregate_shock(delta_rates, "g_delta_loo", weights)
-print("  s:")
-agg_s     = build_aggregate_shock(s_rates,     "g_s_loo",     weights)
+    fig.suptitle(
+        "Raw vs. residualized AR(1) IRF comparison\n"
+        "(gap = demand/productivity contamination in raw ρ̂)",
+        fontsize=11
+    )
+    fig.tight_layout()
+    fig.savefig(out_path, dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    print(f"  Comparison plot saved: {out_path}")
 
-# -----------------------------------------------------------------------
-# AR(1) estimation
-# -----------------------------------------------------------------------
-print("\n[4] Estimating AR(1) persistence")
-res_delta = estimate_ar1(agg_delta, "δ")
-res_s     = estimate_ar1(agg_s,     "s")
 
-# -----------------------------------------------------------------------
-# Save results table
-# -----------------------------------------------------------------------
-summary = pd.DataFrame([
-    {k: v for k, v in res_delta.items()
-     if k not in ("fitted","resid","y","y_lag")},
-    {k: v for k, v in res_s.items()
-     if k not in ("fitted","resid","y","y_lag")},
-])
-summary.to_csv(RESULTS_DIR / "shock_persistence.csv", index=False)
-print(f"\n  Saved: {RESULTS_DIR / 'shock_persistence.csv'}")
+# ═══════════════════════════════════════════════════════════════════════════════
+#  MAIN
+# ═══════════════════════════════════════════════════════════════════════════════
 
-# -----------------------------------------------------------------------
-# Plot
-# -----------------------------------------------------------------------
-print("\n[5] Plotting")
-plot_persistence(
-    {"δ": res_delta, "s": res_s},
-    out_path=RESULTS_DIR / "shock_persistence.png",
-)
-_open_file(RESULTS_DIR / "shock_persistence.png")
+def main():
+    print("=" * 65)
+    print("Part 6 — Aggregate Shock Persistence (AR(1))")
+    print("=" * 65)
 
-# -----------------------------------------------------------------------
-# Summary for part5 use
-# -----------------------------------------------------------------------
-print("\n" + "=" * 60)
-print("Summary for LP interpretation (part5)")
-print("=" * 60)
-for res in [res_delta, res_s]:
-    irf = ar1_irf(res["rho"], IRF_H)
-    print(f"\n  {res['label']} shock:")
-    print(f"    ρ̂ = {res['rho']:.4f}  (half-life = {res['half_life']:.1f} qtrs)")
-    print(f"    Shock IRF at h=4:  {irf[4]:.3f}")
-    print(f"    Shock IRF at h=8:  {irf[8]:.3f}")
-    print(f"    Shock IRF at h=16: {irf[16]:.3f}")
-    print(f"    → An unemployment IRF that has not reverted by h=16 is "
-          f"{'consistent' if irf[16] > 0.1 else 'harder to explain'} "
-          f"with ρ̂={res['rho']:.3f}")
+    # ── 1. Employment weights ─────────────────────────────────────────────────
+    print("\n[1] Loading employment weights")
+    weights = _load_weights()
+    print(f"  {len(weights)} industries, weight sum={weights.sum():.6f}")
+
+    # ── 2. Raw aggregate shock rates ──────────────────────────────────────────
+    print("\n[2] Raw aggregate shock rates")
+    raw_d  = _weighted_agg(_nat_avg(SHOCK_RATES_PATH,    "g_delta_loo")
+                            .rename(columns={"g_delta_loo": "rate"}),
+                           "rate", weights)
+    raw_ld = _weighted_agg(_nat_avg(SHOCK_RATES_LD_PATH, "g_ld_loo")
+                            .rename(columns={"g_ld_loo": "rate"}),
+                           "rate", weights)
+    # _nat_avg returns a 3-column df; rename for _weighted_agg
+    def _agg(path, col):
+        df = _nat_avg(path, col)
+        df = df.rename(columns={col: "rate"})
+        return _weighted_agg(df, "rate", weights)
+
+    agg_raw_d  = _agg(SHOCK_RATES_PATH,    "g_delta_loo")
+    agg_raw_ld = _agg(SHOCK_RATES_LD_PATH, "g_ld_loo")
+    print(f"  δ:  {agg_raw_d.index[0]}–{agg_raw_d.index[-1]},  "
+          f"mean={agg_raw_d.mean():.5f},  SD={agg_raw_d.std():.5f}")
+    print(f"  LD: {agg_raw_ld.index[0]}–{agg_raw_ld.index[-1]},  "
+          f"mean={agg_raw_ld.mean():.5f},  SD={agg_raw_ld.std():.5f}")
+
+    # ── 3. Residualized aggregate shock rates ─────────────────────────────────
+    print("\n[3] Residualized aggregate shock rates (v2 spec)")
+    resid_panel = _build_residualized_panel()
+    if resid_panel is None:
+        print("  WARNING: cache files missing — skipping residualized spec.")
+        print("  Run part2b_shock_comovement.py with FRED_API_KEY first.")
+        has_resid = False
+    else:
+        def _agg_resid(col):
+            df = resid_panel[["industry_code", "quarter_label", col]].copy()
+            df = df.rename(columns={col: "rate"})
+            return _weighted_agg(df, "rate", weights)
+
+        agg_resid_d  = _agg_resid("nu_delta")
+        agg_resid_ld = _agg_resid("nu_ld")
+        has_resid    = True
+        print(f"  ν^δ:  {agg_resid_d.index[0]}–{agg_resid_d.index[-1]},  "
+              f"mean={agg_resid_d.mean():.5f},  SD={agg_resid_d.std():.5f}")
+        print(f"  ν^LD: {agg_resid_ld.index[0]}–{agg_resid_ld.index[-1]},  "
+              f"mean={agg_resid_ld.mean():.5f},  SD={agg_resid_ld.std():.5f}")
+
+    # ── 4. AR(1) estimation ───────────────────────────────────────────────────
+    print("\n[4] AR(1) estimation")
+    print("\n  --- Raw rates ---")
+    res_raw_d  = estimate_ar1(agg_raw_d,  "δ  (raw)")
+    res_raw_ld = estimate_ar1(agg_raw_ld, "LD (raw)")
+    _print_ar1(res_raw_d)
+    _print_ar1(res_raw_ld)
+
+    corr_raw = innovation_correlation(res_raw_d, res_raw_ld)
+    print(f"\n  Innovation correlation (raw):")
+    print(f"    corr(η^δ, η^{{LD}}) = {corr_raw:+.4f}")
+    print(f"    Model assumption corr=0 is "
+          f"{'approximately satisfied' if abs(corr_raw) < 0.15 else 'violated'}.")
+
+    if has_resid:
+        print("\n  --- Residualized rates ---")
+        res_re_d  = estimate_ar1(agg_resid_d,  "δ  (residualized)")
+        res_re_ld = estimate_ar1(agg_resid_ld, "LD (residualized)")
+        _print_ar1(res_re_d)
+        _print_ar1(res_re_ld)
+
+        corr_resid = innovation_correlation(res_re_d, res_re_ld)
+        print(f"\n  Innovation correlation (residualized):")
+        print(f"    corr(η^δ, η^{{LD}}) = {corr_resid:+.4f}")
+        print(f"    Model assumption corr=0 is "
+              f"{'approximately satisfied' if abs(corr_resid) < 0.15 else 'violated'}.")
+
+    # ── 5. Comparison table ───────────────────────────────────────────────────
+    print("\n[5] Raw vs. residualized comparison")
+    if has_resid:
+        _print_comparison("δ",  res_raw_d,  res_re_d)
+        _print_comparison("LD", res_raw_ld, res_re_ld)
+
+        print(f"\n  Innovation correlations:")
+        print(f"    Raw:          corr(η^δ, η^{{LD}}) = {corr_raw:+.4f}")
+        print(f"    Residualized: corr(η^δ, η^{{LD}}) = {corr_resid:+.4f}")
+        print(f"\n  Interpretation:")
+        print(f"    The gap Δρ^δ  = {res_raw_d['rho'] - res_re_d['rho']:+.4f} "
+              f"is the upward bias in raw ρ̂^δ from demand/productivity.")
+        print(f"    The gap Δρ^LD = {res_raw_ld['rho'] - res_re_ld['rho']:+.4f} "
+              f"is the analogous bias for LD.")
+        print(f"    The residualized estimates are the preferred calibration "
+              f"targets for the model's AR(1) shock processes.")
+        print(f"    The innovation correlation — even after residualization —")
+        print(f"    motivates allowing corr(ε^δ, ε^s) ≠ 0 in the model,")
+        print(f"    consistent with Coles and Kelishomi (2018).")
+
+    # ── 6. Save results CSV ───────────────────────────────────────────────────
+    print("\n[6] Saving results")
+    rows = []
+    for res, spec in [(res_raw_d, "raw"), (res_raw_ld, "raw")]:
+        rows.append({k: v for k, v in res.items()
+                     if k not in ("fitted", "resid", "y", "y_lag")})
+        rows[-1]["spec"] = spec
+
+    if has_resid:
+        for res, spec in [(res_re_d, "residualized"), (res_re_ld, "residualized")]:
+            rows.append({k: v for k, v in res.items()
+                         if k not in ("fitted", "resid", "y", "y_lag")})
+            rows[-1]["spec"] = spec
+
+        rows.append({"label": "innovation_corr_raw",   "rho": corr_raw,   "spec": "raw"})
+        rows.append({"label": "innovation_corr_resid", "rho": corr_resid, "spec": "residualized"})
+
+    pd.DataFrame(rows).to_csv(RESULTS_DIR / "shock_persistence.csv", index=False)
+    print(f"  Saved: {RESULTS_DIR / 'shock_persistence.csv'}")
+
+    # ── 7. Plots ──────────────────────────────────────────────────────────────
+    print("\n[7] Plotting")
+    _plot_persistence(
+        {"δ": res_raw_d, "LD": res_raw_ld},
+        spec_label="raw",
+        out_path=RESULTS_DIR / "shock_persistence_raw.png"
+    )
+    if has_resid:
+        _plot_persistence(
+            {"δ": res_re_d, "LD": res_re_ld},
+            spec_label="residualized",
+            out_path=RESULTS_DIR / "shock_persistence_resid.png"
+        )
+        _plot_irf_comparison(
+            {"δ": res_raw_d,  "LD": res_raw_ld},
+            {"δ": res_re_d,   "LD": res_re_ld},
+            out_path=RESULTS_DIR / "shock_persistence_comparison.png"
+        )
+
+    # ── 8. Summary ────────────────────────────────────────────────────────────
+    print("\n" + "=" * 65)
+    print("CALIBRATION SUMMARY")
+    print("=" * 65)
+    print(f"\n  {'Shock':<6}  {'Spec':>14}  {'ρ̂':>8}  {'Half-life':>10}  {'N':>6}")
+    print(f"  {'-'*6}  {'-'*14}  {'-'*8}  {'-'*10}  {'-'*6}")
+    for res, spec in [(res_raw_d, "raw"), (res_raw_ld, "raw")]:
+        print(f"  {res['label'].split()[0]:<6}  {spec:>14}  "
+              f"{res['rho']:>8.4f}  {res['half_life']:>10.2f}  {res['nobs']:>6}")
+    if has_resid:
+        for res, spec in [(res_re_d, "residualized"), (res_re_ld, "residualized")]:
+            print(f"  {res['label'].split()[0]:<6}  {spec:>14}  "
+                  f"{res['rho']:>8.4f}  {res['half_life']:>10.2f}  {res['nobs']:>6}")
+        print(f"\n  Innovation correlations:")
+        print(f"    Raw:          {corr_raw:+.4f}")
+        print(f"    Residualized: {corr_resid:+.4f}")
+    print(f"\n  Preferred calibration targets (residualized):")
+    if has_resid:
+        print(f"    ρ_δ  = {res_re_d['rho']:.4f}  "
+              f"(raw: {res_raw_d['rho']:.4f}, bias={res_raw_d['rho']-res_re_d['rho']:+.4f})")
+        print(f"    ρ_LD = {res_re_ld['rho']:.4f}  "
+              f"(raw: {res_raw_ld['rho']:.4f}, bias={res_raw_ld['rho']-res_re_ld['rho']:+.4f})")
+        print(f"    corr(ε^δ, ε^LD) = {corr_resid:+.4f}")
+    else:
+        print(f"    ρ_δ  = {res_raw_d['rho']:.4f}  (raw only — residualized unavailable)")
+        print(f"    ρ_LD = {res_raw_ld['rho']:.4f}  (raw only — residualized unavailable)")
+
+    print("\nDone.")
+
+
+if __name__ == "__main__":
+    main()

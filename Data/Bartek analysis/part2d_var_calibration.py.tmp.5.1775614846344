@@ -414,58 +414,35 @@ def _bootstrap_irfs(df, y_cols, n_lags, K, n_irf, B=500, seed=42):
     """
     Residual bootstrap for VAR structural IRF confidence bands.
 
-    The bootstrap operates entirely in the two-way-demeaned space so that
-    each replication is on exactly the same footing as the point estimate.
-    Working in raw panel space and re-calling _estimate_var would apply
-    two-way demeaning a second time to bootstrap data that is already
-    demeaned, producing CIs that are not centred on the point estimate.
-
-    Algorithm:
-      1. Two-way demean the panel once and build (Y_dm, X_dm) arrays.
-      2. Estimate VAR on the demeaned arrays via OLS → B, residuals.
-         Y_hat = X_dm @ B.T  (fitted values in demeaned space).
-      3. In each replication:
-           a. Draw N rows from the residuals with replacement.
-           b. Form Y_b = Y_hat + drawn residuals  (still demeaned).
-           c. Re-run OLS of Y_b on X_dm → B_b, Sigma_b, Cholesky P_b.
-           d. Compute structural IRFs from (A_list_b, P_b).
-      4. Quantile the B replication IRFs for CI bands.
+    Each replication: draw N residuals with replacement, add to fitted values,
+    re-estimate VAR + Cholesky, record IRFs.  Returns (ci_lo, ci_hi) dicts.
     """
     rng = np.random.default_rng(seed)
+    A0, S0, meta0, res0, Ydm0 = _estimate_var(df, y_cols, n_lags)
+    Y_hat = Ydm0 - res0
+    N0    = len(res0)
 
-    # ── point-estimate demeaned arrays (computed once) ────────────────────────
-    df_dm        = _two_way_demean(df, y_cols)
-    Y_dm, X_dm, meta0 = _build_var_data(df_dm, y_cols, n_lags)
-    N0           = len(Y_dm)
-
-    # Point-estimate OLS in demeaned space
-    B0           = np.linalg.lstsq(X_dm, Y_dm, rcond=None)[0].T  # (K × K*L)
-    res0         = Y_dm - X_dm @ B0.T                             # (N, K)
-    Y_hat        = Y_dm - res0                                     # (N, K)
-    df_resid     = N0 - K * n_lags
-    irf_keys     = list(_compute_structural_irfs(
-                       [B0[:, l*K:(l+1)*K] for l in range(n_lags)],
-                       np.linalg.cholesky((res0.T @ res0) / df_resid),
-                       K, n_irf).keys())
-    irf_boots    = {k: [] for k in irf_keys}
+    irf_boots = {k: [] for k in _compute_structural_irfs(A0, np.linalg.cholesky(S0), K, n_irf)}
 
     for _ in range(B):
-        idx      = rng.integers(0, N0, size=N0)
-        Y_b      = Y_hat + res0[idx]               # synthetic demeaned panel
-
-        # OLS on same X_dm (FEs already absorbed — do NOT re-demean)
-        B_b      = np.linalg.lstsq(X_dm, Y_b, rcond=None)[0].T
-        res_b    = Y_b - X_dm @ B_b.T
-        Sigma_b  = (res_b.T @ res_b) / df_resid
-        A_list_b = [B_b[:, l*K:(l+1)*K] for l in range(n_lags)]
-
+        idx    = rng.integers(0, N0, size=N0)
+        Y_b    = Y_hat + res0[idx]
+        df_b   = df.copy()
+        tmp    = meta0.copy()
+        tmp[y_cols[0] + "_b"] = Y_b[:, 0]
+        tmp[y_cols[1] + "_b"] = Y_b[:, 1]
+        df_b   = df_b.merge(tmp, on=["industry_code", "quarter_label"], how="left")
+        mask   = df_b[y_cols[0] + "_b"].notna()
+        for j, c in enumerate(y_cols):
+            df_b.loc[mask, c] = df_b.loc[mask, c + "_b"]
+        df_b   = df_b.drop(columns=[c + "_b" for c in y_cols])
         try:
-            P_b    = np.linalg.cholesky(Sigma_b)
-            irfs_b = _compute_structural_irfs(A_list_b, P_b, K, n_irf)
+            Ab, Sb, _, _, _ = _estimate_var(df_b, y_cols, n_lags)
+            irfs_b = _compute_structural_irfs(Ab, np.linalg.cholesky(Sb), K, n_irf)
             for k in irf_boots:
                 irf_boots[k].append(irfs_b[k])
-        except np.linalg.LinAlgError:
-            continue   # Sigma_b not PSD — skip (rare with large N)
+        except (np.linalg.LinAlgError, ValueError):
+            continue
 
     alpha = (1 - CI_LEVEL) / 2
     ci_lo = {k: np.quantile(np.array(v), alpha,     axis=0) for k, v in irf_boots.items() if v}
@@ -492,46 +469,39 @@ def _save_output(A_list, Sigma, P, irfs_point, ci_lo, ci_hi,
     cum_ld     = irfs_point["ld_to_ld"].sum()
     HORIZONS   = list(range(N_IRF + 1))
 
-    # ── IRF plots: one figure per shock, both responses overlaid ─────────────
-    # Each figure shows ν^δ and ν^{LD} responses to one structural shock,
-    # making it easy to read the own-response and cross-response together.
-    shock_specs = [
-        # (shock_key_prefix, shock_label, output_filename)
-        ("delta", "ε^δ shock (est. closings)",  "var_irf_delta_shock.png"),
-        ("ld",    "ε^{LD} shock (layoffs/disc.)", "var_irf_ld_shock.png"),
+    # ── IRF plot ──────────────────────────────────────────────────────────────
+    fig, axes = plt.subplots(2, 2, figsize=(10, 7))
+    fig.suptitle(
+        "Bivariate Panel VAR: Structural IRFs on Shock Series\n"
+        f"(VAR({selected_lags}), residualized ν, industry+time FEs, "
+        f"{int(CI_LEVEL*100)}% bootstrap CIs)",
+        fontsize=11
+    )
+    panel_info = [
+        (0, 0, "delta_to_delta", "ε^δ shock",   "ν^δ (est. closings)",  "#1f77b4"),
+        (0, 1, "delta_to_ld",    "ε^δ shock",   "ν^{LD} (layoffs)",     "#d62728"),
+        (1, 0, "ld_to_delta",    "ε^{LD} shock", "ν^δ (est. closings)", "#1f77b4"),
+        (1, 1, "ld_to_ld",       "ε^{LD} shock", "ν^{LD} (layoffs)",    "#d62728"),
     ]
-    series_specs = [
-        # (key_suffix, series_label, color, linestyle)
-        ("delta", "ν^δ  (est. closings)", "#1f77b4", "-"),
-        ("ld",    "ν^{LD} (layoffs)",     "#d62728", "--"),
-    ]
-    p_irfs = []
-    for shock_prefix, shock_label, fname in shock_specs:
-        fig, ax = plt.subplots(figsize=(7, 4))
-        fig.suptitle(
-            f"Panel VAR: Responses to 1-SD {shock_label}\n"
-            f"(VAR({selected_lags}), residualized ν, industry+time FEs, "
-            f"{int(CI_LEVEL*100)}% bootstrap CIs)",
-            fontsize=10
-        )
-        for suffix, series_label, color, ls in series_specs:
-            key = f"{shock_prefix}_to_{suffix}"
-            pt  = irfs_point[key]
-            lo  = ci_lo.get(key, pt)
-            hi  = ci_hi.get(key, pt)
-            ax.fill_between(HORIZONS, lo, hi, alpha=0.15, color=color)
-            ax.plot(HORIZONS, pt, color=color, lw=2, ls=ls, label=series_label)
-        ax.axhline(0, color="black", lw=0.8, ls=":")
-        ax.set_xlabel("Quarters after shock", fontsize=9)
-        ax.set_ylabel("Log rate response", fontsize=9)
-        ax.legend(fontsize=9)
+    for row, col, key, shock_lbl, resp_lbl, color in panel_info:
+        ax = axes[row, col]
+        pt = irfs_point[key]
+        lo = ci_lo.get(key, pt)
+        hi = ci_hi.get(key, pt)
+        ax.fill_between(HORIZONS, lo, hi, alpha=0.20, color=color,
+                        label=f"{int(CI_LEVEL*100)}% CI")
+        ax.plot(HORIZONS, pt, color=color, lw=2, label="Point estimate")
+        ax.axhline(0, color="black", lw=0.8, ls="--")
+        ax.set_title(f"Response of {resp_lbl}\nto 1-SD {shock_lbl}", fontsize=9)
+        ax.set_xlabel("Quarters", fontsize=8)
+        ax.set_ylabel("Log rate response", fontsize=8)
         ax.tick_params(labelsize=8)
-        plt.tight_layout()
-        p = RESULTS_DIR / fname
-        fig.savefig(p, dpi=150, bbox_inches="tight")
-        plt.close(fig)
-        p_irfs.append(p)
-        print(f"  IRF plot saved: {p}")
+        ax.legend(fontsize=7)
+    plt.tight_layout()
+    p_irf = RESULTS_DIR / "var_irf_chol.png"
+    fig.savefig(p_irf, dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    print(f"  IRF plot saved: {p_irf}")
 
     # ── calibration CSV ───────────────────────────────────────────────────────
     P_inv = np.linalg.inv(P)
@@ -609,11 +579,9 @@ def _save_output(A_list, Sigma, P, irfs_point, ci_lo, ci_hi,
         print("  expected: time FEs absorb aggregate cycles; within-estimator reflects")
         print("  industry-specific variation only.")
 
-    print(f"\n  Output:")
-    for p in p_irfs:
-        print(f"    {p}")
-    print(f"    {p_calib}")
-    print(f"    {RESULTS_DIR / 'var_lag_selection.csv'}")
+    print(f"\n  Output: {p_irf}")
+    print(f"          {p_calib}")
+    print(f"          {RESULTS_DIR / 'var_lag_selection.csv'}")
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -688,11 +656,4 @@ def main():
 
     # ── 5. Output ─────────────────────────────────────────────────────────────
     print("\n--- Section 5: Output ---")
-    _save_output(A_list, Sigma, P, irfs_point, ci_lo, ci_hi,
-                 n_ind, t_span, N_est, selected_lags)
-
-    print("\nDone.")
-
-
-if __name__ == "__main__":
-    main()
+    _save_output(A_list, Sigma, P, irfs_point, ci_lo
