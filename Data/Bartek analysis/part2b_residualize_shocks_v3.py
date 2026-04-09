@@ -33,11 +33,9 @@ Regressors
                     (FRED: JTSJOL / UNEMPLOY)
   φ_j × ΔMP_t       monetary-policy × establishment-size interaction  [v3]
                     φ_j = log avg establishment size from Census CBP 2000
-                    ΔMP_t = quarterly Δ Wu-Xia shadow FFR (Atlanta Fed)
-                    Captures industry-specific credit supply variation:
-                    small-establishment industries are bank-dependent and
-                    most sensitive to monetary tightening (Gertler-Gilchrist
-                    1994), explaining why r(δ,LD) survives v2 residualization.
+                    ΔMP_t = quarterly Δ Wu-Xia shadow FFR (Atlanta Fed),
+                    extended with FEDFUNDS (FRED) post-2022Q1 — theoretically
+                    exact since shadow rate = FFR when FFR > 0.25%.
 
 All regressors are either aggregate or lagged one quarter to ensure they
 are predetermined with respect to the current-period shock draw.
@@ -96,6 +94,7 @@ pd.set_option('display.max_columns', 8)
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+plt.ioff()   # suppress interactive display; prevents REPL from printing repr of artists
 from pathlib import Path
 
 # ── working directory ─────────────────────────────────────────────────────────
@@ -343,7 +342,8 @@ def _build_tightness_from_local() -> pd.DataFrame:
 
 def _fetch_wuxia() -> pd.DataFrame:
     """
-    Download Wu-Xia (2016) shadow FFR from Atlanta Fed Excel file.
+    Download Wu-Xia (2016) shadow FFR from Atlanta Fed and extend with
+    FEDFUNDS from FRED for the post-suspension period.
 
     Excel layout (confirmed):
       Col 0: date (monthly, last business day)
@@ -353,12 +353,14 @@ def _fetch_wuxia() -> pd.DataFrame:
       Last observation: 2022M2 (updates suspended when FOMC exited ZLB).
 
     Strategy:
-      - Use Wu-Xia where non-null (1990Q1–2022Q1; covers full estimation sample)
-      - Fall back to effective FFR for any pre-1990 quarters
-      - Quarterly series = average of monthly values within each quarter
-      - Output is first-differenced: ΔMP_t is stationary, interpretable as the
-        marginal change in monetary policy stance, consistent with other flow
-        controls in the spec (Δlog p, Δlog VA).
+      - Within Excel coverage: use Wu-Xia where non-null (1990Q1–2022Q1);
+        fall back to FEDFUNDS column for pre-1990 quarters.
+      - Post-2022M2: extend with FEDFUNDS from FRED. This is theoretically
+        exact: Wu-Xia model states shadow rate = FFR whenever FFR > 0.25%,
+        which holds throughout 2022Q2 onward.
+      - Quarterly series = average of monthly values within each quarter.
+      - Output first-differenced (ΔMP_t): stationary, interpretable as
+        marginal change in policy stance, consistent with other flow controls.
 
     Returns DataFrame: [quarter_label, wuxia_level, delta_wuxia]
     """
@@ -368,6 +370,7 @@ def _fetch_wuxia() -> pd.DataFrame:
               f"({df['quarter_label'].min()}–{df['quarter_label'].max()})")
         return df
 
+    # ── Step 1: download Atlanta Fed Excel ───────────────────────────────────
     print("  Downloading Wu-Xia shadow FFR from Atlanta Fed ...")
     try:
         resp = requests.get(WUXIA_URL, timeout=30)
@@ -386,11 +389,42 @@ def _fetch_wuxia() -> pd.DataFrame:
     raw["fedfunds"] = pd.to_numeric(raw[1], errors="coerce")
     raw["wuxia"]    = pd.to_numeric(raw[2], errors="coerce")
 
-    # Prefer shadow rate; fall back to FEDFUNDS outside Wu-Xia coverage
+    # Prefer shadow rate; fall back to FEDFUNDS for pre-1990
     raw["rate"] = raw["wuxia"].where(raw["wuxia"].notna(), raw["fedfunds"])
+    excel_end   = raw["date"].max()
     raw = raw[["date", "rate"]].dropna().copy()
+    print(f"  Excel covers: {raw['date'].min().date()} – {excel_end.date()}")
 
-    # Monthly → quarterly average
+    # ── Step 2: extend with FEDFUNDS from FRED past Excel end date ───────────
+    # Shadow rate = FFR by construction when FFR > 0.25% (post-ZLB period).
+    extension_start = excel_end + pd.DateOffset(months=1)
+    print(f"  Fetching FEDFUNDS from FRED from {extension_start.date()} onward ...")
+    try:
+        fred_client = _get_fred_client()
+        ff = fred_client.get_series(
+            "FEDFUNDS",
+            observation_start=extension_start.strftime("%Y-%m-%d"),
+        )
+        ff = ff.dropna()
+        if not ff.empty:
+            ext = pd.DataFrame({
+                "date": ff.index.to_pydatetime(),
+                "rate": ff.values,
+            })
+            ext["date"] = pd.to_datetime(ext["date"])
+            raw = pd.concat([raw, ext], ignore_index=True)
+            print(f"  FEDFUNDS extension: {ext['date'].min().date()} – "
+                  f"{ext['date'].max().date()}  ({len(ext)} months appended)")
+        else:
+            print("  [warn] FEDFUNDS extension returned no data — "
+                  "series will end at Excel coverage.")
+    except Exception as e:
+        print(f"  [warn] FEDFUNDS extension failed ({e}). "
+              "Series will end at Excel coverage. "
+              "Set FRED_API_KEY to enable extension.")
+
+    # ── Step 3: monthly → quarterly average → first difference ───────────────
+    raw = raw.sort_values("date").reset_index(drop=True)
     raw["quarter_label"] = raw["date"].apply(_dt_to_ql)
     qtr = (raw.groupby("quarter_label")["rate"]
               .mean()
@@ -398,11 +432,10 @@ def _fetch_wuxia() -> pd.DataFrame:
               .sort_values("quarter_label")
               .reset_index(drop=True))
     qtr.rename(columns={"rate": "wuxia_level"}, inplace=True)
-
-    # First difference — ΔMP_t
     qtr["delta_wuxia"] = qtr["wuxia_level"].diff()
 
-    print(f"  Wu-Xia: {qtr['quarter_label'].min()}–{qtr['quarter_label'].max()}, "
+    print(f"  Combined series: {qtr['quarter_label'].min()}–"
+          f"{qtr['quarter_label'].max()}, "
           f"{len(qtr)} quarters, "
           f"{qtr['delta_wuxia'].notna().sum()} with ΔMP_t non-null")
     qtr.to_parquet(WUXIA_CACHE, index=False)
@@ -731,12 +764,38 @@ print(f"FRED_API_KEY: set ({FRED_API_KEY[:8]}...)")
 
 # ── 1. assemble controls panel ────────────────────────────────────────────────
 nat = _load_controls()
-#Inspect
-nat.groupby(['industry_code']).head(5)
+nat.head(5)
+
 # ── 2. residualize ────────────────────────────────────────────────────────────
 SPEC      = "v3: Δlog(p) + Δlog(VA_lag) + φ_j×ΔMP_t [+ log(θ_lag) for LD/QU]"
 reg_base  = ("dlog_p", "dlog_va_lag", "phi_x_dmp")
 reg_tight = ("dlog_p", "dlog_va_lag", "log_theta_lag", "phi_x_dmp")
+
+# Full regression equation estimated by _residualize() via within-industry OLS:
+#
+#   For δ and total separations (TS):
+#     log g^k_{j,t} = α_j
+#                   + γ   · Δlog p_t           [aggregate productivity growth]
+#                   + λ   · Δlog VA_{j,t-1}    [lagged industry VA growth]
+#                   + ψ   · φ_j × ΔMP_t        [MP × log avg establishment size]
+#                   + ν^k_{j,t}                [residual → new instrument]
+#
+#   For LD and QU (additionally absorbs aggregate labour-market conditions):
+#     log g^k_{j,t} = α_j
+#                   + γ   · Δlog p_t
+#                   + λ   · Δlog VA_{j,t-1}
+#                   + μ   · log θ_{t-1}        [lagged log market tightness V/U]
+#                   + ψ   · φ_j × ΔMP_t
+#                   + ν^k_{j,t}
+#
+#   α_j absorbed by within-industry demeaning (pooled OLS on demeaned data).
+#   All regressors predetermined: aggregate values or lagged one quarter.
+#   φ_j fixed at pre-sample CBP 2000 industry characteristics (time-invariant).
+#   ΔMP_t = quarterly first difference of Wu-Xia shadow FFR (stationary).
+#   After within-industry demeaning the MP interaction becomes:
+#     φ_j × (ΔMP_t − mean_t[ΔMP_t])
+#   identifying differential sensitivity to the monetary policy cycle by
+#   industry bank-dependence, orthogonal to the industry FE.
 
 print(f"\n--- Residualization [{SPEC}] ---")
 print(f"  δ, TS : controls = {reg_base}")
@@ -802,71 +861,92 @@ print(by_ind.to_string(index=False))
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-#  DIAGNOSTICS  (plots — can be skipped without affecting outputs)
+#  DIAGNOSTICS  (plots — wrapped in function to suppress REPL repr output)
 # ═══════════════════════════════════════════════════════════════════════════════
 
-industries = sorted(nat["industry_label"].unique())
-quarters   = sorted(nat["quarter_label"].unique())
-dates      = [_ql_to_dt(q) for q in quarters]
-n_ind      = len(industries)
+def _plot_diagnostics(nat: pd.DataFrame, spec: str) -> None:
+    """
+    Produce two diagnostic plots and save to data/results/.
+    Wrapping in a function prevents matplotlib artist repr from printing
+    in interactive / REPL sessions.
 
-# Plot A: raw log shock rates by industry
-series_cols = [
-    ("log_g_delta", r"$\log g^\delta$", "#1f77b4"),
-    ("log_g_s",     r"$\log g^{TS}$",   "#d62728"),
-    ("log_g_ld",    r"$\log g^{LD}$",   "#2ca02c"),
-    ("log_g_qu",    r"$\log g^{QU}$",   "#ff7f0e"),
-]
-fig, axes = plt.subplots(n_ind, 4, figsize=(20, 2.0 * n_ind),
-                         sharex=True, squeeze=False)
-for i, ind in enumerate(industries):
-    sub = nat[nat["industry_label"] == ind].set_index("quarter_label").reindex(quarters)
-    for j, (col, _, color) in enumerate(series_cols):
-        ax = axes[i, j]
-        ax.plot(dates, sub[col].values, color=color, linewidth=1.1)
-        _add_recessions(ax)
-        ax.set_ylabel(ind if j == 0 else "", fontsize=7)
-        ax.grid(axis="y", linewidth=0.4, alpha=0.4)
-for j, (_, title, _) in enumerate(series_cols):
-    axes[0, j].set_title(title, fontsize=10)
-fig.suptitle("National industry shock rates by supersector (raw log)", fontsize=11, y=1.005)
-fig.tight_layout()
-p = RESULTS_DIR / "comovement_raw_series.png"
-fig.savefig(p, dpi=120, bbox_inches="tight"); plt.close(fig); _open_file(p)
-print(f"\nPlot A saved: {p}")
+    Plot A: raw log shock rates by industry × quarter (time series grid).
+    Plot B: scatter of δ vs each s-type, raw (top) vs residualized (bottom).
+    """
+    industries = sorted(nat["industry_label"].unique())
+    quarters   = sorted(nat["quarter_label"].unique())
+    dates      = [_ql_to_dt(q) for q in quarters]
+    n_ind      = len(industries)
 
-# Plot B: delta vs each s-type — raw (top row) vs residualized (bottom row)
-scatter_pairs = [
-    ("delta vs TS", "log_g_delta","log_g_s",  "nu_delta","nu_s",
-     r"$\log g^\delta$",r"$\log g^{TS}$",r"$\nu^\delta$",r"$\nu^{TS}$"),
-    ("delta vs LD", "log_g_delta","log_g_ld", "nu_delta","nu_ld",
-     r"$\log g^\delta$",r"$\log g^{LD}$",r"$\nu^\delta$",r"$\nu^{LD}$"),
-    ("delta vs QU", "log_g_delta","log_g_qu", "nu_delta","nu_qu",
-     r"$\log g^\delta$",r"$\log g^{QU}$",r"$\nu^\delta$",r"$\nu^{QU}$"),
-]
-fig, axes = plt.subplots(2, 3, figsize=(15, 9))
-for ci, (lbl, rx, ry, nx, ny, rxl, ryl, nxl, nyl) in enumerate(scatter_pairs):
-    r_r = nat[rx].corr(nat[ry])
-    r_n = nat[nx].corr(nat[ny])
-    for row, (cx, cy, xl, yl, color, r_val) in enumerate([
-        (rx, ry, rxl, ryl, "#555",    r_r),
-        (nx, ny, nxl, nyl, "#1f77b4", r_n),
-    ]):
-        ax = axes[row, ci]
-        ax.scatter(nat[cx], nat[cy], s=5, alpha=0.35, color=color)
-        ax.set_xlabel(xl, fontsize=9); ax.set_ylabel(yl, fontsize=9)
-        ax.set_title(f"{lbl}  {'raw' if row==0 else 'residualized'}  (r={r_val:.3f})",
-                     fontsize=9)
-        ax.axhline(0, color="black", linewidth=0.5)
-        ax.axvline(0, color="black", linewidth=0.5)
-        ax.grid(linewidth=0.4, alpha=0.4)
-fig.suptitle(
-    rf"$\delta$ vs each s-type: raw (top) vs residualized (bottom) [{SPEC}]",
-    fontsize=11,
-)
-fig.tight_layout()
-p = RESULTS_DIR / "comovement_scatter.png"
-fig.savefig(p, dpi=120, bbox_inches="tight"); plt.close(fig); _open_file(p)
-print(f"Plot B saved: {p}")
+    # Plot A: raw log shock rates by industry
+    series_cols = [
+        ("log_g_delta", r"$\log g^\delta$", "#1f77b4"),
+        ("log_g_s",     r"$\log g^{TS}$",   "#d62728"),
+        ("log_g_ld",    r"$\log g^{LD}$",   "#2ca02c"),
+        ("log_g_qu",    r"$\log g^{QU}$",   "#ff7f0e"),
+    ]
+    fig, axes = plt.subplots(n_ind, 4, figsize=(20, 2.0 * n_ind),
+                             sharex=True, squeeze=False)
+    for i, ind in enumerate(industries):
+        sub = nat[nat["industry_label"] == ind].set_index("quarter_label").reindex(quarters)
+        for j, (col, _, color) in enumerate(series_cols):
+            ax = axes[i, j]
+            ax.plot(dates, sub[col].values, color=color, linewidth=1.1)
+            _add_recessions(ax)
+            ax.set_ylabel(ind if j == 0 else "", fontsize=7)
+            ax.grid(axis="y", linewidth=0.4, alpha=0.4)
+    for j, (_, title, _) in enumerate(series_cols):
+        axes[0, j].set_title(title, fontsize=10)
+    fig.suptitle("National industry shock rates by supersector (raw log)",
+                 fontsize=11, y=1.005)
+    fig.tight_layout()
+    out_a = RESULTS_DIR / "comovement_raw_series.png"
+    fig.savefig(out_a, dpi=120, bbox_inches="tight")
+    plt.close(fig)
+    _open_file(out_a)
+    print(f"\nPlot A saved: {out_a}")
+
+    # Plot B: δ vs each s-type — raw (top row) vs residualized (bottom row)
+    scatter_pairs = [
+        ("delta vs TS", "log_g_delta","log_g_s",  "nu_delta","nu_s",
+         r"$\log g^\delta$",r"$\log g^{TS}$",r"$\nu^\delta$",r"$\nu^{TS}$"),
+        ("delta vs LD", "log_g_delta","log_g_ld", "nu_delta","nu_ld",
+         r"$\log g^\delta$",r"$\log g^{LD}$",r"$\nu^\delta$",r"$\nu^{LD}$"),
+        ("delta vs QU", "log_g_delta","log_g_qu", "nu_delta","nu_qu",
+         r"$\log g^\delta$",r"$\log g^{QU}$",r"$\nu^\delta$",r"$\nu^{QU}$"),
+    ]
+    fig, axes = plt.subplots(2, 3, figsize=(15, 9))
+    for ci, (lbl, rx, ry, nx, ny, rxl, ryl, nxl, nyl) in enumerate(scatter_pairs):
+        r_r = nat[rx].corr(nat[ry])
+        r_n = nat[nx].corr(nat[ny])
+        for row, (cx, cy, xl, yl, color, r_val) in enumerate([
+            (rx, ry, rxl, ryl, "#555",    r_r),
+            (nx, ny, nxl, nyl, "#1f77b4", r_n),
+        ]):
+            ax = axes[row, ci]
+            ax.scatter(nat[cx], nat[cy], s=5, alpha=0.35, color=color)
+            ax.set_xlabel(xl, fontsize=9)
+            ax.set_ylabel(yl, fontsize=9)
+            ax.set_title(
+                f"{lbl}  {'raw' if row==0 else 'residualized'}  (r={r_val:.3f})",
+                fontsize=9,
+            )
+            ax.axhline(0, color="black", linewidth=0.5)
+            ax.axvline(0, color="black", linewidth=0.5)
+            ax.grid(linewidth=0.4, alpha=0.4)
+    fig.suptitle(
+        rf"$\delta$ vs each s-type: raw (top) vs residualized (bottom) [{spec}]",
+        fontsize=11,
+    )
+    fig.tight_layout()
+    out_b = RESULTS_DIR / "comovement_scatter.png"
+    fig.savefig(out_b, dpi=120, bbox_inches="tight")
+    plt.close(fig)
+    _open_file(out_b)
+    print(f"Plot B saved: {out_b}")
+
+
+# ── 5. plots ──────────────────────────────────────────────────────────────────
+_plot_diagnostics(nat, SPEC)
 
 print("\nDone.")
