@@ -220,20 +220,23 @@ def _build_h_sample(panel: pd.DataFrame, h: int,
 # ---------------------------------------------------------------------------
 # Test 1: Partial R² and Partial F
 # ---------------------------------------------------------------------------
-def test1_partial_f(panel: pd.DataFrame) -> pd.DataFrame:
+def test1_partial_f(panel: pd.DataFrame,
+                    outcome: str = "vacancy") -> pd.DataFrame:
     """
-    At each horizon h, run three vacancy regressions:
+    At each horizon h, run three regressions on the chosen outcome:
       (a) delta only   (b) LD only   (c) joint (delta + LD)
-    Compute partial F for LD = marginal contribution of LD over delta-only.
+    Compute partial F for LD = marginal contribution of LD over delta-only,
+    and partial F for delta = marginal contribution of delta over LD-only.
     """
-    print("\n  Test 1: Partial R² and Partial F (vacancy outcome)")
+    out_tag = "vacancy" if outcome == "vacancy" else "unemployment"
+    print(f"\n  Test 1: Partial R² and Partial F ({out_tag} outcome)")
     print(f"  {'h':>3}  {'R2_d':>7}  {'R2_ld':>7}  {'R2_jt':>7}  "
           f"{'pF_ld':>7}  {'pR2_ld':>7}  {'pF_d':>7}  {'pR2_d':>7}  {'N':>6}")
     print(f"  {'-'*72}")
 
     rows = []
     for h in HORIZONS:
-        df = _build_h_sample(panel, h, outcome="vacancy")
+        df = _build_h_sample(panel, h, outcome=outcome)
         if df is None:
             continue
 
@@ -267,7 +270,8 @@ def test1_partial_f(panel: pd.DataFrame) -> pd.DataFrame:
         partial_f_d   = (r2_j - r2_l) / (1.0 - r2_j) * (N - K) if r2_j < 1 else 0
 
         rows.append({
-            "h": h, "r2_delta_only": r2_d, "r2_ld_only": r2_l,
+            "h": h, "outcome": outcome,
+            "r2_delta_only": r2_d, "r2_ld_only": r2_l,
             "r2_joint": r2_j, "nobs": N,
             "partial_f_ld": partial_f_ld, "partial_r2_ld": partial_r2_ld,
             "partial_f_delta": partial_f_d, "partial_r2_delta": partial_r2_d,
@@ -337,74 +341,95 @@ def run_orth_lp(panel: pd.DataFrame, outcome: str = "vacancy") -> pd.DataFrame:
 
 
 # ---------------------------------------------------------------------------
-# Summary plot
+# Summary plot — 2 × 3 grid (rows = vacancy / unemployment)
 # ---------------------------------------------------------------------------
-def plot_diagnostics(partial_f_df: pd.DataFrame,
-                     orth_vac: pd.DataFrame,
-                     sep_vac_csv: Path,
+def _plot_row(axes_row, pf_df: pd.DataFrame,
+              orth_irf: pd.DataFrame, sep_csv: Path,
+              outcome_label: str, ylabel_irf: str) -> None:
+    """
+    Fill one row of the 2×3 figure:
+      Col 0: Partial F (delta vs LD)
+      Col 1: Orth LD IRF vs separate LD IRF
+      Col 2: Partial R²
+    """
+    sep = pd.read_csv(sep_csv).set_index("h") if sep_csv.exists() else None
+    h_vals = pf_df["h"].values
+    COLOR_D  = "#1f77b4"
+    COLOR_LD = "#d62728"
+
+    # Col 0 — Partial F
+    ax = axes_row[0]
+    ax.plot(h_vals, pf_df["partial_f_delta"], color=COLOR_D, lw=2,
+            marker="o", ms=3.5, label=r"Partial F: $\delta$ (marginal over LD)")
+    ax.plot(h_vals, pf_df["partial_f_ld"], color=COLOR_LD, lw=2,
+            marker="s", ms=3.5, label="Partial F: LD (marginal over δ)")
+    ax.axhline(10, color="grey", lw=1.2, ls="--", alpha=0.7, label="F = 10")
+    ax.set_title(f"Partial F — {outcome_label}", fontsize=10)
+    ax.set_xlabel("Horizon h (quarters)", fontsize=9)
+    ax.set_ylabel("Partial F-statistic", fontsize=9)
+    ax.legend(fontsize=7.5, framealpha=0.85)
+    ax.grid(axis="y", lw=0.4, alpha=0.4)
+    ax.set_xticks(h_vals[::2])
+
+    # Col 1 — Orth LD IRF vs separate
+    ax = axes_row[1]
+    if not orth_irf.empty:
+        h_v = orth_irf["h"].values
+        ax.fill_between(h_v, orth_irf["ci90_lo"], orth_irf["ci90_hi"],
+                        color=COLOR_LD, alpha=0.15)
+        ax.plot(h_v, orth_irf["beta"], color=COLOR_LD, lw=2,
+                marker="o", ms=3.5, label="LD orth (δ-purged)")
+        ax.set_xticks(h_v[::2])
+    if sep is not None:
+        hs   = [h for h in HORIZONS if h in sep.index]
+        betas = [float(sep.loc[h, "beta"]) for h in hs]
+        ax.plot(hs, betas, color=COLOR_D, lw=1.5, ls="--",
+                marker="s", ms=3, label="LD separate", alpha=0.8)
+    ax.axhline(0, color="black", lw=0.8)
+    ax.set_title(f"Orth LD IRF vs separate — {outcome_label}", fontsize=10)
+    ax.set_xlabel("Horizon h (quarters)", fontsize=9)
+    ax.set_ylabel(ylabel_irf, fontsize=9)
+    ax.legend(fontsize=7.5, framealpha=0.85)
+    ax.grid(axis="y", lw=0.4, alpha=0.4)
+
+    # Col 2 — Partial R²
+    ax = axes_row[2]
+    ax.plot(h_vals, pf_df["partial_r2_delta"], color=COLOR_D, lw=2,
+            marker="o", ms=3.5, label=r"Partial R²: $\delta$")
+    ax.plot(h_vals, pf_df["partial_r2_ld"], color=COLOR_LD, lw=2,
+            marker="s", ms=3.5, label="Partial R²: LD")
+    ax.set_title(f"Partial R² — {outcome_label}", fontsize=10)
+    ax.set_xlabel("Horizon h (quarters)", fontsize=9)
+    ax.set_ylabel("Partial R²", fontsize=9)
+    ax.legend(fontsize=7.5, framealpha=0.85)
+    ax.grid(axis="y", lw=0.4, alpha=0.4)
+    ax.set_xticks(h_vals[::2])
+
+
+def plot_diagnostics(pf_vac: pd.DataFrame, pf_unemp: pd.DataFrame,
+                     orth_vac: pd.DataFrame, orth_unemp: pd.DataFrame,
+                     sep_vac_csv: Path, sep_unemp_csv: Path,
                      out_path: Path) -> None:
     """
-    Three-panel figure:
-      Left:   Partial F for delta and LD at each horizon (Test 1)
-      Center: Orthogonalized LD vacancy IRF vs separate LD vacancy IRF (Test 2)
-      Right:  Orthogonalized LD unemployment IRF (secondary diagnostic)
+    2 × 3 figure:
+      Row 0 (top):    vacancy outcome
+      Row 1 (bottom): unemployment outcome
+      Cols: Partial F | Orth LD IRF vs separate | Partial R²
     """
-    sep_vac = pd.read_csv(sep_vac_csv).set_index("h") if sep_vac_csv.exists() else None
+    fig, axes = plt.subplots(2, 3, figsize=(18, 10))
 
-    fig, axes = plt.subplots(1, 3, figsize=(18, 5.5))
+    _plot_row(axes[0], pf_vac, orth_vac, sep_vac_csv,
+              outcome_label="vacancy",
+              ylabel_irf="pp change in vacancy rate\nper 1-SD shock")
 
-    # --- Left panel: Partial F ---
-    ax = axes[0]
-    h_vals = partial_f_df["h"].values
-    ax.plot(h_vals, partial_f_df["partial_f_delta"], color="#1f77b4", lw=2,
-            marker="o", ms=4, label=r"Partial F: $\delta$ (marginal over LD)")
-    ax.plot(h_vals, partial_f_df["partial_f_ld"], color="#d62728", lw=2,
-            marker="s", ms=4, label="Partial F: LD (marginal over δ)")
-    ax.axhline(10, color="grey", lw=1.2, ls="--", alpha=0.7, label="F = 10 threshold")
-    ax.set_title("Test 1: Partial F in joint vacancy LP", fontsize=11)
-    ax.set_xlabel("Horizon h (quarters)")
-    ax.set_ylabel("Partial F-statistic")
-    ax.legend(fontsize=8, framealpha=0.85)
-    ax.grid(axis="y", lw=0.4, alpha=0.4)
-    ax.set_xticks(h_vals[::2])
-
-    # --- Center panel: Orth LD vacancy IRF ---
-    ax = axes[1]
-    if not orth_vac.empty:
-        h_v = orth_vac["h"].values
-        ax.fill_between(h_v, orth_vac["ci90_lo"], orth_vac["ci90_hi"],
-                        color="#d62728", alpha=0.15)
-        ax.plot(h_v, orth_vac["beta"], color="#d62728", lw=2,
-                marker="o", ms=3.5, label="LD orth (δ-purged)")
-    if sep_vac is not None:
-        hs = [h for h in HORIZONS if h in sep_vac.index]
-        ax.plot(hs, [float(sep_vac.loc[h, "beta"]) for h in hs],
-                color="#1f77b4", lw=1.5, ls="--", marker="s", ms=3,
-                label="LD separate", alpha=0.8)
-    ax.axhline(0, color="black", lw=0.8)
-    ax.set_title("Test 2: LD orth vacancy IRF\nvs LD separate", fontsize=11)
-    ax.set_xlabel("Horizon h (quarters)")
-    ax.set_ylabel("pp change in vacancy rate\nper 1-SD shock")
-    ax.legend(fontsize=8, framealpha=0.85)
-    ax.grid(axis="y", lw=0.4, alpha=0.4)
-    ax.set_xticks(h_v[::2] if not orth_vac.empty else [])
-
-    # --- Right panel: Partial R² ---
-    ax = axes[2]
-    ax.plot(h_vals, partial_f_df["partial_r2_delta"], color="#1f77b4", lw=2,
-            marker="o", ms=4, label=r"Partial R²: $\delta$")
-    ax.plot(h_vals, partial_f_df["partial_r2_ld"], color="#d62728", lw=2,
-            marker="s", ms=4, label="Partial R²: LD")
-    ax.set_title("Partial R² in joint vacancy LP", fontsize=11)
-    ax.set_xlabel("Horizon h (quarters)")
-    ax.set_ylabel("Partial R²")
-    ax.legend(fontsize=8, framealpha=0.85)
-    ax.grid(axis="y", lw=0.4, alpha=0.4)
-    ax.set_xticks(h_vals[::2])
+    _plot_row(axes[1], pf_unemp, orth_unemp, sep_unemp_csv,
+              outcome_label="unemployment",
+              ylabel_irf="pp change in unemp. rate\nper 1-SD shock")
 
     fig.suptitle(
-        "Joint LP identification diagnostics: Story 1 (true zero) vs Story 2 (underpowered)",
-        fontsize=12, y=1.02
+        "Joint LP identification diagnostics: Story 1 (true zero) vs Story 2 (underpowered)\n"
+        "Top row = vacancy outcome | Bottom row = unemployment outcome",
+        fontsize=12
     )
     fig.tight_layout()
     fig.savefig(out_path, dpi=150, bbox_inches="tight")
@@ -427,11 +452,12 @@ panel, sd_delta, sd_ld = load_and_build_panel()
 print("\n[2] Orthogonalizing B^LD on B^delta (pooled, with FEs)")
 panel = orthogonalize_ld(panel)
 
-# [3] Test 1: Partial R² and Partial F
+# [3] Test 1: Partial R² and Partial F — both outcomes
 print("\n[3] Test 1: Partial R² and Partial F")
-partial_f_results = test1_partial_f(panel)
+partial_f_vac   = test1_partial_f(panel, outcome="vacancy")
+partial_f_unemp = test1_partial_f(panel, outcome="unemp")
 
-# [4] Test 2: Orthogonalized LD LP
+# [4] Test 2: Orthogonalized LD LP — both outcomes
 print("\n[4] Test 2: Orthogonalized LD LP")
 orth_vac   = run_orth_lp(panel, outcome="vacancy")
 orth_unemp = run_orth_lp(panel, outcome="unemp")
@@ -439,46 +465,53 @@ orth_unemp = run_orth_lp(panel, outcome="unemp")
 # [5] Save results
 print("\n[5] Saving results")
 for df, fname in [
-    (partial_f_results, "joint_diagnostics_partial_f.csv"),
-    (orth_vac,          "joint_diagnostics_orth_vacancy.csv"),
-    (orth_unemp,        "joint_diagnostics_orth_unemp.csv"),
+    (partial_f_vac,   "joint_diagnostics_partial_f_vac.csv"),
+    (partial_f_unemp, "joint_diagnostics_partial_f_unemp.csv"),
+    (orth_vac,        "joint_diagnostics_orth_vacancy.csv"),
+    (orth_unemp,      "joint_diagnostics_orth_unemp.csv"),
 ]:
     if not df.empty:
         p = RESULTS_DIR / fname
         df.to_csv(p, index=False)
         print(f"  Saved: {p}")
 
-# [6] Plot
+# [6] Plot — 2×3 grid: top row = vacancy, bottom row = unemployment
 print("\n[6] Plotting")
 plot_diagnostics(
-    partial_f_results, orth_vac, SEP_LD_VAC,
+    partial_f_vac, partial_f_unemp,
+    orth_vac, orth_unemp,
+    SEP_LD_VAC, SEP_LD_UNEMP,
     RESULTS_DIR / "joint_diagnostics.png"
 )
 
 # [7] Summary interpretation
 print("\n[7] Summary")
-if not partial_f_results.empty:
-    pf = partial_f_results
-    avg_pf_ld = pf.loc[pf["h"] <= 8, "partial_f_ld"].mean()
-    avg_pf_d  = pf.loc[pf["h"] <= 8, "partial_f_delta"].mean()
-    print(f"  Avg partial F (h=0..8):  delta = {avg_pf_d:.1f},  LD = {avg_pf_ld:.1f}")
-    if avg_pf_ld > 10:
-        print("  -> LD has sufficient independent variation: zero is INFORMATIVE")
-        print("     (supports Story 1: genuine zero vacancy effect)")
-    elif avg_pf_ld > 3:
-        print("  -> LD has moderate independent variation: zero is AMBIGUOUS")
-    else:
-        print("  -> LD has weak independent variation: zero is UNINFORMATIVE")
-        print("     (supports Story 2: identification failure)")
+for label, pf, orth in [
+    ("VACANCY",      partial_f_vac,   orth_vac),
+    ("UNEMPLOYMENT", partial_f_unemp, orth_unemp),
+]:
+    print(f"\n  --- {label} ---")
+    if not pf.empty:
+        avg_pf_ld = pf.loc[pf["h"] <= 8, "partial_f_ld"].mean()
+        avg_pf_d  = pf.loc[pf["h"] <= 8, "partial_f_delta"].mean()
+        print(f"  Avg partial F (h=0..8):  delta = {avg_pf_d:.1f},  LD = {avg_pf_ld:.1f}")
+        if avg_pf_ld > 10:
+            print("  -> LD has sufficient independent variation: zero is INFORMATIVE")
+            print("     (supports Story 1: genuine zero effect)")
+        elif avg_pf_ld > 3:
+            print("  -> LD has moderate independent variation: zero is AMBIGUOUS")
+        else:
+            print("  -> LD has weak independent variation: zero is UNINFORMATIVE")
+            print("     (supports Story 2: identification failure)")
 
-if not orth_vac.empty:
-    n_sig = (orth_vac["pval"] < 0.10).sum()
-    mean_b = orth_vac.loc[orth_vac["h"] <= 8, "beta"].mean()
-    print(f"\n  Orth LD vacancy: {n_sig}/21 horizons significant at 10%")
-    print(f"  Mean beta (h=0..8) = {mean_b:.4f}")
-    if n_sig <= 2 and abs(mean_b) < 0.05:
-        print("  -> Orthogonalized LD shows no vacancy effect: supports Story 1")
-    else:
-        print("  -> Orthogonalized LD shows significant vacancy effect: supports Story 2")
+    if not orth.empty:
+        n_sig  = (orth["pval"] < 0.10).sum()
+        mean_b = orth.loc[orth["h"] <= 8, "beta"].mean()
+        print(f"  Orth LD {label.lower()}: {n_sig}/21 horizons significant at 10%")
+        print(f"  Mean beta (h=0..8) = {mean_b:.4f}")
+        if n_sig <= 2 and abs(mean_b) < 0.05:
+            print("  -> Orthogonalized LD shows no effect: supports Story 1")
+        else:
+            print("  -> Orthogonalized LD shows significant effect: supports Story 2")
 
 print("\nDone.")

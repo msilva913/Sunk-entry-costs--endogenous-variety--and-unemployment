@@ -404,12 +404,29 @@ print("=" * 60)
 
 # [1] Load
 print("\n[1] Loading data")
-delta_raw, ld_raw, laus = load_data()
+delta_resid, ld_resid, laus = load_data()
 
 # [2] Build joint panel
 print("\n[2] Building joint panel")
-panel, sd_delta, sd_ld = build_joint_panel(delta_raw, ld_raw, laus)
+panel, sd_delta, sd_ld = build_joint_panel(delta_resid, ld_resid, laus)
 has_vac = "vac_rate" in panel.columns
+
+#Inspect 
+panel.head(5)
+panel.columns
+
+# Variance inflation factor: collinearity diagnostics for joint LP
+r_instr    = panel["bartik_delta"].corr(panel["bartik_ld"])
+vif        = 1 / (1 - r_instr**2)
+eigenvals  = np.linalg.eigvalsh(
+    np.array([[1, r_instr],[r_instr, 1]])
+)
+kappa      = np.sqrt(eigenvals.max() / eigenvals.min())
+se_inflate = np.sqrt(vif)
+
+print(f"  r(δ,LD) = {r_instr:.4f}")
+print(f"  VIF     = {vif:.4f}  (SE inflation = {se_inflate:.4f}×)")
+print(f"  κ       = {kappa:.4f}  (condition number)")
 
 # [3] Joint LP -- unemployment
 print("\n[3] Joint LP -- unemployment outcome")
