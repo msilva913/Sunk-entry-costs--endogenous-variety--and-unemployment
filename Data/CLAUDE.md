@@ -1,6 +1,6 @@
 # CLAUDE.md — Empirical LP Project (Firm Entry/Exit DSGE)
 
-**Last updated:** April 8, 2026
+**Last updated:** April 9, 2026
 **Author:** Mario Silva
 **Purpose:** Persistent project context for fresh Cowork sessions. Paste this into any new session to restore full project state.
 **Code structure:** clean, succinct code easily interpretable by empirical macroeconomist.
@@ -53,11 +53,22 @@ data/results/        — LP output CSVs and all IRF plots
 | `part2c_granger_lp.py` | Panel LP Granger causality: δ vs LD (raw + residualized) | ✅ Complete | `data/results/granger_lp_*.png` |
 | `part2d_var_calibration.py` | Bivariate panel VAR(L) on (ν^δ, ν^{LD}): companion matrix, Σ, Cholesky IRFs | ✅ Complete | `data/results/var_calibration.csv`, `var_irf_chol.png` |
 | `part5_joint_lp.py` | Joint LP with δ and LD in same regression (v2-residualized); pre-standardizes instruments; outputs comparison tables and joint vs separate plots | ✅ Complete | `lp_joint_delta_ld_{unemp,vacancy}.csv` + `.png` |
+| `part7b_sloos.py` | SLOOS C&I net tightening × δ interaction LP; both unemployment and vacancy outcomes; SLOOS_LM (primary) + SLOOS_SM (robustness) + NFCI replication for comparison | ✅ Complete | `lp_irf_delta_sloos_lm_{unemp,vacancy}.csv`, `lp_irf_delta_sloos_sm_{unemp,vacancy}.csv`, `lp_irf_delta_nfci_rep_{unemp,vacancy}.csv`, `lp_irf_delta_sloos_comparison_{unemp,vacancy}.png` |
+| `part2b_residualize_shocks_v3.py` | v3 residualization: adds φ_j × ΔMP_t interaction (log avg establishment size from Census CBP 2000 × Wu-Xia shadow FFR first difference) to v2 spec | ✅ Complete | Same parquet outputs as part2b; overwrites resid parquets with v3 residuals |
+| `part2b_v3_additions.py` | Standalone test script verifying Wu-Xia fetch and CBP size fetch before integration into v3 | ✅ Complete (test only) | `data/cache/wuxia_quarterly.parquet`, `data/cache/cbp_estab_size.parquet` |
 
 ### Notable additions in March 2026 session:
 - **Priority 1 completed:** `part4_outcomes.py` now fetches JOLTS state-level job openings (SA, stock → quarterly average). Series ID format verified: `JTS000000{ST}0000000JOL` (21 chars). Data available from Dec 2000 for all 50 states.
 - **Priority 2 completed:** JOLTS decomposed into layoffs+discharges (LD) and quits (quits) via `part2_shock_rates_s.py` and `part3_resid_instruments.py`. Separate Bartik instruments built and residualized for each.
 - **Vacancy LP outcome** added to `part5_lp.py` via `outcome="vacancy"` parameter. Uses log-change specification; lagged log vacancies replace lagged unemployment rate as control.
+
+### Notable additions in April 9, 2026 session:
+- **`part7b_sloos.py`** written and run: SLOOS C&I tightening as alternative interaction variable replacing NFCI. Two series: `DRTSCILM` (large/medium C&I, primary) and `DRTSCIS` (small C&I, robustness). Key finding: SLOOS interaction (δ_h) is near-zero and insignificant h=0–8 for unemployment; weakly positive only at h=12 (+0.031, p=0.001) and h=16 (+0.021, p=0.045). Vacancy SLOOS interaction uniformly insignificant. NFCI shows sign-switching pattern (positive h=0–4, negative h=12–20) — recession-severity confound, not credit supply. SLOOS resolves NFCI puzzle: δ effect operates at average credit conditions, consistent with frictionless model. See section 14.1.
+- **`part2b_residualize_shocks_v3.py`** written: upgrades v2 to v3 by adding φ_j × ΔMP_t as residualization control. φ_j = log avg establishment size by BLS supersector from Census CBP year 2000 (predetermined); ΔMP_t = quarterly first difference of Wu-Xia shadow FFR extended with FEDFUNDS post-2022Q1. Key finding: r(δ,LD) = 0.4243 after v3, essentially unchanged from v2 (0.423). Coefficients on φ_j × ΔMP_t are negative for both δ and LD, same sign and similar magnitude — removes variation from both proportionally and leaves residual correlation unchanged. Monetary policy differential sensitivity does not explain r(δ,LD). See section 14.2.
+- **Wu-Xia shadow FFR** downloaded from Atlanta Fed Excel (monthly, 1960M1–2022M2); quarterly averaged; first-differenced; extended with FEDFUNDS (FRED) post-2022M2. Cached at `data/cache/wuxia_quarterly.parquet`.
+- **Census CBP establishment size** computed from Census public API (year 2000, NAICS1997) for all 12 BLS supersectors. Range: 7.3 (Other Services) to 46.5 (Manufacturing) workers/estab. Cached at `data/cache/cbp_estab_size.parquet`.
+- **Matplotlib REPL fix:** `plt.ioff()` added and diagnostic plot blocks wrapped in `_plot_diagnostics()` function. Eliminates Line2D/Text repr spam in interactive sessions.
+- **SLOOS series note:** Use `DRTSCILM` (standards tightening) NOT `DRSDCILM` (demand — wrong concept). Corrected during session.
 
 ### Notable additions in April 8, 2026 session:
 - **`part5_joint_lp.py`** written and run: joint LP with δ and LD instruments in the same regression at each horizon h, on v2-residualized instruments. Instruments pre-standardized to 1-SD units before regression so coefficients are directly comparable to separate LPs. Outputs: `lp_joint_delta_ld_unemp.csv`, `lp_joint_delta_ld_vacancy.csv`, comparison plots `lp_joint_delta_ld_{unemp,vacancy}.png` (red = joint, blue = separate).
@@ -662,21 +673,154 @@ V2 added lagged industry VA growth and lagged market tightness to the residualiz
 - Paper's empirical contribution: industry-level firm destruction shocks (orthogonal to contemporaneous layoffs at continuing firms) generate persistent Beveridge curve dynamics
 - Available now; no additional data work required
 
-**Route B — Add industry-level financial conditions control to residualization (preferred if feasible).**
-- The leading hypothesis for why r(δ,LD) survives v2 is industry-specific credit supply shocks
-- Adding industry credit spread or default rate to part2b residualization would further reduce r(δ,LD) and potentially validate separate LPs
-- Possible sources: BofA/ICE option-adjusted spreads by sector (Bloomberg/FRED), Compustat-based leverage ratios by industry
-- This is the cleanest empirical fix and would directly address the instrument non-identification problem
-- Also connects naturally to the NFCI interaction finding — if industry credit is the confound, controlling for it should simultaneously sharpen the δ–LD asymmetry and explain the financial state-dependence
-- Implementation: extend `part2b_shock_comovement.py` with industry credit variable; re-run part3 and part5
+**Route B — Add industry-level financial conditions control to residualization.**
 
-**The joint LP and v2 residualization are complementary, not alternatives.** Route B + joint LP is the strongest possible specification. Route A alone is defensible now.
+*Status: partially tested, partially open (as of April 9).*
+
+- **Tested and ruled out:** systematic monetary policy channel via φ_j × ΔMP_t (v3). Differential sensitivity to aggregate monetary tightening by establishment size does not explain r(δ,LD). Coefficients same sign and similar magnitude for both series — removes variation proportionally, correlation unchanged.
+- **Tested and ruled out (LP stage):** aggregate credit supply channel via SLOOS C&I. SLOOS interaction is economically small and insignificant for h=0–8; main effect β_h is large at average credit conditions, consistent with the frictionless model.
+- **Untested — still open:** idiosyncratic industry-specific credit supply shocks orthogonal to aggregate monetary policy (e.g., regional bank exposure to construction, sector-specific collateral value collapses). ICE BofA sector OAS spreads from FRED are the right instrument for this test. Fetch series `BAMLHE00EHY2EY` and related sector OAS, map to 12 BLS supersectors, add lagged sector spread to part2b. Not yet implemented.
+- **Ruled out as useful addition:** Rajan-Zingales external finance dependence — measures demand for external finance, not credit supply sensitivity; correlated with φ_j; original sample covers manufacturing SIC codes only, requiring extrapolation for service supersectors.
+- **Current working hypothesis for r(δ,LD) = 0.42:** shared industry-specific fundamentals driving both margins simultaneously with different timing (see section 14.3), supported by Granger asymmetry. Not a confound — a structural feature consistent with the model.
+
+**The joint LP and v2/v3 residualization are complementary, not alternatives.** Route A is the defensible current position; Route B (sector OAS) remains the cleanest remaining test.
 
 ### 13.6 Priority Order for Next Session
 
-1. **Route A immediately actionable:** decide whether to present joint LP as primary or robustness; draft paper text on δ vacancy finding using joint LP results
-2. **Route B investigation:** search for accessible industry-level credit spread data (FRED first; Bloomberg if available)
-3. **SLOOS interaction** (Priority 3): `part7b_sloos.py` — tests aggregate credit supply vs. recession severity for the NFCI finding; directly relevant to Route B hypothesis
-4. **Recession-severity placebo** (Priority 4a): extend `part5_lp.py`
-5. **Wild cluster bootstrap** (Priority 4b): supplement LP SEs with wildboottest
-6. **Pre-GFC sample restriction** (Priority 4c): add `max_qt` option to `run_lp()`
+*Superseded by section 14.4 (April 9 session completed items 1–3).*
+
+1. ~~Route A immediately actionable~~ → completed: joint LP implemented, SLOOS confirms frictionless transmission
+2. ~~SLOOS interaction~~ → completed: `part7b_sloos.py`
+3. ~~Route B investigation (aggregate)~~ → completed: φ_j × ΔMP_t ruled out via v3
+
+Remaining (see section 14.4): sector OAS test, pre-GFC restriction, wild bootstrap, recession-severity placebo.
+
+---
+
+## 14. New Findings and Discussion — April 9, 2026
+
+### 14.0 Core Punchline
+
+**On instrument identification:** The Bartik instruments for δ and LD share a residual correlation of ~0.42 that survives every aggregate control attempted across three residualization rounds (v1→v2→v3). All external confound hypotheses tested so far have been rejected with available data. The residual correlation is most parsimoniously structural — both margins respond to the same unobserved industry-specific conditions with different timing — rather than a contamination artifact. δ is robustly identified via the joint LP; LD is not separately identified at this instrument correlation.
+
+**On labor market impulse responses:** Firm destruction (δ) generates a textbook Beveridge outward shift — persistent unemployment rise (~2.8 pp peak at h=12) and persistent vacancy decline (~0.5 pp), both operating at average credit conditions with no material credit-supply amplification. The δ vacancy result is the cleanest structural finding in the paper: robust to controlling for LD, insensitive to financial conditions (SLOOS null), significant h=1–20, and consistent with the model's accounting identity that firm exits destroy vacancy slots directly. Layoff shocks (LD) produce a similar unemployment trajectory but their vacancy channel is unidentified, and the monotonically rising unemployment IRF is anomalous relative to shock persistence.
+
+---
+
+### 14.1 SLOOS Results and NFCI Decomposition
+
+**Research question:** Does the NFCI × δ interaction (highly significant in part5) reflect genuine credit supply amplification or recession-severity confounding?
+
+**Unemployment results (SLOOS LM, primary):**
+- β_h (main effect at average credit conditions): large and significant throughout, peaks +2.85 pp at h=12
+- δ_h (SLOOS interaction): near-zero and insignificant h=0–8; weakly positive at h=12 (+0.031, p=0.001) and h=16 (+0.021, p=0.045); fades at h=20
+- SLOOS SM (small C&I): near-identical pattern, confirming result is not specific to firm size segment
+
+**Vacancy results (SLOOS LM and SM):**
+- δ_h: uniformly near-zero and insignificant at all horizons (p > 0.40 throughout)
+- β_h (main effect): persistent negative, peaks −0.49 pp at h=4
+
+**NFCI comparison (diagnostic):**
+- δ_h sign-switches: +0.38 at h=0, +0.78 at h=4, then reverses to −0.77 at h=12, −0.68 at h=16
+- Sign reversal is diagnostic of recession-severity confounding — deep recessions produce large early δ effects and faster mean-reversion; NFCI proxies recession depth, not credit supply
+- NFCI vacancy interaction: uniformly insignificant throughout
+
+**Interpretation:** The SLOOS test resolves the NFCI puzzle cleanly. The bulk of the δ unemployment effect operates at average credit conditions, consistent with the frictionless model's prediction. The weakly positive SLOOS interaction at h=12–16 is consistent with a real but slow-moving and economically small credit channel (constrained re-entry of displaced workers). The vacancy effect is entirely insensitive to credit conditions — vacancy destruction from firm exit is a direct accounting consequence of establishment closure, not mediated by banking.
+
+**Implication for paper:** Recharacterize the NFCI interaction finding as evidence of recession-severity confounding, not a financial friction. The SLOOS result positively confirms the frictionless model's transmission mechanism. Both results together are a strong robustness section.
+
+**Key FRED series used:**
+- `DRTSCILM` — Net % of banks tightening C&I standards, large/medium firms (primary)
+- `DRTSCIS` — Net % of banks tightening C&I standards, small firms (robustness)
+- ⚠️ Do NOT use `DRSDCILM` — that is loan *demand*, not credit supply standards
+
+---
+
+### 14.2 v3 Residualization: Monetary Policy × Establishment Size
+
+**What was added to v2 spec:** φ_j × ΔMP_t, where:
+- φ_j = log avg establishment size (Census CBP 2000, NAICS1997, predetermined — time-invariant)
+- ΔMP_t = quarterly first difference of Wu-Xia shadow FFR extended with FEDFUNDS post-2022Q1
+
+**Establishment size by supersector (φ_j, ascending):**
+
+| BLS Code | Supersector | Avg size | φ_j |
+|----------|-------------|----------|-----|
+| 80 | Other Services | 7.3 | 1.990 |
+| 20 | Construction | 9.3 | 2.226 |
+| 55 | Finance+RE | 10.9 | 2.391 |
+| 42 | Retail | 13.3 | 2.590 |
+| 41 | Wholesale | 13.7 | 2.617 |
+| 60 | Prof+Business | 16.8 | 2.821 |
+| 70 | Entertainment+Accom | 18.0 | 2.890 |
+| 10 | Mining | 19.2 | 2.956 |
+| 43 | Transport+Utilities | 21.4 | 3.065 |
+| 65 | Education+Health | 22.9 | 3.131 |
+| 50 | Information | 26.5 | 3.279 |
+| 30 | Manufacturing | 46.5 | 3.839 |
+
+**v3 residualization R² and key coefficients:**
+- ν^δ: dlog_p=+5.05, dlog_va_lag=−0.060, phi_x_dmp=−0.017, R²=0.081
+- ν^s: dlog_p=+3.94, dlog_va_lag=+0.404, phi_x_dmp=−0.000, R²=0.029
+- ν^LD: dlog_p=+11.15, dlog_va_lag=+0.311, log_theta_lag=+0.017, phi_x_dmp=−0.032, R²=0.138
+- ν^QU: dlog_p=−5.62, dlog_va_lag=−0.038, log_theta_lag=+0.351, phi_x_dmp=−0.001, R²=0.610
+
+**v3 pooled cross-series correlations:**
+- r(δ,LD): raw=+0.618, resid=+0.424 — essentially unchanged from v2 (0.423)
+- r(δ,QU): raw=+0.613, resid=+0.048 — large reduction, QU orthogonalization continues to work
+- r(LD,QU): raw=+0.553, resid=−0.076
+
+**Why φ_j × ΔMP_t did not reduce r(δ,LD):** Coefficients are negative for both δ (−0.017) and LD (−0.032) — same sign, similar order of magnitude. The interaction removes variation from both series proportionally and in the same direction, leaving their mutual correlation unchanged. This is the expected pattern if the common variation is structural (shared industry fundamentals) rather than driven by differential monetary policy sensitivity.
+
+**v3 spec summary:**
+- δ, TS: `(dlog_p, dlog_va_lag, phi_x_dmp)`
+- LD, QU: `(dlog_p, dlog_va_lag, log_theta_lag, phi_x_dmp)`
+- φ_j range: 1.990 (Other Services) to 3.839 (Manufacturing), span = 1.85 log pts
+- ΔMP_t: quarterly first difference of Wu-Xia/FEDFUNDS combined series
+
+---
+
+### 14.3 Structural Interpretation of r(δ,LD) = 0.42
+
+The systematic elimination of external confound hypotheses across v1→v2→v3 now supports a **structural interpretation** of the residual correlation. The most economically compelling mechanism is shared unobserved industry-specific conditions driving both margins simultaneously with different timing.
+
+When an industry-specific shock hits (technology displacement, regulatory change, demand shift), establishment exit rates rise (δ) and surviving firms simultaneously reduce employment (LD) as the industry adjusts to a new equilibrium. Both margins reflect the same underlying deterioration, not a causal chain from one to the other. This explains:
+
+- **Granger asymmetry:** δ predicts future LD (industry conditions deteriorate progressively, exit wave precedes full adjustment), but LD does not predict future δ at long horizons
+- **VAR cross-persistence:** β(LD←δ) = 0.228 exceeds α(δ←LD) = 0.132 — directional but not purely causal
+- **Correlation surviving all aggregate controls:** the common factor is industry-specific, invisible to national aggregates
+
+**Note on endogenous exit channel:** An alternative structural mechanism — exiting firms release workers that surviving firms selectively retain while laying off the rest — predicts LD should be *lower* after δ (survivors absorb released labor). This is the wrong sign relative to the data, ruling it out as the primary mechanism.
+
+**Implication for paper:** Present r(δ,LD) as a structural feature of the Bartik instruments reflecting the joint response of both margins to industry-specific shocks, supported by the Granger evidence. The joint LP is the appropriate methodological response: it shows the δ vacancy result is robust to controlling for this structural comovement, confirming identification of the firm destruction channel specifically.
+
+---
+
+### 14.4 Updated Priority Order for Next Session
+
+1. **ICE BofA sector OAS from FRED** — test idiosyncratic industry credit supply channel (the one remaining open hypothesis for r(δ,LD)). Fetch sector OAS spreads from FRED (series `BAMLHE00EHY2EY` and related), map to 12 BLS supersectors, add lagged sector spread as residualization control in part2b. Check if r(δ,LD) moves.
+
+2. **Pre-GFC sample restriction for LD (Priority 4c)** — the monotonically rising LD unemployment IRF is likely GFC-dominated. Add `max_qt="2007Q4"` option to `run_lp()` in `part5_lp.py`. Cheapest remaining diagnostic; directly tests whether LD anomaly is sample-specific.
+
+3. **Wild cluster bootstrap (Priority 4b)** — supplement LP standard errors with wildboottest. n=50 clusters is at lower bound of reliability for cluster-robust inference.
+
+4. **Recession-severity placebo for NFCI interaction (Priority 4a)** — now partially superseded by SLOOS result but still useful as a formal robustness check. Run (1) B×NFCI, (2) B×Δu_nat, (3) both simultaneously to confirm NFCI proxies recession depth rather than credit supply.
+
+5. **Paper text** — draft the empirical section characterizing the v1→v2→v3 residualization sequence as systematic elimination of confound hypotheses, concluding that r(δ,LD) is structural. SLOOS section documents the frictionless model confirmation. δ vacancy finding is the headline result.
+
+---
+
+### 14.5 Data Sources and Caches Added This Session
+
+| Cache file | Source | Coverage | Notes |
+|------------|--------|----------|-------|
+| `data/cache/wuxia_quarterly.parquet` | Atlanta Fed Excel + FRED FEDFUNDS | 1960Q1–present | Delete to rebuild with updated FEDFUNDS extension |
+| `data/cache/cbp_estab_size.parquet` | Census CBP API, year 2000 | 12 BLS supersectors | Time-invariant φ_j; stable cross-industry ordering |
+| `data/results/lp_irf_delta_sloos_lm_unemp.csv` | part7b_sloos.py | h=0..20 | Primary SLOOS spec, unemployment |
+| `data/results/lp_irf_delta_sloos_lm_vacancy.csv` | part7b_sloos.py | h=0..20 | Primary SLOOS spec, vacancy |
+| `data/results/lp_irf_delta_sloos_sm_unemp.csv` | part7b_sloos.py | h=0..20 | Small-firm C&I robustness |
+| `data/results/lp_irf_delta_sloos_sm_vacancy.csv` | part7b_sloos.py | h=0..20 | Small-firm C&I robustness |
+| `data/results/lp_irf_delta_nfci_rep_unemp.csv` | part7b_sloos.py | h=0..20 | NFCI replication within SLOOS script |
+| `data/results/lp_irf_delta_nfci_rep_vacancy.csv` | part7b_sloos.py | h=0..20 | NFCI replication within SLOOS script |
+| `data/results/lp_irf_delta_sloos_comparison_unemp.png` | part7b_sloos.py | — | SLOOS vs NFCI comparison, β_h and δ_h panels, unemployment |
+| `data/results/lp_irf_delta_sloos_comparison_vacancy.png` | part7b_sloos.py | — | SLOOS vs NFCI comparison, β_h and δ_h panels, vacancy |
