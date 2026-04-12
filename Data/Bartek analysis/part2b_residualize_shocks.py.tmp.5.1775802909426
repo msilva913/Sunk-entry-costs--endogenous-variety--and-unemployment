@@ -438,8 +438,7 @@ def _load_controls() -> pd.DataFrame:
     print(f"  After merge: {len(nat):,} obs")
 
     # ── (d) lagged industry value-added growth ────────────────────────────────
-    extended_label = " [GDP-anchored Chow-Lin extended]" if BEA_VA_CACHE == _BEA_VA_EXTENDED else " [FRED 2005Q1+ only]"
-    print(f"\n--- Industry real value-added (BEA via FRED){extended_label} ---")
+    print("\n--- Industry real value-added (BEA via FRED) ---")
     if BEA_VA_CACHE.exists():
         try:
             bea_va = pd.read_parquet(BEA_VA_CACHE)
