@@ -18,7 +18,11 @@ Instruments
   Raw:          delta_instrument_base2006.csv   (delta, BED destruction)
                 s_instrument_base2006.csv        (s-TS, total separations -- baseline only)
   Residualized: *_resid_base2006.csv (delta, LD, QU) from part3_resid_instruments.py
-                residualized on Dlog p_t [+ log theta_t for LD, QU]
+                residualized on Δlog p_t + Δlog VA_{j,t-1} [+ log θ_{t-1} for LD, QU]
+                Industry VA extended pre-2005 via GDP-anchored Chow-Lin backcast
+                (part2b_extend_va.py); residualized delta available from ~1994Q4.
+                Sample start for all residualized LPs: 2001Q1 (binding constraint
+                is state-level JOLTS vacancy data, available from 2001Q1 onward).
 
 Outputs
 -------
@@ -539,7 +543,10 @@ if resid_ok:
     qu_resid_panel    = build_panel(load_resid(QU_RESID_INSTR_FILE),
                                     "bartik_qu",    outcomes)
 
-    # delta restricted to post-2001 for comparability with LD/QU
+    # delta restricted to 2001Q1+ for comparability with LD/QU.
+    # Binding constraint: state-level JOLTS vacancy data starts 2001Q1;
+    # the Chow-Lin VA extension makes residualized delta available from
+    # ~1994Q4 but vacancy LPs cannot use that pre-2001 data regardless.
     delta_resid_post  = (delta_resid_panel[
                              delta_resid_panel["quarter_label"] >= "2001Q1"]
                          .copy().reset_index(drop=True))
@@ -636,7 +643,7 @@ if resid_ok:
          "QU (resid)":    irf_qu_resid},
         out_path = RESULTS_DIR / "lp_irf_delta_ld_qu_overlay.png",
         title    = (r"IRF: $\delta$ vs Layoffs+Discharges vs Quits"
-                    "\n(v2-residualized, 1-SD scale, 2005Q3–2019Q4)"),
+                    "\n(v2-residualized, 1-SD scale, 2001Q1–2019Q4)"),
         ylabel   = "pp change in unemp. rate per 1-SD shock",
     )
 
@@ -648,7 +655,7 @@ if resid_ok and vac_ok:
          "QU (resid)":    irf_qu_vac},
         out_path = RESULTS_DIR / "lp_irf_vacancy_decomp_overlay.png",
         title    = (r"Vacancy IRF: $\delta$ vs LD vs QU"
-                    "\n(v2-residualized, 1-SD scale, 2005Q3–2019Q4)"),
+                    "\n(v2-residualized, 1-SD scale, 2001Q1–2019Q4)"),
         ylabel   = "pp change in vacancy rate per 1-SD shock",
     )
 

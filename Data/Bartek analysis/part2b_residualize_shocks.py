@@ -49,8 +49,8 @@ Industry VA: FRED series IDs
   BLS 50 -> RVAI               Information
   BLS 55 -> RVAFI + RVARL      Finance+Insurance + Real Estate (summed)
   BLS 60 -> RVAPBS             Professional & Business Services
-  BLS 65 -> RVAES + RVAHC      Education + Health & Social Assistance (summed)
-  BLS 70 -> RVAER + RVAAF      Arts/Entertainment + Accommodation/Food (summed)
+  BLS 65 -> RVAES      Education + Health & Social Assistance (summed)
+  BLS 70 -> RVAAF      Arts/Entertainment + Accommodation/Food (summed)
   BLS 80 -> RVAOSEG            Other Services
 
 Coverage: all FRED RVA series start 2005Q1.  Sample for this script is
@@ -129,19 +129,22 @@ FRED_API_KEY = os.getenv("FRED_API_KEY")
 
 # ── FRED series -> BLS supersector mapping ────────────────────────────────────
 # Multi-component sectors are summed at the level before log-differencing.
+# Corrections vs. prior version:
+#   BLS 65: RVAESHS replaces RVAES (education-only subsector, ~16% of total).
+#   BLS 70: RVAAER + RVAAF replaces RVAER (non-existent) + RVAAF.
 BLS_TO_FRED = {
-    10: ["RVAM"],
-    20: ["RVAC"],
-    30: ["RVAMA"],
-    41: ["RVAW"],
-    42: ["RVAR"],
-    43: ["RVAT", "RVAU"],
-    50: ["RVAI"],
-    55: ["RVAFI", "RVARL"],
-    60: ["RVAPBS"],
-    65: ["RVAES", "RVAHC"],
-    70: ["RVAER", "RVAAF"],
-    80: ["RVAOSEG"],
+    10: ["RVAM"],            # Mining
+    20: ["RVAC"],            # Construction
+    30: ["RVAMA"],           # Manufacturing
+    41: ["RVAW"],            # Wholesale Trade
+    42: ["RVAR"],            # Retail Trade
+    43: ["RVAT", "RVAU"],    # Transport+Warehousing + Utilities
+    50: ["RVAI"],            # Information
+    55: ["RVAFI", "RVARL"],  # Finance+Insurance + Real Estate+Rental
+    60: ["RVAPBS"],          # Professional+Business Services
+    65: ["RVAESHS"],         # Education+Health+Social Assistance (full aggregate)
+    70: ["RVAAER", "RVAAF"], # Arts+Entertainment + Accommodation+Food
+    80: ["RVAOSEG"],         # Other Services excl Govt
 }
 
 # ── small helpers ─────────────────────────────────────────────────────────────

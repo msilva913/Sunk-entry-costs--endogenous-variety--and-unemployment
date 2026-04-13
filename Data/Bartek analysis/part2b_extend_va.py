@@ -1,115 +1,70 @@
 """
-part2b_extend_va.py  --  GDP-anchored Chow-Lin backcast of sector VA pre-2005
-==============================================================================
-The FRED BEA real value-added series (RVAM, RVAC, ...) begin in 2005Q1, which
-truncates the v2 residualization sample and drops the pre-2005 observations
-from the LP.  This script constructs a quarterly VA series for each of the 12
-BLS supersectors back to 1992Q1 using a Chow-Lin temporal disaggregation
-(Chow and Lin 1971, JASA) with aggregate real GDP as the high-frequency
-indicator.
+part2b_extend_va.py  --  Constrained Chow-Lin backcast of sector VA pre-2005
+=============================================================================
+Extends the quarterly BEA sector value-added series from 2005Q1 back to
+1992Q1 using a constrained Chow-Lin (1971, JASA) temporal disaggregation.
 
-Methodology: Growth-rate Chow-Lin disaggregation
-------------------------------------------------
-Chow-Lin temporal disaggregation (Chow and Lin, 1971) is the standard
-technique in national accounts for estimating high-frequency (quarterly)
-values from low-frequency (annual) benchmarks using a correlated indicator
-series.  We implement a growth-rate formulation:
+The resulting extended cache (bea_va_quarterly_12ind_extended.parquet) replaces
+bea_va_quarterly_12ind.parquet as the VA control series in part2b_residualize_
+shocks.py, expanding the v2/v3 residualization sample from 2005Q2+ to 1992Q2+.
 
-  Step 1 (estimation): For each sector j, regress quarterly growth rates on
-    quarterly GDP growth rates over the post-2005 sample (where both are
-    observed):
-      Δlog(VA_{j,t}) = β̂_j * Δlog(GDP_t) + ε_{j,t}
-    OLS estimation. The coefficient β̂_j is the short-run GDP elasticity of
-    sector j's VA: a 1% quarterly GDP growth corresponds to β̂_j% quarterly
-    VA growth on average. Manufacturing typically has β > 1 (procyclical
-    amplification); services have β < 1 (muted cyclicality).
+BLS-to-FRED mapping corrections vs. prior version
+--------------------------------------------------
+  BLS 65: RVAESHS    (Education+Health+Social Assistance, full aggregate)
+          Previously used RVAES (Education only, ~16% of total) — corrected.
+  BLS 70: RVAAER + RVAAF   (Arts+Entertainment + Accommodation+Food)
+          Previously used RVAER (does not exist on FRED) — corrected.
 
-  Step 2 (recursive backcast): For each pre-2005 quarter t, compute the
-    implied quarterly growth rate:
-      Δlog(VA_{j,t}) = β̂_j * Δlog(GDP_t)
-    Then iterate forward from the 2005Q1 anchor level:
-      log(VA_{j,t}) = log(VA_{j,t-1}) + Δlog(VA_{j,t})
-    This produces a smooth backcasted time path that:
-    - Respects the within-year shape of the GDP cycle (recessions in Q1-Q3
-      show as VA declines; recoveries in Q4 show as rebounds)
-    - Implies annual VA growth = β̂_j × annual GDP growth (annual consistency)
-    - Is continuous at the 2005Q1 splice point
-
-  Step 3 (output): Compute log-differences of the spliced series (both
-    backcasted and observed). Return Δlog(VA_{j,t}) for all quarters.
-
-Advantages of growth-rate formulation:
-  - Estimation avoids I(1) cointegration complications
-  - Interpretation is transparent: elasticity of growth to growth
-  - Application is consistent with estimation approach
-  - Output (quarterly growth rates) directly matches the control variable
-    needed in part2b residualization
-  - Annual sums are automatically consistent (no ad-hoc Denton correction needed)
-
-Why this is preferable to linear interpolation
-----------------------------------------------
-Linear interpolation sets quarterly VA growth equal to (annual growth) / 4
-in each quarter of the year. This imposes a rigid assumption: demand conditions
-are identical across all four quarters of each year. This is most severely
-violated during recessions (e.g., the 2001 NBER contraction ran March–November
-with distinct quarterly timing). Linear interpolation therefore produces VA
-growth rates that are artificially smooth during the periods (recessions) where
-the residualization control is most needed to remove demand contamination.
-
-Growth-rate Chow-Lin uses the observed quarterly path of real GDP to
-disciplinedly distribute within-year movements to each sector. The key
-empirical observation is that quarterly sector VA growth is highly correlated
-with quarterly GDP growth: manufacturing and construction show β > 1, while
-services show β < 1. The regression Step 1 (reported in output) quantifies
-these elasticities. The backcast then applies the sector-specific elasticity
-to the actual GDP path, inheriting the within-year cycle from aggregate GDP.
-
-This is disciplined because: (i) β̂_j is estimated from data; (ii) the backcast
-respects the actual quarterly GDP path, not an assumption; (iii) annual growth
-is automatically consistent; (iv) the within-year shape comes from an external,
-highly observable series (GDP) rather than an arbitrary assumption.
-
-The approach is strictly superior to linear interpolation if GDP growth is a
-better predictor of sector VA growth than zero (constant growth). This is
-confirmed empirically by the R² reported in Step 1 for each sector.
-
-Sources and implementation notes
+Constrained Chow-Lin formulation
 ---------------------------------
-  Annual sector VA benchmarks: FRED annual series, same BLS_TO_FRED mapping as
-    part2b_residualize_shocks.py.  For sectors composed of multiple FRED
-    series, annual totals are summed across components before log-differencing.
-    FRED stores the quarterly RVA series at quarterly frequency; the annual
-    average is computed as the mean of the four quarterly observations.
+Let VA_{j,t} be quarterly sector VA (unobserved pre-2005), and Y_{j,A} be
+the BEA annual benchmark for year A (observed 1997+).
 
-  Quarterly real GDP indicator: FRED GDPC1 (chained 2017 dollars), available
-    from 1947Q1.
+Step 1 — Indicator regression (post-2005 quarterly data):
+    Δlog(VA_{j,t}) = α_j + β_j · Δlog(GDP_t) + ε_{j,t}
 
-  Annual BEA benchmarks: where FRED quarterly data starts 2005Q1, we compute
-    annual averages from the quarterly series for 2005–2024 and fetch annual
-    data for 1992–2004 from the same FRED series by resampling the quarterly
-    to annual frequency.  For most RVA series, FRED does *not* carry annual
-    values before 2005 separately — the series simply starts in 2005.  We
-    therefore construct pre-2005 annual benchmarks from BEA NIPA Table 6.1
-    accessed via FRED annual series where available, or from the BEA GDP-by-
-    industry annual release (GDPbyInd_VA_NAICS, which runs from 1997 onward).
-    In practice, for sectors where annual FRED data is unavailable, we fall
-    back to the GDP-scaling approach: VA_{j,t}^backcast = VA_{j,2005Q1} *
-    (GDP_t / GDP_{2005Q1})^β̂_j, scaled to respect the annual growth rates
-    implied by the BEA GDP-by-industry annual tables.
+    OLS with intercept. α_j captures sector-specific mean growth that differs
+    from GDP (secular tech growth, mining decline, etc.); β_j is the short-run
+    cyclical GDP elasticity. Omitting the intercept produces negative centered-R²
+    for sectors where mean growth ≠ mean GDP growth. R² is reported for each
+    sector; sectors with R² < R2_THRESHOLD receive β_use = 0 (intercept-only
+    backcast) to avoid adding noisy GDP variation.
 
-  The backcast is saved to:
+Step 2 — Unconstrained recursive backcast:
+    For each pre-2005 quarter, apply implied growth = α_j + β_use·Δlog(GDP_t)
+    recursively backward from the 2005Q1 anchor level.
+
+Step 3 — Annual benchmark constraint (proportional Denton adjustment):
+    BEA annual VA = average of 4 quarterly SAAR values. For each year A in
+    1997–2004 with annual benchmark Y_{j,A}:
+
+        scale_A = Y_{j,A} / mean(VA_{j,q}^unconstrained, q in {Q1..Q4 of A})
+        VA_{j,q}^constrained = VA_{j,q}^unconstrained · scale_A
+
+    This guarantees mean(VA_{j,q}^constrained) = Y_{j,A} exactly, making the
+    quarterly path consistent with published BEA annual data.
+    Years 1992–1996 (no annual benchmark available) use the unconstrained
+    backcast only.
+
+Annual benchmark source:
+    bea_va_annual_by_supersector.csv — produced from BEA GDP-by-Industry
+    Table 1.3.6, April 9 2026 release. One column per BLS supersector (BLS10
+    through BLS80), row index = year, units = billions of chained 2017 dollars.
+    File must be co-located with this script (or edit ANN_BENCH_CSV below).
+
+GDP indicator:
+    FRED GDPC1 (Real GDP, chained 2017 dollars). Cached after first fetch.
+
+Outputs:
     data/cache/bea_va_quarterly_12ind_extended.parquet
-  This replaces bea_va_quarterly_12ind.parquet as input to part2b.
+    data/results/va_chowlin_backcast_validation.png
 
-Run
----
-  FRED_API_KEY=<key> python part2b_extend_va.py
+Run:
+    FRED_API_KEY=<key> python part2b_extend_va.py
 
-  On subsequent runs the extended cache is used; FRED key not needed.
-
-Prerequisites
--------------
-  data/cache/bea_va_quarterly_12ind.parquet   (part2b_residualize_shocks.py)
+Prerequisites:
+    part2b_residualize_shocks.py  (produces bea_va_quarterly_12ind.parquet)
+    bea_va_annual_by_supersector.csv  (annual benchmark CSV)
 """
 
 import os
@@ -133,485 +88,421 @@ except NameError:
 
 from construct_delta_instrument import DEFAULT_CACHE_DIR, INDUSTRY_LABELS
 
-# ── FRED API key ───────────────────────────────────────────────────────────────
 from dotenv import load_dotenv
 load_dotenv()
 FRED_API_KEY = os.getenv("FRED_API_KEY")
 
 # ── paths ──────────────────────────────────────────────────────────────────────
-BEA_VA_CACHE      = DEFAULT_CACHE_DIR / "bea_va_quarterly_12ind.parquet"
-VA_EXTENDED_CACHE = DEFAULT_CACHE_DIR / "bea_va_quarterly_12ind_extended.parquet"
-GDP_CACHE         = DEFAULT_CACHE_DIR / "gdpc1_quarterly.parquet"
-RESULTS_DIR       = Path("data/results")
+BEA_QTR_CACHE = DEFAULT_CACHE_DIR / "bea_va_quarterly_12ind.parquet"
+BEA_EXT_CACHE = DEFAULT_CACHE_DIR / "bea_va_quarterly_12ind_extended.parquet"
+GDP_CACHE     = DEFAULT_CACHE_DIR / "gdpc1_quarterly.parquet"
+RESULTS_DIR   = Path("data/results")
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
-# ── FRED sector mapping (same as part2b) ──────────────────────────────────────
+# Annual benchmark CSV: must be in same directory as this script.
+ANN_BENCH_CSV = Path("bea_va_annual_by_supersector.csv")
+
+# ── constants ──────────────────────────────────────────────────────────────────
+TARGET_START  = "1992Q1"   # desired start of extended quarterly series
+SPLICE_QT     = "2005Q1"   # first observed FRED quarterly value (anchor)
+R2_THRESHOLD  = 0.15       # R² below this → suppress β (intercept-only backcast)
+
+# ── FRED quarterly series for each BLS supersector ────────────────────────────
+# Used to estimate α_j and β_j from post-2005 data.
+# Corrections vs. prior version:
+#   BLS 65: RVAESHS replaces RVAES (education-only subsector, ~16% of total).
+#   BLS 70: RVAAER + RVAAF replaces RVAER (non-existent) + RVAAF.
 BLS_TO_FRED = {
-    10: ["RVAM"],
-    20: ["RVAC"],
-    30: ["RVAMA"],
-    41: ["RVAW"],
-    42: ["RVAR"],
-    43: ["RVAT", "RVAU"],
-    50: ["RVAI"],
-    55: ["RVAFI", "RVARL"],
-    60: ["RVAPBS"],
-    65: ["RVAES", "RVAHC"],
-    70: ["RVAER", "RVAAF"],
-    80: ["RVAOSEG"],
+    10: ["RVAM"],            # Mining
+    20: ["RVAC"],            # Construction
+    30: ["RVAMA"],           # Manufacturing
+    41: ["RVAW"],            # Wholesale Trade
+    42: ["RVAR"],            # Retail Trade
+    43: ["RVAT", "RVAU"],    # Transport+Warehousing + Utilities
+    50: ["RVAI"],            # Information
+    55: ["RVAFI", "RVARL"],  # Finance+Insurance + Real Estate+Rental
+    60: ["RVAPBS"],          # Professional+Business Services
+    65: ["RVAESHS"],         # Education+Health+Social Assistance (full aggregate)
+    70: ["RVAAER", "RVAAF"], # Arts+Entertainment + Accommodation+Food
+    80: ["RVAOSEG"],         # Other Services excl Govt
 }
 
-SECTOR_LABELS = INDUSTRY_LABELS  # {code: label}
 
 # ── helpers ────────────────────────────────────────────────────────────────────
+def _dt_to_ql(dt) -> str:
+    return f"{dt.year}Q{(dt.month - 1) // 3 + 1}"
+
 def _ql_to_dt(ql: str) -> pd.Timestamp:
     y, q = ql.split("Q")
     return pd.Timestamp(year=int(y), month=int(q) * 3 - 2, day=1)
 
-def _dt_to_ql(dt) -> str:
-    return f"{dt.year}Q{(dt.month - 1) // 3 + 1}"
-
 def _get_fred_client():
     if not FRED_API_KEY:
         raise EnvironmentError(
-            "FRED_API_KEY not set. Register free at "
-            "https://fred.stlouisfed.org/docs/api/api_key.html"
+            "FRED_API_KEY not set.\n"
+            "  Register free: https://fred.stlouisfed.org/docs/api/api_key.html\n"
+            "  Windows PowerShell:  $env:FRED_API_KEY = '<key>'\n"
+            "  Linux/macOS:         export FRED_API_KEY=<key>"
         )
     from fredapi import Fred
     return Fred(api_key=FRED_API_KEY)
 
+def _sector_label(bls_code: int) -> str:
+    return (INDUSTRY_LABELS.get(bls_code)
+            or INDUSTRY_LABELS.get(str(bls_code), "?"))
 
-# ═══════════════════════════════════════════════════════════════════════════════
-#  SECTION 1: GDP indicator
-# ═══════════════════════════════════════════════════════════════════════════════
 
+# ── Section 1: GDP indicator ───────────────────────────────────────────────────
 def _load_gdp() -> pd.Series:
-    """
-    Load quarterly real GDP (FRED: GDPC1, chained 2017$).
-    Returns quarterly Series indexed by quarter_label strings.
-    Available from 1947Q1.
-    """
+    """Real GDP (GDPC1) as quarterly Series indexed by quarter_label."""
     if GDP_CACHE.exists():
         df = pd.read_parquet(GDP_CACHE)
-        print(f"  GDP: loaded from cache ({df['quarter_label'].min()}–{df['quarter_label'].max()})")
+        print(f"  GDP: cache ({df['quarter_label'].min()}–{df['quarter_label'].max()})")
     else:
-        if not FRED_API_KEY:
-            raise EnvironmentError("FRED_API_KEY required to fetch GDP.")
+        print("  GDP: fetching GDPC1 from FRED ...")
         fred = _get_fred_client()
-        s = fred.get_series("GDPC1", observation_start="1990-01-01")
-        df = pd.DataFrame({"date": s.index, "gdp": s.values})
-        df["quarter_label"] = df["date"].map(_dt_to_ql)
-        df = df[["quarter_label", "gdp"]].dropna()
+        s    = fred.get_series("GDPC1", observation_start="1990-01-01")
+        df   = (pd.DataFrame({"date": s.index, "gdp": s.values})
+                  .assign(quarter_label=lambda d: d["date"].map(_dt_to_ql))
+                  [["quarter_label", "gdp"]].dropna())
         df.to_parquet(GDP_CACHE, index=False)
-        print(f"  GDP: fetched from FRED ({df['quarter_label'].min()}–{df['quarter_label'].max()}), saved.")
-
-    gdp = df.set_index("quarter_label")["gdp"]
-    gdp = gdp.sort_index()
-    return gdp
+        print(f"  GDP: saved ({df['quarter_label'].min()}–{df['quarter_label'].max()})")
+    return df.set_index("quarter_label")["gdp"].sort_index()
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-#  SECTION 2: Sector-level VA — quarterly post-2005 + annual pre-2005
-# ═══════════════════════════════════════════════════════════════════════════════
-
-def _load_sector_va_quarterly() -> pd.DataFrame:
+# ── Section 2: Post-2005 quarterly VA levels ──────────────────────────────────
+def _fetch_quarterly_va() -> pd.DataFrame:
     """
-    Load the existing BEA quarterly VA cache (2005Q1+).
-    Returns long DataFrame: quarter_label, industry_code (int), va (level).
+    Fetch post-2005 quarterly VA levels from FRED (2004Q4+ to get the lag).
+    Returns long DataFrame: quarter_label, industry_code (int), va.
     """
-    if not BEA_VA_CACHE.exists():
-        sys.exit(
-            f"Missing {BEA_VA_CACHE}.\n"
-            "Run part2b_residualize_shocks.py with FRED_API_KEY set first."
-        )
-    df = pd.read_parquet(BEA_VA_CACHE)
-    # The cache stores dlog_va — we need to reconstruct the level.
-    # The FRED fetch in part2b stores the level as 'va' before differencing;
-    # re-fetch to get levels, or reconstruct from dlog_va.
-    # Re-fetch is cleaner and ensures correct units.
-    return df  # columns: quarter_label, industry_code, dlog_va
-
-
-def _fetch_sector_va_levels(fred_client) -> pd.DataFrame:
-    """
-    Re-fetch sector VA levels from FRED for 2004Q4+ (need one extra quarter
-    for the lag).  Returns long DataFrame: quarter_label, industry_code, va.
-    """
-    print("  Fetching sector VA levels from FRED (2004Q4+) ...")
+    print("  Fetching quarterly VA from FRED ...")
+    fred    = _get_fred_client()
     records = []
-    for bls_code, series_ids in BLS_TO_FRED.items():
+    for bls_code, sids in BLS_TO_FRED.items():
         components = {}
-        for sid in series_ids:
+        for sid in sids:
             try:
-                s = fred_client.get_series(sid, observation_start="2004-10-01")
-                s = s.resample("QS").first()
-                components[sid] = s
+                s = fred.get_series(sid, observation_start="2004-10-01")
+                components[sid] = s.resample("QS").first()
+                print(f"    {sid}: {len(components[sid])} quarters")
             except Exception as e:
-                print(f"    WARNING: {sid} failed: {e}")
-        if len(components) < len(series_ids):
-            continue
+                sys.exit(f"[ERROR] FRED series '{sid}' failed: {e}\n"
+                         f"  Check BLS_TO_FRED mapping above.")
         va_total = pd.concat(list(components.values()), axis=1).sum(
-            axis=1, min_count=len(series_ids)
+            axis=1, min_count=len(sids)
         )
-        df = pd.DataFrame({"date": va_total.index, "va": va_total.values}).dropna()
-        df["quarter_label"] = df["date"].map(_dt_to_ql)
-        df["industry_code"] = int(bls_code)
-        records.append(df[["quarter_label", "industry_code", "va"]])
-    return pd.concat(records, ignore_index=True).sort_values(
-        ["industry_code", "quarter_label"]
-    ).reset_index(drop=True)
+        df = (pd.DataFrame({"date": va_total.index, "va": va_total.values})
+                .dropna()
+                .assign(quarter_label=lambda d: d["date"].map(_dt_to_ql),
+                        industry_code=int(bls_code))
+                [["quarter_label", "industry_code", "va"]])
+        records.append(df)
+
+    result = (pd.concat(records, ignore_index=True)
+                .sort_values(["industry_code", "quarter_label"])
+                .reset_index(drop=True))
+    print(f"  VA levels: {result['quarter_label'].min()}–{result['quarter_label'].max()}, "
+          f"{result['industry_code'].nunique()} sectors")
+    return result
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-#  SECTION 3: GDP-anchored Chow-Lin backcast
-# ═══════════════════════════════════════════════════════════════════════════════
-
-def _chow_lin_backcast_sector(
-    va_quarterly: pd.Series,    # sector VA levels, 2005Q1+, indexed by quarter_label
-    gdp: pd.Series,             # real GDP, 1992Q1+, indexed by quarter_label
-    sector_code: int,
-    target_start: str = "1992Q1",
-) -> pd.Series:
+# ── Section 3: Annual benchmarks ──────────────────────────────────────────────
+def _load_annual_benchmarks() -> pd.DataFrame:
     """
-    Chow-Lin temporal disaggregation using aggregate GDP as the indicator.
+    Load BEA annual VA benchmarks from bea_va_annual_by_supersector.csv.
 
-    Growth-rate formulation:
+    CSV schema:
+      - Index column: 'year' (int, 1997–2025)
+      - Value columns: BLS10, BLS20, ..., BLS80
+      - Units: billions of chained 2017 dollars (same as FRED SAAR series)
 
-    Procedure:
-    ----------
-    1. Estimate β_j: regress Δlog(VA_{j,t}) on Δlog(GDP_t) in the post-2005
-       sample (where both series are observed). OLS in growth rates (first
-       differences of logs). The coefficient β̂_j is the short-run GDP
-       elasticity of sector j's VA: a 1% quarterly GDP growth corresponds to
-       a β̂_j% quarterly VA growth on average.
+    BEA convention: annual value = mean of 4 quarterly SAAR values.
+    Annual constraint in Step 3 therefore requires:
+        mean(VA_{Q1..Q4}^constrained) = annual_benchmark
 
-    2. Recursive backcast: iterate *backward* from the 2005Q1 anchor,
-       one quarter at a time.  At each step, back out the earlier level:
-         log(VA_{j,t}) = log(VA_{j,t+1}) - β̂_j × Δlog(GDP_{t→t+1})
-       This is equivalent to asserting Δlog(VA_{j,t}) = β̂_j × Δlog(GDP_t)
-       for every pre-2005 quarter and propagating from the anchor backward.
-       The anchor pins the absolute level; the GDP path determines the
-       within-period shape.  Annual growth is automatically consistent:
-       summing the quarterly growth rates within any year gives
-       β̂_j × (annual GDP growth).
-
-    3. Splice: concatenate [backcast: target_start–2004Q4] + [observed: 2005Q1+].
-       Return log-difference of the spliced series as Δlog(VA_{j,t}).
-
-    This approach is:
-    - Consistent: estimates β in growth rates, applies it in growth rates
-    - Interpretable: β̂_j is the elasticity of VA growth to GDP growth
-    - Efficient: avoids cointegration issues from level regression
-    - Annual-consistent: implies annual VA growth = β̂_j × annual GDP growth
-
-    Returns pd.Series of dlog_va indexed by quarter_label (growth rates).
+    Coverage 1997–2004 is used for constraints; 1992–1996 has no benchmark.
     """
-    # ── align on common quarters ───────────────────────────────────────────────
-    common = va_quarterly.index.intersection(gdp.index)
+    if not ANN_BENCH_CSV.exists():
+        sys.exit(
+            f"[ERROR] Annual benchmark CSV not found: {ANN_BENCH_CSV.resolve()}\n"
+            f"  Produce it from BEA GDP-by-Industry Table 1.3.6 using the\n"
+            f"  companion Excel workbook, then save as:\n"
+            f"  {ANN_BENCH_CSV.resolve()}"
+        )
+    df = pd.read_csv(ANN_BENCH_CSV, index_col="year")
+    df.columns = [int(c.replace("BLS", "")) for c in df.columns]
+    df.index   = df.index.astype(int)
+    print(f"  Annual benchmarks: {df.index.min()}–{df.index.max()}, "
+          f"{len(df.columns)} sectors")
+    return df   # shape (n_years, 12), index=year, columns=bls_code (int)
+
+
+# ── Section 4: Constrained Chow-Lin backcast (one sector) ─────────────────────
+def _chow_lin_sector(
+    va_quarterly: pd.Series,  # quarterly VA levels post-2005Q1, index=quarter_label
+    gdp         : pd.Series,  # real GDP quarterly, index=quarter_label
+    ann_bench   : pd.Series,  # annual benchmarks, index=year (int)
+    bls_code    : int,
+) -> tuple:
+    """
+    Constrained Chow-Lin for one BLS supersector.
+
+    Returns:
+        dlog_full   : pd.Series of Δlog(VA), quarter_label index, TARGET_START onward
+        meta        : dict with alpha, beta, beta_use, r2, n_constrained
+    """
+    # Align quarterly VA and GDP on common post-2005 quarters
+    common  = va_quarterly.index.intersection(gdp.index)
     va_obs  = va_quarterly.loc[common].dropna()
-    gdp_obs = gdp.loc[common].dropna()
-    common  = va_obs.index.intersection(gdp_obs.index)
-    va_obs  = va_obs.loc[common]
-    gdp_obs = gdp_obs.loc[common]
+    gdp_obs = gdp.loc[va_obs.index.intersection(gdp.index)]
+    va_obs  = va_obs.loc[gdp_obs.index]
 
-    if len(common) < 8:
-        print(f"    Sector {sector_code}: insufficient overlap ({len(common)} obs) — "
-              "falling back to linear interpolation.")
-        return _linear_interpolate_sector(va_quarterly, gdp, target_start)
+    if len(va_obs) < 8:
+        sys.exit(f"[ERROR] BLS {bls_code}: only {len(va_obs)} common observations. "
+                 "Check FRED series.")
 
-    # ── step 1: estimate GDP elasticity in log-differences ────────────────────
+    # ── Step 1: OLS regression Δlog(VA) = α + β·Δlog(GDP) + ε ───────────────
     dlog_va  = np.log(va_obs).diff().dropna()
-    dlog_gdp = np.log(gdp_obs).diff().dropna()
-    idx = dlog_va.index.intersection(dlog_gdp.index)
-    dlog_va  = dlog_va.loc[idx]
-    dlog_gdp = dlog_gdp.loc[idx]
-    # OLS: dlog_va = β * dlog_gdp + ε (no constant — growth rates, demeaned
-    #   effectively by the industry FE in part2b)
-    beta = float(np.dot(dlog_gdp, dlog_va) / np.dot(dlog_gdp, dlog_gdp))
-    r2 = float(1 - ((dlog_va - beta * dlog_gdp) ** 2).sum()
-               / ((dlog_va - dlog_va.mean()) ** 2).sum())
-    print(f"    Sector {sector_code:<3} ({SECTOR_LABELS.get(sector_code,'?'):<30}): "
-          f"β(GDP) = {beta:+.4f},  R²(growth) = {r2:.3f},  N={len(dlog_va)}")
+    dlog_gdp = np.log(gdp_obs).diff().reindex(dlog_va.index).dropna()
+    dlog_va  = dlog_va.reindex(dlog_gdp.index)
 
-    # ── step 2: recursive backcast using growth-rate formula ───────────────────
-    anchor_qt = va_obs.index[0]   # first observed quarter (≈ 2005Q1)
-    anchor_va  = float(va_obs.iloc[0])
-    log_anchor_va = np.log(anchor_va)
+    X      = np.column_stack([np.ones(len(dlog_gdp)), dlog_gdp.values])
+    y      = dlog_va.values
+    coeffs = np.linalg.lstsq(X, y, rcond=None)[0]
+    alpha, beta = float(coeffs[0]), float(coeffs[1])
 
-    backcast_qts_sorted = sorted([q for q in sorted(gdp.index) if q < anchor_qt and q >= target_start])
-    if not backcast_qts_sorted:
-        # Nothing to backcast — return observed growth rates
-        return np.log(va_quarterly).diff().dropna()
+    resid  = y - X @ coeffs
+    ss_tot = ((y - y.mean()) ** 2).sum()
+    r2     = float(1.0 - (resid**2).sum() / ss_tot) if ss_tot > 0 else 0.0
 
-    # Build an ordered list from earliest backcast quarter through anchor,
-    # then iterate *backward* from the anchor so we can propagate the
-    # known anchor level into the past one quarter at a time.
-    # At each step: log(VA_{t}) = log(VA_{t+1}) - β × Δlog(GDP_{t→t+1})
-    all_qts_to_anchor = sorted(set(backcast_qts_sorted + [anchor_qt]))
+    # Suppress β for low-R² sectors to avoid adding noisy GDP variation
+    beta_use = beta if r2 >= R2_THRESHOLD else 0.0
+    suppressed = r2 < R2_THRESHOLD
 
-    log_va_dict = {anchor_qt: log_anchor_va}
-    for i in range(len(all_qts_to_anchor) - 1, 0, -1):
-        q_curr = all_qts_to_anchor[i - 1]  # earlier quarter (target)
-        q_next = all_qts_to_anchor[i]       # later quarter (already known)
+    lbl = f"{_sector_label(bls_code):<35}"
+    print(f"    BLS {bls_code:<3} ({lbl}): "
+          f"α={alpha:+.4f}  β={beta:+.5f}  R²={r2:.3f}  N={len(dlog_va)}"
+          + ("  [β suppressed]" if suppressed else ""))
+
+    # ── Step 2: unconstrained recursive backcast ──────────────────────────────
+    anchor_qt    = va_obs.index[0]   # ≈ 2005Q1
+    backcast_qts = sorted(q for q in gdp.index if TARGET_START <= q < anchor_qt)
+
+    if not backcast_qts:
+        dlog_obs = np.log(va_quarterly).diff().dropna()
+        meta = dict(alpha=alpha, beta=beta, beta_use=beta_use, r2=r2, n_constrained=0)
+        return dlog_obs, meta
+
+    all_qts = sorted(set(backcast_qts + [anchor_qt]))
+    log_va  = {anchor_qt: float(np.log(va_obs.iloc[0]))}
+
+    for i in range(len(all_qts) - 1, 0, -1):
+        q_next = all_qts[i]
+        q_curr = all_qts[i - 1]
         if q_curr not in gdp.index or q_next not in gdp.index:
             continue
-        gdp_curr = float(gdp.loc[q_curr])
-        gdp_next = float(gdp.loc[q_next])
-        if gdp_curr <= 0 or gdp_next <= 0:
+        g_curr, g_next = float(gdp[q_curr]), float(gdp[q_next])
+        if g_curr <= 0 or g_next <= 0:
             continue
-        # GDP growth from q_curr to q_next
-        dlog_gdp_q = np.log(gdp_next) - np.log(gdp_curr)
-        # Implied VA growth from q_curr to q_next = β × GDP growth
-        dlog_va_q  = beta * dlog_gdp_q
-        # Back out level at q_curr from known level at q_next
-        log_va_dict[q_curr] = log_va_dict[q_next] - dlog_va_q
+        dlog_gdp_q     = np.log(g_next) - np.log(g_curr)
+        dlog_va_q      = alpha + beta_use * dlog_gdp_q
+        log_va[q_curr] = log_va[q_next] - dlog_va_q
 
-    # Keep only pre-anchor (backcasted) quarters
-    log_va_backcast = {q: v for q, v in log_va_dict.items() if q < anchor_qt}
-
-    # ── step 3: Annual-consistency diagnostics ────────────────────────────────
-    # Verify that the implied annual average growth rate aligns with expectations.
-    for yr in set(q.split("Q")[0] for q in log_va_backcast.keys()):
-        yr_qts = sorted([q for q in all_qts_to_anchor if q.startswith(yr + "Q")])
-        if len(yr_qts) == 4 and all(q in log_va_dict for q in yr_qts):
-            yr_log_va = np.array([log_va_dict[q] for q in yr_qts])
-            ann_va_growth = yr_log_va[-1] - yr_log_va[0]  # Q1-to-Q4 within year
-            yr_gdp = np.array([float(gdp.loc[q]) for q in yr_qts])
-            ann_gdp_growth = np.log(yr_gdp[-1]) - np.log(yr_gdp[0])
-            expected_ann_va_growth = beta * ann_gdp_growth
-            discrepancy = abs(ann_va_growth - expected_ann_va_growth)
-            if discrepancy > 0.01:
-                print(f"      Year {yr}: VA annual growth {ann_va_growth:.4f}, "
-                      f"expected {expected_ann_va_growth:.4f} (β={beta:.3f}), "
-                      f"discrepancy={discrepancy:.4f}")
-
-    # ── step 4: splice and return growth rates ─────────────────────────────────
-    backcast_series = pd.Series(
-        {q: np.exp(v) for q, v in log_va_backcast.items()},
+    va_backcast = pd.Series(
+        {q: np.exp(v) for q, v in log_va.items() if q < anchor_qt},
         name="va"
-    )
-    full_series = pd.concat([backcast_series, va_quarterly]).sort_index()
-    # Ensure no duplicates at the splice point
-    full_series = full_series[~full_series.index.duplicated(keep="last")]
-    dlog_va_full = np.log(full_series).diff().dropna()
-    return dlog_va_full
+    ).sort_index()
+
+    # ── Step 3: annual benchmark constraint (proportional Denton) ─────────────
+    # For year A in backcast window with benchmark Y_{j,A}:
+    #   scale_A = Y_{j,A} / mean(VA_backcast[Q1:Q4 of A])
+    #   VA_backcast[Q1:Q4 of A] *= scale_A
+    # Guarantees mean(VA_constrained[Q1:Q4]) = Y_{j,A} exactly.
+    n_constrained = 0
+    bench_years   = set(ann_bench.dropna().index) if len(ann_bench) > 0 else set()
+    for yr in sorted(set(int(q[:4]) for q in va_backcast.index)):
+        if yr not in bench_years:
+            continue
+        yr_qts = [q for q in va_backcast.index if q.startswith(f"{yr}Q")]
+        if len(yr_qts) < 4:
+            continue
+        predicted_mean = float(va_backcast[yr_qts].mean())
+        if predicted_mean <= 0:
+            continue
+        scale = float(ann_bench[yr]) / predicted_mean
+        va_backcast[yr_qts] = va_backcast[yr_qts] * scale
+        n_constrained += 1
+
+    # ── Step 4: splice with observed quarterly series and compute Δlog ─────────
+    full_va   = pd.concat([va_backcast, va_quarterly]).sort_index()
+    full_va   = full_va[~full_va.index.duplicated(keep="last")]
+    dlog_full = np.log(full_va).diff().dropna()
+
+    meta = dict(alpha=alpha, beta=beta, beta_use=beta_use,
+                r2=r2, n_constrained=n_constrained)
+    return dlog_full, meta
 
 
-def _linear_interpolate_sector(
-    va_quarterly: pd.Series,
-    gdp: pd.Series,
-    target_start: str,
-) -> pd.Series:
+# ── Section 5: Validation plot ─────────────────────────────────────────────────
+def _plot_validation(extended: pd.DataFrame, gdp: pd.Series,
+                     results_meta: dict) -> None:
     """
-    Fallback: distribute annual BEA growth evenly across four quarters.
-    Annual benchmark = mean of observed quarters within each year.
-    Pre-2005 annual growth = GDP growth scaled by β (estimated from post-2005
-    data if available; else uses β=1 i.e. proportional to GDP).
+    Per-sector plot: observed (blue) vs backcasted (red) quarterly Δlog(VA),
+    with GDP×β reference (grey dashed). Marks splice point and NBER recessions.
     """
-    anchor_qt  = va_quarterly.index[0]
-    anchor_val = float(va_quarterly.iloc[0])
-    backcast_qts = sorted([q for q in gdp.index if q < anchor_qt and q >= target_start])
-    if not backcast_qts:
-        return np.log(va_quarterly).diff().dropna()
+    sectors  = sorted(extended["industry_code"].unique())
+    all_qts  = sorted(extended["quarter_label"].unique())
+    dates    = [_ql_to_dt(q) for q in all_qts]
+    dlog_gdp = np.log(gdp).diff()
+    rec_spans = [("2001-03-01","2001-11-01"), ("2007-12-01","2009-06-01")]
 
-    # Annual linear: set each quarter equal to 1/4 of annual growth
-    # implied by GDP (β=1 as conservative assumption)
-    log_va = {anchor_qt: np.log(anchor_val)}
-    for q in reversed(backcast_qts):
-        # Step back one quarter using quarterly GDP growth
-        qts_sorted = sorted(gdp.index)
-        idx = qts_sorted.index(q)
-        if idx + 1 < len(qts_sorted) and qts_sorted[idx + 1] in log_va:
-            next_q  = qts_sorted[idx + 1]
-            gdp_now = float(gdp.loc[q]) if q in gdp.index else np.nan
-            gdp_nxt = float(gdp.loc[next_q]) if next_q in gdp.index else np.nan
-            if np.isnan(gdp_now) or np.isnan(gdp_nxt):
-                log_va[q] = log_va[next_q]
-            else:
-                log_va[q] = log_va[next_q] - (np.log(gdp_nxt) - np.log(gdp_now))
-        else:
-            log_va[q] = log_va.get(anchor_qt, 0.0)
-
-    backcast_series = pd.Series(
-        {q: np.exp(v) for q, v in log_va.items() if q != anchor_qt},
-        name="va"
-    )
-    full_series = pd.concat([backcast_series, va_quarterly]).sort_index()
-    full_series = full_series[~full_series.index.duplicated(keep="last")]
-    return np.log(full_series).diff().dropna()
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-#  SECTION 4: Validation plot
-# ═══════════════════════════════════════════════════════════════════════════════
-
-def _plot_validation(
-    extended: pd.DataFrame,
-    original: pd.DataFrame,
-    gdp: pd.Series,
-    out_path: Path,
-) -> None:
-    """
-    For each sector, plot:
-      - Observed post-2005 quarterly VA growth (blue)
-      - Backcasted pre-2005 VA growth from Chow-Lin (red)
-      - Aggregate GDP growth × β̂ (grey dashed) as reference
-    This allows visual inspection of whether the backcast is reasonable.
-    """
-    sectors = sorted(extended["industry_code"].unique())
-    n = len(sectors)
-    dlog_gdp = np.log(gdp).diff().dropna()
-
-    fig, axes = plt.subplots(n, 1, figsize=(14, 2.8 * n), sharex=True)
-    if n == 1:
+    fig, axes = plt.subplots(len(sectors), 1,
+                             figsize=(14, 2.8 * len(sectors)), sharex=True)
+    if len(sectors) == 1:
         axes = [axes]
 
-    splice_qt = "2005Q1"
-    all_qts = sorted(extended["quarter_label"].unique())
-    dates = [_ql_to_dt(q) for q in all_qts]
-
     for ax, code in zip(axes, sectors):
-        sub = extended[extended["industry_code"] == code].set_index("quarter_label")
-        sub = sub.reindex(all_qts)
-        dlog = sub["dlog_va"].values
+        sub  = (extended[extended["industry_code"] == code]
+                .set_index("quarter_label")["dlog_va"]
+                .reindex(all_qts))
+        dlog = sub.values
+        is_back = np.array([q < SPLICE_QT for q in all_qts])
 
-        orig_sub = original[original["industry_code"] == code].set_index("quarter_label")
-        orig_sub = orig_sub.reindex(all_qts)
+        ax.plot(dates, np.where(~is_back, dlog, np.nan),
+                color="#1f77b4", lw=1.2, label="Observed (FRED)")
+        ax.plot(dates, np.where( is_back, dlog, np.nan),
+                color="#d62728", lw=1.2, label="Chow-Lin backcast")
 
-        is_backcast  = np.array([q < splice_qt for q in all_qts])
-        is_observed  = ~is_backcast
+        m = results_meta.get(code, {})
+        if m.get("beta_use", 0) != 0:
+            ref = (dlog_gdp.reindex(all_qts) * m["beta_use"] + m["alpha"]).values
+            ax.plot(dates, ref, color="grey", lw=0.8, ls="--", alpha=0.5,
+                    label=f"α+β·ΔGDP  (β={m['beta_use']:.2f})")
 
-        ax.plot(dates, np.where(is_observed,  dlog, np.nan), color="#1f77b4",
-                linewidth=1.2, label="Observed (FRED, 2005Q1+)")
-        ax.plot(dates, np.where(is_backcast, dlog, np.nan), color="#d62728",
-                linewidth=1.2, label="Chow-Lin backcast (pre-2005)")
-
-        # GDP reference
-        gdp_dlog = dlog_gdp.reindex(all_qts)
-        ax.plot(dates, gdp_dlog.values * 0.5, color="grey", linewidth=0.8,
-                linestyle="--", alpha=0.6, label="0.5 × Δlog(GDP) [scale ref]")
-
-        # Recession shading
-        for s, e in [("2001-03-01", "2001-11-01"), ("2007-12-01", "2009-06-01")]:
+        for s, e in rec_spans:
             ax.axvspan(pd.Timestamp(s), pd.Timestamp(e), alpha=0.10, color="grey")
-        ax.axvline(pd.Timestamp(splice_qt[:4] + "-01-01"),
-                   color="black", linewidth=0.7, linestyle=":")
-        ax.axhline(0, color="black", linewidth=0.4)
-        ax.set_ylabel(SECTOR_LABELS.get(code, str(code)), fontsize=7.5)
-        ax.grid(axis="y", linewidth=0.4, alpha=0.4)
+        ax.axvline(_ql_to_dt(SPLICE_QT), color="black", lw=0.7, ls=":")
+        ax.axhline(0, color="black", lw=0.4)
+
+        r2  = m.get("r2", float("nan"))
+        nc  = m.get("n_constrained", 0)
+        sup = "  β=0" if m.get("beta_use", 1) == 0 else ""
+        ax.set_ylabel(f"BLS {code} | R²={r2:.2f}{sup} | {nc} yrs constrained",
+                      fontsize=7.5)
+        ax.grid(axis="y", lw=0.4, alpha=0.4)
         if ax is axes[0]:
-            ax.legend(fontsize=7.5, ncol=3, loc="upper left")
+            ax.legend(fontsize=7, ncol=3, loc="upper left")
 
-    fig.suptitle(
-        "GDP-anchored Chow-Lin backcast: quarterly Δlog(sector VA)\n"
-        "Red = backcast (pre-2005), Blue = observed FRED quarterly",
-        fontsize=11,
-    )
     axes[-1].set_xlabel("Year", fontsize=9)
+    fig.suptitle(
+        "Constrained Chow-Lin: quarterly Δlog(sector VA)\n"
+        "Red = backcast | Blue = observed FRED | "
+        "Dotted = 2005Q1 splice | Annual constraints applied 1997–2004",
+        fontsize=10
+    )
     fig.tight_layout()
-    fig.savefig(out_path, dpi=130, bbox_inches="tight")
+    out = RESULTS_DIR / "va_chowlin_backcast_validation.png"
+    fig.savefig(out, dpi=130, bbox_inches="tight")
     plt.close(fig)
-    print(f"\n  Validation plot saved: {out_path}")
+    print(f"  Plot saved: {out}")
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════════════════
 #  MAIN
-# ═══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════════════════
 
-print("=" * 65)
-print("Part 2b-extend  --  GDP-anchored Chow-Lin backcast of sector VA")
-print("=" * 65)
+print("=" * 70)
+print("part2b_extend_va.py  --  Constrained Chow-Lin sector VA backcast")
+print("=" * 70)
 
-# ── [1] Load GDP indicator ─────────────────────────────────────────────────────
-print("\n[1] Loading quarterly real GDP (GDPC1)")
-gdp = _load_gdp()
-print(f"    GDP available: {gdp.index.min()}–{gdp.index.max()}, N={len(gdp)}")
-
-# ── [2] Load observed quarterly VA levels (2005Q1+) ───────────────────────────
-print("\n[2] Loading observed quarterly sector VA (2005Q1+)")
 if not FRED_API_KEY:
     sys.exit(
-        "FRED_API_KEY is required to fetch sector VA levels.\n"
-        "  PowerShell: $env:FRED_API_KEY = '<your_key>'\n"
-        "  Linux/Mac:  export FRED_API_KEY=<your_key>"
+        "ERROR: FRED_API_KEY not set.\n"
+        "  Register free at https://fred.stlouisfed.org/docs/api/api_key.html"
     )
-fred = _get_fred_client()
-va_levels = _fetch_sector_va_levels(fred)
-print(f"    VA levels: {va_levels['quarter_label'].min()}–{va_levels['quarter_label'].max()}, "
-      f"{va_levels['industry_code'].nunique()} sectors, {len(va_levels):,} rows")
 
-TARGET_START = "1992Q1"  # full delta-shock sample start
+# [1] GDP indicator
+print("\n[1] Real GDP indicator")
+gdp = _load_gdp()
 
-# ── [3] Chow-Lin backcast for each sector ──────────────────────────────────────
-print(f"\n[3] GDP-anchored Chow-Lin backcast to {TARGET_START}")
-print(f"    {'Sector':<38} β(GDP)   R²(growth)")
-records = []
-for code in sorted(va_levels["industry_code"].unique()):
-    sub = va_levels[va_levels["industry_code"] == code].set_index("quarter_label")["va"]
-    sub = sub.sort_index()
-    dlog_full = _chow_lin_backcast_sector(sub, gdp, sector_code=int(code),
-                                          target_start=TARGET_START)
+# [2] Post-2005 quarterly VA levels (estimation sample for α, β)
+print("\n[2] Post-2005 quarterly sector VA levels")
+va_levels = _fetch_quarterly_va()
+
+# [3] Annual benchmarks (1997–2025; 1997–2004 used as constraints)
+print("\n[3] Annual VA benchmarks")
+ann_bench_df = _load_annual_benchmarks()
+
+# [4] Constrained Chow-Lin for each sector
+print(f"\n[4] Constrained Chow-Lin backcast  (target: {TARGET_START}, "
+      f"R² threshold: {R2_THRESHOLD})")
+print(f"    {'Sector':<42}  α         β        R²")
+
+records      = []
+results_meta = {}
+
+for bls_code in sorted(va_levels["industry_code"].unique()):
+    code_int = int(bls_code)
+    va_sub   = (va_levels[va_levels["industry_code"] == bls_code]
+                .set_index("quarter_label")["va"]
+                .sort_index())
+    ann_sub  = (ann_bench_df[code_int]
+                if code_int in ann_bench_df.columns
+                else pd.Series(dtype=float))
+
+    dlog_full, meta = _chow_lin_sector(va_sub, gdp, ann_sub, code_int)
+
     df_out = dlog_full.reset_index()
     df_out.columns = ["quarter_label", "dlog_va"]
-    df_out["industry_code"] = int(code)
+    df_out["industry_code"] = code_int
     records.append(df_out[["quarter_label", "industry_code", "dlog_va"]])
+    results_meta[code_int] = meta
 
 extended = (pd.concat(records, ignore_index=True)
               .sort_values(["industry_code", "quarter_label"])
               .reset_index(drop=True))
 
-print(f"\n    Extended VA series: {extended['quarter_label'].min()}–{extended['quarter_label'].max()}, "
+n_pre  = extended[extended["quarter_label"] <  SPLICE_QT]["quarter_label"].nunique()
+n_post = extended[extended["quarter_label"] >= SPLICE_QT]["quarter_label"].nunique()
+print(f"\n  Extended: {extended['quarter_label'].min()}–{extended['quarter_label'].max()}, "
       f"{extended['industry_code'].nunique()} sectors, {len(extended):,} rows")
+print(f"  Backcasted quarters: {n_pre}  |  Observed (FRED): {n_post}")
 
-# Check coverage
-n_pre2005 = extended[extended["quarter_label"] < "2005Q1"]["quarter_label"].nunique()
-n_post2005 = extended[extended["quarter_label"] >= "2005Q1"]["quarter_label"].nunique()
-print(f"    Pre-2005 quarters added: {n_pre2005}  |  Post-2005 quarters (observed): {n_post2005}")
+# [5] Summary table
+print("\n[5] Estimation summary")
+print()
+HDR = (f"  {'BLS':<5}  {'Sector / description':<35}  "
+       f"{'alpha':>9}  {'beta_OLS':>9}  {'beta_use':>9}  "
+       f"{'R-sq':>7}  {'Ann.':>5}")
+SEP = ("  " + "-"*5 + "  " + "-"*35 + "  " + "-"*9 + "  " + "-"*9 +
+       "  " + "-"*9 + "  " + "-"*7 + "  " + "-"*5)
+print(HDR)
+print(SEP)
+for code in sorted(results_meta.keys()):
+    m    = results_meta[code]
+    lbl  = _sector_label(code)
+    flag = " *" if m["beta_use"] == 0.0 else ""
+    print(f"  {code:<5}  {lbl:<35}  "
+          f"{m['alpha']:>+9.4f}  {m['beta']:>+9.4f}  {m['beta_use']:>+9.4f}  "
+          f"{m['r2']:>7.3f}  {m['n_constrained']:>4}{flag}")
+print(SEP)
+print()
+print("  Column guide:")
+print("    alpha     : sector-specific mean quarterly growth (intercept)")
+print("    beta_OLS  : OLS estimate of GDP elasticity (post-2005 data)")
+print("    beta_used : beta applied in backcast (0 if R-sq below threshold)")
+print("    R-sq      : in-sample R² of Δlog(VA) ~ α + β·Δlog(GDP)")
+print("    Ann.      : years with annual BEA benchmark applied as constraint")
+print(f"  * beta_used suppressed to 0 (R-sq < {R2_THRESHOLD}); backcast uses α only.")
 
-# ── [4] Validation: compare Chow-Lin vs original in-sample ────────────────────
-print("\n[4] In-sample validation (2005Q1+): comparing Chow-Lin prediction vs observed")
-original_dlog = (pd.read_parquet(BEA_VA_CACHE)
-                 .sort_values(["industry_code", "quarter_label"]))
+# [6] Save
+print(f"\n[6] Saving {BEA_EXT_CACHE}")
+extended.to_parquet(BEA_EXT_CACHE, index=False)
+print(f"  Saved. part2b_residualize_shocks.py will use this automatically.")
 
-for code in sorted(va_levels["industry_code"].unique()):
-    ext_sub  = extended[(extended["industry_code"] == code) &
-                        (extended["quarter_label"] >= "2005Q2")].set_index("quarter_label")["dlog_va"]
-    orig_sub = original_dlog[original_dlog["industry_code"] == code].set_index("quarter_label")["dlog_va"]
-    common = ext_sub.index.intersection(orig_sub.index)
-    if len(common) < 4:
-        continue
-    r = ext_sub.loc[common].corr(orig_sub.loc[common])
-    rmse = float(np.sqrt(((ext_sub.loc[common] - orig_sub.loc[common]) ** 2).mean()))
-    print(f"    Sector {code:<3}: r(Chow-Lin, observed) = {r:.4f},  RMSE = {rmse:.5f}")
-
-# ── [5] Save extended cache ────────────────────────────────────────────────────
-print(f"\n[5] Saving extended VA to {VA_EXTENDED_CACHE}")
-extended.to_parquet(VA_EXTENDED_CACHE, index=False)
-print(f"    Saved: {VA_EXTENDED_CACHE}")
-
-# ── [6] Validation plot ────────────────────────────────────────────────────────
-print("\n[6] Generating validation plot")
-_plot_validation(extended, original_dlog, gdp,
-                 RESULTS_DIR / "va_chowlin_backcast_validation.png")
-
-# ── [7] Summary statistics ─────────────────────────────────────────────────────
-print("\n[7] Summary: dlog_va distribution pre- vs post-2005")
-print(f"    {'Period':<15}  {'Mean':>8}  {'SD':>8}  {'Min':>8}  {'Max':>8}")
-for label, mask in [("Pre-2005",  extended["quarter_label"] < "2005Q1"),
-                    ("Post-2005", extended["quarter_label"] >= "2005Q1")]:
-    d = extended.loc[mask, "dlog_va"].dropna()
-    print(f"    {label:<15}  {d.mean():>+8.5f}  {d.std():>8.5f}  "
-          f"{d.min():>+8.5f}  {d.max():>+8.5f}")
-
-print("\n--- How to use in part2b ---")
-print(
-    "  In part2b_residualize_shocks.py, replace the BEA_VA_CACHE path with\n"
-    "  VA_EXTENDED_CACHE (bea_va_quarterly_12ind_extended.parquet).\n"
-    "  The merge in _load_controls() will now pick up pre-2005 quarters,\n"
-    "  extending the v2 LP sample from 2005Q3 back to 1994Q4 for delta\n"
-    "  (1992Q3 plus two lags for productivity and VA lag).\n"
-    "  For LD, the sample starts at 2001Q1 regardless; the backcast\n"
-    "  adds 2001Q1–2004Q4 VA observations for the LD residualization."
-)
+# [7] Validation plot
+print("\n[7] Validation plot")
+_plot_validation(extended, gdp, results_meta)
 
 print("\nDone.")
