@@ -8,13 +8,6 @@ The resulting extended cache (bea_va_quarterly_12ind_extended.parquet) replaces
 bea_va_quarterly_12ind.parquet as the VA control series in part2b_residualize_
 shocks.py, expanding the v2/v3 residualization sample from 2005Q2+ to 1992Q2+.
 
-BLS-to-FRED mapping corrections vs. prior version
---------------------------------------------------
-  BLS 65: RVAESHS    (Education+Health+Social Assistance, full aggregate)
-          Previously used RVAES (Education only, ~16% of total) — corrected.
-  BLS 70: RVAAER + RVAAF   (Arts+Entertainment + Accommodation+Food)
-          Previously used RVAER (does not exist on FRED) — corrected.
-
 Constrained Chow-Lin formulation
 ---------------------------------
 Let VA_{j,t} be quarterly sector VA (unobserved pre-2005), and Y_{j,A} be

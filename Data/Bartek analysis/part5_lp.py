@@ -1,7 +1,7 @@
 """
 part5_lp.py -- Panel Local Projections
 ======================================
-Estimates IRFs of state unemployment and vacancy rates to the delta and s
+Estimates IRFs of state unemployment and vacancy rates to the δ, LD, and QU
 Bartik shocks via Jorda (2005) local projections.
 
 Specification (outcome y, shock k, horizon h):
@@ -10,42 +10,38 @@ Specification (outcome y, shock k, horizon h):
                              + gamma_1 * y_{s,t-1} + gamma_2 * log(LF_{s,t-1})
                              + eps_{s,t,h}
 
-a_s = state FE, a_t = time FE, B^k = leave-one-out Bartik instrument.
-State-clustered SEs; outcomes capped at 2019Q4 to exclude COVID.
+GFC interaction variant (added to diagnose QU placebo failure):
+    ... + delta_h * B_{s,t}^k × GFC_t          (shock-quarter GFC dummy)
+         + phi_h  * GFC_{t+h}                   (outcome-quarter GFC dummy)
+
+GFC_t = 1 if shock quarter in 2008Q3–2009Q4; GFC_{t+h} = 1 if outcome
+quarter in 2008Q3–2009Q4. Together these absorb (i) differential amplification
+of shocks occurring during the GFC and (ii) the aggregate vacancy collapse
+when outcomes land at the GFC trough -- the mechanism driving the QU placebo
+failure at long horizons.
 
 Instruments
 -----------
-  Raw:          delta_instrument_base2006.csv   (delta, BED destruction)
-                s_instrument_base2006.csv        (s-TS, total separations -- baseline only)
   Residualized: *_resid_base2006.csv (delta, LD, QU) from part3_resid_instruments.py
                 residualized on Δlog p_t + Δlog VA_{j,t-1} [+ log θ_{t-1} for LD, QU]
-                Industry VA extended pre-2005 via GDP-anchored Chow-Lin backcast
-                (part2b_extend_va.py); residualized delta available from ~1994Q4.
-                Sample start for all residualized LPs: 2001Q1 (binding constraint
-                is state-level JOLTS vacancy data, available from 2001Q1 onward).
+                Industry VA extended pre-2005 via GDP-anchored Chow-Lin backcast.
+                Sample start: 2001Q1 (binding constraint: JOLTS vacancy data).
 
 Outputs
 -------
-  lp_irf_delta.csv                       raw delta IRF (full sample)
-  lp_irf_s.csv                           raw s-TS IRF (baseline comparison)
-  lp_irf_delta_post2001.csv              delta restricted to post-2001
-  lp_irf_delta_nfci.csv                  delta with NFCI x B interaction
-  lp_irf_s_nfci.csv                      s-TS with NFCI x B interaction
   lp_irf_{delta,ld,qu}_resid.csv         residualized unemployment IRFs
-  lp_irf_{delta,ld,qu}_vacancy.csv       residualized vacancy-rate IRFs
-  lp_irf_combined.png                    delta vs s-TS baseline
-  lp_irf_delta_sample_check.png          sample robustness
-  lp_irf_delta_resid_comparison.png      raw vs residualized delta
-  lp_irf_delta_ld_qu_overlay.png         asymmetry -- unemployment outcome
-  lp_irf_vacancy_decomp_overlay.png      asymmetry -- vacancy outcome
-  lp_irf_beveridge_asymmetry.png         delta/LD u-and-v side-by-side panels
+  lp_irf_{delta,ld,qu}_vacancy.csv       residualized vacancy IRFs
+  lp_irf_{delta,ld,qu}_gfc.csv           GFC-interaction unemployment IRFs
+  lp_irf_{delta,ld,qu}_vac_gfc.csv       GFC-interaction vacancy IRFs
+  lp_irf_delta_ld_qu_overlay.png         asymmetry -- unemployment
+  lp_irf_vacancy_decomp_overlay.png      asymmetry -- vacancy
+  lp_irf_beveridge_asymmetry.png         delta/LD u-and-v side-by-side
   lp_irf_beveridge_path.png              (u_h, v_h) trajectory in UV space
+  lp_irf_gfc_qu_comparison.png          QU baseline vs GFC-controlled
 
 Prerequisites
 -------------
-  part1_shares.py, part2_shock_rates.py, part2_shock_rates_s.py,
-  part3_instrument.py, part3_instrument_s.py, part4_outcomes.py,
-  part7_nfci.py, part2b_shock_comovement.py, part3_resid_instruments.py
+  part4_outcomes.py, part2b_shock_comovement.py, part3_resid_instruments.py
 """
 
 import os
@@ -85,13 +81,14 @@ INSTR_DIR   = Path("data/instruments")
 RESULTS_DIR = Path("data/results")
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
-DELTA_INSTR_FILE       = INSTR_DIR / f"delta_instrument_base{BASE_YEAR}.csv"
-S_INSTR_FILE           = INSTR_DIR / f"s_instrument_base{BASE_YEAR}.csv"
 DELTA_RESID_INSTR_FILE = INSTR_DIR / f"delta_instrument_resid_base{BASE_YEAR}.csv"
 LD_RESID_INSTR_FILE    = INSTR_DIR / f"ld_instrument_resid_base{BASE_YEAR}.csv"
 QU_RESID_INSTR_FILE    = INSTR_DIR / f"qu_instrument_resid_base{BASE_YEAR}.csv"
 LAUS_FILE              = INSTR_DIR / "laus_quarterly.parquet"
-NFCI_FILE              = Path("data/cache") / "nfci_quarterly.parquet"
+
+# GFC definition: NBER recession 2008Q3–2009Q4 (peak July 2008, trough June 2009)
+GFC_START = "2008Q3"
+GFC_END   = "2009Q4"
 
 
 # ---------------------------------------------------------------------------
@@ -108,18 +105,6 @@ def quarter_shift(ql_series: pd.Series, h: int) -> pd.Series:
 # ---------------------------------------------------------------------------
 # Data loading
 # ---------------------------------------------------------------------------
-def load_instruments():
-    delta = pd.read_csv(DELTA_INSTR_FILE, dtype={"state_fips": str})
-    s     = pd.read_csv(S_INSTR_FILE,     dtype={"state_fips": str})
-    delta["state_fips"] = delta["state_fips"].str.zfill(2)
-    s["state_fips"]     = s["state_fips"].str.zfill(2)
-    print(f"  delta instrument: {delta['quarter_label'].min()} - "
-          f"{delta['quarter_label'].max()}")
-    print(f"  s instrument:     {s['quarter_label'].min()} - "
-          f"{s['quarter_label'].max()}")
-    return delta, s
-
-
 def load_resid(path: Path) -> pd.DataFrame:
     df = pd.read_csv(path, dtype={"state_fips": str})
     df["state_fips"] = df["state_fips"].str.zfill(2)
@@ -138,13 +123,6 @@ def load_outcomes() -> pd.DataFrame:
     else:
         print("  Vacancies: not present -- run part4_outcomes.py to add")
     return laus[keep]
-
-
-def load_nfci() -> pd.DataFrame:
-    nfci = pd.read_parquet(NFCI_FILE)
-    print(f"  NFCI: {nfci['quarter_label'].min()} - "
-          f"{nfci['quarter_label'].max()}")
-    return nfci[["quarter_label", "nfci", "nfci_risk", "anfci"]]
 
 
 # ---------------------------------------------------------------------------
@@ -193,22 +171,33 @@ def build_panel(instr: pd.DataFrame, instr_col: str,
     return panel
 
 
-def attach_nfci_interaction(panel: pd.DataFrame, nfci: pd.DataFrame,
-                            instr_col: str) -> pd.DataFrame:
+def attach_gfc_interaction(panel: pd.DataFrame, instr_col: str) -> pd.DataFrame:
     """
-    Merge NFCI and add demeaned interaction B_{s,t} x nfci_risk_dm.
-    Demeaning is over the panel's own estimation sample so beta_h is
-    interpretable as the IRF at average sample financial conditions.
+    Add two GFC control columns to the panel:
+
+      instr_x_gfc : B_{s,t} × GFC_t
+          Instrument interacted with a dummy for the *shock quarter* falling
+          in the GFC window (GFC_START–GFC_END). Captures differential
+          amplification of shocks that occur during the crisis.
+
+      gfc_shock   : GFC_t (the dummy itself, included as a level control)
+
+    The outcome-quarter GFC dummy GFC_{t+h} is constructed inside
+    run_lp_horizon() at each horizon h, since it depends on future_ql.
+
+    Together the two terms absorb:
+      (1) Shocks occurring during the GFC that may generate atypically large
+          IRFs regardless of instrument value.
+      (2) Outcomes landing at the GFC trough — the key mechanism behind the
+          QU placebo failure, where shocks in 2006–2007 have h=8–10 outcomes
+          in 2008–2009 exactly when all industries contracted sharply.
     """
-    panel = panel.merge(
-        nfci[["quarter_label", "nfci", "nfci_risk", "anfci"]],
-        on="quarter_label", how="left"
-    )
-    n_miss = panel["nfci_risk"].isna().sum()
-    if n_miss:
-        print(f"  [warn] {n_miss} rows missing NFCI -- check NFCI date coverage")
-    panel["nfci_risk_dm"] = panel["nfci_risk"] - panel["nfci_risk"].mean()
-    panel["instr_x_nfci"] = panel[instr_col] * panel["nfci_risk_dm"]
+    panel = panel.copy()
+    panel["gfc_shock"]   = (
+        (panel["quarter_label"] >= GFC_START) &
+        (panel["quarter_label"] <= GFC_END)
+    ).astype(float)
+    panel["instr_x_gfc"] = panel[instr_col] * panel["gfc_shock"]
     return panel
 
 
@@ -216,12 +205,18 @@ def attach_nfci_interaction(panel: pd.DataFrame, nfci: pd.DataFrame,
 # LP estimation -- single horizon
 # ---------------------------------------------------------------------------
 def run_lp_horizon(base_panel, h, shock_col,
-                   include_nfci=False, outcome="unemp"):
+                   include_nfci=False, include_gfc=False, outcome="unemp"):
     """
     Estimate the LP at horizon h.
 
-    outcome : "unemp"   -> dep_var = u_{s,t+h} - u_{s,t-1}  (pp)
-              "vacancy" -> dep_var = vac_rate_{s,t+h} - vac_rate_{s,t-1}  (pp)
+    outcome      : "unemp"   -> dep_var = u_{s,t+h} - u_{s,t-1}  (pp)
+                   "vacancy" -> dep_var = vac_rate_{s,t+h} - vac_rate_{s,t-1} (pp)
+    include_gfc  : if True, add two GFC controls:
+                     instr_x_gfc  -- B_{s,t} × GFC_t  (shock-quarter dummy)
+                     gfc_outcome  -- GFC_{t+h}          (outcome-quarter dummy)
+                   beta_h then captures the IRF in non-GFC shock AND non-GFC
+                   outcome quarters, isolating the structural channel from the
+                   demand collapse that drives the QU placebo failure.
     """
     if outcome not in ("unemp", "vacancy"):
         raise ValueError(f"outcome must be 'unemp' or 'vacancy', got {outcome!r}")
@@ -251,9 +246,21 @@ def run_lp_horizon(base_panel, h, shock_col,
         df["dep_var"] = df["vac_future"] - df["vac_rate_lag1"]
         lag_control   = "vac_rate_lag1"
 
+    # Outcome-quarter GFC dummy: 1 when t+h lands in the GFC trough.
+    # This absorbs the aggregate vacancy/unemployment collapse at the trough
+    # regardless of which shock quarter generated the observation -- the key
+    # mechanism behind QU placebo failure at h=8–15.
+    if include_gfc:
+        df["gfc_outcome"] = (
+            (df["future_ql"] >= GFC_START) &
+            (df["future_ql"] <= GFC_END)
+        ).astype(float)
+
     required = ["dep_var", shock_col, lag_control, "lf_log_lag1"]
     if include_nfci:
         required.append("instr_x_nfci")
+    if include_gfc:
+        required += ["instr_x_gfc", "gfc_outcome"]
     df = df.dropna(subset=required).copy()
 
     if len(df) < 100:
@@ -266,6 +273,8 @@ def run_lp_horizon(base_panel, h, shock_col,
     core = [shock_col, lag_control, "lf_log_lag1"]
     if include_nfci:
         core.append("instr_x_nfci")
+    if include_gfc:
+        core += ["instr_x_gfc", "gfc_outcome"]
     X = sm.add_constant(
         pd.concat([df[core], state_dummies, time_dummies], axis=1),
         has_constant="add"
@@ -274,7 +283,7 @@ def run_lp_horizon(base_panel, h, shock_col,
         cov_type="cluster",
         cov_kwds={"groups": df["state_fips"].values}
     )
-    
+
     beta  = float(model.params[shock_col])
     se    = float(model.bse[shock_col])
     tstat = float(model.tvalues[shock_col])
@@ -296,6 +305,15 @@ def run_lp_horizon(base_panel, h, shock_col,
             "delta_h_t":  float(model.tvalues["instr_x_nfci"]),
             "delta_h_p":  float(model.pvalues["instr_x_nfci"]),
         })
+    if include_gfc:
+        row.update({
+            "gfc_h":     float(model.params["instr_x_gfc"]),
+            "gfc_h_se":  float(model.bse["instr_x_gfc"]),
+            "gfc_h_t":   float(model.tvalues["instr_x_gfc"]),
+            "gfc_h_p":   float(model.pvalues["instr_x_gfc"]),
+            "gfc_out_h": float(model.params["gfc_outcome"]),
+            "gfc_out_p": float(model.pvalues["gfc_outcome"]),
+        })
     return row
 
 
@@ -303,12 +321,15 @@ def run_lp_horizon(base_panel, h, shock_col,
 # LP estimation -- all horizons
 # ---------------------------------------------------------------------------
 def run_lp(panel, shock_col, label, include_nfci=False,
-           outcome="unemp") -> pd.DataFrame:
+           include_gfc=False, outcome="unemp") -> pd.DataFrame:
     """Run LP for all horizons, scale to 1-SD units, return DataFrame."""
     outcome_tag = "-> vacancy rate" if outcome == "vacancy" else "-> unemp rate"
-    nfci_tag    = " [+NFCI]" if include_nfci else ""
-    print(f"\n  LP: {label}{nfci_tag}  {outcome_tag}  h=0..{max(HORIZONS)}")
-    if include_nfci:
+    tag = (" [+GFC]" if include_gfc else "") + (" [+NFCI]" if include_nfci else "")
+    print(f"\n  LP: {label}{tag}  {outcome_tag}  h=0..{max(HORIZONS)}")
+    if include_gfc:
+        print(f"  {'h':>3}  {'beta':>9}  {'SE':>7}  {'t':>7}  {'p':>6}  "
+              f"{'gfc_h':>9}  {'gfc_h_p':>7}  {'gfc_out':>9}  {'N':>6}")
+    elif include_nfci:
         print(f"  {'h':>3}  {'beta':>9}  {'SE':>7}  {'t':>7}  {'p':>6}  "
               f"{'delta_h':>9}  {'dh_p':>6}  {'N':>6}")
     else:
@@ -318,13 +339,20 @@ def run_lp(panel, shock_col, label, include_nfci=False,
     rows = []
     for h in HORIZONS:
         res = run_lp_horizon(panel, h, shock_col,
-                             include_nfci=include_nfci, outcome=outcome)
+                             include_nfci=include_nfci,
+                             include_gfc=include_gfc,
+                             outcome=outcome)
         if res is None:
             continue
         rows.append(res)
         sig = "***" if res["pval"] < .01 else "**" if res["pval"] < .05 \
               else "*" if res["pval"] < .10 else ""
-        if include_nfci:
+        if include_gfc:
+            print(f"  {h:3d}  {res['beta']:9.4f}  {res['se']:7.4f}  "
+                  f"{res['tstat']:7.3f}  {res['pval']:6.3f}  "
+                  f"{res['gfc_h']:9.4f}  {res['gfc_h_p']:7.3f}  "
+                  f"{res['gfc_out_h']:9.4f}  {res['nobs']:6d}  {sig}")
+        elif include_nfci:
             print(f"  {h:3d}  {res['beta']:9.4f}  {res['se']:7.4f}  "
                   f"{res['tstat']:7.3f}  {res['pval']:6.3f}  "
                   f"{res['delta_h']:9.4f}  {res['delta_h_p']:6.3f}  "
@@ -343,6 +371,9 @@ def run_lp(panel, shock_col, label, include_nfci=False,
     if include_nfci:
         irf["delta_h"]    = irf["delta_h"]    * sd
         irf["delta_h_se"] = irf["delta_h_se"] * sd
+    if include_gfc:
+        irf["gfc_h"]    = irf["gfc_h"]    * sd
+        irf["gfc_h_se"] = irf["gfc_h_se"] * sd
     irf["instr_sd"] = sd
     irf["outcome"]  = outcome
     return irf
@@ -502,9 +533,7 @@ print("=" * 60)
 # [1] Load data
 # ---------------------------------------------------------------------------
 print("\n[1] Loading data")
-delta_instr, s_instr = load_instruments()
 outcomes = load_outcomes()
-nfci     = load_nfci()
 
 resid_ok = all(p.exists() for p in [DELTA_RESID_INSTR_FILE,
                                      LD_RESID_INSTR_FILE,
@@ -514,95 +543,95 @@ vac_ok   = ("vacancies" in outcomes.columns
 print(f"  Residualized instruments available: {resid_ok}")
 print(f"  Vacancy data available:             {vac_ok}")
 
+if not resid_ok:
+    raise FileNotFoundError(
+        "Residualized instrument CSVs not found.\n"
+        "Run part2b_shock_comovement.py then part3_resid_instruments.py first."
+    )
+
 # ---------------------------------------------------------------------------
-# [2] Build panels -- one pass; panels are reused for all LP outcomes
+# [2] Build panels
 # ---------------------------------------------------------------------------
 print("\n[2] Building panels")
 
-# Raw panels
-delta_panel    = build_panel(delta_instr, "bartik_delta", outcomes)
-s_panel        = build_panel(s_instr,     "bartik_s",     outcomes)
+delta_resid_panel = build_panel(load_resid(DELTA_RESID_INSTR_FILE),
+                                "bartik_delta", outcomes)
+ld_resid_panel    = build_panel(load_resid(LD_RESID_INSTR_FILE),
+                                "bartik_ld",    outcomes)
+qu_resid_panel    = build_panel(load_resid(QU_RESID_INSTR_FILE),
+                                "bartik_qu",    outcomes)
 
-# Subset delta to post-2001 BEFORE attaching NFCI so demeaning uses
-# the post-2001 sample mean (keeps beta_h interpretation clean).
-delta_post2001 = (delta_panel[delta_panel["quarter_label"] >= "2001Q1"]
-                  .copy().reset_index(drop=True))
+# Restrict delta to 2001Q1+ for comparability with LD/QU.
+# Binding constraint: JOLTS vacancy data starts 2001Q1.
+delta_resid_post = (delta_resid_panel[
+                        delta_resid_panel["quarter_label"] >= "2001Q1"]
+                    .copy().reset_index(drop=True))
 
-# Attach NFCI interaction to each panel (demean within own sample)
-delta_panel    = attach_nfci_interaction(delta_panel,    nfci, "bartik_delta")
-s_panel        = attach_nfci_interaction(s_panel,        nfci, "bartik_s")
-delta_post2001 = attach_nfci_interaction(delta_post2001, nfci, "bartik_delta")
-
-# Residualized panels (delta, LD, QU) -- used for both unemployment and
-# vacancy LPs; no need to rebuild in the vacancy section.
-if resid_ok:
-    delta_resid_panel = build_panel(load_resid(DELTA_RESID_INSTR_FILE),
-                                    "bartik_delta", outcomes)
-    ld_resid_panel    = build_panel(load_resid(LD_RESID_INSTR_FILE),
-                                    "bartik_ld",    outcomes)
-    qu_resid_panel    = build_panel(load_resid(QU_RESID_INSTR_FILE),
-                                    "bartik_qu",    outcomes)
-
-    # delta restricted to 2001Q1+ for comparability with LD/QU.
-    # Binding constraint: state-level JOLTS vacancy data starts 2001Q1;
-    # the Chow-Lin VA extension makes residualized delta available from
-    # ~1994Q4 but vacancy LPs cannot use that pre-2001 data regardless.
-    delta_resid_post  = (delta_resid_panel[
-                             delta_resid_panel["quarter_label"] >= "2001Q1"]
-                         .copy().reset_index(drop=True))
-
-    delta_resid_post = attach_nfci_interaction(delta_resid_post, nfci, "bartik_delta")
-    ld_resid_panel   = attach_nfci_interaction(ld_resid_panel,   nfci, "bartik_ld")
-    qu_resid_panel   = attach_nfci_interaction(qu_resid_panel,   nfci, "bartik_qu")
+# GFC-interaction panels: attach shock-quarter GFC dummy and interaction term.
+# The outcome-quarter GFC dummy is constructed inside run_lp_horizon at each h.
+delta_gfc_panel = attach_gfc_interaction(delta_resid_post,  "bartik_delta")
+ld_gfc_panel    = attach_gfc_interaction(ld_resid_panel,    "bartik_ld")
+qu_gfc_panel    = attach_gfc_interaction(qu_resid_panel,    "bartik_qu")
 
 # ---------------------------------------------------------------------------
-# [3] Raw baseline LPs
+# [3] Baseline residualized LPs (unemployment)
 # ---------------------------------------------------------------------------
-print("\n[3] Raw baseline LPs")
-
-irf_delta      = run_lp(delta_panel,    "bartik_delta", "delta (raw, full)")
-irf_s          = run_lp(s_panel,        "bartik_s",     "s-TS (raw)")
-irf_delta_post = run_lp(delta_post2001, "bartik_delta", "delta (raw, post-2001)")
-irf_delta_nfci = run_lp(delta_panel,    "bartik_delta", "delta (raw)",
-                         include_nfci=True)
-irf_s_nfci     = run_lp(s_panel,        "bartik_s",     "s-TS (raw)",
-                         include_nfci=True)
+print("\n[3] Residualized unemployment LPs")
+irf_delta_resid = run_lp(delta_resid_post, "bartik_delta", "delta (resid)")
+irf_ld_resid    = run_lp(ld_resid_panel,   "bartik_ld",    "LD (resid)")
+irf_qu_resid    = run_lp(qu_resid_panel,   "bartik_qu",    "QU (resid)")
 
 # ---------------------------------------------------------------------------
-# [4] Residualized unemployment LPs
+# [4] Baseline residualized LPs (vacancy)
 # ---------------------------------------------------------------------------
-if resid_ok:
-    print("\n[4] Residualized unemployment LPs")
-    irf_delta_resid = run_lp(delta_resid_post, "bartik_delta",
-                              "delta (resid, post-2001)")
-    irf_ld_resid    = run_lp(ld_resid_panel,   "bartik_ld",
-                              "LD (resid)")
-    irf_qu_resid    = run_lp(qu_resid_panel,   "bartik_qu",
-                              "QU (resid)")
-else:
-    print("\n[4] Residualized instruments not found -- skipping.")
-    print("    Run part2b_shock_comovement.py then part3_resid_instruments.py")
-
-# ---------------------------------------------------------------------------
-# [5] Residualized vacancy LPs -- reuse panels built in [2]
-# ---------------------------------------------------------------------------
-if resid_ok and vac_ok:
-    print("\n[5] Residualized vacancy LPs")
+if vac_ok:
+    print("\n[4] Residualized vacancy LPs")
     irf_delta_vac = run_lp(delta_resid_post, "bartik_delta",
                             "delta -> vacancy", outcome="vacancy")
     irf_ld_vac    = run_lp(ld_resid_panel,   "bartik_ld",
                             "LD -> vacancy",    outcome="vacancy")
     irf_qu_vac    = run_lp(qu_resid_panel,   "bartik_qu",
                             "QU -> vacancy",    outcome="vacancy")
-elif vac_ok and not resid_ok:
-    print("\n[5] Vacancy LPs skipped -- residualized instruments required.")
 else:
-    print("\n[5] Vacancy LPs skipped -- vacancy data not available.")
+    print("\n[4] Vacancy LPs skipped -- vacancy data not available.")
+    irf_delta_vac = irf_ld_vac = irf_qu_vac = pd.DataFrame()
 
 # ---------------------------------------------------------------------------
-# [6] Save results
+# [5] GFC-interaction LPs (unemployment)
+# Diagnostic: does the QU vacancy effect survive controlling for GFC timing?
+# beta_h = IRF in non-GFC shock AND non-GFC outcome quarters.
+# gfc_h  = differential IRF for shocks occurring during GFC.
+# gfc_out_h = level shift when outcome quarter lands in GFC trough.
 # ---------------------------------------------------------------------------
-print("\n[6] Saving results")
+print(f"\n[5] GFC-interaction LPs (unemployment)  [{GFC_START}–{GFC_END}]")
+irf_delta_gfc = run_lp(delta_gfc_panel, "bartik_delta",
+                        "delta (resid+GFC)", include_gfc=True)
+irf_ld_gfc    = run_lp(ld_gfc_panel,    "bartik_ld",
+                        "LD (resid+GFC)",    include_gfc=True)
+irf_qu_gfc    = run_lp(qu_gfc_panel,    "bartik_qu",
+                        "QU (resid+GFC)",    include_gfc=True)
+
+# ---------------------------------------------------------------------------
+# [6] GFC-interaction LPs (vacancy)
+# ---------------------------------------------------------------------------
+if vac_ok:
+    print(f"\n[6] GFC-interaction LPs (vacancy)  [{GFC_START}–{GFC_END}]")
+    irf_delta_vac_gfc = run_lp(delta_gfc_panel, "bartik_delta",
+                                "delta -> vacancy [+GFC]",
+                                include_gfc=True, outcome="vacancy")
+    irf_ld_vac_gfc    = run_lp(ld_gfc_panel,    "bartik_ld",
+                                "LD -> vacancy [+GFC]",
+                                include_gfc=True, outcome="vacancy")
+    irf_qu_vac_gfc    = run_lp(qu_gfc_panel,    "bartik_qu",
+                                "QU -> vacancy [+GFC]",
+                                include_gfc=True, outcome="vacancy")
+else:
+    irf_delta_vac_gfc = irf_ld_vac_gfc = irf_qu_vac_gfc = pd.DataFrame()
+
+# ---------------------------------------------------------------------------
+# [7] Save results
+# ---------------------------------------------------------------------------
+print("\n[7] Saving results")
 
 def _save(irf, fname):
     if irf is not None and not irf.empty:
@@ -610,101 +639,110 @@ def _save(irf, fname):
         irf.to_csv(p, index=False)
         print(f"  Saved: {p}")
 
-_save(irf_delta,      "lp_irf_delta.csv")
-_save(irf_s,          "lp_irf_s.csv")
-_save(irf_delta_post, "lp_irf_delta_post2001.csv")
-_save(irf_delta_nfci, "lp_irf_delta_nfci.csv")
-_save(irf_s_nfci,     "lp_irf_s_nfci.csv")
+# Baseline
+_save(irf_delta_resid,    "lp_irf_delta_resid.csv")
+_save(irf_ld_resid,       "lp_irf_ld_resid.csv")
+_save(irf_qu_resid,       "lp_irf_qu_resid.csv")
+_save(irf_delta_vac,      "lp_irf_delta_vacancy.csv")
+_save(irf_ld_vac,         "lp_irf_ld_vacancy.csv")
+_save(irf_qu_vac,         "lp_irf_qu_vacancy.csv")
 
-if resid_ok:
-    _save(irf_delta_resid, "lp_irf_delta_resid.csv")
-    _save(irf_ld_resid,    "lp_irf_ld_resid.csv")
-    _save(irf_qu_resid,    "lp_irf_qu_resid.csv")
-
-if resid_ok and vac_ok:
-    _save(irf_delta_vac, "lp_irf_delta_vacancy.csv")
-    _save(irf_ld_vac,    "lp_irf_ld_vacancy.csv")
-    _save(irf_qu_vac,    "lp_irf_qu_vacancy.csv")
+# GFC-interaction
+_save(irf_delta_gfc,      "lp_irf_delta_gfc.csv")
+_save(irf_ld_gfc,         "lp_irf_ld_gfc.csv")
+_save(irf_qu_gfc,         "lp_irf_qu_gfc.csv")
+_save(irf_delta_vac_gfc,  "lp_irf_delta_vac_gfc.csv")
+_save(irf_ld_vac_gfc,     "lp_irf_ld_vac_gfc.csv")
+_save(irf_qu_vac_gfc,     "lp_irf_qu_vac_gfc.csv")
 
 # ---------------------------------------------------------------------------
-# [7] Plots
 # ---------------------------------------------------------------------------
-print("\n[7] Plotting")
-# Plots retained: core asymmetry (unemp), core asymmetry (vacancy),
-# Beveridge 2x2 panel, and Beveridge path in UV space.
-# Removed: raw baseline, sample-check, and raw-vs-resid comparisons
-# (one-time diagnostics no longer needed).
+# [8] Plots
+# ---------------------------------------------------------------------------
+print("\n[8] Plotting")
 
-if resid_ok:
-    # 7a. Core asymmetry -- unemployment outcome
+def _plt_diagnostics():
+    import matplotlib.pyplot as plt
+
+    # 8a. Core asymmetry -- unemployment
     overlay_plot_irf(
         {"delta (resid)": irf_delta_resid,
          "LD (resid)":    irf_ld_resid,
          "QU (resid)":    irf_qu_resid},
         out_path = RESULTS_DIR / "lp_irf_delta_ld_qu_overlay.png",
         title    = (r"IRF: $\delta$ vs Layoffs+Discharges vs Quits"
-                    "\n(v2-residualized, 1-SD scale, 2001Q1–2019Q4)"),
+                    "\n(residualized, 1-SD scale, 2001Q1–2019Q4)"),
         ylabel   = "pp change in unemp. rate per 1-SD shock",
     )
 
-if resid_ok and vac_ok:
-    # 7b. Core asymmetry -- vacancy outcome
-    overlay_plot_irf(
-        {"delta (resid)": irf_delta_vac,
-         "LD (resid)":    irf_ld_vac,
-         "QU (resid)":    irf_qu_vac},
-        out_path = RESULTS_DIR / "lp_irf_vacancy_decomp_overlay.png",
-        title    = (r"Vacancy IRF: $\delta$ vs LD vs QU"
-                    "\n(v2-residualized, 1-SD scale, 2001Q1–2019Q4)"),
-        ylabel   = "pp change in vacancy rate per 1-SD shock",
-    )
+    if vac_ok:
+        # 8b. Core asymmetry -- vacancy
+        overlay_plot_irf(
+            {"delta (resid)": irf_delta_vac,
+             "LD (resid)":    irf_ld_vac,
+             "QU (resid)":    irf_qu_vac},
+            out_path = RESULTS_DIR / "lp_irf_vacancy_decomp_overlay.png",
+            title    = (r"Vacancy IRF: $\delta$ vs LD vs QU"
+                        "\n(residualized, 1-SD scale, 2001Q1–2019Q4)"),
+            ylabel   = "pp change in vacancy rate per 1-SD shock",
+        )
 
-    # 7c. Beveridge asymmetry -- u and v side-by-side 2x2 panels
-    plot_irf(
-        {"delta -- unemployment": irf_delta_resid,
-         "delta -- vacancies":   irf_delta_vac,
-         "LD -- unemployment":   irf_ld_resid,
-         "LD -- vacancies":      irf_ld_vac},
-        RESULTS_DIR / "lp_irf_beveridge_asymmetry.png",
-    )
+        # 8c. Beveridge asymmetry -- u and v side-by-side
+        plot_irf(
+            {"delta -- unemployment": irf_delta_resid,
+             "delta -- vacancies":   irf_delta_vac,
+             "LD -- unemployment":   irf_ld_resid,
+             "LD -- vacancies":      irf_ld_vac},
+            RESULTS_DIR / "lp_irf_beveridge_asymmetry.png",
+        )
 
-    # 7d. Beveridge path -- (u_h, v_h) trajectory in UV space
-    beveridge_path_plot(
-        {"delta (resid)": (irf_delta_resid, irf_delta_vac),
-         "LD (resid)":    (irf_ld_resid,    irf_ld_vac)},
-        out_path = RESULTS_DIR / "lp_irf_beveridge_path.png",
-    )
+        # 8d. Beveridge path
+        beveridge_path_plot(
+            {"delta (resid)": (irf_delta_resid, irf_delta_vac),
+             "LD (resid)":    (irf_ld_resid,    irf_ld_vac)},
+            out_path = RESULTS_DIR / "lp_irf_beveridge_path.png",
+        )
+
+    # 8e. QU GFC diagnostic: baseline vs GFC-controlled (vacancy)
+    # Key plot: does QU vacancy effect survive GFC controls?
+    if vac_ok and not irf_qu_vac_gfc.empty:
+        overlay_plot_irf(
+            {"QU baseline":     irf_qu_vac,
+             "QU (+GFC ctrl)":  irf_qu_vac_gfc},
+            out_path = RESULTS_DIR / "lp_irf_gfc_qu_comparison.png",
+            title    = ("QU vacancy IRF: baseline vs GFC-controlled\n"
+                        r"GFC ctrl = $B \times GFC_t$ + $GFC_{t+h}$ dummies"),
+            ylabel   = "pp change in vacancy rate per 1-SD shock",
+        )
+
+_plt_diagnostics()
 
 # ---------------------------------------------------------------------------
-# [8] Summary table
+# [9] Summary table
 # ---------------------------------------------------------------------------
-print("\n[8] Summary -- peak responses (1-SD standardized)")
+print("\n[9] Summary -- peak responses (1-SD standardized)")
 print(f"  {'Series':<35}  {'outcome':>8}  {'h_peak':>6}  "
       f"{'beta_peak':>9}  {'SE':>7}  {'p':>6}")
 print(f"  {'-'*78}")
 
 all_irfs = [
-    ("delta (raw, full)",          "unemp",   irf_delta),
-    ("delta (raw, post-2001)",     "unemp",   irf_delta_post),
-    ("s-TS (raw)",                 "unemp",   irf_s),
+    ("delta (resid)",            "unemp",   irf_delta_resid),
+    ("LD (resid)",               "unemp",   irf_ld_resid),
+    ("QU (resid)",               "unemp",   irf_qu_resid),
+    ("delta (resid+GFC)",        "unemp",   irf_delta_gfc),
+    ("LD (resid+GFC)",           "unemp",   irf_ld_gfc),
+    ("QU (resid+GFC)",           "unemp",   irf_qu_gfc),
+    ("delta (resid)",            "vacancy", irf_delta_vac),
+    ("LD (resid)",               "vacancy", irf_ld_vac),
+    ("QU (resid)",               "vacancy", irf_qu_vac),
+    ("delta (resid+GFC)",        "vacancy", irf_delta_vac_gfc),
+    ("LD (resid+GFC)",           "vacancy", irf_ld_vac_gfc),
+    ("QU (resid+GFC)",           "vacancy", irf_qu_vac_gfc),
 ]
-if resid_ok:
-    all_irfs += [
-        ("delta (resid, post-2001)",   "unemp",   irf_delta_resid),
-        ("LD (resid)",                 "unemp",   irf_ld_resid),
-        ("QU (resid)",                 "unemp",   irf_qu_resid),
-    ]
-if resid_ok and vac_ok:
-    all_irfs += [
-        ("delta (resid)",              "vacancy", irf_delta_vac),
-        ("LD (resid)",                 "vacancy", irf_ld_vac),
-        ("QU (resid)",                 "vacancy", irf_qu_vac),
-    ]
 
 for lbl, outcome_tag, df in all_irfs:
     if df is None or df.empty:
         continue
-    # Peak by absolute value (vacancies have negative peaks)
     pk = df.loc[df["beta"].abs().idxmax()]
     print(f"  {lbl:<35}  {outcome_tag:>8}  {int(pk['h']):>6}  "
           f"{pk['beta']:>9.4f}  {pk['se']:>7.4f}  {pk['pval']:>6.3f}")
