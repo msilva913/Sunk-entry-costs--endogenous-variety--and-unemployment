@@ -115,9 +115,9 @@ def load_outcomes() -> pd.DataFrame:
     laus = pd.read_parquet(LAUS_FILE)
     laus["state_fips"] = laus["state_fips"].str.zfill(2)
     keep = ["state_fips", "state", "quarter_label", "unemp_rate", "labor_force"]
-    if "vacancies" in laus.columns:
-        keep.append("vacancies")
-        n = laus["vacancies"].notna().sum()
+    if "vac_rate" in laus.columns:
+        keep.append("vac_rate")
+        n = laus["vac_rate"].notna().sum()
         print(f"  Vacancies: {n:,} non-NaN rows "
               f"({100*n/len(laus):.0f}% coverage)")
     else:
@@ -141,9 +141,9 @@ def build_panel(instr: pd.DataFrame, instr_col: str,
     vacancy rate = vacancies (thousands) * 1000 / labor_force (persons) * 100
     """
     merge_cols = ["state_fips", "quarter_label", "unemp_rate", "labor_force"]
-    _has_vac   = "vacancies" in outcomes.columns
+    _has_vac   = "vac_rate" in outcomes.columns
     if _has_vac:
-        merge_cols.append("vacancies")
+        merge_cols.append("vac_rate")
 
     panel = instr[["state_fips", "state", "quarter_label", instr_col]].merge(
         outcomes[merge_cols], on=["state_fips", "quarter_label"], how="inner"
@@ -156,7 +156,6 @@ def build_panel(instr: pd.DataFrame, instr_col: str,
         lambda x: np.log(x.shift(1))
     )
     if _has_vac:
-        panel["vac_rate"] = panel["vacancies"] * 1000 / panel["labor_force"] * 100
         panel["vac_rate_lag1"] = panel.groupby("state_fips")["vac_rate"].shift(1)
 
     # Zero out lags where the quarter sequence has a gap
@@ -538,8 +537,8 @@ outcomes = load_outcomes()
 resid_ok = all(p.exists() for p in [DELTA_RESID_INSTR_FILE,
                                      LD_RESID_INSTR_FILE,
                                      QU_RESID_INSTR_FILE])
-vac_ok   = ("vacancies" in outcomes.columns
-            and outcomes["vacancies"].notna().any())
+vac_ok   = ("vac_rate" in outcomes.columns
+            and outcomes["vac_rate"].notna().any())
 print(f"  Residualized instruments available: {resid_ok}")
 print(f"  Vacancy data available:             {vac_ok}")
 
@@ -747,6 +746,5 @@ for lbl, outcome_tag, df in all_irfs:
     print(f"  {lbl:<35}  {outcome_tag:>8}  {int(pk['h']):>6}  "
           f"{pk['beta']:>9.4f}  {pk['se']:>7.4f}  {pk['pval']:>6.3f}")
     
-u_std = np.std(outcomes.unemp_rate)
-v_std = np.std(outcomes.vacancies)
+
 
