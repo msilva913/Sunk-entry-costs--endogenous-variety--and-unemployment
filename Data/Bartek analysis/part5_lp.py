@@ -746,3 +746,7 @@ for lbl, outcome_tag, df in all_irfs:
     pk = df.loc[df["beta"].abs().idxmax()]
     print(f"  {lbl:<35}  {outcome_tag:>8}  {int(pk['h']):>6}  "
           f"{pk['beta']:>9.4f}  {pk['se']:>7.4f}  {pk['pval']:>6.3f}")
+    
+u_std = np.std(outcomes.unemp_rate)
+v_std = np.std(outcomes.vacancies)
+
