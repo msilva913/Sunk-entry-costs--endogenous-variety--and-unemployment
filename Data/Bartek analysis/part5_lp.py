@@ -746,5 +746,19 @@ for lbl, outcome_tag, df in all_irfs:
     print(f"  {lbl:<35}  {outcome_tag:>8}  {int(pk['h']):>6}  "
           f"{pk['beta']:>9.4f}  {pk['se']:>7.4f}  {pk['pval']:>6.3f}")
     
+# ---------------------------------------------------------
+# [10] Summary table
+# ------------------------------------------------
+# 1. Calculate the standard deviation of vac_rate for each state
+within_state_stds = outcomes.groupby('state_fips')['vac_rate'].std().rename('std_vac_rate')
 
+# 2. Get the average labor force for each state to use as weights
+state_weights = outcomes.groupby('state_fips')['labor_force'].mean().rename('avg_lf')
+# 3. Merge them and calculate the weighted average of the standard deviations
+std_df = pd.merge(within_state_stds, state_weights, on='state_fips')
+# The 'natural scale' is the labor-force-weighted average of within-state standard deviations
+natural_scale = np.average(std_df['std_vac_rate'], weights=std_df['avg_lf'])
+
+print(f"\n--- Natural Scale for Interpretation ---")
+print(f"Average within-state standard deviation of vac_rate: {natural_scale:.2f} percentage points")
 

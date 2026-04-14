@@ -259,6 +259,27 @@ SLOOS^{dm}_t demeaned within estimation sample. β_h = IRF at average credit con
 13. **Joint LP is a robustness check for δ, not a structural LD result.** δ vacancy stable across joint/separate. LD zero in joint spec reflects identification failure, not confirmed reposting.
 14. **QU placebo failure**: large delayed vacancy effect (h=8–20) likely driven by GFC timing. GFC interaction diagnostic in `part5_lp.py` tests this directly. Results pending.
 15. **SLOOS series**: use `DRTSCILM` (C&I tightening standards). NOT `DRSDCILM` (that is loan demand — wrong concept entirely).
+16. Data handling for large data.
+- Purpose: Minimize token usage by avoiding broad scans of large/binary data unless absolutely necessary.
+- Data to guard: Any files under data/ or .cache/, and any *.parquet, *.feather, *.orc files.
+- Default rule: Do not open or scan these files or folders unless:
+it is essential to answer the current question, and
+you have asked for and received my explicit approval.
+- “Essential” means: The task cannot be completed accurately without content from a specific file, and lighter options (schema, small sample, or metadata) are insufficient.
+- Before any read, ask first and include:
+  - Why the data is needed and how it affects the answer.
+  -  Exact files you intend to read and a minimal plan (e.g., read schema only; or read first 100 rows; or filter on date and sample 200 rows).
+  - A lighter alternative I can approve (e.g., generate schema or a small sample via a script/command).
+- Preferred lightweight alternatives (propose one when asking):
+  - Get schema only (PyArrow/DuckDB).
+  - Read a tiny sample (e.g., 100–200 rows) from just the necessary file(s).
+  - Ask me to run a local command to produce schema.txt and sample.csv for you to review.
+- Hard limits unless I approve otherwise:
+  - Never scan entire directories of Parquets.
+  - Do not open files larger than 5–10 MB without approval.
+  - Read only the specific files named in the approval; avoid wildcards.
+- Ignored paths by default: node_modules/, .venv/, build/dist/, .cache/, data/cache/.
+- After any approved read: Summarize what you learned briefly and confirm whether further reads are still needed.
 
 ---
 
