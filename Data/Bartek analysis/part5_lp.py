@@ -30,7 +30,8 @@ Instruments
 
 Outputs
 -------
-  lp_irf_{delta,ld,qu}_resid.csv         residualized unemployment IRFs
+  lp_irf_{delta,ld,qu}_resid.csv         residualized unemployment IRFs (2001Q1+)
+  lp_irf_delta_resid_1997.csv            δ unemployment IRF (1997Q1+ extended)
   lp_irf_{delta,ld,qu}_vacancy.csv       residualized vacancy IRFs
   lp_irf_{delta,ld,qu}_gfc.csv           GFC-interaction unemployment IRFs
   lp_irf_{delta,ld,qu}_vac_gfc.csv       GFC-interaction vacancy IRFs
@@ -38,7 +39,8 @@ Outputs
   lp_irf_vacancy_decomp_overlay.png      asymmetry -- vacancy
   lp_irf_beveridge_asymmetry.png         delta/LD u-and-v side-by-side
   lp_irf_beveridge_path.png              (u_h, v_h) trajectory in UV space
-  lp_irf_gfc_qu_comparison.png          QU baseline vs GFC-controlled
+  lp_irf_gfc_qu_comparison.png           QU baseline vs GFC-controlled
+  lp_irf_delta_sample_extension.png      δ: 1997Q1+ vs 2001Q1+ sample comparison
 
 Prerequisites
 -------------
@@ -568,6 +570,20 @@ delta_resid_post = (delta_resid_panel[
                         delta_resid_panel["quarter_label"] >= "2001Q1"]
                     .copy().reset_index(drop=True))
 
+# Extended delta panel: 1997Q1+ (BED data available; LD/QU cannot go this far
+# back because JOLTS starts 2001Q1). Used only for the sample-extension
+# robustness check -- unemployment outcome only.
+delta_resid_1997 = (delta_resid_panel[
+                        delta_resid_panel["quarter_label"] >= "1997Q1"]
+                    .copy().reset_index(drop=True))
+_delta_actual_start = delta_resid_panel["quarter_label"].min()
+if _delta_actual_start > "1997Q4":
+    print(f"  WARNING: delta instrument starts {_delta_actual_start}, "
+          f"not 1997Q1. Check shock_rates_delta_resid.parquet.")
+else:
+    print(f"  Delta extended sample: {_delta_actual_start}+ "
+          f"({delta_resid_1997['quarter_label'].nunique()} quarters)")
+
 # GFC-interaction panels: attach shock-quarter GFC dummy and interaction term.
 # The outcome-quarter GFC dummy is constructed inside run_lp_horizon at each h.
 delta_gfc_panel = attach_gfc_interaction(delta_resid_post,  "bartik_delta")
@@ -578,9 +594,14 @@ qu_gfc_panel    = attach_gfc_interaction(qu_resid_panel,    "bartik_qu")
 # [3] Baseline residualized LPs (unemployment)
 # ---------------------------------------------------------------------------
 print("\n[3] Residualized unemployment LPs")
-irf_delta_resid = run_lp(delta_resid_post, "bartik_delta", "delta (resid)")
+irf_delta_resid = run_lp(delta_resid_post, "bartik_delta", "delta (resid, 2001Q1+)")
 irf_ld_resid    = run_lp(ld_resid_panel,   "bartik_ld",    "LD (resid)")
 irf_qu_resid    = run_lp(qu_resid_panel,   "bartik_qu",    "QU (resid)")
+
+# Extended-sample δ LP: 1997Q1+. Only δ can use this window (LD/QU are
+# JOLTS-constrained to 2001Q1). Unemployment outcome only -- vacancy data
+# (JOLTS state-level) starts 2001Q1 so no extended vacancy LP is possible.
+irf_delta_1997  = run_lp(delta_resid_1997, "bartik_delta", "delta (resid, 1997Q1+)")
 
 # ---------------------------------------------------------------------------
 # [4] Baseline residualized LPs (vacancy)
@@ -642,6 +663,7 @@ def _save(irf, fname):
 
 # Baseline
 _save(irf_delta_resid,    "lp_irf_delta_resid.csv")
+_save(irf_delta_1997,     "lp_irf_delta_resid_1997.csv")
 _save(irf_ld_resid,       "lp_irf_ld_resid.csv")
 _save(irf_qu_resid,       "lp_irf_qu_resid.csv")
 _save(irf_delta_vac,      "lp_irf_delta_vacancy.csv")
@@ -657,13 +679,11 @@ _save(irf_ld_vac_gfc,     "lp_irf_ld_vac_gfc.csv")
 _save(irf_qu_vac_gfc,     "lp_irf_qu_vac_gfc.csv")
 
 # ---------------------------------------------------------------------------
-# ---------------------------------------------------------------------------
 # [8] Plots
 # ---------------------------------------------------------------------------
 print("\n[8] Plotting")
 
 def _plt_diagnostics():
-    import matplotlib.pyplot as plt
 
     # 8a. Core asymmetry -- unemployment
     overlay_plot_irf(
@@ -716,6 +736,53 @@ def _plt_diagnostics():
             ylabel   = "pp change in vacancy rate per 1-SD shock",
         )
 
+    # 8f. Sample extension robustness: δ unemployment IRF 1997Q1+ vs 2001Q1+
+    # Only δ can use the extended pre-2001 sample (LD/QU are JOLTS-constrained
+    # to 2001Q1). Compares IRF shapes to check whether the additional 16 quarters
+    # (1997Q1–2000Q4 — expansion years with low unemployment) materially shift
+    # the estimated response. Both IRFs are 1-SD standardised using their own
+    # instrument SD so they are directly comparable in magnitude.
+    if not irf_delta_1997.empty:
+        # Colour-code: blue = 2001Q1+ baseline, orange = 1997Q1+ extended
+        fig, ax = plt.subplots(figsize=(10, 6))
+        plt.ioff()
+        ax.axhline(0, color="black", lw=0.8)
+        for hh in [4, 8, 12, 16, 20]:
+            ax.axvline(hh, color="grey", lw=0.4, ls=":", alpha=0.5)
+
+        specs = [
+            (irf_delta_resid, "2001Q1+ baseline", "#1f77b4", "-"),
+            (irf_delta_1997,  "1997Q1+ extended", "#ff7f0e", "--"),
+        ]
+        for irf, label, color, ls in specs:
+            if irf is None or irf.empty:
+                continue
+            h = irf["h"].values
+            _ = ax.fill_between(h, irf["ci90_lo"], irf["ci90_hi"],
+                                color=color, alpha=0.15)
+            _ = ax.plot(h, irf["ci95_lo"], color=color, lw=0.7, ls="--", alpha=0.5)
+            _ = ax.plot(h, irf["ci95_hi"], color=color, lw=0.7, ls="--", alpha=0.5)
+            _ = ax.plot(h, irf["beta"], color=color, lw=2.0, ls=ls,
+                       marker="o", ms=3.5, label=label)
+
+        _ = ax.set_xlabel("Horizon h (quarters)", fontsize=11)
+        _ = ax.set_ylabel("pp change in unemp. rate per 1-SD shock", fontsize=11)
+        _ = ax.set_title(
+            r"$\delta$ unemployment IRF: sample extension robustness"
+            "\n1997Q1+ (extended, orange dashed) vs 2001Q1+ (baseline, blue solid)"
+            "\nLD/QU comparison not available — JOLTS data starts 2001Q1",
+            fontsize=11
+        )
+        _ = ax.legend(fontsize=10, framealpha=0.85)
+        _ = ax.grid(axis="y", lw=0.4, alpha=0.4)
+        ax.set_xticks(range(0, 21, 2))
+        fig.tight_layout()
+        p = RESULTS_DIR / "lp_irf_delta_sample_extension.png"
+        fig.savefig(p, dpi=150, bbox_inches="tight")
+        plt.close(fig)
+        print(f"  Saved: {p}")
+        _open_file(p)
+
 _plt_diagnostics()
 
 # ---------------------------------------------------------------------------
@@ -727,9 +794,10 @@ print(f"  {'Series':<35}  {'outcome':>8}  {'h_peak':>6}  "
 print(f"  {'-'*78}")
 
 all_irfs = [
-    ("delta (resid)",            "unemp",   irf_delta_resid),
-    ("LD (resid)",               "unemp",   irf_ld_resid),
-    ("QU (resid)",               "unemp",   irf_qu_resid),
+    ("delta (resid, 2001Q1+)",       "unemp",   irf_delta_resid),
+    ("delta (resid, 1997Q1+)",       "unemp",   irf_delta_1997),
+    ("LD (resid)",                   "unemp",   irf_ld_resid),
+    ("QU (resid)",                   "unemp",   irf_qu_resid),
     ("delta (resid+GFC)",        "unemp",   irf_delta_gfc),
     ("LD (resid+GFC)",           "unemp",   irf_ld_gfc),
     ("QU (resid+GFC)",           "unemp",   irf_qu_gfc),
@@ -748,19 +816,14 @@ for lbl, outcome_tag, df in all_irfs:
     print(f"  {lbl:<35}  {outcome_tag:>8}  {int(pk['h']):>6}  "
           f"{pk['beta']:>9.4f}  {pk['se']:>7.4f}  {pk['pval']:>6.3f}")
     
-# ---------------------------------------------------------
-# [10] Summary table
-# ------------------------------------------------
-# 1. Calculate the standard deviation of vac_rate for each state
-within_state_stds = outcomes.groupby('state_fips')['vac_rate'].std().rename('std_vac_rate')
-
-# 2. Get the average labor force for each state to use as weights
-state_weights = outcomes.groupby('state_fips')['labor_force'].mean().rename('avg_lf')
-# 3. Merge them and calculate the weighted average of the standard deviations
-std_df = pd.merge(within_state_stds, state_weights, on='state_fips')
-# The 'natural scale' is the labor-force-weighted average of within-state standard deviations
-natural_scale = np.average(std_df['std_vac_rate'], weights=std_df['avg_lf'])
-
-print(f"\n--- Natural Scale for Interpretation ---")
-print(f"Average within-state standard deviation of vac_rate: {natural_scale:.2f} percentage points")
-
+# ---------------------------------------------------------------------------
+# [10] Natural scale reference (vacancy rate within-state SD)
+# ---------------------------------------------------------------------------
+if vac_ok:
+    within_state_stds = outcomes.groupby('state_fips')['vac_rate'].std().rename('std_vac_rate')
+    state_weights     = outcomes.groupby('state_fips')['labor_force'].mean().rename('avg_lf')
+    std_df            = pd.merge(within_state_stds, state_weights, on='state_fips')
+    natural_scale     = np.average(std_df['std_vac_rate'], weights=std_df['avg_lf'])
+    print(f"\n--- Natural scale (vacancy rate) ---")
+    print(f"  Labor-force-weighted avg within-state SD of vac_rate: "
+          f"{natural_scale:.3f} pp")
