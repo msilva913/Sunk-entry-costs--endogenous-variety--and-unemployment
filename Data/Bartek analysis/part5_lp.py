@@ -1,4 +1,5 @@
 """
+
 part5_lp.py -- Panel Local Projections
 ======================================
 Estimates IRFs of state unemployment and vacancy rates to the δ, LD, and QU
@@ -533,6 +534,7 @@ print("=" * 60)
 # ---------------------------------------------------------------------------
 print("\n[1] Loading data")
 outcomes = load_outcomes()
+
 
 resid_ok = all(p.exists() for p in [DELTA_RESID_INSTR_FILE,
                                      LD_RESID_INSTR_FILE,

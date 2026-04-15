@@ -224,8 +224,9 @@ def _build_resid_bartik(shares, resid, shock_col, bartik_col,
               f"Interpret instrument with caution if missing industries "
               f"are economically large.")
 
-    instr["state_fips"] = instr["state_fips"].astype(int)
+    instr["state_fips"] = instr["state_fips"].astype(str).str.zfill(2)
     instr["state"]      = instr["state_fips"].map(FIPS2D_TO_STATE)
+    instr["state_fips"] = instr["state_fips"].astype(int)
 
     return instr[["state", "state_fips", "quarter_label",
                   bartik_col, "weight_sum", "n_supersectors"]]
