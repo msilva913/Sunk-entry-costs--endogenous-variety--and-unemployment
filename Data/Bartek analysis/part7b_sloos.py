@@ -22,8 +22,8 @@ Comparing δ_h(SLOOS) vs δ_h(NFCI) directly tests (A) vs (B).
 
 SLOOS series used
 -----------------
-  DRTSCILM  Net % banks tightening C&I standards, large/medium firms  (primary)
-  DRTSCIS   Net % banks tightening C&I standards, small firms          (secondary)
+  DRSDCILM  Net % banks tightening C&I standards, large/medium firms  (primary)
+  DRSDCIS   Net % banks tightening C&I standards, small firms          (secondary)
   Both: quarterly, NSA, back to 1990Q4.  Source: Federal Reserve / FRED.
 
 Interaction specification
@@ -93,8 +93,8 @@ SLOOS_CACHE      = CACHE_DIR / "sloos_quarterly.parquet"
 
 # FRED series IDs for SLOOS C&I net tightening
 SLOOS_SERIES = {
-    "sloos_lm": "DRTSCILM",   # tightening standards, large/medium C&I  ✅
-    "sloos_sm": "DRTSCIS",    # tightening standards, small C&I          ✅
+    "sloos_lm": "DRSDCILM",   # large & middle-market firms  (primary)
+    "sloos_sm": "DRSDCIS",    # small firms                  (robustness)
 }
 
 # ---------------------------------------------------------------------------
@@ -375,16 +375,24 @@ def run_lp(panel: pd.DataFrame, shock_col: str, interaction_col: str,
 # Comparison plot: SLOOS_LM vs NFCI interaction coefficients
 # ---------------------------------------------------------------------------
 def plot_sloos_vs_nfci(irf_sloos: pd.DataFrame, irf_nfci: pd.DataFrame,
-                       out_path: Path) -> None:
+                       out_path: Path,
+                       outcome: str = "unemp") -> None:
     """
     Two-panel figure.  Left: β_h (main effect at average conditions).
     Right: δ_h (interaction coefficient).
     Both panels show SLOOS_LM (primary) and NFCI (comparison) on same axes.
+    outcome: 'unemp' or 'vacancy' -- controls ylabel and suptitle only.
     """
     if irf_nfci.empty:
         print("  [warn] NFCI IRF not available -- plotting SLOOS only")
         _plot_single(irf_sloos, out_path, label="SLOOS C&I (large/med)")
         return
+
+    ylabel  = ("pp change in vacancy rate\nper 1-SD shock"
+               if outcome == "vacancy"
+               else "pp change in unemp. rate\nper 1-SD shock")
+    suptitle = (r"$\delta$ shock: SLOOS vs NFCI interaction — "
+                + ("vacancies" if outcome == "vacancy" else "unemployment"))
 
     fig, axes = plt.subplots(1, 2, figsize=(14, 5))
     colors = {"SLOOS C&I (LM)": "#d62728", "NFCI risk": "#1f77b4"}
@@ -415,11 +423,10 @@ def plot_sloos_vs_nfci(irf_sloos: pd.DataFrame, irf_nfci: pd.DataFrame,
             ax.axvline(hh, color="grey", lw=0.5, ls=":", alpha=0.6)
         ax.set_title(title, fontsize=11)
         ax.set_xlabel("Horizon h (quarters)", fontsize=10)
-        ax.set_ylabel("pp per 1-SD shock", fontsize=10)
+        ax.set_ylabel(ylabel, fontsize=10)
         ax.legend(fontsize=9)
 
-    fig.suptitle(r"$\delta$ shock: SLOOS vs NFCI interaction — unemployment",
-                 fontsize=12, y=1.01)
+    fig.suptitle(suptitle, fontsize=12, y=1.01)
     fig.tight_layout()
     fig.savefig(out_path, dpi=150, bbox_inches="tight")
     plt.close(fig)
@@ -502,65 +509,113 @@ def main():
     else:
         panel_nfci = pd.DataFrame()
 
-    # [5] Run LPs
-    print("\n[5] LP: δ × SLOOS_LM (primary)")
-    irf_lm = run_lp(panel_lm, "bartik_delta",
-                    "instr_x_sloos_lm", "delta (resid) × SLOOS LM")
+    vac_ok = "vac_rate" in panel.columns
+    if not vac_ok:
+        print("  [warn] Vacancy data not in panel -- vacancy LPs will be skipped")
 
-    print("\n[6] LP: δ × SLOOS_SM (robustness)")
-    irf_sm = run_lp(panel_sm, "bartik_delta",
-                    "instr_x_sloos_sm", "delta (resid) × SLOOS SM")
+    # [5] Unemployment LPs
+    print("\n[5] LP: δ × SLOOS_LM → unemployment (primary)")
+    irf_lm_u = run_lp(panel_lm, "bartik_delta",
+                      "instr_x_sloos_lm", "delta (resid) × SLOOS LM",
+                      outcome="unemp")
 
-    irf_nfci_rep = pd.DataFrame()
+    print("\n[6] LP: δ × SLOOS_SM → unemployment (robustness)")
+    irf_sm_u = run_lp(panel_sm, "bartik_delta",
+                      "instr_x_sloos_sm", "delta (resid) × SLOOS SM",
+                      outcome="unemp")
+
+    irf_nfci_u = pd.DataFrame()
     if not panel_nfci.empty:
-        print("\n[7] LP: δ × NFCI (replication for comparison)")
-        irf_nfci_rep = run_lp(panel_nfci, "bartik_delta",
-                              "instr_x_nfci", "delta (resid) × NFCI risk")
+        print("\n[7] LP: δ × NFCI → unemployment (comparison replication)")
+        irf_nfci_u = run_lp(panel_nfci, "bartik_delta",
+                            "instr_x_nfci", "delta (resid) × NFCI risk",
+                            outcome="unemp")
 
-    # [8] Save CSVs
-    print("\n[8] Saving results")
+    # [8] Vacancy LPs
+    irf_lm_v = irf_sm_v = irf_nfci_v = pd.DataFrame()
+    if vac_ok:
+        print("\n[8] LP: δ × SLOOS_LM → vacancy (primary)")
+        irf_lm_v = run_lp(panel_lm, "bartik_delta",
+                          "instr_x_sloos_lm", "delta (resid) × SLOOS LM",
+                          outcome="vacancy")
+
+        print("\n[9] LP: δ × SLOOS_SM → vacancy (robustness)")
+        irf_sm_v = run_lp(panel_sm, "bartik_delta",
+                          "instr_x_sloos_sm", "delta (resid) × SLOOS SM",
+                          outcome="vacancy")
+
+        if not panel_nfci.empty:
+            print("\n[10] LP: δ × NFCI → vacancy (comparison replication)")
+            irf_nfci_v = run_lp(panel_nfci, "bartik_delta",
+                                "instr_x_nfci", "delta (resid) × NFCI risk",
+                                outcome="vacancy")
+
+    # [11] Save CSVs
+    print("\n[11] Saving results")
     def _save(df, fname):
         if df is not None and not df.empty:
             p = RESULTS_DIR / fname
             df.to_csv(p, index=False)
             print(f"  Saved: {p}")
 
-    _save(irf_lm,       "lp_irf_delta_sloos_lm.csv")
-    _save(irf_sm,       "lp_irf_delta_sloos_sm.csv")
-    _save(irf_nfci_rep, "lp_irf_delta_nfci_rep.csv")
+    # unemployment
+    _save(irf_lm_u,   "lp_irf_delta_sloos_lm_unemp.csv")
+    _save(irf_sm_u,   "lp_irf_delta_sloos_sm_unemp.csv")
+    _save(irf_nfci_u, "lp_irf_delta_nfci_rep_unemp.csv")
+    # vacancy
+    _save(irf_lm_v,   "lp_irf_delta_sloos_lm_vacancy.csv")
+    _save(irf_sm_v,   "lp_irf_delta_sloos_sm_vacancy.csv")
+    _save(irf_nfci_v, "lp_irf_delta_nfci_rep_vacancy.csv")
 
-    # [9] Comparison plot: SLOOS_LM vs NFCI
-    print("\n[9] Comparison plot")
+    # [12] Comparison plots: SLOOS_LM vs NFCI, unemployment and vacancy
+    print("\n[12] Comparison plots")
     plot_sloos_vs_nfci(
-        irf_lm, irf_nfci_rep,
-        RESULTS_DIR / "lp_irf_delta_sloos_comparison.png"
+        irf_lm_u, irf_nfci_u,
+        RESULTS_DIR / "lp_irf_delta_sloos_comparison_unemp.png",
+        outcome="unemp"
     )
+    if vac_ok:
+        plot_sloos_vs_nfci(
+            irf_lm_v, irf_nfci_v,
+            RESULTS_DIR / "lp_irf_delta_sloos_comparison_vacancy.png",
+            outcome="vacancy"
+        )
 
-    # [10] Summary table
-    print("\n[10] Summary -- interaction coefficient δ_h at selected horizons")
-    print(f"  {'Spec':<28}  {'h':>3}  {'beta_h':>8}  {'delta_h':>9}  "
-          f"{'dh_SE':>7}  {'dh_p':>6}")
-    print(f"  {'-'*65}")
-    for lbl, irf in [("SLOOS LM (large/med C&I)", irf_lm),
-                     ("SLOOS SM (small C&I)",     irf_sm),
-                     ("NFCI risk (replication)",  irf_nfci_rep)]:
-        if irf is None or irf.empty or "delta_h" not in irf.columns:
-            continue
-        for h in [0, 4, 8, 12, 16, 20]:
-            row = irf[irf["h"] == h]
-            if row.empty:
+    # [13] Summary table -- both outcomes
+    print("\n[13] Summary -- interaction coefficient δ_h at selected horizons")
+    for outcome_tag, specs in [
+        ("UNEMPLOYMENT", [
+            ("SLOOS LM (large/med C&I)", irf_lm_u),
+            ("SLOOS SM (small C&I)",     irf_sm_u),
+            ("NFCI risk (replication)",  irf_nfci_u),
+        ]),
+        ("VACANCY", [
+            ("SLOOS LM (large/med C&I)", irf_lm_v),
+            ("SLOOS SM (small C&I)",     irf_sm_v),
+            ("NFCI risk (replication)",  irf_nfci_v),
+        ]),
+    ]:
+        print(f"\n  --- {outcome_tag} ---")
+        print(f"  {'Spec':<28}  {'h':>3}  {'beta_h':>8}  {'delta_h':>9}  "
+              f"{'dh_SE':>7}  {'dh_p':>6}")
+        print(f"  {'-'*65}")
+        for lbl, irf in specs:
+            if irf is None or irf.empty or "delta_h" not in irf.columns:
                 continue
-            r   = row.iloc[0]
-            sig = ("***" if r["delta_h_p"] < .01
-                   else "**" if r["delta_h_p"] < .05
-                   else "*"  if r["delta_h_p"] < .10 else "")
-            print(f"  {lbl:<28}  {h:3d}  {r['beta']:8.4f}  "
-                  f"{r['delta_h']:9.4f}  {r['delta_h_se']:7.4f}  "
-                  f"{r['delta_h_p']:6.3f}  {sig}")
+            for h in [0, 4, 8, 12, 16, 20]:
+                row = irf[irf["h"] == h]
+                if row.empty:
+                    continue
+                r   = row.iloc[0]
+                sig = ("***" if r["delta_h_p"] < .01
+                       else "**" if r["delta_h_p"] < .05
+                       else "*"  if r["delta_h_p"] < .10 else "")
+                print(f"  {lbl:<28}  {h:3d}  {r['beta']:8.4f}  "
+                      f"{r['delta_h']:9.4f}  {r['delta_h_se']:7.4f}  "
+                      f"{r['delta_h_p']:6.3f}  {sig}")
 
     print("\nDone.")
 
 
 if __name__ == "__main__":
     main()
-    

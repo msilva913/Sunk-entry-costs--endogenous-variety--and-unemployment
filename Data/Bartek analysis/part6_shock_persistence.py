@@ -28,10 +28,10 @@ We therefore report two sets of estimates:
   Residualized: AR(1) on ν̄_t^(k) = Σ_j ω_j · ν^(k)_{j,t}
                 (employment-weighted average of residualized shock rates)
 
-The residualized series is shorter (2005Q3 onward, limited by BEA VA data)
-but is the conceptually preferred calibration target. The comparison between
-raw and residualized ρ estimates quantifies how much measured persistence
-reflects structural shock dynamics vs. demand/productivity contamination.
+The residualized series uses a common 2001Q1+ window for both δ and LD,
+matching the JOLTS start date for LD and avoiding mechanical AR(1)
+inflation from the low-variance pre-2001 expansion years in the δ series.
+The extended δ sample (1997Q1+) is used only in the part5 LP robustness check.
 
 Innovation covariance across shocks
 ------------------------------------
@@ -93,16 +93,19 @@ from pathlib import Path
 try:
     os.chdir(Path(__file__).resolve().parent)
 except NameError:
-    os.chdir(
+     os.chdir(
         Path.home()
-        / "Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unemployment"
+        / "Documents/GitHub/Sunk_entry_costs_endogenous_variety_unemployment"
         / "Data/Bartek analysis"
     )
 
 from construct_delta_instrument import (
-    DEFAULT_CACHE_DIR, SHOCK_RATES_PATH, INDUSTRY_LABELS,
+    DEFAULT_CACHE_DIR, DEFAULT_OUTPUT_DIR, SHOCK_RATES_PATH, INDUSTRY_LABELS,
 )
 from construct_s_instrument import SHOCK_RATES_LD_PATH
+
+RESID_D_PATH  = DEFAULT_OUTPUT_DIR / "shock_rates_delta_resid.parquet"
+RESID_LD_PATH = DEFAULT_OUTPUT_DIR / "shock_rates_ld_resid.parquet"
 
 # ── parameters ────────────────────────────────────────────────────────────────
 BASE_YEAR   = 2006
@@ -156,82 +159,26 @@ def _weighted_agg(ind_qt: pd.DataFrame, rate_col: str,
     return agg
 
 
-def _build_residualized_panel() -> pd.DataFrame:
+def _load_resid_series(parquet_path: Path, col: str,
+                       weights: pd.Series) -> pd.Series | None:
     """
-    Build residualized industry-quarter shock rates ν^δ and ν^{LD} in-process,
-    replicating the part2b v2 spec to avoid NTFS-mount parquet corruption.
+    Load a residualized shock series from a part2b output parquet and return
+    its employment-weighted aggregate time series.
 
-    Returns DataFrame with columns:
-      industry_code, quarter_label, nu_delta, nu_ld
+    Each series is loaded independently so δ (1997Q1+) and LD (2001Q1+) keep
+    their own sample ranges.  The old _build_residualized_panel() merged both
+    into a single inner-joined DataFrame, clipping δ to LD's shorter JOLTS
+    sample and then further to the 2005Q4 FRED-VA start — producing N=65 for
+    both.  Loading separately gives the correct N for each shock.
+
+    Returns None if the parquet does not exist.
     """
-    required = [
-        DEFAULT_CACHE_DIR / "ophnfb_quarterly.parquet",
-        DEFAULT_CACHE_DIR / "national_tightness_quarterly.parquet",
-        DEFAULT_CACHE_DIR / "bea_va_quarterly_12ind.parquet",
-    ]
-    missing = [p for p in required if not p.exists()]
-    if missing:
-        return None   # caller handles gracefully
-
-    # Raw log shock rates
-    nat_d  = _nat_avg(SHOCK_RATES_PATH,    "g_delta_loo")
-    nat_ld = _nat_avg(SHOCK_RATES_LD_PATH, "g_ld_loo")
-    nat_d.columns  = ["industry_code", "quarter_label", "g_delta"]
-    nat_ld.columns = ["industry_code", "quarter_label", "g_ld"]
-
-    nat = nat_d.merge(nat_ld, on=["industry_code", "quarter_label"], how="inner")
-    nat = nat[(nat.g_delta > 0) & (nat.g_ld > 0)].copy()
-    nat["log_g_delta"] = np.log(nat["g_delta"])
-    nat["log_g_ld"]    = np.log(nat["g_ld"])
-    nat["industry_code"] = nat["industry_code"].astype(int)
-
-    # Controls
-    prod = pd.read_parquet(DEFAULT_CACHE_DIR / "ophnfb_quarterly.parquet")
-    prod = prod.sort_values("quarter_label").reset_index(drop=True)
-    prod["dlog_p"] = np.log(prod["productivity"]).diff()
-
-    tight = pd.read_parquet(DEFAULT_CACHE_DIR / "national_tightness_quarterly.parquet")
-    tight = tight.sort_values("quarter_label").reset_index(drop=True)
-    tight["log_theta_lag"] = tight["log_theta"].shift(1)
-
-    bea = pd.read_parquet(DEFAULT_CACHE_DIR / "bea_va_quarterly_12ind.parquet")
-    bea = bea.sort_values(["industry_code", "quarter_label"]).reset_index(drop=True)
-    bea["dlog_va_lag"] = bea.groupby("industry_code")["dlog_va"].shift(1)
-    bea_lag = bea[["industry_code", "quarter_label", "dlog_va_lag"]].dropna().copy()
-    bea_lag["industry_code"] = bea_lag["industry_code"].astype(int)
-
-    nat = (nat
-           .merge(prod[["quarter_label", "dlog_p"]].dropna(),
-                  on="quarter_label", how="inner")
-           .merge(tight[["quarter_label", "log_theta_lag"]].dropna(),
-                  on="quarter_label", how="inner")
-           .merge(bea_lag, on=["industry_code", "quarter_label"], how="inner"))
-    nat = nat.dropna().sort_values(
-        ["industry_code", "quarter_label"]).reset_index(drop=True)
-
-    def _residualize(df, dep_col, resid_col, reg_cols):
-        work = df[["industry_code", dep_col, *reg_cols]].copy().reset_index(drop=True)
-        work["y_dm"] = (work[dep_col]
-                        - work.groupby("industry_code")[dep_col].transform("mean"))
-        dm_cols = []
-        for rc in reg_cols:
-            dc = f"_dm_{rc}"
-            work[dc] = work[rc] - work.groupby("industry_code")[rc].transform("mean")
-            dm_cols.append(dc)
-        X      = work[dm_cols].to_numpy()
-        y      = work["y_dm"].to_numpy()
-        gammas = np.linalg.lstsq(X, y, rcond=None)[0]
-        resid  = y - X @ gammas
-        out    = df.copy()
-        out[resid_col] = resid
-        return out
-
-    nat = _residualize(nat, "log_g_delta", "nu_delta",
-                       ("dlog_p", "dlog_va_lag"))
-    nat = _residualize(nat, "log_g_ld",    "nu_ld",
-                       ("dlog_p", "dlog_va_lag", "log_theta_lag"))
-
-    return nat[["industry_code", "quarter_label", "nu_delta", "nu_ld"]]
+    if not parquet_path.exists():
+        return None
+    df = pd.read_parquet(parquet_path)
+    df = df.rename(columns={col: "rate"})
+    return _weighted_agg(df[["industry_code", "quarter_label", "rate"]],
+                         "rate", weights)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -482,21 +429,32 @@ def main():
           f"mean={agg_raw_ld.mean():.5f},  SD={agg_raw_ld.std():.5f}")
 
     # ── 3. Residualized aggregate shock rates ─────────────────────────────────
-    print("\n[3] Residualized aggregate shock rates (v2 spec)")
-    resid_panel = _build_residualized_panel()
-    if resid_panel is None:
-        print("  WARNING: cache files missing — skipping residualized spec.")
-        print("  Run part2b_shock_comovement.py with FRED_API_KEY first.")
+    print("\n[3] Residualized aggregate shock rates (part2b outputs)")
+    agg_resid_d  = _load_resid_series(RESID_D_PATH,  "nu_delta", weights)
+    agg_resid_ld = _load_resid_series(RESID_LD_PATH, "nu_ld",    weights)
+
+    if agg_resid_d is None or agg_resid_ld is None:
+        missing = []
+        if agg_resid_d  is None: missing.append(str(RESID_D_PATH))
+        if agg_resid_ld is None: missing.append(str(RESID_LD_PATH))
+        print(f"  WARNING: residualized parquets not found:\n"
+              + "\n".join(f"    {p}" for p in missing))
+        print("  Run part2b_residualize_shocks.py first.")
         has_resid = False
     else:
-        def _agg_resid(col):
-            df = resid_panel[["industry_code", "quarter_label", col]].copy()
-            df = df.rename(columns={col: "rate"})
-            return _weighted_agg(df, "rate", weights)
-
-        agg_resid_d  = _agg_resid("nu_delta")
-        agg_resid_ld = _agg_resid("nu_ld")
-        has_resid    = True
+        # Restrict both residualized series to 2001Q1+ for a common window.
+        # ν^δ covers 1997Q1+ after the part2b panel split, but the pre-2001
+        # expansion years (low, stable exit rates) mechanically inflate the
+        # AR(1) coefficient because consecutive quarters of near-identical
+        # values look highly autocorrelated.  Using 2001Q1+ for both δ and LD
+        # gives a comparable sample and avoids this bias.  The extended δ
+        # series (1997Q1+) is used only in the part5 sample-extension LP.
+        RESID_START = "2001Q1"
+        agg_resid_d  = agg_resid_d[agg_resid_d.index  >= RESID_START]
+        agg_resid_ld = agg_resid_ld[agg_resid_ld.index >= RESID_START]
+        has_resid = True
+        print(f"  Common window: {RESID_START}+ (δ extended series restricted "
+              f"to match LD JOLTS start; avoids pre-2001 expansion bias)")
         print(f"  ν^δ:  {agg_resid_d.index[0]}–{agg_resid_d.index[-1]},  "
               f"mean={agg_resid_d.mean():.5f},  SD={agg_resid_d.std():.5f}")
         print(f"  ν^LD: {agg_resid_ld.index[0]}–{agg_resid_ld.index[-1]},  "
