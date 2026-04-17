@@ -46,10 +46,21 @@ Run
 import argparse
 import base64
 import mimetypes
+import os
 import re
 import subprocess
 import sys
 from pathlib import Path
+
+# ── working directory ─────────────────────────────────────────────────────────
+try:
+    os.chdir(Path(__file__).resolve().parent)
+except NameError:
+    os.chdir(
+        Path.home()
+        / "Documents/GitHub/Sunk_entry_costs_endogenous_variety_unemployment"
+        / "Data/Bartek analysis"
+    )
 
 MATHJAX_URL = "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"
 

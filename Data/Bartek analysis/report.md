@@ -31,7 +31,19 @@ where:
 - $\omega_{s,j}$ = base-year (2006) employment share of supersector $j$ in state $s$, from QCEW annual data (`data/instruments/shares_base2006.parquet`)
 - $g^{(k)}_{-s,j,t}$ = **leave-one-out (LOO)** national shock rate for shock type $k$ in supersector $j$ at quarter $t$, excluding state $s$ to avoid mechanical own-state correlation
 
-The LOO design ensures the national shock rate is exogenous to any single state's idiosyncratic shocks. The identifying assumption (Goldsmith-Pinkham, Sorkin & Swift 2020) is that the base-year employment shares $\omega_{s,j}$ are exogenous to state-specific shocks, conditional on state and time fixed effects. In Adão, Kolesár & Morales (2019) terms, identification requires the shares to be "as good as randomly assigned" across states within supersectors — here supported by the fact that 2006 is a pre-crisis base year.
+### Why Bartik instruments are needed
+
+The core identification problem is that both unemployment and vacancies in a state are simultaneously determined by local demand, supply, and structural shocks. A naive regression of state unemployment on local firm exit rates would be confounded by any local force that simultaneously drives both outcomes. The Bartik design resolves this by constructing a state's predicted shock from the interaction of predetermined industry composition with national industry-level shock rates — variation that is exogenous to any individual state's conditions.
+
+**Endogeneity that the Bartik structure handles without additional controls.** The clearest example is a local demand shock. Suppose Texas experiences an oil price boom that raises income, boosts local consumer spending, and lowers unemployment. It also reduces local firm exits as profitability rises. A simple regression would find a spurious positive correlation between firm exits and unemployment because both respond to Texas-specific oil conditions. The Bartik instrument breaks this link: $g^{\delta}_{-s,j,t}$ is the national establishment closing rate in each industry *excluding* Texas, so Texas's own oil boom does not enter the shock numerator. The identifying variation comes from national industry trends — for example, a national increase in Mining closing rates driven by global commodity prices — weighted by each state's industry composition. Texas gets a large predicted δ shock when Mining nationally is hit hard, regardless of Texas's own labor market conditions.
+
+A second example is labor supply heterogeneity. Some states have large manufacturing bases and others are service-dominated. Observed differences in unemployment responses to economic downturns partly reflect this composition, not structural differences in shock transmission. The Bartik instrument uses a fixed 2006 base-year composition for all states, so the identifying variation comes from the national timing of industry-level shocks, not from states sorting themselves into industries for unobserved reasons. Goldsmith-Pinkham, Sorkin and Swift (2020) formalize this: identification rests on the exogeneity of the employment shares $\omega_{s,j}$, conditional on state and time fixed effects — here supported by using 2006 as a pre-crisis base year that predates the GFC-era restructuring.
+
+The LOO design handles a third source of endogeneity: mechanical own-state correlation. If a large state like California has a severe recession, California's own firm exits enter the national closing rate $g^{\delta}_{j,t}$ for its major industries. This would create a spurious positive correlation between California's Bartik instrument and its unemployment even if the structural channel is zero. Excluding each state from its own national rate eliminates this mechanical feedback.
+
+### What the Bartik structure does not handle
+
+The Bartik design controls for local idiosyncratic shocks through the national shock rate construction, and for state-level heterogeneity through the fixed effects in the LP. What it does not automatically handle is endogeneity that operates *through the national shock rates themselves* — aggregate or industry-level forces that drive both $g^{(k)}_{j,t}$ and the LP outcome via a channel distinct from the structural δ or s mechanism. This is addressed through the residualization in Section 2.3.
 
 Three instrument types are constructed:
 
@@ -39,21 +51,87 @@ Three instrument types are constructed:
 - **LD instrument**: based on JOLTS layoff and discharge rates (match separation channel, primary)
 - **QU instrument**: based on JOLTS quit rates (separation channel, placebo)
 
-## 2.2 Identification and the Case for Residualization
 
-The raw Bartik instruments face a potential identification threat: national shock rates $g^{(k)}_{j,t}$ may be driven partly by aggregate demand or monetary policy, not solely by supply-side business formation and exit dynamics. If supersectors differ in their sensitivity to such aggregates — and if those sensitivities are correlated with the base-year employment shares — the instruments may capture common demand variation rather than structural shocks.
+## 2.2 Permanence Calibration of the δ Instrument
 
-The project addresses this through a three-stage residualization:
+### The BED closings-versus-deaths distinction
 
-**v1 — Aggregate controls**: Regress national shock rates on time-fixed effects and aggregate output growth.
+The BED establishment closings series records every establishment whose employment falls to zero in a given quarter — what the BLS calls a "closing." This is a broader event than what the model's δ requires. In the Gabrovski–Silva framework, δ represents **permanent** product-line destruction: the firm's vacancy slot is irreversibly destroyed and cannot be reactivated without paying the full sunk entry cost again. But not every BED closing is permanent. Seasonal businesses close and reopen routinely; establishments undergo administrative restructurings that appear as closures in the UI records; some firms temporarily suspend operations and later resume.
 
-**v2 — Industry-level controls**: Add industry real value-added growth $\Delta \log \text{VA}_{j,t}$ as a control, absorbing sector-specific demand fluctuations. This is the primary residualization stage.
+BLS itself recognizes this distinction explicitly and resolves it with a three-quarter waiting rule: an establishment that closes "may be a death, but the BED program waits three quarters to determine whether the closing is permanent or is just a temporary shutdown. Therefore, there is a lag of three quarters between a permanent closing and its publication" as an establishment death (BLS Business Employment Dynamics Technical Note). BED "deaths" — the published series that distinguishes permanent from temporary closings — are accordingly available only with a 9-month publication lag, making them unsuitable for constructing a real-time Bartik instrument at quarterly frequency.
 
-**v3 — Monetary policy sensitivity**: Further control for $\phi_j \times \Delta \text{MP}_t$ where $\phi_j$ is log average establishment size from Census CBP (a proxy for interest-rate sensitivity) and $\Delta \text{MP}_t$ is the Wu–Xia shadow FFR change. This tests whether differential monetary policy exposure explains residual instrument co-movement.
+This creates a measurement challenge specific to using BED data for the δ instrument: the quarterly closing series that is available in real time overstates permanent destruction, while the permanent death series is released with too much lag to be useful. The permanence calibration resolves this tension.
 
-The key diagnostic is the pairwise correlation between residualized δ and LD innovations across versions. The correlation $r(\nu^\delta, \nu^{LD})$ remains stable across all three stages at approximately **0.424**, implying the shared variation is not an aggregate demand or monetary policy artifact — it reflects a structural co-movement of firm exit and layoff rates at the industry level (see Section 4.5).
+### Construction of the permanence ratio
 
-## 2.3 Local Projection Specifications
+The calibration uses the Census Bureau's Business Dynamics Statistics (BDS) as an external benchmark. The BDS provides annual firm and establishment exit counts — permanent exits defined as establishments with positive employment in March of the previous year and no employment in March of the current year — at the industry level with broad NAICS sector coverage back to 1977. Crane et al. (2022) describe this identification strategy clearly: the BDS measures what the BED would call "deaths" but at annual rather than quarterly frequency, making it the natural anchor for scaling quarterly BED closings to permanent exits.
+
+For each BLS supersector $j$ and year $y$, the permanence ratio is:
+
+$$\pi_{j,y} = \frac{\text{BDS exits}_{j,y}}{\sum_{t \in y} \text{BED closings}_{j,t}}$$
+
+The numerator counts annual permanent exits from the BDS; the denominator sums the four quarters of BED closings within that calendar year. The ratio measures what fraction of BED closings in sector $j$ proved permanently closed on an annual look-ahead window. The permanence-adjusted closing rate used as the national shock rate numerator is then:
+
+$$\text{closings}^{\text{perm}}_{j,t} = \pi_{j,y(t)} \times \text{BED closings}_{j,t}$$
+
+where $y(t)$ is the calendar year of quarter $t$. This converts the quarterly high-frequency signal from BED into a series that is conceptually aligned with permanent establishment deaths, maintaining quarterly timing while anchoring magnitudes to the annual BDS benchmark.
+
+### Relationship to the existing literature
+
+Davis, Haltiwanger and Schuh (1992, 1996) established the foundational measurement framework for gross job flows, distinguishing job creation from openings and expansions and job destruction from closings and contractions. Their framework recognized that quarterly gross job destruction from closings includes both permanent and temporary components, but their plant-level Longitudinal Research Database was restricted to manufacturing and did not provide the public-use quarterly closing series with the frequency and sector coverage required for an across-sector Bartik instrument.
+
+The permanent-versus-temporary distinction in establishment dynamics was subsequently formalized by Figura (2002), who decomposed plant-level job flows into high-frequency (transitory) and low-frequency (permanent) components using band-pass filters, showing that the two types have distinct cyclical properties. The BED program's own death classification operationalizes a similar distinction using a three-quarter look-ahead rule in the administrative data.
+
+The approach here is closest in spirit to Crane et al. (2022), who explicitly use the BDS as a benchmark for permanent exit rates and compare it against other measures of business shutdown (BED closures, SafeGraph visits, business applications) to separate temporary closures from true permanent exits during the COVID pandemic. Their finding — that many 2020 BED closings were temporary reopenings, so the BDS provides the more economically meaningful exit count — motivates exactly the scaling applied here.
+
+The specific contribution of the $\pi_{j,y}$ ratio is methodological: it provides a sector-specific, time-varying adjustment that maintains quarterly frequency (from BED) while anchoring the magnitude of permanent destruction to the annual BDS benchmark. The approach is pragmatic rather than novel in a deep theoretical sense — it exploits the fact that BLS and Census measure the same underlying event (permanent establishment exit) at different frequencies and from different administrative sources, and takes their ratio as a correction factor.
+
+### Validity and limitations
+
+The ratio $\pi_{j,y}$ is valid under the assumption that BDS annual exits and BED annual closings measure the same population of establishments, differing only in the permanence criterion. This is approximately correct: both series draw on UI administrative records and QCEW establishment IDs, so the universe overlap is high. The main discrepancy arises from definitional differences in the look-ahead window — BED's three-quarter rule versus BDS's annual March-to-March comparison — which can generate small differences in timing of exit attribution across years.
+
+A second limitation is that $\pi_{j,y}$ is estimated at annual frequency and applied uniformly to all four quarters within the year, imposing the assumption that the share of temporary closings is constant within a year. For sectors with strong seasonality — Leisure and Hospitality, Construction — this assumption is violated: the first quarter sees more temporary closures than the third. The sector-year adjustment partially corrects for systematic differences across sectors but does not remove within-year seasonal variation in the permanence fraction.
+
+### Empirical permanence ratios by sector
+
+The data reveal substantial and economically interpretable heterogeneity. Mining (BLS 10) has a pre-COVID long-run mean of $\bar{\pi} = 0.17$: only about one in six quarterly BED closings represents a genuine permanent exit, with the remainder being temporary suspensions from commodity price cycles, seasonal extraction, and maintenance. Construction (BLS 20) is the second-lowest at $\bar{\pi} = 0.55$, consistent with the project-based firm structure of the sector. Leisure and Hospitality (BLS 70, $\bar{\pi} = 0.79$) and Other Services (BLS 80, $\bar{\pi} = 0.85$) occupy an intermediate range.
+
+By contrast, Manufacturing (BLS 30), Information (BLS 50), and Financial Activities (BLS 55) all have pre-COVID means above 0.98, consistent with high fixed costs making temporary closure economically unattractive.
+
+During the Great Recession (2008–2010), permanence ratios moved toward 1.0 in most sectors, consistent with recessions converting temporary closures to permanent exits as liquidity constraints tighten. During COVID (red-shaded), ratios dropped sharply, correctly capturing the large number of temporarily suspended establishments that subsequently reopened. The sample is capped at 2019Q4 for LP outcomes, so COVID-period instrument values do not affect the estimated IRFs.
+
+### Figure
+
+![Permanence ratios by supersector](permanence_ratios_by_supersector.png)
+
+*Figure 1. Permanence ratio $\pi_{j,y}$ = BDS annual exits / BED quarterly closings sum, by supersector and year. Grey shading = Great Recession (2008–2010); red shading = COVID period (2020–2021). Mining and Construction have structurally low $\pi$ throughout, reflecting high rates of temporary closure. Most goods-producing and knowledge-intensive sectors cluster near $\pi \approx 1$ outside of COVID. Source: BDS national sector table (`bds2023_sec_nat.csv`), BED national establishment closings. Computed in `part2_shock_rates.py`; stored in `data/instruments/permanence_ratios_by_supersector.parquet`.*
+
+---
+
+## 2.3 Identification and the Case for Residualization
+
+Even after the Bartik construction eliminates local demand shocks and mechanical own-state correlation, the national shock rates $g^{(k)}_{j,t}$ may themselves be contaminated by aggregate or industry-level forces that have independent effects on the LP outcomes. If these forces are correlated with the base-year employment shares $\omega_{s,j}$, they produce biased estimates of β_h even in the Bartik framework. Three distinct contamination channels motivate the three residualization stages.
+
+### What each residualization stage controls for
+
+**v1 — Aggregate macro cycle** ($\Delta \log p_t$ from FRED OPHNFB)
+
+The raw δ shock rate rises during recessions and falls during expansions — not because permanent firm destruction varies with the cycle, but because the BED closing rate reflects aggregate demand conditions. In 2009Q1, establishment closing rates spiked across all industries simultaneously, driven by the aggregate collapse in demand. If states that are more exposed to high-closing industries (e.g. Manufacturing) also have worse unemployment outcomes for aggregate cyclical reasons unrelated to firm destruction per se, the raw Bartik instrument picks up aggregate business cycle effects rather than the structural δ channel. Projecting $g^{\delta}_{j,t}$ on aggregate productivity growth $\Delta \log p_t$ removes the common aggregate component before forming the instrument, so only the idiosyncratic industry deviation from the national cycle enters the shock rate. For example, if Manufacturing closing rates rise by more than what aggregate productivity decline would predict, the residual $\nu^{\delta}_{j,t}$ captures this excess — a genuine industry-specific destruction event rather than a generic recession. The same aggregate contamination applies to the LD and QU shock rates, so the v1 residualization is applied to all instruments.
+
+**v2 — Industry-specific demand cycles** ($\Delta \log \text{VA}_{j,t-1}$ from BEA via FRED)
+
+Aggregate productivity control is not sufficient because industry-specific demand contractions drive both closing rates and unemployment independently. The clearest example is the 2005–2007 collapse in residential Construction. National Construction closing rates rose sharply before the aggregate recession began, driven by the implosion of the housing bubble — an industry-specific demand shock, not an aggregate one. States with high Construction employment shares (Nevada, Florida, Arizona) received large δ Bartik values precisely when their unemployment was rising for Construction-demand reasons. Projecting $g^{\delta}_{j,t}$ on lagged industry real value-added growth $\Delta \log \text{VA}_{j,t-1}$ removes the industry-specific demand cycle from the shock rate, so the residual $\nu^{\delta}_{j,t}$ represents firm destruction above and beyond what the industry's own demand trajectory would predict. The one-quarter lag ensures the control is predetermined relative to the current shock. The same logic applies to LD: layoff rates in Construction or Retail rose during those sectors' own downturns for demand reasons independent of any structural s shock, and lagged VA growth absorbs this. For QU, industry VA growth also matters because quit rates fall when industry demand contracts and workers become reluctant to leave — failing to control for this would attribute the demand-driven quit decline to a structural quit shock.
+
+**v3 — Differential monetary policy sensitivity** ($\phi_j \times \Delta \text{MP}_t$)
+
+Interest rate changes affect industries differentially depending on how capital-intensive and credit-dependent their establishments are. A monetary tightening cycle raises closing rates more in Construction (high leverage, interest-rate sensitive project financing) and Manufacturing (capital-intensive, interest-rate sensitive investment) than in Services. If the employment shares $\omega_{s,j}$ are correlated with states' exposure to interest-rate-sensitive industries — industrial Midwestern states have heavy Manufacturing, construction-boom states had heavy Construction — then monetary policy changes create a spurious correlation between the Bartik instrument and unemployment outcomes. The v3 control adds $\phi_j \times \Delta \text{MP}_t$, where $\phi_j$ is log average establishment size (a proxy for capital intensity from Census CBP 2000, predetermined) and $\Delta \text{MP}_t$ is the Wu–Xia shadow FFR first difference, to remove this differential monetary policy channel from the shock rates before Bartik aggregation.
+
+### Diagnostic: what the residualization achieves
+
+The key diagnostic is the pairwise correlation between residualized δ and LD innovations. If the three residualization stages successfully removed the shared aggregate and industry-level demand variation, the residual correlation $r(\nu^\delta, \nu^{LD})$ should fall toward zero. In practice it remains stable at approximately **0.424** across all three stages (v1→v2→v3). This implies the shared variation is not an aggregate demand artifact, not an industry-specific demand cycle, and not a monetary policy sensitivity effect. The residual correlation is most parsimoniously interpreted as a structural co-movement: industry-level shocks simultaneously drive both establishment exit (δ) and layoffs at surviving firms (LD), reflecting the same underlying industry-specific deterioration — see Section 4.5 for full treatment.
+
+
+## 2.4 Local Projection Specifications
 
 All regressions use residualized instruments only. Instruments are rescaled ×100 for percentage-point units and standardized by the cross-sectional standard deviation of the Bartik variable, so $\beta_h$ is a 1-SD-shock impulse response.
 
@@ -61,7 +139,13 @@ All regressions use residualized instruments only. Instruments are rescaled ×10
 
 $$u_{s,t+h} - u_{s,t-1} = \alpha_s + \alpha_t + \beta_h \cdot B^{(k)}_{s,t} + \gamma_1 u_{s,t-1} + \gamma_2 \log \text{LF}_{s,t-1} + \varepsilon_{s,t,h}$$
 
-**Economic rationale**: $\beta_h$ captures the cumulative unemployment response (in percentage points) at horizon $h$ quarters to a 1-SD Bartik shock. State fixed effects $\alpha_s$ absorb permanent cross-state heterogeneity (industry composition, right-to-work laws). Time fixed effects $\alpha_t$ absorb aggregate business-cycle variation common to all states. Standard errors are clustered at the state level ($n=50$) to account for within-state serial correlation in outcomes.
+**State fixed effects $\alpha_s$.** Permanent differences in unemployment rates across states reflect long-run structural features: right-to-work legislation, union density, industry composition not fully captured by the Bartik weights, geographic isolation, and demographic mix. Without $\alpha_s$, a high-unemployment state that also happens to have large manufacturing employment would appear to have a larger unemployment response to a δ shock simply because its baseline is high. Absorbing $\alpha_s$ ensures $\beta_h$ is identified from within-state variation over time, not from the cross-state level of unemployment.
+
+**Time fixed effects $\alpha_t$.** Aggregate recessions raise unemployment everywhere simultaneously. The 2008–2009 GFC generated large common variation across all states that is unrelated to any particular state's Bartik instrument value. Without $\alpha_t$, the regression would partly attribute this aggregate unemployment increase to whatever instruments happen to be high in that quarter — creating a spurious positive $\beta_h$ for all three instruments. The time FE absorbs the aggregate business cycle, so identification comes from the differential response of high-instrument states relative to low-instrument states in the same quarter.
+
+**Lagged unemployment $u_{s,t-1}$.** Unemployment is highly persistent — close to a unit root at business cycle frequencies. Without conditioning on the initial level, a state entering the shock quarter with already-elevated unemployment will mechanically show a large value of $u_{s,t+h} - u_{s,t-1}$ for aggregate mean-reversion reasons unrelated to the Bartik shock. For example, if Michigan enters 2006Q4 with elevated unemployment from prior auto-sector restructuring, its unemployment will tend to remain high through 2007–2008 regardless of its δ instrument value. Conditioning on $u_{s,t-1}$ controls for this initial condition so that $\beta_h$ measures the shock's *incremental* contribution above the state's baseline trajectory. It also absorbs any correlation between the Bartik instrument and lagged state conditions — states with large Manufacturing shares tended to have higher unemployment in the pre-crisis period, and the instrument also loads on Manufacturing through the employment shares.
+
+**Lagged log labor force $\log \text{LF}_{s,t-1}$.** Labor force size determines the denominator of the unemployment rate and also proxies for state economic scale, urban density, and immigration patterns — all of which affect both baseline unemployment rates and sensitivity to industry shocks. A large, diverse state labor market (California) absorbs industry-specific shocks differently from a small, concentrated one (Wyoming). Conditioning on $\log \text{LF}_{s,t-1}$ removes this source of scale-driven heterogeneity in how unemployment rates respond to a given shock, ensuring $\beta_h$ reflects the structural transmission channel rather than state size effects. The one-quarter lag ensures this is predetermined relative to the shock.
 
 ### Vacancy-Rate LP
 
@@ -69,9 +153,12 @@ $$v_{s,t+h} - v_{s,t-1} = \alpha_s + \alpha_t + \beta_h \cdot B^{(k)}_{s,t} + \g
 
 where $v_{s,t}$ is the vacancy rate in percentage points ($\text{vacancies} \times 1000 / \text{labor force} \times 100$). $\beta_h < 0$ means shocks reduce vacancy slots.
 
-**Key conventions**: base year 2006 for employment shares; LOO national shock rates throughout; sample capped at 2019Q4 (COVID exclusion); horizons $h = 0, 1, \ldots, 20$ quarters.
+The rationale for each control is analogous to the unemployment LP. **$\alpha_s$** absorbs permanent differences in state vacancy rates from structural features — local housing costs affecting the job market, state-specific minimum wages affecting vacancy posting decisions, and geographic concentration of high-vacancy industries. **$\alpha_t$** absorbs the aggregate vacancy cycle: JOLTS vacancies collapsed in 2008–2009 across all states simultaneously and recovered in 2010–2014; without $\alpha_t$ this aggregate swing would spuriously inflate $\beta_h$ for all instruments. **$v_{s,t-1}$** controls for initial vacancy conditions, which matter because states with high pre-shock vacancy rates have more room to fall and tend to be in tighter labor markets where firms post more vacancies — both sources of persistence that are unrelated to the structural δ vs. s channel. **$\log \text{LF}_{s,t-1}$** controls for the same scale and compositional heterogeneity as in the unemployment equation; it also partially absorbs cross-state differences in the intensity of vacancy posting per worker that reflect structural rather than cyclical factors.
 
-## 2.4 GFC Interaction Diagnostic
+**Key conventions**: base year 2006 for employment shares; LOO national shock rates throughout; sample capped at 2019Q4 (COVID exclusion); horizons $h = 0, 1, \ldots, 20$ quarters; SE clustered at state level ($n=50$) to account for within-state serial correlation across horizons.
+
+
+## 2.5 GFC Interaction Diagnostic
 
 The raw QU (quits) instrument fails its placebo test: it generates a large, rising vacancy effect at horizons $h = 8$–$20$ — *larger* in magnitude than the δ effect — with a conspicuous 7–8 quarter delayed onset. This delay matches precisely the horizon at which 2006–2007 shock cohorts have outcomes landing in the 2008–2009 GFC trough. States with high employment shares in high-quit industries (Leisure+Hospitality, Retail) experienced both large QU Bartik values in 2006–2007 and disproportionately large vacancy declines in 2008–2009, generating a spurious correlation.
 
@@ -247,6 +334,85 @@ The joint vacancy and unemployment IRFs are plotted in `data/results/lp_irf_beve
 
 Sources: `data/results/lp_joint_delta_ld_vacancy.csv`, `data/results/lp_joint_delta_ld_unemp.csv`. Plots: `data/results/lp_joint_delta_ld_vacancy.png`, `data/results/lp_joint_delta_ld_unemp.png`.
 
+## 5.6 Recession-Severity Placebo (`part7c_recession_placebo.py`)
+
+### Motivation
+
+The baseline LP absorbs aggregate conditions in the shock quarter $t$ through time fixed effects $\alpha_t$. But time fixed effects cannot absorb a *differential* effect: if states with high Bartik instrument values systematically suffer more during bad aggregate quarters than during good ones, $\beta_h$ captures that composition-times-severity interaction rather than the structural transmission channel. This is the central remaining identification threat after the GFC interaction and SLOOS checks.
+
+The recession-severity placebo tests this directly using two continuous, quarter-by-quarter severity measures:
+
+$$y_{s,t+h} - y_{s,t-1} = \alpha_s + \alpha_t + \beta_h B^k_{s,t} + \delta^{lev}_h B^k_{s,t} \times \bar{u}^{nat}_t + \delta^{chg}_h B^k_{s,t} \times \Delta u^{nat}_t + \phi^{lev}_h \bar{u}^{nat}_t + \phi^{chg}_h \Delta u^{nat}_t + \text{controls} + \varepsilon$$
+
+where $\bar{u}^{nat}_t$ is the demeaned national unemployment rate level (primary measure, captures the *regime*: how bad aggregate conditions are) and $\Delta u^{nat}_t$ is the demeaned first difference (secondary measure, captures *momentum*: how fast conditions are deteriorating). Both are demeaned so $\beta_h$ is the IRF at average aggregate conditions. The level and change measures have in-sample correlation of roughly 0.35, so they add distinct information without collinearity problems. The national unemployment rate is preferred over NFCI because there is no model in which the structural effect of firm destruction on a state's unemployment should depend on what the national unemployment rate is doing — a significant interaction is unambiguously a composition-severity confound rather than a genuine credit channel.
+
+### Results by instrument
+
+![Severity placebo overlay — δ unemployment](data/results/placebo_sev_delta_unemp_overlay.png)
+*Figure: δ unemployment IRF. Blue solid = part5 baseline; orange dashed = severity-controlled $\beta_h$. Right panel: $\delta^{lev}_h$ (solid) and $\delta^{chg}_h$ (dashed) interactions.*
+
+**δ → unemployment.** $\beta_h$ is highly significant throughout $h = 0$–$20$ and tracks the part5 baseline almost exactly. $\delta^{lev}_h$ is positive but uniformly insignificant. $\delta^{chg}_h$ turns *negative* and significant at $h = 17$–$20$ (p = 0.028–0.077) — the opposite sign of a confound, meaning high-δ states experience *smaller* additional unemployment during periods of rapid national deterioration. The identification is clean.
+
+![Severity placebo overlay — δ vacancy](data/results/placebo_sev_delta_vac_overlay.png)
+*Figure: δ vacancy IRF vs. severity-controlled.*
+
+**δ → vacancy.** The strongest result in the paper. $\beta_h$ negative and significant throughout $h = 1$–$20$. Both $\delta^{lev}_h$ and $\delta^{chg}_h$ are completely and uniformly insignificant across all 21 horizons — not a single significant coefficient. The δ vacancy decline is invariant to both the level and the momentum of aggregate distress. This is the most direct available test of the Beveridge asymmetry mechanism and it passes decisively.
+
+**LD → unemployment.** $\beta_h$ significant throughout. $\delta^{lev}_h$ is *negative* and significant $h = 2$–$12$ — anti-confound, high-LD states have smaller additional unemployment responses when the economy is bad. $\delta^{chg}_h$ positive at $h = 0$ (momentum confound at impact) then negative and highly significant from $h = 8$ onward. The LD unemployment IRF survives the placebo.
+
+![Severity placebo overlay — LD vacancy](data/results/placebo_sev_ld_vac_overlay.png)
+*Figure: LD vacancy IRF vs. severity-controlled.*
+
+**LD → vacancy.** $\delta^{lev}_h$ is insignificant throughout. $\delta^{chg}_h$ is positive and significant at $h = 0$–$1$ (momentum confound at impact) and again at $h = 11$–$15$ (medium-horizon confound). The positive sign means high-LD states see additional vacancy declines when unemployment is rising fast — consistent with layoff-intensive industries reducing vacancy posting when economic momentum turns negative. $\beta_h$ does not collapse but is marginally significant at long horizons. The LD vacancy result has a partial momentum-based confound at short and medium horizons that limits its interpretive value. This result is reported in the appendix.
+
+**QU → unemployment and vacancy.** Neither severity measure resolves the delayed-onset anomaly or the long-horizon vacancy decline. The QU contamination is structural and survives the most demanding available placebo test.
+
+![Severity interaction summary](data/results/placebo_sev_interaction_summary.png)
+*Figure: $\delta^{lev}_h$ (solid) and $\delta^{chg}_h$ (dashed) interaction coefficients for all instrument × outcome combinations. Flat near zero = identification robust.*
+
+### Summary table
+
+| Series | Outcome | $\beta_{h^*}$ | $p$ | $\delta^{lev}$ verdict | $\delta^{chg}$ verdict | Interpretation |
+|--------|---------|---------------|-----|------------------------|------------------------|----------------|
+| δ | unemp | +1.548 | 0.000 | Insignificant | Anti-confound at $h \geq 17$ | ✅ Clean |
+| δ | vacancy | −0.444 | 0.000 | Insignificant all $h$ | Insignificant all $h$ | ✅ Cleanest result |
+| LD | unemp | +1.965 | 0.000 | Anti-confound $h = 2$–$12$ | Momentum confound $h \geq 8$ | ✅ Survives |
+| LD | vacancy | −0.438 | 0.066 | Insignificant | Momentum confound $h = 0$–$1$, $11$–$15$ | ⚠️ Partial confound |
+| QU | unemp | +1.404 | 0.000 | Mostly insignificant | Anti-confound short, fades | ❌ Structural |
+| QU | vacancy | −0.517 | 0.000 | Level confound $h = 6$–$15$ | Mostly insignificant | ❌ Structural |
+
+Sources: `data/results/placebo_sev_{delta,ld,qu}_{unemp,vac}.csv`. Plots: `data/results/placebo_sev_*_overlay.png`, `data/results/placebo_sev_interaction_summary.png`.
+
+## 5.7 The LD Vacancy Result: Interpretation and Limitations
+
+*(Reported in appendix in the paper; discussed here for completeness.)*
+
+### Why LD shocks are persistently associated with lower vacancies
+
+The LD→vacancy decline is robust to residualization, GFC controls, joint LP with δ, SLOOS, and both recession-severity interactions. It cannot be dismissed as a pure measurement artifact. The economic mechanism requires understanding what JOLTS layoffs and discharges actually measure.
+
+JOLTS LD contains a mixture of three structurally distinct events:
+
+**(a) Exogenous match dissolution** — a worker is separated from a firm whose desired employment is unchanged. The firm survives intact and reposts the vacancy at near-zero sunk cost. This is the model's $s$ shock. It predicts no vacancy decline or a brief, self-correcting one.
+
+**(b) Deliberate workforce reduction** — a firm lays off workers because it wants fewer employees, due to restructuring, automation, corporate strategy shifts, or firm-specific profitability pressures. The firm does not intend to replace the workers. No vacancy is reposted; the vacancy stock falls. These events appear in JOLTS LD but are orthogonal to industry demand conditions — they reflect firm-level idiosyncratic decisions that survive into the residualized $\nu^{LD}$.
+
+**(c) Partial establishment closure** — a plant or location is shut down without full firm exit. Workers are laid off during the closure process and vacancies at the closing unit are withdrawn. The firm as a whole survives but the establishment contributes to the LD rate while simultaneously reducing the vacancy stock. These are concentrated in Manufacturing and Construction and are structurally similar to δ events without triggering the permanent exit threshold.
+
+### Why residualization cannot fully resolve the contamination
+
+The v2 residualization projects $\log g^{LD}_{j,t}$ on lagged industry VA growth $\Delta \log \text{VA}_{j,t-1}$, lagged market tightness $\log \theta_{t-1}$, and aggregate productivity growth $\Delta \log p_t$. This removes variation in the *industry-level average* LD rate that is driven by industry demand cycles and aggregate conditions. The residual $\nu^{LD}$ is orthogonal to all of these.
+
+But cases (b) and (c) survive residualization because they operate at the **firm level**, not the industry level. A major corporate restructuring at one large manufacturer elevates the national Manufacturing LD rate in that quarter but is not predicted by lagged industry VA growth, because the industry aggregate is stable — other firms in the sector are unaffected. After residualization, this firm-level event remains in $\nu^{LD}$, and because restructuring firms simultaneously withdraw vacancy postings, the vacancy decline survives too.
+
+The one-quarter lag in the VA control compounds this: if a firm receives contemporaneous news about future demand and begins laying off preemptively while lagged industry VA was still normal, the adjustment is entirely invisible to the predetermined control. Resolving this contamination would require firm-level panel data identifying whether each JOLTS separation was accompanied by a vacancy posting at the same establishment in the subsequent quarter — data that are not publicly available at the required frequency and geography.
+
+### Implications for the paper
+
+The LD→vacancy result is assigned to the appendix for three reasons. First, the LD concept does not map cleanly onto the model's $s$ shock: JOLTS LD is a mixture of events (a), (b), and (c), whereas the model's $s$ is purely event (a). Second, the partial severity confound at short and medium horizons (momentum interaction) further limits the clean structural interpretation. Third, and most importantly, the paper's empirical contribution does not depend on the LD result: the Beveridge asymmetry is established by the δ→vacancy finding alone, which is clean across every robustness check.
+
+The aggregate separation rate in the structural model is calibrated to match the data moment $\tau = 3.1\%$ rather than separately identified from the LD IRF. The empirical LD results are informative about the heterogeneity of separation events but cannot be used to separately identify the reposting channel from data alone.
+
 ---
 
 # 6. Supporting Insights
@@ -297,17 +463,20 @@ The **δ vacancy response** is the most robust finding in the paper:
 - Stable across baseline and GFC-controlled specifications (Section 5.3)
 - Stable across separate and joint LP with LD (difference < 0.13 pp; Section 5.5)
 - Not credit-mediated (SLOOS test, Section 6.4)
+- **Both severity interactions ($\delta^{lev}_h$ and $\delta^{chg}_h$) uniformly insignificant across all 21 horizons** — the strictest available placebo test (Section 5.6)
 - Consistent direction with model mechanism
+
+The **δ unemployment response** also survives all robustness checks including the severity placebo, with the change interaction turning anti-confound (negative, significant) at long horizons.
 
 The **δ → LD co-movement** ($r = 0.424$) is also a robust finding that survives all residualization stages (v1→v2→v3) and is not explained by aggregate demand, sectoral demand, or monetary policy sensitivity.
 
 ## 7.2 What Doesn't Survive
 
-**QU placebo failure** (Section 5.3): QU generates a large vacancy response that survives GFC controls, ruling out the simplest contamination story. The failure is structural — high-quit industries have inherently different long-run vacancy dynamics — and QU cannot serve as a clean reposting placebo. This limits the ability to identify the structural reposting channel from the data.
+**QU placebo failure** (Sections 5.3, 5.6): QU generates large vacancy and unemployment responses that survive GFC controls, SLOOS, and both recession-severity interactions. The contamination is structural — high-quit industries have inherently different long-run vacancy dynamics — and QU cannot serve as a clean reposting placebo.
 
-**LD identification**: LD vacancy results are non-monotone and collapse under joint estimation with δ. The $r(\nu^\delta, \nu^{LD}) = 0.424$ correlation means these instruments do not provide separate identification of the two channels. The project cannot cleanly decompose total separation effects into the reposting vs. non-reposting components using these instruments alone.
+**LD identification** (Sections 5.5, 5.7): LD vacancy results have a partial momentum-based confound at short and medium horizons. The deeper issue is that JOLTS LD mixes exogenous match dissolution (model's $s$) with deliberate workforce reductions and partial establishment closures, and industry-level residualization cannot remove the within-industry firm-level component. LD is moved to the appendix; the aggregate separation rate is calibrated as a moment rather than identified from the IRF.
 
-**n = 50 cluster problem**: Standard asymptotic cluster-robust inference with 50 state clusters is at the lower bound of reliability. The wild cluster bootstrap (`wildboottest`, Priority 2) has not yet been implemented. IRF bands may be too narrow at long horizons.
+**n = 50 cluster problem**: Standard asymptotic cluster-robust inference with 50 state clusters is at the lower bound of reliability. The wild cluster bootstrap (`wildboottest`, Priority 1) has not yet been implemented. IRF bands may be too narrow at long horizons.
 
 ## 7.3 Remaining Threats
 
@@ -324,9 +493,8 @@ The **δ → LD co-movement** ($r = 0.424$) is also a robust finding that surviv
 In priority order:
 
 1. **Wild cluster bootstrap** for all baseline LPs to validate inference with $n = 50$ clusters.
-2. **Recession-severity placebo**: control for $B \times \text{NFCI}_t$, $B \times \Delta u^{\text{nat}}_t$, and both simultaneously, to check whether δ effects are recession-severity-driven.
-3. **GFC diagnostic for LD unemployment**: apply the $\text{GFC}_{t+h}$ outcome-quarter control to the LD→unemployment equation to test whether the monotonically rising path is GFC-contaminated.
-4. **Pre-2001 sample check**: with Chow-Lin extended VA available back to 1992, explore whether using BED data pre-2001 (with estimated JOLTS coverage) changes instrument correlation structure.
+2. **GFC diagnostic for LD unemployment**: apply the $\text{GFC}_{t+h}$ outcome-quarter control to the LD→unemployment equation to test whether the monotonically rising path is GFC-contaminated.
+3. **Sample extension robustness**: compare δ unemployment IRF on 1997Q1+ vs. 2001Q1+ samples (implemented in part5, plot at `data/results/lp_irf_delta_sample_extension.png`).
 
 ---
 
@@ -351,12 +519,47 @@ The full estimation pipeline runs in the following order from `Data/Bartek analy
 | 6 | `part6_shock_persistence.py` | AR(1) estimation of shock persistence; calibration targets | ✅ | `data/results/shock_persistence.csv` |
 | 7a | `part7_nfci.py` | Chicago Fed NFCI → quarterly, headline + risk subindex | ✅ | `data/cache/nfci_quarterly.parquet` |
 | 7b | `part7b_sloos.py` | SLOOS C&I net tightening × δ interaction LP | ✅ | `lp_irf_delta_sloos_lm_{unemp,vacancy}.csv` + comparison plots |
+| 7c | `part7c_recession_placebo.py` | Recession-severity placebo: dual interaction with $u^{nat}_t$ (level) and $\Delta u^{nat}_t$ (change) for δ, LD, QU × unemployment and vacancy | ✅ | `placebo_sev_{delta,ld,qu}_{unemp,vac}.csv` + overlay plots |
 
 **Pending scripts (not yet written):**
 
 | Step | Planned Script | Function |
 |------|---------------|---------|
 | P1 | `part5_wcrb.py` | Wild cluster bootstrap for baseline LPs |
-| P2 | `part7c_recession_placebo.py` | Recession-severity placebo: B×NFCI, B×Δu_nat |
+| P2 | `part7d_ld_gfc.py` | GFC outcome-quarter control for LD→unemployment equation |
 
 All data fetching, instrument construction, and regression are strictly separated across scripts. Delete `.parquet` cache files under `data/cache/` to force re-download from BLS/FRED APIs.
+
+---
+
+# References
+
+Adão, Rodrigo, Michal Kolesár, and Eduardo Morales. 2019. "Shift-Share Designs: Theory and Inference." *Quarterly Journal of Economics* 134 (4): 1949–2010.
+
+Bartik, Timothy J. 1991. *Who Benefits from State and Local Economic Development Policies?* Kalamazoo, MI: W.E. Upjohn Institute for Employment Research.
+
+Bilbiie, Florin O., Fabio Ghironi, and Marc J. Melitz. 2012. "Endogenous Entry, Product Variety, and Business Cycles." *Journal of Political Economy* 120 (2): 304–345.
+
+BLS Business Employment Dynamics Technical Note. Various issues. U.S. Bureau of Labor Statistics. https://www.bls.gov/news.release/cewbd.tn.htm.
+
+Chow, Gregory C., and An-loh Lin. 1971. "Best Linear Unbiased Interpolation, Distribution, and Extrapolation of Time Series by Related Series." *Review of Economics and Statistics* 53 (4): 372–375.
+
+Coles, Melvyn G., and Ali Kelishomi. 2018. "Do Job Destruction Shocks Matter in the Theory of Unemployment?" *American Economic Journal: Macroeconomics* 10 (3): 118–136.
+
+Crane, Leland D., Ryan A. Decker, Aaron Flaaen, Adrian Hamins-Puertolas, and Christopher Kurz. 2022. "Business Exit during the COVID-19 Pandemic: Non-Traditional Measures in Historical Context." *Journal of Macroeconomics* 72: 103419.
+
+Davis, Steven J., and John Haltiwanger. 1992. "Gross Job Creation, Gross Job Destruction, and Employment Reallocation." *Quarterly Journal of Economics* 107 (3): 819–863.
+
+Davis, Steven J., John C. Haltiwanger, and Scott Schuh. 1996. *Job Creation and Destruction*. Cambridge, MA: MIT Press.
+
+Figura, Andrew. 2002. "Is Reallocation Related to the Cycle? A Look at Permanent and Temporary Job Flows." Finance and Economics Discussion Series 2002-16. Board of Governors of the Federal Reserve System.
+
+Gabrovski, Miroslav, and Victor Ortego-Marti. 2025. "Search and Matching with Endogenous Labor Supply." Working Paper.
+
+Goldsmith-Pinkham, Paul, Isaac Sorkin, and Henry Swift. 2020. "Bartik Instruments: What, When, Why, and How." *American Economic Review* 110 (8): 2586–2624.
+
+Jarmin, Ron S., and Javier Miranda. 2002. "The Longitudinal Business Database." CES Discussion Paper CES-WP-02-17. U.S. Census Bureau Center for Economic Studies.
+
+Jordà, Òscar. 2005. "Estimation and Inference of Impulse Responses by Local Projections." *American Economic Review* 95 (1): 161–182.
+
+Wu, Jing Cynthia, and Fan Dora Xia. 2016. "Measuring the Macroeconomic Impact of Monetary Policy at the Zero Lower Bound." *Journal of Money, Credit and Banking* 48 (2–3): 253–291.
