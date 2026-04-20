@@ -142,8 +142,43 @@ RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
 SAMPLE_START = "2001Q1"
-SAMPLE_END   = "2019Q4"
+SAMPLE_END   = "2019Q4"   # excludes COVID — see documentation below
 PREGFC_END   = "2007Q3"
+
+# GFC episode window only — COVID excluded (see WHY NOT COVID below)
+GFC_START    = "2008Q3"
+GFC_END      = "2009Q4"
+
+# WHY THE SAMPLE ENDS AT 2019Q4 — COVID MEASUREMENT BREAKDOWN
+# ─────────────────────────────────────────────────────────────
+# The Shimer (2007) separation rate formula requires:
+#   s_t = u^s_{t+1} * f_t / (e_t * (1 - exp(-f_t)))
+# where u^s_{t+1} = CPS short-term unemployed (< 5 weeks).
+#
+# During 2020Q1–2021Q4 this formula breaks down due to a well-documented
+# CPS classification error. BLS survey interviewers classified millions of
+# temporarily laid-off workers as "employed but absent from work" rather
+# than unemployed (Bick and Blandin 2020; Abraham and Kearney 2020).
+# This caused:
+#   (1) u_total to be severely understated — the denominator of f_t
+#       collapses, causing f_t to be mechanically mis-estimated
+#   (2) u^s_{t+1} to be understated — reducing the numerator of s_t
+#   (3) Paradoxical result: in 2020Q2, when g_delta spiked to 2.4%
+#       (vs normal 1.1%) and g_LD spiked to 9.7% (vs normal 4%),
+#       s_nat *fell* from 15.3% to 9.4% — the opposite of economics.
+#
+# The COVID interactions in a full-sample regression absorb this
+# measurement artifact rather than identifying structural economics.
+# Including them adds noise to the normal-times β estimates without
+# adding interpretable information. The correct treatment is sample
+# exclusion, not dummy-variable correction, because the misclassification
+# is correlated with both g_LD (which spiked) and g_delta (which spiked)
+# in a way that the interaction terms cannot cleanly separate from
+# genuine structural amplification.
+#
+# The BED parquet extends to 2024Q2, and JOLTS/CPS extend further, so
+# the data *exists* — the exclusion is a methodological choice, not a
+# data constraint.
 
 SHIMER_CACHE = CACHE_DIR / "shimer_national_monthly.parquet"
 LD_CACHE     = CACHE_DIR / "jolts_ld_national_monthly.parquet"
@@ -448,200 +483,482 @@ def run_regression(panel: pd.DataFrame,
                    sample_start: str, sample_end: str,
                    label: str) -> None:
     """
-    Regress s^nat on g^LD and g^δ, separately and jointly.
-    Run under two transformations: demeaned levels and first differences.
-    Use Newey-West HAC standard errors (NW_LAGS quarters).
+    Regress s^nat on g^LD and g^delta with GFC episode dummy and interactions.
 
-    Reports:
-      - β^LD, β^δ (separate and joint regressions)
-      - R² for each specification
-      - Coefficient ratio β^LD / β^δ (joint regression)
-      - F-test of joint significance
-      - Implied share of s^nat variation attributable to each channel
+    Specification (primary — spec C)
+    ---------------------------------
+    s^nat_t = alpha
+              + beta^LD  g^LD_t + beta^delta g^delta_t  <- normal-times
+              + gamma  D^GFC_t                          <- GFC level shift
+              + delta^LD  g^LD_t x D^GFC_t              <- GFC amplification
+              + delta^delta  g^delta_t x D^GFC_t
+              + eps_t
 
-    The regression s^nat_t = α + β^LD g^LD_t + β^δ g^δ_t + ε
-    gives partial coefficients: how much does s^nat respond to each
-    channel holding the other constant — the cleanest diagnostic.
+    All continuous variables demeaned. beta^LD and beta^delta identify
+    the structural relationship in non-GFC quarters at average conditions.
+
+    GFC window: GFC_START - GFC_END (NBER peak-trough). n=6 quarters.
+
+    Why only GFC, not COVID
+    -----------------------
+    The COVID period (2020Q1-2021Q4) is excluded from the sample entirely
+    because the Shimer formula breaks down due to CPS misclassification:
+    millions of temporarily laid-off workers were coded as "employed but
+    absent," causing s_nat to fall in 2020Q2 precisely when g_delta and
+    g_LD spiked (see SAMPLE_END documentation in constants block above).
+    Dummy-variable correction cannot separate this measurement artifact
+    from genuine structural amplification because both are correlated with
+    the same episode indicators.
+
+    Reports three nested specifications for stability assessment:
+      [A] Baseline — no episode controls
+      [B] GFC level dummy only
+      [C] GFC dummy + interactions (primary)
+
+    Newey-West HAC standard errors, lag = NW_LAGS quarters.
     """
-    sub = panel[(panel["quarter_label"] >= sample_start) &
-                (panel["quarter_label"] <= sample_end)].dropna(
-                subset=["s_nat", "g_ld_nat", "g_delta_nat"]).copy()
+    sub = (panel[(panel["quarter_label"] >= sample_start) &
+                 (panel["quarter_label"] <= sample_end)]
+           .dropna(subset=["s_nat", "g_ld_nat", "g_delta_nat"])
+           .copy()
+           .reset_index(drop=True))
 
-    print(f"\n{'─'*65}")
-    print(f"REGRESSION RESULTS — {label}  (n={len(sub)})")
-    print(f"{'─'*65}")
-    print(f"{'Spec':<30} {'β^LD':>8} {'(SE)':>7} {'β^δ':>8} {'(SE)':>7}"
-          f"  {'R²':>5}  {'β^LD/β^δ':>9}")
-    print(f"{'─'*65}")
+    sub["d_gfc"] = ((sub["quarter_label"] >= GFC_START) &
+                    (sub["quarter_label"] <= GFC_END)).astype(float)
+    n_gfc  = int(sub["d_gfc"].sum())
+    n_norm = len(sub) - n_gfc
 
-    for transform, tlabel in [
-        ("demean",  "Demeaned levels"),
-        ("fdiff",   "First differences"),
-    ]:
-        s  = sub["s_nat"].copy()
-        gl = sub["g_ld_nat"].copy()
-        gd = sub["g_delta_nat"].copy()
+    s  = sub["s_nat"]       - sub["s_nat"].mean()
+    gl = sub["g_ld_nat"]    - sub["g_ld_nat"].mean()
+    gd = sub["g_delta_nat"] - sub["g_delta_nat"].mean()
+    gl_gfc = gl * sub["d_gfc"]
+    gd_gfc = gd * sub["d_gfc"]
 
-        if transform == "demean":
-            s  = s  - s.mean()
-            gl = gl - gl.mean()
-            gd = gd - gd.mean()
-        else:
-            s  = s.diff().dropna()
-            gl = gl.reindex(s.index).diff().dropna()
-            gd = gd.reindex(s.index).diff().dropna()
-            idx = s.index.intersection(gl.index).intersection(gd.index)
-            s, gl, gd = s[idx], gl[idx], gd[idx]
+    def _nw_ols(y, X_df):
+        X = sm.add_constant(X_df, has_constant="add")
+        return sm.OLS(y.values, X.values).fit(
+            cov_type="HAC",
+            cov_kwds={"maxlags": NW_LAGS, "use_correction": True}
+        )
 
-        n = len(s)
+    def star(p):
+        return "***" if p < .01 else "**" if p < .05 else "*" if p < .10 else ""
 
-        def _nw_ols(y, X_df):
-            X = sm.add_constant(X_df, has_constant="add")
-            m = sm.OLS(y.values, X.values).fit(
-                cov_type="HAC",
-                cov_kwds={"maxlags": NW_LAGS, "use_correction": True}
-            )
-            return m
+    print(f"\n{chr(0x2550)*68}")
+    print(f"REGRESSION — {label}")
+    print(f"  n={len(sub)}  normal={n_norm}  GFC={n_gfc}"
+          f"  |  GFC window: {GFC_START}-{GFC_END}")
+    print(f"  NW HAC SEs lag={NW_LAGS}")
+    print(chr(0x2550)*68)
 
-        # Separate: s on g^LD only
-        m_ld = _nw_ols(s, gl.rename("g_ld"))
-        b_ld_sep = m_ld.params[1];  se_ld_sep = m_ld.bse[1]
-        r2_ld    = m_ld.rsquared
+    # [A] Baseline
+    m_a = _nw_ols(s, pd.DataFrame({"g_ld": gl, "g_d": gd}))
+    b_ld_a = m_a.params[1]; b_d_a = m_a.params[2]
+    ratio_a = b_ld_a / b_d_a if abs(b_d_a) > 1e-8 else float("nan")
+    print(f"\n  [A] Baseline — no episode controls  R2={m_a.rsquared:.3f}")
+    print(f"    {'beta^LD':<28} {b_ld_a:>9.4f}  ({m_a.bse[1]:.4f})"
+          f"  p={m_a.pvalues[1]:.3f}{star(m_a.pvalues[1])}")
+    print(f"    {'beta^delta':<28} {b_d_a:>9.4f}  ({m_a.bse[2]:.4f})"
+          f"  p={m_a.pvalues[2]:.3f}{star(m_a.pvalues[2])}")
+    print(f"    beta^LD/beta^delta = {ratio_a:.2f}")
 
-        # Separate: s on g^δ only
-        m_d = _nw_ols(s, gd.rename("g_d"))
-        b_d_sep = m_d.params[1];  se_d_sep = m_d.bse[1]
-        r2_d    = m_d.rsquared
+    # [B] GFC level dummy only
+    m_b = _nw_ols(s, pd.DataFrame(
+        {"g_ld": gl, "g_d": gd, "d_gfc": sub["d_gfc"]}))
+    b_ld_b = m_b.params[1]; b_d_b = m_b.params[2]
+    ratio_b = b_ld_b / b_d_b if abs(b_d_b) > 1e-8 else float("nan")
+    print(f"\n  [B] GFC level dummy only  R2={m_b.rsquared:.3f}")
+    print(f"    {'beta^LD':<28} {b_ld_b:>9.4f}  ({m_b.bse[1]:.4f})"
+          f"  p={m_b.pvalues[1]:.3f}{star(m_b.pvalues[1])}")
+    print(f"    {'beta^delta':<28} {b_d_b:>9.4f}  ({m_b.bse[2]:.4f})"
+          f"  p={m_b.pvalues[2]:.3f}{star(m_b.pvalues[2])}")
+    print(f"    {'gamma(GFC level)':<28} {m_b.params[3]:>9.4f}  ({m_b.bse[3]:.4f})"
+          f"  p={m_b.pvalues[3]:.3f}{star(m_b.pvalues[3])}")
+    print(f"    beta^LD/beta^delta = {ratio_b:.2f}")
 
-        # Joint: s on g^LD and g^δ
-        m_joint = _nw_ols(s, pd.DataFrame({"g_ld": gl, "g_d": gd}))
-        b_ld_j  = m_joint.params[1];  se_ld_j = m_joint.bse[1]
-        b_d_j   = m_joint.params[2];  se_d_j  = m_joint.bse[2]
-        r2_j    = m_joint.rsquared
-        ratio   = b_ld_j / b_d_j if abs(b_d_j) > 1e-8 else float("nan")
+    # [C] GFC dummy + interactions (primary)
+    m_c = _nw_ols(s, pd.DataFrame({
+        "g_ld": gl, "g_d": gd, "d_gfc": sub["d_gfc"],
+        "gl_x_gfc": gl_gfc, "gd_x_gfc": gd_gfc,
+    }))
+    b_ld_c = m_c.params[1]; b_d_c = m_c.params[2]
+    ratio_c = b_ld_c / b_d_c if abs(b_d_c) > 1e-8 else float("nan")
+    var_s  = np.var(s.values)
+    sh_ld  = b_ld_c * np.cov(gl.values, s.values)[0, 1] / var_s
+    sh_d   = b_d_c  * np.cov(gd.values, s.values)[0, 1] / var_s
+    sh_res = 1.0 - sh_ld - sh_d
 
-        print(f"\n  [{tlabel}]  n={n}")
-        print(f"  {'s ~ g^LD (sep.)':<28} {b_ld_sep:>8.4f} ({se_ld_sep:.4f})"
-              f"           {'':>8}          R²={r2_ld:.3f}")
-        print(f"  {'s ~ g^δ (sep.)':<28}           {'':>8}  "
-              f"{b_d_sep:>8.4f} ({se_d_sep:.4f})  R²={r2_d:.3f}")
-        print(f"  {'s ~ g^LD + g^δ (joint)':<28} {b_ld_j:>8.4f} ({se_ld_j:.4f})"
-              f"  {b_d_j:>8.4f} ({se_d_j:.4f})  R²={r2_j:.3f}  "
-              f"ratio={ratio:.2f}")
-
-        # Significance stars on joint
-        def star(p): return "***" if p<.01 else "**" if p<.05 else "*" if p<.10 else ""
-        p_ld = m_joint.pvalues[1];  p_d = m_joint.pvalues[2]
-        print(f"  {'p-values (joint)':<28} {p_ld:>8.3f}{star(p_ld):<3}       "
-              f"  {p_d:>8.3f}{star(p_d):<3}")
-
-        # Share of s^nat variation attributable to each channel (OLS decomp)
-        var_s   = np.var(s.values)
-        cov_ld  = b_ld_j * np.cov(gl.values, s.values)[0, 1]
-        cov_d   = b_d_j  * np.cov(gd.values, s.values)[0, 1]
-        sh_ld   = cov_ld / var_s if var_s > 0 else float("nan")
-        sh_d    = cov_d  / var_s if var_s > 0 else float("nan")
-        sh_res  = 1.0 - sh_ld - sh_d
-        print(f"  Variance decomposition (joint): "
-              f"g^LD={sh_ld:.2%}  g^δ={sh_d:.2%}  residual={sh_res:.2%}")
-
+    print(f"\n  [C] GFC dummy + interactions (primary)  R2={m_c.rsquared:.3f}")
+    print(f"    {chr(0x2500)*52}")
+    print(f"    Normal-times coefficients:")
+    print(f"    {'beta^LD':<28} {b_ld_c:>9.4f}  ({m_c.bse[1]:.4f})"
+          f"  p={m_c.pvalues[1]:.3f}{star(m_c.pvalues[1])}")
+    print(f"    {'beta^delta':<28} {b_d_c:>9.4f}  ({m_c.bse[2]:.4f})"
+          f"  p={m_c.pvalues[2]:.3f}{star(m_c.pvalues[2])}")
+    print(f"    beta^LD/beta^delta = {ratio_c:.2f}")
+    print(f"    {chr(0x2500)*52}")
+    print(f"    GFC controls:")
+    print(f"    {'gamma(GFC level)':<28} {m_c.params[3]:>9.4f}  ({m_c.bse[3]:.4f})"
+          f"  p={m_c.pvalues[3]:.3f}{star(m_c.pvalues[3])}")
+    print(f"    {'delta^LD (g^LD x GFC)':<28} {m_c.params[4]:>9.4f}  ({m_c.bse[4]:.4f})"
+          f"  p={m_c.pvalues[4]:.3f}{star(m_c.pvalues[4])}")
+    print(f"    {'delta^d  (g^d x GFC)':<28} {m_c.params[5]:>9.4f}  ({m_c.bse[5]:.4f})"
+          f"  p={m_c.pvalues[5]:.3f}{star(m_c.pvalues[5])}")
+    print(f"    {chr(0x2500)*52}")
+    print(f"    Variance decomp (approximate, normal-times cov):")
+    print(f"    g^LD={sh_ld:.1%}  g^delta={sh_d:.1%}  residual={sh_res:.1%}")
+    print(f"    {chr(0x2500)*52}")
+    print(f"    Coefficient stability A to C:")
+    print(f"    beta^LD:    {b_ld_a:.4f} -> {b_ld_b:.4f} -> {b_ld_c:.4f}"
+          f"  (delta from baseline: {b_ld_c - b_ld_a:+.4f})")
+    print(f"    beta^delta: {b_d_a:.4f} -> {b_d_b:.4f} -> {b_d_c:.4f}"
+          f"  (delta from baseline: {b_d_c - b_d_a:+.4f})")
+    stable_ld = "STABLE" if abs(b_ld_c - b_ld_a) < 0.3 else "SENSITIVE"
+    stable_d  = "STABLE" if abs(b_d_c  - b_d_a)  < 0.5 else "SENSITIVE"
+    print(f"    Stability: {stable_ld} for beta^LD, {stable_d} for beta^delta")
     print()
 
 
-# =============================================================================
 # 5. Correlation table (secondary)
 # =============================================================================
 def correlation_table(panel: pd.DataFrame,
                       sample_start: str, sample_end: str,
                       label: str) -> pd.DataFrame:
     """
-    Pairwise correlations under demeaned levels and first differences.
-    Secondary to the regression — included for conventional reporting.
+    Pairwise correlations, demeaned levels only.
+    First differences excluded — see run_regression docstring.
     """
     sub = panel[(panel["quarter_label"] >= sample_start) &
                 (panel["quarter_label"] <= sample_end)].dropna(
                 subset=["s_nat", "g_ld_nat", "g_delta_nat"]).copy()
-    rows = []
-    for transform, tlabel in [
-        ("demean",  "Demeaned levels"),
-        ("fdiff",   "First differences"),
-    ]:
-        s  = sub["s_nat"].copy()
-        gl = sub["g_ld_nat"].copy()
-        gd = sub["g_delta_nat"].copy()
-        if transform == "demean":
-            s -= s.mean(); gl -= gl.mean(); gd -= gd.mean()
+    s  = sub["s_nat"]      - sub["s_nat"].mean()
+    gl = sub["g_ld_nat"]   - sub["g_ld_nat"].mean()
+    gd = sub["g_delta_nat"]- sub["g_delta_nat"].mean()
+    return pd.DataFrame([{
+        "sample":      label,
+        "transform":   "Demeaned levels",
+        "r(s,g_LD)":   round(s.corr(gl), 3),
+        "r(s,g_δ)":    round(s.corr(gd), 3),
+        "r(g_LD,g_δ)": round(gl.corr(gd), 3),
+        "n":           len(s),
+    }])
+
+
+# =============================================================================
+# Filter utilities (HP and Hamilton) + comparison regression
+# =============================================================================
+def apply_hp_filter(series: pd.Series, lam: float = 1600) -> pd.Series:
+    """
+    HP filter — extract cyclical component.
+
+    Applied to the FULL available series (not just the estimation window)
+    so that the estimation window 2001Q1–2019Q4 sits well inside the
+    filter's reliable interior, minimising endpoint bias.
+
+    Buffer assessment:
+      s_nat    : 1948Q1–2026Q1 — enormous buffer on both sides
+      g_ld_nat : 2000Q4–2026Q1 — 25Q post-sample buffer after 2019Q4  ✓
+      g_delta  : 1992Q3–2021Q4 — 8Q post-sample buffer after 2019Q4
+                 Borderline but acceptable (HP distortion zone ≈ 5–6Q)
+
+    Data loss within estimation window: ZERO for all three series.
+
+    λ=1600: standard choice for quarterly business cycle analysis.
+    Shimer (2007) uses HP throughout for comparability.
+    """
+    from statsmodels.tsa.filters.hp_filter import hpfilter
+    vals = series.dropna()
+    cycle, _ = hpfilter(vals, lamb=lam)
+    return pd.Series(cycle.values, index=vals.index, name=series.name)
+
+
+def apply_hamilton_filter(series: pd.Series,
+                          h: int = 4, p: int = 4) -> pd.Series:
+    """
+    Hamilton (2018) filter — project y_t onto y_{t-h}, …, y_{t-h-p+1}.
+    Cyclical component = OLS residual.
+
+    Why h=4 rather than the canonical h=8:
+      The JOLTS series (g_ld_nat) starts 2000Q4. Hamilton h=8 requires
+      t-h through t-h-p+1 = t-11, so the first filtered quarter would be
+      2000Q4 + 11Q = 2003Q3, losing 2001Q1–2002Q2 (10 quarters = 13%
+      of the estimation sample). Unacceptable.
+
+      h=4 needs t-4 through t-7 (7 lags), so the first filtered quarter
+      is 2000Q4 + 7Q = 2002Q3. This loses only 2001Q1–2002Q2 (6 quarters)
+      from g_ld_nat. The other two series have long pre-samples and lose
+      nothing within the estimation window.
+
+      h=4 targets cycles of at least 4 quarters (1 year), which still
+      removes the secular trend while retaining business cycle variation.
+
+    Advantages over HP:
+      - No endpoint bias by construction (residual at t uses only past data)
+      - No spurious cycles (Hamilton 2018 critique of HP)
+      - Stationary residuals by construction
+
+    Reference: Hamilton, J.D. (2018). "Why You Should Never Use the
+    Hodrick-Prescott Filter." Review of Economics and Statistics,
+    100(5), 831–843.
+    """
+    vals = series.dropna().copy()
+    df_h = pd.DataFrame({"y": vals})
+    for i in range(p):
+        df_h[f"y_lag{h+i}"] = df_h["y"].shift(h + i)
+    df_h = df_h.dropna()
+    X = sm.add_constant(df_h[[f"y_lag{h+i}" for i in range(p)]])
+    resid = sm.OLS(df_h["y"], X).fit().resid
+    return pd.Series(resid.values, index=df_h.index, name=series.name)
+
+
+def filter_panel(panel: pd.DataFrame, method: str,
+                 lam: float = 1600,
+                 h: int = 4, p: int = 4) -> pd.DataFrame:
+    """
+    Apply trend filter to all three series using the FULL available data
+    (entire panel, not just the estimation window) to maximise pre/post
+    sample buffers and minimise endpoint or initialisation bias.
+
+    Returns a copy of the panel with filtered (cyclical) series replacing
+    the originals. The estimation window restriction (SAMPLE_START–
+    SAMPLE_END) is applied in run_regression as usual.
+
+    Data loss summary:
+      HP     : zero data loss for all three series ✓
+      Hamilton: zero loss for s_nat and g_delta; g_ld_nat loses
+               2001Q1–2002Q2 (6 quarters) due to JOLTS start date.
+    """
+    if method not in ("hp", "hamilton"):
+        raise ValueError(f"method must be 'hp' or 'hamilton', got {method!r}")
+
+    filtered = panel.copy()
+    tag = (f"HP λ={lam}" if method == "hp"
+           else f"Hamilton h={h} p={p}")
+    losses = {}
+
+    for col in ["s_nat", "g_ld_nat", "g_delta_nat"]:
+        full_series = (panel.set_index("quarter_label")[col]
+                            .dropna()
+                            .sort_index())
+        if method == "hp":
+            cyc = apply_hp_filter(full_series, lam=lam)
         else:
-            s = s.diff().dropna()
-            gl = gl.reindex(s.index).diff().dropna()
-            gd = gd.reindex(s.index).diff().dropna()
-            idx = s.index.intersection(gl.index).intersection(gd.index)
-            s, gl, gd = s[idx], gl[idx], gd[idx]
+            cyc = apply_hamilton_filter(full_series, h=h, p=p)
+
+        # Track data loss within estimation window
+        est_index = [q for q in full_series.index
+                     if SAMPLE_START <= q <= SAMPLE_END]
+        filtered_est = [q for q in cyc.index
+                        if SAMPLE_START <= q <= SAMPLE_END]
+        lost = len(est_index) - len(filtered_est)
+        losses[col] = lost
+
+        cyc_df = cyc.reset_index()
+        cyc_df.columns = ["quarter_label", col]
+        filtered = (filtered.drop(columns=[col])
+                             .merge(cyc_df, on="quarter_label", how="left"))
+
+    print(f"\n  Filter: {tag}")
+    for col, lost in losses.items():
+        status = "✓" if lost == 0 else f"⚠  {lost} quarters lost"
+        print(f"    {col:<16}: {status}")
+    return filtered
+
+
+# =============================================================================
+# F2. Run filtered regressions — full comparison table
+# =============================================================================
+def run_filtered_comparison(panel: pd.DataFrame) -> None:
+    """
+    Run and print regressions under three specifications side by side:
+      (1) Demeaned levels with GFC dummy + interactions  [existing]
+      (2) HP filter λ=1600                               [new]
+      (3) Hamilton filter h=4, p=4                       [new]
+
+    For the filtered specs the GFC dummy/interactions are retained.
+    Even in cyclically-filtered data the GFC episode is an outlier —
+    the cyclical component of g_delta spiked sharply in 2008–2009 —
+    and omitting the controls would push the interaction variation
+    into β^δ as in spec A of the demeaned regression.
+
+    The run_regression() function demeans continuous variables before
+    estimation. For filtered series this demean is nearly a no-op
+    (HP and Hamilton residuals have mean ≈ 0 by construction) but
+    is harmless and ensures a consistent intercept interpretation.
+    """
+    print("\n" + "=" * 68)
+    print("FILTERED REGRESSION COMPARISON — Full sample 2001Q1–2019Q4")
+    print("=" * 68)
+    print("Purpose: assess sensitivity of normal-times β^LD and β^δ to")
+    print("trend-removal method.")
+    print()
+    print("Spec [C] (GFC dummy + interactions) reported for each filter.")
+    print()
+
+    specs = [
+        ("Demeaned levels\n(GFC dummy + interactions)",
+         panel, None),
+        (f"HP filter λ=1600\n(GFC dummy + interactions)",
+         filter_panel(panel, "hp", lam=1600), "hp"),
+        (f"Hamilton h=4 p=4\n(GFC dummy + interactions)",
+         filter_panel(panel, "hamilton", h=4, p=4), "hamilton"),
+    ]
+
+    # Collect spec-C results for comparison table
+    rows = []
+    for label, pnl, ftype in specs:
+        sub = (pnl[(pnl["quarter_label"] >= SAMPLE_START) &
+                   (pnl["quarter_label"] <= SAMPLE_END)]
+               .dropna(subset=["s_nat", "g_ld_nat", "g_delta_nat"])
+               .copy()
+               .reset_index(drop=True))
+
+        sub["d_gfc"] = ((sub["quarter_label"] >= GFC_START) &
+                        (sub["quarter_label"] <= GFC_END)).astype(float)
+
+        s  = sub["s_nat"]       - sub["s_nat"].mean()
+        gl = sub["g_ld_nat"]    - sub["g_ld_nat"].mean()
+        gd = sub["g_delta_nat"] - sub["g_delta_nat"].mean()
+
+        X = sm.add_constant(pd.DataFrame({
+            "g_ld":     gl,
+            "g_d":      gd,
+            "d_gfc":    sub["d_gfc"],
+            "gl_x_gfc": gl * sub["d_gfc"],
+            "gd_x_gfc": gd * sub["d_gfc"],
+        }))
+        m = sm.OLS(s.values, X.values).fit(
+            cov_type="HAC",
+            cov_kwds={"maxlags": NW_LAGS, "use_correction": True}
+        )
+
+        def star(p):
+            return "***" if p<.01 else "**" if p<.05 else "*" if p<.10 else ""
+
+        b_ld = m.params[1]; p_ld = m.pvalues[1]
+        b_d  = m.params[2]; p_d  = m.pvalues[2]
+        ratio = b_ld / b_d if abs(b_d) > 1e-8 else float("nan")
         rows.append({
-            "sample": label, "transform": tlabel,
-            "r(s,g_LD)":  round(s.corr(gl), 3),
-            "r(s,g_δ)":   round(s.corr(gd), 3),
-            "r(g_LD,g_δ)": round(gl.corr(gd), 3),
-            "n": len(s),
+            "label":   label.split("\n")[0],
+            "n":       int(m.nobs),
+            "β^LD":    b_ld,
+            "p_LD":    p_ld,
+            "s_LD":    star(p_ld),
+            "β^δ":     b_d,
+            "p_δ":     p_d,
+            "s_δ":     star(p_d),
+            "ratio":   ratio,
+            "R²":      m.rsquared,
         })
-    return pd.DataFrame(rows)
+
+    # Print comparison table
+    print(f"  {'Specification':<22}  {'n':>4}  {'β^LD':>8}  {'p':>6}  "
+          f"{'β^δ':>8}  {'p':>6}  {'ratio':>6}  {'R²':>5}")
+    print(f"  {'─'*72}")
+    for r in rows:
+        print(f"  {r['label']:<22}  {r['n']:>4}  {r['β^LD']:>8.4f}  "
+              f"{r['p_LD']:>6.3f}{r['s_LD']:<3}  {r['β^δ']:>8.4f}  "
+              f"{r['p_δ']:>6.3f}{r['s_δ']:<3}  {r['ratio']:>6.2f}  "
+              f"{r['R²']:>5.3f}")
+    print()
+    print("  Interpretation:")
+    print("  Stable β^LD across rows → LD-channel loading is not a trend artifact")
+    print("  Stable β^δ across rows → δ-channel loading robust to detrending")
+    print("  Ratio >> 1 across all rows → s^nat primarily tracks LD in normal times")
 
 
 # =============================================================================
 # 6. Plots
 # =============================================================================
 def plot_comparison(panel: pd.DataFrame, out_path: Path) -> None:
+    """
+    Three-panel figure using raw quarterly rates (no z-scoring):
+      Left   : time series of all three series in levels.
+                s_nat and g_ld_nat share the left y-axis (both ~0–12%).
+                g_delta_nat uses the right y-axis (smaller range, ~0–2%).
+      Middle : scatter s_nat vs g_ld_nat (demeaned), with regression line.
+      Right  : scatter s_nat vs g_delta_nat (demeaned), with regression line.
+
+    Using raw rates rather than z-scores preserves the economically
+    meaningful level information: s_nat ≈ 7%, g_ld ≈ 4%, g_delta ≈ 1%,
+    and their differences reflect real structural distinctions between
+    E→U hazards, layoff rates, and firm destruction rates.
+    """
     plt.ioff()
     sub = panel[(panel["quarter_label"] >= SAMPLE_START) &
-                (panel["quarter_label"] <= SAMPLE_END)].copy()
+                (panel["quarter_label"] <= SAMPLE_END)].copy().reset_index(drop=True)
 
-    def zs(x): return (x - x.mean()) / x.std()
-    sub = sub.copy()
-    sub["s_z"]  = zs(sub["s_nat"])
-    sub["ld_z"] = zs(sub["g_ld_nat"])
-    sub["d_z"]  = zs(sub["g_delta_nat"])
+    pct = lambda x: x * 100   # decimal fraction → percent for y-axis labels
 
     fig, axes = plt.subplots(1, 3, figsize=(16, 5))
 
-    # Time series
-    ax = axes[0]
+    # ── Left: time series overlay ──────────────────────────────────────────
+    ax  = axes[0]
+    ax2 = ax.twinx()   # right axis for g_delta (smaller scale)
+
     x  = range(len(sub))
     xt = [i for i, q in enumerate(sub["quarter_label"])
           if q.endswith("Q1") and int(q[:4]) % 4 == 0]
-    xl = [q[:4] for i, q in enumerate(sub["quarter_label"])
+    xl = [q[:4] for q in sub["quarter_label"]
           if q.endswith("Q1") and int(q[:4]) % 4 == 0]
-    _ = ax.plot(x, sub["s_z"],  "#1f77b4", lw=1.8,
-                label=r"$s^{nat}_t$ (Shimer)")
-    _ = ax.plot(x, sub["ld_z"], "#d62728", lw=1.6, ls="--",
-                label=r"$g^{LD}_t$ (JOLTS — published national rate)")
-    _ = ax.plot(x, sub["d_z"],  "#2ca02c", lw=1.6, ls=":",
-                label=r"$g^{\delta}_t$ (BED closing)")
-    ax.axhline(0, color="black", lw=0.6)
-    ax.set_xticks(xt); ax.set_xticklabels(xl, fontsize=8)
-    ax.set_title("Z-scored quarterly series\n2001Q1–2019Q4", fontsize=10)
-    ax.set_ylabel("SD from mean", fontsize=9)
-    ax.legend(fontsize=7); ax.grid(axis="y", lw=0.4, alpha=0.4)
 
-    # Scatter: s vs g^LD
-    for ax, col, color, lbl in [
-        (axes[1], "ld_z", "#d62728", r"$g^{LD}_t$"),
-        (axes[2], "d_z",  "#2ca02c", r"$g^{\delta}_t$"),
+    l1, = ax.plot(x, pct(sub["s_nat"]),    "#1f77b4", lw=2.0,
+                  label=r"$s^{nat}_t$ (Shimer, left)")
+    l2, = ax.plot(x, pct(sub["g_ld_nat"]), "#d62728", lw=1.8, ls="--",
+                  label=r"$g^{LD}_t$ (JOLTS, left)")
+    l3, = ax2.plot(x, pct(sub["g_delta_nat"]), "#2ca02c", lw=1.8, ls=":",
+                   label=r"$g^{\delta}_t$ (BED, right)")
+
+    # Shade GFC and COVID episode windows
+    def _shade(ax, start_q, end_q, color, label):
+        qs = list(sub["quarter_label"])
+        i0 = next((i for i, q in enumerate(qs) if q >= start_q), None)
+        i1 = next((i for i, q in enumerate(qs) if q > end_q),   len(qs)-1)
+        if i0 is not None:
+            ax.axvspan(i0, i1, alpha=0.12, color=color, label=label)
+
+    _shade(ax, GFC_START, GFC_END, "orange", "GFC (2008Q3–2009Q4)")
+
+    ax.set_xticks(xt); ax.set_xticklabels(xl, fontsize=8)
+    ax.set_ylabel("Quarterly rate (% of employment)", fontsize=9)
+    ax2.set_ylabel(r"$g^{\delta}$ quarterly rate (%)", fontsize=9,
+                   color="#2ca02c")
+    ax2.tick_params(axis="y", colors="#2ca02c")
+    ax.set_title("Quarterly separation and closing rates\n"
+                 r"(all in % of employment per quarter — shaded = episode windows)",
+                 fontsize=10)
+    ax.legend(handles=[l1, l2, l3] + ax.patches[:2],
+              fontsize=7, loc="upper right")
+    ax.grid(axis="y", lw=0.4, alpha=0.4)
+
+    # ── Middle and right: scatter plots (demeaned) ─────────────────────────
+    dm = lambda x: x - x.mean()
+    s_dm  = dm(sub["s_nat"])
+    ld_dm = dm(sub["g_ld_nat"])
+    d_dm  = dm(sub["g_delta_nat"])
+
+    for ax, xvals, color, xlabel in [
+        (axes[1], ld_dm, "#d62728", r"$g^{LD}_t$ demeaned (% of empl.)"),
+        (axes[2], d_dm,  "#2ca02c", r"$g^{\delta}_t$ demeaned (% of empl.)"),
     ]:
-        r = sub["s_z"].corr(sub[col])
-        _ = ax.scatter(sub[col], sub["s_z"], alpha=0.45, s=18,
-                       color=color, edgecolors="none")
-        xl_ = np.linspace(sub[col].min(), sub[col].max(), 50)
-        m, b = np.polyfit(sub[col].dropna(), sub["s_z"].dropna(), 1)
-        _ = ax.plot(xl_, m*xl_+b, color=color, lw=1.5)
-        _ = ax.set_title(fr"$s^{{nat}}$ vs {lbl}" + f"\nr = {r:.3f}",
-                         fontsize=10)
-        _ = ax.set_xlabel(f"{lbl} (z-score)", fontsize=9)
-        _ = ax.set_ylabel(r"$s^{nat}$ (z-score)", fontsize=9)
+        r = s_dm.corr(xvals)
+        xp = pct(xvals); yp = pct(s_dm)
+        _ = ax.scatter(xp, yp, alpha=0.45, s=20, color=color,
+                       edgecolors="none")
+        xl_ = np.linspace(xp.min(), xp.max(), 50)
+        m, b = np.polyfit(xp.dropna(), yp.dropna(), 1)
+        _ = ax.plot(xl_, m*xl_+b, color=color, lw=1.6)
+        _ = ax.set_title(fr"$s^{{nat}}$ vs {xlabel.split()[0]}"
+                         f"\nr = {r:.3f}", fontsize=10)
+        _ = ax.set_xlabel(xlabel, fontsize=9)
+        _ = ax.set_ylabel(r"$s^{nat}$ demeaned (% of empl.)", fontsize=9)
+        ax.axhline(0, color="black", lw=0.5)
+        ax.axvline(0, color="black", lw=0.5)
         ax.grid(lw=0.4, alpha=0.3)
 
     fig.suptitle(
         r"National Shimer $s^{nat}_t$ vs. JOLTS LD and BED closing rates"
-        "\n(using published national JOLTS rate, not Bartik aggregation)",
+        "\n(raw quarterly rates in comparable units — no z-scoring)",
         fontsize=10
     )
     fig.tight_layout()
@@ -690,7 +1007,7 @@ def plot_rolling_corr(panel: pd.DataFrame, out_path: Path,
 # =============================================================================
 # Main
 # =============================================================================
-if __name__ == "__main__":
+def main():
     print("=" * 65)
     print("Part 8 — National Shimer separation rate diagnostic")
     print("=" * 65)
@@ -740,13 +1057,21 @@ if __name__ == "__main__":
     print(f"\n  Saved: {out_csv}")
 
     # ── 5. Regression (primary) ───────────────────────────────────────────────
-    print("\n[5] Regression analysis (primary diagnostic)")
-    print("    s^nat_t = α + β^LD·g^LD_t + β^δ·g^δ_t + ε")
-    print("    Newey-West HAC SEs, lag truncation =", NW_LAGS)
+    print("\n[5] Regression analysis")
+    print(f"    Sample: {SAMPLE_START}–{SAMPLE_END}")
+    print(f"    GFC episode: {GFC_START}–{GFC_END}  (n=6 quarters)")
+    print(f"    COVID excluded — CPS measurement breakdown (see constants block)")
+    print()
+    print("    Three nested specs per run:")
+    print("    [A] Baseline — no episode controls")
+    print("    [B] GFC level dummy only")
+    print("    [C] GFC dummy + interactions (primary)")
+    print()
+
     run_regression(panel, SAMPLE_START, SAMPLE_END,
                    f"Full sample {SAMPLE_START}–{SAMPLE_END}")
     run_regression(panel, SAMPLE_START, PREGFC_END,
-                   f"Pre-GFC {SAMPLE_START}–{PREGFC_END}")
+                   f"Pre-GFC only {SAMPLE_START}–{PREGFC_END}")
 
     # ── 6. Correlation table (secondary) ─────────────────────────────────────
     print("\n[6] Pairwise correlations (secondary)")
@@ -756,6 +1081,10 @@ if __name__ == "__main__":
                            f"Pre-GFC {SAMPLE_START}–{PREGFC_END}")
     print(pd.concat([c1, c2]).to_string(index=False))
 
+    # ── 6b. Filtered regression comparison ──────────────────────────────────
+    print("\n[6b] Filtered regression comparison (HP and Hamilton)")
+    run_filtered_comparison(panel)
+
     # ── 7. Plots ──────────────────────────────────────────────────────────────
     print("\n[7] Plotting")
     plot_comparison(panel,
@@ -764,3 +1093,7 @@ if __name__ == "__main__":
                       RESULTS_DIR / "shimer_national_rolling_corr.png")
 
     print("\nDone.")
+
+
+if __name__ == "__main__":
+    main()
