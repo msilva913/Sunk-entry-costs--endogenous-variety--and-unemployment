@@ -458,4 +458,101 @@ if RAW_D_PATH.exists() and RAW_S_PATH.exists():
     fig.savefig(p, dpi=150, bbox_inches="tight"); plt.close(fig); _open_file(p)
     print(f"Plot 3 saved: {p}")
 
+# plot 4: residualized instrument cross-state distributions over time 
+# Three-panel fan chart (Î´, LD, QU) matching the style of the raw comparison
+# in part3_instrument_s.py (percentile bands + two extreme-state traces).
+
+def _ql_to_dt_r(q: str):
+    """'2005Q1' -> pd.Timestamp at quarter start."""
+    y, qq = int(q[:4]), int(q[-1])
+    return pd.Timestamp(year=y, month=(qq - 1) * 3 + 1, day=1)
+
+def _build_dist_r(df, col):
+    raw = (
+        df.groupby("quarter_label")[col]
+        .agg(mean="mean",
+             p10=lambda x: np.percentile(x, 10),
+             p25=lambda x: np.percentile(x, 25),
+             p75=lambda x: np.percentile(x, 75),
+             p90=lambda x: np.percentile(x, 90))
+        .sort_index()
+    )
+    all_q = pd.period_range(raw.index[0], raw.index[-1],
+                            freq="Q").strftime("%YQ%q").tolist()
+    return raw.reindex(all_q)
+
+def _extreme_states_r(df, col):
+    """Return (low_state, high_state, peak_quarter) by cross-state SD."""
+    peak = df.groupby("quarter_label")[col].std().idxmax()
+    vals = df.query("quarter_label == @peak").sort_values(col)
+    return vals.iloc[0]["state_fips"], vals.iloc[-1]["state_fips"], peak
+
+def _state_ts_r(df, col, fips, all_q):
+    s = df[df["state_fips"] == fips].set_index("quarter_label")[col].reindex(all_q)
+    return [_ql_to_dt_r(q) for q in s.index if q is not None], \
+           s.dropna().values if s.notna().any() else []
+
+COLORS_R = {"delta": "#1f77b4", "ld": "#2ca02c", "qu": "#9467bd"}
+
+panels_r = [
+    (instr_d,  "bartik_delta", COLORS_R["delta"],
+     r"$\tilde{B}^\delta_{s,t}$ ” firm destruction (residualized)"),
+    (instr_ld, "bartik_ld",    COLORS_R["ld"],
+     r"$\tilde{B}^{LD}_{s,t}$” layoffs & discharges (residualized)"),
+    (instr_qu, "bartik_qu",    COLORS_R["qu"],
+     r"$\tilde{B}^{QU}_{s,t}$” quits / placebo (residualized)"),
+]
+
+fig, axes = plt.subplots(1, 3, figsize=(21, 5), sharey=False)
+
+for ax, (df, col, color, title) in zip(axes, panels_r):
+    dist   = _build_dist_r(df, col)
+    lo, hi, pq = _extreme_states_r(df, col)
+    valid  = dist.dropna(subset=["mean"])
+    dts    = [_ql_to_dt_r(q) for q in valid.index]
+    all_q  = dist.index.tolist()
+
+    ax.fill_between(dts, valid["p10"], valid["p90"],
+                    alpha=0.18, color=color, label="10-90th pctile")
+    ax.fill_between(dts, valid["p25"], valid["p75"],
+                    alpha=0.32, color=color, label="IQR")
+    ax.plot(dts, valid["mean"], color=color, linewidth=2.0,
+            label="Cross-state mean")
+
+    # Extreme-state traces
+    xs_lo = [_ql_to_dt_r(q) for q in df[df["state_fips"] == lo]
+             .sort_values("quarter_label")["quarter_label"].tolist()]
+    ys_lo = df[df["state_fips"] == lo].sort_values("quarter_label")[col].values
+    xs_hi = [_ql_to_dt_r(q) for q in df[df["state_fips"] == hi]
+             .sort_values("quarter_label")["quarter_label"].tolist()]
+    ys_hi = df[df["state_fips"] == hi].sort_values("quarter_label")[col].values
+
+    if len(xs_lo) and len(ys_lo):
+        ax.plot(xs_lo, ys_lo, color="firebrick", linewidth=0.85, linestyle=":",
+                label=f"FIPS {lo} (low at {pq})")
+    if len(xs_hi) and len(ys_hi):
+        ax.plot(xs_hi, ys_hi, color="darkgreen", linewidth=0.85, linestyle=":",
+                label=f"FIPS {hi} (high at {pq})")
+
+    ax.axvspan(pd.Timestamp("2007-12-01"), pd.Timestamp("2009-06-01"),
+               alpha=0.08, color="grey", label="GFC")
+    ax.axhline(0, color="black", linewidth=0.6)
+
+    ax.set_title(title, fontsize=10)
+    ax.set_ylabel("Bartik instrument value", fontsize=9)
+    ax.legend(fontsize=7.5, framealpha=0.85)
+    ax.grid(axis="y", linewidth=0.5, alpha=0.4)
+
+fig.suptitle(
+    "Residualized Bartik instruments: cross-state distributions over time\n"
+    r"(v2 spec: $\log g^k_{j,t}$ residualized on $\Delta\log p_t$, "
+    r"$\Delta\log VA_{j,t-1}$, $\log\theta_{t-1}$; shares fixed at 2006)",
+    fontsize=11, y=1.02,
+)
+fig.tight_layout()
+p4 = RESULTS_DIR / "instruments_resid_distribution_comparison.png"
+fig.savefig(p4, dpi=150, bbox_inches="tight"); plt.close(fig); _open_file(p4)
+print(f"Plot 4 saved: {p4}")
+
 print("\nDone.")
+

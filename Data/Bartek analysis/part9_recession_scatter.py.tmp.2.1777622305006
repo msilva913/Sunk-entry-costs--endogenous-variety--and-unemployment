@@ -1,0 +1,470 @@
+"""
+part9_recession_scatter.py -- Cross-recession motivating scatter
+================================================================
+For each NBER recession episode (BED coverage: 1992Q3+), computes:
+
+  X-axis  : Cumulative permanence-adjusted national delta rate during
+             recession quarters = sum_{t in rec} g^delta_t
+             (raw BED closings x pi_{j,y}).
+
+  Y-axis  : Post-recession recovery speed for U/LF and V/LF.
+             Measured as quarters to recover 50% of the trough gap from
+             trough back to pre-recession level.
+
+Recessions covered (1990-91 excluded: BED starts 1992Q3):
+  2001    : 2001Q1 - 2001Q4
+  2008-09 : 2007Q4 - 2009Q2
+  2020    : 2020Q1 - 2020Q2
+
+Vacancy series -- spliced V/LF (%):
+  Pre-2001Q1 : Barnichon Composite HWI (already V/LF %, provided as
+               CompositeHWI.csv one level above working directory).
+  2001Q1+    : Computed from JOLTS state vacancies in laus_quarterly.parquet
+               as V/LF = sum(vacancies_s * 1000) / sum(LF_s) * 100.
+               Units: percent of labor force, consistent with UNRATE.
+  Splice: scale HWI to match JOLTS-derived mean over 2001Q1-2003Q4 so
+  both segments are in the same units.
+
+Data sources:
+  data/cache/bed_closings_national_12ind.parquet
+  data/instruments/permanence_ratios_by_supersector.parquet
+  data/cache/unrate_quarterly.parquet
+  data/instruments/laus_quarterly.parquet   (vac_rate, labor_force)
+  data/cache/qcew_2006_12ind_private.parquet
+  ../CompositeHWI.csv   (Barnichon, placed by user)
+
+Output
+------
+  data/results/recession_scatter.png
+  data/results/recession_scatter.csv
+"""
+
+import sys
+import warnings
+import pandas as pd
+import numpy as np
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import matplotlib.ticker as mticker
+from pathlib import Path
+
+# ---------------------------------------------------------------------------
+# Paths
+# ---------------------------------------------------------------------------
+CACHE_DIR   = Path("data/cache")
+INSTR_DIR   = Path("data/instruments")
+RESULTS_DIR = Path("data/results")
+RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+
+BED_CACHE     = CACHE_DIR / "bed_closings_national_12ind.parquet"
+PERM_CACHE    = INSTR_DIR / "permanence_ratios_by_supersector.parquet"
+UNRATE_CACHE  = CACHE_DIR / "unrate_quarterly.parquet"
+LAUS_CACHE    = INSTR_DIR / "laus_quarterly.parquet"
+SHARES_CACHE  = CACHE_DIR / "qcew_2006_12ind_private.parquet"
+# Barnichon Composite HWI -- one level above working dir (Data/)
+HWI_PATH      = Path("../CompositeHWI.csv")
+
+# ---------------------------------------------------------------------------
+# NBER recession dates (inclusive, quarter_label format)
+# 1990-91 excluded: BED data starts 1992Q3, no delta available.
+# ---------------------------------------------------------------------------
+RECESSIONS = {
+    "2001":    {"start": "2001Q1", "end": "2001Q4", "color": "#ff7f0e"},
+    "2008-09": {"start": "2007Q4", "end": "2009Q2", "color": "#d62728"},
+    "2020":    {"start": "2020Q1", "end": "2020Q2", "color": "#9467bd"},
+}
+
+# Number of quarters before recession start used as "pre-recession" window
+PRE_REC_WINDOW = 4   # average of 4 quarters before peak
+
+# Recovery threshold: fraction of trough gap that must be recovered
+RECOVERY_THRESHOLD = 0.50   # 50%
+
+# Maximum post-trough quarters to search for recovery
+MAX_SEARCH_QTRS = 24
+
+# ---------------------------------------------------------------------------
+# Quarter utilities
+# ---------------------------------------------------------------------------
+def ql_range(start: str, end: str) -> list[str]:
+    """Return list of quarter_labels from start to end inclusive."""
+    p0 = pd.Period(start, freq="Q")
+    p1 = pd.Period(end,   freq="Q")
+    return [f"{p.year}Q{p.quarter}" for p in pd.period_range(p0, p1, freq="Q")]
+
+def ql_shift(ql: str, n: int) -> str:
+    p = pd.Period(ql, freq="Q") + n
+    return f"{p.year}Q{p.quarter}"
+
+def ql_to_dt(ql: str) -> pd.Timestamp:
+    y, q = ql.split("Q")
+    return pd.Timestamp(year=int(y), month=(int(q)-1)*3+1, day=1)
+
+
+# ---------------------------------------------------------------------------
+# Load and construct national permanence-adjusted delta rate
+# ---------------------------------------------------------------------------
+def load_national_delta() -> pd.DataFrame:
+    """
+    Returns quarterly DataFrame with columns:
+        quarter_label, g_delta_nat   (national perm-adj closing rate)
+
+    g_delta_nat = sum_j closings_perm_{j,t} / sum_j emp_nat_{j,t0}
+
+    Uses 2006 base employment (QCEW) as denominator, matching the
+    Bartik instrument construction.
+    """
+    print("Loading BED closings ...")
+    bed = pd.read_parquet(BED_CACHE)
+    # closings_nat is in thousands of workers
+    print(f"  BED: {bed['quarter_label'].min()} - {bed['quarter_label'].max()}, "
+          f"{bed['industry_code'].nunique()} industries")
+
+    print("Loading permanence ratios ...")
+    perm = pd.read_parquet(PERM_CACHE)
+    print(f"  pi coverage: BDS years {perm['bds_year'].min()}-{perm['bds_year'].max()}")
+
+    # Apply permanence adjustment (same logic as construct_delta_instrument.py)
+    from construct_delta_instrument import _quarter_to_bds_year, apply_permanence_adjustment
+    bed_adj = apply_permanence_adjustment(bed, perm)
+
+    # National denominator: total 2006 base employment across all industries
+    print("Loading 2006 QCEW base employment ...")
+    shares_raw = pd.read_parquet(SHARES_CACHE)
+    # Columns may vary; find employment column
+    emp_cols = [c for c in shares_raw.columns if "emp" in c.lower()]
+    print(f"  QCEW columns: {shares_raw.columns.tolist()}")
+
+    # Sum across all states and industries for total national base employment
+    emp_col_candidates = ["employment", "emp", "annual_avg_emplvl"]
+    matched = [c for c in emp_col_candidates if c in shares_raw.columns]
+    if matched:
+        emp_nat_total = shares_raw[matched[0]].sum()
+    else:
+        raise KeyError(f"Cannot find employment column in QCEW cache. Columns: {shares_raw.columns.tolist()}")
+
+    print(f"  National base employment (2006): {emp_nat_total:,.0f} persons")
+
+    # Aggregate adjusted closings to national quarterly total.
+    # closings_nat is in thousands of workers (BED API units).
+    # emp_nat_total is in persons. Multiply closings by 1000 for consistent units.
+    nat_closings = (
+        bed_adj.groupby("quarter_label")["closings_nat"].sum().reset_index()
+    )
+    nat_closings["g_delta_nat"] = (nat_closings["closings_nat"] * 1000) / emp_nat_total
+
+    return nat_closings[["quarter_label", "g_delta_nat", "closings_nat"]].sort_values("quarter_label")
+
+
+# ---------------------------------------------------------------------------
+# Load national U and V
+# ---------------------------------------------------------------------------
+def _decyear_to_ql(y: float) -> str:
+    """Convert decimal year (e.g. 1990.5) to quarter_label (e.g. '1990Q3')."""
+    year  = int(y)
+    month = round((y - year) * 12) + 1
+    month = max(1, min(12, month))
+    q     = (month - 1) // 3 + 1
+    return f"{year}Q{q}"
+
+
+def load_national_uv() -> pd.DataFrame:
+    """
+    Returns quarterly DataFrame: quarter_label, unemp_rate, vac_rate.
+
+    unemp_rate : FRED UNRATE = U/LF (%), from unrate_quarterly.parquet.
+
+    vac_rate   : Spliced V/LF (%), symmetric to unemp_rate:
+      - 2001Q1+ : Aggregated from laus_quarterly.parquet (state panel).
+                  V/LF_nat = sum(vac_rate_s * LF_s / 100) / sum(LF_s) * 100.
+                  Each state's vac_rate_s = JOLTS vacancies (thousands) * 1000
+                  / labor_force_s * 100 -- already computed in part4_outcomes.
+                  Aggregating via LF-weights gives national V/LF in percent.
+      - Pre-2001 : Barnichon Composite HWI (CompositeHWI.csv), column 'V/LF'
+                  already in percent.  Scaled to match JOLTS-derived mean over
+                  2001Q1-2003Q4 overlap so both segments are unit-consistent.
+
+    Unit check: JOLTS-derived V/LF and HWI V/LF are both vacancies/labor-force
+    expressed as a percentage.  UNRATE is also U/LF in percent.  Consistent.
+    """
+    # -- UNRATE ----------------------------------------------------------------
+    print("Loading UNRATE ...")
+    unrate = pd.read_parquet(UNRATE_CACHE)
+    unemp_col = next((c for c in unrate.columns
+                      if c.lower() in ("unrate", "unemp_rate", "value", "unemp")), None)
+    if unemp_col is None:
+        raise KeyError(f"Cannot find unemployment column. Columns: {unrate.columns.tolist()}")
+    unrate = (unrate[["quarter_label", unemp_col]]
+              .rename(columns={unemp_col: "unemp_rate"})
+              .groupby("quarter_label")["unemp_rate"].mean().reset_index())
+    print(f"  UNRATE: {unrate['quarter_label'].min()} - {unrate['quarter_label'].max()}")
+
+    # -- JOLTS-derived national V/LF from state panel (2001Q1+) ---------------
+    print("Loading JOLTS state vacancies from LAUS panel ...")
+    laus = pd.read_parquet(LAUS_CACHE)
+    # vac_rate column is V/LF in % per state; aggregate nationally via LF weights
+    # V_persons_s = vac_rate_s / 100 * LF_s
+    laus_vac = laus[laus["vac_rate"].notna()].copy()
+    laus_vac["vac_persons"] = laus_vac["vac_rate"] / 100.0 * laus_vac["labor_force"]
+    nat_laus = (laus_vac.groupby("quarter_label")
+                .agg(vac_persons=("vac_persons", "sum"),
+                     labor_force=("labor_force", "sum"))
+                .reset_index())
+    nat_laus["vac_rate"] = nat_laus["vac_persons"] / nat_laus["labor_force"] * 100.0
+    jolts_vac = nat_laus[["quarter_label", "vac_rate"]].copy()
+    print(f"  JOLTS V/LF: {jolts_vac['quarter_label'].min()} - "
+          f"{jolts_vac['quarter_label'].max()}, n={len(jolts_vac)}")
+    print(f"  JOLTS V/LF sample values: "
+          f"2001Q1={jolts_vac[jolts_vac['quarter_label']=='2001Q1']['vac_rate'].values}")
+
+    # -- Barnichon HWI vacancy rate (pre-2001) ---------------------------------
+    hwi_path = HWI_PATH
+    if not hwi_path.exists():
+        # try one level up from script location
+        hwi_path = Path(__file__).parent.parent / "CompositeHWI.csv"
+    if not hwi_path.exists():
+        warnings.warn(f"CompositeHWI.csv not found at {HWI_PATH}. Pre-2001 V/LF will be missing.")
+        hwi_q = pd.DataFrame(columns=["quarter_label", "vac_rate_hwi"])
+    else:
+        print(f"Loading Barnichon HWI from {hwi_path} ...")
+        hwi_raw = pd.read_csv(hwi_path)
+        hwi_raw["quarter_label"] = hwi_raw["year"].apply(_decyear_to_ql)
+        hwi_q = (hwi_raw.groupby("quarter_label")["V/LF"]
+                        .mean().reset_index()
+                        .rename(columns={"V/LF": "vac_rate_hwi"}))
+        print(f"  HWI: {hwi_q['quarter_label'].min()} - {hwi_q['quarter_label'].max()}, "
+              f"n={len(hwi_q)}")
+
+    # -- Splice: scale HWI to match JOLTS mean over 2001Q1-2003Q4 -------------
+    SPLICE_QT   = "2001Q1"
+    OVERLAP_END = "2003Q4"
+    overlap_qtrs = ql_range(SPLICE_QT, OVERLAP_END)
+    jolts_mean = jolts_vac[jolts_vac["quarter_label"].isin(overlap_qtrs)]["vac_rate"].mean()
+    hwi_mean   = hwi_q[hwi_q["quarter_label"].isin(overlap_qtrs)]["vac_rate_hwi"].mean() \
+                 if len(hwi_q) > 0 else np.nan
+    if pd.isna(hwi_mean) or hwi_mean == 0:
+        scale = 1.0
+        print("  WARNING: HWI overlap mean is NaN/0 -- no scaling applied")
+    else:
+        scale = jolts_mean / hwi_mean
+    print(f"  Splice: JOLTS mean={jolts_mean:.3f}%, "
+          f"HWI mean={hwi_mean:.3f}%, scale={scale:.4f}")
+    hwi_q["vac_rate"] = hwi_q["vac_rate_hwi"] * scale
+
+    # -- Combine: HWI pre-splice, JOLTS from splice onward --------------------
+    hwi_pre  = hwi_q[hwi_q["quarter_label"] < SPLICE_QT][["quarter_label", "vac_rate"]]
+    combined = pd.concat([hwi_pre, jolts_vac], ignore_index=True).sort_values("quarter_label")
+    print(f"  Spliced V/LF: {combined['quarter_label'].min()} - "
+          f"{combined['quarter_label'].max()}, n={len(combined)}")
+
+    # -- Merge U and V --------------------------------------------------------
+    uv = unrate.merge(combined, on="quarter_label", how="left").sort_values("quarter_label")
+    n_vac = uv["vac_rate"].notna().sum()
+    print(f"  Final panel: {uv['quarter_label'].min()} - {uv['quarter_label'].max()}, "
+          f"V/LF non-missing: {n_vac}")
+    return uv[["quarter_label", "unemp_rate", "vac_rate"]]
+
+
+# ---------------------------------------------------------------------------
+# Recovery speed calculation
+# ---------------------------------------------------------------------------
+def quarters_to_recover_from_end(series: pd.Series, rec_end_ql: str,
+                                  trough_val: float, pre_level: float,
+                                  direction: str = "down") -> float:
+    """
+    From rec_end_ql (NBER recession end quarter), find how many quarters
+    until the series has recovered RECOVERY_THRESHOLD of the full gap
+    (trough_val to pre_level).
+
+    Anchoring at recession end -- not at the trough -- ensures all recessions
+    start the recovery clock at the same institutional event and removes
+    distortions from post-recession trough lags (e.g. 2001 vacancy trough
+    occurred 4 quarters after recession end, inflating trough-anchored recovery
+    times relative to 2008-09 where the trough was immediate).
+
+    direction='down' : U rose during recession; recovery = U falls back.
+    direction='up'   : V fell during recession; recovery = V rises back.
+
+    Target = halfway between trough and pre-level (RECOVERY_THRESHOLD=0.50).
+
+    Returns quarters from rec_end_ql (h=0 means already recovered at end),
+    or np.nan if pre_level or trough_val is missing, or
+    MAX_SEARCH_QTRS + 1 if not recovered within the search window.
+    """
+    if pd.isna(trough_val) or pd.isna(pre_level):
+        return np.nan
+    gap = abs(trough_val - pre_level)
+    if gap < 1e-6:
+        return 0.0
+    # Target: halfway back from trough toward pre-recession level
+    if direction == "down":
+        target = trough_val - RECOVERY_THRESHOLD * gap   # U falls toward pre_u
+    else:
+        target = trough_val + RECOVERY_THRESHOLD * gap   # V rises toward pre_v
+
+    for h in range(MAX_SEARCH_QTRS + 1):
+        ql_h = ql_shift(rec_end_ql, h)
+        val = series.get(ql_h, np.nan)
+        if pd.isna(val):
+            continue
+        if direction == "down" and val <= target:
+            return float(h)
+        if direction == "up" and val >= target:
+            return float(h)
+
+    return float(MAX_SEARCH_QTRS + 1)   # not recovered within window
+
+
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
+
+if __name__ == "__main__":
+    nat_delta = load_national_delta()
+    uv        = load_national_uv()
+
+    # Index national series by quarter_label for fast lookup
+    g_delta  = nat_delta.set_index("quarter_label")["g_delta_nat"]
+    unemp_s  = uv.set_index("quarter_label")["unemp_rate"]
+    vac_s    = uv.set_index("quarter_label")["vac_rate"]
+
+    results = []
+
+    for rec_name, info in RECESSIONS.items():
+        rec_qtrs = ql_range(info["start"], info["end"])
+
+        # -- X-axis: cumulative perm-adjusted delta rate during recession --
+        cum_delta = g_delta.reindex(rec_qtrs).sum(min_count=1)
+        if pd.isna(cum_delta):
+            print(f"  {rec_name}: no delta data (BED not available), skipping")
+            continue
+
+        # -- Pre-recession level (average of PRE_REC_WINDOW quarters before start) --
+        # Uses spliced vac_s (HWI pre-2001, JOLTS 2001+) so pre-2001 recession
+        # gets vacancy pre-level from HWI -- no missing data issue.
+        pre_qtrs = [ql_shift(info["start"], -k) for k in range(1, PRE_REC_WINDOW + 1)]
+        pre_u = unemp_s.reindex(pre_qtrs).mean()
+        pre_v = vac_s.reindex(pre_qtrs).mean()
+
+        # -- Unemployment trough (peak U during recession or up to 4 qtrs after) --
+        search_u = ql_range(info["start"], ql_shift(info["end"], 4))
+        u_vals = unemp_s.reindex(search_u).dropna()
+        if len(u_vals) == 0:
+            print(f"  {rec_name}: no U data, skipping")
+            continue
+        u_trough_ql  = u_vals.idxmax()
+        u_trough_val = u_vals.max()
+
+        # -- Vacancy trough (min V during recession or up to 4 qtrs after) --
+        search_v = ql_range(info["start"], ql_shift(info["end"], 4))
+        v_vals = vac_s.reindex(search_v).dropna()
+        if len(v_vals) == 0:
+            print(f"  {rec_name}: no V data, skipping")
+            v_trough_ql  = None
+            v_trough_val = np.nan
+            v_recovery   = np.nan
+        else:
+            v_trough_ql  = v_vals.idxmin()
+            v_trough_val = v_vals.min()
+            # Recovery anchored at RECESSION END (not trough) for cross-recession
+            # comparability. Anchoring at the trough distorts 2001 vs 2008-09
+            # because the 2001 V-trough was 4 quarters after recession end while
+            # the 2008-09 trough was immediate -- inflating 2001's apparent
+            # trough-anchored recovery length relative to 2008-09.
+            v_recovery = quarters_to_recover_from_end(
+                vac_s, info["end"], v_trough_val, pre_v, direction="up"
+            )
+
+        # U recovery also anchored at recession end for symmetry
+        u_recovery = quarters_to_recover_from_end(
+            unemp_s, info["end"], u_trough_val, pre_u, direction="down"
+        )
+
+        print(f"\n{rec_name}:")
+        print(f"  Recession qtrs: {info['start']}-{info['end']} ({len(rec_qtrs)} quarters)")
+        print(f"  Cum. delta (perm-adj):  {cum_delta:.4f}")
+        print(f"  Pre-recession U: {pre_u:.2f}%  |  V: {pre_v:.2f}%")
+        print(f"  U peak: {u_trough_val:.2f}% at {u_trough_ql}"
+              f"  -> 50% recovery from rec. end: {u_recovery:.0f} qtrs")
+        if v_trough_ql:
+            print(f"  V trough: {v_trough_val:.3f}% at {v_trough_ql}"
+                  f"  -> 50% recovery from rec. end: {v_recovery:.0f} qtrs")
+
+        results.append({
+            "recession":       rec_name,
+            "color":           info["color"],
+            "cum_delta":       cum_delta,
+            "pre_u":           pre_u,
+            "pre_v":           pre_v,
+            "u_peak":          u_trough_val,
+            "u_trough_ql":     u_trough_ql,
+            "u_recovery_qtrs": u_recovery,
+            "v_trough":        v_trough_val,
+            "v_trough_ql":     v_trough_ql,
+            "v_recovery_qtrs": v_recovery,
+        })
+
+    df = pd.DataFrame(results)
+    df.drop(columns=["color"]).to_csv(RESULTS_DIR / "recession_scatter.csv", index=False)
+    print(f"\nResults table:\n{df[['recession','cum_delta','u_recovery_qtrs','v_recovery_qtrs']].to_string(index=False)}")
+
+    # -- Plot --------------------------------------------------------------
+    fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+
+    panels = [
+        (axes[0], "u_recovery_qtrs",
+         f"Quarters for U/LF to recover {int(RECOVERY_THRESHOLD*100)}% of trough gap",
+         "Unemployment rate recovery speed"),
+        (axes[1], "v_recovery_qtrs",
+         f"Quarters for V/LF to recover {int(RECOVERY_THRESHOLD*100)}% of trough gap",
+         "Vacancy rate recovery speed"),
+    ]
+
+    for ax, ycol, ylabel, title in panels:
+        sub = df.dropna(subset=["cum_delta", ycol])
+        if len(sub) < 2:
+            ax.set_title(f"{title}\n(insufficient data)")
+            continue
+
+        for _, row in sub.iterrows():
+            ax.scatter(row["cum_delta"], row[ycol],
+                       color=row["color"], s=120, zorder=5)
+            ax.annotate(row["recession"],
+                        xy=(row["cum_delta"], row[ycol]),
+                        xytext=(4, 4), textcoords="offset points",
+                        fontsize=10, color=row["color"], fontweight="bold")
+
+        # OLS trend line
+        x = sub["cum_delta"].values
+        y = sub[ycol].values
+        if len(x) >= 2:
+            m, b = np.polyfit(x, y, 1)
+            x_line = np.linspace(x.min() * 0.9, x.max() * 1.1, 100)
+            ax.plot(x_line, m * x_line + b, color="grey", linewidth=1.2,
+                    linestyle="--", alpha=0.7)
+            # Correlation annotation
+            r = np.corrcoef(x, y)[0, 1]
+            ax.text(0.05, 0.92, f"r = {r:.2f}", transform=ax.transAxes,
+                    fontsize=9, color="grey")
+
+        ax.set_xlabel(r"Cumulative permanence-adjusted $\delta$ during recession"
+                      "\n(perm. closing employment / 2006 base employment)",
+                      fontsize=9)
+        ax.set_ylabel(ylabel, fontsize=9)
+        ax.set_title(title, fontsize=10)
+        ax.grid(linewidth=0.4, alpha=0.4)
+        ax.xaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f"{x:.3f}"))
+
+    fig.suptitle(
+        "Cross-recession heterogeneity in firm destruction and labor market recovery\n"
+        r"X-axis: $\sum_{t \in \text{rec}} g^\delta_t$ (raw BED, permanence-adjusted)  |  "
+        f"Recovery = {int(RECOVERY_THRESHOLD*100)}% of trough gap",
+        fontsize=10, y=1.02,
+    )
+    fig.tight_layout()
+    out = RESULTS_DIR / "recession_scatter.png"
+    fig.savefig(out, dpi=150, bbox_inches="tight")
+    plt.show()
+    plt.close(fig)
+    print(f"\nPlot saved: {out}")
