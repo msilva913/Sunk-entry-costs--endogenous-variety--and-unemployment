@@ -266,6 +266,40 @@ def load_national_uv() -> pd.DataFrame:
     return uv[["quarter_label", "unemp_rate", "vac_rate"]]
 
 
+# Horizon for cumulative gap metrics (quarters from recession start)
+CUM_GAP_HORIZON = 20
+
+# ---------------------------------------------------------------------------
+# Cumulative gap metrics
+# ---------------------------------------------------------------------------
+def cumulative_gap(series: pd.Series, rec_start_ql: str, pre_level: float,
+                   direction: str = "up", horizon: int = CUM_GAP_HORIZON) -> float:
+    """
+    Cumulative deviation of series from pre_level over [rec_start, rec_start+H].
+
+    direction='up'   : series should be above pre_level (V fell -> gap = pre - val)
+                       CVS = sum_t max(pre_v - v_t, 0)
+    direction='down' : series should be below pre_level (U rose -> gap = val - pre)
+                       CUG = sum_t max(u_t - pre_u, 0)
+
+    Clips at zero so post-recession overshooting does not offset the gap.
+    Units: percentage-point-quarters (pp * qtrs).
+    """
+    if pd.isna(pre_level):
+        return np.nan
+    total = 0.0
+    for h in range(horizon + 1):
+        ql_h = ql_shift(rec_start_ql, h)
+        val = series.get(ql_h, np.nan)
+        if pd.isna(val):
+            continue
+        if direction == "down":
+            total += max(val - pre_level, 0.0)
+        else:
+            total += max(pre_level - val, 0.0)
+    return total
+
+
 # ---------------------------------------------------------------------------
 # Recovery speed calculation
 # ---------------------------------------------------------------------------
@@ -431,6 +465,11 @@ if __name__ == "__main__":
         print(f"  U trough depth: +{u_pp_trough:.2f} pp  "
               f"|  V trough depth: {v_pp_trough:.2f} pp")
 
+        # Cumulative gap: area under deviation curve from recession start, H=20 qtrs
+        cug = cumulative_gap(unemp_s, info["start"], pre_u, direction="down")
+        cvs = cumulative_gap(vac_s,   info["start"], pre_v, direction="up")
+        print(f"  CUG (H=20): {cug:.2f} pp-qtrs  |  CVS (H=20): {cvs:.2f} pp-qtrs")
+
         results.append({
             "recession":              rec_name,
             "color":                  info["color"],
@@ -442,28 +481,31 @@ if __name__ == "__main__":
             "u_pp_trough":            u_pp_trough,
             "u_recovery_end_qtrs":    u_recovery_end,
             "u_recovery_trough_qtrs": u_recovery_trough,
+            "cug":                    cug,
             "v_trough":               v_trough_val,
             "v_trough_ql":            v_trough_ql,
             "v_pp_trough":            v_pp_trough,
             "v_recovery_end_qtrs":    v_recovery_end,
             "v_recovery_trough_qtrs": v_recovery_trough,
+            "cvs":                    cvs,
         })
 
     df = pd.DataFrame(results)
     df.drop(columns=["color"]).to_csv(RESULTS_DIR / "recession_scatter.csv", index=False)
     print(f"\nResults table:")
     print(df[["recession", "cum_delta",
-              "u_pp_trough", "u_recovery_end_qtrs", "u_recovery_trough_qtrs",
-              "v_pp_trough", "v_recovery_end_qtrs", "v_recovery_trough_qtrs"]
+              "u_pp_trough", "u_recovery_end_qtrs", "u_recovery_trough_qtrs", "cug",
+              "v_pp_trough", "v_recovery_end_qtrs", "v_recovery_trough_qtrs", "cvs"]
              ].to_string(index=False))
 
-    # -- Plot: 3x2 grid -------------------------------------------------------
+    # -- Plot: 4x2 grid -------------------------------------------------------
     # Row 0: trough depth (pp deviation from pre-recession level)
     # Row 1: recovery speed anchored at recession END
     # Row 2: recovery speed anchored at series TROUGH (for comparison)
+    # Row 3: cumulative gap -- area under deviation curve, H=20 from rec. start
     # Left column = unemployment; right column = vacancies.
     recov_pct = int(RECOVERY_THRESHOLD * 100)
-    fig, axes = plt.subplots(3, 2, figsize=(12, 13))
+    fig, axes = plt.subplots(4, 2, figsize=(12, 17))
 
     xlabel_str = (r"Cumulative perm.-adjusted $\delta$ during recession"
                   "\n(closing employment / 2006 base, both in persons)")
@@ -490,6 +532,13 @@ if __name__ == "__main__":
         (axes[2, 1], "v_recovery_trough_qtrs",
          f"Qtrs from V/LF trough to {recov_pct}% recovery",
          "Vacancy recovery (trough anchor)"),
+        # row 3: cumulative gap
+        (axes[3, 0], "cug",
+         f"CUG: sum of (U/LF - pre-U)$^+$ over H={CUM_GAP_HORIZON} qtrs from rec. start (pp-qtrs)",
+         f"Cumul. unemployment gap (H={CUM_GAP_HORIZON})"),
+        (axes[3, 1], "cvs",
+         f"CVS: sum of (pre-V - V/LF)$^+$ over H={CUM_GAP_HORIZON} qtrs from rec. start (pp-qtrs)",
+         f"Cumul. vacancy shortfall (H={CUM_GAP_HORIZON})"),
     ]
 
     def _scatter_panel(ax, ycol, ylabel, title):
@@ -522,13 +571,21 @@ if __name__ == "__main__":
     for ax, ycol, ylabel, title in panels:
         _scatter_panel(ax, ycol, ylabel, title)
 
-    # Note explaining the trough-anchor distortion for 2001 V
+    # Note explaining trough-anchor distortion
     axes[2, 1].text(0.05, 0.08,
-        "2001 trough at 2002Q4 (4 qtrs after rec. end);\n"
-        "2008-09 trough at 2009Q3 (1 qtr after rec. end).\n"
-        "Trough anchor conflates slow vacancy formation\n"
-        "with slow recovery.",
+        "2001 V-trough: 2002Q4 (4 qtrs after rec. end)\n"
+        "2008-09 V-trough: 2009Q3 (1 qtr after rec. end)\n"
+        "Trough anchor conflates delayed trough formation\n"
+        "with the recovery phase.",
         transform=axes[2, 1].transAxes, fontsize=7.5, color="dimgrey",
+        verticalalignment="bottom",
+        bbox=dict(boxstyle="round,pad=0.3", facecolor="lightyellow", alpha=0.8))
+
+    # Note on cumulative gap construction
+    axes[3, 0].text(0.05, 0.08,
+        f"Area under gap curve from rec. start, H={CUM_GAP_HORIZON} qtrs.\n"
+        "Positive deviations only (overshooting clipped at 0).",
+        transform=axes[3, 0].transAxes, fontsize=7.5, color="dimgrey",
         verticalalignment="bottom",
         bbox=dict(boxstyle="round,pad=0.3", facecolor="lightyellow", alpha=0.8))
 
