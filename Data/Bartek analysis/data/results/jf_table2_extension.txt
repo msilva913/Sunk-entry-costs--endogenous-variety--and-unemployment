@@ -1,0 +1,116 @@
+==============================================================================================================
+JF TABLE 2 REPLICATION AND EXTENSION
+Job Gains/Losses Accounted for by Opening/Closing Establishments
+Source: BLS Business Employment Dynamics (BED), quarterly
+Replication of Jaimovich & Floetotto (2008, JME) Table 2, extended through 2024Q2
+Industries: 12 Bartik supersectors (matching LP pipeline) + Total private
+==============================================================================================================
+
+COLUMN DEFINITIONS
+------------------------------------------------------------
+C1   Fraction of gross job gains from OPENING (birth) establishments
+     = sum(G_O) / sum(G)  [G_O = BED elem0001 - elem0002; G = BED elem0001]
+
+C2   Fraction of gross job losses from CLOSING (death) establishments
+     = sum(L_C) / sum(L)  [L_C = BED elem0006; L = BED elem0004]
+
+C3-HP  R^2 of regression: HP(log G) ~ HP(log G_O).  lambda=1600.
+       Fraction of HP-cyclical variance in gains explained by openings.
+
+C4-HP  Same as C3-HP for losses ~ closings.
+
+C3-Ham  Same as C3-HP using Hamilton (2018) filter (no endpoint distortion).
+C4-Ham  Same for losses.
+
+C5   Ratio of fitted variances: Var(fitted log G_O) / Var(fitted log G)
+     where both series are projected on [constant, u_t, u_{t-1}].
+     u_t = national LF-weighted unemployment rate.
+     Values > 1: openings more cyclically sensitive than total gains.
+
+C6   Same as C5 for losses and closings.
+
+NOTE: Cols 5-6 use unemployment as projector (vs. GDP in JF original).
+      Unemployment is the model state variable and LP outcome -- more salient
+      for the delta/s transmission exercise.
+
+DATA NOTES
+------------------------------------------------------------
+BLS API series: BDS0000000000{ind6}11{elem4}LQ5
+  elem0001 = total gross gains; elem0002 = gains at expanding establishments
+  elem0004 = total gross losses; elem0006 = losses at closing establishments
+  Openings (births) = elem0001 - elem0002
+Total private = sum of 12 supersectors (~0.7% below BLS headline aggregate)
+
+REPLICATION CHECK (total private, JF period 1992Q3-2006Q3)
+  JF Table 2:  C1=0.223,  C2=0.210
+  This table:  C1=0.213,  C2=0.206  (supersector aggregation gap)
+
+
+SAMPLE: Original JF period (1992Q3--2006Q3)
+--------------------------------------------------------------------------------------------------------------
+Industry                                         C1     C2  C3-HP  C4-HP  C3-Ham  C4-Ham       C5       C6    N
+--------------------------------------------------------------------------------------------------------------
+Total private                                 0.213  0.206  0.407  0.462   0.489   0.626   0.778   1.211   57
+Natural resources & mining                    0.185  0.179  0.329  0.237   0.382   0.414   2.384   1.174   57
+Construction                                  0.214  0.212  0.598  0.456   0.361   0.389   0.386   0.516   57
+Manufacturing                                 0.141  0.154  0.227  0.143   0.474   0.421   0.600   0.324   57
+Wholesale trade                               0.215  0.234  0.375  0.468   0.486   0.668   1.223   1.751   57
+Retail trade                                  0.190  0.170  0.137  0.410   0.519   0.552   0.459   0.935   57
+Transportation & utilities                    0.206  0.148  0.440  0.292   0.637   0.313   1.684    72.1*   57
+Information                                   0.228  0.234  0.401  0.474   0.589   0.732   1.312   1.726   57
+Financial activities                          0.249  0.260  0.579  0.564   0.514   0.702   0.747   1.862   57
+Prof. & business services                     0.215  0.221  0.539  0.304   0.362   0.566   1.077   1.068   57
+Education & health services                   0.215  0.223  0.517  0.444   0.458   0.649   1.609   1.941   57
+Leisure & hospitality                         0.264  0.217  0.298  0.612   0.214   0.416   0.152   1.014   57
+Other services                                0.222  0.219  0.410  0.443   0.298   0.480   0.729   2.291   57
+  * noisy estimate (|ratio| > 5; typically a small-count industry series)
+
+SAMPLE: Extended to 2019Q4 (COVID cutoff)
+--------------------------------------------------------------------------------------------------------------
+Industry                                         C1     C2  C3-HP  C4-HP  C3-Ham  C4-Ham       C5       C6    N
+--------------------------------------------------------------------------------------------------------------
+Total private                                 0.201  0.195  0.452  0.491   0.531   0.613   1.052   1.060  110
+Natural resources & mining                    0.164  0.158  0.358  0.182   0.440   0.301   1.414     5.2*  110
+Construction                                  0.208  0.206  0.573  0.623   0.650   0.760   0.321   0.787  110
+Manufacturing                                 0.125  0.139  0.176  0.254   0.349   0.443   1.849   0.715  110
+Wholesale trade                               0.204  0.227  0.369  0.384   0.490   0.594   0.782   0.806  110
+Retail trade                                  0.172  0.154  0.218  0.328   0.526   0.562   1.366   1.824  110
+Transportation & utilities                    0.170  0.135  0.426  0.298   0.545   0.339   3.363     8.4*  110
+Information                                   0.206  0.210  0.342  0.404   0.620   0.649   1.649   2.165  110
+Financial activities                          0.235  0.247  0.534  0.526   0.594   0.706   1.502   1.503  110
+Prof. & business services                     0.205  0.212  0.558  0.345   0.377   0.523   1.170   0.861  110
+Education & health services                   0.202  0.213  0.430  0.394   0.262   0.416   1.567   3.004  110
+Leisure & hospitality                         0.245  0.198  0.405  0.501   0.366   0.394   0.881   1.730  110
+Other services                                0.221  0.219  0.387  0.368   0.436   0.470   0.559   1.012  110
+  * noisy estimate (|ratio| > 5; typically a small-count industry series)
+
+SAMPLE: Extended to 2024Q2 (BED end)
+--------------------------------------------------------------------------------------------------------------
+Industry                                         C1     C2  C3-HP  C4-HP  C3-Ham  C4-Ham       C5       C6    N
+--------------------------------------------------------------------------------------------------------------
+Total private                                 0.200  0.194  0.598  0.833   0.642   0.771   0.693   0.664  118
+Natural resources & mining                    0.163  0.156  0.314  0.295   0.382   0.350     5.3*   1.550  118
+Construction                                  0.208  0.205  0.557  0.710   0.587   0.775   0.320   0.521  118
+Manufacturing                                 0.123  0.137  0.252  0.413   0.377   0.497   1.544   0.936  118
+Wholesale trade                               0.203  0.226  0.395  0.523   0.508   0.581   0.532   0.473  118
+Retail trade                                  0.169  0.152  0.390  0.618   0.601   0.664   2.164   1.065  118
+Transportation & utilities                    0.169  0.135  0.400  0.292   0.516   0.319   2.803     7.5*  118
+Information                                   0.206  0.209  0.382  0.474   0.604   0.631   1.330   1.567  118
+Financial activities                          0.235  0.246  0.503  0.429   0.588   0.650   1.174   0.982  118
+Prof. & business services                     0.205  0.211  0.525  0.408   0.449   0.514   0.687   0.406  118
+Education & health services                   0.203  0.211  0.324  0.538   0.332   0.597   0.225   0.431  118
+Leisure & hospitality                         0.241  0.196  0.732  0.879   0.683   0.812   0.379   0.767  118
+Other services                                0.225  0.223  0.571  0.875   0.560   0.799   0.422   0.945  118
+  * noisy estimate (|ratio| > 5; typically a small-count industry series)
+
+==============================================================================================================
+KEY FINDINGS (total private)
+------------------------------------------------------------
+  Original JF period (1992Q3--2006Q3): C1=0.213, C2=0.206, C3-HP=0.407, C4-HP=0.462, C5=0.778, C6=1.211
+  Extended to 2019Q4 (COVID cutoff): C1=0.201, C2=0.195, C3-HP=0.452, C4-HP=0.491, C5=1.052, C6=1.060
+  Extended to 2024Q2 (BED end): C1=0.200, C2=0.194, C3-HP=0.598, C4-HP=0.833, C5=0.693, C6=0.664
+
+Secular decline: entry/exit shares fall ~1 pp comparing JF period to 2019 extension.
+GFC effect: C4-HP (cyclical R^2 for closings) rises sharply in 2024 sample (0.46->0.83),
+  driven by the large synchronised establishment destruction in 2008-09.
+Extensive margin cyclicality: C5/C6 > 0.5 for most industries, supporting the delta channel.

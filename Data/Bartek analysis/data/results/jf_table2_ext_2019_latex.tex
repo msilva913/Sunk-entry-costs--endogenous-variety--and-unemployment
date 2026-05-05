@@ -1,0 +1,37 @@
+\begin{table}[htbp]
+\centering
+\small
+\caption{Job Gains/Losses from Opening/Closing Establishments \\
+  \emph{Extended to 2019Q4 (COVID cutoff)} \\
+  \emph{Source: BLS BED (quarterly). Replication/extension of Jaimovich-Floetotto (2008) Table~2.}}
+\label{tab:jf_t2_ext_2019}
+\begin{tabular}{lcccccccc}
+\toprule
+ & \multicolumn{2}{c}{Mean share} & \multicolumn{2}{c}{Cycl.\ var.\ (HP)} & \multicolumn{2}{c}{Cycl.\ var.\ (Ham.)} & \multicolumn{2}{c}{Unemp.\ proj.} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}\cmidrule(lr){8-9}
+Industry & Open. & Clos. & Open. & Clos. & Open. & Clos. & Open. & Clos. \\
+\midrule
+\midrule
+\textbf{Total private} & 0.201 & 0.195 & 0.452 & 0.491 & 0.531 & 0.613 & 1.052 & 1.060 \\
+Natural resources \& mining & 0.164 & 0.158 & 0.358 & 0.182 & 0.440 & 0.301 & 1.414 & 5.2$^{\dagger}$ \\
+Construction & 0.208 & 0.206 & 0.573 & 0.623 & 0.650 & 0.760 & 0.321 & 0.787 \\
+Manufacturing & 0.125 & 0.139 & 0.176 & 0.254 & 0.349 & 0.443 & 1.849 & 0.715 \\
+Wholesale trade & 0.204 & 0.227 & 0.369 & 0.384 & 0.490 & 0.594 & 0.782 & 0.806 \\
+Retail trade & 0.172 & 0.154 & 0.218 & 0.328 & 0.526 & 0.562 & 1.366 & 1.824 \\
+Transportation \& utilities & 0.170 & 0.135 & 0.426 & 0.298 & 0.545 & 0.339 & 3.363 & 8.4$^{\dagger}$ \\
+Information & 0.206 & 0.210 & 0.342 & 0.404 & 0.620 & 0.649 & 1.649 & 2.165 \\
+Financial activities & 0.235 & 0.247 & 0.534 & 0.526 & 0.594 & 0.706 & 1.502 & 1.503 \\
+Prof.~\& business services & 0.205 & 0.212 & 0.558 & 0.345 & 0.377 & 0.523 & 1.170 & 0.861 \\
+Education \& health services & 0.202 & 0.213 & 0.430 & 0.394 & 0.262 & 0.416 & 1.567 & 3.004 \\
+Leisure \& hospitality & 0.245 & 0.198 & 0.405 & 0.501 & 0.366 & 0.394 & 0.881 & 1.730 \\
+Other services & 0.221 & 0.219 & 0.387 & 0.368 & 0.436 & 0.470 & 0.559 & 1.012 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]\footnotesize
+\item \textit{Mean share}: fraction of gross gains (losses) from opening (closing) establishments.
+\item \textit{Cycl.\ var.}: $R^2$ from regressing HP- (or Hamilton-) filtered log total flows on filtered log entry/exit flows.
+\item \textit{Unemp.\ proj.}: ratio of fitted variances from projecting log series on constant $+u_t+u_{t-1}$ (national unemployment rate).
+\item Values $>1$ in unemp.\ columns indicate entry/exit is more cyclically sensitive than total flows.
+\item $^\dagger$ Noisy estimate ($|\text{ratio}|>5$; small-count series).
+\end{tablenotes}
+\end{table}

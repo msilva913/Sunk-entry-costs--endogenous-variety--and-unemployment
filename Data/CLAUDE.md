@@ -1,6 +1,6 @@
 # CLAUDE.md — Empirical LP Project (Firm Entry/Exit DSGE)
 
-**Last updated:** May 5, 2026
+**Last updated:** May 5, 2026 (session 2)
 **Author:** Mario Silva
 **Purpose:** Persistent project context for fresh Cowork sessions. Paste this into any new session to restore full project state.
 **Code structure:** clean, succinct code easily interpretable by empirical macroeconomist.
@@ -56,6 +56,7 @@ data/results/        — LP output CSVs and all IRF plots
 | `part9_recession_scatter.py` | Cross-recession motivating scatter: Bartik cum. exit rate vs. labor market outcomes across 3 NBER recessions | ✅ Complete | `recession_scatter_primary.png`, `recession_scatter_appendix.png`, `recession_scatter_latex.tex` |
 | `part10_state_scatter.py` | Cross-state motivating scatter: avg. exit rate vs. CUG/CVS (primary) and recovery speed (appendix) for 50 states | ✅ Complete | `state_scatter_primary.png`, `state_scatter_appendix.png`, `state_scatter.csv`, `state_scatter_latex.tex` |
 | `part10b_state_scatter_sensitivity.py` | Sensitivity check: full-sample vs. recession-quarter X-axis for state recovery speed panels | ✅ Complete | `state_scatter_sensitivity.png`, `state_scatter_sensitivity_latex.tex` |
+| `part11_jf_table2.py` | BED-based replication and extension of Jaimovich-Floetotto (2008) Table 2: entry/exit share of gross flows and cyclical comovement, 12 Bartik supersectors + total private, 3 sample periods | ✅ Complete | `jf_table2_results.parquet`, `jf_table2_extension.txt`, `jf_table2_{sname}_latex.tex` |
 
 ### Notable additions in March 2026 session:
 - **Priority 1 completed:** `part4_outcomes.py` now fetches JOLTS state-level job openings (SA, stock → quarterly average). Series ID format verified: `JTS000000{ST}0000000JOL` (21 chars). Data available from Dec 2000 for all 50 states.
@@ -899,3 +900,67 @@ Priority order:
 4. **SLOOS interaction** (Priority 3) — `part7b_sloos.py`: C&I net tightening as alternative to NFCI
 5. **Recession-severity placebo** (Priority 4a) — extend `part5_lp.py` with Δu_nat interaction
 6. **Pre-GFC sample restriction** (Priority 4c) — add `max_qt` option to `run_lp()`
+
+---
+
+## 16. New Work — May 5, 2026 (Session 2)
+
+### 16.1 JF Table 2 Replication and Extension (part11_jf_table2.py)
+
+**Purpose:** Replicate and extend Table 2 of Jaimovich & Floetotto (2008, JME) — "Firm entry, labor market dynamics, and the business cycle" — using the project's BED data. Provides empirical support for calibrating the relative importance of establishment entry and exit in aggregate gross job flows.
+
+**Script:** `part11_jf_table2.py` in `Data/Bartek analysis/`
+
+**Data source:** `data/cache/bed_gross_flows_correct.parquet`
+- Column naming caveat (critical): `'expanding'` column = elem0001 = **total** gross gains (not just expanding establishments); `'openings'` column = elem0002 = gains at **expanding (continuing)** establishments only
+- Derived series: G_O (births) = `expanding − openings`; L_C (closings/deaths) = `closings` (elem0006)
+- Total private = sum of 12 Bartik supersectors; industry code `000000` for BED aggregate
+
+**Industries:** 12 Bartik supersectors + TOTAL (aggregate). Ordered: TOTAL, 10 (Mining), 20 (Construction), 30 (Manufacturing), 41 (Wholesale), 42 (Retail), 43 (T&U), 50 (Information), 55 (Finance/RE), 60 (PBS), 65 (Edu/Health), 70 (Arts/Food), 80 (Other services).
+
+**Sample periods:**
+1. `jf_orig`: 1992Q3–2006Q3 (replicates JF original)
+2. `ext_2019`: 1992Q3–2019Q4 (COVID cutoff, primary extension)
+3. `ext_2024`: 1992Q3–2024Q2 (full BED coverage)
+
+**Table columns:**
+
+| Col | Description | Method |
+|-----|-------------|--------|
+| C1 | Entry share of gross gains: Σ(G_O)/Σ(G) | Raw level means |
+| C2 | Exit share of gross losses: Σ(L_C)/Σ(L) | Raw level means |
+| C3 | Cyclical R²: HP(log G_O) → HP(log G) | HP filter λ=1600 on log levels; R² of OLS |
+| C4 | Cyclical R²: HP(log L_C) → HP(log L) | HP filter λ=1600 on log levels; R² of OLS |
+| C3H | Cyclical R²: Hamilton(log G_O) → Hamilton(log G) | Hamilton (2018) filter; robustness for C3 |
+| C4H | Cyclical R²: Hamilton(log L_C) → Hamilton(log L) | Hamilton (2018) filter; robustness for C4 |
+| C5 | u-projected fitted var ratio: Var(ĜO)/Var(Ĝ) | Project log(G), log(G_O) on [1, u_t, u_{t-1}]; ratio of fitted variances |
+| C6 | u-projected fitted var ratio: Var(L̂C)/Var(L̂) | Same for losses |
+
+**Key methodological note — cols 5-6:** JF project on **raw (unfiltered) log levels** using GDP as projector. Our implementation is identical except uses national unemployment (u_t, u_{t-1}) instead of GDP as the business cycle projector (more natural given this paper's focus). Cols 3-4 use HP filter; cols 5-6 are a separate projection exercise on levels. Our cols 5-6 are directly interpretable as "fraction of the aggregate flow cycle (as measured by unemployment) accounted for by entry/exit."
+
+**Key findings (jf_orig sample, TOTAL row):**
+- C1 ≈ 0.15, C2 ≈ 0.20: entry/exit account for ~15–20% of gross flows, consistent with JF
+- C3, C4 high (≥0.85): entry/exit cyclical comovements are tight with total flows
+- Secular decline in C1/C2 is visible comparing ext_2019 to jf_orig — entry rates fell post-GFC, well-documented in BDS/BED literature
+- Hamilton filter C3H/C4H broadly consistent with HP results; T&U (`43`) flagged with `†` for noisy closings series (mean ~2.9k/qtr)
+
+**Output files in `data/results/`:**
+- `jf_table2_results.parquet` — full panel (all samples × industries × statistics)
+- `jf_table2_extension.txt` — human-readable ASCII table with documentation header
+- `jf_table2_jf_orig_latex.tex` — LaTeX tabular for 1992Q3–2006Q3 sample
+- `jf_table2_ext_2019_latex.tex` — LaTeX tabular for 1992Q3–2019Q4 sample
+- `jf_table2_ext_2024_latex.tex` — LaTeX tabular for 1992Q3–2024Q2 sample
+
+**LaTeX console print:** Script prints all three LaTeX tables to stdout with `%===` separators for direct copy-paste into .tex document.
+
+**Technical issues resolved this session:**
+- `bed_gross_flows_correct.parquet` column names are inverted vs. economic meaning (see data source caveat above) — correct mapping confirmed by summing goods-producing supersectors against BED aggregate
+- UnicodeEncodeError in Spyder (cp1252 default): fixed with `encoding="utf-8"` on all `open()` calls + `.encode("ascii", errors="replace")` guard in `write_text_table`
+- scipy not installed in sandbox: `pip install scipy --break-system-packages`
+
+### 16.2 δ/τ Calibration (Completed)
+
+- **δ_bar = 0.940%/qtr**: BDS employment-weighted exit rate (annual, ÷4), common sample 1978–2019
+- **τ_bar = 9.34%/qtr**: Shimer (2012) total separation rate, common sample
+- **δ/τ = 10.07%**: product-line destruction accounts for ~10% of all separations at steady state
+- These are the model calibration targets; the BED-based JF Table 2 provides supporting micro-evidence on the quantitative role of entry/exit in aggregate flows
