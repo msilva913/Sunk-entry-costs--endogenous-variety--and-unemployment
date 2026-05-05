@@ -498,48 +498,9 @@ if __name__ == "__main__":
               "v_pp_trough", "v_recovery_end_qtrs", "v_recovery_trough_qtrs", "cvs"]
              ].to_string(index=False))
 
-    # -- Plot: 4x2 grid -------------------------------------------------------
-    # Row 0: trough depth (pp deviation from pre-recession level)
-    # Row 1: recovery speed anchored at recession END
-    # Row 2: recovery speed anchored at series TROUGH (for comparison)
-    # Row 3: cumulative gap -- area under deviation curve, H=20 from rec. start
-    # Left column = unemployment; right column = vacancies.
-    recov_pct = int(RECOVERY_THRESHOLD * 100)
-    fig, axes = plt.subplots(4, 2, figsize=(12, 17))
-
-    xlabel_str = (r"Cumulative perm.-adjusted $\delta$ during recession"
-                  "\n(closing employment / 2006 base, both in persons)")
-
-    panels = [
-        # row 0: trough depth
-        (axes[0, 0], "u_pp_trough",
-         "U/LF trough minus pre-recession U/LF (pp)",
-         "Unemployment depth"),
-        (axes[0, 1], "v_pp_trough",
-         "V/LF trough minus pre-recession V/LF (pp)",
-         "Vacancy depth"),
-        # row 1: recession-end-anchored recovery
-        (axes[1, 0], "u_recovery_end_qtrs",
-         f"Qtrs from rec. end to {recov_pct}% U/LF recovery",
-         "Unemployment recovery (rec.-end anchor)"),
-        (axes[1, 1], "v_recovery_end_qtrs",
-         f"Qtrs from rec. end to {recov_pct}% V/LF recovery",
-         "Vacancy recovery (rec.-end anchor)"),
-        # row 2: trough-anchored recovery
-        (axes[2, 0], "u_recovery_trough_qtrs",
-         f"Qtrs from U/LF trough to {recov_pct}% recovery",
-         "Unemployment recovery (trough anchor)"),
-        (axes[2, 1], "v_recovery_trough_qtrs",
-         f"Qtrs from V/LF trough to {recov_pct}% recovery",
-         "Vacancy recovery (trough anchor)"),
-        # row 3: cumulative gap
-        (axes[3, 0], "cug",
-         f"CUG: sum of (U/LF - pre-U)$^+$ over H={CUM_GAP_HORIZON} qtrs from rec. start (pp-qtrs)",
-         f"Cumul. unemployment gap (H={CUM_GAP_HORIZON})"),
-        (axes[3, 1], "cvs",
-         f"CVS: sum of (pre-V - V/LF)$^+$ over H={CUM_GAP_HORIZON} qtrs from rec. start (pp-qtrs)",
-         f"Cumul. vacancy shortfall (H={CUM_GAP_HORIZON})"),
-    ]
+    recov_pct  = int(RECOVERY_THRESHOLD * 100)
+    xlabel_str = (r"Cumulative perm.-adjusted establishment exit rate during recession"
+                  "\n(BED closing employment / 2006 base employment, both in persons)")
 
     def _scatter_panel(ax, ycol, ylabel, title):
         sub = df.dropna(subset=["cum_delta", ycol])
@@ -568,35 +529,130 @@ if __name__ == "__main__":
         ax.grid(linewidth=0.4, alpha=0.4)
         ax.xaxis.set_major_formatter(mticker.FuncFormatter(lambda v, _: f"{v:.3f}"))
 
-    for ax, ycol, ylabel, title in panels:
+    # =========================================================================
+    # Figure 1 (primary): recession-end-anchored recovery + cumulative gap
+    # =========================================================================
+    fig1, axes1 = plt.subplots(2, 2, figsize=(12, 9))
+
+    primary_panels = [
+        (axes1[0, 0], "u_recovery_end_qtrs",
+         f"Qtrs from rec. end to {recov_pct}% U/LF recovery",
+         "Unemployment recovery (rec.-end anchor)"),
+        (axes1[0, 1], "v_recovery_end_qtrs",
+         f"Qtrs from rec. end to {recov_pct}% V/LF recovery",
+         "Vacancy recovery (rec.-end anchor)"),
+        (axes1[1, 0], "cug",
+         f"sum of (U/LF - pre-U)$^+$, H={CUM_GAP_HORIZON} qtrs from rec. start (pp-qtrs)",
+         f"Cumulative unemployment gap (H={CUM_GAP_HORIZON})"),
+        (axes1[1, 1], "cvs",
+         f"sum of (pre-V - V/LF)$^+$, H={CUM_GAP_HORIZON} qtrs from rec. start (pp-qtrs)",
+         f"Cumulative vacancy shortfall (H={CUM_GAP_HORIZON})"),
+    ]
+
+    for ax, ycol, ylabel, title in primary_panels:
         _scatter_panel(ax, ycol, ylabel, title)
 
-    # Note explaining trough-anchor distortion
-    axes[2, 1].text(0.05, 0.08,
+    axes1[1, 0].text(0.05, 0.08,
+        f"Area under gap curve from rec. start over H={CUM_GAP_HORIZON} qtrs.\n"
+        "Positive deviations only (post-recovery overshoot clipped at 0).",
+        transform=axes1[1, 0].transAxes, fontsize=7.5, color="dimgrey",
+        verticalalignment="bottom",
+        bbox=dict(boxstyle="round,pad=0.3", facecolor="lightyellow", alpha=0.8))
+
+    fig1.tight_layout()
+    out1 = RESULTS_DIR / "recession_scatter_primary.png"
+    fig1.savefig(out1, dpi=150, bbox_inches="tight")
+    plt.close(fig1)
+    print(f"Primary figure saved:  {out1}")
+
+    # =========================================================================
+    # Figure 2 (appendix): peak impact + trough-anchored recovery speed
+    # =========================================================================
+    fig2, axes2 = plt.subplots(2, 2, figsize=(12, 9))
+
+    appendix_panels = [
+        (axes2[0, 0], "u_pp_trough",
+         "U/LF at trough minus pre-recession U/LF (pp)",
+         "Unemployment depth (peak impact)"),
+        (axes2[0, 1], "v_pp_trough",
+         "V/LF at trough minus pre-recession V/LF (pp)",
+         "Vacancy depth (peak impact)"),
+        (axes2[1, 0], "u_recovery_trough_qtrs",
+         f"Qtrs from U/LF trough to {recov_pct}% recovery",
+         "Unemployment recovery (trough anchor)"),
+        (axes2[1, 1], "v_recovery_trough_qtrs",
+         f"Qtrs from V/LF trough to {recov_pct}% recovery",
+         "Vacancy recovery (trough anchor)"),
+    ]
+
+    for ax, ycol, ylabel, title in appendix_panels:
+        _scatter_panel(ax, ycol, ylabel, title)
+
+    axes2[1, 1].text(0.05, 0.08,
         "2001 V-trough: 2002Q4 (4 qtrs after rec. end)\n"
         "2008-09 V-trough: 2009Q3 (1 qtr after rec. end)\n"
         "Trough anchor conflates delayed trough formation\n"
         "with the recovery phase.",
-        transform=axes[2, 1].transAxes, fontsize=7.5, color="dimgrey",
+        transform=axes2[1, 1].transAxes, fontsize=7.5, color="dimgrey",
         verticalalignment="bottom",
         bbox=dict(boxstyle="round,pad=0.3", facecolor="lightyellow", alpha=0.8))
 
-    # Note on cumulative gap construction
-    axes[3, 0].text(0.05, 0.08,
-        f"Area under gap curve from rec. start, H={CUM_GAP_HORIZON} qtrs.\n"
-        "Positive deviations only (overshooting clipped at 0).",
-        transform=axes[3, 0].transAxes, fontsize=7.5, color="dimgrey",
-        verticalalignment="bottom",
-        bbox=dict(boxstyle="round,pad=0.3", facecolor="lightyellow", alpha=0.8))
+    fig2.tight_layout()
+    out2 = RESULTS_DIR / "recession_scatter_appendix.png"
+    fig2.savefig(out2, dpi=150, bbox_inches="tight")
+    plt.close(fig2)
+    print(f"Appendix figure saved: {out2}")
 
-    fig.suptitle(
-        "Cross-recession heterogeneity: firm destruction and labor market outcomes\n"
-        r"X-axis: $\sum_{t \in \mathrm{rec}} g^\delta_t$  "
-        "(permanence-adjusted, BED 1992Q3+)",
-        fontsize=11, y=1.01,
-    )
-    fig.tight_layout()
-    out = RESULTS_DIR / "recession_scatter.png"
-    fig.savefig(out, dpi=150, bbox_inches="tight")
-    plt.close(fig)
-    print(f"\nPlot saved: {out}")
+    # =========================================================================
+    # LaTeX figure snippets
+    # =========================================================================
+    latex_primary = r"""\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{recession_scatter_primary.png}
+    \caption{Relationship between cumulative permanence-adjusted establishment
+    exit rates during recessions and labor market outcome measures.
+    The top row shows quarters from the NBER recession end date until
+    unemployment (left) and vacancy (right) rates recover 50\% of the
+    trough gap. The bottom row shows the cumulative unemployment gap
+    (CUG, left) and cumulative vacancy shortfall (CVS, right), defined
+    as the sum of positive deviations from the pre-recession baseline
+    over $H=20$ quarters from recession onset. Exit rates are constructed
+    from BLS Business Employment Dynamics (BED) establishment closing
+    data, permanence-adjusted using Business Dynamics Statistics (BDS)
+    death-to-closing ratios, and normalized by 2006 base-year employment.
+    Vacancy data: Barnichon (2010) Composite Help-Wanted Index (pre-2001)
+    spliced with JOLTS state-level job openings (2001 onward).
+    Recessions: 2001, 2007--2009, 2020 (NBER dates).}
+    \label{fig:recession_scatter_primary}
+\end{figure}"""
+
+    latex_appendix = r"""\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{recession_scatter_appendix.png}
+    \caption{Supplementary recession severity measures.
+    The top row shows the peak deviation of unemployment (left) and
+    vacancy (right) rates from pre-recession baselines (percentage
+    points). The bottom row shows quarters from the series trough
+    until 50\% recovery for unemployment (left) and vacancies (right).
+    Trough-anchored recovery times are sensitive to the lag between
+    the NBER recession end date and the series nadir, which varies
+    across episodes (2001 vacancy trough: 4 quarters after recession
+    end; 2008--2009: 1 quarter). See Figure~\ref{fig:recession_scatter_primary}
+    for data sources and construction details.}
+    \label{fig:recession_scatter_appendix}
+\end{figure}"""
+
+    latex_out = RESULTS_DIR / "recession_scatter_latex.tex"
+    with open(latex_out, "w") as f:
+        f.write("% Primary figure\n")
+        f.write(latex_primary)
+        f.write("\n\n% Appendix figure\n")
+        f.write(latex_appendix)
+        f.write("\n")
+    print(f"LaTeX snippets saved:  {latex_out}")
+
+    # Also print to console for quick copy-paste
+    print("\n--- LaTeX: primary figure ---")
+    print(latex_primary)
+    print("\n--- LaTeX: appendix figure ---")
+    print(latex_appendix)
