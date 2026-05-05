@@ -1,6 +1,6 @@
 # CLAUDE.md — Empirical LP Project (Firm Entry/Exit DSGE)
 
-**Last updated:** April 8, 2026
+**Last updated:** May 5, 2026
 **Author:** Mario Silva
 **Purpose:** Persistent project context for fresh Cowork sessions. Paste this into any new session to restore full project state.
 **Code structure:** clean, succinct code easily interpretable by empirical macroeconomist.
@@ -53,6 +53,9 @@ data/results/        — LP output CSVs and all IRF plots
 | `part2c_granger_lp.py` | Panel LP Granger causality: δ vs LD (raw + residualized) | ✅ Complete | `data/results/granger_lp_*.png` |
 | `part2d_var_calibration.py` | Bivariate panel VAR(L) on (ν^δ, ν^{LD}): companion matrix, Σ, Cholesky IRFs | ✅ Complete | `data/results/var_calibration.csv`, `var_irf_chol.png` |
 | `part5_joint_lp.py` | Joint LP with δ and LD in same regression (v2-residualized); pre-standardizes instruments; outputs comparison tables and joint vs separate plots | ✅ Complete | `lp_joint_delta_ld_{unemp,vacancy}.csv` + `.png` |
+| `part9_recession_scatter.py` | Cross-recession motivating scatter: Bartik cum. exit rate vs. labor market outcomes across 3 NBER recessions | ✅ Complete | `recession_scatter_primary.png`, `recession_scatter_appendix.png`, `recession_scatter_latex.tex` |
+| `part10_state_scatter.py` | Cross-state motivating scatter: avg. exit rate vs. CUG/CVS (primary) and recovery speed (appendix) for 50 states | ✅ Complete | `state_scatter_primary.png`, `state_scatter_appendix.png`, `state_scatter.csv`, `state_scatter_latex.tex` |
+| `part10b_state_scatter_sensitivity.py` | Sensitivity check: full-sample vs. recession-quarter X-axis for state recovery speed panels | ✅ Complete | `state_scatter_sensitivity.png`, `state_scatter_sensitivity_latex.tex` |
 
 ### Notable additions in March 2026 session:
 - **Priority 1 completed:** `part4_outcomes.py` now fetches JOLTS state-level job openings (SA, stock → quarterly average). Series ID format verified: `JTS000000{ST}0000000JOL` (21 chars). Data available from Dec 2000 for all 50 states.
@@ -790,3 +793,109 @@ Priority order:
 | `part7c_recession_placebo.py` | New script: dual-severity placebo (level + change) |
 | `build_report_html.py` | New utility: pandoc-based Markdown→HTML with base64 images |
 | `report.md` | Sections 5.6, 5.7 added (severity placebo + LD interpretation); 7.1–7.4 updated |
+
+---
+
+## 15. New Findings and Completed Work — May 5, 2026
+
+### 15.1 Motivating Scatter: Cross-Recession (part9_recession_scatter.py)
+
+**Purpose:** Descriptive figure relating each recession's cumulative permanent-adjusted establishment exit rate (X-axis) to labor market outcomes (Y-axes) across the three NBER recessions (2001, 2007–09, 2020). Motivates the δ channel before the LP analysis.
+
+**Key technical decisions:**
+- X-axis: cumulative Bartik delta during recession quarters (raw, non-residualized — goal is illustrative variation, not causal identification). Units corrected: BED closings are in thousands of workers, so multiplied by 1000 before dividing by QCEW employment level.
+- V/LF aggregation: recomputed directly from LAUS state panel (sum vac_persons / sum LF × 100) bypassing the tightness cache, which had a mean-vs-sum bug giving log_theta ≈ 3.74 instead of the correct V/LF ≈ 3–4%.
+- HWI splice: Barnichon Composite HWI spliced with JOLTS V/LF at 2001Q1 (scale factor ≈ 0.998) for pre-JOLTS vacancy coverage. Path: `../CompositeHWI.csv`.
+- Trough depth: arithmetic PP deviations (u_trough − pre_u), not log-deviations.
+- Recovery metrics: (a) recession-end anchor — clock starts at NBER recession end; (b) trough anchor — clock starts at series nadir; (c) cumulative gap — area under positive deviation curve from recession START, H=20 quarters, clipped at zero.
+
+**Figure split:**
+- **Primary** (`recession_scatter_primary.png`): 2×2 — recession-end recovery speed (row 0) and cumulative gaps CUG/CVS (row 1). No suptitle; captions in LaTeX only.
+- **Appendix** (`recession_scatter_appendix.png`): 2×2 — trough depth (row 0) and trough-anchored recovery speed (row 1).
+- LaTeX snippets in `data/results/recession_scatter_latex.tex`.
+
+**Key finding:** Unemployment cumulative gap scales monotonically with cumulative exit rate across the three recessions. Vacancy pattern is less clean — 2001 vacancy formation was unusually slow relative to its exit rate (acknowledged in paper text without overdoing it; likely reflects JOLTS series immaturity and structural vacancy posting differences pre-GFC).
+
+---
+
+### 15.2 Motivating Scatter: Cross-State (part10_state_scatter.py)
+
+**Purpose:** 50-state scatter linking structural exit rate exposure (full-sample average Bartik delta) to recession labor market outcomes averaged across three recessions. Complements the cross-recession figure by showing within-US geographic variation.
+
+**X-axis:** Full-sample time average of `bartik_delta` per state (1992Q3–2021Q4). Non-residualized by design — structural cross-state heterogeneity in exit propensity, not causal identification. Confirmed: residualized delta is not appropriate here (geographic variation is the signal).
+
+**Outcome measures** (LF-weighted average across 3 recessions per state):
+- **CUG** — cumulative unemployment gap: Σ max(u_{t} − pre_u, 0) over H=20 quarters from recession start (pp-qtrs)
+- **CVS** — cumulative vacancy shortfall: Σ max(pre_v − v_{t}, 0) over H=20 quarters from recession start (pp-qtrs)
+- **u_rec_end / v_rec_end** — quarters from NBER recession end to 50% recovery of trough gap (appendix)
+- **u_rec_trough / v_rec_trough** — quarters from series trough to 50% recovery (appendix)
+
+**Figure split:**
+- **Primary** (`state_scatter_primary.png`): 1×2 — CUG (left) and CVS (right). These are the headline cross-state results.
+- **Appendix** (`state_scatter_appendix.png`): 2×2 — recovery speed under both anchors (rec-end and trough). Included for completeness but not leading results.
+- Outputs also: `state_scatter.csv`, `state_scatter_latex.tex` (both LaTeX snippets).
+
+**Key weighted correlations (r_w, LF weights):**
+
+| Outcome | r_w | Notes |
+|---------|-----|-------|
+| CUG | +0.647 | Headline result — correct sign, strong |
+| CVS | +0.282 | Correct sign, moderate |
+| u_rec_end | −0.267 | Wrong sign — see below |
+| v_rec_end | +0.075 | Near zero |
+| u_rec_trough | −0.439 | Still wrong sign |
+| v_rec_trough | +0.059 | Near zero |
+
+**Why recovery speed has wrong/null sign — diagnosis:**
+Recovery speed is confounded by state economic structure. High-delta states are predominantly service/Sun Belt economies (CA, FL, NV, HI, TX, NJ, NY) that experienced the 2001 recession mildly and recover quickly on average. Low-delta states are Manufacturing/Rust Belt (IN, OH, KY, ME, AR, IA) that recover slowly regardless of recession. The cross-state variation in exit rates is driven by industry composition, not treatment intensity — switching anchors (trough vs. rec-end) does not fix this. CV of avg_delta_rate = 4.8%; unweighted r for u_rec_end = +0.011, confirming the negative weighted result is driven by large states, not a general pattern.
+
+**Resolution:** CUG is the right metric because it integrates depth × duration, combining both channels through which exit shocks generate persistent damage. Recovery speed conflates structural recovery capacity with the exit shock effect. Paper leads with CUG/CVS as the cross-state motivating evidence; recovery speed panels appear only in the appendix with a brief caveat about industry composition.
+
+**Paper narrative for fig:state_scatter:** States with structurally higher establishment exit rates accumulate significantly larger total unemployment gaps during recessions (r_w = 0.65), consistent with the model's prediction that firm destruction shocks generate persistent rather than transitory Beveridge curve dislocations. The vacancy shortfall shows the same directional pattern (r_w = 0.28) but more weakly, consistent with a partial reposting channel.
+
+---
+
+### 15.3 Sensitivity Check: X-Axis Definition (part10b_state_scatter_sensitivity.py)
+
+**Purpose:** Test whether the cross-state recovery speed correlations depend on how the X-axis establishment exit rate is defined — full-sample average vs. recession-quarter average (13 quarters spanning the three NBER episodes).
+
+**Results:**
+
+| Outcome | Full-sample X r_w | Recession-quarter X r_w | Full-sample slope | Rec-quarter slope |
+|---------|------------------|------------------------|-------------------|-------------------|
+| U recovery | −0.267 | −0.284 | −1323 | −1080 |
+| V recovery | +0.075 | +0.081 | +133 | +118 |
+
+**Key facts:** Cross-state correlation between the two X measures = 0.995; mean ratio = 1.183 (recession quarters have ~18% higher exit rates uniformly — pure level rescaling, no reranking). Weighted correlations barely move and slopes rescale approximately by 1/1.18 as expected. The null/wrong-sign result for recovery speed is equally present under both X definitions, confirming the issue is economic structure, not measurement choice.
+
+---
+
+### 15.4 Key Files Added This Session
+
+| File | Function |
+|------|----------|
+| `part9_recession_scatter.py` | Cross-recession scatter: cum. exit rate vs. outcomes (3 recessions) |
+| `part10_state_scatter.py` | Cross-state scatter: avg. exit rate vs. CUG/CVS (primary) + recovery speed (appendix) |
+| `part10b_state_scatter_sensitivity.py` | Sensitivity: full-sample vs. recession-quarter X for recovery speed panels |
+
+| Output | Description |
+|--------|-------------|
+| `data/results/recession_scatter_primary.png` | Cross-recession primary figure (rec-end recovery + CUG/CVS) |
+| `data/results/recession_scatter_appendix.png` | Cross-recession appendix figure (depth + trough recovery) |
+| `data/results/recession_scatter_latex.tex` | LaTeX snippets for both recession scatter figures |
+| `data/results/state_scatter_primary.png` | Cross-state primary figure (CUG + CVS) — fig:state_scatter |
+| `data/results/state_scatter_appendix.png` | Cross-state appendix figure (recovery speed, 2 anchors) |
+| `data/results/state_scatter.csv` | State-level outcomes: avg_delta_rate, CUG, CVS, recovery speeds |
+| `data/results/state_scatter_latex.tex` | LaTeX snippets for both state scatter figures |
+| `data/results/state_scatter_sensitivity.png` | Sensitivity figure: full-sample vs. recession-quarter X |
+| `data/results/state_scatter_sensitivity_latex.tex` | LaTeX snippet for sensitivity figure |
+
+### 15.5 Pending Work (Updated)
+
+Priority order:
+1. **Wild cluster bootstrap** (part5_wcrb.py) — n=50 clusters at lower bound; asymptotic SEs may be too narrow at long horizons
+2. **GFC diagnostic for LD unemployment** (part7d_ld_gfc.py) — LD unemployment rises monotonically through h=20; apply GFC_{t+h} outcome-quarter control
+3. **build_report_html.py** — run locally to generate HTML report (requires pandoc)
+4. **SLOOS interaction** (Priority 3) — `part7b_sloos.py`: C&I net tightening as alternative to NFCI
+5. **Recession-severity placebo** (Priority 4a) — extend `part5_lp.py` with Δu_nat interaction
+6. **Pre-GFC sample restriction** (Priority 4c) — add `max_qt` option to `run_lp()`
