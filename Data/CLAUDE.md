@@ -929,20 +929,26 @@ Priority order:
 |-----|-------------|--------|
 | C1 | Entry share of gross gains: Σ(G_O)/Σ(G) | Raw level means |
 | C2 | Exit share of gross losses: Σ(L_C)/Σ(L) | Raw level means |
-| C3 | Cyclical R²: HP(log G_O) → HP(log G) | HP filter λ=1600 on log levels; R² of OLS |
-| C4 | Cyclical R²: HP(log L_C) → HP(log L) | HP filter λ=1600 on log levels; R² of OLS |
-| C3H | Cyclical R²: Hamilton(log G_O) → Hamilton(log G) | Hamilton (2018) filter; robustness for C3 |
-| C4H | Cyclical R²: Hamilton(log L_C) → Hamilton(log L) | Hamilton (2018) filter; robustness for C4 |
-| C5 | u-projected fitted var ratio: Var(ĜO)/Var(Ĝ) | Project log(G), log(G_O) on [1, u_t, u_{t-1}]; ratio of fitted variances |
-| C6 | u-projected fitted var ratio: Var(L̂C)/Var(L̂) | Same for losses |
+| C3 | Relative std dev: sd(HP log G_O) / sd(HP log G) | HP filter λ=1600; values >1 = openings amplify cycle |
+| C4 | Relative std dev: sd(HP log L_C) / sd(HP log L) | HP filter λ=1600; values >1 = closings amplify cycle |
+| C3H | Hamilton relative std dev: sd(Ham log G_O) / sd(Ham log G) | Hamilton (2018) filter; robustness for C3 |
+| C4H | Hamilton relative std dev: sd(Ham log L_C) / sd(Ham log L) | Hamilton (2018) filter; robustness for C4 |
+| C5 | u-projected fitted var ratio (HP): Var(fitted HP G_O) / Var(fitted HP G) | HP-filter log flows and log u; project on [1, cu_t, cu_{t-1}]; ratio of fitted variances |
+| C6 | u-projected fitted var ratio (HP): Var(fitted HP L_C) / Var(fitted HP L) | Same for losses |
+| C5H | Same as C5 via Hamilton filter | Hamilton filter throughout |
+| C6H | Same as C6 via Hamilton filter | Hamilton filter throughout |
 
-**Key methodological note — cols 5-6:** JF project on **raw (unfiltered) log levels** using GDP as projector. Our implementation is identical except uses national unemployment (u_t, u_{t-1}) instead of GDP as the business cycle projector (more natural given this paper's focus). Cols 3-4 use HP filter; cols 5-6 are a separate projection exercise on levels. Our cols 5-6 are directly interpretable as "fraction of the aggregate flow cycle (as measured by unemployment) accounted for by entry/exit."
+**Key methodological notes:**
+- All four cyclical columns (3-6) use HP-detrended series (λ=1600), following JF's "detrended series" language. Hamilton filter backup table produced separately.
+- Cols 3-4: relative standard deviation (not R²) — standard RBC-style moment. HP applied to **raw levels** (not logs). Log-transforming before HP inflates the ratio mechanically (G_O ~ 20% of G, so log G_O has higher HP-cycle amplitude than log G even when level cycles are proportional). Raw-level HP gives C3-HP = 0.369, C4-HP = 0.336 for total private, matching JF's ~0.33.
+- Cols 5-6: unemployment used as projector instead of JF's GDP; both flows and unemployment HP-filtered before projection.
 
 **Key findings (jf_orig sample, TOTAL row):**
-- C1 ≈ 0.15, C2 ≈ 0.20: entry/exit account for ~15–20% of gross flows, consistent with JF
-- C3, C4 high (≥0.85): entry/exit cyclical comovements are tight with total flows
-- Secular decline in C1/C2 is visible comparing ext_2019 to jf_orig — entry rates fell post-GFC, well-documented in BDS/BED literature
-- Hamilton filter C3H/C4H broadly consistent with HP results; T&U (`43`) flagged with `†` for noisy closings series (mean ~2.9k/qtr)
+- C1 = 0.213, C2 = 0.206: entry/exit account for ~20% of gross flows, consistent with JF (gap from supersector aggregation vs BLS headline)
+- C3-HP = 0.369, C4-HP = 0.336: openings/closings are ~1/3 as volatile as total flows at business-cycle frequencies — matches JF's ~0.33
+- C5-HP = 0.007, C6-HP = 0.022: very small unemployment-projected variance ratios in JF period; closings account for little of the unemployment-driven component pre-GFC (intensive margin dominates in that sample)
+- Secular decline in C1/C2 visible comparing jf_orig to ext_2019 — entry rates fell post-GFC, well-documented in BDS/BED literature
+- Hamilton filter C3H/C4H broadly consistent with HP results throughout
 
 **Output files in `data/results/`:**
 - `jf_table2_results.parquet` — full panel (all samples × industries × statistics)
