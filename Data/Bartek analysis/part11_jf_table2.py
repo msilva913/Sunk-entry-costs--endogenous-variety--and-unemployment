@@ -28,36 +28,35 @@ COLUMN DEFINITIONS
   Col 2  Mean share of gross job LOSSES from closing (death) establishments
          = sum(L_C) / sum(L)  over sample
 
-  Col 3  Relative standard deviation (HP filter, raw levels):
-         sd(HP G_O) / sd(HP G)  [lambda=1600, quarterly, applied to raw levels]
+  Col 3  Relative standard deviation (Hamilton filter, h=8 p=4, raw levels):
+         sd(Ham G_O) / sd(Ham G)
          Values < 1: openings less volatile than total gains at business-cycle freq.
-         Consistent with JF: ~0.33 for US total private in 1992Q3-2006Q3.
+         Main specification: Hamilton is robust to large outliers (GFC, COVID)
+         and has no endpoint distortion.
 
-  Col 4  Same as Col 3 for losses and closings:
-         sd(HP L_C) / sd(HP L)
+  Col 4  Same as Col 3 for losses and closings: sd(Ham L_C) / sd(Ham L)
 
-  Col 3H / Col 4H  Same as Col 3/4 using Hamilton (2018) filter (raw levels)
-         Hamilton: regress x_t on x_{t-8..t-11} + constant
+  Col 3HP / Col 4HP  Backup: same as Col 3/4 using HP filter (lambda=1600).
+         Comparable to JF original: ~0.33 for US total private 1992Q3-2006Q3.
 
-  Col 5  Ratio of fitted variances from projecting HP-filtered (level) G_O and G
-         on [constant, HP(u_t), HP(u_{t-1})]:
-         Var(fitted HP G_O) / Var(fitted HP G)
+  Col 5  Ratio of fitted variances from projecting Hamilton-filtered G_O and G
+         on [constant, Ham(u_t), Ham(u_{t-1})]:
+         Var(fitted Ham G_O) / Var(fitted Ham G)
          Values > 1: openings more unemployment-sensitive than total gains.
 
   Col 6  Same as Col 5 for losses and closings.
 
 NOTE ON COLS 3-6
 ----------------
-All four columns apply HP detrending (lambda=1600, quarterly) to RAW LEVELS
-(not logs), following JF's convention. Log-transforming before HP inflates the
-relative volatility of the smaller series (G_O ~ 20% of G), producing ratios
-well above 1 even when level cycles are proportional -- producing our earlier
-error of ~1.68 instead of ~0.33. On raw levels, C3 ~ 0.37 for total private,
-matching JF closely (small gap from supersector aggregation vs BLS headline).
-Cols 5-6 project HP-filtered level flows on HP-filtered unemployment (current
-and one lag); JF use detrended GDP -- unemployment is used here as the model
-state variable and LP outcome.
-Hamilton filter backup columns (C3H, C4H, C5H, C6H) replace HP throughout.
+All columns apply detrending to RAW LEVELS (not logs), following JF's convention.
+Main specification: Hamilton (2018) filter (h=8, p=4) -- robust to outliers
+(GFC 2008-09, COVID 2020), no endpoint distortion. HP filter (lambda=1600)
+appears in the appendix for direct comparison to JF's ~0.33 benchmark.
+Log-transforming before filtering would inflate the relative volatility of the
+smaller series (G_O ~ 20% of G) mechanically, producing ratios >> 1.
+Cols 5-6: ratio of fitted variances from projecting filtered flows on filtered
+unemployment (current + one lag); JF use detrended GDP -- unemployment is used
+here as the model state variable and LP outcome.
 
 BED SERIES IDENTIFICATION (resolved from BLS API)
 --------------------------------------------------
@@ -139,13 +138,19 @@ ORDERED_PIPS = ["TOTAL", "10", "20", "30", "41", "42", "43",
 SAMPLES = {
     "jf_orig":  ("1992Q3", "2006Q3"),
     "ext_2019": ("1992Q3", "2019Q4"),
-    "ext_2024": ("1992Q3", "2024Q2"),
+    "ext_2024": ("1992Q3", "2024Q4"),
 }
 SAMPLE_LABELS = {
     "jf_orig":  "Original JF period (1992Q3--2006Q3)",
-    "ext_2019": "Extended to 2019Q4 (COVID cutoff)",
-    "ext_2024": "Extended to 2024Q2 (BED end)",
+    "ext_2019": "Extended to 2019Q4 (COVID cutoff, preferred)",
+    "ext_2024": "Extended to 2024Q4 (BED end)",
 }
+# NOTE: The BED cache (bed_gross_flows_correct.parquet) currently ends at
+# 2021Q4 (sandbox limitation). Run refresh_bed_cache.py locally to extend
+# through 2024Q4; the ext_2024 sample will then cover the full BED history.
+# Until the cache is refreshed, ext_2024 will silently truncate at 2021Q4
+# (which includes COVID 2020Q1-Q2 — HP filter is distorted; Hamilton less so).
+# ext_2019 remains the preferred extended sample for structural comparisons.
 
 DATA_DIR    = "data"
 CACHE_DIR   = f"{DATA_DIR}/cache"
@@ -248,28 +253,37 @@ def hp_filter_cycle(x: np.ndarray, lam: float = 1600.0) -> np.ndarray:
     return x - trend
 
 
-def hamilton_filter_cycle(x: np.ndarray) -> np.ndarray:
+def hamilton_filter_cycle(x: np.ndarray, h: int = 8, p: int = 4) -> np.ndarray:
     """
     Hamilton (2018) filter on raw levels of x.  Returns the cyclical component.
-    Regresses x_t on [1, x_{t-8}, x_{t-9}, x_{t-10}, x_{t-11}].
-    Advantage: causal filter with no endpoint distortion.
-    Requires at least 15 observations; leading NaNs fill the initialisation window.
 
-    Applied to raw levels (not logs) for the same reason as hp_filter_cycle.
+    Regresses x_t on [1, x_{t-h}, x_{t-h-1}, ..., x_{t-h-p+1}] and returns
+    the residual.  Default h=8 (2-year horizon), p=4 (one year of lags) as
+    recommended by Hamilton (2018) for quarterly data.
+
+    Advantages over HP: causal (no two-sided smoothing), no endpoint distortion,
+    not sensitive to large outliers (COVID, GFC) — outliers affect only nearby
+    observations rather than the entire trend.  This makes it the preferred main
+    specification when the sample includes the GFC or COVID.
+
+    Leading h+p-1 observations are NaN (insufficient history).
+    Requires at least h+p+5 observations for a reliable estimate.
+
+    Applied to raw levels (not logs) — same reasoning as hp_filter_cycle.
     """
-    x  = x.astype(float)
-    n  = len(x)
+    x     = x.astype(float)
+    n     = len(x)
+    skip  = h + p - 1          # number of leading NaNs
     resid = np.full(n, np.nan)
-    if n < 15:
+    if n < skip + 5:
         return resid
-    T = n - 11
-    Y = x[11:]
-    X = np.column_stack([
-        np.ones(T),
-        x[3:n - 8], x[2:n - 9], x[1:n - 10], x[0:n - 11],
-    ])
+    T = n - skip
+    Y = x[skip:]
+    # Regressors: x_{t-h}, x_{t-h-1}, ..., x_{t-h-p+1}
+    cols = [x[skip - h - j : n - h - j] for j in range(p)]
+    X    = np.column_stack([np.ones(T)] + cols)
     beta       = np.linalg.lstsq(X, Y, rcond=None)[0]
-    resid[11:] = Y - X @ beta
+    resid[skip:] = Y - X @ beta
     return resid
 
 
@@ -383,9 +397,14 @@ def compute_table(panel: pd.DataFrame, u_nat: pd.DataFrame) -> pd.DataFrame:
     """
     Compute all columns for every (sample, industry) combination.
 
-    HP-filter is the main specification throughout cols 3-6.
-    Hamilton filter provides backup columns (c3_ham, c4_ham, c5_ham, c6_ham).
-    Returns a tidy DataFrame.
+    Hamilton filter (h=8, p=4) is the MAIN specification throughout cols 3-6:
+    it is robust to large outliers (GFC, COVID) and has no endpoint distortion.
+    HP filter (lambda=1600) provides BACKUP columns (c3_hp, c4_hp, c5_hp, c6_hp)
+    for comparison with JF original and for the appendix table.
+
+    Column naming convention:
+        c3_ham, c4_ham, c5_ham, c6_ham  -- main (Hamilton)
+        c3_hp,  c4_hp,  c5_hp,  c6_hp   -- backup (HP)
     """
     rows = []
     for sname, (s0, s1) in SAMPLES.items():
@@ -400,10 +419,10 @@ def compute_table(panel: pd.DataFrame, u_nat: pd.DataFrame) -> pd.DataFrame:
                 continue
 
             c1, c2               = compute_cols_12(sub)
-            c3_hp,  c4_hp        = compute_cols_34(sub, hp_filter_cycle)
             c3_ham, c4_ham       = compute_cols_34(sub, hamilton_filter_cycle)
-            c5_hp,  c6_hp        = compute_cols_56(sub, u_nat, hp_filter_cycle)
+            c3_hp,  c4_hp        = compute_cols_34(sub, hp_filter_cycle)
             c5_ham, c6_ham       = compute_cols_56(sub, u_nat, hamilton_filter_cycle)
+            c5_hp,  c6_hp        = compute_cols_56(sub, u_nat, hp_filter_cycle)
 
             rows.append(dict(
                 sample=sname, pip=pip,
@@ -411,10 +430,10 @@ def compute_table(panel: pd.DataFrame, u_nat: pd.DataFrame) -> pd.DataFrame:
                 label_tex=INDUSTRY_LABELS.get(pip, pip),
                 n=len(sub),
                 c1=c1,    c2=c2,
-                c3_hp=c3_hp,   c4_hp=c4_hp,
                 c3_ham=c3_ham, c4_ham=c4_ham,
-                c5_hp=c5_hp,   c6_hp=c6_hp,
+                c3_hp=c3_hp,   c4_hp=c4_hp,
                 c5_ham=c5_ham, c6_ham=c6_ham,
+                c5_hp=c5_hp,   c6_hp=c6_hp,
             ))
 
     return pd.DataFrame(rows)
@@ -489,7 +508,7 @@ def write_text_table(res: pd.DataFrame, path: str):
            f" {'C3-Ham':>7} {'C4-Ham':>7} {'C5-HP':>8} {'C6-HP':>8}"
            f" {'C5-Ham':>8} {'C6-Ham':>8}  {'N':>3}")
 
-    for sname in ["jf_orig", "ext_2019", "ext_2024"]:
+    for sname in SAMPLES:
         sub = res[res["sample"] == sname]
         lines += [
             "",
@@ -516,7 +535,7 @@ def write_text_table(res: pd.DataFrame, path: str):
         "KEY FINDINGS (total private)",
         "-" * 60,
     ]
-    for sname in ["jf_orig", "ext_2019", "ext_2024"]:
+    for sname in SAMPLES:
         r = res[(res["sample"] == sname) & (res["pip"] == "TOTAL")].iloc[0]
         lines.append(
             f"  {SAMPLE_LABELS[sname]}: C1={r.c1:.3f}, C2={r.c2:.3f}, "
@@ -550,12 +569,13 @@ def _latex_table_body(res: pd.DataFrame, sname: str, variant: str) -> list:
     """
     Build the LaTeX tabular lines for one sample period and filter variant.
 
-    variant = 'hp'  : main table  (cols 3-6 via HP filter)
-    variant = 'ham' : backup table (cols 3-6 via Hamilton filter)
+    variant = 'ham' : main table  (cols 3-6 via Hamilton filter, h=8, p=4)
+    variant = 'hp'  : backup table (cols 3-6 via HP filter, lambda=1600)
     """
     sub = res[res["sample"] == sname]
     label = SAMPLE_LABELS[sname]
-    filt_label = "HP filter, $\\lambda=1600$" if variant == "hp" else "Hamilton (2018) filter"
+    filt_label = ("Hamilton (2018) filter ($h=8$, $p=4$)"
+                  if variant == "ham" else "HP filter, $\\lambda=1600$")
 
     def fmt(v, noisy=5.0):
         if np.isnan(v):    return r"\text{---}"
@@ -576,7 +596,7 @@ def _latex_table_body(res: pd.DataFrame, sname: str, variant: str) -> list:
         r"  \emph{Source: BLS BED (quarterly). Replication/extension of"
         r" Jaimovich \& Floetotto (2008, JME) Table~2.} \\"
         r"  \emph{Filter: " + filt_label + r".}}",
-        r"\label{tab:jf_t2_" + sname + ("" if variant == "hp" else "_ham") + r"}",
+        r"\label{tab:jf_t2_" + sname + ("_hp" if variant == "hp" else "") + r"}",
         r"\begin{tabular}{l" + "c" * 6 + r"}",
         r"\toprule",
         r" & \multicolumn{2}{c}{Mean share} "
@@ -610,10 +630,11 @@ def _latex_table_body(res: pd.DataFrame, sname: str, variant: str) -> list:
         r"\begin{tablenotes}[flushleft]\footnotesize",
         r"\item $\bar{g}^O$ ($\bar{g}^C$): fraction of gross job gains (losses)"
         r" from opening (closing) establishments $= \sum G_O / \sum G$.",
-        r"\item $\sigma^O/\sigma$: std dev of filtered log gains at openings relative to"
-        r" std dev of filtered log total gains (col~3 in JF). $\sigma^C/\sigma$: same for losses.",
+        r"\item $\sigma^O/\sigma$: std dev of HP-filtered gains at openings relative to"
+        r" std dev of HP-filtered total gains (col~3 in JF); filter applied to raw levels."
+        r" $\sigma^C/\sigma$: same for losses.",
         r"\item $\mathcal{V}^O/\mathcal{V}$: ratio of fitted variances from projecting"
-        r" filtered log flows on filtered unemployment ($u_t$, $u_{t-1}$);"
+        r" HP-filtered flows on HP-filtered unemployment ($u_t$, $u_{t-1}$);"
         r" JF use detrended GDP.",
         r"\item Values $>1$: entry/exit margin more cyclically sensitive than total flows.",
         r"\item $^\dagger$ Noisy ($|\text{ratio}|>5$; small-count series).",
@@ -623,13 +644,13 @@ def _latex_table_body(res: pd.DataFrame, sname: str, variant: str) -> list:
     return lines
 
 
-def write_latex_table(res: pd.DataFrame, sname: str, path_hp: str, path_ham: str):
+def write_latex_table(res: pd.DataFrame, sname: str, path_ham: str, path_hp: str):
     """
     Write two LaTeX tables for one sample period:
-      path_hp  -- main specification (HP filter throughout cols 3-6)
-      path_ham -- backup specification (Hamilton filter throughout cols 3-6)
+      path_ham -- main specification (Hamilton filter, h=8 p=4, throughout cols 3-6)
+      path_hp  -- backup specification (HP filter, lambda=1600, throughout cols 3-6)
     """
-    for variant, path in [("hp", path_hp), ("ham", path_ham)]:
+    for variant, path in [("ham", path_ham), ("hp", path_hp)]:
         lines = _latex_table_body(res, sname, variant)
         with open(path, "w", encoding="utf-8") as f:
             f.write("\n".join(lines) + "\n")
@@ -657,16 +678,15 @@ if __name__ == "__main__":
     print("Writing plain-text output...")
     write_text_table(res, f"{RESULTS_DIR}/jf_table2_extension.txt")
 
-    print("Writing LaTeX tables (HP main + Hamilton backup for each sample)...")
+    print("Writing LaTeX tables (Hamilton main + HP backup for each sample)...")
     for sname in SAMPLES:
-        path_hp  = f"{RESULTS_DIR}/jf_table2_{sname}_latex.tex"
-        path_ham = f"{RESULTS_DIR}/jf_table2_{sname}_ham_latex.tex"
-        write_latex_table(res, sname, path_hp, path_ham)
+        path_ham = f"{RESULTS_DIR}/jf_table2_{sname}_latex.tex"
+        path_hp  = f"{RESULTS_DIR}/jf_table2_{sname}_hp_latex.tex"
+        write_latex_table(res, sname, path_ham, path_hp)
 
-    # --- Print LaTeX to console for direct copy-paste into .tex document ---
     SEP = "%" + "=" * 70
     for sname in SAMPLES:
-        for variant, suffix in [("HP main", ""), ("Hamilton backup", "_ham")]:
+        for variant, suffix in [("Hamilton main", ""), ("HP backup", "_hp")]:
             print()
             print(SEP)
             print(f"% TABLE ({variant}): {SAMPLE_LABELS[sname]}")

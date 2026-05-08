@@ -2,7 +2,7 @@
 \centering
 \small
 \caption{Job Gains/Losses from Opening/Closing Establishments (\emph{Original JF period (1992Q3--2006Q3)}) \\
-  \emph{Source: BLS BED (quarterly). Replication/extension of Jaimovich \& Floetotto (2008, JME) Table~2.} \\  \emph{Filter: HP filter, $\lambda=1600$.}}
+  \emph{Source: BLS BED (quarterly). Replication/extension of Jaimovich \& Floetotto (2008, JME) Table~2.} \\  \emph{Filter: Hamilton (2018) filter ($h=8$, $p=4$).}}
 \label{tab:jf_t2_jf_orig}
 \begin{tabular}{lcccccc}
 \toprule
@@ -11,25 +11,25 @@
 Industry & $\bar{g}^O$ & $\bar{g}^C$ & $\sigma^O/\sigma$ & $\sigma^C/\sigma$ & $\mathcal{V}^O/\mathcal{V}$ & $\mathcal{V}^C/\mathcal{V}$ \\
 \midrule
 \midrule
-\textbf{Total private} & 0.213 & 0.206 & 0.369 & 0.336 & 0.007 & 0.022 \\
-Natural resources \& mining & 0.185 & 0.179 & 0.333 & 0.389 & 0.066 & 0.186 \\
-Construction & 0.214 & 0.212 & 0.270 & 0.236 & 0.029 & 0.021 \\
-Manufacturing & 0.141 & 0.154 & 0.329 & 0.193 & 0.005 & 0.003 \\
-Wholesale trade & 0.215 & 0.234 & 0.386 & 0.392 & 0.016 & 0.029 \\
-Retail trade & 0.190 & 0.170 & 0.430 & 0.325 & 0.013 & 0.039 \\
-Transportation \& utilities & 0.206 & 0.148 & 0.707 & 0.502 & 0.124 & 1.073 \\
-Information & 0.228 & 0.234 & 0.341 & 0.431 & 0.045 & 0.064 \\
-Financial activities & 0.249 & 0.260 & 0.549 & 0.590 & 0.049 & 0.083 \\
-Prof.~\& business services & 0.215 & 0.221 & 0.377 & 0.314 & 0.002 & 0.015 \\
-Education \& health services & 0.215 & 0.223 & 0.560 & 0.453 & 0.010 & 0.090 \\
-Leisure \& hospitality & 0.264 & 0.217 & 0.403 & 0.560 & 0.001 & 0.147 \\
-Other services & 0.222 & 0.219 & 0.447 & 0.601 & 0.012 & 0.090 \\
+\textbf{Total private} & 0.212 & 0.206 & 0.391 & 0.335 & 0.015 & 0.051 \\
+Natural resources \& mining & 0.185 & 0.179 & 0.389 & 0.375 & 0.347 & 0.284 \\
+Construction & 0.214 & 0.212 & 0.233 & 0.210 & 0.024 & 0.057 \\
+Manufacturing & 0.141 & 0.154 & 0.285 & 0.180 & 0.011 & 0.003 \\
+Wholesale trade & 0.215 & 0.234 & 0.336 & 0.344 & 0.034 & 0.041 \\
+Retail trade & 0.190 & 0.170 & 0.361 & 0.338 & 0.025 & 0.058 \\
+Transportation \& utilities & 0.186 & 0.196 & 0.331 & 0.277 & 0.039 & 0.043 \\
+Information & 0.228 & 0.234 & 0.320 & 0.393 & 0.054 & 0.124 \\
+Financial activities & 0.249 & 0.260 & 0.472 & 0.572 & 0.124 & 0.178 \\
+Prof.~\& business services & 0.215 & 0.221 & 0.363 & 0.271 & 0.015 & 0.023 \\
+Education \& health services & 0.215 & 0.223 & 0.551 & 0.448 & 0.070 & 0.282 \\
+Leisure \& hospitality & 0.264 & 0.217 & 0.463 & 0.688 & 0.002 & 0.206 \\
+Other services & 0.222 & 0.219 & 0.410 & 0.683 & 0.022 & 0.504 \\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[flushleft]\footnotesize
 \item $\bar{g}^O$ ($\bar{g}^C$): fraction of gross job gains (losses) from opening (closing) establishments $= \sum G_O / \sum G$.
-\item $\sigma^O/\sigma$: std dev of filtered log gains at openings relative to std dev of filtered log total gains (col~3 in JF). $\sigma^C/\sigma$: same for losses.
-\item $\mathcal{V}^O/\mathcal{V}$: ratio of fitted variances from projecting filtered log flows on filtered unemployment ($u_t$, $u_{t-1}$); JF use detrended GDP.
+\item $\sigma^O/\sigma$: std dev of HP-filtered gains at openings relative to std dev of HP-filtered total gains (col~3 in JF); filter applied to raw levels. $\sigma^C/\sigma$: same for losses.
+\item $\mathcal{V}^O/\mathcal{V}$: ratio of fitted variances from projecting HP-filtered flows on HP-filtered unemployment ($u_t$, $u_{t-1}$); JF use detrended GDP.
 \item Values $>1$: entry/exit margin more cyclically sensitive than total flows.
 \item $^\dagger$ Noisy ($|\text{ratio}|>5$; small-count series).
 \end{tablenotes}

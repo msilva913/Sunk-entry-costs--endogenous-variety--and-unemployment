@@ -943,12 +943,22 @@ Priority order:
 - Cols 3-4: relative standard deviation (not R²) — standard RBC-style moment. HP applied to **raw levels** (not logs). Log-transforming before HP inflates the ratio mechanically (G_O ~ 20% of G, so log G_O has higher HP-cycle amplitude than log G even when level cycles are proportional). Raw-level HP gives C3-HP = 0.369, C4-HP = 0.336 for total private, matching JF's ~0.33.
 - Cols 5-6: unemployment used as projector instead of JF's GDP; both flows and unemployment HP-filtered before projection.
 
-**Key findings (jf_orig sample, TOTAL row):**
-- C1 = 0.213, C2 = 0.206: entry/exit account for ~20% of gross flows, consistent with JF (gap from supersector aggregation vs BLS headline)
-- C3-HP = 0.369, C4-HP = 0.336: openings/closings are ~1/3 as volatile as total flows at business-cycle frequencies — matches JF's ~0.33
-- C5-HP = 0.007, C6-HP = 0.022: very small unemployment-projected variance ratios in JF period; closings account for little of the unemployment-driven component pre-GFC (intensive margin dominates in that sample)
-- Secular decline in C1/C2 visible comparing jf_orig to ext_2019 — entry rates fell post-GFC, well-documented in BDS/BED literature
-- Hamilton filter C3H/C4H broadly consistent with HP results throughout
+**Key findings (TOTAL row, all samples):**
+
+| Sample | C1 | C2 | C3-HP | C4-HP | C5-HP | C6-HP |
+|--------|----|----|-------|-------|-------|-------|
+| jf_orig (1992Q3–2006Q3) | 0.213 | 0.206 | 0.369 | 0.336 | 0.007 | 0.022 |
+| ext_2019 (preferred, –2019Q4) | 0.201 | 0.195 | 0.282 | 0.224 | 0.009 | 0.013 |
+| ext_2021 (incl. COVID, –2021Q4) | 0.200 | 0.194 | 0.207 | 0.133 | 0.016 | 0.015 |
+
+- **C3-HP/C4-HP match JF (~0.33)** in jf_orig sample — validates methodology
+- **Secular decline in C1/C2**: entry/exit shares fall ~1 pp post-GFC (business dynamism decline)
+- **C3/C4 fall in extended samples**: GFC intensive margin (mass layoffs at continuing firms) dominates total flow variance, making the extensive margin look relatively less volatile — compositional, not a calibration problem
+- **COVID distortion (ext_2021)**: the 2020Q1–Q2 spike in gross flows warps the HP trend across the whole sample; ext_2019 is the preferred extended sample for structural comparisons
+- **C5-HP/C6-HP very small (~0.01) throughout**: entry/exit margin accounts for little of the unemployment-driven component of total flows — intensive margin dominates. Supports calibrating δ/τ ≈ 10% as a minority channel.
+- **BED cache ends 2021Q4**: ext_2021 is the true BED endpoint; no data beyond that in cache
+
+**Output files:** `jf_table2_{jf_orig,ext_2019,ext_2021}_latex.tex` (HP main); `_ham_latex.tex` (Hamilton backup)
 
 **Output files in `data/results/`:**
 - `jf_table2_results.parquet` — full panel (all samples × industries × statistics)
