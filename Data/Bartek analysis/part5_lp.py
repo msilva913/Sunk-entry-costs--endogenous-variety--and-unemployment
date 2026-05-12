@@ -783,6 +783,47 @@ def _plt_diagnostics():
         print(f"  Saved: {p}")
         _open_file(p)
 
+    # 8g. Baseline paper figure: delta -> unemployment (left) and delta -> vacancy (right)
+    # This is the primary figure in Section 4 of the paper (fig:delta_uv_irf).
+    # Uses v2-residualized delta instrument, 2001Q1-2019Q4 sample.
+    if vac_ok and not irf_delta_resid.empty and not irf_delta_vac.empty:
+        fig, axes = plt.subplots(1, 2, figsize=(13, 5.5))
+        plt.ioff()
+
+        panels = [
+            (axes[0], irf_delta_resid, "pp change in unemployment rate\nper 1-SD shock",
+             r"(a) Unemployment rate"),
+            (axes[1], irf_delta_vac,   "pp change in vacancy rate\nper 1-SD shock",
+             r"(b) Vacancy rate"),
+        ]
+
+        for ax, irf, ylabel, subtitle in panels:
+            h = irf["h"].values
+            color = "#1f77b4"
+            _ = ax.fill_between(h, irf["ci90_lo"], irf["ci90_hi"],
+                                color=color, alpha=0.20, label="90% CI")
+            _ = ax.plot(h, irf["ci95_lo"], color=color, lw=0.7, ls="--", alpha=0.55)
+            _ = ax.plot(h, irf["ci95_hi"], color=color, lw=0.7, ls="--", alpha=0.55,
+                        label="95% CI")
+            _ = ax.plot(h, irf["beta"], color=color, lw=2.0, marker="o",
+                        ms=3.5, label=r"$\hat{\beta}_h$")
+            ax.axhline(0, color="black", lw=0.9)
+            for hh in range(4, int(h.max()) + 1, 4):
+                ax.axvline(hh, color="grey", lw=0.4, ls=":", alpha=0.55)
+            ax.set_xlabel("Horizon $h$ (quarters)", fontsize=11)
+            ax.set_ylabel(ylabel, fontsize=11)
+            ax.set_title(subtitle, fontsize=11, pad=6)
+            ax.set_xticks(range(0, int(h.max()) + 1, 2))
+            ax.legend(fontsize=9, framealpha=0.85)
+            ax.grid(axis="y", lw=0.4, alpha=0.4)
+
+        fig.tight_layout()
+        p = RESULTS_DIR / "lp_irf_delta_uv_baseline.png"
+        fig.savefig(p, dpi=150, bbox_inches="tight")
+        plt.close(fig)
+        print(f"  Saved: {p}")
+        _open_file(p)
+
 _plt_diagnostics()
 
 # ---------------------------------------------------------------------------
