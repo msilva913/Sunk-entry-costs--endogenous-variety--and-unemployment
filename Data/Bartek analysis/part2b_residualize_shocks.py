@@ -561,14 +561,24 @@ def _load_panel_ldqu(prod: pd.DataFrame, bea_lag: pd.DataFrame,
 print("=" * 65)
 print("Part 2b  --  Residualize national industry shock rates")
 print("=" * 65)
-if not FRED_API_KEY:
+# FRED key is only required if caches are absent.
+# If all three caches exist the script runs without a key.
+_caches_present = (
+    BEA_VA_CACHE.exists() and
+    PROD_CACHE.exists() and
+    TIGHTNESS_CACHE.exists()
+)
+if not FRED_API_KEY and not _caches_present:
     sys.exit(
-        "ERROR: FRED_API_KEY is not set.\n"
+        "ERROR: FRED_API_KEY is not set and one or more caches are missing.\n"
         "  Register free at https://fred.stlouisfed.org/docs/api/api_key.html\n"
         "  Windows PowerShell:  $env:FRED_API_KEY = '<your_key>'\n"
         "  Linux/macOS:         export FRED_API_KEY=<your_key>"
     )
-print(f"FRED_API_KEY: set ({FRED_API_KEY[:8]}...)")
+if FRED_API_KEY:
+    print(f"FRED_API_KEY: set ({FRED_API_KEY[:8]}...)")
+else:
+    print("FRED_API_KEY: not set -- using cached data only")
 
 # ── 1. Load shared controls (each fetched/cached once) ────────────────────────
 prod     = _load_productivity()

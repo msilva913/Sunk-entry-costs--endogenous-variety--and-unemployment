@@ -10,7 +10,6 @@ I was expecting a `,' or a `}'---line 16 of file references.bib
  :         year={2020}
 (Error may have been on previous line)
 I'm skipping whatever remains of this entry
-Warning--I didn't find a database entry for "moscarini_2012"
 Name 2 in "Bilbiie, Florin O. and Ghironi, Fabio, and Melitz, Marc J." has a comma at the end for entry bilbiie_2012
 while executing---line 1193 of file econometrica.bst
 Name 2 in "Bilbiie, Florin O. and Ghironi, Fabio, and Melitz, Marc J." has a comma at the end for entry bilbiie_2012
@@ -23,7 +22,7 @@ Warning--empty journal in colciago_2021
 Done.
 You've used 22 entries,
             2327 wiz_defined-function locations,
-            656 strings with 6931 characters,
+            655 strings with 6917 characters,
 and the built_in function-call counts, 11169 in all, are:
 = -- 1118
 > -- 593

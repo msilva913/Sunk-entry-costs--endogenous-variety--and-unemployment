@@ -177,7 +177,7 @@
 	
 	% Empirical motivation
 	Three empirical facts motivate treating firm destruction as a 
-	distinct and quantitatively important margin. First, establishment closings and openings constitute a large and cyclically sensitive component of gross job flows. Table~\ref{tab:jf_t2_ext_2024} extends Table 2 in \citet{jaimovich_2008} through 2024Q4 using Business Economics Database (BED) data. Columns 1--2 of Table~\ref{tab:jf_t2_ext_2024} report the average fraction of quarterly gross job gains (losses) accounted for by opening (closing) establishments. Columns 3 and 4 report the ratio of the cyclical standard deviation of entry/exit flows to that of total flows, using the Hamilton (2018) regression filter ($h=8, p=4$) applied to raw levels. Columns 5 and 6 repeat the calculation with the HP filter ($\lambda=1600$), which closely reproduces \citet{jaimovich_2008}'s benchmark of approximately 0.33 in the original 1992--2006 sample.
+	distinct and quantitatively important margin. \textit{First, establishment closings and openings constitute a large and cyclically sensitive component of gross job flows}. Table~\ref{tab:jf_t2_ext_2024} extends Table 2 in \citet{jaimovich_2008} through 2024Q4 using Business Economics Database (BED) data. Columns 1--2 of Table~\ref{tab:jf_t2_ext_2024} report the average fraction of quarterly gross job gains (losses) accounted for by opening (closing) establishments. Columns 3 and 4 report the ratio of the cyclical standard deviation of entry/exit flows to that of total flows, using the Hamilton (2018) regression filter ($h=8, p=4$) applied to raw levels. Columns 5 and 6 repeat the calculation with the HP filter ($\lambda=1600$), which closely reproduces \citet{jaimovich_2008}'s benchmark of approximately 0.33 in the original 1992--2006 sample.
 	
 	Columns 1 and 2 show that closing establishments account for 19.3 percent of gross job losses on average across all private-sector supersectors 
 	--- a share that is remarkably stable across industries ranging from construction (20.5 percent) to financial activities (24.6 percent). The relative standard deviation columns show that closing-establishment 
@@ -225,26 +225,26 @@
 	
 	
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	Second, cumulative establishment exit predicts the severity and persistence of labor market disruption across recessions. Figure~\ref{fig:recession_scatter_primary} plots the permanence-adjusted establishment exit rate against cumulative unemployment and vacancy gaps across the three post-1992 NBER recessions. The 2008--09 recession generated the largest exit rate (7.8\% of base employment) and the largest cumulative unemployment gap (76.6 pp-quarters), reflecting both a deep trough and a protracted recovery. The 2001 recession, despite a more moderate exit rate (5.6\%), produced the largest cumulative vacancy shortfall (25.7 pp-quarters) of the three episodes — exceeding even the GFC (18.8 pp-quarters) — driven by an unusually prolonged vacancy formation freeze following the collapse of investment demand after the dot-com bust, a pattern that likely reflects demand-side forces beyond establishment exit alone. The 2020 recession, with the smallest exit rate (2.9\%), generated rapid recovery in both labor market margins and negligible cumulative vacancy shortfall (1.7 pp-quarters), consistent with a supply disruption that left the matching technology largely intact. Across these three episodes, larger establishment exit is associated with greater and more persistent labor market damage, particularly in the unemployment dimension.
+	\textit{Second, cumulative establishment exit predicts the severity and persistence of labor market disruption across recessions.} Figure~\ref{fig:recession_scatter_primary} plots the permanence-adjusted establishment exit rate against cumulative unemployment and vacancy gaps across the three post-1992 NBER recessions. The 2008--09 recession generated the largest exit rate (7.8\% of base employment) and the largest cumulative unemployment gap (76.6 pp-quarters), reflecting both a deep trough and a protracted recovery. The 2001 recession, despite a more moderate exit rate (5.6\%), produced the largest cumulative vacancy shortfall (25.7 pp-quarters) of the three episodes — exceeding even the GFC (18.8 pp-quarters) — driven by an unusually prolonged vacancy formation freeze following the collapse of investment demand after the dot-com bust, a pattern that likely reflects demand-side forces beyond establishment exit alone. The 2020 recession, with the smallest exit rate (2.9\%), generated rapid recovery in both labor market margins and negligible cumulative vacancy shortfall (1.7 pp-quarters), consistent with a supply disruption that left the matching technology largely intact. Across these three episodes, larger establishment exit is associated with greater and more persistent labor market damage, particularly in the unemployment dimension.
 	\begin{figure}[H]
 		\centering
 		\includegraphics[width=0.9\textwidth]{recession_scatter_primary.png}
-		\caption{Relationship between cumulative permanence-adjusted establishment
-			exit rates during recessions and labor market outcome measures.
+		\caption{Relationship between cumulative establishment exit rates
+			(BED Deaths) during recessions and labor market outcome measures.
 			The top row shows quarters from the NBER recession end date until
 			unemployment (left) and vacancy (right) rates recover 50\% of the
 			trough gap. The bottom row shows the cumulative unemployment gap
 			(CUG, left) and cumulative vacancy shortfall (CVS, right), defined
 			as the sum of positive deviations from the pre-recession baseline
 			over $H=20$ quarters from recession onset. Exit rates are constructed
-			from BLS Business Employment Dynamics (BED) establishment closing
-			data, permanence-adjusted using Business Dynamics Statistics (BDS)
-			death-to-closing ratios, and normalized by 2006 base-year employment.}
+			from BLS Business Employment Dynamics (BED) establishment deaths
+			(establishments absent for four or more consecutive quarters),
+			normalized by 2006 base-year employment.}
 		\label{fig:recession_scatter_primary}
 	\end{figure}
 	
-	Third, states with structurally higher establishment exit rates 
-	accumulate larger labor market gaps during recessions. 
+	\textit{Third, states with structurally higher establishment exit rates 
+	accumulate larger labor market gaps during recessions.} 
 	Figure~\ref{fig:state_scatter} plots each state's full-sample 
 	average Bartik-weighted establishment exit rate against its 
 	cumulative unemployment gap (CUG) and cumulative vacancy shortfall 
@@ -304,9 +304,11 @@
 	%
 	Following \citet{goldsmith_2020}, we bring quasi-experimental discipline to the $\delta$ transmission 
 	channel using Bartik shift-share instruments constructed from 
-	permanence-adjusted BED establishment closing rates --- scaling 
-	quarterly closings by the fraction confirmed as permanent in the annual Business Dynamics Statistics to align the instrument with the model's concept of irreversible product-line destruction. The instrument weights 
-	leave-one-out national industry-level closing rates by each state's 
+	BED establishment deaths --- the subset of closings absent from
+	the UI payroll base for four or more consecutive quarters,
+	aligning the instrument directly with the model's concept of
+	irrreversible product-line destruction. The instrument weights
+	leave-one-out national industry-level death rates by each state's 
 	base-year (2006) industry employment shares. The identifying 
 	variation is geographic: a state with high pre-recession exposure 
 	to industries experiencing national waves of establishment closings 
@@ -346,7 +348,7 @@
 	combining two sets of moment conditions. The first is closely related to \citet{coles_2018}: unconditional moments of 
 	unemployment, vacancies, labor productivity, and aggregate job 
 	finding and separation rates, augmented with the mean and 
-	relative volatility of the permanence-adjusted establishment exit  rate, which disciplines the level and cyclical variation of the destruction process directly rather than inferring it residually from labor market outcomes. The second set consists of the empirically identified $\delta\to u$ and $\delta\to v$ impulse responses from the Bartik local projections, matched via Bayesian impulse response matching with inverse-variance weights. The two sets are complementary: unconditional moments pin down the destruction process and the steady-state labor market, while the 
+	relative volatility of the permanent establishment exit rate (BED Deaths), which disciplines the level and cyclical variation of the destruction process directly rather than inferring it residually from labor market outcomes. The second set consists of the empirically identified $\delta\to u$ and $\delta\to v$ impulse responses from the Bartik local projections, matched via Bayesian impulse response matching with inverse-variance weights. The two sets are complementary: unconditional moments pin down the destruction process and the steady-state labor market, while the 
 	conditional moments discipline the structural transmission 
 	parameters governing how costly and slow vacancy replacement is 
 	following a firm destruction shock.\footnote{The unconditional moments identify the level and 
@@ -1695,7 +1697,7 @@ Figure~\ref{fig:steady_state_curves_z}.
 \end{proposition}
 	
 
-	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	\section{Empirical Evidence and Bartik Local Projections}\label{sec:empirical}
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -1736,7 +1738,7 @@ Figure~\ref{fig:steady_state_curves_z}.
 	state-specific shocks to unemployment and vacancy creation beyond the
 	exit channel. Section~\ref{sec:empirical_instr}
 	describes instrument construction in detail;
-	Section~\ref{sec:empirical_lp} states the local projection
+	Section \ref{sec:empirical_lp} states the local projection
 	specification; Section~\ref{sec:empirical_results} reports results. Section~\ref{sec:empirical_results} provides two
 	validation exercises: a severity placebo that tests whether the vacancy
 	IRF is driven by recession depth rather than exit exposure, and a joint
@@ -1772,73 +1774,81 @@ Figure~\ref{fig:steady_state_curves_z}.
 	ownership transitions all appear as closings in BED without
 	constituting permanent product-line destruction.
 
-	\paragraph{Permanence calibration.}
-	We address this by calibrating, for each supersector $j$ and BDS
-	year $y$, the fraction of BED closings that proved permanent:
-	\begin{equation}\label{eq:perm_ratio}
-		\pi_{j,y} \;=\;
-		\frac{\text{BDS exits}_{j,y}}
-		     {\displaystyle\sum_{q:\,y(q)=y}\text{BED closings}_{j,q}}.
-	\end{equation}
-	The numerator is the Census Bureau Business Dynamics Statistics (BDS)
-	count of establishments absent from March-$y$ payrolls that were
-	present in March-$(y{-}1)$ --- the Census operational definition of
-	permanent exit.  The denominator sums the four BED quarters mapping to
-	BDS year $y$, which runs from Q2$(y{-}1)$ through Q1$(y)$.  The ratio
-	$\pi_{j,y}$ is therefore the permanence rate: the share of BED closings
-	in supersector $j$ during year $y$ that did not reopen.  The
-	permanence-adjusted closing count entering the Bartik numerator is then
-	$\text{closings}^{\text{perm}}_{j,t}=\pi_{j,y(t)}\times\text{BED
-	closings}_{j,t}$.
+	\paragraph{BED Deaths as the measure of permanent exits.}
+	We address this using a second BED data series that resolves the
+	permanence problem directly.  In addition to closings, BED separately
+	reports \emph{deaths} --- establishments absent from the UI payroll
+	base for four or more consecutive quarters --- which by construction
+	excludes temporary shutdowns.\footnote{BED data classes: 06 (Closings)
+	records establishments absent from the next quarterly payroll file;
+	08 (Deaths) records establishments absent for four or more consecutive
+	quarters.  Deaths $\subseteq$ Closings in every industry$\times$quarter
+	cell, so ratio is bounded above by unity by
+	construction.}  Since a temporarily closed establishment re-enters the
+	payroll base within one to three quarters, it never accumulates four
+	consecutive absences and therefore never appears in BED Deaths.  Our
+	$\delta$ instrument uses BED Deaths --- not raw closings --- as the
+	numerator of the national exit rate.
 
-	The calibration reveals substantial heterogeneity across sectors and
-	time.\footnote{Appendix~\ref{app:perm_table} reports $\pi_{j,y}$ by
-	supersector for the full sample.}  Construction has the lowest mean
-	permanence rate ($\bar{\pi} = 0.56$), reflecting the high share of
-	project-based establishments that dissolve at contract completion and
-	reconstitute under a new entity --- BED records the dissolution but BDS
-	records the continuation.  Leisure and hospitality is similarly low
-	($\bar{\pi} = 0.79$), driven by seasonal closures.  Mining is a
-	special case: the BLS Mining supersector combines NAICS 21 (mining and
-	extraction) with a logging component, but BDS covers only NAICS 21; the
-	resulting $\bar{\pi} \approx 0.18$ reflects the denominator's broader
-	coverage rather than a genuine low permanence rate.
+	Figure~\ref{fig:bed_deaths} shows employment-weighted mean BED Closings
+	and Deaths rates across 12 supersectors from 1992Q3 to 2019Q4, together
+	with 25th--75th industry percentile bands.  The Deaths/Closings ratio
+	(lower panel) averages 0.63 across the full sample and is remarkably
+	stable over the business cycle, dipping modestly during the GFC but
+	remaining well below unity throughout.  This stability implies that the
+	fraction of closings that are temporary does not vary sharply over time,
+	and that using Deaths directly gives a cleaner series than either raw
+	closings or a time-varying permanence correction.
 
-	Since permanence is a binary attribute of each closing, $\pi_{j,y}$
-	is bounded above by unity by construction.  Nevertheless, the raw
-	BDS/BED employment ratio mechanically exceeds unity in 145 of 360
-	industry$\times$year cells (40 percent by employment weight), affecting
-	ten of twelve supersectors.\footnote{The excess arises from a
-	measurement timing difference between the two surveys: BDS records
-	employment at an exiting establishment in the March reference period
-	\emph{prior} to exit (year $y-1$), while BED records employment at the
-	time of the quarterly closing event.  Establishments that permanently
-	exit typically downsize before formal closure, so BDS employment
-	(measured one year earlier) exceeds BED employment at closure; this is
-	most pronounced in sectors with prolonged pre-exit decline such as
-	Manufacturing and Information.  A secondary source is industry
-	reclassification: an establishment that exits one NAICS supersector by
-	converting to another activity (e.g.\ a manufacturer converting to
-	distribution) contributes a BDS death to its origin sector but may not
-	appear as a BED closing at all.  Both mechanisms produce a raw ratio
-	that can exceed unity but carry no implications for instrument validity:
-	they reflect measurement conventions, not a logical contradiction in the
-	permanence concept.}  We cap $\pi_{j,y}$ at unity before applying the
-	permanence adjustment.  For capped cells this is equivalent to treating
-	all BED closings in that supersector-year as permanent --- a conservative
-	assumption that, if anything, attenuates the permanence correction
-	relative to the true structural rate.  The employment-weighted mean
-	across industries and years after capping is $\bar{\pi} = 0.91$
-	(2001--2019 sample), so the calibration matters primarily for sectors
-	with systematic seasonal or project-cycle activity, and for years such
-	as 2020 where temporary shutdowns were unusually prevalent.
+	\begin{figure}[h]
+		\centering
+		\includegraphics[width=\linewidth]{bed_closings_vs_deaths.png}
+		\caption{BED Closings and Deaths: employment-weighted rates across
+		12 supersectors, 1992Q3--2019Q4.  \emph{Top panel:} mean closing
+		rate (blue) and death rate (red) as percent of employment per
+		quarter, with 25th--75th industry percentile bands.  Grey shading
+		denotes NBER recessions.  \emph{Bottom panel:} Deaths/Closings
+		ratio; dashed line at 1.0 is the theoretical upper bound.}
+		\label{fig:bed_deaths}
+	\end{figure}
+
+	The Deaths/Closings ratio exhibits substantial heterogeneity across
+	sectors.  Construction has the lowest mean ratio (0.57), consistent
+	with the prevalence of project-based establishments that close on
+	contract completion and reconstitute under a new entity --- a genuinely
+	temporary exit from BED's perspective.  Leisure and hospitality is
+	similarly low (0.82), reflecting seasonal closures.  At the other end,
+	manufacturing (1.00 at the cap), information (1.00), and
+	finance and real estate (1.00) hit the upper bound, implying that
+	essentially all recorded closings in those sectors constitute permanent
+	exits.\footnote{The Deaths/Closings ratio exceeds unity for manufacturing
+	and information in certain years when computed from BDS exit counts
+	rather than BED Deaths directly.  The BDS-implied ratio can exceed one
+	due to a timing mismatch: BDS records employment at the March reference
+	date \emph{prior} to exit while BED records employment at the time of
+	the closing event, and establishments that permanently exit typically
+	downsize before formal closure.  A secondary source is industry
+	reclassification: a manufacturer converting to distribution contributes
+	a BDS death to its origin sector but may not appear as a BED closing.
+	Neither issue arises with BED Deaths, which is constructed entirely
+	within the BED survey.  As a back-of-envelope verification, the
+	employment-weighted mean Deaths/Closings ratio from BED (0.90,
+	2001--2019) closely matches the mean permanence ratio implied by
+	cross-walking BDS annual exits against BED quarterly closings
+	($\bar{\pi} = 0.91$ after capping at unity), confirming that the two
+	series measure the same underlying concept.  Full industry-level
+	BDS-implied permanence ratios $\pi_{j,y}$ are reported in
+	Appendix~\ref{app:perm_table}.}
+	Wholesale trade (0.97), retail (0.98), and professional and business
+	services (0.97) are near the cap, reflecting structurally high
+	permanence in those sectors.  The employment-weighted mean across all
+	12 supersectors is 0.90 (2001--2019 sample).
 
 	Most papers using BED data for shock identification
-	\citep[e.g.,][]{moscarini_2012, elsby_2013} implicitly set
-	$\pi_{j,y}=1$, treating all closings as permanent.  We are not aware
-	of a prior paper applying a BDS-based permanence correction to align
-	BED closings with the structural concept of irreversible product-line
-	destruction.
+	\citep[e.g.,][]{elsby_2013} implicitly treat all
+	closings as permanent.  We are not aware of a prior paper using the
+	BED Deaths series to align the instrument with the structural concept
+	of irreversible product-line destruction.
 
 	\paragraph{Leave-one-out construction and base-year shares.}
 	The leave-one-out (LOO) national permanent exit rate for state $s$,
@@ -1846,7 +1856,7 @@ Figure~\ref{fig:steady_state_curves_z}.
 	\begin{equation}\label{eq:loo_rate}
 		g^{\delta}_{-s,j,t}
 		\;=\;
-		\frac{\text{closings}^{\text{perm}}_{j,t}}
+		\frac{\text{deaths}_{j,t}}
 		     {E^{\text{nat}}_{-s,j,t_0}},
 	\end{equation}
 	where $E^{\text{nat}}_{-s,j,t_0}=E^{\text{nat}}_{j,t_0}-E_{s,j,t_0}$
@@ -1854,9 +1864,8 @@ Figure~\ref{fig:steady_state_curves_z}.
 	own base-year employment.  The LOO correction in the denominator
 	ensures that state $s$'s own exit activity cannot mechanically inflate
 	its instrument value.  Numerator LOO --- subtracting state $s$'s own
-	closings from the national count --- is not implemented because
-	BED state-level closing counts by supersector are not publicly
-	available.  Employment shares $\omega_{s,j}$ are drawn from the 2006
+	deaths from the national count --- is not implemented because
+	BED state-level deaths by supersector are not publicly available.  Employment shares $\omega_{s,j}$ are drawn from the 2006
 	QCEW (agglvl=54, private sector), a stable pre-GFC year that predates
 	the bulk of the identifying variation.  The Bartik instrument is:
 	\begin{equation}\label{eq:bartik_delta}
@@ -1913,18 +1922,15 @@ Figure~\ref{fig:steady_state_curves_z}.
 	$\hat{\beta}_j=0$, using only the sector-specific mean growth rate to
 	avoid injecting noisy cyclical variation into the pre-period.
 
-	As a robustness check we further augment equation~\eqref{eq:resid_v2}
-	with a monetary policy sensitivity term
-	$\psi(\phi_j\times\Delta MP_t)$, where $\phi_j$ is log average
-	establishment size in supersector $j$ (Census CBP, 2000) and
-	$\Delta MP_t$ is the quarterly change in the Wu--Xia (2016) shadow
-	federal funds rate (v3 specification).  The v3 results are reported
-	in Appendix~\ref{app:robustness}; v2 is the baseline throughout.
-
 	After v2 residualization the cross-state correlation between the
 	$\delta$ and layoffs-and-discharges (LD) Bartik instruments falls from
-	approximately 0.54 on raw rates to 0.42 --- and does not fall further
-	under v3.  The persistence of this residual correlation after
+	approximately 0.54 on raw rates to 0.42.\footnote{As a robustness check we further augment equation~\eqref{eq:resid_v2}
+		with a monetary policy sensitivity term
+		$\psi(\phi_j\times\Delta MP_t)$, where $\phi_j$ is log average
+		establishment size in supersector $j$ (Census CBP, 2000) and
+		$\Delta MP_t$ is the quarterly change in the Wu--Xia (2016) shadow
+		federal funds rate (v3 specification).  The v3 results are reported
+		in Appendix~\ref{app:robustness}; v2 is the baseline throughout.}  The persistence of this residual correlation after
 	controlling for industry demand cycles and aggregate productivity is
 	informative: the shared variation is not a demand artifact but most
 	likely reflects industry-specific financial conditions that move both
@@ -1943,8 +1949,7 @@ Figure~\ref{fig:steady_state_curves_z}.
 			state and time fixed effects; standard errors are clustered at the
 			state level ($n=50$).  Shaded band: 90\% confidence interval;
 			dashed lines: 95\% confidence interval.  The instrument is
-			permanence-adjusted BED establishment closing rates
-			(equation~\eqref{eq:bartik_delta}), residualised on aggregate
+			BED establishment deaths (equation~\eqref{eq:bartik_delta}), residualized on aggregate
 			productivity growth and lagged industry value-added growth
 			(equation~\eqref{eq:resid_v2}).  Outcome window capped at 2019Q4
 			to exclude COVID.}
@@ -1959,7 +1964,7 @@ Figure~\ref{fig:steady_state_curves_z}.
 
 	Figure~\ref{fig:delta_uv_irf} reports the impulse responses of the
 	state unemployment rate and log vacancy rate to a one-standard-deviation
-	increase in the residualised $\delta$ Bartik instrument
+	increase in the residualized $\delta$ Bartik instrument
 	($\hat{\sigma}_{\tilde{B}^\delta} = 14.0$ pp, 2001Q1--2019Q4 sample).
 	The unemployment response rises steadily from $+0.18$ pp at $h=0$ to
 	a plateau of $+1.50$ pp by $h=17$--$20$, remaining highly significant
@@ -1973,7 +1978,7 @@ Figure~\ref{fig:steady_state_curves_z}.
 	suspending it.
 
 	A notable feature of the two IRFs is their asymmetric dynamics at
-	medium horizons: the vacancy response stabilises around $h = 12$--$14$
+	medium horizons: the vacancy response stabilizes around $h = 12$--$14$
 	while the unemployment response continues to rise through $h = 20$.
 	This pattern is consistent with a recovery path in which new vacancy
 	creation resumes before the unemployment pool fully clears, and is
@@ -1981,7 +1986,7 @@ Figure~\ref{fig:steady_state_curves_z}.
 	impulse to $\delta_t$ decays --- with persistence $\rho_\delta \approx
 	0.65$, the shock is largely dissipated by $h = 6$--$8$ --- entry of new
 	product lines begins to restore vacancy creation, so the vacancy rate
-	stabilises.  However, firms near the endogenous continuation threshold
+	stabilizes.  However, firms near the endogenous continuation threshold
 	$\chi_t^c$ remain vulnerable to exit even after the impulse has passed,
 	because their continuation values are still depressed by the lower product
 	variety $N_t$ and the compressed markup.  These secondary exits extend
@@ -1989,10 +1994,7 @@ Figure~\ref{fig:steady_state_curves_z}.
 	worker inflows into unemployment beyond what the exogenous $\delta$
 	persistence alone would predict.  The unemployment stock therefore
 	continues to accumulate --- each secondary exit inflows more workers ---
-	while vacancies are simultaneously being replenished by new entrants.
-	Formally, this is a stock-flow asymmetry: vacancies respond to
-	\emph{incentives} (which recover roughly in line with the shock), whereas
-	the unemployment stock drains only through \emph{matching flows}, which
+	while vacancies are simultaneously being replenished by new entrants. The unemployment stock drains only through matching flows, which
 	depend on tightness $\theta = v/u$.  Even as $v$ recovers toward its
 	steady-state value, tightness remains depressed as long as the
 	unemployment stock is large, slowing the drain.  The combination of
@@ -2238,6 +2240,7 @@ Figure~\ref{fig:steady_state_curves_z}.
 	\textcolor{red}{To do: include plot for corresponding BGM model}
 	Finally, we compare a technology shock in this framework to \citet{bilbiie_2012}. There are several key differences. First, labor reponds only via the extensive margin. It is predetermined on impact and can only expand gradually. A Frisch elasticity of labor supply of one produces a similar response of output on impact. 
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	\section{Conclusion}\label{ref:conclusion}
 	\appendix
 	\section{Steady state}\label{app:steady_state}
 	We summarize the steady state of the system below:
@@ -2864,212 +2867,7 @@ in the baseline analysis. \hfill$\square$
 	%	\hline
 	%	Separation rate $s$ & $\downarrow$ & ambiguous & ambiguous & downward & The effect of $\tau$ on vacancy creation $e$ depends on whether $\theta > 1$. I don't yet have a good intuition for why this is the case. When $\theta<1$, there is an additional ambiguity coming from opposing effects on the JC curve from $\uparrow \tau$ and $\downarrow K$. \\
 	%	\hline
-	%	Destruction rate $\delta$ & $\downarrow$ & $\downarrow$ & leftward & downward & Larger destruction rate increases the flow cost of opening vacancies $K$. For any given level of $N$, recruiters are less willing to open vacancies. Two possible interpretations for the AC curve: (1) Higher destruction rate results in fewer steady-state firms $N$; (2) Higher destruction rate results in more firm entry $\uparrow N_e$, which requires more employment in the market clearing condition. \\
-	%	\hline
-	%	Mass of idle recruiters $F$ & $\uparrow$ & $\uparrow$ & rightward & no movement & Higher mass of idle recruiters reduces the flow entry cost $K$, which allows active recruiters to post more vacancies for any given $N$. \\
-	%	\hline
-	%	Rate of time preference $r$ & $\downarrow$ & $\downarrow$ & leftward &  downward & Higher rate of time preference raises the flow entry cost and reduces the present value of the expected surplus, causing recruiters to post fewer vacancies for any given $N$. \\
-	%	\hline
-	%	Hiring cost $\kappa$ & $\downarrow$ & $\downarrow$ & leftward &  no movement & Increased hiring costs raise the cost of vacancy creation resulting in lower market tightness and fewer business lines.  \\
-	%	\hline
-	%\end{longtable}
-	%\fontsize{12pt}{12pt}\selectfont
-	%\subsection{Transmission of technology shocks}
-	%\textcolor{red}{Not updated}
-	%We derive elasticities that help interpret the transmission of technology shocks in the steady state. Use \eqref{eq:curve_res_cons} to write
-	%\begin{align}
-	%	w^{int}=z^{\frac{\varepsilon}{\varepsilon-1}}L(\theta)^{1/(\varepsilon-1)}\zeta_1
-	%\end{align}
-	%where $\zeta_1$ is a constant with respect to $z$ and $\theta$. Taking logs and differentiating yields
-	%\begin{align}\label{eq:elast_wR_z}
-	%	\epsilon_{w^{int},z}=\frac{\varepsilon}{\varepsilon-1}+\frac{1}{\varepsilon-1}\epsilon_{L,z}
-	%\end{align}
-	%From \eqref{eq:elast_wR_z}, variety effects enhance the direct effect of technology and introduce an additional channel through expansion of product lines. Indeed, as $\varepsilon\to \infty$, $\epsilon_{w^{int},z}\to 1$.
-	%
-	%Next, we derive an expression for $\epsilon_{L,z}$. Write $L$ in logs as 
-	%$
-	%\log L = \zeta_2 + (1-\eta_L)\log \theta-\log(\tau+(1-\delta)A\theta^{1-\eta_L})$
-	%so that
-	%\begin{align}
-	%	\epsilon_{L,z}=(1-\eta_L)(1-L(\theta))\epsilon_{\theta,z}
-	%\end{align}
-	%The elasticity depends on the elasticity of the job finding rate $1-\eta_L$ multiplied by the unemployment rate. Putting this together yields
-	%\begin{align}
-	%	\epsilon_{w^{int},z}=\frac{\varepsilon}{\varepsilon-1}+\frac{1}{\varepsilon-1}(1-\eta_L)(1-L)\epsilon_{\theta,z}
-	%\end{align}
-	%To derive the full expression, start with
-	%\begin{align}
-	%	\frac{K}{q(\theta)} = \frac{1-\delta_e}{r+\tau}(w^{int}-w-K)
-	%\end{align}
-	%The elasticity of the left-hand side with respect to $z$ is $(\epsilon_{K,\theta}+\eta_L)\epsilon_{\theta,z}$. For the right-hand side, first apply derivatives
-	%\begin{align}
-	%	\der{(w^{int}-w-K)}{z} =(1-\phi)(\der{w^{int}}{z}-\der{K}{z}) -\frac{\phi}{1-\delta}\left(\der{\theta}{z}K+\theta \der{K}{z}\right)
-	%\end{align}
-	%Accordingly, we can write the elasticity in the right-hand side as
-	%\begin{align}
-	%	\epsilon_{w^{int}-w-K,z} = \frac{1}{w^{int}-w-K}\left[(1-\phi)\left(w^{int}\epsilon_{w^{int},z}-K\epsilon_{K,\theta}\epsilon_{\theta,z}\right)-\frac{\phi\theta K}{1-\delta}\epsilon_{\theta,z}(1+\epsilon_{K,\theta})\right]
-	%\end{align}
-	%\newpage
-	%\subsection{Details of comparative statics}
-	%\textcolor{red}{Temporarily comment out this section to preserve space}
-	%In this section, we qualitatively characterize how steady state labor market tightness and firm product lines responds to various shocks.  We analyze the equilibrium in $(\theta,N)$ given by the system \eqref{eq:curve_jcc} and \eqref{eq:curve_res_cons}
-	%\begin{align*}
-	%\left(\kappa+\frac{K(\theta)}{q(\theta)}\right)\left(\rho+\tau+\phi \theta q(\theta)\right)&=(1-\delta)(1-\phi)\left(N^{1/(\varepsilon-1)}z/\mu-K(\theta)-b\right) \\
-	%N &= \frac{(\mu-1)(1-\delta)z L(\theta)}{f_{e}(\delta \mu +\rho)}
-	%\end{align*}
-	%which is graphically represented in \ref{fig:steady_state_curves}.
-	%\begin{figure}[h!]\label{fig:steady_state_curves}
-	%	\centering
-	%	\includegraphics[scale=.3]{steady_state.png}
-	%	\caption{Steady state in $(\theta,N)$.}
-	%\end{figure}
-	%
-	%Distinct from a standard labor search model, the job creation curve includes the flow cost of entry $K(\theta)$ due to finitely elastic vacancy creation.  Futhermore, the number of product lines $N$ is relevant to optimal job creation in that it affects the wage recruiters receive $w^{int}=pz/\mu$ through variety effects $p=N^{1/(\epsilon-1)}$.  Note that in the limiting case $\epsilon \rightarrow \infty$, in which variety effects are absent, the job creation curve would independently  determine equilibrium labor market tightness.  The resource constraint curve is essentially a market clearing condition which shows the equilibrium level of employment ($L(\theta)$) that a given number of business lines ($N$) can support.  
-	%
-	%First, consider a positive productivity shock $z$.  Higher productivity increases the real wage recruiters receive $w^{int}/p=z/\mu$, so for a given level of employment $L$ higher aggregate income can support a larger number of businesses.  This is represented by the AC curve shifting upward.  Similarly, higher wages $w^{int}$ increases the surplus received by recruiters; so for a given level of business lines $N$, there will be more vacancies creating causing a higher level of labor market tightness $\theta$.  This is represented by a rightward shift of the JC curve.  The new equilibrium features both higher tightness and business lines.
-	%\begin{figure}[h!]
-	%	\centering
-	%	\includegraphics[scale=.3]{steady_state_z.png}
-	%	\caption{Productivity shock: $z$}
-	%\end{figure}
-	%
-	%Next, consider a positive shock to workers bargaining power $\phi$.  More bargaining power to workers lowers the surplus received by recruiters forcing them to realize higher compensating vacancy filling rates (lower labor market tightness).  This is represented by a leftward shift of the JC curve.  With looser labor markets, movement down along the AC curve shows there is a lower equilibrium level of business lines due to less employment.
-	%\begin{figure}[h!]
-	%	\centering
-	%	\includegraphics[scale=.3]{steady_state_mu.png}
-	%	\caption{Bargaining power shock: $\phi$}
-	%\end{figure}
-	%
-	%Notice that an increase in unemployment benefits $b$ will result in the same qualitative effects as an increase in bargaining power.  Rather than shrinking the fraction of the joint surplus recruiters receive, higher unemployment benefits shrinks the joint surplus itself.  Nonethess, it similarly results in lower labor market tightness and fewer product lines.
-	%
-	%Next, consider a positive shock to fixed entry costs $f_e$.  This shock discourages entry for any given level of tightness and is represented by a downward shift of the AC curve.  Fewer business lines reduce the wage that recruiters receive, through variety effects, causing fewer vacancies to be opened.  This movement down along the JC curve results in lower equilibrium tightness and business lines.
-	%\begin{figure}[h!]
-	%	\centering
-	%	\includegraphics[scale=.3]{steady_state_fe.png}
-	%	\caption{Fixed entry cost shock: $f_e$}
-	%\end{figure}
-	%
-	%Next, consider a positive shock to the separation rate $s$ or destruction rate $\delta$.  Both these variables affect the aggregate separation rate $\tau = 1-(1-\delta)(1-s)$, but further impact the JC curve through its affects on entry and the flow cost of vacancy creation
-	%\begin{align*}
-	%K &= \frac{\rho+\delta}{1+ \rho}\left(e/F \right)^{1/\xi} \\
-	%e &= \delta \left( \frac{\theta \tau+(1-\delta)f(\theta)}{\tau + (1-\delta)f(\theta)}\right)
-	%\end{align*}
-	%which also features the aggregate separation rate $\tau$.  We have that 
-	%$$
-	%\partial e/\partial \tau = \frac{(\theta-1)\delta (1-\delta)f(\theta)}{(\tau+(1-\delta)f(\theta))^2}
-	%$$
-	%so that the relationship between entry and the aggregate separation rate depends on whether or not $\theta$ is greater or less than 1.  In the case that $\theta>1$ higher aggregate separation rate $\tau$ increases entry $e$ which increases the flow vacancy cost $K$.  These effects are represented by an upward shift of the job creation curve.  The resource constraint curve is affected by $\tau$ via aggregate employment
-	%$$
-	%L = \frac{(1-\delta)f(\theta)}{\tau+(1-\delta)f(\theta)}
-	%$$
-	%such that a higher separation rate shifts the resource constraint curve downward.  Therefore, in the case $\theta>1$ the net result is lower market tightness and fewer business lines.
-	%
-	%\begin{figure}[h!]\label{steady_state_s}
-	%	\centering
-	%	\includegraphics[scale=.3]{steady_state_s.png}
-	%	\caption{Separation rate shock: $s$, for $\theta-1>0$}
-	%\end{figure}
-	%
-	%If, however, $\theta<1$ then higher aggregate separation $\tau$ results in less entry which \textit{lowers} the flow vacancy creation cost $K$.  In this case the net effect on the job creation curve is ambiguous.  Although there will surely be fewer business lines, it is unclear whether the labor market will be tighter or looser.
-	%
-	%You can show that $\partial K/\partial \delta>0$ so that higher destruction rates unambiguously increase the flow vacancy cost.  This causes the job creation curve the shift upward while the resource constraint curve shifts due to $\partial L/\partial \delta <0$.  Therefore the effects are the same as depicted in \ref{steady_state_s} resulting in lower market tightness and fewer product lines.
-	%
-	
-	%Next, consider an increase the the elasticity of substitution $\varepsilon$.  The value of $\varepsilon$ affects the real wage of recruiters through two distinct channels: the price ($p=N^{\frac{1}{\varepsilon-1}}$) and the markup ($\mu=\frac{\varepsilon}{\varepsilon-1}$).  Clearly $\partial \mu/\partial \varepsilon <0$ so that higher values of $\varepsilon$ increase the real wage of recruiters causing them to open more vacancies.  Conversely, $\partial p/\partial \varepsilon<0$ so that higher values of $\varepsilon$ decreases the wage recruiters receive; reflected by fewer vacancies.
-	
-	%You can show that the net effect on the wage, is dictated by the following inequalities:
-	
-	%\begin{align*}
-	%\frac{\partial \left[ N^{\frac{1}{\varepsilon-1}}z\frac{\varepsilon-1}{\varepsilon} \right]}{\partial \varepsilon} > 0 \quad &\text{if} \quad %\frac{\varepsilon-1}{\varepsilon} > \ln N \\
-	%\frac{\partial \left[ N^{\frac{1}{\varepsilon-1}}z\frac{\varepsilon-1}{\varepsilon} \right]}{\partial \varepsilon} < 0 \quad &\text{if} \quad \frac{\varepsilon-1}{\varepsilon} < \ln N \\
-	%\frac{\partial \left[ N^{\frac{1}{\varepsilon-1}}z\frac{\varepsilon-1}{\varepsilon} \right]}{\partial \varepsilon} = 0 \quad &\text{if} \quad \frac{\varepsilon-1}{\varepsilon} = \ln N
-	%\end{align*}
-	%So the JC curve will rotate counter clockwise about the point $N=e^{\frac{\epsilon-1}{\epsilon}}$.   At high values of $N$, an increase in $\varepsilon$ will cause recruiters to realize lower wages; so that the price effect dominates.  At lower values of $N$ an marginal increase in $\varepsilon$ causes recruiters to realize higher wages; so that the markup effect dominates the markup effect. 
-	
-	%Only markups matter for the AC curve; so we can immediately conclude that higher values of $\varepsilon$ shift the AC curve rightward.  Economically, lower markups allows a higher level of employment which, in order to clear the labor market, corresponds to higher levels of tightness.  The net result is a reduction in steady state business lines $N$, and an ambiguous effect on tightness $\theta$.
-	%\begin{figure}[h!]
-	%	\centering
-	%	\includegraphics[scale=.3]{steady_state_e.png}
-	%	\caption{Elasticity  shock: $\epsilon$}
-	%\end{figure}
-	%
-	%Next, consider  an increase in the mass of potential entrants $F$.  Higher $F$ only affects the job creation curve through the flow vacancy cost $K$, and clearly $\partial K/\partial F<0$ so that the job creation curve shifts rightward resulting in tighter labor markets and fewer business lines.
-	%
-	%\begin{figure}[h!]
-	%	\centering
-	%	\includegraphics[scale=.3]{steady_state_F.png}
-	%	\caption{Potential entrants shock: $F$}
-	%\end{figure}
-	%
-	%Finally, consider a positive shock to the rate of time preference $\rho$.  Higher rate of time preference raises the flow entry cost $K$ and reduces the present value of the expected surplus resulting in  fewer vacancies.  For any given level of tightness, higher rates of time preference increase the value of current product lines allowing higher levels of employment for any given $N$.  This is why the resource constraint curve shifts rightward.  The net result is lower equilibrium tightness and business lines represented as in \eqref{steady_state_s}.
-	%
-	%Below is a summary of the comparative statics:
-	%\fontsize{9pt}{9pt}\selectfont
-	%\begin{longtable}{|l|c|c|c|c|p{6cm}|}
-	%	\hline
-	%	\textbf{Parameter} & \textbf{$N$} & \textbf{$\theta$} & \textbf{JC Curve} & \textbf{AC Curve} & \textbf{Comments} \\
-	%	\hline
-	%	\endfirsthead
-	%	\hline
-	%	Productivity $z$ & $\uparrow$ & $\uparrow$ & rightward & upward & Increase in the wage recruiters receive $w^{int}/p=z/\mu$ causes them to open more vacancies for any given level of $N$. Similarly, higher wages result in lower employment through market clearing. \\
-	%	\hline
-	%	Bargaining power $\phi$ & $\downarrow$ & $\downarrow$ & leftward & no movement & More bargaining power to the worker reduces the surplus that recruiters receive in the wage bargain. For a given level of $N$, they will open fewer vacancies. \\
-	%	\hline
-	%	Unemployment benefit $b$ & $\downarrow$ & $\downarrow$ & leftward & no movement & Higher unemployment benefits improve the workers' threat point in the wage bargain, resulting in less surplus to the recruiter. Hence, they are less willing to open vacancies for a given $N$. \\
-	%	\hline
-	%	Fixed entry cost $f_e$ & $\downarrow$ & $\downarrow$ & no movement & downward & Higher entry costs reduce the amount of new business formation for a given level of employment $L$. \\
-	%	\hline
-	%	Separation rate $s$ & $\downarrow$ & ambiguous & ambiguous & downward & The effect of $\tau$ on vacancy creation $e$ depends on whether $\theta > 1$. I don't yet have a good intuition for why this is the case. When $\theta<1$, there is an additional ambiguity coming from opposing effects on the JC curve from $\uparrow \tau$ and $\downarrow K$. \\
-	%	\hline
-	%	Destruction rate $\delta$ & $\downarrow$ & $\downarrow$ & leftward & downward & Larger destruction rate increases the flow cost of opening vacancies $K$. For any given level of $N$, recruiters are less willing to open vacancies. Two possible interpretations for the AC curve: (1) Higher destruction rate results in fewer steady-state firms $N$; (2) Higher destruction rate results in more firm entry $\uparrow N_e$, which requires more employment in the market clearing condition. \\
-	%	\hline
-	%	Elasticity of substitution $\epsilon$ & $\downarrow$ & $\downarrow$ & leftward & no movement & Higher elasticity of substitution reduces markups thereby increasing wages, but also lowers prices causing lower wages. The positive effect on wages dominants for lower levels of business lines $N$, whereas the negative effect dominates for higher values of $N$.  Simultaneously, higher $\varepsilon$ allows for more employment and a tighter labor market from the AC curve. \\
-	%	\hline
-	%	Mass of idle recruiters $F$ & $\uparrow$ & $\uparrow$ & rightward & no movement & Higher mass of idle recruiters reduces the flow entry cost $K$, which allows active recruiters to post more vacancies for any given $N$. \\
-	%	\hline
-	%	Rate of time preference $\rho$ & $\downarrow$ & $\downarrow$ & leftward &  downward & Higher rate of time preference raises the flow entry cost and reduces the present value of the expected surplus, causing recruiters to post fewer vacancies for any given $N$. \\
-	%	\hline
-	%\end{longtable}
-	%\fontsize{12pt}{12pt}\selectfont
-	
-	\subsection{Transmission of technology shocks}
-	\textcolor{red}{Not updated}
-	We derive elasticities that help interpret the transmission of technology shocks in the steady state. Use \eqref{eq:curve_res_cons} to write
-	\begin{align}
-		w^{int}=z^{\frac{\varepsilon}{\varepsilon-1}}L(\theta)^{1/(\varepsilon-1)}\zeta_1
-	\end{align}
-	where $\zeta_1$ is a constant with respect to $z$ and $\theta$. Taking logs and differentiating yields
-	\begin{align}\label{eq:elast_wR_z}
-		\epsilon_{w^{int},z}=\frac{\varepsilon}{\varepsilon-1}+\frac{1}{\varepsilon-1}\epsilon_{L,z}
-	\end{align}
-	From \eqref{eq:elast_wR_z}, variety effects enhance the direct effect of technology and introduce an additional channel through expansion of product lines. Indeed, as $\varepsilon\to \infty$, $\epsilon_{w^{int},z}\to 1$.
-	
-	Next, we derive an expression for $\epsilon_{L,z}$. Write $L$ in logs as 
-	$
-	\log L = \zeta_2 + (1-\eta_L)\log \theta-\log(\tau+(1-\delta)A\theta^{1-\eta_L})$
-	so that
-	\begin{align}
-		\epsilon_{L,z}=(1-\eta_L)(1-L(\theta))\epsilon_{\theta,z}
-	\end{align}
-	The elasticity depends on the elasticity of the job finding rate $1-\eta_L$ multiplied by the unemployment rate. Putting this together yields
-	\begin{align}
-		\epsilon_{w^{int},z}=\frac{\varepsilon}{\varepsilon-1}+\frac{1}{\varepsilon-1}(1-\eta_L)(1-L)\epsilon_{\theta,z}
-	\end{align}
-	To derive the full expression, start with
-	\begin{align}
-		\frac{K}{q(\theta)} = \frac{1-\delta_e}{r+\tau}(w^{int}-w-K)
-	\end{align}
-	The elasticity of the left-hand side with respect to $z$ is $(\epsilon_{K,\theta}+\eta_L)\epsilon_{\theta,z}$. For the right-hand side, first apply derivatives
-	\begin{align}
-		\der{(w^{int}-w-K)}{z} =(1-\phi)(\der{w^{int}}{z}-\der{K}{z}) -\frac{\phi}{1-\delta}\left(\der{\theta}{z}K+\theta \der{K}{z}\right)
-	\end{align}
-	Accordingly, we can write the elasticity in the right-hand side as
-	\begin{align}
-		\epsilon_{w^{int}-w-K,z} = \frac{1}{w^{int}-w-K}\left[(1-\phi)\left(w^{int}\epsilon_{w^{int},z}-K\epsilon_{K,\theta}\epsilon_{\theta,z}\right)-\frac{\phi\theta K}{1-\delta}\epsilon_{\theta,z}(1+\epsilon_{K,\theta})\right]
-	\end{align}
-	\
-	
-	%%%%%%%%%%%%%%%%%%%%%%%%
+	%	Destruction rate $\delta$ & $\downarrow$ & $\downarrow$ & leftward & downward & Larger destruction rate increases the flow cost of opening vacancies $K$. For any given level of $N$, recruiters are less willing to open vacanci
 	\bibliographystyle{econometrica}
 	\bibliography{references}
-\end{document}
+	\end{document}

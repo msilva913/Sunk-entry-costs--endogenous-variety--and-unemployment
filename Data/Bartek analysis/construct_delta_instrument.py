@@ -1545,4 +1545,322 @@ END_QUARTER   = "2023Q1"
 SHARES_PATH      = DEFAULT_OUTPUT_DIR / f"shares_base{BASE_YEAR}.parquet"
 SHOCK_RATES_PATH = DEFAULT_OUTPUT_DIR / f"shock_rates_{START_QUARTER}_{END_QUARTER}.parquet"
 INSTRUMENT_PATH  = DEFAULT_OUTPUT_DIR / f"delta_instrument_base{BASE_YEAR}.csv"
-PERM_RATIOS_PATH = DEFAULT_OUTPUT_DIR / "permanence_ratios_by_supersector.parquet"
+
+
+# ---------------------------------------------------------------------------
+# 10.  BED DEATHS FETCH AND CLOSINGS-VS-DEATHS DIAGNOSTIC
+# ---------------------------------------------------------------------------
+
+def fetch_bed_deaths_national(
+    cache_dir     : Path = DEFAULT_CACHE_DIR,
+    start_quarter : str  = "1992Q3",
+    end_quarter   : str  = "2019Q4",
+) -> pd.DataFrame:
+    """
+    Fetch national BED employment losses from *dying* establishments
+    (dataclass=08: absent for 4+ consecutive quarters) by supersector.
+
+    Deaths/Closings <= 1 by construction in every industry x quarter because
+    Deaths is a strict subset of Closings.  This series is the conceptually
+    clean measure of permanent establishment exits and eliminates the need
+    for the BDS/BED permanence ratio calibration.
+
+    Series ID structure: identical to closings but dataclass=08 instead of 06.
+        BDS0000000000{bed_code}110008LQ5  (28 chars)
+    bed_code at positions [13:19] -- same as fetch_bed_closings_national().
+    """
+    import time
+
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    cache_file = cache_dir / "bed_deaths_national_12ind.parquet"
+
+    if cache_file.exists():
+        print("  [BED Deaths] loading from cache")
+        df = pd.read_parquet(cache_file)
+    else:
+        direct_inv    = {v: k for k, v in BED_INDUSTRY_MAP.items()}
+        ttu_codes     = set(BED_TTU_MAP.keys())
+        all_bed_codes = list(BED_INDUSTRY_MAP.values()) + list(ttu_codes)
+        # dataclass=08 (Deaths) instead of 06 (Closings)
+        series_ids = [f"BDS0000000000{c}110008LQ5" for c in all_bed_codes]
+
+        print(f"  [BED Deaths] fetching {len(series_ids)} series from BLS API v1 ...")
+
+        api_url     = "https://api.bls.gov/publicAPI/v1/timeseries/data/"
+        year_chunks = [("1992", "2001"), ("2002", "2011"), ("2012", "2030")]
+        raw_rows    = []
+
+        for c_idx, (start_yr, end_yr) in enumerate(year_chunks):
+            print(
+                f"    chunk {c_idx+1}/{len(year_chunks)}  "
+                f"({start_yr}-{end_yr}) ...",
+                end=" ", flush=True,
+            )
+            payload = {
+                "seriesid" : series_ids,
+                "startyear": start_yr,
+                "endyear"  : end_yr,
+            }
+            resp = requests.post(
+                api_url,
+                json    = payload,
+                headers = {"Content-Type": "application/json"},
+                timeout = 60,
+            )
+            resp.raise_for_status()
+            result = resp.json()
+
+            if result.get("status") != "REQUEST_SUCCEEDED":
+                raise ValueError(
+                    f"BLS API error for {start_yr}-{end_yr}: "
+                    f"{result.get('message', result)}"
+                )
+
+            n_obs = 0
+            for series in result["Results"]["series"]:
+                sid      = series["seriesID"]
+                bed_code = sid[13:19]    # positions 13-18 inclusive; same as closings
+                if bed_code not in direct_inv and bed_code not in ttu_codes:
+                    continue
+                for obs in series["data"]:
+                    if obs.get("value", "-") == "-":
+                        continue
+                    # Strip leading zero: "Q04" -> quarter "4"
+                    qnum = str(int(obs["period"].lstrip("Q")))
+                    raw_rows.append({
+                        "quarter_label": f"{obs['year']}Q{qnum}",
+                        "bed_code"     : bed_code,
+                        "deaths_nat"   : float(obs["value"].replace(",", "")),
+                    })
+                    n_obs += 1
+            print(f"{n_obs} obs")
+            if c_idx < len(year_chunks) - 1:
+                time.sleep(2.0)
+
+        if not raw_rows:
+            raise ValueError(
+                "BLS API returned no Deaths data.  Check daily quota or register "
+                "a free API key at https://data.bls.gov/registrationEngine/"
+            )
+
+        raw = pd.DataFrame(raw_rows)
+        raw["industry_code"] = raw["bed_code"].map(
+            lambda c: direct_inv.get(c) or BED_TTU_MAP.get(c)
+        )
+        raw = raw[raw["industry_code"].notna()]
+
+        df = (
+            raw
+            .groupby(["quarter_label", "industry_code"])["deaths_nat"]
+            .sum()
+            .reset_index()
+            .sort_values(["industry_code", "quarter_label"])
+            .reset_index(drop=True)
+        )
+        df.to_parquet(cache_file, index=False)
+        print(
+            f"  [BED Deaths] cached {len(df):,} rows | "
+            f"{df['industry_code'].nunique()} supersectors | "
+            f"{df['quarter_label'].nunique()} quarters"
+        )
+
+    df = df[
+        (df["quarter_label"] >= start_quarter) &
+        (df["quarter_label"] <= end_quarter)
+    ].copy()
+    return df
+
+
+def plot_closings_vs_deaths(
+    output_dir    : Path  = Path("data/results"),
+    cache_dir     : Path  = DEFAULT_CACHE_DIR,
+    start_quarter : str   = "1992Q3",
+    end_quarter   : str   = "2019Q4",
+    percentiles   : tuple = (25, 75),
+) -> None:
+    """
+    Two-panel time-series figure comparing BED Closings vs Deaths rates.
+
+    Panel 1 (top): Employment-weighted mean closing rate (blue) and death rate
+      (red) across 12 supersectors, with shaded bands for the lower-upper
+      industry percentile range.  Units: percent of employment per quarter.
+
+    Panel 2 (bottom): Deaths/Closings ratio -- employment-weighted mean
+      (green) with percentile band and a horizontal reference line at 1.0.
+
+    Employment weights: base-year (2006) national industry employment from
+      data/instruments/shares_base2006.parquet.
+
+    NBER recession shading: 2001Q1-2001Q4, 2007Q4-2009Q2, 2020Q1-2020Q2.
+
+    Saves to: output_dir / "bed_closings_vs_deaths.png"
+    """
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    print("[plot] loading closings and deaths ...")
+    closings = fetch_bed_closings_national(
+        cache_dir, start_quarter=start_quarter, end_quarter=end_quarter
+    )
+    deaths = fetch_bed_deaths_national(
+        cache_dir, start_quarter=start_quarter, end_quarter=end_quarter
+    )
+
+    # Employment weights: base-year national employment per industry (persons)
+    shares_path = DEFAULT_OUTPUT_DIR / "shares_base2006.parquet"
+    if shares_path.exists():
+        shares = pd.read_parquet(shares_path)
+        emp_weights = shares.groupby("industry_code")["emp_nat_ind"].first().to_dict()
+    else:
+        print("  [plot] shares_base2006.parquet not found; using equal weights")
+        emp_weights = {c: 1.0 for c in closings["industry_code"].unique()}
+
+    merged = pd.merge(
+        closings, deaths,
+        on=["quarter_label", "industry_code"], how="inner"
+    )
+    # BED levels in thousands of workers; emp_weights from QCEW are in persons.
+    # Divide by 1000 so rates are in percent-of-employment units.
+    merged["emp_w"]        = merged["industry_code"].map(emp_weights).fillna(1.0) / 1000.0
+    merged["closing_rate"] = merged["closings_nat"] / merged["emp_w"] * 100
+    merged["death_rate"]   = merged["deaths_nat"]   / merged["emp_w"] * 100
+    merged["ratio"]        = merged["deaths_nat"] / merged["closings_nat"].replace(0, np.nan)
+
+    all_quarters = sorted(merged["quarter_label"].unique())
+    q_to_idx     = {q: i for i, q in enumerate(all_quarters)}
+    merged["q_idx"] = merged["quarter_label"].map(q_to_idx)
+
+    def _wpercentile(values, weights, q):
+        arr = np.asarray(values, dtype=float)
+        wt  = np.asarray(weights, dtype=float)
+        mask = np.isfinite(arr) & np.isfinite(wt) & (wt > 0)
+        arr, wt = arr[mask], wt[mask]
+        if len(arr) == 0:
+            return np.nan
+        idx = np.argsort(arr)
+        arr, wt = arr[idx], wt[idx]
+        cdf = np.cumsum(wt) / wt.sum()
+        return float(np.interp(q / 100.0, cdf, arr))
+
+    plo, phi = percentiles
+    records = []
+    for q_label, grp in merged.groupby("quarter_label"):
+        w  = grp["emp_w"].values
+        wt = w.sum()
+        records.append({
+            "q_idx"      : q_to_idx[q_label],
+            "close_mean" : (grp["closing_rate"] * w).sum() / wt,
+            "death_mean" : (grp["death_rate"]   * w).sum() / wt,
+            "ratio_mean" : (grp["ratio"].fillna(0) * w).sum() / wt,
+            "close_plo"  : _wpercentile(grp["closing_rate"].values, w, plo),
+            "close_phi"  : _wpercentile(grp["closing_rate"].values, w, phi),
+            "death_plo"  : _wpercentile(grp["death_rate"].values,   w, plo),
+            "death_phi"  : _wpercentile(grp["death_rate"].values,   w, phi),
+            "ratio_plo"  : _wpercentile(grp["ratio"].values, w, plo),
+            "ratio_phi"  : _wpercentile(grp["ratio"].values, w, phi),
+        })
+
+    agg = pd.DataFrame(records).sort_values("q_idx").reset_index(drop=True)
+    xs  = agg["q_idx"].values
+    xtick_idx    = [i for i, q in enumerate(all_quarters) if q.endswith("Q1")]
+    xtick_labels = [all_quarters[i][:4] for i in xtick_idx]
+
+    NBER_RECESSIONS = [
+        ("2001Q1", "2001Q4"),
+        ("2007Q4", "2009Q2"),
+        ("2020Q1", "2020Q2"),
+    ]
+
+    def _rec_shade(ax, alpha=0.15):
+        for r_start, r_end in NBER_RECESSIONS:
+            x0 = q_to_idx.get(r_start)
+            x1 = q_to_idx.get(r_end)
+            if x0 is not None and x1 is not None:
+                ax.axvspan(x0, x1, color="grey", alpha=alpha, zorder=0)
+
+    fig, axes = plt.subplots(2, 1, figsize=(11, 7), sharex=True)
+    fig.subplots_adjust(hspace=0.12)
+
+    # Panel 1: Closings and Deaths rates
+    ax1 = axes[0]
+    _rec_shade(ax1)
+    ax1.fill_between(xs, agg["close_plo"], agg["close_phi"],
+                     color="#2166ac", alpha=0.15,
+                     label=f"Closings {plo}-{phi}th pctile (industry)")
+    ax1.fill_between(xs, agg["death_plo"], agg["death_phi"],
+                     color="#d6604d", alpha=0.20,
+                     label=f"Deaths {plo}-{phi}th pctile (industry)")
+    ax1.plot(xs, agg["close_mean"], color="#2166ac", lw=1.8, label="Closings (wtd mean)")
+    ax1.plot(xs, agg["death_mean"], color="#d6604d", lw=1.8, label="Deaths (wtd mean)")
+    ax1.set_ylabel("Pct of employment per quarter", fontsize=10)
+    ax1.set_title(
+        "BED Closings vs. Deaths: employment-weighted rates, 12 supersectors",
+        fontsize=11,
+    )
+    ax1.legend(fontsize=8, ncol=2, loc="upper right")
+    ax1.tick_params(axis="y", labelsize=9)
+    ax1.grid(axis="y", lw=0.4, alpha=0.5)
+
+    # Panel 2: Deaths/Closings ratio
+    ax2 = axes[1]
+    _rec_shade(ax2)
+    ax2.fill_between(xs, agg["ratio_plo"], agg["ratio_phi"],
+                     color="#4dac26", alpha=0.20,
+                     label=f"Deaths/Closings {plo}-{phi}th pctile")
+    ax2.plot(xs, agg["ratio_mean"], color="#4dac26", lw=1.8,
+             label="Deaths/Closings (wtd mean)")
+    ax2.axhline(1.0, color="black", lw=0.9, ls="--", label="Ratio = 1.0 (upper bound)")
+    ax2.set_ylabel("Deaths / Closings", fontsize=10)
+    ax2.set_xlabel("Year", fontsize=10)
+    ax2.legend(fontsize=8, loc="lower right")
+    ax2.tick_params(axis="both", labelsize=9)
+    ax2.grid(axis="y", lw=0.4, alpha=0.5)
+    ax2.set_ylim(0, 1.15)
+    ax2.set_xticks(xtick_idx)
+    ax2.set_xticklabels(xtick_labels, rotation=45, ha="right")
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    out_path = output_dir / "bed_closings_vs_deaths.png"
+    plt.savefig(out_path, dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    print(f"[plot] saved: {out_path}")
+
+    print(f"\nDeaths/Closings ratio (wtd mean):")
+    print(f"  Full-sample mean : {agg['ratio_mean'].mean():.3f}")
+    print(f"  Min              : {agg['ratio_mean'].min():.3f}")
+    print(f"  Max              : {agg['ratio_mean'].max():.3f}")
+    print(f"  Mean closing rate: {agg['close_mean'].mean():.4f}% of emp/qtr")
+    print(f"  Mean deaths  rate: {agg['death_mean'].mean():.4f}% of emp/qtr")
+
+
+# ---------------------------------------------------------------------------
+# 11.  CLI ENTRY POINTS
+# ---------------------------------------------------------------------------
+# Run from Data/Bartek analysis/:
+#
+#   python construct_delta_instrument.py              -- plot using cached data
+#   python construct_delta_instrument.py --refresh    -- delete Deaths cache and re-fetch
+#
+# To force a re-fetch without the flag, delete the cache file manually:
+#   data/cache/bed_deaths_national_12ind.parquet
+
+if __name__ == "__main__":
+    import sys
+
+    refresh = "--refresh" in sys.argv
+    if refresh:
+        deaths_cache = DEFAULT_CACHE_DIR / "bed_deaths_national_12ind.parquet"
+        if deaths_cache.exists():
+            deaths_cache.unlink()
+            print(f"[cache] deleted {deaths_cache} -- will re-fetch from BLS API")
+        else:
+            print(f"[cache] {deaths_cache} not found -- will fetch fresh")
+
+    plot_closings_vs_deaths(
+        output_dir    = Path("data/results"),
+        cache_dir     = DEFAULT_CACHE_DIR,
+        start_quarter = START_QUARTER,
+        end_quarter   = "2019Q4",
+        percentiles   = (25, 75),
+    )
