@@ -1,6 +1,6 @@
 # CLAUDE.md — Empirical LP Project (Firm Entry/Exit DSGE)
 
-**Last updated:** May 5, 2026 (session 2)
+**Last updated:** May 8, 2026 (session 3)
 **Author:** Mario Silva
 **Purpose:** Persistent project context for fresh Cowork sessions. Paste this into any new session to restore full project state.
 **Code structure:** clean, succinct code easily interpretable by empirical macroeconomist.
@@ -980,3 +980,87 @@ Priority order:
 - **τ_bar = 9.34%/qtr**: Shimer (2012) total separation rate, common sample
 - **δ/τ = 10.07%**: product-line destruction accounts for ~10% of all separations at steady state
 - These are the model calibration targets; the BED-based JF Table 2 provides supporting micro-evidence on the quantitative role of entry/exit in aggregate flows
+
+---
+
+## 17. Revisions and Findings — May 8, 2026 (Session 3)
+
+### 17.1 part11_jf_table2.py — Major Methodology Revision
+
+**Column structure redesigned** (breaking change vs. prior session):
+
+| Col | Old spec | New spec |
+|-----|----------|----------|
+| 3 | HP rel. std dev | Hamilton (h=8, p=4) rel. std dev — MAIN |
+| 4 | HP rel. std dev | Hamilton (h=8, p=4) rel. std dev — MAIN |
+| 5 | R² (filtered log u on filtered log G_O) | HP (λ=1600) rel. std dev — JF comparison |
+| 6 | R² (filtered log u on filtered log L_C) | HP (λ=1600) rel. std dev — JF comparison |
+
+**Why the R² spec was dropped (cols 5-6):** Unemployment u_t is highly autocorrelated, so any bivariate regression of filtered(log u) on filtered(log G_O) picks up the predetermined lagged component of u mechanically regardless of the actual entry/exit signal. The R² values were economically uninterpretable and sample-unstable (C5 flipped from 0.017 to 0.166 across jf_orig vs ext_2019). The parallel structure (Hamilton cols 3-4, HP cols 5-6, same statistic both) is cleaner and directly answers the filter-sensitivity question.
+
+**Why HP rather than Hamilton for the JF comparison (cols 5-6):** HP in the jf_orig sample gives C5=0.362, C6=0.333, closely matching JF's 0.33/0.34. Hamilton gives slightly higher values (0.391/0.335) because it is less aggressive at trend removal over short windows. HP remains the appropriate filter for direct JF replication; Hamilton is preferred for extended samples containing GFC/Covid.
+
+**Quast-Wolters modification evaluated and rejected:** QW averages Hamilton residuals over h=4..12 to reduce horizon sensitivity. Computed and compared — values differ by ≤0.015 from Hamilton h=8 across all samples. QW does not reduce the secular decline in C3/C4 across extended samples because the Covid/GFC spikes inflate sd(L) in the denominator regardless of h. Not worth adding as a separate column.
+
+**Table format change:** Removed `tablenotes` environment entirely. Notes moved into a compact `\multicolumn{7}{p{...}}` row between the last data row and `\bottomrule`, inside the tabular. Caption is now factual description only (no findings text). Three separate `.tex` files output per sample; no HP-backup appendix file.
+
+**Output files (current, data/results/):**
+- `jf_table2_jf_orig_latex.tex` — 1992Q3–2006Q3 (JF replication)
+- `jf_table2_ext_2019_latex.tex` — 1992Q3–2019Q4 (preferred extended)
+- `jf_table2_ext_2024_latex.tex` — 1992Q3–2024Q4 (BED end; truncates at 2021Q4 until cache refreshed locally)
+- `jf_table2_results.parquet` — columns: sample, pip, c1, c2, c3 (Ham), c4 (Ham), c5 (HP), c6 (HP), n
+- `jf_table2_extension.txt` — human-readable table
+
+**BED column naming clarification (confirmed):** `df["G_O"] = df["expanding"] - df["openings"]` is correct. The legacy cache column `"openings"` contains BED elem0002 = gains at *expanding (continuing)* establishments, not births. `"expanding"` contains elem0001 = total gross gains. The subtraction yields gains at *opening (birth)* establishments. Confirmed via `frac_open` column in cache (~0.19–0.22, consistent with C1 ≈ 20%).
+
+### 17.2 Key Numbers for part11 (ext_2019 preferred sample)
+
+**Total private:**
+- C1 = 0.200, C2 = 0.195 (entry/exit mean shares)
+- C3 = 0.269, C4 = 0.239 (Hamilton rel. std dev)
+- C5 = 0.275, C6 = 0.223 (HP rel. std dev)
+
+**Industry range (ext_2019):**
+- Manufacturing: C1=12.5%, C2=13.9% (lowest entry/exit shares)
+- Financial Activities: C1=23.5%, C2=24.7%; Leisure & Hospitality: C1=24.5%
+
+**jf_orig total private (replication check):**
+- C5(HP)=0.362, C6(HP)=0.333 vs. JF benchmark 0.33/0.34 — gap is ~3 pp from supersector aggregation
+
+**Secular decline diagnosis (confirmed):** The drop in C3/C4/C5/C6 from jf_orig to ext_2019/ext_2024 is entirely driven by the denominator: sd(L) jumps from 254 (jf_orig) → 322 (ext_2019) → 1208 (ext_2024), while sd(LC) barely moves (85 → 72 → 159). The Covid spike creates max|cL| = 12,168 vs. 738 in the original sample — a 16× outlier. Hamilton is more robust than HP to this but neither filter recovers the original ratios. This is genuine economics (intensive margin dominates GFC/Covid variance), not a methodological artifact.
+
+### 17.3 Empirical Motivation — Four Facts Structure (Paper Draft)
+
+The empirical motivation section is organized around four interconnected facts, presented in plain "First / Second / Third / Fourth" structure (not bolded headers — bolded headers read like slides, not a journal paper):
+
+**Fact 1 — Job flows track establishment entry/exit closely (BDS):**
+- Establishment exit rate avg 10.4%/yr, firm exit 8.9%/yr, job destruction 14.1%/yr
+- Establishment–firm exit correlation = 0.943
+
+**Fact 2 — Entry/exit account for ~20% of gross flows and are cyclically relevant (BED/JF Table 2):**
+- Mean shares: 20.0% of gains, 19.5% of losses (ext_2019)
+- Range: 12–14% (Manufacturing) to 23–25% (Financial Activities, Leisure & Hospitality)
+- Cyclical volatility ratios: 0.27/0.24 (Hamilton), 0.28/0.22 (HP) — below JF due to GFC/Covid intensive-margin dominance, but economically significant
+- Key calibration contrast: monthly separation rate 3.1% >> monthly establishment exit rate 0.31% (= δ̄ 0.940%/qtr ÷ 3). Gap motivates the model: not all separations destroy a business opportunity; not all firm exits are preceded by worker separations.
+
+**CAUTION on monthly exit rate figure in draft:** Text originally said 0.651%/month — does not match any series. Correct value is δ̄ = 0.940%/qtr = 0.313%/month (from BDS). Text should use 0.313%/month or equivalently 0.940%/qtr.
+
+**Fact 3 — Cumulative exit predicts recession severity across recessions (recession scatter):**
+- 2001: cum_delta=5.6%, CUG=30.0 pp-qtrs, CVS=25.7 pp-qtrs, u_peak=5.9%
+- 2008-09: cum_delta=7.8%, CUG=76.6 pp-qtrs, CVS=18.8 pp-qtrs, u_peak=9.9%
+- 2020: cum_delta=2.9%, CUG=26.6 pp-qtrs, CVS=1.7 pp-qtrs, u_peak=13.0%
+- Note: 2001 CVS (25.7) > 2008-09 CVS (18.8) despite lower exit rate — prolonged dot-com vacancy freeze, not just exit
+- 2020 CUG (26.6) is substantial despite tiny CVS — demand recovered fast but unemployment remained elevated briefly
+
+**Fact 4 — High-exit states accumulate larger labor market gaps (state scatter):**
+- Weighted correlations: r_w(CUG) = 0.647, r_w(CVS) = 0.282
+- Recovery speed has wrong/null sign due to industry-composition confound (high-exit states are service/Sun Belt, fast structural recovery); CUG is the right metric
+
+### 17.4 Pending Work (Updated Priority Order)
+
+1. **Wild cluster bootstrap** (`part5_wcrb.py`) — n=50 clusters at lower bound; asymptotic SEs may be too narrow at long horizons ❌
+2. **GFC diagnostic for LD unemployment** (`part7d_ld_gfc.py`) — LD unemployment rises monotonically through h=20; apply GFC_{t+h} outcome-quarter control ❌
+3. **SLOOS interaction** (`part7b_sloos.py`) — C&I net tightening as alternative to NFCI; tests credit supply vs. recession severity ❌
+4. **Pre-GFC sample restriction** — add `max_qt="2007Q4"` option to `run_lp()` in `part5_lp.py` ❌
+5. **Refresh BED cache to 2024Q4** — run `refresh_bed_cache.py` locally (blocked in sandbox by BLS API rate limit); ext_2024 currently truncates at 2021Q4 ❌
+6. **build_report_html.py** — run locally to generate HTML report (requires pandoc) ❌

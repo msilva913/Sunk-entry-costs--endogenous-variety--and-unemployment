@@ -1,36 +1,31 @@
 \begin{table}[htbp]
 \centering
 \small
-\caption{Job Gains/Losses from Opening/Closing Establishments (\emph{Extended to 2019Q4 (COVID cutoff, preferred)}) \\
-  \emph{Source: BLS BED (quarterly). Replication/extension of Jaimovich \& Floetotto (2008, JME) Table~2.} \\  \emph{Filter: Hamilton (2018) filter ($h=8$, $p=4$).}}
+\caption{Job Gains and Losses from Opening and Closing Establishments (\emph{Extended to 2019Q4 (COVID cutoff, preferred)}) \\[2pt]
+  {\small\itshape Source: BLS Business Employment Dynamics (BED), quarterly, 12 Bartik supersectors. Replication and extension of Jaimovich \& Floetotto (2008, JME) Table~2.}}
 \label{tab:jf_t2_ext_2019}
 \begin{tabular}{lcccccc}
 \toprule
- & \multicolumn{2}{c}{Mean share} & \multicolumn{2}{c}{Rel.\ std dev} & \multicolumn{2}{c}{Unemp.\ proj.} \\
+ & \multicolumn{2}{c}{Mean share} & \multicolumn{2}{c}{Rel.\ std dev (Ham)} & \multicolumn{2}{c}{Rel.\ std dev (HP)} \\
 \cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
-Industry & $\bar{g}^O$ & $\bar{g}^C$ & $\sigma^O/\sigma$ & $\sigma^C/\sigma$ & $\mathcal{V}^O/\mathcal{V}$ & $\mathcal{V}^C/\mathcal{V}$ \\
+Industry & $\bar{g}^O$ & $\bar{g}^C$ & $\sigma^O/\sigma$ & $\sigma^C/\sigma$ & $\sigma^O/\sigma$ & $\sigma^C/\sigma$ \\
 \midrule
 \midrule
-\textbf{Total private} & 0.200 & 0.195 & 0.269 & 0.239 & 0.022 & 0.028 \\
-Natural resources \& mining & 0.164 & 0.158 & 0.295 & 0.205 & 0.070 & 0.017 \\
-Construction & 0.208 & 0.206 & 0.188 & 0.198 & 0.020 & 0.027 \\
-Manufacturing & 0.125 & 0.139 & 0.234 & 0.123 & 0.003 & 0.002 \\
-Wholesale trade & 0.204 & 0.227 & 0.260 & 0.249 & 0.023 & 0.016 \\
-Retail trade & 0.172 & 0.154 & 0.239 & 0.223 & 0.027 & 0.019 \\
-Transportation \& utilities & 0.165 & 0.175 & 0.208 & 0.223 & 0.016 & 0.016 \\
-Information & 0.206 & 0.210 & 0.292 & 0.367 & 0.025 & 0.094 \\
-Financial activities & 0.235 & 0.247 & 0.352 & 0.387 & 0.073 & 0.104 \\
-Prof.~\& business services & 0.205 & 0.212 & 0.288 & 0.239 & 0.024 & 0.025 \\
-Education \& health services & 0.202 & 0.213 & 0.341 & 0.336 & 0.035 & 0.784 \\
-Leisure \& hospitality & 0.245 & 0.198 & 0.271 & 0.332 & 0.047 & 0.079 \\
-Other services & 0.221 & 0.219 & 0.291 & 0.352 & 0.024 & 0.061 \\
+\textbf{Total private} & 0.200 & 0.195 & 0.269 & 0.239 & 0.275 & 0.223 \\
+Natural resources \& mining & 0.164 & 0.158 & 0.295 & 0.205 & 0.261 & 0.215 \\
+Construction & 0.208 & 0.206 & 0.188 & 0.198 & 0.212 & 0.192 \\
+Manufacturing & 0.125 & 0.139 & 0.234 & 0.123 & 0.260 & 0.119 \\
+Wholesale trade & 0.204 & 0.227 & 0.260 & 0.249 & 0.296 & 0.250 \\
+Retail trade & 0.172 & 0.154 & 0.239 & 0.223 & 0.311 & 0.257 \\
+Transportation \& utilities & 0.165 & 0.175 & 0.208 & 0.223 & 0.147 & 0.174 \\
+Information & 0.206 & 0.210 & 0.292 & 0.367 & 0.327 & 0.399 \\
+Financial activities & 0.235 & 0.247 & 0.352 & 0.387 & 0.481 & 0.455 \\
+Prof.~\& business services & 0.205 & 0.212 & 0.288 & 0.239 & 0.290 & 0.246 \\
+Education \& health services & 0.202 & 0.213 & 0.341 & 0.336 & 0.455 & 0.429 \\
+Leisure \& hospitality & 0.245 & 0.198 & 0.271 & 0.332 & 0.315 & 0.350 \\
+Other services & 0.221 & 0.219 & 0.291 & 0.352 & 0.344 & 0.402 \\
+\midrule
+\multicolumn{7}{p{0.92\linewidth}}{\footnotesize \textit{Notes.} $\bar{g}^O$ ($\bar{g}^C$): mean share of gross job gains (losses) from opening (closing) establishments, $\sum G_O/\sum G$. Cols 3--4: relative std dev $\sigma^O/\sigma$ ($\sigma^C/\sigma$) via Hamilton (2018) filter ($h{=}8$, $p{=}4$), raw levels; robust to GFC/Covid outliers. Cols 5--6: same statistic via HP filter ($\lambda{=}1600$); HP values for total private in the original sample ($\approx 0.33$) closely match Jaimovich \& Floetotto (2008, JME) Table~2. Values $<1$: extensive margin less volatile than total flows. $^{*}$ Noisy estimate ($|\text{ratio}|>5$).} \\
 \bottomrule
 \end{tabular}
-\begin{tablenotes}[flushleft]\footnotesize
-\item $\bar{g}^O$ ($\bar{g}^C$): fraction of gross job gains (losses) from opening (closing) establishments $= \sum G_O / \sum G$.
-\item $\sigma^O/\sigma$: std dev of HP-filtered gains at openings relative to std dev of HP-filtered total gains (col~3 in JF); filter applied to raw levels. $\sigma^C/\sigma$: same for losses.
-\item $\mathcal{V}^O/\mathcal{V}$: ratio of fitted variances from projecting HP-filtered flows on HP-filtered unemployment ($u_t$, $u_{t-1}$); JF use detrended GDP.
-\item Values $>1$: entry/exit margin more cyclically sensitive than total flows.
-\item $^\dagger$ Noisy ($|\text{ratio}|>5$; small-count series).
-\end{tablenotes}
 \end{table}

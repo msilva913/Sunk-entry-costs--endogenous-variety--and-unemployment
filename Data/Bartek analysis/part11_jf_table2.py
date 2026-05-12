@@ -36,27 +36,27 @@ COLUMN DEFINITIONS
 
   Col 4  Same as Col 3 for losses and closings: sd(Ham L_C) / sd(Ham L)
 
-  Col 3HP / Col 4HP  Backup: same as Col 3/4 using HP filter (lambda=1600).
-         Comparable to JF original: ~0.33 for US total private 1992Q3-2006Q3.
 
-  Col 5  Ratio of fitted variances from projecting Hamilton-filtered G_O and G
-         on [constant, Ham(u_t), Ham(u_{t-1})]:
-         Var(fitted Ham G_O) / Var(fitted Ham G)
-         Values > 1: openings more unemployment-sensitive than total gains.
+  Col 5  Relative standard deviation using HP filter (lambda=1600), raw levels:
+         sd(HP G_O) / sd(HP G)
+         Same statistic as Col 3 but with HP rather than Hamilton filter.
+         Provides direct comparison to JF original (~0.33 for total private).
 
-  Col 6  Same as Col 5 for losses and closings.
+  Col 6  Same as Col 5 for losses and closings: sd(HP L_C) / sd(HP L)
 
 NOTE ON COLS 3-6
 ----------------
-All columns apply detrending to RAW LEVELS (not logs), following JF's convention.
-Main specification: Hamilton (2018) filter (h=8, p=4) -- robust to outliers
-(GFC 2008-09, COVID 2020), no endpoint distortion. HP filter (lambda=1600)
-appears in the appendix for direct comparison to JF's ~0.33 benchmark.
-Log-transforming before filtering would inflate the relative volatility of the
-smaller series (G_O ~ 20% of G) mechanically, producing ratios >> 1.
-Cols 5-6: ratio of fitted variances from projecting filtered flows on filtered
-unemployment (current + one lag); JF use detrended GDP -- unemployment is used
-here as the model state variable and LP outcome.
+All four columns report RELATIVE STANDARD DEVIATION of entry/exit flows vs
+total flows at business-cycle frequencies (filter applied to RAW LEVELS, not
+logs -- log-transforming inflates ratios for the smaller series mechanically).
+
+Cols 3-4 use the Hamilton (2018) filter (h=8, p=4): causal, no endpoint
+distortion, robust to large outliers (GFC, COVID). Preferred for extended
+samples. Cols 5-6 use the HP filter (lambda=1600): directly comparable to JF's
+original ~0.33 benchmark for total private 1992Q3-2006Q3. Both columns answer
+the same question (how volatile is the extensive margin relative to total flows?)
+under two detrending assumptions -- the table is self-contained, no appendix
+needed.
 
 BED SERIES IDENTIFICATION (resolved from BLS API)
 --------------------------------------------------
@@ -325,86 +325,40 @@ def compute_cols_34(sub: pd.DataFrame, filter_fn):
     return _rel_sd(cGO, cG), _rel_sd(cLC, cL)
 
 
-def compute_cols_56(sub: pd.DataFrame, u_nat: pd.DataFrame, filter_fn):
+def compute_cols_56(sub: pd.DataFrame) -> tuple:
     """
-    Cols 5-6: ratio of fitted variances from projecting HP- (or Hamilton-)
-    filtered log flows on filtered unemployment (current + 1 lag).
+    Cols 5-6: Relative standard deviation using HP filter (lambda=1600).
 
-    Methodology (following JF's "detrended series" language):
-      1. HP-filter (or Hamilton-filter) log G, log G_O, log L, log L_C, log u_nat
-      2. Project each filtered flow series on [constant, cu_t, cu_{t-1}]
-         where cu = filtered unemployment cycle
-      3. Col 5 = Var(fitted cycle G_O) / Var(fitted cycle G)
-         Col 6 = Var(fitted cycle L_C) / Var(fitted cycle L)
+    Same statistic as compute_cols_34 but with HP filter instead of Hamilton:
+      Col 5: sd(HP G_O) / sd(HP G)
+      Col 6: sd(HP L_C) / sd(HP L)
 
-    Values > 1: entry/exit flows are more unemployment-sensitive than total flows.
-    JF use detrended GDP as projector; here we use unemployment (the model state
-    variable and LP outcome) as the more salient cyclical projector.
+    Filter applied to RAW LEVELS (not logs) -- consistent with cols 3-4 and
+    with JF's ~0.33 benchmark for total private 1992Q3-2006Q3.
+
+    Having both Hamilton (cols 3-4) and HP (cols 5-6) in the same table lets
+    the reader directly assess filter sensitivity without a separate appendix.
+    HP values in the jf_orig sample should be ~0.33, validating replication.
     """
-    m = (sub[["quarter_label", "G", "G_O", "L", "L_C"]]
-         .merge(u_nat, on="quarter_label")
-         .sort_values("quarter_label")
-         .reset_index(drop=True))
-
-    if len(m) < 15:
-        return np.nan, np.nan
-
-    # Filter all series in raw levels (consistent with cols 3-4 convention).
-    # Unemployment is already a rate (stationary); gross flows are in thousands
-    # of jobs (non-stationary in levels but HP filtering removes the trend).
-    cu  = filter_fn(m["u_nat"].values)          # filtered unemployment cycle
-    cG  = filter_fn(m["G"].values)
-    cGO = filter_fn(m["G_O"].values)
-    cL  = filter_fn(m["L"].values)
-    cLC = filter_fn(m["L_C"].values)
-
-    # Align: drop leading NaNs (Hamilton filter produces NaNs for first 11 obs)
-    valid = (~np.isnan(cu) & ~np.isnan(cG) & ~np.isnan(cGO)
-             & ~np.isnan(cL) & ~np.isnan(cLC))
-    # Need at least one lag of cu, so shift
-    idx = np.where(valid)[0]
-    if len(idx) < 10:
-        return np.nan, np.nan
-    # Use t >= idx[1] so that cu_{t-1} is also valid
-    t0 = idx[0] + 1   # first index where both cu_t and cu_{t-1} are valid
-    t_all = np.arange(t0, len(cu))
-    # Re-check all series are non-nan in this window
-    mask = (valid[t_all] & valid[t_all - 1])
-    t_use = t_all[mask]
-    if len(t_use) < 8:
-        return np.nan, np.nan
-
-    X = np.column_stack([np.ones(len(t_use)), cu[t_use], cu[t_use - 1]])
-
-    def _fitted_var(cyc):
-        y    = cyc[t_use]
-        beta = np.linalg.lstsq(X, y, rcond=None)[0]
-        return np.var(X @ beta, ddof=1)
-
-    vG  = _fitted_var(cG);  vGO = _fitted_var(cGO)
-    vL  = _fitted_var(cL);  vLC = _fitted_var(cLC)
-
-    c5 = vGO / vG  if vG  > 0 else np.nan
-    c6 = vLC / vL  if vL  > 0 else np.nan
-    return c5, c6
+    return compute_cols_34(sub, hp_filter_cycle)
 
 
 # ---------------------------------------------------------------------------
 # 5.  MAIN COMPUTATION LOOP
 # ---------------------------------------------------------------------------
 
-def compute_table(panel: pd.DataFrame, u_nat: pd.DataFrame) -> pd.DataFrame:
+def compute_table(panel: pd.DataFrame) -> pd.DataFrame:
     """
     Compute all columns for every (sample, industry) combination.
 
-    Hamilton filter (h=8, p=4) is the MAIN specification throughout cols 3-6:
-    it is robust to large outliers (GFC, COVID) and has no endpoint distortion.
-    HP filter (lambda=1600) provides BACKUP columns (c3_hp, c4_hp, c5_hp, c6_hp)
-    for comparison with JF original and for the appendix table.
+    Cols 1-2: mean entry/exit shares (filter-independent).
+    Cols 3-4: relative std dev using Hamilton filter (h=8, p=4) -- robust to
+              large outliers (GFC, COVID), no endpoint distortion.
+    Cols 5-6: relative std dev using HP filter (lambda=1600) -- directly
+              comparable to JF original (~0.33 for total private, jf_orig sample).
 
-    Column naming convention:
-        c3_ham, c4_ham, c5_ham, c6_ham  -- main (Hamilton)
-        c3_hp,  c4_hp,  c5_hp,  c6_hp   -- backup (HP)
+    All filter columns use raw levels (not logs).
+    Single output table; no separate appendix needed.
     """
     rows = []
     for sname, (s0, s1) in SAMPLES.items():
@@ -418,22 +372,18 @@ def compute_table(panel: pd.DataFrame, u_nat: pd.DataFrame) -> pd.DataFrame:
             if len(sub) < 15:
                 continue
 
-            c1, c2               = compute_cols_12(sub)
-            c3_ham, c4_ham       = compute_cols_34(sub, hamilton_filter_cycle)
-            c3_hp,  c4_hp        = compute_cols_34(sub, hp_filter_cycle)
-            c5_ham, c6_ham       = compute_cols_56(sub, u_nat, hamilton_filter_cycle)
-            c5_hp,  c6_hp        = compute_cols_56(sub, u_nat, hp_filter_cycle)
+            c1, c2         = compute_cols_12(sub)
+            c3, c4         = compute_cols_34(sub, hamilton_filter_cycle)
+            c5, c6         = compute_cols_56(sub)
 
             rows.append(dict(
                 sample=sname, pip=pip,
                 label_plain=INDUSTRY_LABELS_PLAIN.get(pip, pip),
                 label_tex=INDUSTRY_LABELS.get(pip, pip),
                 n=len(sub),
-                c1=c1,    c2=c2,
-                c3_ham=c3_ham, c4_ham=c4_ham,
-                c3_hp=c3_hp,   c4_hp=c4_hp,
-                c5_ham=c5_ham, c6_ham=c6_ham,
-                c5_hp=c5_hp,   c6_hp=c6_hp,
+                c1=c1, c2=c2,
+                c3=c3, c4=c4,
+                c5=c5, c6=c6,
             ))
 
     return pd.DataFrame(rows)
@@ -463,28 +413,23 @@ def write_text_table(res: pd.DataFrame, path: str):
         "C2   Fraction of gross job losses from CLOSING (death) establishments",
         "     = sum(L_C) / sum(L)  [L_C = BED elem0006; L = BED elem0004]",
         "",
-        "C3-HP  Relative std dev (HP filter): sd(HP log G_O) / sd(HP log G).  lambda=1600.",
-        "       Values < 1: openings less volatile than total gains at business-cycle freq.",
-        "       Values > 1: openings amplify the cycle (extensive margin).",
+        "C3  Relative std dev (Hamilton filter, h=8 p=4, raw levels):",
+        "    sd(Ham G_O) / sd(Ham G)",
+        "    Values < 1: openings less volatile than total gains at business-cycle freq.",
+        "    Values > 1: openings amplify the cycle (extensive margin).",
+        "    Hamilton: causal, no endpoint distortion, robust to GFC/COVID outliers.",
         "",
-        "C4-HP  Same as C3-HP for losses: sd(HP log L_C) / sd(HP log L).",
+        "C4  Same as C3 for losses: sd(Ham L_C) / sd(Ham L).",
         "",
-        "C3-Ham  Same as C3-HP using Hamilton (2018) filter (no endpoint distortion).",
-        "C4-Ham  Same for losses.",
+        "C5  Relative std dev (HP filter, lambda=1600, raw levels):",
+        "    sd(HP G_O) / sd(HP G)",
+        "    Same statistic as C3, HP filter. Directly comparable to JF original ~0.33.",
         "",
-        "C5-HP  Ratio of fitted variances from projecting HP-filtered log flows on",
-        "       [constant, HP(u_t), HP(u_{t-1})]:  Var(fitted HP G_O) / Var(fitted HP G).",
-        "       u_t = national LF-weighted unemployment rate (HP-filtered).",
-        "       Values > 1: openings more unemployment-sensitive than total gains.",
-        "",
-        "C6-HP  Same as C5-HP for losses and closings.",
-        "",
-        "C5-Ham, C6-Ham  Same as C5-HP/C6-HP using Hamilton filter throughout (backup table).",
+        "C6  Same as C5 for losses: sd(HP L_C) / sd(HP L).",
         "",
         "NOTE: JF cols 3-6 use 'detrended series' (HP-filtered) throughout.",
-        "      Cols 3-4 report relative std dev (not R^2) following standard RBC convention.",
-        "      Cols 5-6 use unemployment as projector (vs. GDP in JF original).",
-        "      Unemployment is the model state variable and LP outcome.",
+        "      All columns report RELATIVE STD DEV; filter applied to raw levels.",
+        "      C3-C4 (Hamilton) preferred for extended samples; C5-C6 (HP) for JF comparison.",
         "",
         "DATA NOTES", "-" * 60,
         "BLS API series: BDS0000000000{ind6}11{elem4}LQ5",
@@ -504,9 +449,8 @@ def write_text_table(res: pd.DataFrame, path: str):
         if abs(v) > noisy: return f"{v:7.1f}*"
         return f"{v:7.3f}"
 
-    hdr = (f"{'Industry':<44} {'C1':>6} {'C2':>6} {'C3-HP':>6} {'C4-HP':>6}"
-           f" {'C3-Ham':>7} {'C4-Ham':>7} {'C5-HP':>8} {'C6-HP':>8}"
-           f" {'C5-Ham':>8} {'C6-Ham':>8}  {'N':>3}")
+    hdr = (f"{'Industry':<44} {'C1':>6} {'C2':>6}"
+           f" {'C3-Ham':>7} {'C4-Ham':>7} {'C5-HP':>7} {'C6-HP':>7}  {'N':>3}")
 
     for sname in SAMPLES:
         sub = res[res["sample"] == sname]
@@ -522,10 +466,8 @@ def write_text_table(res: pd.DataFrame, path: str):
             r = r.iloc[0]
             lines.append(
                 f"{r.label_plain:<44} {r.c1:6.3f} {r.c2:6.3f}"
-                f" {r.c3_hp:6.3f} {r.c4_hp:6.3f}"
-                f" {r.c3_ham:7.3f} {r.c4_ham:7.3f}"
-                f" {fmt_val(r.c5_hp)} {fmt_val(r.c6_hp)}"
-                f" {fmt_val(r.c5_ham)} {fmt_val(r.c6_ham)}  {r.n:3.0f}"
+                f" {fmt_val(r.c3)} {fmt_val(r.c4)}"
+                f" {fmt_val(r.c5)} {fmt_val(r.c6)}  {r.n:3.0f}"
             )
         lines.append("  * noisy estimate (|ratio| > 5; typically a small-count industry series)")
 
@@ -539,8 +481,8 @@ def write_text_table(res: pd.DataFrame, path: str):
         r = res[(res["sample"] == sname) & (res["pip"] == "TOTAL")].iloc[0]
         lines.append(
             f"  {SAMPLE_LABELS[sname]}: C1={r.c1:.3f}, C2={r.c2:.3f}, "
-            f"C3-HP={r.c3_hp:.3f}, C4-HP={r.c4_hp:.3f}, "
-            f"C5-HP={fmt_val(r.c5_hp).strip()}, C6-HP={fmt_val(r.c6_hp).strip()}"
+            f"C3(Ham)={fmt_val(r.c3).strip()}, C4(Ham)={fmt_val(r.c4).strip()}, "
+            f"C5(HP)={fmt_val(r.c5).strip()}, C6(HP)={fmt_val(r.c6).strip()}"
         )
     lines += [
         "",
@@ -565,49 +507,63 @@ def write_text_table(res: pd.DataFrame, path: str):
 # 7.  OUTPUT: LaTeX
 # ---------------------------------------------------------------------------
 
-def _latex_table_body(res: pd.DataFrame, sname: str, variant: str) -> list:
-    """
-    Build the LaTeX tabular lines for one sample period and filter variant.
+# Compact note line inside the tabular (between midrule and bottomrule)
+_NOTE_LINE = (
+    r"\multicolumn{7}{p{0.92\linewidth}}{\footnotesize"
+    r" \textit{Notes.}"
+    r" $\bar{g}^O$ ($\bar{g}^C$): mean share of gross job gains (losses)"
+    r" from opening (closing) establishments, $\sum G_O/\sum G$."
+    r" Cols 3--4: relative std dev $\sigma^O/\sigma$ ($\sigma^C/\sigma$)"
+    r" via Hamilton (2018) filter ($h{=}8$, $p{=}4$), raw levels;"
+    r" robust to GFC/Covid outliers."
+    r" Cols 5--6: same statistic via HP filter ($\lambda{=}1600$);"
+    r" HP values for total private in the original sample ($\approx 0.33$)"
+    r" closely match Jaimovich \& Floetotto (2008, JME) Table~2."
+    r" Values $<1$: extensive margin less volatile than total flows."
+    r" $^{*}$ Noisy estimate ($|\text{ratio}|>5$).} \\"
+)
 
-    variant = 'ham' : main table  (cols 3-6 via Hamilton filter, h=8, p=4)
-    variant = 'hp'  : backup table (cols 3-6 via HP filter, lambda=1600)
+
+def _latex_table_body(res: pd.DataFrame, sname: str) -> list:
+    """
+    Build LaTeX tabular for one sample period.
+    Notes are a compact multicolumn row inside the tabular; no tablenotes needed.
+    Caption includes a concise sample-specific finding.
     """
     sub = res[res["sample"] == sname]
     label = SAMPLE_LABELS[sname]
-    filt_label = ("Hamilton (2018) filter ($h=8$, $p=4$)"
-                  if variant == "ham" else "HP filter, $\\lambda=1600$")
+    tot = sub[sub["pip"] == "TOTAL"].iloc[0]
+
+    caption_lines = [
+        r"\caption{Job Gains and Losses from Opening and Closing Establishments"
+        r" (\emph{" + label + r"}) \\[2pt]",
+        r"  {\small\itshape Source: BLS Business Employment Dynamics (BED),"
+        r" quarterly, 12 Bartik supersectors."
+        r" Replication and extension of Jaimovich \& Floetotto (2008, JME) Table~2.}}",
+    ]
 
     def fmt(v, noisy=5.0):
         if np.isnan(v):    return r"\text{---}"
-        if abs(v) > noisy: return f"{v:.1f}$^{{\\dagger}}$"
+        if abs(v) > noisy: return f"{v:.1f}$^{{*}}$"
         return f"{v:.3f}"
 
-    c3_col  = f"c3_{variant}"
-    c4_col  = f"c4_{variant}"
-    c5_col  = f"c5_{variant}"
-    c6_col  = f"c6_{variant}"
-
-    lines = [
-        r"\begin{table}[htbp]",
-        r"\centering",
-        r"\small",
-        r"\caption{Job Gains/Losses from Opening/Closing Establishments"
-        r" (\emph{" + label + r"}) \\",
-        r"  \emph{Source: BLS BED (quarterly). Replication/extension of"
-        r" Jaimovich \& Floetotto (2008, JME) Table~2.} \\"
-        r"  \emph{Filter: " + filt_label + r".}}",
-        r"\label{tab:jf_t2_" + sname + ("_hp" if variant == "hp" else "") + r"}",
-        r"\begin{tabular}{l" + "c" * 6 + r"}",
-        r"\toprule",
-        r" & \multicolumn{2}{c}{Mean share} "
-        r"& \multicolumn{2}{c}{Rel.\ std dev} "
-        r"& \multicolumn{2}{c}{Unemp.\ proj.} \\",
-        r"\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}",
-        r"Industry & $\bar{g}^O$ & $\bar{g}^C$"
-        r" & $\sigma^O/\sigma$ & $\sigma^C/\sigma$"
-        r" & $\mathcal{V}^O/\mathcal{V}$ & $\mathcal{V}^C/\mathcal{V}$ \\",
-        r"\midrule",
-    ]
+    lines = (
+        [r"\begin{table}[htbp]", r"\centering", r"\small"]
+        + caption_lines
+        + [
+            r"\label{tab:jf_t2_" + sname + r"}",
+            r"\begin{tabular}{lcccccc}",
+            r"\toprule",
+            r" & \multicolumn{2}{c}{Mean share}"
+            r" & \multicolumn{2}{c}{Rel.\ std dev (Ham)}"
+            r" & \multicolumn{2}{c}{Rel.\ std dev (HP)} \\",
+            r"\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}",
+            r"Industry & $\bar{g}^O$ & $\bar{g}^C$"
+            r" & $\sigma^O/\sigma$ & $\sigma^C/\sigma$"
+            r" & $\sigma^O/\sigma$ & $\sigma^C/\sigma$ \\",
+            r"\midrule",
+        ]
+    )
 
     for pip in ORDERED_PIPS:
         r = sub[sub["pip"] == pip]
@@ -620,41 +576,25 @@ def _latex_table_body(res: pd.DataFrame, sname: str, variant: str) -> list:
             lbl = r"\textbf{" + lbl + r"}"
         lines.append(
             f"{lbl} & {r.c1:.3f} & {r.c2:.3f}"
-            f" & {fmt(getattr(r, c3_col))} & {fmt(getattr(r, c4_col))}"
-            f" & {fmt(getattr(r, c5_col))} & {fmt(getattr(r, c6_col))} \\\\"
+            f" & {fmt(r.c3)} & {fmt(r.c4)}"
+            f" & {fmt(r.c5)} & {fmt(r.c6)} \\\\"
         )
 
     lines += [
+        r"\midrule",
+        _NOTE_LINE,
         r"\bottomrule",
         r"\end{tabular}",
-        r"\begin{tablenotes}[flushleft]\footnotesize",
-        r"\item $\bar{g}^O$ ($\bar{g}^C$): fraction of gross job gains (losses)"
-        r" from opening (closing) establishments $= \sum G_O / \sum G$.",
-        r"\item $\sigma^O/\sigma$: std dev of HP-filtered gains at openings relative to"
-        r" std dev of HP-filtered total gains (col~3 in JF); filter applied to raw levels."
-        r" $\sigma^C/\sigma$: same for losses.",
-        r"\item $\mathcal{V}^O/\mathcal{V}$: ratio of fitted variances from projecting"
-        r" HP-filtered flows on HP-filtered unemployment ($u_t$, $u_{t-1}$);"
-        r" JF use detrended GDP.",
-        r"\item Values $>1$: entry/exit margin more cyclically sensitive than total flows.",
-        r"\item $^\dagger$ Noisy ($|\text{ratio}|>5$; small-count series).",
-        r"\end{tablenotes}",
         r"\end{table}",
     ]
     return lines
 
 
-def write_latex_table(res: pd.DataFrame, sname: str, path_ham: str, path_hp: str):
-    """
-    Write two LaTeX tables for one sample period:
-      path_ham -- main specification (Hamilton filter, h=8 p=4, throughout cols 3-6)
-      path_hp  -- backup specification (HP filter, lambda=1600, throughout cols 3-6)
-    """
-    for variant, path in [("ham", path_ham), ("hp", path_hp)]:
-        lines = _latex_table_body(res, sname, variant)
-        with open(path, "w", encoding="utf-8") as f:
-            f.write("\n".join(lines) + "\n")
-        print(f"  Written: {path}")
+def write_latex_table(res: pd.DataFrame, sname: str, path: str):
+    lines = _latex_table_body(res, sname)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write("\n".join(lines) + "\n")
+    print(f"  Written: {path}")
 
 
 # ---------------------------------------------------------------------------
@@ -667,30 +607,25 @@ if __name__ == "__main__":
     print(f"  {len(panel)} rows, {panel['pip_code'].nunique()} industries, "
           f"quarters {panel['quarter_label'].min()}-{panel['quarter_label'].max()}")
 
-    print("Loading national unemployment rate...")
-    u_nat = load_national_unemp()
-
     print("Computing table...")
-    res = compute_table(panel, u_nat)
+    res = compute_table(panel)
     res.to_parquet(f"{RESULTS_DIR}/jf_table2_results.parquet", index=False)
     print(f"  Saved: {RESULTS_DIR}/jf_table2_results.parquet")
 
     print("Writing plain-text output...")
     write_text_table(res, f"{RESULTS_DIR}/jf_table2_extension.txt")
 
-    print("Writing LaTeX tables (Hamilton main + HP backup for each sample)...")
+    print("Writing LaTeX tables...")
     for sname in SAMPLES:
-        path_ham = f"{RESULTS_DIR}/jf_table2_{sname}_latex.tex"
-        path_hp  = f"{RESULTS_DIR}/jf_table2_{sname}_hp_latex.tex"
-        write_latex_table(res, sname, path_ham, path_hp)
+        path = f"{RESULTS_DIR}/jf_table2_{sname}_latex.tex"
+        write_latex_table(res, sname, path)
 
     SEP = "%" + "=" * 70
     for sname in SAMPLES:
-        for variant, suffix in [("Hamilton main", ""), ("HP backup", "_hp")]:
-            print()
-            print(SEP)
-            print(f"% TABLE ({variant}): {SAMPLE_LABELS[sname]}")
-            print(SEP)
-            path = f"{RESULTS_DIR}/jf_table2_{sname}{suffix}_latex.tex"
-            with open(path, "r", encoding="utf-8") as f:
-                print(f.read())
+        print()
+        print(SEP)
+        print(f"% TABLE: {SAMPLE_LABELS[sname]}")
+        print(SEP)
+        path = f"{RESULTS_DIR}/jf_table2_{sname}_latex.tex"
+        with open(path, "r", encoding="utf-8") as f2:
+            print(f2.read())
