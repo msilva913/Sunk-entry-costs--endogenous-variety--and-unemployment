@@ -555,5 +555,38 @@ p4 = RESULTS_DIR / "instruments_resid_distribution_comparison.png"
 fig.savefig(p4, dpi=150, bbox_inches="tight"); plt.close(fig); _open_file(p4)
 print(f"Plot 4 saved: {p4}")
 
+# Standalone delta panel for paper (instrument construction section)
+df_d, col_d, color_d, title_d = panels_r[0]
+fig_d, ax_d = plt.subplots(figsize=(8, 4.5))
+dist_d  = _build_dist_r(df_d, col_d)
+valid_d = dist_d.dropna(subset=["mean"])
+dts_d   = [_ql_to_dt_r(q) for q in valid_d.index]
+ax_d.fill_between(dts_d, valid_d["p10"], valid_d["p90"],
+                  alpha=0.18, color=color_d, label="10th--90th pctile")
+ax_d.fill_between(dts_d, valid_d["p25"], valid_d["p75"],
+                  alpha=0.32, color=color_d, label="IQR (25th--75th)")
+ax_d.plot(dts_d, valid_d["mean"], color=color_d, linewidth=2.0,
+          label="Cross-state mean")
+ax_d.axvspan(pd.Timestamp("2001-04-01"), pd.Timestamp("2001-11-01"),
+             alpha=0.10, color="grey")
+ax_d.axvspan(pd.Timestamp("2007-12-01"), pd.Timestamp("2009-06-01"),
+             alpha=0.10, color="grey")
+ax_d.axvspan(pd.Timestamp("2020-03-01"), pd.Timestamp("2020-06-01"),
+             alpha=0.10, color="grey")
+ax_d.axhline(0, color="black", linewidth=0.7)
+ax_d.set_ylabel(r"$\tilde{B}^\delta_{s,t}$ (pp of employment)", fontsize=10)
+ax_d.set_xlabel("Quarter", fontsize=10)
+ax_d.set_title(
+    r"Residualized $\delta$ Bartik instrument: cross-state distribution, 1997Q1--2019Q4"
+    "\n(v2: residualized on aggregate productivity growth and lagged industry VA growth)",
+    fontsize=10,
+)
+ax_d.legend(fontsize=9, framealpha=0.85)
+ax_d.grid(axis="y", linewidth=0.4, alpha=0.4)
+fig_d.tight_layout()
+p4b = RESULTS_DIR / "instrument_delta_distribution.png"
+fig_d.savefig(p4b, dpi=150, bbox_inches="tight"); plt.close(fig_d); _open_file(p4b)
+print(f"Plot 4b saved: {p4b}")
+
 print("\nDone.")
 

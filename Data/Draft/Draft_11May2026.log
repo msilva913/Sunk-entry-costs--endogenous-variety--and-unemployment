@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (MiKTeX 25.4) (preloaded format=pdflatex 2025.7.17)  12 MAY 2026 20:25
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (MiKTeX 25.4) (preloaded format=pdflatex 2025.7.17)  12 MAY 2026 21:12
 entering extended mode
  \write18 enabled.
  %&-line parsing enabled.
@@ -1201,7 +1201,27 @@ LaTeX Warning: Reference `app:robustness' on page 33 undefined on input line 19
 33.
 
 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unem
-ployment/Data/Bartek analysis/data/results/lp_irf_delta_uv_baseline.png, id=603
+ployment/Data/Bartek analysis/data/results/instrument_delta_distribution.png, i
+d=603, 571.4148pt x 314.6154pt>
+File: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and
+-unemployment/Data/Bartek analysis/data/results/instrument_delta_distribution.p
+ng Graphic file (type png)
+<use C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-
+unemployment/Data/Bartek analysis/data/results/instrument_delta_distribution.pn
+g>
+Package pdftex.def Info: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endo
+genous-variety--and-unemployment/Data/Bartek analysis/data/results/instrument_d
+elta_distribution.png  used on input line 1943.
+(pdftex.def)             Requested size: 427.90907pt x 235.6009pt.
+
+
+[33]
+
+[34 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-
+unemployment/Data/Bartek analysis/data/results/instrument_delta_distribution.pn
+g>]
+<C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unem
+ployment/Data/Bartek analysis/data/results/lp_irf_delta_uv_baseline.png, id=621
 , 932.7648pt x 388.8126pt>
 File: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and
 -unemployment/Data/Bartek analysis/data/results/lp_irf_delta_uv_baseline.png Gr
@@ -1210,21 +1230,17 @@ aphic file (type png)
 unemployment/Data/Bartek analysis/data/results/lp_irf_delta_uv_baseline.png>
 Package pdftex.def Info: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endo
 genous-variety--and-unemployment/Data/Bartek analysis/data/results/lp_irf_delta
-_uv_baseline.png  used on input line 1943.
+_uv_baseline.png  used on input line 2003.
 (pdftex.def)             Requested size: 447.35611pt x 186.47366pt.
 
 
-[33]
-
-[34 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-
+[35 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-
 unemployment/Data/Bartek analysis/data/results/lp_irf_delta_uv_baseline.png>]
-
-[35]
 
 [36]
 
 [37]
-Overfull \hbox (38.69614pt too wide) in paragraph at lines 2143--2165
+Overfull \hbox (38.69614pt too wide) in paragraph at lines 2138--2160
  [] 
  []
 
@@ -1233,8 +1249,10 @@ Overfull \hbox (38.69614pt too wide) in paragraph at lines 2143--2165
 [38]
 
 [39]
+
+[40]
 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unem
-ployment/Programs baseline/variety_effects_irf_z_comparison.pdf, id=679, 802.99
+ployment/Programs baseline/variety_effects_irf_z_comparison.pdf, id=690, 802.99
 197pt x 501.29483pt>
 File: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and
 -unemployment/Programs baseline/variety_effects_irf_z_comparison.pdf Graphic fi
@@ -1243,13 +1261,13 @@ le (type pdf)
 unemployment/Programs baseline/variety_effects_irf_z_comparison.pdf>
 Package pdftex.def Info: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endo
 genous-variety--and-unemployment/Programs baseline/variety_effects_irf_z_compar
-ison.pdf  used on input line 2265.
+ison.pdf  used on input line 2260.
 (pdftex.def)             Requested size: 486.25761pt x 303.56349pt.
 
 
-[40]
+[41]
 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unem
-ployment/Programs baseline/risk_aversion_comparison_delta_shock.pdf, id=689, 79
+ployment/Programs baseline/risk_aversion_comparison_delta_shock.pdf, id=697, 79
 4.4922pt x 501.29584pt>
 File: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and
 -unemployment/Programs baseline/risk_aversion_comparison_delta_shock.pdf Graphi
@@ -1258,14 +1276,14 @@ c file (type pdf)
 unemployment/Programs baseline/risk_aversion_comparison_delta_shock.pdf>
 Package pdftex.def Info: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endo
 genous-variety--and-unemployment/Programs baseline/risk_aversion_comparison_del
-ta_shock.pdf  used on input line 2272.
+ta_shock.pdf  used on input line 2267.
 (pdftex.def)             Requested size: 486.25761pt x 306.81499pt.
 
 
-[41 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-
+[42 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-
 unemployment/Programs baseline/variety_effects_irf_z_comparison.pdf>]
 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unem
-ployment/Programs baseline/elastic_comparison_delta_shock.pdf, id=737, 798.7420
+ployment/Programs baseline/elastic_comparison_delta_shock.pdf, id=744, 798.7420
 8pt x 501.29382pt>
 File: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and
 -unemployment/Programs baseline/elastic_comparison_delta_shock.pdf Graphic file
@@ -1274,14 +1292,14 @@ File: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and
 unemployment/Programs baseline/elastic_comparison_delta_shock.pdf>
 Package pdftex.def Info: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endo
 genous-variety--and-unemployment/Programs baseline/elastic_comparison_delta_sho
-ck.pdf  used on input line 2282.
+ck.pdf  used on input line 2277.
 (pdftex.def)             Requested size: 486.25761pt x 305.18451pt.
 
 
-[42 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-
+[43 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-
 unemployment/Programs baseline/risk_aversion_comparison_delta_shock.pdf>]
 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unem
-ployment/Programs baseline/elastic_comparison_tech_shock.pdf, id=773, 798.74208
+ployment/Programs baseline/elastic_comparison_tech_shock.pdf, id=782, 798.74208
 pt x 501.29082pt>
 File: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and
 -unemployment/Programs baseline/elastic_comparison_tech_shock.pdf Graphic file 
@@ -1290,14 +1308,14 @@ File: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and
 unemployment/Programs baseline/elastic_comparison_tech_shock.pdf>
 Package pdftex.def Info: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endo
 genous-variety--and-unemployment/Programs baseline/elastic_comparison_tech_shoc
-k.pdf  used on input line 2290.
+k.pdf  used on input line 2285.
 (pdftex.def)             Requested size: 486.25761pt x 305.18266pt.
 
 
-[43 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-
+[44 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-
 unemployment/Programs baseline/elastic_comparison_delta_shock.pdf>]
 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unem
-ployment/Programs baseline/kappa_comparison_delta_shock.pdf, id=814, 798.74208p
+ployment/Programs baseline/kappa_comparison_delta_shock.pdf, id=821, 798.74208p
 t x 501.29382pt>
 File: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and
 -unemployment/Programs baseline/kappa_comparison_delta_shock.pdf Graphic file (
@@ -1306,36 +1324,34 @@ type pdf)
 unemployment/Programs baseline/kappa_comparison_delta_shock.pdf>
 Package pdftex.def Info: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endo
 genous-variety--and-unemployment/Programs baseline/kappa_comparison_delta_shock
-.pdf  used on input line 2298.
+.pdf  used on input line 2293.
 (pdftex.def)             Requested size: 486.25761pt x 305.18451pt.
 
 
-[44 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-
+[45 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-
 unemployment/Programs baseline/elastic_comparison_tech_shock.pdf>]
 
-[45 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-
+[46 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-
 unemployment/Programs baseline/kappa_comparison_delta_shock.pdf>]
 
-[46]
+[47]
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 2358.
-
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\psi' on input line 2358.
+(hyperref)                removing `math shift' on input line 2353.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 2358.
+(hyperref)                removing `\psi' on input line 2353.
 
 
-LaTeX Warning: Reference `eq:labor_C_N' on page 47 undefined on input line 2364
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 2353.
+
+
+LaTeX Warning: Reference `eq:labor_C_N' on page 48 undefined on input line 2359
 .
 
 
-
-[47]
 
 [48]
 
@@ -1346,7 +1362,9 @@ LaTeX Warning: Reference `eq:labor_C_N' on page 47 undefined on input line 2364
 [51]
 
 [52]
-Overfull \hbox (0.669pt too wide) in paragraph at lines 2659--2665
+
+[53]
+Overfull \hbox (0.669pt too wide) in paragraph at lines 2654--2660
 \T1/cmr/m/n/12 This is a non-lin-ear pre-de-ter-mined vari-able equa-tion drive
 n by the ex-oge-nous pro-cesses $\OMS/cmsy/m/n/12 f\OML/cmm/m/it/12 z[]; ^^N[];
  u[]\OMS/cmsy/m/n/12 g$\T1/cmr/m/n/12 ,
@@ -1354,20 +1372,20 @@ n by the ex-oge-nous pro-cesses $\OMS/cmsy/m/n/12 f\OML/cmm/m/it/12 z[]; ^^N[];
 
 
 
-[53]
+[54]
 
-LaTeX Warning: Reference `eq:rc_limit' on page 54 undefined on input line 2756.
-
-
+LaTeX Warning: Reference `eq:rc_limit' on page 55 undefined on input line 2751.
 
 
-[54] (Draft_11May2026.bbl
 
-[55]
 
-[56])
+[55] (Draft_11May2026.bbl
 
-[57] (Draft_11May2026.aux)
+[56]
+
+[57])
+
+[58] (Draft_11May2026.aux)
  ***********
 LaTeX2e <2025-06-01> patch level 1
 L3 programming layer <2025-07-11>
@@ -1383,10 +1401,10 @@ Package rerunfilecheck Info: File `Draft_11May2026.out' has not changed.
 (rerunfilecheck)             Checksum: CEA1A357A122EA81FDD41739ABB367DA;5993.
  ) 
 Here is how much of TeX's memory you used:
- 27383 strings out of 468149
- 528466 string characters out of 5431082
- 926258 words of memory out of 5000000
- 55293 multiletter control sequences out of 15000+600000
+ 27393 strings out of 468149
+ 530005 string characters out of 5431082
+ 926228 words of memory out of 5000000
+ 55304 multiletter control sequences out of 15000+600000
  650185 words of font info for 99 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  84i,15n,91p,2336b,847s stack positions out of 10000i,1000n,20000p,200000b,200000s
@@ -1429,9 +1447,9 @@ msilv/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmti12.pfb><
 C:/Users/msilv/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/symbol
 s/msam10.pfb><C:/Users/msilv/AppData/Local/Programs/MiKTeX/fonts/type1/public/a
 msfonts/symbols/msbm10.pfb>
-Output written on Draft_11May2026.pdf (57 pages, 1400851 bytes).
+Output written on Draft_11May2026.pdf (58 pages, 1528814 bytes).
 PDF statistics:
- 1753 PDF objects out of 2073 (max. 8388607)
- 229 named destinations out of 1000 (max. 500000)
- 338 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 1759 PDF objects out of 2073 (max. 8388607)
+ 228 named destinations out of 1000 (max. 500000)
+ 343 words of extra memory for PDF output out of 10000 (max. 10000000)
 

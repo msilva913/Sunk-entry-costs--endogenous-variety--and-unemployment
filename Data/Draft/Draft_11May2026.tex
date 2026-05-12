@@ -1940,20 +1940,18 @@ Figure~\ref{fig:steady_state_curves_z}.
 
 	\begin{figure}[H]
 		\centering
-		\includegraphics[width=0.92\textwidth]{lp_irf_delta_uv_baseline.png}
-		\caption{Impulse responses of the state unemployment rate (left)
-			and vacancy rate (right) to a one-standard-deviation increase
-			in the residualised $\delta$ Bartik instrument
-			($\hat{\sigma}_{\tilde{B}^\delta}=14.0$ pp, 2001Q1--2019Q4).
-			Both outcomes are estimated from panel local projections with
-			state and time fixed effects; standard errors are clustered at the
-			state level ($n=50$).  Shaded band: 90\% confidence interval;
-			dashed lines: 95\% confidence interval.  The instrument is
-			BED establishment deaths (equation~\eqref{eq:bartik_delta}), residualized on aggregate
-			productivity growth and lagged industry value-added growth
-			(equation~\eqref{eq:resid_v2}).  Outcome window capped at 2019Q4
-			to exclude COVID.}
-		\label{fig:delta_uv_irf}
+		\includegraphics[width=0.88\textwidth]{instrument_delta_distribution.png}
+		\caption{Cross-state distribution of the residualized $\delta$ Bartik
+			instrument $\tilde{B}^{\delta}_{s,t}$ across 50 states,
+			2001Q1--2019Q4.  Dark shading: interquartile range (25th--75th
+			percentile); light shading: 10th--90th percentile; solid line:
+			cross-state mean.  The instrument is constructed from BED
+			establishment deaths residualized on aggregate productivity growth
+			and lagged industry value-added growth
+			(equation~\eqref{eq:resid_v2}), aggregated via fixed 2006
+			employment shares (equation~\eqref{eq:bartik_delta}).  Grey
+			shading denotes NBER recessions.}
+		\label{fig:delta_distribution}
 	\end{figure}
 
 	\subsection{Local projection specification}\label{sec:empirical_lp}
@@ -1969,7 +1967,7 @@ Figure~\ref{fig:steady_state_curves_z}.
 		+ \gamma_2\,\log L_{s,t-1}
 		+ \varepsilon_{s,t+h},
 	\end{equation}
-	where $y_{s,t}$ is the outcome of interest for state $s$ in quarter $t$,
+	where $y_{s,t}$ is the labor market outcome of interest for state $s$ in quarter $t$,
 	$\tilde{B}^{\delta}_{s,t}$ is the residualized $\delta$ Bartik instrument
 	constructed in Section~\ref{sec:empirical_instr}, $\alpha_s$ and
 	$\alpha_t$ are state and time fixed effects, $y_{s,t-1}$ is the lagged
@@ -1978,17 +1976,13 @@ Figure~\ref{fig:steady_state_curves_z}.
 	the shock, so the sequence $\{\hat\beta_h\}$ traces the impulse response
 	directly.  Standard errors are clustered at the state level ($n=50$).
 
-	Two outcomes are considered.  The first is the state unemployment rate
-	$u_{s,t}$ (LAUS), measured in percentage points.  The second is the
-	state vacancy rate $v_{s,t} = 100 \times V_{s,t}/L_{s,t}$, where
-	$V_{s,t}$ is the quarterly average of monthly JOLTS job-openings stocks
-	(seasonally adjusted) and $L_{s,t}$ is the LAUS labor force.  Both
-	outcomes are in percentage points, so $\hat\beta_h$ has the same
-	interpretation for both: the percentage-point change in the outcome
-	rate per one-standard-deviation shock.  The specifications differ only
-	in the autoregressive control $y_{s,t-1}$, which is the lagged
-	unemployment rate for the first outcome and the lagged vacancy rate for
-	the second.
+	The two outcomes are the state unemployment rate $u_{s,t}$ and vacancy
+	rate $v_{s,t}$, both in percentage points (unemployed persons or
+	vacancies as a share of the labor force).  Concretely,
+	$v_{s,t} = 100 \times V_{s,t}/L_{s,t}$, where $V_{s,t}$ is the
+	quarterly average of monthly JOLTS job-openings stocks (seasonally
+	adjusted) and $L_{s,t}$ is the LAUS labor force.  The two
+	specifications differ only in the autoregressive control $y_{s,t-1}$.
 
 	The estimation sample runs from 2001Q1, when JOLTS state vacancy data
 	become available, through 2019Q4; observations with $t+h >
@@ -2003,6 +1997,24 @@ Figure~\ref{fig:steady_state_curves_z}.
 	deviation $\hat\sigma_{\tilde{B}^\delta} = 14.0$ pp; all reported
 	$\hat\beta_h$ are scaled by $\hat\sigma_{\tilde{B}^\delta}^{-1}$ so
 	that the impulse responses correspond to a one-standard-deviation shock.
+
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.92\textwidth]{lp_irf_delta_uv_baseline.png}
+		\caption{Impulse responses of the state unemployment rate (left)
+			and vacancy rate (right) to a one-standard-deviation increase
+			in the residualised $\delta$ Bartik instrument
+			($\hat{\sigma}_{\tilde{B}^\delta}=14.0$ pp, 2001Q1--2019Q4).
+			Both outcomes are estimated from panel local projections with
+			state and time fixed effects; standard errors are clustered at the
+			state level ($n=50$).  Shaded band: 90\% confidence interval;
+			dashed lines: 95\% confidence interval.  The instrument is
+			BED establishment deaths (equation~\eqref{eq:bartik_delta}),
+			residualized on aggregate productivity growth and lagged industry
+			value-added growth (equation~\eqref{eq:resid_v2}).  Outcome
+			window capped at 2019Q4 to exclude COVID.}
+		\label{fig:delta_uv_irf}
+	\end{figure}
 
 	\subsection{Results}\label{sec:empirical_results}
 
