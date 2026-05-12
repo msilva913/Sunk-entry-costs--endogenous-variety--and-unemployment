@@ -1,0 +1,129 @@
+\ifx\undefined\BySame
+\newcommand{\BySame}{\leavevmode\rule[.5ex]{3em}{.5pt}\ }
+\fi
+\ifx\undefined\textsc
+\newcommand{\textsc}[1]{{\sc #1}}
+\newcommand{\emph}[1]{{\em #1\/}}
+\let\tmpsmall\small
+\renewcommand{\small}{\tmpsmall\sc}
+\fi
+\begin{thebibliography}{}
+
+\harvarditem[Bartik]{Bartik}{1991}{bartik_1991}
+\textsc{Bartik, T.~J.}  (1991): \emph{Who benefits from state and local
+  economic development policies?} W.E. Upjohn Institute for Employment
+  Research, Kalamazoo, MI.
+
+\harvarditem[Benassy]{Benassy}{1996}{benassy_1996}
+\textsc{Benassy, J.-P.}  (1996): ``Taste for variety and optimum production
+  patterns in monopolistic competition,'' \emph{Economics Letters}, 52(1),
+  41--47.
+
+\harvarditem[Bilbiie, Ghironi, and Melitz]{Bilbiie, Ghironi, and
+  Melitz}{2012}{bilbiie_2012}
+\textsc{Bilbiie, F.~O., F.~Ghironi,  {\small and} M.~J. Melitz}  (2012):
+  ``Endogenous {Entry}, {Product} {Variety}, and {Business} {Cycles},''
+  \emph{Journal of Political Economy}, 120(2), 304--345.
+
+\harvarditem[Broer, Druedahl, Harmenberg, and {\"O}berg]{Broer, Druedahl,
+  Harmenberg, and {\"O}berg}{2025}{broer_2025}
+\textsc{Broer, T., J.~Druedahl, K.~Harmenberg,  {\small and} E.~{\"O}berg}
+  (2025): ``The Unemployment-Risk Channel in Business-Cycle Fluctuations,''
+  \emph{International Economic Review}.
+
+\harvarditem[Christiano, Eichenbaum, and Trabandt]{Christiano, Eichenbaum, and
+  Trabandt}{2016}{christiano_2016}
+\textsc{Christiano, L.~J., M.~S. Eichenbaum,  {\small and} M.~Trabandt}
+  (2016): ``Unemployment and business cycles,'' \emph{Econometrica}, 84(4),
+  1523--1569.
+
+\harvarditem[Colciago, Fasani, and Rossi]{Colciago, Fasani, and
+  Rossi}{2021}{colciago_2021}
+\textsc{Colciago, A., S.~Fasani,  {\small and} L.~Rossi}  (2021):
+  ``Unemployment, Firm Dynamics, and the Business Cycle,'' .
+
+\harvarditem[Coles and Moghaddasi~Kelishomi]{Coles and
+  Moghaddasi~Kelishomi}{2018}{coles_2018}
+\textsc{Coles, M.~G.,  {\small and} A.~Moghaddasi~Kelishomi}  (2018): ``Do job
+  destruction shocks matter in the theory of unemployment,'' \emph{American
+  Economic Journal: Macroeconomics}, 10(3), 118--136.
+
+\harvarditem[Elsby and Michaels]{Elsby and Michaels}{2013}{elsby_2013}
+\textsc{Elsby, M. W.~L.,  {\small and} R.~Michaels}  (2013): ``Marginal jobs,
+  heterogeneous firms, and unemployment flows,'' \emph{American Economic
+  Journal: Macroeconomics}, 5(1), 1--48.
+
+\harvarditem[Feenstra]{Feenstra}{2003}{feenstra_2003}
+\textsc{Feenstra, R.~C.}  (2003): ``A homothetic utility function for
+  monopolistic competition models, without constant price elasticity,''
+  \emph{Economics Letters}, 78(1), 79--86.
+
+\harvarditem[Gabrovski and Silva]{Gabrovski and Silva}{2025}{gabrovski_2025}
+\textsc{Gabrovski, M.,  {\small and} M.~R. Silva}  (2025): ``Unemployment and
+  Labor Productivity Comovement: the Role of Firm Exit,'' \emph{Journal of
+  Economic Dynamics and Control}, p. 105205.
+
+\harvarditem[Goldsmith-Pinkham, Sorkin, and Swift]{Goldsmith-Pinkham, Sorkin,
+  and Swift}{2020}{goldsmith_2020}
+\textsc{Goldsmith-Pinkham, P., I.~Sorkin,  {\small and} H.~Swift}  (2020):
+  ``Bartik instruments: What, when, why, and how,'' \emph{American Economic
+  Review}, 110(8), 2586--2624.
+
+\harvarditem[Hagedorn and Manovskii]{Hagedorn and
+  Manovskii}{2008}{hagedorn_2008}
+\textsc{Hagedorn, M.,  {\small and} I.~Manovskii}  (2008): ``The Cyclical
+  Behavior of Equilibrium Unemployment and Vacancies Revisited,''
+  \emph{American Economic Review}, 98(4), 1692--1706.
+
+\harvarditem[Jaimovich and Floetotto]{Jaimovich and
+  Floetotto}{2008}{jaimovich_2008}
+\textsc{Jaimovich, N.,  {\small and} M.~Floetotto}  (2008): ``Firm dynamics,
+  markup variations, and the business cycle,'' \emph{Journal of monetary
+  Economics}, 55(7), 1238--1252.
+
+\harvarditem[Jord{\`a}]{Jord{\`a}}{2005}{jorda_2005}
+\textsc{Jord{\`a}, {\`O}.}  (2005): ``Estimation and inference of impulse
+  responses by local projections,'' \emph{American Economic Review}, 95(1),
+  161--182.
+
+\harvarditem[Merz]{Merz}{1995}{merz_1995}
+\textsc{Merz, M.}  (1995): ``Search in the labor market and the real business
+  cycle,'' \emph{Journal of monetary Economics}, 36(2), 269--300.
+
+\harvarditem[Mortensen and Pissarides]{Mortensen and
+  Pissarides}{1994}{mortensen_1994}
+\textsc{Mortensen, D.~T.,  {\small and} C.~A. Pissarides}  (1994): ``Job
+  creation and job destruction in the theory of unemployment,'' \emph{The
+  Review of Economic Studies}, 61(3), 397--415.
+
+\harvarditem[Nakamura and Steinsson]{Nakamura and
+  Steinsson}{2014}{nakamura_2014}
+\textsc{Nakamura, E.,  {\small and} J.~Steinsson}  (2014): ``Fiscal stimulus in
+  a monetary union: Evidence from US regions,'' \emph{American Economic
+  Review}, 104(3), 753--792.
+
+\harvarditem[Petrongolo and Pissarides]{Petrongolo and
+  Pissarides}{2001}{petrongolo_2001}
+\textsc{Petrongolo, B.,  {\small and} C.~A. Pissarides}  (2001): ``Looking into
+  the black box: A survey of the matching function,'' \emph{Journal of Economic
+  literature}, 39(2), 390--431.
+
+\harvarditem[Pissarides]{Pissarides}{2009}{pissarides_2009}
+\textsc{Pissarides, C.~A.}  (2009): ``The unemployment volatility puzzle: Is
+  wage stickiness the answer?,'' \emph{Econometrica}, 77(5), 1339--1369.
+
+\harvarditem[Schaal and Taschereau-Dumouchel]{Schaal and
+  Taschereau-Dumouchel}{2019}{schaal_2019}
+\textsc{Schaal, E.,  {\small and} M.~Taschereau-Dumouchel}  (2019):
+  ``{Aggregate Demand and the Dynamics of Unemployment},'' \emph{Working
+  Paper}, pp. 1--41.
+
+\harvarditem[Shao and Silos]{Shao and Silos}{2013}{shao_2013}
+\textsc{Shao, E.,  {\small and} P.~Silos}  (2013): ``Entry costs and labor
+  market dynamics,'' \emph{European Economic Review}, 63, 243--255.
+
+\harvarditem[Shimer]{Shimer}{2005}{shimer_2005}
+\textsc{Shimer, R.}  (2005): ``The Cyclical Behavior of Equilibrium
+  Unemployment and Vacancies,'' \emph{American Economic Review}, 95(1), 25--49.
+
+\end{thebibliography}

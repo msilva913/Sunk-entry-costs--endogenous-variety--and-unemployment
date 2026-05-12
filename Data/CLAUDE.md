@@ -1064,3 +1064,287 @@ The empirical motivation section is organized around four interconnected facts, 
 4. **Pre-GFC sample restriction** — add `max_qt="2007Q4"` option to `run_lp()` in `part5_lp.py` ❌
 5. **Refresh BED cache to 2024Q4** — run `refresh_bed_cache.py` locally (blocked in sandbox by BLS API rate limit); ext_2024 currently truncates at 2021Q4 ❌
 6. **build_report_html.py** — run locally to generate HTML report (requires pandoc) ❌
+---
+
+## 18. Paper Writing Progress and Outline — May 12, 2026 (Session 4)
+
+### 18.1 Session Overview
+
+This session focused entirely on paper writing in a Claude.ai chat session. Major progress was made on the introduction, environment, and equilibrium sections. The empirical section (Section 4) was discussed and structured but not yet drafted due to a figure-scaling ambiguity that needs resolution. The Cowork environment should resume with the empirical section as the primary task.
+
+---
+
+### 18.2 Complete Paper Outline
+
+```
+Section 1: Introduction
+    — Para 1: Cross-recession puzzle (2008 vs 2020 CUG gap)
+    — Para 2-3: CK → GS → this paper (contribution ladder)
+    — Para 4: Three empirical facts (JF table, recession scatter, state scatter → Bartik bridge)
+    — Para 5: Bartik LP strategy and δ→u, δ→v results
+    — Para 6: Estimation strategy (BSMM + Bayesian IRF matching)
+    — Para 7: Positioning and roadmap
+
+Section 2: Environment
+    2.1  Preferences (general homothetic; DS-CES, General CES, Translog)
+    2.2  Laws of motion for firms, unemployment, and vacancies
+    2.3  Stochastic processes (three AR(1): z_t, δ_t, s_t)
+    [Timing figure]
+
+Section 3: Equilibrium
+    3.1  Household
+    3.2  Recruiters
+    3.3  Wage determination
+    3.4  Retailers
+    3.5  Firm entry and exit
+    3.6  Aggregation
+    3.7  Definition of equilibrium
+         [Table: ingredients comparison — CK, Broer et al., GS, baseline]
+    3.8  Limiting cases
+         — Prop 1: Independence of labor market block (general CES, if/iff)
+         — Prop 2: Double limit (DS-CES, ε→∞ with f_e=f̄_e/ε, p_0=0)
+         — Prop 3: Clone-replacement equilibrium (AGS)
+         — Remark: GS nested (σ=κ=0); CK nested (σ=κ=s_t=0)
+    3.9  Steady state
+         — Key ratios (π_s, N-L relationship)
+         — Four curves (exit threshold, product destruction, JC, RC)
+         — Prop on variety vs. elasticity
+         — Prop on equilibrium existence and multiplicity
+         — [Figure: steady_state_curves — JC and RC in (θ,N)]
+         — [Figure: steady_state_curves_z — productivity shock shift]
+         — DS-CES single equation for θ
+         — Prop on comparative statics
+    3.10 The δ-vs-s asymmetry [TO BE DRAFTED]
+         — Three-channel transmission: u_t, v_{t-1}, N_t
+         — Formal proposition (local vs. global scope TBD)
+         — Empirical bridge to LP
+
+Section 4: Empirical Evidence and Bartik Local Projections
+    4.1  Bartik instrument construction
+         — δ instrument: BED establishment closings, permanence calibration
+           (π_{j,y} = BDS exits / BED closings sum; sector heterogeneity)
+         — LOO construction: leave-one-out national rates, 2006 base shares
+         — v1 residualization: Δlog p_t (aggregate productivity)
+         — v2 residualization: + Δlog VA_{j,t-1} (industry VA, FRED) [BASELINE]
+         — v3 residualization: + φ_j × ΔMP_t (monetary policy sensitivity) [ROBUSTNESS]
+         — Instrument correlation: r(δ,LD)=0.424 survives v1→v2 (structural)
+    4.2  Local projection specification
+         — Panel LP: state-time FE, state-clustered SE, h=0..20
+         — Unemployment eq: y_{s,t+h}-y_{s,t-1} = α_s+α_t+β_h B^δ_{s,t}+controls
+         — Vacancy eq: analogous, log-change specification
+         — Sample: 2001Q1–2019Q4 (COVID cap); δ full sample 1992Q4+
+         — Standardization: ×100 pp units, divided by cross-sectional SD
+    4.3  Results
+         — δ→u IRF: [NUMBERS FROM FIGURE — PENDING SCALING CLARIFICATION]
+         — δ→v IRF: [NUMBERS FROM FIGURE — PENDING VACANCY FIGURE UPLOAD]
+         — Severity placebo: both δ^lev_h and δ^chg_h uniformly insignificant
+           for δ→vacancy across all h=0..20 (cleanest result in paper)
+         — δ-LD residual correlation: r=0.424, motivation for BSMM
+         — Joint LP: δ vacancy stable, LD collapses → δ result not LD artifact
+    4.4  Appendix [EMPIRICAL]
+         — LD→u, LD→v IRFs with structural interpretation
+         — QU placebo failure and why it does not threaten δ results
+         — SLOOS robustness
+         — Sample extension: 1997Q1+ vs 2001Q1+
+         — Wild cluster bootstrap (pending)
+
+Section 5: Quantitative Analysis [NOT YET REVISED]
+    5.1  Calibration stages (four-stage sequential approach)
+    5.2  BSMM: unconditional moments (Shimer 2005/2012 + BED exit rate)
+    5.3  Bayesian IRF matching: δ→u and δ→v from Bartik LP
+    5.4  Posterior estimates
+    5.5  Two-model counterfactual: baseline vs. AGS
+
+Section 6: Conclusion [NOT STARTED]
+
+Appendix A: Steady State (full system + derivations)
+Appendix B: Other Derivations
+Appendix C: Limiting Cases (proofs of Props 1-3)
+    — Proof of Prop 1 (Independence): complete, p_0=0 condition added
+    — Proof of Prop 2 (Double limit): drafted this session, full dynamic proof
+    — Proof of Prop 3 (AGS): brief verification argument drafted
+Appendix D: Empirical Robustness [TO BE ORGANIZED]
+```
+
+---
+
+### 18.3 Sections Completed or Substantially Drafted This Session
+
+**Section 1 — Introduction: COMPLETE**
+All seven paragraphs drafted and approved. Key decisions:
+- CUG as primary metric (not recovery speed)
+- Opening paragraph: 2020 vs 2008 contrast (13.0% vs 9.9% peak u; 26.6 vs 76.6 pp-qtrs CUG)
+- Contribution ladder: CK → GS → this paper, with precise characterization
+  of what GS adds (δ-vs-s distinction, predetermination) and what this paper
+  adds (variety effects + endogenous entry, endogenous exit, time-varying δ_t and s_t shocks)
+- Three motivating facts: JF table, cross-recession scatter (CUG), state scatter
+  (Bartik bridge to identification, no separate motivating fact for state scatter)
+- Bartik paragraph: permanence adjustment, LOO, v2 as baseline,
+  severity placebo as primary validation
+- BSMM + Bayesian IRF matching paragraph
+- Positioning paragraph: four literature strands (finitely elastic vacancies,
+  endogenous variety, Bartik identification, Bayesian structural estimation)
+  with CK, GS, Broer et al., CFR, BGM references
+- No standalone related literature section — integrated citations throughout
+
+**Section 2 — Environment: COMPLETE**
+All three subsections drafted with notation fixes:
+- χ_t^c replaces x_t^c for continuation cost threshold (avoids conflict with vacancy creation costs)
+- Λ_t ≡ F_χ(χ_t^c) replaces F(x_t^c) throughout
+- Three explicit AR(1) equations replace old generic ν_t placeholder
+- eq:/tab:/fig:/sec: label prefixes applied globally via Python script (38 eq labels, 2 table labels, 8 figure labels renamed)
+- Timing figure retained as-is (clean)
+
+**Section 3 — Equilibrium: SUBSTANTIALLY COMPLETE**
+All subsections drafted:
+- 3.1-3.7: household through definition of equilibrium (notation fixes applied)
+- Ingredients comparison table: CK, Broer et al., GS, Shao-Silos, Schaal-Dumouchel, CET, CFR, Cacciatore-Fiori, Schaal, this paper
+- Limiting cases (3.8): three propositions + remark drafted with proofs
+- Steady state (3.9): merged shares + curves, three propositions, two TikZ figures drafted
+- 3.10 (δ-vs-s asymmetry mechanism): NOT YET DRAFTED — one open question:
+  whether proposition is local or global (deferred pending quantitative analysis)
+- Role of endogenous business formation: folded into 3.8 as Prop 3 + Remark
+
+**Section 4 — Empirical: NOT YET DRAFTED**
+Structure agreed, key decisions made, blocking issue identified (see 18.4).
+
+**Appendix C proofs: SUBSTANTIALLY DRAFTED**
+- Proof of Prop 1: updated with p_0=0 necessity/sufficiency arguments
+- Proof of Prop 2 (double limit): full dynamic proof using characterize-limiting-system approach
+  Key mathematical content: N_t drops out of all aggregate allocation conditions;
+  firm LOM in limit → N_t = (1-δ_{t-1})(N_{t-1} + z_{t-1}L_{t-1}ln(N_{t-1})/f̄_e);
+  steady state: δ̄N̄ = z̄L̄ln(N̄)/f̄_e, unique solution N̄>1;
+  local stability iff N̄ > e^{1-δ̄} (stated as explicit parameter restriction, not asserted)
+- Proof of Prop 3 (AGS): brief verification argument, substitution N=1, μ=1 into baseline
+
+---
+
+### 18.4 Blocking Issue for Empirical Section
+
+**Figure scaling discrepancy — must resolve before drafting Section 4.3.**
+
+Two uploaded files:
+- `lp_irf_delta.csv`: shows full-sample (1992Q4–2019Q4) unemployment IRF with beta peaking at ~0.47 pp at h=8-9
+- `lp_irf_delta_gfc.csv`: shows post-2001 (2001Q1–2019Q4) with GFC interaction terms
+
+Images uploaded:
+- `lp_irf_delta_sample_check.png`: full sample (blue, peaks ~1.1 pp) vs. post-2001 (red, peaks ~2.6 pp)
+- `lp_irf_delta_sample_extension.png`: 2001Q1+ baseline (blue, peaks ~1.5 pp) vs 1997Q1+ (orange, peaks ~1.07 pp)
+- `lp_irf_delta_resid_comparison.png`: raw post-2001 (peaks ~2.6 pp) vs. residualized (peaks ~3.4 pp)
+
+**The CSV beta values (~0.47) do not match the image values (~1.1 pp for full sample) by a factor of ~2.3.**
+
+Possible explanations:
+1. CSV shows non-standardized coefficients; images show per-1-SD-shock (standardized)
+2. CSV and images correspond to different specifications
+3. Units mismatch (pp vs. decimal)
+
+**Resolution needed before drafting:**
+1. Confirm which CSV (lp_irf_delta.csv vs. lp_irf_delta_gfc.csv) is the v2 baseline, post-2001 sample
+2. Confirm whether CSV beta values need to be multiplied by instr_sd to get per-1-SD-shock values shown in images
+3. Upload the vacancy IRF figure and CSV (v2 baseline, δ→vacancy) — not yet uploaded
+
+**The v2 baseline for the paper is:**
+- Post-2001 sample (2001Q1–2019Q4) for comparability with LD/QU
+- Residualized with v2 specification (Δlog p_t + Δlog VA_{j,t-1})
+- Standardized to per-1-SD-shock units
+- Peak δ→u from image 2 (2001Q1+ baseline): approximately 1.49 pp at h=16-18
+- Peak δ→v: UNKNOWN (vacancy figure not uploaded)
+
+---
+
+### 18.5 Notation Changes Applied Globally (Important for Cowork)
+
+The following notation changes were made throughout Draft_9May2026.tex and should be carried forward in all code, figures, and LaTeX:
+
+| Old | New | Reason |
+|-----|-----|--------|
+| x_t^c | χ_t^c (chi) | Avoids conflict with vacancy creation cost x in recruiter problem |
+| f_m | χ_m | Continuation cost upper bound, matches χ notation |
+| F(x_t^c) | Λ_t ≡ F_χ(χ_t^c) | Clean auxiliary notation for survival probability |
+| ζ_t (auxiliary) | Λ_t | Avoids conflict with ζ(N) benefit-of-variety elasticity |
+| All labels: lom_u | eq:lom_u | Consistent eq:/tab:/fig:/sec: prefixes throughout |
+
+A Python script (`fix_labels.py`) was run to apply 38 equation label renames, 2 table label renames, 8 figure label renames globally in the draft.
+
+**Updated draft file:** `/mnt/user-data/outputs/Draft_9May2026_labels_fixed.tex` — this should replace the project Draft_9May2026.tex.
+
+---
+
+### 18.6 Key Conceptual Decisions Made This Session
+
+**On the contribution ladder:**
+- GS contribution: (1) δ < τ (predetermination), (2) δ and s as distinct structural parameters (but not time-varying shocks — GS has no δ_t or s_t AR(1))
+- This paper adds above GS: (1) time-varying δ_t and s_t shocks, (2) variety effects (ζ>0) — the only channel linking N_t to JCC, (3) endogenous entry — matters only with variety effects; inseparable from variety channel, (4) endogenous exit (p_0>0) — independent channel, links Λ_t to profitability
+- Elevator pitch: (1) δ < τ, (2) variety effects + endogenous entry (single mechanism), (3) endogenous exit (state-dependent destruction margin)
+
+**On the double limit:**
+- ε→∞ alone with f_e fixed: degenerate (N→0 with δ>0, Y^c→0 with positive employment)
+- δ→0 not viable: would eliminate the destruction margin central to vacancy LOM in GS/CK
+- Joint limit ε→∞, f_e=f̄_e/ε: well-defined, N̄>0 finite, all aggregate allocations independent of N̄
+- Clone replacement (AGS): rigorous reduced-form implementation of double limit
+- N̄=1 normalization: without loss of generality for aggregate allocations (not achievable by rescaling f̄_e since ln(1)=0 in fixed point equation)
+
+**On LP specification:**
+- v2 as main specification (Δlog p_t + Δlog VA_{j,t-1} residualization)
+- v3 (+ monetary policy sensitivity) as robustness check
+- LD/QU results in appendix (not in main text) since LD not entering Bayesian IRF matching
+- δ-LD residual correlation (r=0.424) in main text as motivation for BSMM
+- Severity placebo: both interactions insignificant for δ→vacancy — headline validation result
+
+---
+
+### 18.7 Next Steps for Empirical Section (Priority Order)
+
+**Step 1 — Resolve scaling issue (BLOCKING)**
+- Determine: is lp_irf_delta.csv the v2 baseline post-2001 or full-sample?
+- Determine: does beta in CSV need multiplying by instr_sd for per-1-SD values?
+- Identify which figure corresponds to which specification
+- Confirm peak δ→u number for v2 baseline, post-2001 sample
+
+**Step 2 — Upload missing figure (BLOCKING for vacancy subsection)**
+- Upload vacancy IRF figure (v2 baseline, δ→vacancy, post-2001 sample)
+- Upload corresponding CSV
+
+**Step 3 — Draft Section 4.1: Bartik instrument construction**
+- BED data, permanence calibration (π_{j,y} construction), LOO design
+- v1 residualization (aggregate productivity Δlog p_t)
+- v2 residualization (+ lagged industry VA growth from FRED, 2005Q1+ coverage)
+- v3 as robustness (monetary policy sensitivity)
+- Instrument correlation: r(δ,LD)=0.424 robustness across stages
+
+**Step 4 — Draft Section 4.2: LP specification**
+- Unemployment and vacancy equations
+- State and time fixed effects (with economic interpretation)
+- Clustering, sample period, COVID cap
+- Standardization convention
+
+**Step 5 — Draft Section 4.3: Results**
+- δ→u IRF: peak, significance window, persistence relative to shock half-life
+- δ→v IRF: peak, significance window, sustained h=1..20 significance
+- Severity placebo: both interactions insignificant for δ→vacancy (all h)
+- δ-LD correlation: r=0.424, structural interpretation, motivation for BSMM
+- Joint LP: δ stable, LD collapses → robustness of δ result
+- Beveridge path: simultaneous u rise and v fall (consistent with model)
+
+**Step 6 — Section 3.10 (δ-vs-s asymmetry mechanism)**
+- Three-channel amplification: u_t (separation), v_{t-1} (predetermination), N_t (variety)
+- Formal statement pending resolution of local vs. global scope
+- Bridge sentence to LP: "Section 4 tests the vacancy channel of this asymmetry"
+
+**Step 7 — Section 5 quantitative analysis revision**
+- Calibration section: update to reflect four-stage approach
+- Data-consistent quantities: move here from old equilibrium section
+- Two-model counterfactual: baseline vs. AGS
+
+---
+
+### 18.8 Pending Code Tasks (from prior sessions, unchanged)
+
+Priority order:
+1. **Wild cluster bootstrap** (`part5_wcrb.py`) — n=50 clusters at lower bound ❌
+2. **GFC diagnostic for LD unemployment** (`part7d_ld_gfc.py`) — LD u rises monotonically ❌
+3. **SLOOS interaction** (`part7b_sloos.py`) — completed in prior session ✅ (see Section 14.6)
+4. **Pre-GFC sample restriction** — add `max_qt="2007Q4"` to `run_lp()` ❌
+5. **Refresh BED cache to 2024Q4** — blocked by BLS API rate limit ❌
+6. **build_report_html.py** — requires pandoc locally ❌
