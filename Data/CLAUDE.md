@@ -1,5 +1,5 @@
 # CLAUDE.md — Empirical LP Project (Firm Entry/Exit DSGE)
-**Last updated:** May 12, 2026 · **Author:** Mario Silva
+**Last updated:** May 14, 2026 · **Author:** Mario Silva
 **Code style:** clean, succinct, interpretable by empirical macroeconomist
 
 ---
@@ -42,7 +42,7 @@ Data/Bartek analysis/
 **QU placebo fails:** corr(β_unemp, β_vac) = −0.971 across horizons — demand contamination signature
 **Vacancy convention:** outcome is vacancy RATE = V/LF × 100 in pp, levels difference. Never log. Symmetric to unemployment rate.
 **Calibration:** δ̄ = 0.940%/qtr, τ̄ = 9.34%/qtr, δ/τ = 10.1%
-**Paper draft:** `Draft/Draft_11May2026.tex` — Intro + Sections 2–4.2 complete; 4.3 partially drafted
+**Paper draft:** `Draft/Draft_11May2026.tex` — Intro + Sections 2–4.2 complete; prop:bgm_nest + proof complete; 4.3 partially drafted
 
 ---
 

@@ -108,16 +108,29 @@ JOLTS LD mixes three events: (a) exogenous match dissolution → reposting [mode
 - C3/C4 fall in extended samples: GFC intensive margin dominates denominator
 - Entry/exit margin accounts for ~10% of unemployment-driven flow variation → supports δ/τ ≈ 10% calibration
 
-## Paper Draft Status (as of May 12, 2026)
+## Paper Draft Status (as of May 14, 2026)
 
 - **Introduction**: Complete
 - **Section 2 Environment**: Complete
 - **Section 3 Equilibrium**: Substantially complete (3.10 δ-vs-s mechanism pending)
-- **Section 4.1 Instrument construction**: Complete
-- **Section 4.2 LP specification**: Complete (eq:lp, generic y_{s,t}, eq:lp in draft)
-- **Section 4.3 Results**: Partially drafted (fig:delta_uv_irf + prose; severity placebo and joint LP paragraphs pending)
+  - `prop:bgm_nest` (Nesting LR-BGM) + LR-BGM definition paragraph: **Complete**
+  - Proof of `prop:bgm_nest` in Appendix C: **Complete**
+- **Section 4.1 Instrument construction**: Complete (`fig:delta_distribution` standalone panel added)
+- **Section 4.2 LP specification**: Complete (eq:lp generic y_{s,t}; `fig:delta_uv_irf` placed here)
+- **Section 4.3 Results**: Partially drafted (fig:delta_uv_irf prose; severity placebo and joint LP paragraphs pending)
 - **Section 5 Quantitative**: Not revised
 - **Section 6 Conclusion**: Not started
-- **Appendix C proofs**: Props 1–3 substantially drafted
+- **Appendix C proofs**: Props 1–4 complete (prop:bgm_nest added May 14)
 
 Key notation: χ_t^c (not x_t^c), Λ_t ≡ F_χ(χ_t^c), eq:/tab:/fig:/sec: label prefixes throughout. Draft file: `Draft/Draft_11May2026.tex`.
+
+## prop:bgm_nest — Proof Structure (Appendix C)
+
+Three-block proof mirroring prop:ags style:
+1. **Setup**: p_0=0 → F_χ(0)=0 → X_t^c=0, Λ_t=1, δ_{e,t}=δ_{t-1}
+2. **Firm LOM** (eq:N_lom_eq): substituting Λ=1 + gross-output identity Y^c = z(1-u)ρ/μ → parenthesized term = N^e_{t-1} = BGM entry flow
+3. **Business formation Euler** (eq:N_euler_eq): Λ_{t+1}=1, X^c=0 → μ-ratio form with ν^f = f_e ρ(N) = BGM equity asset pricing
+4. **Resource constraint** (eq:gdp, NOT eq:rc): Y^c = C + X_t under p_0=0; net X_t → Y_t = C_t + ν^f N^e = BGM eq. (3)
+5. **Closing remark**: isomorphism holds for any realization of {1-u_t, X_t}, not that equilibrium distributions coincide
+
+Key: isomorphism at GDP level (eq:gdp), not gross output (eq:rc). X_t nets out as intermediate input on both sides.

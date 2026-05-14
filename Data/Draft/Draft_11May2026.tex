@@ -495,9 +495,7 @@
 	\end{align}
 	The symmetric price elasticity of demand is in general a function 
 	of the measure $N_t$ of goods:
-	\begin{align}
-		\varepsilon(N_t)=-\der{\log c_{j}}{\log p_{j}}.
-	\end{align}
+		$\varepsilon(N_t)=-\der{\log c_{j}}{\log p_{j}}$.
 	The welfare gain from an additional product variety is captured by 
 	the relative price and its elasticity:
 	\begin{align}\label{eq:relative_price}
@@ -1249,7 +1247,7 @@ The next several propositions characterize the
 relationship between the business formation block 
 and labor market block, and establish the connection 
 to benchmark frameworks in the literature. Proofs 
-are in Appendix~\ref{app:limiting_cases}.
+are in ~\ref{app:limiting_cases}.
 
 \begin{proposition}[Independence of labor market block]
 	\label{prop:independence}
@@ -1378,16 +1376,52 @@ Section~\ref{sec:quantitative}.
 
 \begin{remark}[Nested special cases of AGS]
 	\label{rem:nesting}
-	The AGS model nests two benchmark frameworks as 
-	limiting cases. Setting $\sigma=\kappa=0$ renders 
-	the AGS system isomorphic to \citet{gabrovski_2025}, 
-	extended here with aggregate AR(1) shocks to 
+	The AGS model nests two benchmark frameworks as
+	limiting cases. Setting $\sigma=\kappa=0$ renders
+	the AGS system isomorphic to \citet{gabrovski_2025},
+	extended here with aggregate AR(1) shocks to
 	$\delta_t$ and $s_t$.
-	Additionally setting $s_t=0$ recovers 
-	\citet{coles_2018} exactly, with $w_t^{int}=z_t$ 
-	and consumption determined residually from 
+	Additionally setting $s_t=0$ recovers
+	\citet{coles_2018} exactly, with $w_t^{int}=z_t$
+	and consumption determined residually from
 	$z_t(1-u_t)=C_t+\frac{\xi}{\xi+1}Q_t^{\xi+1}$.
 \end{remark}
+
+Strictly speaking, the baseline model does not nest
+\citet{bilbiie_2012} since there is no intensive labor
+margin.  However, it does nest a restricted version.
+Define \emph{labor-restricted BGM} (LR-BGM) as the
+\citet{bilbiie_2012} model with labor dropped from
+preferences: the household maximizes $\sum_t \beta^t
+c_t^{1-\sigma}/(1-\sigma)$ subject to
+$c_t = w_t L_t + \pi_t - X_t$, where $\{L_t\}$ and
+$\{X_t\}$ are exogenous sequences and $X_t$ is the
+vacancy-creation cost absorbed as an intermediate input.
+The resource constraint of LR-BGM is therefore
+$Y_t = C_t + \nu_t^f N_t^e$, matching the GDP identity
+\eqref{eq:gdp}, with $X_t$ netted out on both sides.
+
+\begin{proposition}[Nesting LR-BGM]
+	\label{prop:bgm_nest}
+	Set $p_0=0$, so $X_t^c=0$, $\Lambda_t=1$, and
+	$\delta_{e,t}=\delta_{t-1}$.  For any exogenous
+	sequences $\{L_t\}$ and $\{X_t\}$, the business
+	formation block of the baseline model---equations
+	\eqref{eq:N_lom_eq}, \eqref{eq:N_euler_eq}, and
+	\eqref{eq:gdp}---is isomorphic to LR-BGM evaluated
+	at the same sequences.
+\end{proposition}
+
+The isomorphism holds at the level of GDP \eqref{eq:gdp}
+rather than gross output \eqref{eq:rc}: vacancy costs
+$X_t$ are intermediate inputs in both models and cancel
+from the resource constraint, leaving
+$Y_t = C_t + \nu_t^f N_t^e$ in each case.  The sole
+departure of the baseline from LR-BGM is that $L_t$ and
+$X_t$ are endogenous, determined jointly by the DMP block
+\eqref{eq:v_lom}--\eqref{eq:u_lom}.  Restoring $p_0>0$
+further adds endogenous exit to the LR-BGM core.
+
 \subsection{Steady state}\label{sec:steady_state}
 
 A steady state is a fixed point of the equilibrium system 
@@ -1998,6 +2032,28 @@ Figure~\ref{fig:steady_state_curves_z}.
 	$\hat\beta_h$ are scaled by $\hat\sigma_{\tilde{B}^\delta}^{-1}$ so
 	that the impulse responses correspond to a one-standard-deviation shock.
 
+	We also construct Bartik instruments for layoffs-and-discharges
+	$\tilde{B}^{\text{LD}}$ (JOLTS LD) and quits $\tilde{B}^{\text{QU}}$
+	(JOLTS quits), using the same 2006 QCEW base-year shares and v2
+	residualization.  Neither is treated as a well-identified separate
+	estimation target.  $\tilde{B}^{\text{LD}}$ conflates genuine match
+	dissolution at surviving establishments with vacancy withdrawals at
+	partially closing firms, mixing $s$- and $\delta$-type events in
+	proportions that vary across industries and cycles; moreover,
+	$\tilde{B}^{\delta}$ Granger-causes future LD through $h=12$ while the
+	reverse predictability fades by $h=8$, indicating that LD is partly
+	endogenous to destruction.  $\tilde{B}^{\text{QU}}$ is procyclical and
+	driven largely by job-to-job transitions, which represent a worker gain
+	for one employer offset by a hire at another and have no clear mapping
+	to the model's match separation shock $s$; we include it as a diagnostic
+	instrument only.\footnote{In particular, a high quit rate in an industry
+	does not imply that vacancies go unfilled --- the quitting worker is
+	typically replaced by a job-to-job mover from elsewhere, so the net
+	effect on aggregate vacancies is near zero.  This is conceptually
+	distinct from the $s$ shock in the model, which destroys a match and
+	triggers a vacancy repost.}  Both instruments and their local
+	projections are reported in Appendix~\ref{app:diagnostics}.
+
 	\begin{figure}[H]
 		\centering
 		\includegraphics[width=0.92\textwidth]{lp_irf_delta_uv_baseline.png}
@@ -2039,27 +2095,32 @@ Figure~\ref{fig:steady_state_curves_z}.
 	medium horizons: the vacancy response stabilizes around $h = 12$--$14$
 	while the unemployment response continues to rise through $h = 20$.
 	This pattern is consistent with a recovery path in which new vacancy
-	creation resumes before the unemployment pool fully clears, and is
-	further reinforced by the endogenous exit margin in the model.  As the
-	impulse to $\delta_t$ decays --- with persistence $\rho_\delta \approx
-	0.65$, the shock is largely dissipated by $h = 6$--$8$ --- entry of new
-	product lines begins to restore vacancy creation, so the vacancy rate
-	stabilizes.  However, firms near the endogenous continuation threshold
-	$\chi_t^c$ remain vulnerable to exit even after the impulse has passed,
-	because their continuation values are still depressed by the lower product
-	variety $N_t$ and the compressed markup.  These secondary exits extend
-	the effective duration of the destruction episode, generating additional
-	worker inflows into unemployment beyond what the exogenous $\delta$
-	persistence alone would predict.  The unemployment stock therefore
-	continues to accumulate --- each secondary exit inflows more workers ---
-	while vacancies are simultaneously being replenished by new entrants. The unemployment stock drains only through matching flows, which
-	depend on tightness $\theta = v/u$.  Even as $v$ recovers toward its
-	steady-state value, tightness remains depressed as long as the
-	unemployment stock is large, slowing the drain.  The combination of
-	endogenous secondary exit and the stock-flow asymmetry accounts for
-	the divergence of the two IRFs at medium horizons.  Whether the
+	creation resumes before the unemployment pool fully clears.  Whether the
 	calibrated model replicates this relative timing is testable and will
 	be assessed in Section~\ref{sec:quantitative}.
+
+	% --- Severity placebo ---
+
+	A natural concern is that the $\delta$ Bartik instrument may inadvertently
+	capture recession severity: states with structurally high establishment turnover
+	may also experience worse aggregate downturns, so the IRF could reflect
+	demand-driven labor-market deterioration rather than product-line destruction
+	per se.  We address this with a severity placebo that augments the baseline
+	local projection with two interactions: $\tilde{B}_t^\delta \times
+	\bar{u}_t^{\text{nat}}$, a level proxy for underlying economic slack, and
+	$\tilde{B}_t^\delta \times \Delta\bar{u}_t^{\text{nat}}$, a flow proxy for
+	cyclical momentum.  If the instrument were a severity proxy, these interactions
+	should absorb the baseline IRF.  Instead, both interaction coefficients are
+	insignificant at every horizon $h = 0, \ldots, 20$ for the vacancy outcome, and
+	the baseline $\delta \to v$ coefficients are unchanged in magnitude and
+	significance.  This is the cleanest external validity check in the paper: the
+	vacancy response to establishment destruction is not explained by where
+	the aggregate economy happens to stand in the cycle.  The severity placebo
+	also passes for the unemployment outcome, though the interpretation is less
+	sharp given the natural correlation between any adverse state-level shock and
+	local unemployment.  Robustness results for the alternative instruments and
+	the joint local projection are collected in
+\ref{app:diagnostics}.
 
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	\section{Quantitative analysis}\label{sec:quantitative}
@@ -2300,6 +2361,99 @@ Figure~\ref{fig:steady_state_curves_z}.
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	\section{Conclusion}\label{ref:conclusion}
 	\appendix
+
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	\section{Instrument diagnostics and robustness}\label{app:diagnostics}
+
+	\subsection{Residual \texorpdfstring{$\delta$}{delta}--LD correlation}\label{app:delta_ld_corr}
+
+	After v2 residualization the cross-state correlation between the $\delta$
+	and layoffs-and-discharges instruments is
+	$r(\tilde{B}^\delta, \tilde{B}^{\text{LD}}) = 0.423$, down from $0.54$
+	on raw rates.  The residualization controls for aggregate productivity
+	growth, lagged industry value-added, and lagged labor-market tightness,
+	ruling out the most obvious industry-demand and aggregate-cycle
+	explanations for the shared variation.  The leading interpretation is
+	industry-specific financial conditions: when credit tightens in a sector,
+	both product-line exit ($\uparrow \delta$) and layoffs at surviving
+	establishments ($\uparrow \text{LD}$) rise simultaneously, generating
+	positive covariance without a structural link between the two shocks.
+	Consistent with this, the Granger-causality evidence shows that $\delta$
+	predicts future LD at horizons $h = 4$--$12$ while LD predicts future
+	$\delta$ only at $h = 0$--$4$; the long-horizon dependence runs from
+	destruction to layoffs and not the reverse.  A natural further step
+	would be to residualize on a measure of sector-level credit supply,
+	such as SLOOS net C\&I tightening interacted with industry leverage
+	exposure; we leave this for future work.
+
+	\subsection{LD local projections}\label{app:ld_lp}
+
+	Figure~\ref{fig:ld_uv_irf} reports the impulse responses of the
+	unemployment and vacancy rates to a one-standard-deviation increase in
+	$\tilde{B}^{\text{LD}}$.  The unemployment response rises monotonically
+	to a peak of $+1.68$ pp at $h=20$, significant throughout.  The
+	vacancy response is persistently negative (trough $-0.45$ pp at
+	$h=20$).  Both patterns survive the severity placebo.  However, the
+	monotonically rising unemployment IRF is anomalous given the estimated
+	LD persistence $\hat\rho_{\text{LD}} \approx 0.3$: a transitory shock
+	should produce a hump-shaped response, not a path that continues to
+	rise two decades out.  This suggests the LD instrument captures
+	variation beyond the model's $s$ shock --- most plausibly the GFC
+	episode, in which layoffs were severe and prolonged.  We regard the LD
+	IRFs as indicative rather than structural.
+
+	\subsection{Joint local projection}\label{app:joint_lp}
+
+	To assess whether the $\delta$ results are contaminated by the shared
+	variation with LD, we estimate a joint local projection including both
+	instruments as simultaneous regressors at each horizon $h$.  Three
+	findings emerge.  First, the $\delta$ vacancy IRF is stable: coefficient
+	differences relative to the separate specification are below $0.13$ pp
+	at all $h$, confirming that the vacancy decline is not an artifact of
+	LD exposure.  Second, the $\delta$ unemployment IRF shrinks by roughly
+	$0.5$--$1.3$ pp in the joint specification, reflecting absorption of
+	the variation shared with LD; the peak response remains positive and
+	significant.  Third, the LD vacancy coefficient collapses to zero and
+	is insignificant at every horizon once $\delta$ is controlled for.
+	This zero reflects identification limits from the $r = 0.423$
+	collinearity rather than structural evidence that separation shocks
+	leave vacancies intact.  We treat the separate $\delta$ LP as the
+	primary specification; the joint LP confirms robustness of the headline
+	vacancy result.
+
+	\subsection{QU placebo instrument}\label{app:qu_placebo}
+
+	$\tilde{B}^{\text{QU}}$ is constructed from JOLTS quit rates using the
+	same shares and residualization as the primary instruments.  Quits
+	represent voluntary job-to-job transitions: the quitting worker moves
+	directly to another employer, leaving the origin firm with an unfilled
+	position but supplying the destination firm with a worker.  The net
+	effect on aggregate unemployment and vacancies is therefore ambiguous
+	and governed by matching frictions at the destination, not by the
+	separation event at the origin.  This is conceptually distinct from the
+	model's $s$ shock, which dissolves a match and triggers an unambiguous
+	vacancy repost.  Furthermore, the quit rate is procyclical --- it rises
+	when labor markets tighten --- so $\tilde{B}^{\text{QU}}$ partly
+	reflects the same industry-level demand cycle that v2 residualization
+	attempts to remove.
+
+	Empirically, the QU instrument does not behave as a flat-zero placebo.
+	Its unemployment and vacancy IRFs are nearly identical in magnitude to
+	those of $\tilde{B}^\delta$, and the within-instrument correlation
+	$\text{corr}(\hat\beta^u_h, \hat\beta^v_h) = -0.971$ across $h =
+	0,\ldots,20$ --- the same mechanical proportionality observed for
+	$\tilde{B}^\delta$ ($-0.948$).  This signature indicates that QU
+	identifies industry-level demand contractions (which move $u$ and $v$
+	symmetrically along the Beveridge curve) rather than a structurally
+	distinct separation shock.  The contamination is likely structural:
+	high-quit industries tend to be procyclical, so the industry component
+	of the quit rate is correlated with demand conditions even after
+	residualization on aggregate productivity and lagged VA.  The QU
+	failure confirms that a well-identified $s$-type instrument remains an
+	open challenge and motivates treating the LD results as indicative
+	rather than structural.
+
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	\section{Steady state}\label{app:steady_state}
 	We summarize the steady state of the system below:
 	\begin{align}
@@ -2760,19 +2914,69 @@ $m_t=\beta(C_t/C_{t-1})^{-\sigma}$ is unchanged.
 The stochastic processes \eqref{eq:ar1_z}--\eqref{eq:ar1_s} 
 are unchanged.
 
-The resulting system 
-\eqref{eq:jcc_ags}--\eqref{eq:u_ags} together 
-with $e_t=G(Q_t)$, $m_t=\beta(C_t/C_{t-1})^{-\sigma}$, 
-$C_t=z_t(1-u_t)-X_t$, and stochastic processes 
-\eqref{eq:ar1_z}--\eqref{eq:ar1_s} is well-posed: 
-it inherits a unique bounded equilibrium from 
-standard DSGE existence conditions, since it is 
-a special case of the baseline model with 
-$N_t=1$ fixed, which satisfies the Blanchard-Kahn 
-conditions on the labor market block established 
+The resulting system
+\eqref{eq:jcc_ags}--\eqref{eq:u_ags} together
+with $e_t=G(Q_t)$, $m_t=\beta(C_t/C_{t-1})^{-\sigma}$,
+$C_t=z_t(1-u_t)-X_t$, and stochastic processes
+\eqref{eq:ar1_z}--\eqref{eq:ar1_s} is well-posed:
+it inherits a unique bounded equilibrium from
+standard DSGE existence conditions, since it is
+a special case of the baseline model with
+$N_t=1$ fixed, which satisfies the Blanchard-Kahn
+conditions on the labor market block established
 in the baseline analysis. \hfill$\square$
-	
-	
+
+\subsection*{Proof of Proposition~\ref{prop:bgm_nest}}
+
+Set $p_0=0$. Then $F_\chi(0)=0$, so no firm pays a
+continuation cost: $X_t^c=0$, $\Lambda_t=1$, and
+$\delta_{e,t}=\delta_{t-1}$ for all $t$.
+
+\emph{Firm LOM~\eqref{eq:N_lom_eq}.} With $\Lambda_t=1$
+and $\delta_{e,t}=\delta_{t-1}$, the baseline LOM becomes
+\begin{equation*}
+  N_t = (1-\delta_{t-1})\!\left(N_{t-1}
+  + \frac{z_{t-1}(1-u_{t-1})}{f_e}
+  - \frac{Y_{t-1}^c}{f_e\rho(N_{t-1})}\right),
+\end{equation*}
+where $\{1-u_{t-1}\}$ is treated as an exogenous
+sequence by assumption.  Using the gross-output identity
+$Y_{t-1}^c = z_{t-1}(1-u_{t-1})\rho(N_{t-1})/\mu(N_{t-1})$
+(from retail-firm optimality), the parenthesized term
+equals $N_{t-1}^e = z_{t-1}(1-u_{t-1})/f_e \cdot
+(1-1/\mu(N_{t-1}))$, which is the BGM entry flow
+$N_t^e = G(Q_t)$ evaluated at $Q_t = f_e/\nu_t^f$.
+Hence \eqref{eq:N_lom_eq} is the BGM firm LOM.
+
+\emph{Business formation Euler~\eqref{eq:N_euler_eq}.}
+With $\Lambda_{t+1}=1$ and $X_{t+1}^c=0$, the baseline
+Euler simplifies to
+\begin{equation*}
+  f_e\rho(N_t) = (1-\delta_t)\,\mathbb{E}_t m_{t+1}
+  \frac{\mu(N_t)}{\mu(N_{t+1})}
+  \left\{f_e\rho(N_{t+1})
+  + \frac{Y_{t+1}^c}{N_{t+1}}(\mu(N_{t+1})-1)\right\}.
+\end{equation*}
+Dividing by $\rho(N_t)$ and using
+$\nu_t^f = f_e\rho(N_t)$ (free entry), this is the BGM
+asset-pricing equation for firm equity.
+
+\emph{Resource constraint~\eqref{eq:gdp}.} With
+$X_t^c=0$, gross output satisfies $Y_t^c = C_t + X_t$.
+Netting out $X_t$ on both sides gives the GDP identity
+$Y_t = C_t + \nu_t^f N_t^e$, which is the BGM resource constraint.
+The household budget constraint
+$c_t = w_t(1-u_t) + \pi_t - X_t$
+closes the system identically in both models.
+
+The two systems thus share the same three equations and
+the same exogenous sequences $\{z_t,\delta_t,1-u_t,X_t\}$.
+Since $1-u_t$ and $X_t$ are endogenous in the baseline but
+exogenous in LR-BGM, the proposition asserts isomorphism
+for any realization of those sequences, not that the
+equilibrium distributions coincide. \hfill$\square$
+
+
 	\subsection{Details of comparative statics}
 	\textcolor{red}{Comment out this section temporarily}
 	%In this section, we qualitatively characterize how steady state labor market tightness and firm product lines responds to various shocks under both DS-CES and general-CES preferences.  We analyze the equilibrium in $(\theta,N)$ given by the system \eqref{eq:curve_jcc} and \eqref{eq:curve_res_cons}

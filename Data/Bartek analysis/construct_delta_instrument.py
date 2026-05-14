@@ -1257,7 +1257,7 @@ def build_bartik_instrument(
 def build_delta_instrument(
     base_year     : int  = 2006,
     start_quarter : str  = "1992Q3",
-    end_quarter   : str  = "2023Q1",
+    end_quarter   : str  = "2024Q2",
     cache_dir     : Path = DEFAULT_CACHE_DIR,
     save_output   : bool = True,
     output_dir    : Path = DEFAULT_OUTPUT_DIR,
@@ -1265,27 +1265,29 @@ def build_delta_instrument(
     bds_file      : Path = None,
 ) -> pd.DataFrame:
     """
-    End-to-end construction of the permanence-adjusted delta Bartik instrument.
+    End-to-end construction of the delta Bartik instrument using BED Deaths.
 
-    The numerator uses BED gross job losses from closing establishments,
-    scaled by the BDS/BED permanence ratio π_{j,y} to filter out temporary
-    shutdowns and retain only permanent establishment exits.
+    The numerator uses BED Deaths (dataclass=08): establishments absent from
+    the UI payroll base for four or more consecutive quarters.  By construction
+    Deaths ⊆ Closings, so temporary shutdowns (establishments that reopen
+    within 1–3 quarters) are excluded without requiring a BDS permanence ratio
+    calibration.  This is the conceptually clean measure of permanent
+    product-line destruction — the structural δ shock in the model.
 
-    All data are fetched automatically from BLS and Census and cached locally.
+    All data are fetched automatically from BLS and cached locally.
 
     Parameters
     ----------
     base_year     : Pre-recession base year for employment shares.
                     Default 2006 (Great Recession).  Use 2019 for COVID.
     start_quarter : First quarter of the instrument time series.
-                    Default "1992Q3" (earliest BED date).
-    end_quarter   : Last quarter.  Default "2023Q1" (last BDS-covered quarter).
-                    BDS year 2023 maps to BED 2022Q2–2023Q1.  Quarters beyond
-                    2023Q1 lack a permanence ratio and use raw BED as fallback.
-    cache_dir     : Local directory for caching BLS/Census downloads.
+                    Default "1992Q3" (earliest BED Deaths date).
+    end_quarter   : Last quarter.  Default "2024Q2".
+    cache_dir     : Local directory for caching BLS downloads.
     save_output   : Write the instrument to CSV.  Default True.
     output_dir    : Directory for the output CSV.
-    census_key    : Optional Census API key for BDS fetch.
+    census_key    : Unused; retained for call-site compatibility.
+    bds_file      : Unused; retained for call-site compatibility.
 
     Returns
     -------
@@ -1299,12 +1301,12 @@ def build_delta_instrument(
     # Great Recession identification episode
     df_gr = build_delta_instrument(base_year=2006)
 
-    # COVID episode (use 2019 base year, raw BED fallback for 2023Q2+)
+    # COVID episode
     df_covid = build_delta_instrument(base_year=2019, end_quarter="2024Q2")
     """
     print("=" * 60)
     print(
-        f"Delta instrument (permanence-adjusted)  |  "
+        f"Delta instrument (BED Deaths)  |  "
         f"base year = {base_year}  |  {start_quarter} – {end_quarter}"
     )
     print("=" * 60)
@@ -1312,41 +1314,27 @@ def build_delta_instrument(
     # Step 1: QCEW employment shares
     shares = build_employment_shares(base_year, cache_dir)
 
-    # Steps 2-4: BED closings → BDS exits → permanence ratios → adjusted series
-    print(f"\n[BED] fetching national closings (raw) from BLS ...")
-    bed_raw = fetch_bed_closings_national(
-        cache_dir, start_quarter="1992Q3", end_quarter="2024Q2"
+    # Step 2: BED Deaths (dataclass=08) — no BDS permanence calibration needed
+    print(f"\n[BED Deaths] fetching national deaths from BLS ...")
+    bed_deaths = fetch_bed_deaths_national(
+        cache_dir, start_quarter=start_quarter, end_quarter=end_quarter
     )
     print(
-        f"  {bed_raw['quarter_label'].nunique()} quarters  |  "
-        f"{bed_raw['industry_code'].nunique()} supersectors"
+        f"  {bed_deaths['quarter_label'].nunique()} quarters  |  "
+        f"{bed_deaths['industry_code'].nunique()} supersectors"
     )
 
-    print(f"\n[BDS] fetching annual exits ...")
-    bds_exits = fetch_bds_exits_national(
-        cache_dir, census_key=census_key, bds_file=bds_file
-    )
+    # Rename deaths_nat → closings_nat so build_loo_shock_rates is agnostic
+    bed_window = bed_deaths.rename(columns={"deaths_nat": "closings_nat"}).copy()
 
-    print(f"\n[π] computing permanence ratios ...")
-    perm_ratios = compute_permanence_ratios(bed_raw, bds_exits)
-
-    print(f"\n[adj] applying permanence adjustment ...")
-    bed_adj = apply_permanence_adjustment(bed_raw, perm_ratios)
-
-    # Filter to requested window after adjustment
-    bed_window = bed_adj[
-        (bed_adj["quarter_label"] >= start_quarter) &
-        (bed_adj["quarter_label"] <= end_quarter)
-    ].copy()
-
-    # Step 5: LOO shock rates
+    # Step 3: LOO shock rates
     shock_rates = build_loo_shock_rates(shares, bed_window)
 
-    # Step 6: Bartik aggregation
+    # Step 4: Bartik aggregation
     print("\n[Bartik] aggregating ...")
     instrument = build_bartik_instrument(shares, shock_rates)
 
-    # Step 7: Summary
+    # Step 5: Summary
     print("\n" + "=" * 60)
     print("Instrument summary (cross-state, last 8 quarters):")
     print("=" * 60)
