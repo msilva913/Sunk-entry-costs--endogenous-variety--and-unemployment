@@ -1363,7 +1363,7 @@ def build_delta_instrument(
 def build_national_shock_rates(
     shares        : pd.DataFrame,
     start_quarter : str  = "1992Q3",
-    end_quarter   : str  = "2023Q1",
+    end_quarter   : str  = "2024Q2",
     cache_dir     : Path = DEFAULT_CACHE_DIR,
     save_output   : bool = True,
     output_dir    : Path = DEFAULT_OUTPUT_DIR,
@@ -1525,10 +1525,9 @@ def build_national_shock_rates(
 
 BASE_YEAR     = 2006
 START_QUARTER = "1992Q3"
-# END_QUARTER is the last BED quarter fully covered by BDS permanence calibration.
-# BDS data extend through year 2023 (as of early 2026), which maps to BED
-# quarters 2022Q2–2023Q1.  Quarters beyond 2023Q1 use raw BED as fallback.
-END_QUARTER   = "2023Q1"
+# END_QUARTER: BED Deaths series available through at least 2024Q2 via BLS API.
+# No BDS coverage limit applies — Deaths requires no permanence calibration.
+END_QUARTER   = "2024Q2"
 
 SHARES_PATH      = DEFAULT_OUTPUT_DIR / f"shares_base{BASE_YEAR}.parquet"
 SHOCK_RATES_PATH = DEFAULT_OUTPUT_DIR / f"shock_rates_{START_QUARTER}_{END_QUARTER}.parquet"
@@ -1542,7 +1541,7 @@ INSTRUMENT_PATH  = DEFAULT_OUTPUT_DIR / f"delta_instrument_base{BASE_YEAR}.csv"
 def fetch_bed_deaths_national(
     cache_dir     : Path = DEFAULT_CACHE_DIR,
     start_quarter : str  = "1992Q3",
-    end_quarter   : str  = "2019Q4",
+    end_quarter   : str  = "2024Q2",
 ) -> pd.DataFrame:
     """
     Fetch national BED employment losses from *dying* establishments
