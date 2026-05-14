@@ -2388,38 +2388,75 @@ Figure~\ref{fig:steady_state_curves_z}.
 
 	\subsection{LD local projections}\label{app:ld_lp}
 
-	Figure~\ref{fig:ld_uv_irf} reports the impulse responses of the
-	unemployment and vacancy rates to a one-standard-deviation increase in
-	$\tilde{B}^{\text{LD}}$.  The unemployment response rises monotonically
-	to a peak of $+1.68$ pp at $h=20$, significant throughout.  The
-	vacancy response is persistently negative (trough $-0.45$ pp at
-	$h=20$).  Both patterns survive the severity placebo.  However, the
-	monotonically rising unemployment IRF is anomalous given the estimated
-	LD persistence $\hat\rho_{\text{LD}} \approx 0.3$: a transitory shock
-	should produce a hump-shaped response, not a path that continues to
-	rise two decades out.  This suggests the LD instrument captures
-	variation beyond the model's $s$ shock --- most plausibly the GFC
-	episode, in which layoffs were severe and prolonged.  We regard the LD
-	IRFs as indicative rather than structural.
+	The separate LD local projections are subsumed by the joint LP figure
+	(Figure~\ref{fig:joint_lp_vacancy} below), which overlays the LD
+	separate-specification IRF alongside the joint-LP coefficient for the
+	same instrument.  In the separate specification the LD unemployment
+	response rises monotonically to a peak of $+1.68$ pp at $h=20$,
+	significant throughout, while the vacancy response is persistently
+	negative (trough $-0.45$ pp at $h=20$).  Both patterns survive the
+	severity placebo.  The monotonically rising unemployment IRF is
+	anomalous given the estimated LD persistence
+	$\hat\rho_{\text{LD}} \approx 0.3$: a transitory shock should produce
+	a hump-shaped response, not a path that continues to rise five years
+	out.  The most likely explanation is GFC contamination --- the 2008--09
+	recession produced a severe and prolonged layoff episode whose
+	industry-composition variation is not fully absorbed by the v2
+	residualization --- rather than a structural property of the $s$ shock.
+	We regard the LD IRFs as indicative rather than structural, and do not
+	use them as estimation targets.
 
 	\subsection{Joint local projection}\label{app:joint_lp}
 
-	To assess whether the $\delta$ results are contaminated by the shared
-	variation with LD, we estimate a joint local projection including both
-	instruments as simultaneous regressors at each horizon $h$.  Three
-	findings emerge.  First, the $\delta$ vacancy IRF is stable: coefficient
-	differences relative to the separate specification are below $0.13$ pp
-	at all $h$, confirming that the vacancy decline is not an artifact of
-	LD exposure.  Second, the $\delta$ unemployment IRF shrinks by roughly
-	$0.5$--$1.3$ pp in the joint specification, reflecting absorption of
-	the variation shared with LD; the peak response remains positive and
-	significant.  Third, the LD vacancy coefficient collapses to zero and
-	is insignificant at every horizon once $\delta$ is controlled for.
-	This zero reflects identification limits from the $r = 0.423$
-	collinearity rather than structural evidence that separation shocks
-	leave vacancies intact.  We treat the separate $\delta$ LP as the
-	primary specification; the joint LP confirms robustness of the headline
-	vacancy result.
+	Figure~\ref{fig:joint_lp_vacancy} reports the joint versus separate
+	local projections for the vacancy outcome.  Each panel overlays the
+	joint-LP coefficient (red, solid) against the corresponding
+	separate-LP coefficient (blue, solid), with 90\% confidence bands.
+
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=\textwidth]{lp_joint_delta_ld_vacancy.png}
+		\caption{Joint versus separate local projections: vacancy rate
+			outcome.  \emph{Left panel:} $\delta$ instrument --- joint LP
+			(red) vs.\ separate LP (blue).  \emph{Right panel:} LD
+			instrument --- joint LP (red) vs.\ separate LP (blue).
+			Shading denotes 90\% confidence intervals; standard errors
+			clustered at the state level ($n=50$).  Instruments are
+			v2-residualized; sample 2001Q1--2019Q4.}
+		\label{fig:joint_lp_vacancy}
+	\end{figure}
+
+	Three findings emerge from the figure.  First, the $\delta$ vacancy IRF
+	is stable across specifications: the joint and separate coefficients
+	track within $0.13$ pp at every horizon $h$, and the confidence bands
+	overlap throughout.  The vacancy decline following product-line
+	destruction is not an artifact of the shared variation with LD.
+
+	Second, the $\delta$ unemployment IRF shrinks by roughly $0.5$--$1.3$
+	pp in the joint specification relative to the separate LP, reflecting
+	absorption of the variation that $\tilde{B}^\delta$ and
+	$\tilde{B}^{\text{LD}}$ share.  The peak response remains positive and
+	significant, so the unemployment result is robust, if attenuated.
+
+	Third, the LD vacancy coefficient collapses from its separate-LP value
+	to approximately zero and is insignificant at all horizons once
+	$\delta$ is controlled for (right panel).  This collapse should
+	\emph{not} be read as evidence that $\delta$ subsumes a genuine LD
+	effect on vacancies.  Rather, it reflects that
+	$r(\tilde{B}^\delta,\tilde{B}^{\text{LD}})=0.423$ is large enough that
+	the two instruments do not span orthogonal directions in the shock
+	space: the variation in $\tilde{B}^{\text{LD}}$ orthogonal to
+	$\tilde{B}^{\delta}$ is insufficient to separately identify the LD
+	vacancy response.  The appropriate conclusion is that LD is not
+	separately identified as a structural shock in this setting, not that
+	separation shocks have zero causal effect on vacancies.
+
+	We therefore treat the separate $\delta$ LP as the primary
+	specification.  The joint LP establishes that the headline result ---
+	a persistent vacancy decline in response to product-line destruction
+	--- is robust to controlling for LD, and that the failure to separately
+	identify LD is an instrument-space problem rather than a finding about
+	vacancy dynamics.
 
 	\subsection{QU placebo instrument}\label{app:qu_placebo}
 

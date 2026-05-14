@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (MiKTeX 25.4) (preloaded format=pdflatex 2025.7.17)  14 MAY 2026 16:55
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (MiKTeX 25.4) (preloaded format=pdflatex 2025.7.17)  14 MAY 2026 17:36
 entering extended mode
  \write18 enabled.
  %&-line parsing enabled.
@@ -1327,36 +1327,45 @@ unemployment/Programs baseline/elastic_comparison_tech_shock.pdf>]
 
 [46 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-
 unemployment/Programs baseline/kappa_comparison_delta_shock.pdf>]
-
-LaTeX Warning: Reference `fig:ld_uv_irf' on page 47 undefined on input line 239
-1.
-
+<C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unem
+ployment/Data/Bartek analysis/data/results/lp_joint_delta_ld_vacancy.png, id=93
+4, 1003.1076pt x 427.3566pt>
+File: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and
+-unemployment/Data/Bartek analysis/data/results/lp_joint_delta_ld_vacancy.png G
+raphic file (type png)
+<use C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-
+unemployment/Data/Bartek analysis/data/results/lp_joint_delta_ld_vacancy.png>
+Package pdftex.def Info: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endo
+genous-variety--and-unemployment/Data/Bartek analysis/data/results/lp_joint_del
+ta_ld_vacancy.png  used on input line 2418.
+(pdftex.def)             Requested size: 486.25761pt x 207.16336pt.
 
 
 [47]
 
-[48]
+[48 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-
+unemployment/Data/Bartek analysis/data/results/lp_joint_delta_ld_vacancy.png>]
 
 [49]
 
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 2507.
-
+[50]
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\psi' on input line 2507.
+(hyperref)                removing `math shift' on input line 2544.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 2507.
+(hyperref)                removing `\psi' on input line 2544.
 
 
-LaTeX Warning: Reference `eq:labor_C_N' on page 50 undefined on input line 2513
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 2544.
+
+
+LaTeX Warning: Reference `eq:labor_C_N' on page 51 undefined on input line 2550
 .
 
 
-
-[50]
 
 [51]
 
@@ -1367,7 +1376,9 @@ LaTeX Warning: Reference `eq:labor_C_N' on page 50 undefined on input line 2513
 [54]
 
 [55]
-Overfull \hbox (0.669pt too wide) in paragraph at lines 2808--2814
+
+[56]
+Overfull \hbox (0.669pt too wide) in paragraph at lines 2845--2851
 \T1/cmr/m/n/12 This is a non-lin-ear pre-de-ter-mined vari-able equa-tion drive
 n by the ex-oge-nous pro-cesses $\OMS/cmsy/m/n/12 f\OML/cmm/m/it/12 z[]; ^^N[];
  u[]\OMS/cmsy/m/n/12 g$\T1/cmr/m/n/12 ,
@@ -1375,20 +1386,20 @@ n by the ex-oge-nous pro-cesses $\OMS/cmsy/m/n/12 f\OML/cmm/m/it/12 z[]; ^^N[];
 
 
 
-[56]
+[57]
 
-LaTeX Warning: Reference `eq:rc_limit' on page 57 undefined on input line 2905.
-
-
+LaTeX Warning: Reference `eq:rc_limit' on page 58 undefined on input line 2942.
 
 
-[57] (Draft_11May2026.bbl
 
-[58]
 
-[59])
+[58] (Draft_11May2026.bbl
 
-[60] (Draft_11May2026.aux)
+[59]
+
+[60])
+
+[61] (Draft_11May2026.aux)
  ***********
 LaTeX2e <2025-06-01> patch level 1
 L3 programming layer <2025-07-11>
@@ -1404,11 +1415,11 @@ Package rerunfilecheck Info: File `Draft_11May2026.out' has not changed.
 (rerunfilecheck)             Checksum: 6B36D975234E0145B399D20211E59008;6955.
  ) 
 Here is how much of TeX's memory you used:
- 27419 strings out of 468149
- 530388 string characters out of 5431082
- 926168 words of memory out of 5000000
- 55319 multiletter control sequences out of 15000+600000
- 650185 words of font info for 99 fonts, out of 8000000 for 9000
+ 27436 strings out of 468149
+ 531965 string characters out of 5431082
+ 927563 words of memory out of 5000000
+ 55333 multiletter control sequences out of 15000+600000
+ 651229 words of font info for 102 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  84i,15n,91p,2336b,847s stack positions out of 10000i,1000n,20000p,200000b,200000s
  <C:\Users\msilv\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\eccc
@@ -1450,9 +1461,9 @@ msilv/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmti12.pfb><
 C:/Users/msilv/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/symbol
 s/msam10.pfb><C:/Users/msilv/AppData/Local/Programs/MiKTeX/fonts/type1/public/a
 msfonts/symbols/msbm10.pfb>
-Output written on Draft_11May2026.pdf (60 pages, 1552244 bytes).
+Output written on Draft_11May2026.pdf (61 pages, 1750302 bytes).
 PDF statistics:
- 1822 PDF objects out of 2073 (max. 8388607)
- 239 named destinations out of 1000 (max. 500000)
- 383 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 1835 PDF objects out of 2073 (max. 8388607)
+ 241 named destinations out of 1000 (max. 500000)
+ 388 words of extra memory for PDF output out of 10000 (max. 10000000)
 
