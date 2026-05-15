@@ -1254,6 +1254,103 @@ def build_bartik_instrument(
 # 7.  TOP-LEVEL FUNCTION
 # ---------------------------------------------------------------------------
 
+
+def plot_deaths_by_supersector(
+    output_dir    : Path  = Path("data/results"),
+    cache_dir     : Path  = DEFAULT_CACHE_DIR,
+    start_quarter : str   = "1992Q3",
+    end_quarter   : str   = "2019Q4",
+) -> None:
+    """
+    Two-panel figure showing Deaths/Closings ratio for each supersector.
+
+    Panel 1 (left 6): six supersectors with highest mean Deaths/Closings ratio.
+    Panel 2 (right 6): six supersectors with lowest mean Deaths/Closings ratio.
+    Each sub-plot is a time series. NBER recession shading included.
+
+    Saves to: output_dir / "bed_deaths_by_supersector.png"
+    """
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    import matplotlib.ticker as mticker
+
+    closings = fetch_bed_closings_national(
+        cache_dir, start_quarter=start_quarter, end_quarter=end_quarter
+    )
+    deaths = fetch_bed_deaths_national(
+        cache_dir, start_quarter=start_quarter, end_quarter=end_quarter
+    )
+
+    merged = pd.merge(closings, deaths, on=["quarter_label", "industry_code"], how="inner")
+    merged["ratio"] = merged["deaths_nat"] / merged["closings_nat"].replace(0, np.nan)
+    merged["ss_name"] = merged["industry_code"].map(INDUSTRY_LABELS)
+
+    # Sort supersectors by mean ratio descending
+    mean_ratio = merged.groupby("ss_name")["ratio"].mean().sort_values(ascending=False)
+    top6    = mean_ratio.index[:6].tolist()
+    bottom6 = mean_ratio.index[6:].tolist()
+
+    # Build quarter index for x-axis
+    all_quarters = sorted(merged["quarter_label"].unique())
+    q_to_idx     = {q: i for i, q in enumerate(all_quarters)}
+    merged["q_idx"] = merged["quarter_label"].map(q_to_idx)
+    xtick_idx    = [i for i, q in enumerate(all_quarters) if q.endswith("Q1") and int(q[:4]) % 4 == 0]
+    xtick_labels = [all_quarters[i][:4] for i in xtick_idx]
+
+    NBER_RECESSIONS = [
+        ("2001Q1", "2001Q4"),
+        ("2007Q4", "2009Q2"),
+        ("2020Q1", "2020Q2"),
+    ]
+
+    colors = [
+        "#1f77b4","#d62728","#2ca02c","#ff7f0e","#9467bd","#8c564b",
+    ]
+
+    def _make_panel(ax, ss_list, title):
+        for color, ss in zip(colors, ss_list):
+            sub = merged[merged["ss_name"] == ss].sort_values("q_idx")
+            ax.plot(sub["q_idx"], sub["ratio"], color=color, lw=1.4, label=ss)
+        for r_start, r_end in NBER_RECESSIONS:
+            x0 = q_to_idx.get(r_start)
+            x1 = q_to_idx.get(r_end)
+            if x0 is not None and x1 is not None:
+                ax.axvspan(x0, x1, color="grey", alpha=0.15, zorder=0)
+        ax.axhline(1.0, color="black", lw=0.8, ls="--", alpha=0.5)
+        ax.set_ylim(0, 1.1)
+        ax.set_xticks(xtick_idx)
+        ax.set_xticklabels(xtick_labels, rotation=45, ha="right", fontsize=8)
+        ax.set_ylabel("Deaths / Closings", fontsize=9)
+        ax.set_title(title, fontsize=10)
+        ax.legend(fontsize=7, loc="lower left", ncol=1, framealpha=0.85)
+        ax.grid(axis="y", lw=0.4, alpha=0.4)
+        ax.tick_params(axis="y", labelsize=8)
+
+    fig, axes = plt.subplots(1, 2, figsize=(13, 5), sharey=True)
+    fig.subplots_adjust(wspace=0.08)
+
+    _make_panel(axes[0], top6,    "Six highest mean Deaths/Closings ratio")
+    _make_panel(axes[1], bottom6, "Six lowest mean Deaths/Closings ratio")
+
+    fig.suptitle(
+        "BED Deaths/Closings ratio by supersector, 1992Q3--2019Q4\n"
+        "(dashed line = theoretical upper bound of 1.0; grey = NBER recessions)",
+        fontsize=10, y=1.01,
+    )
+    fig.tight_layout()
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    out_path = output_dir / "bed_deaths_by_supersector.png"
+    plt.savefig(out_path, dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    print(f"[plot] saved: {out_path}")
+
+    print("\nMean Deaths/Closings ratio by supersector (sorted):")
+    for ss, val in mean_ratio.items():
+        print(f"  {ss:<42} {val:.3f}")
+
+
 def build_delta_instrument(
     base_year     : int  = 2006,
     start_quarter : str  = "1992Q3",
@@ -1663,7 +1760,7 @@ def plot_closings_vs_deaths(
     cache_dir     : Path  = DEFAULT_CACHE_DIR,
     start_quarter : str   = "1992Q3",
     end_quarter   : str   = "2019Q4",
-    percentiles   : tuple = (25, 75),
+    percentiles   : tuple = (10, 90),
 ) -> None:
     """
     Two-panel time-series figure comparing BED Closings vs Deaths rates.
@@ -1797,7 +1894,7 @@ def plot_closings_vs_deaths(
                      label=f"Deaths/Closings {plo}-{phi}th pctile")
     ax2.plot(xs, agg["ratio_mean"], color="#4dac26", lw=1.8,
              label="Deaths/Closings (wtd mean)")
-    ax2.axhline(1.0, color="black", lw=0.9, ls="--", label="Ratio = 1.0 (upper bound)")
+    ax2.axhline(1.0, color="black", lw=0.9, ls="--", label="Theoretical upper bound (Deaths $\subseteq$ Closings)")
     ax2.set_ylabel("Deaths / Closings", fontsize=10)
     ax2.set_xlabel("Year", fontsize=10)
     ax2.legend(fontsize=8, loc="lower right")

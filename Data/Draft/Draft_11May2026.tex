@@ -1248,7 +1248,7 @@ The next several propositions characterize the
 relationship between the business formation block 
 and labor market block, and establish the connection 
 to benchmark frameworks in the literature. Proofs 
-are in ~\ref{app:limiting_cases}.
+are in \ref{app:limiting_cases}.
 
 \begin{proposition}[Independence of labor market block]
 	\label{prop:independence}
@@ -1440,7 +1440,7 @@ $\delta_e$ as a parameter; the full steady-state system
 and key derivations are in 
 \ref{app:steady_state}.
 
-\paragraph{Key steady-state ratios.}
+\paragraph{Key steady-state ratios}
 Setting $\delta_t = \bar{\delta}$ and $s_t = \bar{s}$, the 
 Euler equations yield $N^e/N = \delta_e/(1-\delta_e)$. 
 Retail profits as a fraction of consumption output are
@@ -1467,7 +1467,7 @@ product-line stock. The full derivation of steady-state
 output shares and labor allocation is in 
 \ref{app:steady_state}.
 
-\paragraph{Four steady-state curves.}
+\paragraph{Four steady-state curves}
 The \emph{exit threshold curve} gives the locus 
 $(\chi^c, \delta_e)$ consistent with the cutoff 
 condition \eqref{eq:cutoff_eq} at steady state:
@@ -1827,7 +1827,7 @@ Figure~\ref{fig:steady_state_curves_z}.
 
 	Figure~\ref{fig:bed_deaths} shows employment-weighted mean BED Closings
 	and Deaths rates across 12 supersectors from 1992Q3 to 2019Q4, together
-	with 25th--75th industry percentile bands.  The Deaths/Closings ratio
+	with 10th--90th industry percentile bands.  The Deaths/Closings ratio
 	(lower panel) averages 0.63 across the full sample and is remarkably
 	stable over the business cycle, dipping modestly during the GFC but
 	remaining well below unity throughout.  This stability implies that the
@@ -1841,43 +1841,27 @@ Figure~\ref{fig:steady_state_curves_z}.
 		\caption{BED Closings and Deaths: employment-weighted rates across
 		12 supersectors, 1992Q3--2019Q4.  \emph{Top panel:} mean closing
 		rate (blue) and death rate (red) as percent of employment per
-		quarter, with 25th--75th industry percentile bands.  Grey shading
+		quarter, with 10th--90th industry percentile bands.  Grey shading
 		denotes NBER recessions.  \emph{Bottom panel:} Deaths/Closings
-		ratio; dashed line at 1.0 is the theoretical upper bound.}
+		ratio (dashed line at 1.0 marks the theoretical upper bound;
+		ratio is bounded above by unity since Deaths $\subseteq$ Closings
+		in every industry$\times$quarter cell).}
 		\label{fig:bed_deaths}
 	\end{figure}
 
-	The Deaths/Closings ratio exhibits substantial heterogeneity across
-	sectors.  Construction has the lowest mean ratio (0.57), consistent
-	with the prevalence of project-based establishments that close on
-	contract completion and reconstitute under a new entity --- a genuinely
-	temporary exit from BED's perspective.  Leisure and hospitality is
-	similarly low (0.82), reflecting seasonal closures.  At the other end,
-	manufacturing (1.00 at the cap), information (1.00), and
-	finance and real estate (1.00) hit the upper bound, implying that
-	essentially all recorded closings in those sectors constitute permanent
-	exits.\footnote{The Deaths/Closings ratio exceeds unity for manufacturing
-	and information in certain years when computed from BDS exit counts
-	rather than BED Deaths directly.  The BDS-implied ratio can exceed one
-	due to a timing mismatch: BDS records employment at the March reference
-	date \emph{prior} to exit while BED records employment at the time of
-	the closing event, and establishments that permanently exit typically
-	downsize before formal closure.  A secondary source is industry
-	reclassification: a manufacturer converting to distribution contributes
-	a BDS death to its origin sector but may not appear as a BED closing.
-	Neither issue arises with BED Deaths, which is constructed entirely
-	within the BED survey.  As a back-of-envelope verification, the
-	employment-weighted mean Deaths/Closings ratio from BED (0.90,
-	2001--2019) closely matches the mean permanence ratio implied by
-	cross-walking BDS annual exits against BED quarterly closings
-	($\bar{\pi} = 0.91$ after capping at unity), confirming that the two
-	series measure the same underlying concept.  Full industry-level
-	BDS-implied permanence ratios $\pi_{j,y}$ are reported in
-	Appendix~\ref{app:perm_table}.}
-	Wholesale trade (0.97), retail (0.98), and professional and business
-	services (0.97) are near the cap, reflecting structurally high
-	permanence in those sectors.  The employment-weighted mean across all
-	12 supersectors is 0.90 (2001--2019 sample).
+	The Deaths/Closings ratio exhibits substantial cross-sector
+	heterogeneity.  Mining has the lowest mean ratio (0.37), and
+	Construction is similarly low (0.52), consistent with the prevalence
+	of project-based and seasonal establishments that suspend operations
+	temporarily without constituting permanent product-line destruction.
+	Leisure and hospitality (0.58) and Other services (0.59) are also
+	below the sample average.  At the other end, Manufacturing (0.71),
+	Retail trade (0.70), and Information (0.70) have the highest ratios,
+	reflecting structurally lower rates of temporary closure in those
+	sectors.  No supersector reaches the theoretical upper bound of unity
+	in any quarter of the sample.  The employment-weighted mean across all
+	12 supersectors is 0.63 (2001--2019); supersector time series are
+	shown in ~\ref{app:deaths_closings_supersector}.
 
 	Most papers using BED data for shock identification
 	\citep[e.g.,][]{elsby_2013} implicitly treat all
@@ -1975,19 +1959,76 @@ Figure~\ref{fig:steady_state_curves_z}.
 
 	\begin{figure}[H]
 		\centering
-		\includegraphics[width=0.88\textwidth]{instrument_delta_distribution.png}
-		\caption{Cross-state distribution of the residualized $\delta$ Bartik
-			instrument $\tilde{B}^{\delta}_{s,t}$ across 50 states,
-			2001Q1--2019Q4.  Dark shading: interquartile range (25th--75th
-			percentile); light shading: 10th--90th percentile; solid line:
-			cross-state mean.  The instrument is constructed from BED
-			establishment deaths residualized on aggregate productivity growth
-			and lagged industry value-added growth
-			(equation~\eqref{eq:resid_v2}), aggregated via fixed 2006
-			employment shares (equation~\eqref{eq:bartik_delta}).  Grey
-			shading denotes NBER recessions.}
+		\includegraphics[width=\linewidth]{instrument_delta_distribution.png}
+		\caption{Cross-state $\delta$ Bartik instrument distribution,
+			1997Q1--2019Q4.
+			\emph{Left:} residualized instrument $\tilde{B}^{\delta}_{s,t}$
+			(pp of base-year employment); shading shows 25th--75th (dark) and
+			10th--90th (light) cross-state percentile bands.
+			\emph{Right:} z-scored cross-state means of raw (red) and
+			residualized (blue dashed) instruments; $r = 0.905$.
+			Orange shading (1997Q1--2000Q4): pre-LP period available for
+			$\delta\to u$ but not vacancy or LD/QU.
+			Grey shading: NBER recessions.}
 		\label{fig:delta_distribution}
 	\end{figure}
+
+	Figure~\ref{fig:delta_distribution} documents the cross-state
+	distribution of the instrument and the effect of residualization.
+	Both panels extend to 1997Q1, the start of the Chow--Lin-extended
+	value-added series; the orange-shaded region (1997Q1--2000Q4) marks
+	the pre-JOLTS period that is available for the $\delta\to u$
+	specification but not for the vacancy LP.
+	The left panel shows substantial cross-sectional dispersion
+	throughout, with the interquartile range widening sharply during the
+	GFC.  Negative values in some states and quarters reflect
+	lower-than-predicted closing rates given prevailing aggregate
+	conditions and industry composition; since the local projection
+	absorbs the cross-state mean via time fixed effects, identification
+	comes from cross-sectional variation in residualized exposure, which
+	remains well-defined regardless of sign.
+
+	The right panel compares the z-scored cross-state means of the raw
+	and residualized instruments ($r = 0.905$).  The two series track
+	each other closely throughout the sample, indicating that
+	residualization does not materially alter identifying variation in
+	normal times.  Two episodes diverge.  During the GFC, the
+	residualized mean rises somewhat more than the raw instrument at
+	2008Q4 ($z = 1.51$ vs.\ $0.95$), consistent with residualization
+	removing attenuating aggregate and industry-level variation.  The
+	more striking divergence would appear in 2020Q2 (not shown, excluded
+	from LP sample): the raw Bartik spikes to $z = 2.33$ while the
+	residualized instrument falls to $z = -0.45$, because 2020Q2 BED
+	closings were dominated by government-mandated temporary shutdowns
+	that correlate strongly with industry composition and aggregate
+	conditions; residualization correctly removes this variation, leaving
+	below-average permanent destruction.  This episode illustrates
+	precisely why the LP sample is capped at 2019Q4.
+
+	The cross-state mean of the instrument exhibits a pronounced secular
+	decline over the sample, falling roughly one-third from the late
+	1990s to the late 2010s.  This mirrors the well-documented decline in
+	aggregate labor market fluidity: the \citet{shimer_2005} quarterly
+	separation rate fell proportionally over the same period, and the
+	ratio of the two series is nearly constant throughout (coefficient of
+	variation 14\%), indicating that permanent establishment destruction
+	has declined in tandem with broader separation margins rather than
+	becoming relatively more or less important over time.
+
+	Two features of the left panel deserve note.  First, the
+	cross-sectional percentile bands are narrow relative to the
+	time-series movement of the mean: the within-quarter p90--p10 spread
+	averages 0.045\,pp, a coefficient of variation of about 15\%.  The
+	pooled standard deviation across all state-quarters ($\hat{\sigma} =
+	17.4$\,pp) is therefore predominantly a time-series number, reflecting
+	the common component of the instrument that moves all states together.
+	The time fixed effects in the local projection absorb this common
+	component; identification comes from the within-period cross-sectional
+	deviations, which have a typical magnitude of roughly 0.02\,pp.
+	Second, some state-quarter cells take negative values, reflecting
+	lower-than-predicted closing rates given industry composition and
+	aggregate conditions; these are well-defined as deviations from the
+	cross-state mean and cause no identification problem.
 
 	\subsection{Local projection specification}\label{sec:empirical_lp}
 
@@ -2068,8 +2109,7 @@ Figure~\ref{fig:steady_state_curves_z}.
 			dashed lines: 95\% confidence interval.  The instrument is
 			BED establishment deaths (equation~\eqref{eq:bartik_delta}),
 			residualized on aggregate productivity growth and lagged industry
-			value-added growth (equation~\eqref{eq:resid_v2}).  Outcome
-			window capped at 2019Q4 to exclude COVID.}
+			value-added growth (equation~\eqref{eq:resid_v2})}
 		\label{fig:delta_uv_irf}
 	\end{figure}
 
@@ -2081,7 +2121,7 @@ Figure~\ref{fig:steady_state_curves_z}.
 	state unemployment rate and vacancy rate to a one-standard-deviation
 	increase in the residualized $\delta$ Bartik instrument
 	($\hat{\sigma}_{\tilde{B}^\delta} = 17.4$ pp, 2001Q1--2019Q4 sample).
-	The unemployment response rises steadily from $+0.22$ pp at $h=0$ to
+	The unemployment response rises steadily from $0.22$ pp at $h=0$ to
 	a plateau of $+1.71$ pp by $h=17$--$20$, remaining highly significant
 	throughout ($p < 0.001$ from $h=0$).  The vacancy response falls
 	persistently from $-0.11$ pp at $h=0$ to a trough of $-0.58$ pp at
@@ -2407,7 +2447,32 @@ Figure~\ref{fig:steady_state_curves_z}.
 
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	\section{Instrument diagnostics and robustness}\label{app:diagnostics}
-
+	\subsection{Deaths/Closings ratio by supersector}\label{app:deaths_closings_supersector}
+	Figure~\ref{fig:deaths_by_supersector} plots the Deaths/Closings ratio
+	for each of the 12 BLS supersectors separately, divided into the six
+	with the highest mean ratio (left panel) and the six with the lowest
+	(right panel).  Across all sectors and quarters the ratio remains
+	strictly below unity, confirming that BED Deaths are always a subset
+	of BED Closings.  The cross-sector range is wide: Manufacturing,
+	Retail, and Information cluster near 0.70, while Mining (0.37) and
+	Construction (0.52) are substantially lower, consistent with the
+	prevalence of project-based and cyclically suspended establishments in
+	those sectors.  The ratio is broadly stable within each supersector
+	over time, with no systematic cyclical pattern, supporting the use of
+	a fixed Deaths/Closings fraction as the implicit permanence assumption
+	in our instrument.
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=\linewidth]{bed_deaths_by_supersector.png}
+		\caption{BED Deaths/Closings ratio by supersector, 1992Q3--2019Q4.
+			\emph{Left panel:} six supersectors with highest mean ratio.
+			\emph{Right panel:} six supersectors with lowest mean ratio.
+			Dashed horizontal line at 1.0 is the theoretical upper bound
+			(Deaths $\subseteq$ Closings by construction).
+			Grey shading denotes NBER recessions.}
+		\label{fig:deaths_by_supersector}
+	\end{figure}
 	\subsection{Residual \texorpdfstring{$\delta$}{delta}--LD correlation}\label{app:delta_ld_corr}
 
 	After v2 residualization the cross-state correlation between the $\delta$
@@ -2539,6 +2604,8 @@ Figure~\ref{fig:steady_state_curves_z}.
 	rather than structural.
 
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 	\section{Steady state}\label{app:steady_state}
 	We summarize the steady state of the system below:
 	\begin{align}

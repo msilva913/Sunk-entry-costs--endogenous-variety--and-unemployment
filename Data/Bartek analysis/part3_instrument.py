@@ -101,7 +101,7 @@ print(f"Saved: {INSTRUMENT_PATH}  ({len(instrument):,} rows)")
 # Inspect
 # -----------------------------------------------------------------------
 print("\n" + "=" * 60)
-print(f"Part 3 — Bartik delta instrument  (base year {BASE_YEAR})")
+print(f"Part 3 Bartik delta instrument  (base year {BASE_YEAR})")
 print("=" * 60)
 
 n_states = instrument["state_fips"].nunique()
@@ -149,102 +149,144 @@ peak_df = (
 print(peak_df.to_string(index=False))
 
 # -----------------------------------------------------------------------
-# Plot: cross-state distribution of B^delta_{s,t} over time
-# Mean + 10-90 percentile band + 25-75 IQR band
+# -----------------------------------------------------------------------
+# Plot: two-panel figure
+#   Left  — residualized instrument in original units (pp), with
+#            10-90th and 25-75th cross-state percentile bands
+#   Right — z-score overlay: residualized (blue) vs raw (red) cross-
+#            state means, to show what residualization changes
 # -----------------------------------------------------------------------
 def _ql_to_dt(ql):
     y, q = ql.split("Q")
     return pd.Timestamp(year=int(y), month=int(q) * 3 - 2, day=1)
 
-# Build percentile panel: one row per quarter
-dist = (
-    instrument
-    .groupby("quarter_label")["bartik_delta"]
-    .agg(
-        mean  = "mean",
-        p10   = lambda x: np.percentile(x, 10),
-        p25   = lambda x: np.percentile(x, 25),
-        p75   = lambda x: np.percentile(x, 75),
-        p90   = lambda x: np.percentile(x, 90),
+# Load residualized instrument (full available range: 1997Q1 onward via Chow-Lin)
+resid_path = DEFAULT_OUTPUT_DIR / f"delta_instrument_resid_base{BASE_YEAR}.csv"
+if not resid_path.exists():
+    print(f"WARNING: {resid_path} not found; run part2b_residualize_shocks.py first.")
+    resid = None
+else:
+    resid = pd.read_csv(resid_path)
+    # No sample restriction — show full range from Chow-Lin extension (1997Q1)
+    resid = resid[resid["quarter_label"] >= "1997Q1"].copy()
+
+# Both panels: 1997Q1-2019Q4 (full range where both raw and resid available;
+# stop at 2019Q4 to exclude COVID from the comparison window)
+raw_lp = instrument[
+    (instrument["quarter_label"] >= "1997Q1") &
+    (instrument["quarter_label"] <= "2019Q4")
+].copy()
+resid_lp = resid[
+    (resid["quarter_label"] >= "1997Q1") &
+    (resid["quarter_label"] <= "2019Q4")
+].copy() if resid is not None else None
+
+def _build_dist(df, col="bartik_delta"):
+    d = (
+        df.groupby("quarter_label")[col]
+        .agg(
+            mean = "mean",
+            p10  = lambda x: np.percentile(x, 10),
+            p25  = lambda x: np.percentile(x, 25),
+            p75  = lambda x: np.percentile(x, 75),
+            p90  = lambda x: np.percentile(x, 90),
+        )
+        .sort_index()
     )
-    .sort_index()
-)
-# Reindex to complete quarterly grid so gaps render as breaks
-all_q = pd.period_range(
-    start=dist.index[0], end=dist.index[-1], freq="Q"
-).strftime("%YQ%q").tolist()
-dist = dist.reindex(all_q)
-dist_valid = dist.dropna(subset=["mean"])
+    all_q = pd.period_range(
+        start=d.index[0], end=d.index[-1], freq="Q"
+    ).strftime("%YQ%q").tolist()
+    return d.reindex(all_q)
 
-# Identify the two most extreme states at the peak dispersion quarter
-peak_q = summary["std"].idxmax()
-peak_vals = (
-    instrument
-    .query("quarter_label == @peak_q")
-    .sort_values("bartik_delta")
-)
-state_lo = peak_vals.iloc[0][["state", "bartik_delta"]]
-state_hi = peak_vals.iloc[-1][["state", "bartik_delta"]]
+def _zscored_mean(dist_df):
+    m = dist_df["mean"].dropna()
+    return (m - m.mean()) / m.std()
 
-# State time series for the two extreme states
-def _state_series(abbrev):
-    s = (
-        instrument[instrument["state"] == abbrev]
-        .set_index("quarter_label")["bartik_delta"]
-        .reindex(all_q)
+def _shade(ax, lp_sample=False):
+    NBER = [("2007-12-01","2009-06-01"), ("2001-01-01","2001-12-01"), ("2020-01-01","2020-07-01")]
+    for r0, r1 in NBER:
+        ax.axvspan(pd.Timestamp(r0), pd.Timestamp(r1),
+                   color="grey", alpha=0.12, zorder=0)
+    if lp_sample:
+        # Shade the pre-LP region (1997Q1-2000Q4) to distinguish from main sample
+        ax.axvspan(pd.Timestamp("1997-01-01"), pd.Timestamp("2001-01-01"),
+                   color="#f5a623", alpha=0.08, zorder=0)
+        ax.axvline(pd.Timestamp("2001-01-01"), color="#f5a623",
+                   lw=1.0, ls="--", alpha=0.6)
+
+fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+fig.subplots_adjust(wspace=0.28)
+
+# ── Left panel: residualized instrument, original units ──────────────
+ax1 = axes[0]
+if resid is not None:
+    dist_r = _build_dist(resid)
+    dv     = dist_r.dropna(subset=["mean"])
+    xs     = [_ql_to_dt(q) for q in dv.index]
+    _shade(ax1, lp_sample=True)
+    ax1.fill_between(xs, dv["p10"], dv["p90"],
+                     alpha=0.18, color="#1f77b4", label="10–90th pctile")
+    ax1.fill_between(xs, dv["p25"], dv["p75"],
+                     alpha=0.32, color="#1f77b4", label="25–75th pctile (IQR)")
+    ax1.plot(xs, dv["mean"], color="#1f77b4", lw=2.0, label="Cross-state mean")
+    ax1.axhline(0, color="black", lw=0.7, ls="--", alpha=0.5)
+    sigma = resid["bartik_delta"].std()
+    ax1.set_ylabel(r"$\tilde{B}^\delta_{s,t}$ (pp, residualized)", fontsize=10)
+    ax1.set_title(
+        r"Residualized $\delta$ instrument" + "\n" +
+        r"($\hat{\sigma}=" + f"{sigma:.1f}" + r"$ pp; base year 2006)",
+        fontsize=10,
     )
-    dates_s = [_ql_to_dt(q) for q in s.index]
-    return dates_s, s.values
+    ax1.legend(fontsize=8, framealpha=0.85)
+    ax1.grid(axis="y", lw=0.4, alpha=0.4)
+    ax1.tick_params(labelsize=9)
 
-fig, ax = plt.subplots(figsize=(13, 5))
+else:
+    ax1.text(0.5, 0.5, "Residualized instrument not found",
+             ha="center", va="center", transform=ax1.transAxes)
 
-# Shaded bands
-ax.fill_between(
-    [_ql_to_dt(q) for q in dist_valid.index],
-    dist_valid["p10"], dist_valid["p90"],
-    alpha=0.18, color="#1f77b4", label="10–90th pctile",
+# Right panel: z-score overlay raw vs residualized 
+ax2 = axes[1]
+dist_raw = _build_dist(raw_lp)
+dv_raw   = dist_raw.dropna(subset=["mean"])
+_shade(ax2, lp_sample=True)
+
+z_raw  = _zscored_mean(dist_raw)
+xs_raw = [_ql_to_dt(q) for q in z_raw.index]
+ax2.plot(xs_raw, z_raw.values, color="#d62728", lw=1.8,
+         label="Raw Bartik (z-score)")
+
+if resid_lp is not None:
+    dist_r_lp = _build_dist(resid_lp)
+    z_res  = _zscored_mean(dist_r_lp)
+    xs_res = [_ql_to_dt(q) for q in z_res.index]
+    ax2.plot(xs_res, z_res.values, color="#1f77b4", lw=1.8, ls="--",
+             label="Residualized (z-score)")
+    common = z_raw.index.intersection(z_res.index)
+    corr   = np.corrcoef(z_raw.loc[common].values, z_res.loc[common].values)[0, 1]
+    ax2.annotate(f"$r = {corr:.3f}$",
+                 xy=(0.05, 0.93), xycoords="axes fraction",
+                 fontsize=9, color="black",
+                 bbox=dict(boxstyle="round,pad=0.3", fc="white", alpha=0.8))
+
+ax2.axhline(0, color="black", lw=0.7, ls="-", alpha=0.3)
+ax2.set_ylabel("Standardized units (z-score)", fontsize=10)
+ax2.set_title(
+    "Raw vs residualized instrument\n(z-scored means, 1997Q1--2019Q4)",
+    fontsize=10,
 )
-ax.fill_between(
-    [_ql_to_dt(q) for q in dist_valid.index],
-    dist_valid["p25"], dist_valid["p75"],
-    alpha=0.30, color="#1f77b4", label="25–75th pctile (IQR)",
+ax2.legend(fontsize=8, framealpha=0.85)
+ax2.grid(axis="y", lw=0.4, alpha=0.4)
+ax2.tick_params(labelsize=9)
+
+fig.suptitle(
+    r"Bartik $\delta$-instrument: cross-state distribution, 1997Q1–2019Q4  (LP sample shaded: 2001Q1–2019Q4)",
+    fontsize=11, y=1.01,
 )
-
-# Mean
-ax.plot(
-    [_ql_to_dt(q) for q in dist_valid.index],
-    dist_valid["mean"],
-    color="#1f77b4", linewidth=2.0, label="Cross-state mean",
-)
-
-# Extreme state reference lines
-ds, vs = _state_series(state_lo["state"])
-ax.plot(ds, vs, color="firebrick", linewidth=0.9, linestyle=":",
-        label=f"{state_lo['state']} (lowest at {peak_q})")
-ds, vs = _state_series(state_hi["state"])
-ax.plot(ds, vs, color="darkgreen", linewidth=0.9, linestyle=":",
-        label=f"{state_hi['state']} (highest at {peak_q})")
-
-# Recession shading
-ax.axvspan(pd.Timestamp("2007-12-01"), pd.Timestamp("2009-06-01"),
-           alpha=0.08, color="grey")
-ax.axvspan(pd.Timestamp("2020-01-01"), pd.Timestamp("2020-07-01"),
-           alpha=0.10, color="red")
-
-ax.set_title(
-    r"Bartik $\delta$-instrument $B^\delta_{s,t}$: cross-state distribution over time"
-    "\n(quarterly rate; base year 2006)",
-    fontsize=11,
-)
-ax.set_ylabel(r"$B^\delta_{s,t}$ (quarterly rate)", fontsize=10)
-ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f"{x:.4f}"))
-ax.legend(fontsize=8, framealpha=0.85, ncol=2)
-ax.grid(axis="y", linewidth=0.5, alpha=0.4)
 fig.tight_layout()
 
 outpath = DEFAULT_OUTPUT_DIR / "instrument_delta_distribution.png"
 DEFAULT_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-fig.savefig(outpath, dpi=150)
+fig.savefig(outpath, dpi=150, bbox_inches="tight")
 plt.close(fig)
-_open_file(outpath)
 print(f"\nPlot saved: {outpath}")
