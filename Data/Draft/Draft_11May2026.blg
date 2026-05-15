@@ -1,4 +1,4 @@
-This is BibTeX, Version 0.99d
+This is BibTeX, Version 0.99e
 Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
 The top-level auxiliary file: Draft_11May2026.aux
 Reallocating 'name_of_file' (item size: 1) to 13 items.
@@ -20,45 +20,45 @@ Name 2 in "Bilbiie, Florin O. and Ghironi, Fabio, and Melitz, Marc J." has a com
 while executing---line 1283 of file econometrica.bst
 Warning--empty journal in colciago_2021
 Done.
-You've used 22 entries,
+You've used 23 entries,
             2327 wiz_defined-function locations,
-            655 strings with 6917 characters,
-and the built_in function-call counts, 11169 in all, are:
-= -- 1118
-> -- 593
+            660 strings with 7009 characters,
+and the built_in function-call counts, 11626 in all, are:
+= -- 1167
+> -- 608
 < -- 2
-+ -- 198
-- -- 172
-* -- 1022
-:= -- 2108
-add.period$ -- 23
-call.type$ -- 22
-change.case$ -- 131
-chr.to.int$ -- 22
-cite$ -- 23
-duplicate$ -- 390
-empty$ -- 699
-format.name$ -- 204
-if$ -- 2164
++ -- 203
+- -- 176
+* -- 1063
+:= -- 2196
+add.period$ -- 24
+call.type$ -- 23
+change.case$ -- 136
+chr.to.int$ -- 23
+cite$ -- 24
+duplicate$ -- 407
+empty$ -- 732
+format.name$ -- 210
+if$ -- 2252
 int.to.chr$ -- 1
 int.to.str$ -- 0
-missing$ -- 23
-newline$ -- 78
-num.names$ -- 132
-pop$ -- 102
+missing$ -- 24
+newline$ -- 81
+num.names$ -- 138
+pop$ -- 105
 preamble$ -- 1
-purify$ -- 131
+purify$ -- 136
 quote$ -- 0
-skip$ -- 372
+skip$ -- 387
 stack$ -- 0
-substring$ -- 707
-swap$ -- 82
+substring$ -- 743
+swap$ -- 85
 text.length$ -- 2
 text.prefix$ -- 0
 top$ -- 1
-type$ -- 239
+type$ -- 250
 warning$ -- 1
-while$ -- 134
+while$ -- 141
 width$ -- 0
-write$ -- 272
+write$ -- 284
 (There were 5 error messages)

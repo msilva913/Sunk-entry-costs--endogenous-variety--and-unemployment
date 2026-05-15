@@ -15,16 +15,16 @@ VAR(1) panel calibration (part2d, industry×time FEs, 2005Q3–2021Q4):
 - β(LD←δ lag-1) = +0.228 — endogenous exit mechanism
 - corr(u^δ, u^{LD}) = +0.229
 
-## Baseline IRFs (v2 residualized, 2001Q1–2019Q4, σ̂=14.0 pp)
+## Baseline IRFs (BED Deaths, v2 residualized, 2001Q1–2019Q4, σ̂=17.4 pp)
 
 **δ → unemployment:**
-- Rises from +0.18 pp (h=0) to plateau +1.50 pp (h=17–20)
-- Significant throughout (p<0.001 from h=4)
-- 1997Q1+ extension: peak +1.07 pp — attenuation from pre-2001 expansion years
+- Rises from +0.22 pp (h=0) to plateau +1.71 pp (h=17–20)
+- Significant throughout (p<0.001 from h=0)
+- 1997Q1+ extension: peak +1.07 pp — attenuation from pre-2001 expansion years (stale; needs rerun)
 
 **δ → vacancy rate:**
-- Falls from −0.06 pp (h=0) to trough −0.44 pp (h=14)
-- Significant p<0.01 from h=3, sustained through h=20
+- Falls from −0.11 pp (h=0) to trough −0.58 pp (h=18)
+- Significant p<0.01 from h=2, sustained through h=20
 - **Severity placebo passes decisively:** both u^nat level and change interactions insignificant at ALL h=0..20 — cleanest result in paper
 
 **LD → unemployment:** Peak +1.68 pp, significant throughout. Rises monotonically through h=20 (anomaly; inconsistent with ρ_LD≈0.3).
@@ -35,13 +35,13 @@ VAR(1) panel calibration (part2d, industry×time FEs, 2005Q3–2021Q4):
 
 ## Instrument Correlation
 
-| Pair | v1 | v2 |
-|------|----|----|
-| r(δ, LD) | 0.389 | 0.423 |
-| r(δ, QU) | −0.004 | — |
-| r(LD, QU) | −0.492 | — |
+| Pair | v1 | v2 (closings×π) | v2 (Deaths) |
+|------|----|----|-----|
+| r(δ, LD) | 0.389 | 0.423 | **0.334** |
+| r(δ, QU) | −0.004 | — | — |
+| r(LD, QU) | −0.492 | — | — |
 
-r(δ,LD) = 0.423 **survives v2 enriched residualization** (controls for aggregate productivity + lagged industry VA + lagged tightness). The shared variation is not industry demand or aggregate productivity cycles. Leading hypothesis: **industry-specific financial conditions** — when credit tightens in a sector, firms simultaneously exit (↑δ) and lay off at survivors (↑LD). Consistent with NFCI state-dependence finding.
+r(δ,LD) = 0.334 with BED Deaths + v2 residualization (down from 0.423 with closings×π). Switching to Deaths strips the temporary-shutdown component that was correlated with layoffs, reducing the residual correlation. Leading hypothesis for remaining correlation: **industry-specific financial conditions**. Consistent with NFCI state-dependence finding.
 
 ## QU Placebo Failure — Smoking Gun for Demand Contamination
 
@@ -51,14 +51,15 @@ Within-instrument corr(β_unemp_h, β_vac_h) for h=0..20:
 
 This near-perfect mechanical proportionality is the signature of instruments that identify demand-side contractions (which move u and v symmetrically along the Beveridge curve), not structurally distinct shocks with different vacancy implications. QU contamination is structural (industry-level quit dynamics), not fixable with macro controls.
 
-## Joint LP Results (part5_joint_lp.py, v2 residualized)
+## Joint LP Results (part5_joint_lp.py, BED Deaths + v2 residualized)
 
 δ and LD simultaneously in same regression at each h:
-- **β^δ vacancy**: stable vs. separate (differences <0.13 pp) — δ result not an LD artifact ✅
-- **β^LD vacancy**: collapses to zero and insignificant at all h (replicates colleague's result)
-- **β^δ unemployment**: shrinks by ~0.5–1.3 pp vs. separate — δ absorbs shared variation
+- **β^δ vacancy**: qualitatively stable — same sign, timing, shape; trough −0.535 pp (joint) vs −0.582 pp (separate); confidence bands overlap at most h ✅
+- **β^LD vacancy**: collapses to zero and insignificant at all h (0/21 horizons p<0.10)
+- **β^δ unemployment**: shrinks by ~0.6–0.8 pp vs. separate; joint peak +1.15 pp, remains significant
+- **β^LD unemployment**: significant at only 4/21 horizons (p<0.10) in joint spec
 
-Interpretation: the zero LD coefficient reflects identification limits (r=0.423 collinearity), not structural confirmation of reposting. The δ vacancy IRF is robust; LD is not separately identified.
+Interpretation: the zero LD coefficient reflects identification limits (r=0.334 collinearity), not structural confirmation of reposting. The δ vacancy IRF is qualitatively robust; LD is not separately identified. Note: the `<0.13 pp` stability claim from closings×π no longer holds exactly — joint-separate differences now reach ~0.48 pp for vacancy — but sign and shape are preserved.
 
 ## Recession-Severity Placebo (part7c)
 

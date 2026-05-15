@@ -12,6 +12,7 @@
 \usepackage{alltt}
 \usepackage{booktabs}
 \usepackage{longtable}
+\usepackage{threeparttablex}
 \allowdisplaybreaks
 %\modulolinenumbers[5]
 \makeatletter
@@ -1958,7 +1959,7 @@ Figure~\ref{fig:steady_state_curves_z}.
 
 	After v2 residualization the cross-state correlation between the
 	$\delta$ and layoffs-and-discharges (LD) Bartik instruments falls from
-	approximately 0.54 on raw rates to 0.42.\footnote{As a robustness check we further augment equation~\eqref{eq:resid_v2}
+	approximately 0.54 on raw rates to 0.33.\footnote{As a robustness check we further augment equation~\eqref{eq:resid_v2}
 		with a monetary policy sensitivity term
 		$\psi(\phi_j\times\Delta MP_t)$, where $\phi_j$ is log average
 		establishment size in supersector $j$ (Census CBP, 2000) and
@@ -2028,7 +2029,7 @@ Figure~\ref{fig:steady_state_curves_z}.
 		exhibit faster reabsorption of displaced workers.  We use the 2001Q1
 		baseline throughout to maintain a common sample across both outcomes.}
 	The instrument $\tilde{B}^{\delta}_{s,t}$ has cross-sectional standard
-	deviation $\hat\sigma_{\tilde{B}^\delta} = 14.0$ pp; all reported
+	deviation $\hat\sigma_{\tilde{B}^\delta} = 17.4$ pp; all reported
 	$\hat\beta_h$ are scaled by $\hat\sigma_{\tilde{B}^\delta}^{-1}$ so
 	that the impulse responses correspond to a one-standard-deviation shock.
 
@@ -2060,7 +2061,7 @@ Figure~\ref{fig:steady_state_curves_z}.
 		\caption{Impulse responses of the state unemployment rate (left)
 			and vacancy rate (right) to a one-standard-deviation increase
 			in the residualised $\delta$ Bartik instrument
-			($\hat{\sigma}_{\tilde{B}^\delta}=14.0$ pp, 2001Q1--2019Q4).
+			($\hat{\sigma}_{\tilde{B}^\delta}=17.4$ pp, 2001Q1--2019Q4).
 			Both outcomes are estimated from panel local projections with
 			state and time fixed effects; standard errors are clustered at the
 			state level ($n=50$).  Shaded band: 90\% confidence interval;
@@ -2079,12 +2080,12 @@ Figure~\ref{fig:steady_state_curves_z}.
 	Figure~\ref{fig:delta_uv_irf} reports the impulse responses of the
 	state unemployment rate and vacancy rate to a one-standard-deviation
 	increase in the residualized $\delta$ Bartik instrument
-	($\hat{\sigma}_{\tilde{B}^\delta} = 14.0$ pp, 2001Q1--2019Q4 sample).
-	The unemployment response rises steadily from $+0.18$ pp at $h=0$ to
-	a plateau of $+1.50$ pp by $h=17$--$20$, remaining highly significant
-	throughout ($p < 0.001$ from $h=4$ onward).  The vacancy response falls
-	persistently from $-0.06$ pp at $h=0$ to a trough of $-0.44$ pp at
-	$h=14$, significant at $p < 0.01$ from $h=3$ onward and remaining so
+	($\hat{\sigma}_{\tilde{B}^\delta} = 17.4$ pp, 2001Q1--2019Q4 sample).
+	The unemployment response rises steadily from $+0.22$ pp at $h=0$ to
+	a plateau of $+1.71$ pp by $h=17$--$20$, remaining highly significant
+	throughout ($p < 0.001$ from $h=0$).  The vacancy response falls
+	persistently from $-0.11$ pp at $h=0$ to a trough of $-0.58$ pp at
+	$h=18$, significant at $p < 0.01$ from $h=2$ onward and remaining so
 	through $h=20$.  The simultaneous and persistent rise in unemployment
 	alongside the fall in vacancies traces the outward leg of a Beveridge
 	loop, consistent with the model's central prediction that permanent
@@ -2360,7 +2361,49 @@ Figure~\ref{fig:steady_state_curves_z}.
 	Finally, we compare a technology shock in this framework to \citet{bilbiie_2012}. There are several key differences. First, labor reponds only via the extensive margin. It is predetermined on impact and can only expand gradually. A Frisch elasticity of labor supply of one produces a similar response of output on impact. 
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	\section{Conclusion}\label{ref:conclusion}
+	\newpage
 	\appendix
+
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	\section{Data sources}\label{app:data_sources}
+
+	\begin{table}[H]
+	\centering\footnotesize
+	\caption{Data sources\label{tab:data_sources}}
+	\begin{tabular}{@{}p{3.8cm}p{2.4cm}p{4.2cm}p{3.2cm}@{}}
+		\toprule
+		Series & Source & Frequency \& coverage & Unit \\
+		\midrule
+		\multicolumn{4}{l}{\textit{Panel A: Instrument construction}} \\[2pt]
+		BED establishment deaths (dc~08) & BLS BED   & Quarterly, 1992Q3--2024Q2  & National $\times$ supersector \\[2pt]
+		QCEW employment shares           & BLS QCEW  & Annual, base year 2006     & State $\times$ supersector    \\[2pt]
+		Layoffs \& discharges (LD)        & BLS JOLTS & Monthly, 2001Q1--2023Q1    & National $\times$ supersector \\[2pt]
+		Quits (QU)                       & BLS JOLTS & Monthly, 2001Q1--2023Q1    & National $\times$ supersector \\[5pt]
+		\multicolumn{4}{l}{\textit{Panel B: Residualization controls}} \\[2pt]
+		Labor productivity (OPHNFB)      & BLS, FRED & Quarterly, 1947Q1--present & National                      \\[2pt]
+		Value added by industry          & BEA, FRED & Quarterly, 2005Q1--present & National $\times$ supersector \\[5pt]
+		\multicolumn{4}{l}{\textit{Panel C: LP outcome variables}} \\[2pt]
+		Unemployment rate                & BLS LAUS  & Monthly, 1990M1--present   & State                         \\[2pt]
+		Civilian labor force             & BLS LAUS  & Monthly, 1990M1--present   & State, thousands              \\[2pt]
+		Job openings                     & BLS JOLTS & Monthly, 2001M1--present   & State, thousands              \\[5pt]
+		\multicolumn{4}{l}{\textit{Panel D: Bayesian estimation moments}} \\[2pt]
+		Job-finding rate ($f_t$)         & BLS CPS   & Monthly, 1948M1--present   & National                      \\[2pt]
+		Separation rate ($s_t$)          & BLS CPS   & Monthly, 1967M1--present   & National                      \\[2pt]
+		Business formations (BF8)        & Census BFS & Quarterly, 2004Q3--present & National                     \\[2pt]
+		\bottomrule
+	\end{tabular}
+	\end{table}
+
+	\noindent Panel~A instruments are constructed as Bartik shift-share aggregates.
+	BED deaths (dataclass~08) counts employment at establishments absent for four or more consecutive quarters, excluding temporary shutdowns by construction.
+	QCEW shares are fixed at the 2006 base year and leave-one-out corrected.
+	LD and QU are summed from monthly to quarterly; QU serves as a placebo instrument (Appendix~\ref{app:qu_placebo}).
+	Panel~B controls enter the v2 residualization as first log-differences: aggregate productivity growth (OPHNFB) and lagged industry value-added growth (12 BEA supersector series via FRED: VAPGDPIP, VAMFNIP, VACONIP, VATRDIP, VATRIIP, VAINIP, VAFNSIP, VAPBSIP, VAEDUHIP, VALAHIP, VAOSIP, VAGOSIP); the value-added series are extended to 2001Q1 via Chow--Lin temporal disaggregation using BLS employment as the indicator.
+	Panel~C outcomes are averaged from monthly to quarterly; the vacancy rate is defined as job openings divided by civilian labor force, expressed in percentage points.
+	Panel~D moments are national aggregates used as targets in Bayesian estimation.
+	Job-finding and separation rates are constructed from CPS unemployment flows with the continuous-time correction for time-aggregation bias \citep{shimer_2005}.
+	BF8 counts business applications with planned wages that appear in QCEW within eight quarters, and proxies for the model entry flow $N^e_t$.
+
 
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	\section{Instrument diagnostics and robustness}\label{app:diagnostics}
@@ -2369,7 +2412,7 @@ Figure~\ref{fig:steady_state_curves_z}.
 
 	After v2 residualization the cross-state correlation between the $\delta$
 	and layoffs-and-discharges instruments is
-	$r(\tilde{B}^\delta, \tilde{B}^{\text{LD}}) = 0.423$, down from $0.54$
+	$r(\tilde{B}^\delta, \tilde{B}^{\text{LD}}) = 0.334$, down from $0.54$
 	on raw rates.  The residualization controls for aggregate productivity
 	growth, lagged industry value-added, and lagged labor-market tightness,
 	ruling out the most obvious industry-demand and aggregate-cycle
@@ -2427,23 +2470,28 @@ Figure~\ref{fig:steady_state_curves_z}.
 	\end{figure}
 
 	Three findings emerge from the figure.  First, the $\delta$ vacancy IRF
-	is stable across specifications: the joint and separate coefficients
-	track within $0.13$ pp at every horizon $h$, and the confidence bands
-	overlap throughout.  The vacancy decline following product-line
-	destruction is not an artifact of the shared variation with LD.
+	is qualitatively stable across specifications: the joint and separate
+	coefficients share the same sign, timing, and shape throughout, and the
+	confidence bands overlap at most horizons.  The trough in the joint
+	specification ($-0.535$ pp at $h=5$) is somewhat shallower and earlier
+	than in the separate specification ($-0.582$ pp at $h=18$), reflecting
+	partial absorption of the shared variation with LD, but the persistent
+	negative response to product-line destruction is not an artifact of LD
+	exposure.
 
-	Second, the $\delta$ unemployment IRF shrinks by roughly $0.5$--$1.3$
+	Second, the $\delta$ unemployment IRF shrinks by roughly $0.6$--$0.8$
 	pp in the joint specification relative to the separate LP, reflecting
 	absorption of the variation that $\tilde{B}^\delta$ and
-	$\tilde{B}^{\text{LD}}$ share.  The peak response remains positive and
-	significant, so the unemployment result is robust, if attenuated.
+	$\tilde{B}^{\text{LD}}$ share.  The joint peak of $+1.15$ pp remains
+	positive and significant, so the unemployment result is robust, if
+	attenuated.
 
 	Third, the LD vacancy coefficient collapses from its separate-LP value
 	to approximately zero and is insignificant at all horizons once
 	$\delta$ is controlled for (right panel).  This collapse should
 	\emph{not} be read as evidence that $\delta$ subsumes a genuine LD
 	effect on vacancies.  Rather, it reflects that
-	$r(\tilde{B}^\delta,\tilde{B}^{\text{LD}})=0.423$ is large enough that
+	$r(\tilde{B}^\delta,\tilde{B}^{\text{LD}})=0.334$ is large enough that
 	the two instruments do not span orthogonal directions in the shock
 	space: the variation in $\tilde{B}^{\text{LD}}$ orthogonal to
 	$\tilde{B}^{\delta}$ is insufficient to separately identify the LD
@@ -3169,4 +3217,4 @@ equilibrium distributions coincide. \hfill$\square$
 	%	Destruction rate $\delta$ & $\downarrow$ & $\downarrow$ & leftward & downward & Larger destruction rate increases the flow cost of opening vacancies $K$. For any given level of $N$, recruiters are less willing to open vacanci
 	\bibliographystyle{econometrica}
 	\bibliography{references}
-	\end{document}                                                              
+	\end{document}

@@ -35,13 +35,13 @@ Data/Bartek analysis/
 
 ## Quick-reference: most important facts
 
-**Baseline instrument:** δ Bartik, v2 residualized, σ̂ = 14.0 pp, sample 2001Q1–2019Q4
-**Headline IRFs:** δ→u peak +1.50 pp (h=20); δ→v trough −0.44 pp (h=14); both highly significant
+**Baseline instrument:** δ Bartik (BED Deaths), v2 residualized, σ̂ = 17.4 pp, sample 2001Q1–2019Q4
+**Headline IRFs:** δ→u peak +1.71 pp (h=17); δ→v trough −0.58 pp (h=18); sig from h=0/h=2 respectively
 **Headline validation:** severity placebo (u^nat × B^δ) insignificant at ALL h=0..20 for vacancy outcome
-**Instrument correlation:** r(δ,LD) = 0.423 survives v2; industry-level financial conditions are leading explanation
+**Instrument correlation:** r(δ,LD) = 0.334 after v2 + Deaths switch; industry-level financial conditions are leading explanation
 **QU placebo fails:** corr(β_unemp, β_vac) = −0.971 across horizons — demand contamination signature
 **Vacancy convention:** outcome is vacancy RATE = V/LF × 100 in pp, levels difference. Never log. Symmetric to unemployment rate.
-**Calibration:** δ̄ = 0.940%/qtr, τ̄ = 9.34%/qtr, δ/τ = 10.1%
+**Calibration:** δ̄ = 1.079%/qtr (BED Deaths), τ̄ = 9.34%/qtr, δ/τ = 11.6% — NOTE: up from 10.1% with closings×π; Section 5 needs update
 **Paper draft:** `Draft/Draft_11May2026.tex` — Intro + Sections 2–4.2 complete; prop:bgm_nest + proof complete; 4.3 partially drafted
 
 ---
