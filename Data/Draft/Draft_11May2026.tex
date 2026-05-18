@@ -1,4 +1,5 @@
-\documentclass[authoryear, review, 12pt]{elsarticle}
+\PassOptionsToPackage{demo}{graphicx}
+\documentclass[authoryear, review, 12pt, draft]{elsarticle}
 \usepackage{amssymb}
 \usepackage{amsmath}
 \usepackage{amsthm}
@@ -38,7 +39,7 @@
 \usepackage{tabularx}
 \usepackage{comment}
 \usepackage{subfig}
-\usepackage{graphicx}
+\usepackage[demo]{graphicx}
 %\journal{Journal of Monetary Economics}
 %\usepackage{amssymb}
 %\usepackage{amsfonts}
@@ -2094,7 +2095,7 @@ Figure~\ref{fig:steady_state_curves_z}.
 	effect on aggregate vacancies is near zero.  This is conceptually
 	distinct from the $s$ shock in the model, which destroys a match and
 	triggers a vacancy repost.}  Both instruments and their local
-	projections are reported in Appendix~\ref{app:diagnostics}.
+	projections are reported in \ref{app:diagnostics}.
 
 	\begin{figure}[H]
 		\centering
@@ -2165,48 +2166,156 @@ Figure~\ref{fig:steady_state_curves_z}.
 
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	\section{Quantitative analysis}\label{sec:quantitative}
-	\subsection{Comparison to Coles and Kelishomi}
-	In their study, \citet{coles_2018} highlight the critical role of job destruction shocks in explaining labor market fluctuations. They achieve this by incorporating finitely elastic vacancy creation and allowing for the correlation between productivity and separation shocks. Under these conditions, a job destruction shock leads to a significant increase in unemployment, even as the stock of vacancies decreases. This mechanism arises because the destruction shock not only directly reduces vacancies but also because finitely elastic vacancy creation limits the rapid increase in new vacancies despite a larger pool of unemployed workers available for matching. The oversampling of the vacancy stock by newly laid-off workers further contributes to the decline in vacancies. As a result, the job separation process accounts for a substantial portion of unemployment volatility.
-	
-	The job separation shock analyzed by \citet{coles_2018} affects both filled jobs and vacancies. Since each corresponds to a business opportunity, this shock is comparable to the $\delta$ shock in our model. However, the quantitative impact of a job destruction shock—and a technology shock—becomes significantly more pronounced with a higher mean value of $\delta$. \citet{coles_2018} implicitly assume that all separations inferred from unemployment flows relate to product destruction by setting $\delta=0.031$. In contrast, data from the Business Dynamic Statistics database indicates product destruction rates in the range of $9-11\%.$
-	
-	Further, \citet{gabrovski_2025} demonstrate that distinguishing the match separation rate $s$ from the destruction rate $\delta$, and calibrating to a more moderate value, tempers the relationship between unemployment and labor productivity. As unfilled vacancies are re-posted, job creation becomes more closely linked to past productivity levels. 
-	
-	In our analysis, we adopt a comprehensive approach by jointly considering shocks to technology, destruction, and idiosyncratic separation. This discussion underscores the importance of the mean value of $\delta<\tau$ for transmission and motivates the inclusion of labor market volatilities, such as $\tau$, alongside cross-correlations and autocorrelations involving $\tau$ and $x$.
-	\textcolor{red}{Requires updating!}
-	\subsection{Calibration and estimation via Bayesian simulated method of moments}
-	\label{sec:calib}
-	
+	\subsection{Relationship to Coles and Kelishomi}\label{sec:ck_comparison}
+
+	\citet{coles_2018} establish the mechanism at the heart of our framework: sunk
+	vacancy creation costs and a destruction shock that simultaneously eliminates
+	filled jobs and posted vacancies can replicate both the volatility and the
+	Beveridge-curve dynamics of the U.S.\ labor market. Because each filled job and
+	each vacancy corresponds to an active product line, their shock is structurally
+	equivalent to the $\delta$ shock in our model. Finitely elastic vacancy creation
+	limits the speed at which new product lines are opened following a destruction
+	event, so the vacancy stock and unemployment comove negatively---consistent with
+	the data.
+
+	Two features of their calibration require revisiting. First, \citet{coles_2018}
+	set $\delta = 0.031$ per month, effectively treating all aggregate separations as
+	product destruction. BLS Business Employment Dynamics data place the
+	employment-weighted permanent exit rate at $\bar\delta \approx 1.1\%$ per
+	quarter, roughly one-ninth of the aggregate separation rate $\bar\tau = 9.3\%$
+	per quarter; their calibration therefore overstates the destruction margin by an
+	order of magnitude. \citet{gabrovski_2025} show that once $\delta$ and the match
+	separation rate $s$ are distinguished and $\delta$ is calibrated to establishment
+	exit data, the unconditional correlation between unemployment and labor
+	productivity---notoriously difficult to match in Diamond--Mortensen--Pissarides
+	models---attenuates toward its empirical value. Second, CK do not model
+	endogenous firm entry, so their framework is silent on business formation
+	dynamics and the variety channel through which entry costs propagate aggregate
+	shocks.
+
+	Our model addresses both gaps. We retain CK's sunk-cost structure and extend it
+	to include endogenous entry and exit, imperfect competition, and a product-variety
+	externality. We calibrate $\delta$ directly to BED Deaths data and separately
+	identify $s$ from total separations via the \citet{shimer_2012} decomposition.
+	The estimation correspondingly expands the moment set to include the permanent
+	exit rate and business applications, and supplements unconditional moments with
+	identified impulse responses from the Bartik local projections to separately pin
+	down the propagation dynamics of $\delta$ and $s$ shocks.
+
+	\subsection{Calibration and estimation}\label{sec:calib}
+
 	This section sets out our estimation and calibration strategy, the taxonomy of
 	parameters, and the explicit mapping from empirical targets to model objects.
-	
+
 	\medskip\noindent\textbf{Estimation framework.}
-	We estimate the model using a Bayesian simulated method of moments, building on
-	\citet{coles_2018}, \citet{christiano_2016}, and \citet{colciago_2021}.
-	The moment set extends the \citet{shimer_2005} labor-market suite to capture
-	volatility, co-movement, and persistence in key variables, with special
-	attention to separations and productivity: $m(Y)=[m_1'\; m_2'\; m_3']'$, where
-	\begin{align}
-		m_1 &= \begin{pmatrix}
-			sd(u) & sd(v) & sd(\theta) & sd(x) & sd(\tau)
-		\end{pmatrix}, \\
-		m_2 &= \begin{pmatrix}
-			\mathrm{Corr}(u,v) & \mathrm{corr}(u,\theta) & \mathrm{corr}(u,x) &
-			\mathrm{corr}(u,\tau) & \mathrm{corr}(v,\theta) & \mathrm{corr}(v,x) &
-			\mathrm{corr}(v,\tau)
-		\end{pmatrix}, \\
-		m_3 &= \begin{pmatrix}
-			\mathrm{corr}(u,u_{-1}) & \mathrm{corr}(v,v_{-1}) & \mathrm{corr}(\theta,\theta_{-1})
-			& \mathrm{corr}(x,x_{-1}) & \mathrm{corr}(s,s_{-1})
-		\end{pmatrix}.
+	We estimate the model by Bayesian simulated method of moments, combining two
+	complementary sets of moment conditions that together over-identify the parameter
+	vector.
+
+	The first set consists of unconditional second moments of HP-filtered aggregate
+	time series, extending \citet{coles_2018}. We target three groups: (i)~standard
+	deviations ($m_1$), (ii)~contemporaneous pairwise correlations ($m_2$), and
+	(iii)~first-order autocorrelations ($m_3$) for unemployment, vacancies,
+	separations, the job-finding rate, the permanent exit rate, business
+	applications, and labor productivity. The full empirical moment matrix is
+	reported in Table~\ref{tab:smm_moments}. All series are log-transformed and
+	HP-filtered with smoothing parameter $\lambda = 100{,}000$ before computing
+	moments; the identical filter is applied to simulated model data when evaluating
+	$m(\theta)$. This symmetric treatment renders HP-filtered second moments a valid
+	indirect inference target: \citet{canova_ferroni_2011} establish that applying
+	the same filter to data and simulated output controls for any filter-induced
+	distortion, even when the filter introduces spurious dynamics in isolation.
+
+
+\begin{table}[htbp]
+\centering
+\begin{threeparttable}
+\caption{Business Cycle Moments}
+\label{tab:smm_moments}
+\begin{tabular}{l r @{\hspace{6pt}\vline\hspace{6pt}} r r r r r r r @{\hspace{6pt}\vline\hspace{6pt}} r}
+\toprule
+  &  $\sigma(x)$  &  \multicolumn{7}{c}{Contemporaneous correlations}  &  $\rho_1(x)$  \\
+\cmidrule(lr){3-9}
+  &  &  $u$  &  $v$  &  $s$  &  $f$  &  $\delta$  &  $a$  &  $z$  &  \\
+\midrule
+  Unemployment  &  0.2148  &  $1$  &    &    &    &    &    &    &  0.894  \\
+  Vacancies  &  0.2009  &  -0.826  &  $1$  &    &    &    &    &    &  0.945  \\
+  Separations  &  0.1164  &  0.513  &  -0.435  &  $1$  &    &    &    &    &  0.422  \\
+  Job-finding rate  &  0.1473  &  -0.865  &  0.674  &  -0.037  &  $1$  &    &    &    &  0.910  \\
+  Exit rate  &  0.0998  &  -0.041  &  0.127  &  0.492  &  0.359  &  $1$  &    &    &  0.436  \\
+  Business applications  &  0.1264  &  -0.335  &  0.541  &  -0.227  &  0.250  &  -0.192  &  $1$  &    &  0.813  \\
+  Labor productivity  &  0.0191  &  -0.139  &  0.299  &  -0.125  &  0.035  &  -0.158  &  0.404  &  $1$  &  0.890  \\
+\midrule
+  \multicolumn{10}{l}{\textit{Derived statistics}}  \\
+  \quad $\sigma(\theta)/\sigma(z)$  &  20.83  &    &    &    &    &    &    &    &    \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item \textit{Note:} HP filter with $\lambda = 100{,}000$ applied to log-levels of each series. Correlations use pairwise-complete observations; the shortest series (business applications, $a$) begins 2004Q3. Sources --- $u$: BLS LAUS; $v$: Barnichon (2010) composite HWI spliced with BLS JOLTS at 2001Q1; $s$, $f$: Shimer (2012) continuous-time flows from CPS; $\delta$: BLS BED Deaths (dataclass 08), employment-weighted; $a$: BFS high-propensity business applications (BAWBATOTALSAUS) per capita; $z$: BLS PRS85006163 (output per hour, nonfarm business).
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+	The second set consists of empirically identified impulse responses from the
+	Bartik local projections of Section~\ref{sec:empirical}: the $h=0,\ldots,H$
+	quarter paths of unemployment and vacancies following a one-standard-deviation
+	$\delta$ shock. Following \citet{christiano_2016}, we form a Gaussian
+	quasi-likelihood based on the sampling distribution of the LP estimator:
+	\begin{align}\label{eq:ql_irf}
+		\log \mathcal{L}_{\mathrm{IRF}}(\theta)
+		= -\tfrac{1}{2}(\hat\beta - \beta(\theta))'\Omega_\beta^{-1}(\hat\beta -
+		\beta(\theta)),
 	\end{align}
-	The Bayesian framework allows us to combine microeconomic priors with
-	macroeconomic moments, quantify parameter uncertainty, and evaluate
-	identification by comparing the posterior to the prior. For a given draw of
-	estimated parameters, we simulate the model, compute model-implied moments,
-	form the distance to the data, and update the posterior via MCMC. Marginal
-	likelihoods facilitate model comparison for a fixed set of moments.
-	
+	where $\hat\beta$ stacks the two estimated IRF paths, $\beta(\theta)$ is the
+	corresponding model-implied path computed from the linearized state-space
+	representation, and $\Omega_\beta$ is the sampling covariance estimated by wild
+	cluster bootstrap with $n=50$ state clusters. Unlike a full structural
+	likelihood, this quasi-likelihood conditions on the reduced-form LP estimator
+	rather than integrating over the model's DGP; it is valid precisely because the
+	Bartik design yields consistent, approximately normal IRF estimates without
+	requiring distributional assumptions on the structural shocks beyond the LP
+	moment conditions of Section~\ref{sec:empirical_lp}.
+
+	A filtering asymmetry between the two blocks is present by design: unconditional
+	moments are statistics of HP-filtered data, while IRF coefficients are estimated
+	from level regressions. This is resolved on the model side. Model moments
+	$m(\theta)$ are computed from simulated-then-filtered data, mirroring the data
+	construction. Model IRFs $\beta(\theta)$ are read directly from the state-space
+	impulse response without filtering, mirroring the LP estimation. The two objects
+	therefore target genuinely distinct features of the model---cyclical second-moment
+	structure and shock-specific propagation dynamics---in a way that is internally
+	consistent on both the data and model sides.
+
+	The two blocks provide complementary identification. Unconditional moments
+	discipline the level and cyclical volatility of the destruction and separation
+	processes, the amplification and comovement structure, and the persistence of key
+	aggregates. The IRF block separately identifies the dynamic transmission of
+	$\delta$ shocks---in particular, the simultaneous elimination of vacancies that
+	distinguishes $\delta$ from $s$ and generates persistent Beveridge-curve
+	dislocations---identification unavailable from unconditional moments alone, which
+	conflate the contributions of all three shocks.
+
+	To prevent the IRF block from mechanically dominating the joint objective by
+	virtue of moment count, we normalize each block's quadratic form by its
+	dimension. Letting $K_\beta$ denote the number of IRF moment conditions and
+	$K_m$ the number of unconditional moments, the log-posterior kernel is
+	\begin{align}\label{eq:posterior}
+		\log p(\theta \mid \mathrm{data})
+		\propto \log\pi(\theta)
+		- \frac{1}{2K_\beta}(\hat\beta - \beta(\theta))'\Omega_\beta^{-1}
+		(\hat\beta - \beta(\theta))
+		- \frac{1}{2K_m}(\hat m - m(\theta))'\Omega_m^{-1}(\hat m - m(\theta)),
+	\end{align}
+	where $\hat m$ collects the empirical moments from Table~\ref{tab:smm_moments},
+	$m(\theta)$ the corresponding model-implied moments from simulated HP-filtered
+	data, and $\Omega_m$ a HAC covariance estimated by block bootstrap with block
+	length eight quarters. The degrees-of-freedom normalization ensures each block
+	contributes equally in expectation when the model is correctly specified, since
+	each quadratic form is approximately $\chi^2(K)$ with expectation $K$ under the
+	null \citep{dridi_2007}. Appendix~\ref{app:weighting_robustness} reports
+	robustness to rescaling the unconditional moment block by factors of one-half and
+	two.
+
 	\medskip\noindent\textbf{Parameter taxonomy.}
 	We partition the full parameter space $\Theta$ into three blocks.
 	

@@ -22,7 +22,11 @@ from formatting_functions import (
     create_stats_table,
     generate_stacked_moments_table,
     generate_stacked_moments_latex_table,
-    generate_latex_subtables
+    generate_latex_subtables,
+    # Three-block SMM moment table (σ | cross-corr matrix | ρ₁)
+    compute_moments_matrix,
+    format_moments_text,
+    format_moments_latex,
 )
 
 import matplotlib.dates as mdates
@@ -34,9 +38,9 @@ years = mdates.YearLocator(5, month=1)
 years_fmt = mdates.DateFormatter('%Y')
 
 # === 1. Load and Prepare Raw Data ===
-lab = ['c', 'u', 'v', 'theta', 'jf', 'lp', 'ls', 's', 'delta', 'w', 'bf', 'ba']
+lab = ['c', 'u', 'v', 'theta', 'jf', 'lp', 'ls', 's', 'delta', 'w', 'ba']
 init = '1951-01-01'
-final = '2025-12-30'
+final = '2024-12-30'
 
 # Raw data series created by file observables.py
 dat = pd.read_pickle("raw_data.pkl")
@@ -64,7 +68,7 @@ elif filter_type == "hamilton":
     
   
 # === 3. Compute Target Moments ===
-mom_list = ["u", "v", "s", "jf", "delta", "bf", "lp"]
+mom_list = ["u", "v", "s", "jf", "delta", "ba", "lp"]
 
 
 # Compute moments (relative std to 'lp', label unemployment and productivity)
@@ -83,6 +87,49 @@ savemat('moments_empirical.mat', mom_stacked.to_dict('list'))
 tab_tex = generate_stacked_moments_latex_table(mom_stacked)
 tab = generate_stacked_moments_table(mom_stacked)
 print(tab)
+
+# ── Three-block moment table  (σ | corr matrix | ρ₁) ─────────────────────────
+# Effective sample is governed by shortest series: BAWBATOTALSAUS starts 2004Q3,
+# BED Deaths start 1992Q3; pairwise complete observations used throughout.
+
+_NOTE = (
+    r"HP filter with $\lambda = 100{,}000$ applied to log-levels of each series. "
+    r"Correlations use pairwise-complete observations; the shortest series "
+    r"(business applications, $a$) begins 2004Q3. "
+    r"Sources — $u$: BLS LAUS; $v$: Barnichon (2010) composite HWI spliced with "
+    r"BLS JOLTS at 2001Q1; $s$, $f$: Shimer (2012) continuous-time flows from CPS; "
+    r"$\delta$: BLS BED Deaths (dataclass 08), employment-weighted; "
+    r"$a$: BFS high-propensity business applications (BAWBATOTALSAUS) per capita; "
+    r"$z$: BLS PRS85006163 (output per hour, nonfarm business)."
+)
+
+mom_matrix = compute_moments_matrix(cycle, mom_list)
+
+# ── Derived diagnostic: Shimer amplification ratio ────────────────────────────
+# σ(θ)/σ(z) is the canonical check on model amplification (Shimer 2005).
+# θ is excluded from the SMM moment vector — see remark_theta.tex — but
+# reported here as a derived statistic for transparency.
+sigma_theta_over_z = cycle["theta"].std() / cycle["lp"].std()
+_DERIVED = [(r"$\sigma(\theta)/\sigma(z)$", f"{sigma_theta_over_z:.2f}")]
+
+# ── Python-inspectable text table ─────────────────────────────────────────────
+print(format_moments_text(mom_matrix, mom_list, derived=_DERIVED))
+
+# ── LaTeX table ───────────────────────────────────────────────────────────────
+latex_moments = format_moments_latex(
+    mom_matrix,
+    mom_list,
+    caption="Business Cycle Moments",
+    label="tab:smm_moments",
+    note=_NOTE,
+    derived=_DERIVED,
+)
+print("\n% ── LaTeX moment table (insert into draft) ──────────────────────────────")
+print(latex_moments)
+
+with open("moments_table.tex", "w") as f:
+    f.write(latex_moments)
+print("\n[saved] moments_table.tex")
 
 # === 4. Compare Empirical Moments to Model Moments ===
 

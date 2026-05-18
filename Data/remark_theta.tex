@@ -1,0 +1,23 @@
+% ── Remark: exclusion of θ from the SMM moment vector ────────────────────────
+% Insert after Section 3 (moment selection discussion).
+% Requires: amsthm or a \newtheorem{remark}{Remark} declaration in preamble.
+
+\begin{remark}[Tightness and the moment vector]
+Labor market tightness $\theta = v/u$ is omitted from the SMM moment vector
+despite being the central state variable in the matching block.
+The case for inclusion rests on persistence: $\rho(\theta)$ is not recoverable
+from $\rho(u)$ and $\rho(v)$ alone, because it depends on the
+cross-autocorrelations $\mathrm{corr}(u_t, v_{t-1})$ and
+$\mathrm{corr}(v_t, u_{t-1})$, which are absent from our vector.
+Since $\rho(\theta)$ carries identifying power primarily for the matching
+elasticity $\alpha$---governing how tightness transmits to the job-finding
+rate $f = \mu \theta^{1-\alpha}$---its exclusion is innocuous once $\alpha$
+is calibrated externally.
+Following \citet{PetrongoloandPissarides2001}, we set $\alpha = 0.5$,
+so including $\theta$ would add near-collinear moments without independent
+identifying content and risk inflating the condition number of the optimal
+weighting matrix.
+We nonetheless report the derived Shimer amplification ratio
+$\sigma(\theta)/\sigma(z)$ in Table~\ref{tab:smm_moments} as a
+diagnostic check on model-generated volatility.
+\end{remark}

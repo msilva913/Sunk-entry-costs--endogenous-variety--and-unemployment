@@ -1,0 +1,29 @@
+\begin{table}[htbp]
+\centering
+\begin{threeparttable}
+\caption{Business Cycle Moments}
+\label{tab:smm_moments}
+\begin{tabular}{l r @{\hspace{6pt}\vline\hspace{6pt}} r r r r r r r @{\hspace{6pt}\vline\hspace{6pt}} r}
+\toprule
+  &  $\sigma(x)$  &  \multicolumn{7}{c}{Contemporaneous correlations}  &  $\rho_1(x)$  \\
+\cmidrule(lr){3-9}
+  &  &  $u$  &  $v$  &  $s$  &  $f$  &  $\delta$  &  $a$  &  $z$  &  \\
+\midrule
+  Unemployment  &  0.2148  &  $1$  &    &    &    &    &    &    &  0.894  \\
+  Vacancies  &  0.2009  &  -0.826  &  $1$  &    &    &    &    &    &  0.945  \\
+  Separations  &  0.1164  &  0.513  &  -0.435  &  $1$  &    &    &    &    &  0.422  \\
+  Job-finding rate  &  0.1473  &  -0.865  &  0.674  &  -0.037  &  $1$  &    &    &    &  0.910  \\
+  Exit rate  &  0.0998  &  -0.041  &  0.127  &  0.492  &  0.359  &  $1$  &    &    &  0.436  \\
+  Business applications  &  0.1264  &  -0.335  &  0.541  &  -0.227  &  0.250  &  -0.192  &  $1$  &    &  0.813  \\
+  Labor productivity  &  0.0191  &  -0.139  &  0.299  &  -0.125  &  0.035  &  -0.158  &  0.404  &  $1$  &  0.890  \\
+\midrule
+  \multicolumn{10}{l}{\textit{Derived statistics}}  \\
+  \quad $\sigma(\theta)/\sigma(z)$  &  20.83  &    &    &    &    &    &    &    &    \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item \textit{Note:} HP filter with $\lambda = 100{,}000$ applied to log-levels of each series. Correlations use pairwise-complete observations; the shortest series (business applications, $a$) begins 2004Q3. Sources ¡X $u$: BLS LAUS; $v$: Barnichon (2010) composite HWI spliced with BLS JOLTS at 2001Q1; $s$, $f$: Shimer (2012) continuous-time flows from CPS; $\delta$: BLS BED Deaths (dataclass 08), employment-weighted; $a$: BFS high-propensity business applications (BAWBATOTALSAUS) per capita; $z$: BLS PRS85006163 (output per hour, nonfarm business).
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
