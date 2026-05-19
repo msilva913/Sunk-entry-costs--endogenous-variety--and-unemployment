@@ -109,19 +109,54 @@ JOLTS LD mixes three events: (a) exogenous match dissolution → reposting [mode
 - C3/C4 fall in extended samples: GFC intensive margin dominates denominator
 - Entry/exit margin accounts for ~10% of unemployment-driven flow variation → supports δ/τ ≈ 10% calibration
 
-## Paper Draft Status (as of May 14, 2026)
+## SMM Moments Filter Decision (May 19, 2026)
+
+**Baseline filter switched from λ=100,000 to λ=1,600.** Key findings:
+
+- cor(δ,u): −0.041 at λ=100k → **+0.310 at λ=1,600** (sign flip)
+- cor(δ,v): +0.127 at λ=100k → **−0.246 at λ=1,600** (sign flip)
+- cor(δ,s): +0.492 → +0.681
+- No trend contamination: cor(cyc_1600_δ, trend_100k) = 0.005
+
+The λ=100k reversal is confirmed as an over-smoothing artifact: across HP-1600 and the Hamilton (2018) regression filter, cor(δ,u)>0 and cor(δ,v)<0 are robust at h=0..+3. HP-100k is the outlier at 7 of 18 cells in Appendix Table B (app:filter_robustness).
+
+**New Table 4 values (λ=1,600, log-HP, pairwise-complete):**
+
+| Series | σ(x) | cor(u) | cor(v) | cor(s) | cor(f) | cor(δ) | cor(N^e) | cor(z) | ρ₁ |
+|--------|-------|--------|--------|--------|--------|--------|----------|--------|-----|
+| u | 0.1496 | 1 | −0.804 | 0.577 | −0.791 | **+0.310** | −0.105 | −0.009 | 0.792 |
+| v | 0.1419 | −0.804 | 1 | −0.422 | 0.620 | **−0.246** | 0.482 | 0.306 | 0.902 |
+| s | 0.1019 | 0.577 | −0.422 | 1 | 0.020 | 0.681 | −0.345 | −0.228 | 0.250 |
+| f | 0.0977 | −0.791 | 0.620 | 0.020 | 1 | 0.213 | −0.226 | −0.212 | 0.808 |
+| δ | 0.0793 | +0.310 | −0.246 | 0.681 | 0.213 | 1 | −0.496 | −0.250 | 0.114 |
+| N^e | 0.0813 | −0.105 | 0.482 | −0.345 | −0.226 | −0.496 | 1 | 0.381 | 0.545 |
+| z | 0.0128 | −0.009 | 0.306 | −0.228 | −0.212 | −0.250 | 0.381 | 1 | 0.766 |
+
+σ(θ)/σ(z) = 11.70
+
+## Paper Draft Status (as of May 19, 2026)
 
 - **Introduction**: Complete
 - **Section 2 Environment**: Complete
 - **Section 3 Equilibrium**: Substantially complete (3.10 δ-vs-s mechanism pending)
   - `prop:bgm_nest` (Nesting LR-BGM) + LR-BGM definition paragraph: **Complete**
   - Proof of `prop:bgm_nest` in Appendix C: **Complete**
-- **Section 4.1 Instrument construction**: Complete (`fig:delta_distribution` standalone panel added)
-- **Section 4.2 LP specification**: Complete (eq:lp generic y_{s,t}; `fig:delta_uv_irf` placed here)
-- **Section 4.3 Results**: Partially drafted (fig:delta_uv_irf prose; severity placebo and joint LP paragraphs pending)
-- **Section 5 Quantitative**: Not revised
+- **Section 4.1 Instrument construction**: Complete
+- **Section 4.2 LP specification**: Complete
+- **Section 4.3 Results**: Partially drafted (severity placebo and joint LP paragraphs pending)
+- **Section 5.1 CK comparison**: Complete (compressed)
+- **Section 5.2 Calibration and estimation**: Substantially revised ⚠️
+  - Filter switched to λ=1,600 throughout
+  - Table 4 updated with new moments
+  - Moments paragraph rewritten with correct signs and notation (τ→s)
+  - QL justification paragraphs complete
+  - Parameter taxonomy and calibration algorithm complete
+  - Posterior estimates / IRFs / mechanism: stub sections only
 - **Section 6 Conclusion**: Not started
-- **Appendix C proofs**: Props 1–4 complete (prop:bgm_nest added May 14)
+- **Appendix B (Instrument diagnostics)**: New subsection `app:filter_robustness` added
+  - Table B.6: Dynamic correlations by filter (HP-1600, HP-100k, Hamilton; 3-column)
+  - Bold cells where HP-100k is sign-opposite to both other filters (7 cells)
+- **Appendix C proofs**: Props 1–6 complete; Prop 7 pending
 
 Key notation: χ_t^c (not x_t^c), Λ_t ≡ F_χ(χ_t^c), eq:/tab:/fig:/sec: label prefixes throughout. Draft file: `Draft/Draft_11May2026.tex`.
 

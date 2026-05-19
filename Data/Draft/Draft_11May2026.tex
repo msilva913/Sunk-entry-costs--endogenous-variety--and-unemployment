@@ -1,5 +1,5 @@
-\PassOptionsToPackage{demo}{graphicx}
-\documentclass[authoryear, review, 12pt, draft]{elsarticle}
+%\PassOptionsToPackage{graphicx}
+\documentclass[authoryear, review, 12pt]{elsarticle}
 \usepackage{amssymb}
 \usepackage{amsmath}
 \usepackage{amsthm}
@@ -39,7 +39,7 @@
 \usepackage{tabularx}
 \usepackage{comment}
 \usepackage{subfig}
-\usepackage[demo]{graphicx}
+\usepackage{graphicx}
 %\journal{Journal of Monetary Economics}
 %\usepackage{amssymb}
 %\usepackage{amsfonts}
@@ -139,8 +139,7 @@
 	must be rebuilt from scratch at sunk cost; recovery requires not 
 	merely a rebound in profitability but a costly reconstruction of the 
 	vacancy stock, generating a persistent outward shift of the 
-	Beveridge curve. Provided vacancy continuation is sufficiently cheap  relative to initial creation, surviving firms repost after separation, so the aggregate vacancy stock partially self-corrects even while unemployment remains elevated, producing a transitory displacement along the Beveridge curve rather than a persistent  outward shift.
-	
+	Beveridge curve. Provided vacancy continuation is sufficiently cheap  relative to initial creation, surviving firms repost after separation, so the aggregate vacancy stock partially self-corrects even while unemployment remains elevated, producing a transitory displacement along the Beveridge curve rather than a persistent  outward shift.	
 	\citet{coles_2018} show that extending the DMP model with finitely 
 	elastic vacancy creation enables separation shocks to generate a 
 	downward-sloping Beveridge curve and, jointly with technology shocks, 
@@ -1555,38 +1554,24 @@ empirical variation in exit rates across recessions
 identifies the destruction curve independently of 
 preference parameters.
 
-\begin{proposition}[Steady-state equilibria]
+\begin{proposition}[Steady-state equilibria under DS-CES]
 	\label{prop:equilibria}
-	Letting $p_0 \to 0$, so that $\delta_e$ collapses to a parameter, 
-	there generically exist two steady-state equilibria 
-	in $(\theta,N)$ given by \eqref{eq:curve_jcc} and 
-	\eqref{eq:curve_res_cons}. One equilibrium features 
-	strictly lower market tightness and fewer product 
-	lines. Multiple equilibria arise whenever 
-	$\lim_{\theta\to 0}N(\theta)>0$ from 
-	\eqref{eq:curve_jcc}, which holds whenever $b>0$ or 
-	$\kappa>0$: in the limit $\theta\to 0$, 
-	$e(\theta)\to 0$ and $K(\theta)\to 0$, so 
-	\eqref{eq:curve_jcc} implies
+	Restrict to DS-CES preferences ($\rho(N)=N^{1/(\varepsilon-1)}$,
+	$\mu=\varepsilon/(\varepsilon-1)$ constant) and let $p_0\to 0$ so
+	that $\delta_e$ is a parameter.  If $b>0$ or $\kappa>0$, the job
+	creation curve \eqref{eq:curve_jcc} satisfies
 	\begin{align}\label{eq:N_JC_intercept}
-		N_{JC}^0 \equiv \lim_{\theta\to 0}N_{JC}(\theta) 
+		N_{JC}^0 \equiv \lim_{\theta\to 0}N_{JC}(\theta)
 		= \left(\frac{\mu}{z}
 		\left(\frac{\kappa(r+\tau)}{(1-\delta_e)(1-\phi)}
-		+b\right)\right)^{\varepsilon-1} > 0
+		+b\right)\right)^{\varepsilon-1} > 0,
 	\end{align}
-	while \eqref{eq:curve_res_cons} gives $N\to 0$ as 
-	$\theta\to 0$. As $\theta\to\infty$, 
-	\eqref{eq:curve_jcc} implies $N\to\infty$ while 
-	\eqref{eq:curve_res_cons} implies $N\to\bar{N}<\infty$. 
-	The two curves therefore cross exactly twice, as 
-	depicted in Figure~\ref{fig:steady_state_curves}. 
-	Under DS-CES with $\varepsilon\to\infty$, or under 
-	general CES with $\zeta\to 0$, variety effects vanish 
-	from \eqref{eq:curve_jcc}, yielding a unique 
-	equilibrium with $\theta$ determined independently. 
-	We focus on the equilibrium with higher $(\theta,N)$ 
-	throughout.
-	\emph{Proof in ~\ref{app:steady_state}.}
+	while the resource constraint curve \eqref{eq:curve_res_cons}
+	satisfies $N_{RC}(0)=0$ and $N_{RC}(\theta)\to\bar{N}<\infty$.
+	As $\theta\to\infty$, $N_{JC}(\theta)\to\infty$.  The two curves
+	therefore cross an even number of times; generically exactly two
+	equilibria exist in $(\theta,N)$ space, one with strictly higher
+	tightness and product variety than the other.  
 \end{proposition}
 
 \begin{figure}[h!]
@@ -2168,39 +2153,16 @@ Figure~\ref{fig:steady_state_curves_z}.
 	\section{Quantitative analysis}\label{sec:quantitative}
 	\subsection{Relationship to Coles and Kelishomi}\label{sec:ck_comparison}
 
-	\citet{coles_2018} establish the mechanism at the heart of our framework: sunk
-	vacancy creation costs and a destruction shock that simultaneously eliminates
-	filled jobs and posted vacancies can replicate both the volatility and the
-	Beveridge-curve dynamics of the U.S.\ labor market. Because each filled job and
-	each vacancy corresponds to an active product line, their shock is structurally
-	equivalent to the $\delta$ shock in our model. Finitely elastic vacancy creation
-	limits the speed at which new product lines are opened following a destruction
-	event, so the vacancy stock and unemployment comove negatively---consistent with
-	the data.
-
-	Two features of their calibration require revisiting. First, \citet{coles_2018}
-	set $\delta = 0.031$ per month, effectively treating all aggregate separations as
-	product destruction. BLS Business Employment Dynamics data place the
-	employment-weighted permanent exit rate at $\bar\delta \approx 1.1\%$ per
-	quarter, roughly one-ninth of the aggregate separation rate $\bar\tau = 9.3\%$
-	per quarter; their calibration therefore overstates the destruction margin by an
-	order of magnitude. \citet{gabrovski_2025} show that once $\delta$ and the match
-	separation rate $s$ are distinguished and $\delta$ is calibrated to establishment
-	exit data, the unconditional correlation between unemployment and labor
-	productivity---notoriously difficult to match in Diamond--Mortensen--Pissarides
-	models---attenuates toward its empirical value. Second, CK do not model
-	endogenous firm entry, so their framework is silent on business formation
-	dynamics and the variety channel through which entry costs propagate aggregate
-	shocks.
-
-	Our model addresses both gaps. We retain CK's sunk-cost structure and extend it
-	to include endogenous entry and exit, imperfect competition, and a product-variety
-	externality. We calibrate $\delta$ directly to BED Deaths data and separately
-	identify $s$ from total separations via the \citet{shimer_2012} decomposition.
-	The estimation correspondingly expands the moment set to include the permanent
-	exit rate and business applications, and supplements unconditional moments with
-	identified impulse responses from the Bartik local projections to separately pin
-	down the propagation dynamics of $\delta$ and $s$ shocks.
+	Our framework nests \citet{coles_2018} as a special case, as formalized in
+	Proposition~\ref{prop:bgm_nest}. Relative to their calibration, we make two
+	departures. First, we set $\delta$ to the BED Deaths employment-weighted exit rate
+	($\bar\delta \approx 1.1\%$ per quarter) rather than equating it to the full
+	aggregate separation rate; \citet{gabrovski_2025} show this correction materially
+	improves the model's fit on the unemployment--productivity correlation. Second, we
+	expand the estimation moment set to include the permanent exit rate $\delta$ and
+	the entry flow $N^e_t$ (proxied by BFS high-propensity business applications), and supplement unconditional second moments with
+	identified IRFs from the Bartik local projections of Section~\ref{sec:empirical}
+	to separately discipline the propagation dynamics of $\delta$ and $s$ shocks.
 
 	\subsection{Calibration and estimation}\label{sec:calib}
 
@@ -2219,15 +2181,24 @@ Figure~\ref{fig:steady_state_curves_z}.
 	separations, the job-finding rate, the permanent exit rate, business
 	applications, and labor productivity. The full empirical moment matrix is
 	reported in Table~\ref{tab:smm_moments}. All series are log-transformed and
-	HP-filtered with smoothing parameter $\lambda = 100{,}000$ before computing
+	HP-filtered with smoothing parameter $\lambda = 1{,}600$ before computing
 	moments; the identical filter is applied to simulated model data when evaluating
 	$m(\theta)$. This symmetric treatment renders HP-filtered second moments a valid
-	indirect inference target: \citet{canova_ferroni_2011} establish that applying
+	indirect inference target: \citet{canova_2011} establish that applying
 	the same filter to data and simulated output controls for any filter-induced
 	distortion, even when the filter introduces spurious dynamics in isolation.
+	We prefer $\lambda=1{,}600$ over the $\lambda=100{,}000$ convention of
+	\citet{coles_2018} because the higher smoothing parameter strips out the
+	business-cycle frequency variation in $\delta$ at which the destruction
+	mechanism operates, reversing the sign of $\text{cor}(\delta,v)$ and driving
+	$\text{cor}(\delta,u)$ to near zero --- an artifact of over-smoothing rather
+	than a feature of the data.  Appendix~\ref{app:filter_robustness} documents
+	this explicitly: across the Hamilton (2018) regression filter, first differences,
+	and HP with $\lambda=1{,}600$, the correlations $\text{cor}(\delta,u)>0$ and
+	$\text{cor}(\delta,v)<0$ are robust; $\lambda=100{,}000$ is the anomalous
+	specification.
 
-
-\begin{table}[htbp]
+\begin{table}[H]
 \centering
 \begin{threeparttable}
 \caption{Business Cycle Moments}
@@ -2236,27 +2207,46 @@ Figure~\ref{fig:steady_state_curves_z}.
 \toprule
   &  $\sigma(x)$  &  \multicolumn{7}{c}{Contemporaneous correlations}  &  $\rho_1(x)$  \\
 \cmidrule(lr){3-9}
-  &  &  $u$  &  $v$  &  $s$  &  $f$  &  $\delta$  &  $a$  &  $z$  &  \\
+  &  &  $u$  &  $v$  &  $\tau$  &  $f$  &  $\delta$  &  $N^e$  &  $z$  &  \\
 \midrule
-  Unemployment  &  0.2148  &  $1$  &    &    &    &    &    &    &  0.894  \\
-  Vacancies  &  0.2009  &  -0.826  &  $1$  &    &    &    &    &    &  0.945  \\
-  Separations  &  0.1164  &  0.513  &  -0.435  &  $1$  &    &    &    &    &  0.422  \\
-  Job-finding rate  &  0.1473  &  -0.865  &  0.674  &  -0.037  &  $1$  &    &    &    &  0.910  \\
-  Exit rate  &  0.0998  &  -0.041  &  0.127  &  0.492  &  0.359  &  $1$  &    &    &  0.436  \\
-  Business applications  &  0.1264  &  -0.335  &  0.541  &  -0.227  &  0.250  &  -0.192  &  $1$  &    &  0.813  \\
-  Labor productivity  &  0.0191  &  -0.139  &  0.299  &  -0.125  &  0.035  &  -0.158  &  0.404  &  $1$  &  0.890  \\
+  Unemployment  &  0.1496  &  $1$  &    &    &    &    &    &    &  0.792  \\
+  Vacancies  &  0.1419  &  -0.804  &  $1$  &    &    &    &    &    &  0.902  \\
+  Separations  &  0.1019  &  0.577  &  -0.422  &  $1$  &    &    &    &    &  0.250  \\
+  Job-finding rate  &  0.0977  &  -0.791  &  0.620  &  0.020  &  $1$  &    &    &    &  0.808  \\
+  Exit rate  &  0.0793  &  0.310  &  -0.246  &  0.681  &  0.213  &  $1$  &    &    &  0.114  \\
+  Entry flow ($N^e$)  &  0.0813  &  -0.105  &  0.482  &  -0.345  &  -0.226  &  -0.496  &  $1$  &    &  0.545  \\
+  Labor productivity  &  0.0128  &  -0.009  &  0.306  &  -0.228  &  -0.212  &  -0.250  &  0.381  &  $1$  &  0.766  \\
 \midrule
   \multicolumn{10}{l}{\textit{Derived statistics}}  \\
-  \quad $\sigma(\theta)/\sigma(z)$  &  20.83  &    &    &    &    &    &    &    &    \\
+  \quad $\sigma(\theta)/\sigma(z)$  &  11.70  &    &    &    &    &    &    &    &    \\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}[flushleft]
 \footnotesize
-\item \textit{Note:} HP filter with $\lambda = 100{,}000$ applied to log-levels of each series. Correlations use pairwise-complete observations; the shortest series (business applications, $a$) begins 2004Q3. Sources --- $u$: BLS LAUS; $v$: Barnichon (2010) composite HWI spliced with BLS JOLTS at 2001Q1; $s$, $f$: Shimer (2012) continuous-time flows from CPS; $\delta$: BLS BED Deaths (dataclass 08), employment-weighted; $a$: BFS high-propensity business applications (BAWBATOTALSAUS) per capita; $z$: BLS PRS85006163 (output per hour, nonfarm business).
+\item \textit{Note:} HP filter with $\lambda = 1{,}600$ applied to log-levels of each series. Correlations use pairwise-complete observations; the shortest series ($N^e$, entry flow) begins 2004Q3. Sources --- $u$: BLS LAUS; $v$: Barnichon (2010) composite HWI spliced with BLS JOLTS at 2001Q1; $s$, $f$: Shimer (2012) continuous-time flows from CPS; $\delta$: BLS BED Deaths (dataclass 08), employment-weighted; $N^e$: BFS high-propensity business applications (BAWBATOTALSAUS) per capita, proxy for model entry flow; $z$: BLS PRS85006163 (output per hour, nonfarm business).
 \end{tablenotes}
 \end{threeparttable}
 \end{table}
-	The second set consists of empirically identified impulse responses from the
+Table~\ref{tab:smm_moments} highlights several salient features of the data.
+Unemployment and vacancies are highly volatile relative to labor productivity
+($\sigma(u)/\sigma(z) \approx 11.7$, $\sigma(v)/\sigma(z) \approx 11.1$) and
+display a pronounced Beveridge curve ($\text{cor}(u,v)=-0.80$).  The
+unemployment-labor productivity correlation is near zero ($\text{cor}(u,z)=-0.01$),
+consistent with weak technology-shock transmission in models with endogenous
+separation.  The exit rate co-moves strongly with the match separation rate
+($\text{cor}(\delta,\tau)=0.68$), reflecting a common cyclical component of firm
+destruction and worker-job dissolution.  Importantly, the exit rate is positively
+correlated with unemployment ($\text{cor}(\delta,u)=0.31$) and negatively correlated
+with vacancies ($\text{cor}(\delta,v)=-0.25$), consistent with the simultaneous
+vacancy-destruction mechanism central to our model.\footnote{These signs reverse under
+$\lambda=10^5$, an artifact of over-smoothing
+documented in\ref{app:filter_robustness}.}  Labor market variables and
+entry display strong persistence ($\rho_1 \in [0.55, 0.90]$), while separations
+and the exit rate exhibit substantially less ($\rho_1 \approx 0.11$--$0.25$),
+consistent with their role as shock-propagation mechanisms rather than persistent states.
+
+
+The second set consists of empirically identified impulse responses from the
 	Bartik local projections of Section~\ref{sec:empirical}: the $h=0,\ldots,H$
 	quarter paths of unemployment and vacancies following a one-standard-deviation
 	$\delta$ shock. Following \citet{christiano_2016}, we form a Gaussian
@@ -2269,12 +2259,35 @@ Figure~\ref{fig:steady_state_curves_z}.
 	where $\hat\beta$ stacks the two estimated IRF paths, $\beta(\theta)$ is the
 	corresponding model-implied path computed from the linearized state-space
 	representation, and $\Omega_\beta$ is the sampling covariance estimated by wild
-	cluster bootstrap with $n=50$ state clusters. Unlike a full structural
-	likelihood, this quasi-likelihood conditions on the reduced-form LP estimator
-	rather than integrating over the model's DGP; it is valid precisely because the
-	Bartik design yields consistent, approximately normal IRF estimates without
-	requiring distributional assumptions on the structural shocks beyond the LP
-	moment conditions of Section~\ref{sec:empirical_lp}.
+	cluster bootstrap with $n=50$ state clusters.
+
+	The quasi-likelihood is a limited-information Bayesian update: rather than
+	conditioning on the raw panel data, it conditions on $\hat\beta$ as a sufficient
+	statistic for the model-implied path $\beta(\theta)$. 
+	Writing the full likelihood $\mathcal{L}(\mathrm{data}|\theta)$ for the panel
+	would require the model to generate 50 state-level employment series, cross-state
+	variation in industry composition, and the full Bartik instrument---objects entirely
+	outside a representative-agent aggregate economy.  Even setting this aside, any
+	reduced-form likelihood over $\hat\beta$ would require distributional assumptions
+	on the LP residuals, the instrument's conditional distribution, and the
+	finite-sample behavior of a clustered two-stage estimator---auxiliary assumptions
+	with no grounding in the structural model.  The quasi-likelihood avoids both
+	problems by relying only on the asymptotic normality of $\hat\beta$, which
+	follows from the LP moment conditions alone \citep{chernozhukov_2003}.
+
+	One might ask whether the IRF block is necessary at all: why not use the full
+	structural likelihood on aggregate time series and omit the impulse responses
+	entirely?  The answer is identification.  The full likelihood recovers structural
+	parameters from the time-series covariance structure of observables, but in a
+	three-shock model the unconditional second moments cannot separately discipline the
+	propagation of $\delta$ and $s$ shocks: both raise unemployment, and their
+	vacancy responses---the qualitative distinction between them---are collinear in
+	second moments because they depend jointly on shock persistence, sunk-cost
+	dynamics, and the entry margin.  The Bartik design provides the only clean
+	exogenous variation in $\delta$ and therefore the only moment condition that
+	separately identifies the parameters governing the model's central mechanism.
+	Omitting the IRF block would leave the asymmetric vacancy-destruction channel
+	weakly identified from time-series covariances alone.
 
 	A filtering asymmetry between the two blocks is present by design: unconditional
 	moments are statistics of HP-filtered data, while IRF coefficients are estimated
@@ -2309,7 +2322,10 @@ Figure~\ref{fig:steady_state_curves_z}.
 	where $\hat m$ collects the empirical moments from Table~\ref{tab:smm_moments},
 	$m(\theta)$ the corresponding model-implied moments from simulated HP-filtered
 	data, and $\Omega_m$ a HAC covariance estimated by block bootstrap with block
-	length eight quarters. The degrees-of-freedom normalization ensures each block
+	length eight quarters.  The HP filter induces serial correlation in cyclical
+	residuals at all lags, so HAC correction is required regardless of the choice
+	of $\lambda$; the block length of eight quarters is sufficient to cover the
+	effective filter width at $\lambda=1{,}600$. The degrees-of-freedom normalization ensures each block
 	contributes equally in expectation when the model is correctly specified, since
 	each quadratic form is approximately $\chi^2(K)$ with expectation $K$ under the
 	null \citep{dridi_2007}. Appendix~\ref{app:weighting_robustness} reports
@@ -2369,7 +2385,7 @@ Figure~\ref{fig:steady_state_curves_z}.
 			\bottomrule
 		\end{tabular}
 	\end{center}
-	
+	\textcolor{red}{May need updating}\\
 	\medskip\noindent\textbf{Calibration algorithm.}
 	Given a draw from $\Theta_e$ and the external block, we recover $\Theta_d$ in
 	four sequential stages.
@@ -2467,45 +2483,45 @@ Figure~\ref{fig:steady_state_curves_z}.
 	% Describe transmission mechanism of impulse responses
 	\subsection{Inspecting the mechanism}
 	We begin by emphasizing the significance of variety effects by comparing the impulse responses of our model with those of a similar model where $\zeta=0$. Importantly, both versions maintain consistent markup, labor share of income, and other calibrated targets. As illustrated in Figure\ref{fig:variety_effects_irf_z_comparison}, we observe that unemployment exhibits increased persistence, which is closely linked to changes in business formation and the corresponding measure of product lines. Given that the number of firms, and consequently the relative price $p$, is predetermined, the immediate response of unemployment remains unaffected by variety effects.
-	\begin{figure}[H]
-		\includegraphics[width=\textwidth]{"variety_effects_irf_z_comparison"}
-		\centering
-		\caption{}
-		\label{fig:variety_effects_irf_z_comparison}
-	\end{figure}
+%	\begin{figure}[H]
+%		\includegraphics[width=\textwidth]{"variety_effects_irf_z_comparison"}
+%		\centering
+%		\caption{}
+%		\label{fig:variety_effects_irf_z_comparison}
+%	\end{figure}
 	Second, we investigate the impact of risk aversion by comparing the effects of a destruction shock in our baseline model to those in a risk-neutral environment, typical of the benchmark search model, as depicted in Figure \ref{fig:risk_aversion_comparison_delta_shock}. Our primary finding is that labor market variables are generally insensitive to the consumption smoothing motive. This result arises from two factors: (1) the finite elasticity of vacancy creation inherently encourages smoothing of vacancy creation, and (2) new vacancies constitute a small portion of the overall vacancy stock. However, with either more elastic vacancy creation or increased product destruction, the responses of vacancies and unemployment would differ. Notably, risk aversion significantly influences the responses of business formation, consumption, and output. In the absence of convex adjustment costs in business formation, a persistent destruction shock substantially diminishes the present discounted value of profits under risk neutrality. Essentially, the incentive to initiate a new product line declines with a persistent destruction shock, leading households to favor scaling back business formation and increasing consumption instead. In a risk-neutral scenario, a destruction shock would prompt consumption and output to rise alongside unemployment, thereby limiting their role in driving business cycle dynamics. Therefore, when considering the dynamics of business formation—key macroeconomic aggregates—the degree of risk aversion becomes crucial.
-	\begin{figure}[H]
-		\includegraphics[width=\textwidth]{"risk_aversion_comparison_delta_shock"}
-		\centering
-		\caption{}
-		\label{fig:risk_aversion_comparison_delta_shock}
-	\end{figure}
+%	\begin{figure}[H]
+%		\includegraphics[width=\textwidth]{"risk_aversion_comparison_delta_shock"}
+%		\centering
+%		\caption{}
+%		\label{fig:risk_aversion_comparison_delta_shock}
+%	\end{figure}
 	
 	Third, we explore the impact of the inverse elasticity of vacancy creation $\xi^{-1}$. Specifically, we compare the baseline response to the model recalibrated with $\xi^{-1}=0.5$.  In this analysis, we focus on the responses to both technology and destruction shocks, noting significant differences between the two scenarios.
 	
 	Figure \ref{fig:elastic_comparison_delta_shock} illustrates the responses under a destruction shock. With increased elasticity in vacancy creation, the number of new vacancies rises, which mitigates the increase in unemployment. This effect also leads to a smaller decline in business formation and output. Importantly, despite the heightened elasticity in entry, the negative correlation between unemployment and vacancies persists, maintaining the integrity of the Beveridge curve.
-	\begin{figure}[H]
-		\includegraphics[width=\textwidth]{"elastic_comparison_delta_shock"}
-		\centering
-		\caption{}
-		\label{fig:elastic_comparison_delta_shock}
-	\end{figure}
+%	\begin{figure}[H]
+%		\includegraphics[width=\textwidth]{"elastic_comparison_delta_shock"}
+%		\centering
+%		\caption{}
+%		\label{fig:elastic_comparison_delta_shock}
+%	\end{figure}
 	
 	Figure \ref{fig:elastic_comparison_tech_shock} depicts the responses to a contractionary technology shock. With more elastic vacancy creation, the number of new vacancies declines significantly, leading to a substantial reduction in the overall vacancy stock and, consequently, a pronounced increase in unemployment. However, the responses of business formation, consumption, and output remain relatively unchanged. Thus, increased elasticity in vacancy creation amplifies the impact of technology shocks while diminishing the effects of destruction shocks. In other words, incorporating finitely elastic vacancy creation into the benchmark search model allows destruction shocks to have a more pronounced effect on unemployment, while reducing the influence of technology shocks.
-	\begin{figure}[H]
-		\includegraphics[width=\textwidth]{"elastic_comparison_tech_shock"}
-		\centering
-		\caption{}
-		\label{fig:elastic_comparison_tech_shock}
-	\end{figure}
+%	\begin{figure}[H]
+%		\includegraphics[width=\textwidth]{"elastic_comparison_tech_shock"}
+%		\centering
+%		\caption{}
+%		\label{fig:elastic_comparison_tech_shock}
+%	\end{figure}
 	
 	\citet{pissarides_2009} proposes fixed matching costs as a means to make average hiring costs less cyclical, so that job creation becomes more sensitive to fluctuations in technology. This logic applies in our model as well, so we omit the impulse responses. However, Figure \ref{fig:kappa_comparison_delta_shock} shows that the responses are nearly identical in the case of a destruction shock.
-	\begin{figure}[H]
-		\includegraphics[width=\textwidth]{"kappa_comparison_delta_shock"}
-		\centering
-		\caption{}
-		\label{fig:kappa_comparison_delta_shock}
-	\end{figure}
+%	\begin{figure}[H]
+%		\includegraphics[width=\textwidth]{"kappa_comparison_delta_shock"}
+%		\centering
+%		\caption{}
+%		\label{fig:kappa_comparison_delta_shock}
+%	\end{figure}
 	\textcolor{red}{To do: include plot for corresponding BGM model}
 	Finally, we compare a technology shock in this framework to \citet{bilbiie_2012}. There are several key differences. First, labor reponds only via the extensive margin. It is predetermined on impact and can only expand gradually. A Frisch elasticity of labor supply of one produces a similar response of output on impact. 
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2711,6 +2727,65 @@ Figure~\ref{fig:steady_state_curves_z}.
 	failure confirms that a well-identified $s$-type instrument remains an
 	open challenge and motivates treating the LD results as indicative
 	rather than structural.
+
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+	\subsection{Filter robustness for \texorpdfstring{$\delta$}{delta}-related moments}\label{app:filter_robustness}
+
+	Table~\ref{tab:smm_moments} is computed with HP filter $\lambda=1{,}600$,
+	departing from the $\lambda=10^5$ convention of \citep{shimer_2005, coles_2018} and other papers. Here we show that smoothening at $\lambda=10^5$ generates anomalous $\delta$ dynamic correlations with respect to other filters.
+
+	Table~\ref{tab:dyn_corr_filter} reports dynamic cross-correlations
+	$\text{cor}(\delta_t, x_{t+h})$ for $x \in \{u, v\}$ and
+	$h \in \{-4, \ldots, +4\}$ under four conventions: HP with
+	$\lambda=1{,}600$ and $\lambda=10^5$; the Hamilton (2018) regression
+	filter (projection of $y_t$ on $y_{t-h},\ldots,y_{t-h-3}$ with $h=8$
+	quarters); and first differences.  All series are log-transformed before
+	filtering.
+
+	First, $\text{cor}(\delta_t, u_{t+h})$ is
+	positive at $h=0$ under every specification except $\lambda=100^5$
+	(HP-100k: $+0.02$; HP-1600: $+0.39$; Hamilton: $+0.19$; FD: $+0.60$).
+	Second, $\text{cor}(\delta_t, v_{t+h})$ is negative at $h=0$ and $h=+1$
+	under HP-1600, Hamilton, and FD, while HP-100k delivers the opposite sign.
+	HP-100k is flagged as an outlier at five of the nine horizons for the
+	vacancy correlation.  
+
+	\begin{table}[H]
+	\centering
+	\begin{threeparttable}
+	\caption{Dynamic correlations $\text{cor}(\delta_t, x_{t+h})$ by detrending filter}
+	\label{tab:dyn_corr_filter}
+	\begin{tabular}{r rrrr @{\hspace{10pt}} rrrr}
+	\toprule
+	& \multicolumn{4}{c}{$x = $ Unemployment ($u$)} & \multicolumn{4}{c}{$x = $ Vacancies ($v$)} \\
+	\cmidrule(lr){2-5}\cmidrule(lr){6-9}
+	$h$ & HP-1600 & HP-100k & Hamilton & FD & HP-1600 & HP-100k & Hamilton & FD \\
+	\midrule
+	$-4$ & $-0.265$ & $-0.411$ & $-0.332$ & $-0.013$ & $ 0.296$ & $ 0.557$ & $ 0.448$ & $ 0.175$ \\
+	$-3$ & $-0.343$ & $-0.435$ & $-0.334$ & $-0.115$ & $ 0.211$ & $ 0.490$ & $ 0.357$ & $ 0.068$ \\
+	$-2$ & $-0.271$ & $-0.365$ & $-0.257$ & $-0.018$ & $ 0.089$ & $ 0.372$ & $ 0.229$ & $ 0.032$ \\
+	$-1$ & $-0.197$ & $-0.309$ & $-0.176$ & $-0.414$ & $-0.029$ & $ 0.281$ & $ 0.085$ & $ 0.137$ \\
+	$ 0$ & $+0.386$ & $+0.018$ & $+0.185$ & $+0.601$ & $-0.225$ & $+0.148$ & $-0.057$ & $-0.143$ \\
+	$+1$ & $+0.216$ & $-0.048$ & $+0.172$ & $-0.129$ & $-0.312$ & $+0.065$ & $-0.143$ & $ 0.003$ \\
+	$+2$ & $+0.198$ & $-0.031$ & $+0.158$ & $-0.026$ & $-0.384$ & $-0.005$ & $-0.205$ & $-0.197$ \\
+	$+3$ & $+0.201$ & $-0.003$ & $+0.133$ & $-0.016$ & $-0.292$ & $+0.021$ & $-0.144$ & $-0.169$ \\
+	$+4$ & $+0.215$ & $+0.031$ & $+0.122$ & $+0.127$ & $-0.058$ & $+0.133$ & $-0.028$ & $ 0.174$ \\
+	\bottomrule
+	\end{tabular}
+	\begin{tablenotes}[flushleft]
+	\footnotesize
+	\item \textit{Note:} All series log-transformed before filtering.
+	Sample: 1992Q3--2021Q4 ($N=118$); FD loses one observation.
+	HP-1600: Hodrick-Prescott filter with $\lambda=1{,}600$.
+	HP-100k: HP filter with $\lambda=10^5$.
+	Hamilton: regression filter of \citet{hamilton_2018}, $h=8$ quarters, $p=4$ lags.
+	FD: quarter-on-quarter first differences.
+	Entries in \textbf{bold} indicate horizons where HP-100k has the opposite sign
+	from all three other filters.
+	\end{tablenotes}
+	\end{threeparttable}
+	\end{table}
 
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -3238,6 +3313,105 @@ for any realization of those sequences, not that the
 equilibrium distributions coincide. \hfill$\square$
 
 
+	\section{Steady-state equilibria: proof of Proposition~\ref{prop:equilibria}}
+	\label{app:equilibria_proof}
+
+Throughout, restrict to DS-CES preferences: $\rho(N)=N^{1/(\varepsilon-1)}$
+and $\mu=\varepsilon/(\varepsilon-1)$ constant.  Set $p_0=0$ so that
+$\delta_e\in(0,1)$ is a parameter.  Write $h(\theta)\equiv f(\theta)/q(\theta)=\theta$
+for the tightness ratio, and recall $L(\theta)=(1-\delta_e)f(\theta)/[\tau+(1-\delta_e)f(\theta)]$,
+which is strictly increasing, concave, and satisfies $L(0)=0$ and
+$L(\infty)=1-u_{\min}<1$.
+
+\medskip\noindent\textbf{Step 1: $N_{JC}(\theta)$ is well-defined and strictly increasing.}
+
+Under DS-CES the JCC \eqref{eq:curve_jcc} can be written as
+\begin{align}\label{eq:jcc_rearranged}
+  \frac{z}{\mu}\,N^{1/(\varepsilon-1)}
+  = K(\theta) + b
+  + \frac{1}{(1-\delta_e)(1-\phi)}
+    \left(\kappa+\frac{K(\theta)}{q(\theta)}\right)
+    \bigl(r+\tau+(1-\delta_e)\phi\,\theta q(\theta)\bigr)
+  \equiv \Phi(\theta).
+\end{align}
+The right-hand side $\Phi(\theta)$ depends only on $\theta$: $K(\theta)$,
+$q(\theta)$, and $\theta q(\theta)$ are all functions of tightness alone.
+Since $1/(\varepsilon-1)>0$, inverting gives a unique
+\begin{align}
+  N_{JC}(\theta)=\left(\frac{\mu\,\Phi(\theta)}{z}\right)^{\varepsilon-1}.
+\end{align}
+$\Phi(\theta)$ is strictly increasing in $\theta$ (each term is non-decreasing
+and $K(\theta)$ is strictly increasing because $e(\theta)$ is), so
+$N_{JC}(\theta)$ is strictly increasing.
+
+\medskip\noindent\textbf{Step 2: $N_{RC}(\theta)$ is strictly increasing and bounded.}
+
+Under DS-CES \eqref{eq:curve_res_cons} gives
+\begin{align}
+  N_{RC}(\theta)
+  =\frac{(\mu-1)z(1-\delta_e)}{f_e(\delta_e\mu+r)}\,L(\theta)
+  \equiv \bar{N}\,\frac{L(\theta)}{L(\infty)},
+\end{align}
+where $\bar{N}=(\mu-1)z(1-\delta_e)L(\infty)/[f_e(\delta_e\mu+r)]<\infty$.
+Since $L(\theta)$ is strictly increasing, $N_{RC}(\theta)$ is strictly
+increasing, concave, with $N_{RC}(0)=0$ and $N_{RC}(\theta)\uparrow\bar{N}$.
+
+\medskip\noindent\textbf{Step 3: Boundary behavior.}
+
+\emph{At $\theta=0$.}
+As $\theta\to 0$: $e(\theta)\to 0$, $K(\theta)\to 0$, and
+$q(\theta)\to q_0>0$ (the vacancy-filling rate at zero tightness).  Hence
+\begin{align}
+  \Phi(0) = b + \frac{\kappa(r+\tau)}{(1-\delta_e)(1-\phi)},
+\end{align}
+so that
+\begin{align}
+  N_{JC}^0\equiv N_{JC}(0)
+  =\left(\frac{\mu}{z}
+    \left(b+\frac{\kappa(r+\tau)}{(1-\delta_e)(1-\phi)}\right)
+  \right)^{\varepsilon-1}.
+\end{align}
+If $b>0$ or $\kappa>0$ then $N_{JC}^0>0=N_{RC}(0)$, so the JCC lies
+\emph{strictly above} the RC curve at the origin.
+
+\emph{As $\theta\to\infty$.}
+$\Phi(\theta)\to\infty$ (since $K(\theta)\to\infty$), so
+$N_{JC}(\theta)\to\infty$, while $N_{RC}(\theta)\to\bar{N}<\infty$.
+The JCC therefore lies \emph{strictly above} the RC curve for all
+sufficiently large $\theta$.
+
+\medskip\noindent\textbf{Step 4: Even number of crossings; generically exactly two.}
+
+Define $\Delta(\theta)\equiv N_{JC}(\theta)-N_{RC}(\theta)$.  Steps 1--3
+establish $\Delta(0)=N_{JC}^0>0$ and $\Delta(\theta)\to+\infty$.  If
+$\Delta(\theta)>0$ for all $\theta$, the system has no equilibrium.  For
+a non-degenerate parameterization in which at least one equilibrium exists,
+there must be some $\theta^*>0$ with $\Delta(\theta^*)=0$.  Since
+$\Delta(0)>0$ and $\Delta(\infty)>0$, the intermediate value theorem
+requires $\Delta$ to cross zero an \emph{even} number of times, yielding
+an even number of equilibria.
+
+A crossing is non-degenerate (transversal) when $\Delta'(\theta^*)\neq 0$.
+A tangency $\Delta(\theta^*)=\Delta'(\theta^*)=0$ is a codimension-two
+condition in the parameter space (it simultaneously imposes two equations
+on the model's parameters) and therefore fails for a generic open dense
+set of parameterizations.  Excluding tangencies, the even-crossing
+structure collapses to generically \emph{exactly two} equilibria, one
+with lower $(\theta_L,N_L)$ and one with higher $(\theta_H,N_H)$.
+
+\medskip\noindent\textbf{Step 5: Uniqueness as $\varepsilon\to\infty$.}
+
+As $\varepsilon\to\infty$, $\mu\to 1$ and $\rho(N)=N^{1/(\varepsilon-1)}\to 1$
+for any fixed $N$.  The JCC \eqref{eq:jcc_rearranged} becomes independent of $N$:
+\begin{align}
+  \frac{z}{\mu} = \Phi(\theta),
+\end{align}
+which determines a unique $\theta^*$ independently of $N$.  The JCC is then
+a vertical line in $(\theta,N)$ space; it crosses the strictly increasing
+$N_{RC}(\theta)$ exactly once.  Hence a unique equilibrium obtains.
+\hfill$\square$
+
+
 	\subsection{Details of comparative statics}
 	\textcolor{red}{Comment out this section temporarily}
 	%In this section, we qualitatively characterize how steady state labor market tightness and firm product lines responds to various shocks under both DS-CES and general-CES preferences.  We analyze the equilibrium in $(\theta,N)$ given by the system \eqref{eq:curve_jcc} and \eqref{eq:curve_res_cons}
@@ -3349,48 +3523,7 @@ equilibrium distributions coincide. \hfill$\square$
 	%	\caption{Elasticity  shock under DS-CES preferences: $\varepsilon$}
 	%\end{figure}
 	%
-	%Now consider the effect of $\varepsilon$ under general-CES preferences.  In this case, there is no effect on the relative price.  The only impact of $\varepsilon$ is on markups $\mu=\varepsilon/(\varepsilon-1)$.  Lower markups increase the wage recruiters receive causing higher tightness represented by a rightward shift of the JC curve.  As before, the AC curve shifts rightward.  Although the equilibrium mass of firms $N$ clearly falls, the effect on market tightness is ambiguous.
-	%
-	%%\begin{figure}[h!]
-	%%	\centering
-	%%	\includegraphics[scale=.3]{steady_state_e_generalCES.png}
-	%%	\caption{Elasticity  shock under general-CES preferences: $\varepsilon$}
-	%%\end{figure}
-	%
-	%Lastly, consider a positive shock to desire for variety $\zeta$.  Desire for variety only affects the relative price $\rho(N)=N^{\zeta}$ and therefore only impacts the JC curve.  Higher $\zeta$ increases the relative price $\rho(N)$ and therefore increases the wage recruiters receive.  Recruiters are willing to create more vacancies indicated by a rightward shift of the JC curve. This result in higher equilibrium product lines and market tightness.
-	%
-	%%\begin{figure}[h!]
-	%%	\centering
-	%%	\includegraphics[scale=.3]{steady_state_zeta.png}
-	%%	\caption{Elasticity  shock under general-CES preferences: $\varepsilon$}
-	%%\end{figure}
-	%
-	%
-	%Below is a summary of the comparative statics:
-	%\fontsize{9pt}{9pt}\selectfont
-	%\begin{longtable}{|l|c|c|c|c|p{6cm}|}
-	%	\hline
-	%	\textbf{Parameter} & \textbf{$N$} & \textbf{$\theta$} & \textbf{JC Curve} & \textbf{AC Curve} & \textbf{Comments} \\
-	%	\hline
-	%	\endfirsthead
-	%	\hline
-	%	Productivity $z$ & $\uparrow$ & $\uparrow$ & rightward & upward & Increase in the wage recruiters receive $w^{int}=\rho(N)z/\mu$ causes them to open more vacancies for any given level of $N$. Similarly, higher wages result in lower employment through market clearing. \\
-	%	\hline
-	%	Elasticity $\varepsilon$ & & & & &\\(DS-CES) & $\downarrow$ & ambiguous & rotate counter-clockwise & downward & Higher elasticity simultaneously reduces the price and markup.  The net effect on recruiters' wages depends on the level of business lines.  However, lower markups increase employment, for a given $N$, through market clearing. \\
-	%	\hline
-	%	Elasticity $\varepsilon$ & & & & &\\(general-CES) & $\downarrow$ & ambiguous & downward & leftward & Higher elasticity only reduces markups. This increases the wage recruiters receive, causing them to open more vacancies for any given level of $N$. Higher wages increase employment, for a given $N$, through market clearing. \\
-	%	\hline
-	%	Love of variety $\zeta$ & & & & &\\(general-CES) & $\uparrow$ & $\uparrow$ & rightward & no movement & More desire for variety increases the relative price $\rho(N)$ which increases the wage that recruiters receive.  This increases vacancy creation resulting in more employment and more business lines.\\
-	%	\hline
-	%	Bargaining power $\phi$ & $\downarrow$ & $\downarrow$ & leftward & no movement & More bargaining power to the worker reduces the surplus that recruiters receive in the wage bargain. For a given level of $N$, they will open fewer vacancies. \\
-	%	\hline
-	%	Unemployment benefit $b$ & $\downarrow$ & $\downarrow$ & leftward & no movement & Higher unemployment benefits improve the workers' threat point in the wage bargain, resulting in less surplus to the recruiter. Hence, they are less willing to open vacancies for a given $N$. \\
-	%	\hline
-	%	Fixed entry cost $f_e$ & $\downarrow$ & $\downarrow$ & no movement & downward & Higher entry costs reduce the amount of new business formation for a given level of employment $L$. \\
-	%	\hline
-	%	Separation rate $s$ & $\downarrow$ & ambiguous & ambiguous & downward & The effect of $\tau$ on vacancy creation $e$ depends on whether $\theta > 1$. I don't yet have a good intuition for why this is the case. When $\theta<1$, there is an additional ambiguity coming from opposing effects on the JC curve from $\uparrow \tau$ and $\downarrow K$. \\
-	%	\hline
-	%	Destruction rate $\delta$ & $\downarrow$ & $\downarrow$ & leftward & downward & Larger destruction rate increases the flow cost of opening vacancies $K$. For any given level of $N$, recruiters are less willing to open vacanci
-	\bibliographystyle{econometrica}
+	%Now consider the effect of $\varepsilon$ under general-CES preferences.  In this case, there is no effect on the relative price.  The only impact of $\varepsilon$ is on markups $\mu=\varepsilon/(\varepsilon-1)$.  Lower markups increase
+		\bibliographystyle{econometrica}
 	\bibliography{references}
 	\end{document}

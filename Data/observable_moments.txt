@@ -1,0 +1,92 @@
+OBSERVABLE MOMENTS — THREE FILTERS
+Sample: 1992-07-01 to 2021-10-01, N=118 (core); FD N=117
+HP-100k = lambda=100,000 (CK/Shimer convention)
+HP-1600 = lambda=1,600 (standard DSGE)
+FD      = first differences (quarter-on-quarter)
+Flags: ** |delta|>0.15, * |delta|>0.08 (relative to HP-100k baseline)
+
+======================================================================
+PANEL A: Standard deviations (relative to lp for HP; absolute for FD)
+======================================================================
+Variable      HP-100k    HP-1600     FD (abs)
+----------------------------------------------
+u               0.011      0.013      0.01001
+v               0.004      0.004      0.00207
+theta           0.150      0.184      0.10200
+jf              0.035      0.038      0.02295
+s               0.004      0.006      0.00683
+delta           0.000      0.000      0.00025
+lp              1.000      1.000      0.67776
+
+======================================================================
+PANEL B: Contemporaneous correlations
+======================================================================
+Pair             HP-100k   HP-1600        FD   |delta|     
+----------------------------------------------------------
+(u,v)         -0.688    -0.729    -0.524     0.165   **
+(u,lp)         0.483     0.296     0.220     0.263   **
+(u,s)          0.584     0.708     0.884     0.300   **
+(u,delta)      0.018     0.386     0.601     0.583   **
+(v,lp)        -0.176     0.037    -0.024     0.152   **
+(v,delta)      0.148    -0.225    -0.143     0.291   **
+(s,delta)      0.459     0.667     0.671     0.212   **
+(jf,delta)     0.369     0.193     0.094     0.275   **
+(u,jf)        -0.756    -0.568    -0.188     0.568   **
+
+======================================================================
+PANEL C: AR(1) autocorrelations
+======================================================================
+Variable     HP-100k   HP-1600        FD
+------------------------------------------
+u              0.799     0.574    -0.169
+v              0.935     0.875     0.507
+theta          0.892     0.794     0.295
+jf             0.904     0.766     0.016
+s              0.194     0.052    -0.471
+delta          0.453     0.114    -0.450
+lp             0.892     0.708     0.040
+
+======================================================================
+PANEL D: Dynamic cor(delta_t, u_{t+h})
+======================================================================
+h        HP-100k   HP-1600        FD   |delta|     
+----------------------------------------------------
+h=-4       -0.411    -0.265    -0.013     0.398   **
+h=-3       -0.435    -0.343    -0.115     0.320   **
+h=-2       -0.365    -0.271    -0.018     0.347   **
+h=-1       -0.309    -0.197    -0.414     0.105    *
+h=+0        0.018     0.386     0.601     0.583   **
+h=+1       -0.048     0.216    -0.129     0.082    *
+h=+2       -0.031     0.198    -0.026     0.006     
+h=+3       -0.003     0.201    -0.016     0.012     
+h=+4        0.031     0.215     0.127     0.096    *
+
+======================================================================
+PANEL E: Dynamic cor(delta_t, v_{t+h})
+======================================================================
+h        HP-100k   HP-1600        FD   |delta|     
+----------------------------------------------------
+h=-4        0.557     0.296     0.175     0.383   **
+h=-3        0.490     0.211     0.068     0.423   **
+h=-2        0.372     0.089     0.032     0.340   **
+h=-1        0.281    -0.029     0.137     0.144    *
+h=+0        0.148    -0.225    -0.143     0.291   **
+h=+1        0.065    -0.312     0.003     0.062     
+h=+2       -0.005    -0.384    -0.197     0.192   **
+h=+3        0.021    -0.292    -0.169     0.190   **
+h=+4        0.133    -0.058     0.174     0.041     
+
+======================================================================
+NOTES
+======================================================================
+1. Core sample restricted to BED Deaths availability: 1992Q3-2021Q4.
+2. FD autocorrelations for s and delta are strongly negative (~-0.45),
+   indicating over-differencing; these series are I(0) at business-cycle
+   frequencies so HP-filtered moments are more reliable for persistence.
+3. cor(delta,u) under FD (+0.601) and HP-1600 (+0.386) agree in sign
+   and magnitude; HP-100k near-zero (+0.018) is a low-frequency artifact.
+4. Dynamic FD correlations decay to ~0 by h=+2, consistent with a
+   high-pass filter that removes persistence; HP-100k/1600 better suited
+   for capturing propagation dynamics reported in Table 4.
+5. SMM baseline remains HP-100k (CK convention for filter symmetry).
+   FD moments serve as robustness check for delta-specific correlations.

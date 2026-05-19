@@ -84,6 +84,17 @@ NFCI interaction variant:
 | `state_scatter_primary.png` | Cross-state fig (paper) — fig:state_scatter |
 | `jf_table2_ext_2019_latex.tex` | JF Table 2 extension (preferred sample) |
 
+## SMM Moment Construction
+
+**Baseline filter: HP with λ=1,600** (log-levels; applied identically to data and model simulations).
+- Switched from λ=100,000 (Shimer/CK convention) on May 19, 2026
+- Reason: λ=100,000 reverses sign of cor(δ,u) and cor(δ,v) — artifact of over-smoothing, not data feature
+- Robustness documented in `app:filter_robustness` (Table B.6): HP-1600 and Hamilton agree; HP-100k is outlier at 7/18 cells
+- Script: `observables_moments.py` using `filter_transform(..., lamb=1600)` from `time_series_functions.py`
+- Output pickle: `raw_data.pkl` (delta ends 2021Q4 — stale BED cache; refresh when re-estimating)
+
+**New helper script:** `labor_market_dyn_corr_by_filter.py` — produces `Bartek analysis/data/results/dyn_corr_delta_u_v_by_filter.csv` and plots
+
 ## Calibration Targets
 
 | Parameter | Value | Source |

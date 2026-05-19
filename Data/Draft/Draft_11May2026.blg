@@ -10,6 +10,8 @@ I was expecting a `,' or a `}'---line 16 of file references.bib
  :         year={2020}
 (Error may have been on previous line)
 I'm skipping whatever remains of this entry
+Warning--I didn't find a database entry for "chernozhukov_2003"
+Warning--I didn't find a database entry for "decker_2016"
 Name 2 in "Bilbiie, Florin O. and Ghironi, Fabio, and Melitz, Marc J." has a comma at the end for entry bilbiie_2012
 while executing---line 1193 of file econometrica.bst
 Name 2 in "Bilbiie, Florin O. and Ghironi, Fabio, and Melitz, Marc J." has a comma at the end for entry bilbiie_2012
@@ -20,45 +22,45 @@ Name 2 in "Bilbiie, Florin O. and Ghironi, Fabio, and Melitz, Marc J." has a com
 while executing---line 1283 of file econometrica.bst
 Warning--empty journal in colciago_2021
 Done.
-You've used 23 entries,
+You've used 25 entries,
             2327 wiz_defined-function locations,
-            660 strings with 7009 characters,
-and the built_in function-call counts, 11626 in all, are:
-= -- 1167
-> -- 608
+            677 strings with 7411 characters,
+and the built_in function-call counts, 12615 in all, are:
+= -- 1270
+> -- 666
 < -- 2
-+ -- 203
-- -- 176
-* -- 1063
-:= -- 2196
-add.period$ -- 24
-call.type$ -- 23
-change.case$ -- 136
-chr.to.int$ -- 23
-cite$ -- 24
-duplicate$ -- 407
-empty$ -- 732
-format.name$ -- 210
-if$ -- 2252
++ -- 218
+- -- 196
+* -- 1157
+:= -- 2370
+add.period$ -- 26
+call.type$ -- 25
+change.case$ -- 149
+chr.to.int$ -- 25
+cite$ -- 26
+duplicate$ -- 441
+empty$ -- 796
+format.name$ -- 220
+if$ -- 2447
 int.to.chr$ -- 1
 int.to.str$ -- 0
-missing$ -- 24
-newline$ -- 81
-num.names$ -- 138
-pop$ -- 105
+missing$ -- 26
+newline$ -- 87
+num.names$ -- 150
+pop$ -- 114
 preamble$ -- 1
-purify$ -- 136
+purify$ -- 149
 quote$ -- 0
-skip$ -- 387
+skip$ -- 419
 stack$ -- 0
-substring$ -- 743
-swap$ -- 85
+substring$ -- 809
+swap$ -- 91
 text.length$ -- 2
 text.prefix$ -- 0
 top$ -- 1
-type$ -- 250
+type$ -- 272
 warning$ -- 1
-while$ -- 141
+while$ -- 150
 width$ -- 0
-write$ -- 284
+write$ -- 308
 (There were 5 error messages)

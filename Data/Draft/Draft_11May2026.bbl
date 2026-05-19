@@ -31,6 +31,11 @@
   (2025): ``The Unemployment-Risk Channel in Business-Cycle Fluctuations,''
   \emph{International Economic Review}.
 
+\harvarditem[Canova and Ferroni]{Canova and Ferroni}{2011}{canova_2011}
+\textsc{Canova, F.,  {\small and} F.~Ferroni}  (2011): ``Multiple filtering
+  devices for the estimation of cyclical {DSGE} models,'' \emph{Quantitative
+  Economics}, 2(1), 73--98.
+
 \harvarditem[Christiano, Eichenbaum, and Trabandt]{Christiano, Eichenbaum, and
   Trabandt}{2016}{christiano_2016}
 \textsc{Christiano, L.~J., M.~S. Eichenbaum,  {\small and} M.~Trabandt}
@@ -47,6 +52,12 @@
 \textsc{Coles, M.~G.,  {\small and} A.~Moghaddasi~Kelishomi}  (2018): ``Do job
   destruction shocks matter in the theory of unemployment,'' \emph{American
   Economic Journal: Macroeconomics}, 10(3), 118--136.
+
+\harvarditem[Dridi, Guay, and Renault]{Dridi, Guay, and
+  Renault}{2007}{dridi_2007}
+\textsc{Dridi, R., A.~Guay,  {\small and} E.~Renault}  (2007): ``Indirect
+  inference and calibration of dynamic stochastic general equilibrium models,''
+  \emph{Journal of Econometrics}, 136(2), 397--430.
 
 \harvarditem[Elsby and Michaels]{Elsby and Michaels}{2013}{elsby_2013}
 \textsc{Elsby, M. W.~L.,  {\small and} R.~Michaels}  (2013): ``Marginal jobs,
@@ -74,6 +85,11 @@
 \textsc{Hagedorn, M.,  {\small and} I.~Manovskii}  (2008): ``The Cyclical
   Behavior of Equilibrium Unemployment and Vacancies Revisited,''
   \emph{American Economic Review}, 98(4), 1692--1706.
+
+\harvarditem[Hamilton]{Hamilton}{2018}{hamilton_2018}
+\textsc{Hamilton, J.~D.}  (2018): ``Why you should never use the
+  {H}odrick-{P}rescott filter,'' \emph{Review of Economics and Statistics},
+  100(5), 831--843.
 
 \harvarditem[Jaimovich and Floetotto]{Jaimovich and
   Floetotto}{2008}{jaimovich_2008}
@@ -125,9 +141,5 @@
 \harvarditem[Shimer]{Shimer}{2005}{shimer_2005}
 \textsc{Shimer, R.}  (2005): ``The Cyclical Behavior of Equilibrium
   Unemployment and Vacancies,'' \emph{American Economic Review}, 95(1), 25--49.
-
-\harvarditem[Shimer]{Shimer}{2012}{shimer_2012}
-\textsc{\BySame{}}  (2012): ``Reassessing the ins and outs of unemployment,''
-  \emph{Review of Economic Dynamics}, 15(2), 127--148.
 
 \end{thebibliography}
