@@ -2275,9 +2275,7 @@ The second set consists of empirically identified impulse responses from the
 	problems by relying only on the asymptotic normality of $\hat\beta$, which
 	follows from the LP moment conditions alone \citep{chernozhukov_2003}.
 
-	One might ask whether the IRF block is necessary at all: why not use the full
-	structural likelihood on aggregate time series and omit the impulse responses
-	entirely?  The answer is identification.  The full likelihood recovers structural
+	What is the value of using the IRF block instead of relying on the structural likelihood on aggregate time series? The answer is identification.  The full likelihood recovers structural
 	parameters from the time-series covariance structure of observables, but in a
 	three-shock model the unconditional second moments cannot separately discipline the
 	propagation of $\delta$ and $s$ shocks: both raise unemployment, and their
@@ -2340,7 +2338,8 @@ The second set consists of empirically identified impulse responses from the
 	replacement value $b$; the sunk-cost share $x_v$ of total recruiting expenditure
 	(which maps to the fixed matching cost $\kappa$ in Stage~4 below); the inverse
 	elasticity of entry with respect to vacancy value $\xi^{-1}$; the endogenous
-	exit share $\omega_\delta \equiv (1-F(x^c))/\delta_e$; the inverse
+	exit share $\omega_\delta \equiv (1-F(x^c))/\delta_e$; the mass weight $p_0$ on
+	the continuous part of the continuation-cost distribution $F$; the inverse
 	intertemporal elasticity of substitution $\sigma$; and the persistence
 	$\rho_x$ and conditional standard deviation $\sigma_x$ of each shock
 	$x\in\{z,\delta,s\}$.
@@ -2359,33 +2358,45 @@ The second set consists of empirically identified impulse responses from the
 	mass of firms $N=1$ and the wage $w=1$. The remaining parameters—$z$, $\phi$,
 	$f_e$, $A$, $s$, $\psi$, $f_m$, $x_m$, $\kappa$, $\delta$—are recovered from
 	the following targets:
-	
-	\begin{center}
-		\ra{1.3}
-		\begin{tabular}{lll}
+	\begin{table}[h!]
+		\centering
+		\caption{Calibration targets for the dependent block $\Theta_d$.
+			Job-finding and vacancy-filling rates are gross JOLTS rates,
+			corrected by $(1-\delta_e)$ in Stage~1.
+			$X/Y$ and $X^c/Y$ are external targets; all other $\Theta_e$
+			parameters listed in the estimated block are drawn by the SMM sampler.}
+		\label{tab:calib_targets}
+		\ra{1.2}
+		\small
+		\begin{tabular}{@{}lp{1.4cm}p{2.8cm}p{5.8cm}@{}}
 			\toprule
-			Target & Value & Parameter(s) identified \\
+			Target & Value & Source & Parameters identified \\
 			\midrule
-			Annual product destruction rate $\delta_e^{ann}$  & $7.54\%$  &
-			Monthly $\delta_e$, exogenous rate $\delta=(1-\omega_\delta)\delta_e$ \\
-			Endogenous exit share $\omega_\delta$  & estimated  &
-			Exogenous rate $\delta$, separation rate $s$ \\
-			Job-finding rate $f^{emp}$  & $41\%$      &
-			Destruction-adjusted rate $f$, tightness $\theta$, level $A$ \\
-			Vacancy-filling rate $q^{emp}$  & $80\%$  &
-			Destruction-adjusted rate $q$, tightness $\theta$ \\
-			Aggregate separation rate $\tau$   & $3.1\%$    &
-			Match separation rate $s=(\tau-\delta_e)/(1-\delta_e)$ \\
-			Recruiting cost share $X/Y$         & $1.5\%$    &
-			Vacancy value $Q$, then $\kappa$, $z$, $f_e$, $x_m$, $\phi$ \\
-			Fixed cost share $X^c/Y$            & $10\%$  &
-			Within-sector ratio $X^c/Y^c$, profit share $\pi_s$ \\
-			Wage normalization $w=1$            & ---       &  Productivity $z$ \\
-			Firm-mass normalization $N=1$       & ---       &  Entry cost $f_e$ \\
+			Ann.\ destruction rate $\delta_e^{ann}$ & $7.54\%$ &
+			BED Deaths &
+			Monthly $\delta_e$; with $\omega_\delta\in\Theta_e$: exogenous $\delta$ \\
+			Job-finding rate $f^{emp}$ & $41\%$ &
+			JOLTS &
+			Corrected rate $f$, tightness $\theta$, level $A$ \\
+			Vacancy-filling rate $q^{emp}$ & $80\%$ &
+			JOLTS &
+			Corrected rate $q$, tightness $\theta$ \\
+			Separation rate $\tau$ & $3.1\%$ &
+			\citet{shimer_2005} &
+			Match separation $s=(\tau-\delta_e)/(1-\delta_e)$ \\
+			Recruiting share $X/Y$ & $1.5\%$ &
+			CET 2016 &
+			Vacancy value $Q$; then $\kappa$, $z$, $f_e$, $x_m$, $\phi$ \\
+			Fixed cost share $X^c/Y$ & $10\%$ &
+			See text &
+			Retail ratio $X^c/Y^c$, profit share $\pi_s$ \\
+			Wage $w=1$ & --- & --- & Productivity $z$ \\
+			Firm mass $N=1$ & --- & --- & Entry cost $f_e$ \\
 			\bottomrule
 		\end{tabular}
-	\end{center}
-	\textcolor{red}{May need updating}\\
+	\end{table}
+	
+	\normalsize
 	\medskip\noindent\textbf{Calibration algorithm.}
 	Given a draw from $\Theta_e$ and the external block, we recover $\Theta_d$ in
 	four sequential stages.
@@ -2429,8 +2440,10 @@ The second set consists of empirically identified impulse responses from the
 	$\psi = (\mathit{cons}/p_0)\,/\,(1-\mathit{cons}/p_0)$
 	and location parameter $f_m = x^c/\zeta^{1/\psi}$, where
 	$\zeta=([(1-\delta_e)/(1-\delta)]-(1-p_0))/p_0$ is the quantile of the exit
-	threshold within the continuous part of the cost distribution. Here $p_0=0.5$
-	is fixed externally as the probability that the continuation cost is positive.
+	threshold within the continuous part of the cost distribution. The mass weight
+	$p_0\in\Theta_e$ is estimated: given $\pi_s$, only the product $\mathit{cons}=(\psi/(1+\psi))p_0$
+	is pinned by Stage~3, so $p_0$ and $\psi$ are not separately identified from
+	steady-state targets alone and require business-cycle moment restrictions.
 	
 	\medskip\noindent\textit{Stage 4: vacancy value (root-find $Q$).}
 	We solve for the steady-state vacancy value $Q$ by requiring the recruiting-cost

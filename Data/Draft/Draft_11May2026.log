@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.2) (preloaded format=pdflatex 2026.5.15)  19 MAY 2026 17:24
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.2) (preloaded format=pdflatex 2026.5.15)  19 MAY 2026 19:05
 entering extended mode
  \write18 enabled.
  %&-line parsing enabled.
@@ -1180,72 +1180,70 @@ put line 2276.
 [41]
 
 LaTeX Warning: Reference `app:weighting_robustness' on page 42 undefined on inp
-ut line 2331.
+ut line 2329.
 
 [42]
-Overfull \hbox (38.69614pt too wide) in paragraph at lines 2365--2387
- [] 
- []
 
-[43] [44]
+LaTeX Warning: `!h' float specifier changed to `!ht'.
 
-LaTeX Warning: Reference `fig:variety_effects_irf_z_comparison' on page 45 unde
-fined on input line 2485.
+[43] [44] [45]
+
+LaTeX Warning: Reference `fig:variety_effects_irf_z_comparison' on page 46 unde
+fined on input line 2498.
 
 
-LaTeX Warning: Reference `fig:risk_aversion_comparison_delta_shock' on page 45 
-undefined on input line 2492.
-
-[45]
-
-LaTeX Warning: Reference `fig:elastic_comparison_delta_shock' on page 46 undefi
-ned on input line 2502.
+LaTeX Warning: Reference `fig:risk_aversion_comparison_delta_shock' on page 46 
+undefined on input line 2505.
 
 [46]
 
+LaTeX Warning: Reference `fig:elastic_comparison_delta_shock' on page 47 undefi
+ned on input line 2515.
+
+
 LaTeX Warning: Reference `fig:elastic_comparison_tech_shock' on page 47 undefin
-ed on input line 2510.
+ed on input line 2523.
 
 
 LaTeX Warning: Reference `fig:kappa_comparison_delta_shock' on page 47 undefine
-d on input line 2518.
+d on input line 2531.
 
 [47]
-Underfull \hbox (badness 10000) in paragraph at lines 2543--2543
+Underfull \hbox (badness 10000) in paragraph at lines 2556--2556
 []|\T1/cmr/m/n/10 BED es-tab-lish-ment
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2544--2544
+Underfull \hbox (badness 10000) in paragraph at lines 2557--2557
 []|\T1/cmr/m/n/10 QCEW em-ploy-ment
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2545--2545
+Underfull \hbox (badness 10000) in paragraph at lines 2558--2558
 []|\T1/cmr/m/n/10 Layoffs & dis-charges
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2548--2548
+Underfull \hbox (badness 10000) in paragraph at lines 2561--2561
 []|\T1/cmr/m/n/10 Labor pro-duc-tiv-ity
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2557--2557
+Underfull \hbox (badness 10000) in paragraph at lines 2570--2570
 []|\T1/cmr/m/n/10 Business for-ma-tions
  []
 
 [48]
-<bed_deaths_by_supersector.png, id=788, 931.8012pt x 369.5406pt>
+<bed_deaths_by_supersector.png, id=791, 931.8012pt x 369.5406pt>
 File: bed_deaths_by_supersector.png Graphic file (type png)
 <use bed_deaths_by_supersector.png>
-Package pdftex.def Info: bed_deaths_by_supersector.png  used on input line 2592
+Package pdftex.def Info: bed_deaths_by_supersector.png  used on input line 2605
 .
 (pdftex.def)             Requested size: 486.25761pt x 192.8445pt.
  [49] [50 <./bed_deaths_by_supersector.png>]
 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unem
 ployment/Data/Bartek analysis/data/results/lp_joint_delta_ld_vacancy.png, id=80
-3, 1003.1076pt x 427.3566pt>
+6, 1003.1076pt x 427.3566pt>
 File: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and
 -unemployment/Data/Bartek analysis/data/results/lp_joint_delta_ld_vacancy.png G
 raphic file (type png)
@@ -1253,13 +1251,13 @@ raphic file (type png)
 unemployment/Data/Bartek analysis/data/results/lp_joint_delta_ld_vacancy.png>
 Package pdftex.def Info: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endo
 genous-variety--and-unemployment/Data/Bartek analysis/data/results/lp_joint_del
-ta_ld_vacancy.png  used on input line 2651.
+ta_ld_vacancy.png  used on input line 2664.
 (pdftex.def)             Requested size: 486.25761pt x 207.16336pt.
  [51 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and
 -unemployment/Data/Bartek analysis/data/results/lp_joint_delta_ld_vacancy.png>]
  [52]
-Overfull \hbox (3.61536pt too wide) in paragraph at lines 2738--2745
-[]\T1/cmr/m/n/12 Table [][]B.6[][] re-ports dy-namic cross-correlations $[]\OT1
+Overfull \hbox (3.61536pt too wide) in paragraph at lines 2751--2758
+[]\T1/cmr/m/n/12 Table [][]B.7[][] re-ports dy-namic cross-correlations $[]\OT1
 /cmr/m/n/12 (\OML/cmm/m/it/12 ^^N[]; x[]\OT1/cmr/m/n/12 )$ \T1/cmr/m/n/12 for $
 \OML/cmm/m/it/12 x \OMS/cmsy/m/n/12 2 f\OML/cmm/m/it/12 u; v\OMS/cmsy/m/n/12 g$
  \T1/cmr/m/n/12 and $\OML/cmm/m/it/12 h \OMS/cmsy/m/n/12 2 f^^@\OT1/cmr/m/n/12 
@@ -1269,22 +1267,22 @@ Overfull \hbox (3.61536pt too wide) in paragraph at lines 2738--2745
 [53] [54] [55]
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 2843.
+(hyperref)                removing `math shift' on input line 2856.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\psi' on input line 2843.
+(hyperref)                removing `\psi' on input line 2856.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 2843.
+(hyperref)                removing `math shift' on input line 2856.
 
 
-LaTeX Warning: Reference `eq:labor_C_N' on page 56 undefined on input line 2849
+LaTeX Warning: Reference `eq:labor_C_N' on page 56 undefined on input line 2862
 .
 
 [56] [57] [58] [59] [60] [61]
-Overfull \hbox (0.669pt too wide) in paragraph at lines 3144--3150
+Overfull \hbox (0.669pt too wide) in paragraph at lines 3157--3163
 \T1/cmr/m/n/12 This is a non-lin-ear pre-de-ter-mined vari-able equa-tion drive
 n by the ex-oge-nous pro-cesses $\OMS/cmsy/m/n/12 f\OML/cmm/m/it/12 z[]; ^^N[];
  u[]\OMS/cmsy/m/n/12 g$\T1/cmr/m/n/12 ,
@@ -1292,7 +1290,7 @@ n by the ex-oge-nous pro-cesses $\OMS/cmsy/m/n/12 f\OML/cmm/m/it/12 z[]; ^^N[];
 
 [62]
 
-LaTeX Warning: Reference `eq:rc_limit' on page 63 undefined on input line 3241.
+LaTeX Warning: Reference `eq:rc_limit' on page 63 undefined on input line 3254.
 
 
 [63] [64] [65] (Draft_11May2026.bbl [66] [67])
@@ -1315,10 +1313,10 @@ Package rerunfilecheck Info: File `Draft_11May2026.out' has not changed.
 (rerunfilecheck)             Checksum: 8D3BFCEE8DF8F945CA3A4E2D0D4EE3EE;7662.
  ) 
 Here is how much of TeX's memory you used:
- 27657 strings out of 467691
- 529301 string characters out of 5414987
- 946514 words of memory out of 5000000
- 55978 multiletter control sequences out of 15000+600000
+ 27659 strings out of 467691
+ 529336 string characters out of 5414987
+ 946817 words of memory out of 5000000
+ 55979 multiletter control sequences out of 15000+600000
  652891 words of font info for 103 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  84i,15n,104p,2336b,851s stack positions out of 10000i,1000n,20000p,200000b,200000s
@@ -1361,9 +1359,9 @@ msilv/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmti12.pfb><
 C:/Users/msilv/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/symbol
 s/msam10.pfb><C:/Users/msilv/AppData/Local/Programs/MiKTeX/fonts/type1/public/a
 msfonts/symbols/msbm10.pfb>
-Output written on Draft_11May2026.pdf (68 pages, 1982528 bytes).
+Output written on Draft_11May2026.pdf (68 pages, 1989136 bytes).
 PDF statistics:
- 1752 PDF objects out of 2073 (max. 8388607)
- 257 named destinations out of 1000 (max. 500000)
+ 1762 PDF objects out of 2073 (max. 8388607)
+ 258 named destinations out of 1000 (max. 500000)
  400 words of extra memory for PDF output out of 10000 (max. 10000000)
 

@@ -4,7 +4,7 @@ Generate tables for
     2) steady-state shares
 """
 
-include("steady_state_refactored.jl")
+include("steady_state.jl")
 using MAT
 #cd("C:/Users/msilva913/Documents/GitHub/Sunk_entry_costs_endogenous_variety_unemployment")
 # Load posterior mode 
