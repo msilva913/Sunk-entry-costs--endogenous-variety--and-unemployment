@@ -1,5 +1,5 @@
 # CLAUDE.md — Empirical LP Project (Firm Entry/Exit DSGE)
-**Last updated:** May 14, 2026 · **Author:** Mario Silva
+**Last updated:** May 20, 2026 · **Author:** Mario Silva
 **Code style:** clean, succinct, interpretable by empirical macroeconomist
 
 **Draft writing style: **clean, suffinct, applied macroeconomist
@@ -45,6 +45,7 @@ Data/Bartek analysis/
 **Vacancy convention:** outcome is vacancy RATE = V/LF × 100 in pp, levels difference. Never log. Symmetric to unemployment rate.
 **Calibration:** δ̄ = 1.079%/qtr (BED Deaths), τ̄ = 9.34%/qtr, δ/τ = 11.6% — NOTE: up from 10.1% with closings×π; Section 5 needs update
 **Paper draft:** `Draft/Draft_11May2026.tex` — Intro + Sections 2–4.2 complete; prop:bgm_nest + proof complete; 4.3 partially drafted
+**Model code:** `Programs baseline/run_solution_core.jl` audited May 20: r=discount rate, ρ=relative price (consistent with steady_state.jl); κ=matching cost paid per match (κ·q·v in RC); u LOM uses total v_t=v_pret+e_t; BFE at f[4] after JCC.
 
 ---
 

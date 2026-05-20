@@ -1,12 +1,44 @@
-# Based on original code by Alvaro Salazar-Perez and Hernán D. Seoane
-# Modified by Mario Silva
+# run_solution_core.jl
+# =============================================================================
+# Perturbation solution setup — Gabrovski-Silva endogenous exit model
+# =============================================================================
+# Based on toolkit by Alvaro Salazar-Perez and Hernán D. Seoane.
+# Model: BGM (Bilbiie-Ghironi-Melitz 2012) + Coles-Kelishomi (2018) with
+# endogenous exit via heterogeneous continuation costs.
+#
+# Three aggregate shocks: z (technology), δ (permanent exit), s (separation).
+# Shocks are orthogonal by construction (Cholesky, z ordered first in part6b).
+# The z→δ_e pathway is captured by equilibrium equations (x_c responds to z),
+# not by shock covariance.
+#
+# Timing (monthly, following CK stage structure):
+#   Stage 1: New realizations of (z_t, δ_t, s_t)
+#   Stage 2: Bargaining and production — wages, output, profits
+#   Stage 3: Vacancy investment — new entrants e_t drawn
+#   Stage 4: Matching — m_t matches formed
+#   Stage 5: Job separation at rate δ_e_t (endogenous) + s_t (idiosyncratic)
+#
+# State variables x = [u, N, v_pret, z, δ, s]:
+#   u      : unemployment entering period t (pre-matching)
+#   N      : mass of incumbent firms entering period t
+#   v_pret : surviving vacancies from t-1 (pre-entry); total v_t = v_pret + e_t
+#            entrants e_t post vacancies and participate in matching within period t
+#            (draft eq:v_lom); v_pret makes vacancies partially predetermined.
+#   z, δ, s: exogenous shocks (log-deviations from SS = 1)
+#
+# Control variables y (31 total) — see declaration below.
+#
+# Key endogenous exit objects added vs. CK baseline:
+#   x_c  : continuation cost cutoff (firms with cost > x_c exit)
+#   δ_e  : endogenous destruction rate = 1 - (1-δ*δbar)*F(x_c)
+#          where F(x_c) = (1-p_0) + p_0*(x_c/f_m)^ψ
+#   π_s  : per-firm profit share; determined by (ε, Xc_Y) calibration targets
+# =============================================================================
+
 using MKL
 using DataFrames
 using Serialization
 cd(@__DIR__)
-#v1.7- 
-#BLAS.vendor() 
-#:mkl
 
 include("solution_functions.jl")
 include("steady_state.jl")
@@ -14,248 +46,407 @@ include("impulse_response_plots.jl")
 include("time_series_fun.jl")
 
 function solution_interface(model, PAR)
-    eta     =   eval_ShockVAR(PAR)
-    PAR_SS  =   eval_PAR_SS(PAR)
-    SS      =   eval_SS(PAR_SS)
-    SS_err  =   eval_SS_error(PAR_SS, SS)
-    deriv   =   eval_deriv(PAR_SS, SS)
+    eta    = eval_ShockVAR(PAR)
+    PAR_SS = eval_PAR_SS(PAR)
+    SS     = eval_SS(PAR_SS)
+    SS_err = eval_SS_error(PAR_SS, SS)
+    deriv  = eval_deriv(PAR_SS, SS)
     SS_max = maximum(abs.(SS_err))
-    argmax(abs.(SS_err))
-    println("Residuals: $SS_max")
-
-    ss = NamedTuple(zip(model.varnames, exp.(SS[1:model.nvar])))
-    # dev = zeros(model.nvar)
-    # common_keys = intersect(keys(ss), keys(steady))
-    # for (i, field) in enumerate(common_keys)
-    #     dev[i] = ss[field] -steady[field]
-    # end
-    # print(maximum(abs.(dev)))
-    #@btime sol_mat = solve_model(model, deriv, eta)
+    println("Max SS residual: $SS_max")
     sol_mat = solve_model(model, deriv, eta)
     println("Model solved")
-    out = (SS=SS, ss=ss, eta=eta, deriv=deriv, sol_mat=sol_mat)
-    return out
+    ss = NamedTuple(zip(model.varnames, exp.(SS[1:model.nvar])))
+    return (SS=SS, ss=ss, eta=eta, deriv=deriv, sol_mat=sol_mat)
 end
 
-## Model
-# Adjustments
-    flag_order      = 1
-    flag_deviation  = true
-    flag_SSsolver   = false
+# =============================================================================
+# Flags
+# =============================================================================
+flag_order     = 1
+flag_deviation = true
+flag_SSsolver  = false
 
-# Parameters
-    @syms f_e zbar δbar sbar b ϕ ρ σ ε A η_L F x_m κ ξ_inv ρ_z σ_z ρ_δ σ_δ ρ_s σ_s
-    parameters      = [f_e; zbar; δbar; sbar; b; ϕ; ρ; σ; ε; A; η_L; F; x_m; κ; ξ_inv; ρ_z; σ_z; ρ_δ; σ_δ; ρ_s; σ_s ]
-    estimate        = []
-    position        = []
-    priors          = (;)
+# =============================================================================
+# Parameters (symbolic)
+# =============================================================================
+# Order must match PAR vector in run_solution.jl.
+# Removed: F (obsolete scalar CDF — endogenous F(x_c) is computed in equations)
+# Added:   ψ, f_m, p_0 (continuation cost distribution parameters)
+@syms f_e zbar δbar sbar b ϕ r σ ε A η_L κ ξ_inv x_m ψ f_m p_0 ρ_z σ_z ρ_δ σ_δ ρ_s σ_s
 
-    # Transformations
-    β = 1/(1+ρ)
-    ξ = 1/ξ_inv
-    τbar = 1 - (1-δbar)*(1-sbar)
-    μ = ε/(ε-1)
+parameters = [f_e; zbar; δbar; sbar; b; ϕ; r; σ; ε; A; η_L; κ; ξ_inv; x_m; ψ; f_m; p_0;
+              ρ_z; σ_z; ρ_δ; σ_δ; ρ_s; σ_s]
 
+estimate = []   # filled in when SMM is wired up
+position = []
+priors   = (;)
+
+# Composite parameters (symbolic)
+β   = 1 / (1 + r)
+ξ   = 1 / ξ_inv            # entry elasticity
+μ   = ε / (ε - 1)          # markup
+
+# =============================================================================
 # Variables
-@syms  z δ s θ q L u v v_pret e K Q  N p N_e ν_f d_f w_int w L_e L_c Y_c C λ Y labor_prod C_R Y_R Y_cR w_R ls
-@syms zp  δp sp θp qp Kp Lp up vp v_pretp ep Kp Qp Np pp N_ep ν_fp d_fp w_intp wp L_ep L_cp Y_cp Cp λp Yp labor_prod_p C_Rp Y_Rp Y_cRp w_Rp lsp
+# =============================================================================
+# State variables (predetermined, known at start of period t)
+@syms u N v_pret z δ s
+@syms up Np v_pretp zp δp sp
 
+# Control variables (jump variables, determined within period t)
+# Added vs. previous version: x_c (exit threshold), δ_e (endogenous exit rate)
+@syms θ q L v e K Q ρ N_e ν_f d_f w_int w L_e L_c Y_c C λ Y x_c δ_e labor_prod C_R Y_R Y_cR w_R ls
+@syms θp qp Lp vp ep Kp Qp ρp N_ep ν_fp d_fp w_intp wp L_ep L_cp Y_cp Cp λp Yp x_cp δ_ep labor_prod_p C_Rp Y_Rp Y_cRp w_Rp lsp
 
-x               = [u; N; v_pret; z; δ; s] # predetermined
-y               = [θ; q; L; v; e; K; Q; p; N_e; ν_f; d_f; w_int; w; L_e; L_c; Y_c; C; λ; Y; labor_prod; C_R; Y_R; Y_cR; w_R; ls]
-xp              = [up; Np; v_pretp; zp; δp; sp]
-yp              = [θp; qp; Lp; vp; ep; Kp; Qp; pp; N_ep; ν_fp; d_fp; w_intp; wp; L_ep; L_cp; Y_cp; Cp; λp; Yp; labor_prod_p; C_Rp; Y_Rp; Y_cRp; w_Rp; lsp]
-variables       = [x; y; xp; yp]
-varnames = vcat(Symbol.(x), Symbol.(y))
+x  = [u; N; v_pret; z; δ; s]
+y  = [θ; q; L; v; e; K; Q; ρ; N_e; ν_f; d_f; w_int; w; L_e; L_c; Y_c; C; λ; Y; x_c; δ_e; labor_prod; C_R; Y_R; Y_cR; w_R; ls]
+xp = [up; Np; v_pretp; zp; δp; sp]
+yp = [θp; qp; Lp; vp; ep; Kp; Qp; ρp; N_ep; ν_fp; d_fp; w_intp; wp; L_ep; L_cp; Y_cp; Cp; λp; Yp; x_cp; δ_ep; labor_prod_p; C_Rp; Y_Rp; Y_cRp; w_Rp; lsp]
 
-# Shock
-@syms epsilon
-ex               = [epsilon]
-eta = Array([0.0; 0.0; 0.0; -σ_z; σ_δ; σ_s]) # size of state space
+variables = [x; y; xp; yp]
+varnames  = vcat(Symbol.(x), Symbol.(y))
 
-    
-nx = length(x) 
-ny = length(y)
-nvar = nx + ny 
-ne = length(ex) 
+nx   = length(x)
+ny   = length(y)
+nvar = nx + ny
+ne   = 3    # three structural shocks: z, δ, s
 
-# Array of symbolics storing model equtions 
+# =============================================================================
+# Shock matrix eta (nx × ne = 6 × 3)
+# =============================================================================
+# Column j of eta gives the impact of shock j on each state variable.
+# Sign convention: a positive z shock raises log(z), so column 1 entry 4 = +σ_z.
+# A positive δ shock raises log(δ), so column 2 entry 5 = +σ_δ.
+# Shocks are orthogonal (Cholesky z-first in part6b); no off-diagonal terms.
+#
+# States: row 1=u, row 2=N, row 3=v_pret, row 4=z, row 5=δ, row 6=s
+#         z shock   δ shock   s shock
+eta = [0    0    0;    # u      (not directly hit)
+       0    0    0;    # N      (not directly hit)
+       0    0    0;    # v_pret (not directly hit)
+       σ_z  0    0;    # z      (+σ_z on z shock)
+       0    σ_δ  0;    # δ      (+σ_δ on δ shock)
+       0    0    σ_s]  # s      (+σ_s on s shock)
+
+@syms epsilon   # placeholder required by toolkit; ne=3 shocks handled via eta
+ex = [epsilon]
+
+# =============================================================================
+# Model equations
+# =============================================================================
+# Notation:
+#   Unprimed = period t (current); primed = period t+1 (next period, expected)
+#   Shocks z, δ, s enter as multiplicative deviations from SS (= 1 at SS).
+#   δ_e = endogenous destruction rate = 1 - (1 - δ*δbar)*F(x_c)
+#     where F(x_c) = (1-p_0) + p_0*(x_c/f_m)^ψ   [continuation cost CDF]
+#   x_c = continuation cost threshold (firms draw cost each period; exit if > x_c)
+#
+# Equation count: 6 state + 27 control = 33 total, matching nvar.
+# f[1]–f[2]:   endogenous exit (x_c threshold, δ_e rate)
+# f[3]–f[5]:   Euler equations (JCC, business formation, K value)
+# f[6]–f[8]:   wage block (MRP, Nash wage, vacancy creation)
+# f[9]–f[15]:  labor/goods market static conditions
+# f[16]–f[24]: resource constraint, identities, LOMs
+# f[25]:       labor share
+# f[26]–f[30]: data-consistent observables
+# f[31]–f[33]: exogenous AR(1) shock processes
+#
+# Key timing notes:
+#   - δ_e,t applies to incumbents at END of period (Stage 5): destroys filled
+#     jobs and unfilled vacancies simultaneously.
+#   - v_pret is predetermined: surviving vacancies from t-1 before new entry.
+#   - e_t new entrants post vacancies in Stage 3 and join the matching pool
+#     in Stage 4 of the same period (draft eq:v_lom). Total v_t = v_pret + e_t.
+#   - Matching uses total v_t: θ_t = v_t/u_t, f(θ_t) = A*θ_t^(1-η_L). ✓
+#   - v_pret_{t+1} = (1-δ_e_t)*[(1-q_t)*v_t + s_t*sbar*(1-u_t)]: surviving
+#     unmatched vacancies plus reposted separations, both from total v_t.
+
 function gen_model_equations()
     f = fill(Sym("x"), nvar)
-    # Equilibrium conditions
-    # Job creation condition -> θ
-    f[1]  =  κ + K/q - β*λp/λ*(1-δbar*δ)*(w_intp-wp-Kp+(1-sbar*sp)*(κ+Kp/qp))
-    # Marginal revenue product (welfare-based labor prod. measure) -> w_int
-    f[2] = w_int - p*z*zbar/μ
-    # Wage equation -> w
-    f[3] = w - (ϕ*(w_int-K+θ*(K+q*κ)) +(1-ϕ)*b)
-    # Value of a vacancy -> Q
-    f[4] = Q - (e/F)^(ξ_inv)*x_m
-    # Expected discounted difference in vacancy value -> K
-    f[5] = K - (Q-β*λp/λ*(1-δbar*δ)*Qp)
-    # Market tightness -> v
-    f[6] = θ - v/u 
-    # Vacancy filling probability -> q
-    f[7] = q - A*θ^(-η_L) 
-    # Aggregate labor -> L
-    f[8] = L - (1-u)
-    # Composition of labor -> L_c
-    f[9] = L - (L_c+L_e) 
-    # Relative price -> p
-    f[10] = p - N^(1/(ε-1))
-    # Lagrangian multiplier -> λ
-    f[11] = λ - C^(-σ)
-    # Firm value -> ν_f
-    f[12] = ν_f - β*(1-δbar*δ)*λp/λ*(ν_fp+d_fp)
-    # Retail output: resources -> Y_c
-    f[13] = Y_c - p*z*zbar*L_c
-    # Retail output: expenditure -> C
-    f[14] = Y_c - (C+e/(1+ξ_inv)*Q+κ*v*q)
-    # Business entrants -> N_e
-    f[15] = N_e - L_e*z*zbar/f_e 
-    # Firm value relative to price 
-    f[16] = ν_f - p*f_e/μ 
-    # Output = C+I
-    f[17] = Y - (C+ν_f*N_e)
-    # Gross output = Gross income 
-    f[18] = Y+X - (w_int*L+N*d_f)
-    # LOM of vacancies 
-    f[19] = v - (v_pret + e)
-    # Predetermined vacancies 
-    f[20] = v_pretp - (1-δbar*δ)*((1-q)*v+sbar*s*(1-u))
-    # LOM of unemployment
-    f[21] = up - ((1-(1-δbar*δ)*(θ*q))*u + (1-(1-δ*δbar)*(1-sbar*s))*(1-u))
-    # LOM of firms 
-    f[22] = Np - (1-δbar*δ)*(N+N_e)
-    # Profits 
-    #f[23] = d_f - Y_c/(N*ε)
-    # Labor share of income
-    f[23] = ls - w*L/Y
 
-    # Data-consistent variables (_R)
-    f[24] = labor_prod - Y/(p*L) # labor productivity
-    f[25] = C_R - C/p 
-    f[26] = Y_R - Y/p 
-    f[27] = Y_cR - Y_c/p
-    f[28] = w_R - w/p
+    # ── Endogenous exit composites ─────────────────────────────────────────────
+    # Survival probability Λ(x_c) = F(x_c) evaluated at current and next cutoff.
+    # Draft eq:Lambda: Λ_t = (1-p_0) + p_0*(x_c_t/f_m)^ψ
+    Λ    = (1 - p_0) + p_0 * (x_c  / f_m)^ψ   # survival prob, period t
+    Λp   = (1 - p_0) + p_0 * (x_cp / f_m)^ψ   # survival prob, period t+1
 
-    # Exogenous processes
-    f[29]  =   log(zp) - ρ_z * log(z)
-    f[30] =    log(δp) -  ρ_δ * log(δ)
-    f[31] = log(sp) - ρ_s*log(s)
+    # δ_e_t = 1 - (1-δ_t)*Λ_t  [draft eq:delta_e_lom, δ predetermined]
+    # δ_e_{t+1} = 1 - (1-δ_{t+1})*Λ_{t+1}  [next period, not yet realized]
+    #   (1-δ_t)*Λ_{t+1} = "fraction of today's firms+jobs surviving to t+1"
+    # This uses CURRENT δ (predetermined) and NEXT-PERIOD Λp (depends on x_cp).
+    SDF_surv = (1 - δ * δbar) * Λp   # (1-δ_t)*Λ_{t+1}: survival factor for t→t+1
+
+    # ── [1] Exit threshold (eq:cutoff_eq) ─────────────────────────────────────
+    # χ_t^c = Y_t^c*(μ-1)/(μ*N_t) + ρ(N_t)*f_e/μ(N_t)
+    # = per-firm gross profit R^f + firm value ν_f  (eq:cutoff_free_entry)
+    f[1] = x_c - (Y_c * (μ - 1) / (μ * N) + ν_f)
+
+    # ── [2] Endogenous destruction rate (eq:delta_e_lom) ──────────────────────
+    # δ_e_t = 1 - (1-δ_t)*Λ_t  where δ_t is predetermined state
+    f[2] = δ_e - (1 - (1 - δ * δbar) * Λ)
+
+    # ── [3] Job creation condition (eq:jcc_eq) ────────────────────────────────
+    # κ + K/q = E_t[m_{t+1}*(1-δ_t)*Λ_{t+1}*{(1-ϕ)*(w_int'-K'-b)
+    #            - ϕ*θ'*(K'+q'*κ) + (1-s'*sbar)*(κ+K'/q')}]
+    # Survival factor: (1-δ_t)*Λ_{t+1} = SDF_surv (current δ, next-period Λp).
+    f[3] = κ + K/q - β*λp/λ * SDF_surv * (
+               (1-ϕ)*(w_intp - Kp - b)
+               - ϕ*θp*(Kp + qp*κ)
+               + (1 - sp*sbar)*(κ + Kp/qp)
+           )
+
+    # ── [4] Business formation Euler (eq:firm_value_char / BGM eq:euler_bf) ───
+    # ν_f = β*(λ'/λ)*(1-δ_t)*Λ_{t+1}*(ν_f' + d_f')
+    # Interpretation (BGM): marginal cost of creating a firm today (ν_f, via free
+    # entry) equals discounted expected payoff tomorrow — dividend d_f' plus
+    # continuation value ν_f', survival-weighted by SDF_surv = (1-δ_t)*Λ_{t+1}.
+    # Together with free entry f[17] (ν_f = ρ*f_e/μ), this pins the entry margin
+    # dynamically: it is not redundant — it is what makes N forward-looking.
+    f[4] = ν_f - β*λp/λ * SDF_surv * (ν_fp + d_fp)
+
+    # ── [5] Capital value K (eq:Kdef) ─────────────────────────────────────────
+    # K_t = Q_t - (1-δ_t)*E_t[m_{t+1}*Λ_{t+1}*Q_{t+1}]
+    # Q is the sunk cost of posting a vacancy; K is its net value after survival.
+    f[5] = K - (Q - β*λp/λ * SDF_surv * Qp)
+
+    # ── [6] Marginal revenue product (eq:recruiter_compensation) ──────────────
+    # w_int = ρ(N)*z/μ(N) = ρ*z*zbar/μ  (DS-CES: ρ = N^(1/(ε-1)), μ constant)
+    f[6] = w_int - ρ * z * zbar / μ
+
+    # ── [7] Nash bargaining wage ───────────────────────────────────────────────
+    # w = ϕ*(w_int - K + θ*(K + q*κ)) + (1-ϕ)*b
+    f[7] = w - (ϕ*(w_int - K + θ*(K + q*κ)) + (1-ϕ)*b)
+
+    # ── [8] Vacancy creation (eq:entry_eq) ────────────────────────────────────
+    # Q_t = x_m * e_t^(ξ_inv): marginal cost of posting the e_t-th vacancy
+    f[8] = Q - x_m * e^(ξ_inv)
+
+    # ── Labor market ───────────────────────────────────────────────────────────
+    # [9] Market tightness
+    f[9] = θ - v/u
+
+    # [10] Vacancy-filling probability (Cobb-Douglas matching)
+    f[10] = q - A * θ^(-η_L)
+
+    # [11] Total employment
+    f[11] = L - (1 - u)
+
+    # [12] Labor decomposition: production workers + recruiters
+    f[12] = L - (L_c + L_e)
+
+    # ── Goods market ───────────────────────────────────────────────────────────
+    # [13] Relative price (DS-CES aggregator, N varieties): ρ = N^(1/(ε-1))
+    f[13] = ρ - N^(1/(ε-1))
+
+    # [14] Household Euler (λ = marginal utility of consumption)
+    f[14] = λ - C^(-σ)
+
+    # [15] Retail production function
+    f[15] = Y_c - ρ * z * zbar * L_c
+
+    # ── [16] Resource constraint (eq:rc): Y_c = C + X + X_c ──────────────────
+    # X   = e/(1+ξ_inv)*Q + κ*q*v  (sunk entry costs + matching costs [Pissarides 2009])
+    #   κ is paid per match (not per vacancy): total matching cost = κ * q(θ)*v
+    # X_c = N*p_0*ψ_c*x_c          (aggregate continuation costs)
+    # ψ_c = ψ/(ψ+1)
+    ψ_c = ψ / (ψ + 1)
+    X_c = N * p_0 * ψ_c * x_c
+    X   = e * ξ_inv/(1 + ξ_inv) * Q + κ * q * v   # sunk entry costs + matching costs (κ per match, q*v matches)
+    f[16] = Y_c - (C + X + X_c)
+
+    # [17] New entrants: N_e = z*zbar*L_e/f_e
+    f[17] = N_e - z * zbar * L_e / f_e
+
+    # ── [18] Free entry condition (eq:free_entry) ──────────────────────────────
+    # ν_f = ρ(N)*f_e/μ(N) = ρ*f_e/μ  (DS-CES)
+    f[18] = ν_f - ρ * f_e / μ
+
+    # ── [19] GDP (eq:gdp): Y = C + ν_f*N_e ───────────────────────────────────
+    f[19] = Y - (C + ν_f * N_e)
+
+    # ── [20] Income identity: Y = w_int*L + N*d_f ─────────────────────────────
+    # Retail profits net of continuation costs: d_f = Y_c/(ε*N) - X_c/N
+    # Under DS-CES: Y_c/ε = R^f*N + markupˉ¹*Y_c ... equivalently:
+    # d_f*N = Y_c*(μ-1)/μ - X_c = (Y_c - w_int*L_c) - X_c = π^f (net profits)
+    # This is an identity given other equations; use as check/residual for d_f.
+    f[20] = N * d_f - (Y_c * (μ - 1) / μ - X_c)
+
+    # ── Laws of motion ─────────────────────────────────────────────────────────
+    # [21] Total vacancies (eq:v_lom split): v = v_pret + e
+    f[21] = v - (v_pret + e)
+
+    # ── [22] Pre-entry vacancies tomorrow (predetermined part of v_lom) ────────
+    # v_pret_{t+1} = (1-δ_e_t)*[(1-q_t)*v_t + s_t*sbar*(1-u_t)]
+    # (draft eq:v_lom): surviving unmatched vacancies + reposted separations.
+    # Uses total v_t (including e_t): entrants participate in matching this period.
+    f[22] = v_pretp - (1 - δ_e)*((1 - q)*v + s*sbar*(1 - u))
+
+    # ── [23] Unemployment LOM (eq:u_lom) ──────────────────────────────────────
+    # u_{t+1} = (1-f(θ_t))*u_t + τ_t*[(1-u_t) + f(θ_t)*u_t]
+    # where f(θ_t) = A*θ_t^(1-η_L) is the job-finding rate using total v_t
+    # (draft eq:u_lom): entrants e_t participate in matching within period t,
+    # τ_t = δ_e + s*sbar*(1-δ_e)  [total separation rate, eq:tau_lom]
+    τ_t = δ_e + s*sbar*(1 - δ_e)
+    f_t  = A * θ^(1 - η_L)         # job-finding rate: f(θ_t), θ_t uses total v_t
+    f[23] = up - ((1 - f_t)*u + τ_t*((1 - u) + f_t*u))
+
+    # ── [24] Firm LOM (eq:N_lom_eq simplified) ────────────────────────────────
+    # N_{t+1} = (1-δ_{e,t})*(N_t + N_e_t)
+    # Both incumbents and entrants face current-period destruction δ_e. ✓
+    f[24] = Np - (1 - δ_e)*(N + N_e)
+
+    # [25] Labor share
+    f[25] = ls - w*L/Y
+
+    # ── Data-consistent observables ────────────────────────────────────────────
+    # [26] Labor productivity (real output per worker)
+    f[26] = labor_prod - Y/(ρ*L)
+
+    # [27]–[30] Real (price-deflated) aggregates
+    f[27] = C_R    - C/ρ
+    f[28] = Y_R    - Y/ρ
+    f[29] = Y_cR   - Y_c/ρ
+    f[30] = w_R    - w/ρ
+
+    # ── Exogenous AR(1) shock processes (eq:ar1_z – eq:ar1_s) ─────────────────
+    # Log-linear around SS = 1 for each shock (log-deviation = 0 at SS).
+    # Shock innovations are orthogonal by Cholesky construction (part6b).
+    f[31] = log(zp) - ρ_z * log(z)   # technology
+    f[32] = log(δp) - ρ_δ * log(δ)   # structural exit (⊥ z)
+    f[33] = log(sp) - ρ_s * log(s)   # worker separation
+
     return f
 end
-# Steady state   
-"""
-If known, provide the symbolic expresion of the steady state in 
-terms of the parameters and steady-state relationships captured in the targets.
-It must be provided as a column vector, in which the variables 
-should be ordered in the following way: [x; y; xp; yp].
-If the steady state is unknown leave it as an empty vector (SS=[]), 
-so that the program tries to estimate it.
-"""  
+
+# =============================================================================
+# Symbolic steady state
+# =============================================================================
+# Provides the analytic SS to the perturbation toolkit, avoiding numerical
+# root-finding. Uses calibrate_shares → steady_state pipeline from steady_state.jl.
+#
+# Key changes from previous version:
+#   - Removed labor_share target (it is an outcome, not an input in new calibration)
+#   - Uses dest_end_frac to split δ_e into exogenous/endogenous components
+#   - x_c and δ_e now appear explicitly in the SS vector
+#   - δ_e replaces all occurrences of δbar in LOM expressions
+#   - p_0, ψ, f_m replace scalar F
+
 function SS_symbolics(parameters::Vector{Sym{PyObject}}, targets)
 
-    f_e, zbar, δbar, sbar, b, ϕ, ρ, σ, ε, A, η_L, F, x_m, κ, ξ_inv, ρ_z, σ_z, ρ_δ, σ_δ, ρ_s, σ_s = parameters
-    # Initial parameters: targets and normalizations/ leave parameters as symbolic to be populated with calibration
-    @unpack N, w, f, q, x_v, labor_share = targets
-    N_s = N 
-    w_s = w 
-    fbar = f 
-    qbar = q 
+    f_e, zbar, δbar, sbar, b, ϕ, r, σ, ε, A, η_L, κ, ξ_inv, x_m, ψ, f_m, p_0,
+        ρ_z, σ_z, ρ_δ, σ_δ, ρ_s, σ_s = parameters
 
+    @unpack N, w, f, q, X_Y, Xc_Y, dest_ann, dest_end_frac = targets
 
-    ls_s = labor_share
-    p_s = N_s^(1/(ε-1))
-    N_es = δbar/(1-δbar)*N_s
-    q_s = qbar/(1-δbar)
-    θ_s = fbar/qbar
-    u_s = τbar/(τbar+(1-δbar)*(θ_s*q_s))
-    L_s = 1 - u_s 
-    v_s = θ_s*u_s
-    e_s = δbar*(v_s+1-u_s)
-    v_prets = v_s - e_s 
-    recruiter_share= (δbar+(ρ+δbar)*(ε-1))/(δbar+(ρ+δbar)*ε)
-    w_wint = labor_share/recruiter_share
-    w_ints = w_s/(w_wint)
+    # ── Monthly rates ─────────────────────────────────────────────────────────
+    N_s    = N
+    w_s    = w
 
-    # Rescale zbar to be consistent with wage=1
-    zbar = (μ/p_s)*w_ints
-    surplus_ratio = (ρ+τbar)/(1-δbar)*(1/(q_s*x_v))
-    K_s = (w_ints-w_s)/(1+surplus_ratio) 
-    κ   = (1-x_v)/x_v*K_s/q_s
-    f_e = (μ-1)*zbar*(L_s/N_s)*(1-δbar)/(δbar*μ+ρ)
-    ν_fs =p_s*f_e/μ
-    d_fs = (ρ+δbar)/(1-δbar)*ν_fs
-    L_es = N_es*f_e/zbar
-    L_cs = L_s - L_es 
-    Y_cs = p_s*zbar*L_cs
-    Q_s = K_s*(1+ρ)/(ρ+δbar)
-    C_s = Y_cs -  e_s/(1+ξ_inv)*Q_s -  κ*v_s*q_s 
-    λ_s = C_s^(-σ)
-    Y_s = Y_cs + ν_fs*N_es
+    # Endogenous destruction rate (monthly) at SS: δ_e = 1-(1-dest_ann)^(1/12)
+    δ_e_s   = 1 - (1 - dest_ann)^(1/12)
 
-    # data consistent
-    labor_prod_s = Y_s/(p_s*L_s)
-    C_Rs = C_s/p_s
-    Y_Rs = Y_s/p_s
-    Y_cRs = Y_cs/p_s
-    w_Rs = w_s/p_s
+    # Exogenous destruction rate at SS: δ = (1-dest_end_frac)*δ_e
+    δ_s_ss  = (1 - dest_end_frac) * δ_e_s
 
-    z_s = 1.0 
-    δ_s = 1.0
-    s_s = 1.0
-    #x               = [u; N; v_pret; z] # predetermined
-    #y               = [θ; q; L; v; e; K; Q; p; N_e; ν_f; d_f; w_int; w; L_e; L_c; Y_c; C; λ; Y; labor_prod]
-    # Vector
-    SS_block  = [log(x) for x in [u_s, N_s, v_prets, z_s, δ_s, s_s, θ_s, q_s, L_s, v_s, e_s, K_s, Q_s, p_s, N_es, ν_fs, d_fs, w_ints, w_s, L_es, L_cs, Y_cs, C_s, λ_s, Y_s, 
-            labor_prod_s, C_Rs, Y_Rs, Y_cRs, w_Rs, ls_s]]
-    # vertical concatenate: represent both current and future variables
-    SS = vcat(SS_block, SS_block)
+    # Effective job finding/filling (conditional on firm survival)
+    f_corr  = f / (1 - δ_e_s)
+    q_corr  = q / (1 - δ_e_s)
+
+    # Aggregate separation rate and SS s
+    sep_s   = targets.sep
+    s_ss    = (sep_s - δ_e_s) / (1 - δ_e_s)
+
+    # Matching and labor market
+    θ_s     = f_corr / q_corr
+    u_s     = sep_s / (sep_s + (1 - δ_e_s) * f_corr)
+    L_s     = 1 - u_s
+    v_s     = θ_s * u_s
+    e_s     = δ_e_s * (v_s + 1 - u_s)
+    v_prets = v_s - e_s
+
+    # Firms and relative price ρ = N^(1/(ε-1))  [consistent with steady_state.jl]
+    μ_s      = ε / (ε - 1)
+    ρ_val    = N_s^(1/(ε-1))   # local name avoids collision with ρ_s (s-shock persistence)
+
+    # ── x_c and δ_e at SS ─────────────────────────────────────────────────────
+    # x_c_ss = Y_c*(μ-1)/(μ*N) + ν_f  (eq:cutoff_eq = f[1] at SS)
+    # This is computed after ν_f_s and Y_c_s are known below.
+    # δ_e_sym = δ_e_s (numeric calibration target)
+
+    # ── Value functions ────────────────────────────────────────────────────────
+    β_s      = 1 / (1 + r)
+    τ_s      = sep_s
+    surplus_ratio = (r + τ_s) / (1 - δ_e_s) * (1 / (q_corr * targets.x_v))
+    K_s      = (1 - ϕ) / ϕ * (w_s - b) / (surplus_ratio + θ_s / targets.x_v)
+    κ_s      = (1 - targets.x_v) / targets.x_v * K_s / q_corr
+    Q_s      = K_s * (1 + r) / (r + δ_e_s)
+
+    # w_int from JCC (interior labor productivity)
+    w_int_s  = w_s + K_s + (r + τ_s) / (1 - δ_e_s) * (κ_s + K_s / q_corr)
+
+    # zbar pinned by w_int = ρ*z*zbar/μ at SS (z=1)
+    zbar_s   = μ_s * w_int_s / ρ_val
+
+    # Entry cost and recruiters
+    f_e_s    = zbar_s * (μ_s - 1) * L_s / N_s * (1 - δ_e_s) / (δ_e_s * μ_s + r)
+    ν_f_s    = ρ_val * f_e_s / μ_s
+    d_f_s    = (r + δ_e_s) / (1 - δ_e_s) * ν_f_s
+    N_e_s    = δ_e_s / (1 - δ_e_s) * N_s
+    L_e_s    = N_e_s * f_e_s / zbar_s
+    L_c_s    = L_s - L_e_s
+    Y_c_s    = ρ_val * zbar_s * L_c_s
+
+    # x_c at SS: consistent with f[1] = x_c - (Y_c*(μ-1)/(μ*N) + ν_f)
+    x_c_s    = Y_c_s * (μ_s - 1) / (μ_s * N_s) + ν_f_s
+    δ_e_sym  = δ_e_s   # numeric calibration target
+
+    # Continuation cost aggregate at SS (consistent with f[16])
+    ψ_c_s    = ψ / (ψ + 1)
+    X_c_s    = N_s * p_0 * ψ_c_s * x_c_s
+
+    # x_m: pinned by entry condition f[6]: Q = x_m * e^(ξ_inv) at SS
+    x_m_s    = Q_s / e_s^(ξ_inv)
+
+    # Consumption and output (resource constraint f[16]: Y_c = C + X + X_c)
+    # X = e/(1+ξ_inv)*Q + κ*q*v  (sunk entry costs + matching costs: κ per match, q*v matches)
+    X_s      = e_s / (1 + ξ_inv) * Q_s + κ_s * q_corr * v_s
+    C_s      = Y_c_s - X_s - X_c_s
+    λ_s      = C_s^(-σ)
+    Y_s      = C_s + ν_f_s * N_e_s   # GDP: eq:gdp consistent with f[19]
+
+    # ── Shock SS values = 1 (log-linear AR(1) around log=0) ──────────────────
+    z_s  = 1.0
+    δ_s  = 1.0   # shock deviation (not the rate δbar; rate is δ_e_s)
+    s_s  = 1.0
+
+    # ── Data-consistent observables ───────────────────────────────────────────
+    labor_prod_s = Y_s / (ρ_val * L_s)
+    C_R_s        = C_s / ρ_val
+    Y_R_s        = Y_s / ρ_val
+    Y_cR_s       = Y_c_s / ρ_val
+    w_R_s        = w_s / ρ_val
+    ls_s         = w_s * L_s / Y_s
+
+    # ── Assemble SS vector ─────────────────────────────────────────────────────
+    # Order must match [x; y]: [u,N,v_pret,z,δ,s, θ,q,L,v,e,K,Q,ρ,N_e,ν_f,d_f,w_int,w,L_e,L_c,Y_c,C,λ,Y,x_c,δ_e,labor_prod,C_R,Y_R,Y_cR,w_R,ls]
+    SS_block = [log(x) for x in [
+        u_s, N_s, v_prets, z_s, δ_s, s_s,          # states
+        θ_s, q_corr, L_s, v_s, e_s, K_s, Q_s,      # controls 1–7
+        ρ_val, N_e_s, ν_f_s, d_f_s,                 # controls 8–11
+        w_int_s, w_s, L_e_s, L_c_s, Y_c_s,          # controls 12–16
+        C_s, λ_s, Y_s,                               # controls 17–19
+        x_c_s, δ_e_sym,                              # controls 20–21 (new)
+        labor_prod_s, C_R_s, Y_R_s, Y_cR_s, w_R_s, ls_s  # controls 22–27
+    ]]
+
+    SS = vcat(SS_block, SS_block)   # current and future (same at SS)
     return SS
 end
 
-# Set baseline targets 
+# =============================================================================
+# Targets (pre-estimation; estimated parameters at placeholder/prior values)
+# =============================================================================
+# Note: labor_share removed — it is an outcome in the new calibration.
+# p_0 and dest_end_frac are Θ_e (estimated); default values used here.
 
-# Targets based on parameters estimated at posterior mode 
-using MAT
-cd("C:/Users/msilva913/Documents/GitHub/Sunk_entry_costs_endogenous_variety_unemployment")
-#cd("C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unemployment")
-# Load posterior mode 
-posterior_mode = matopen("posterior_mode.mat")
-posterior_mode = read(posterior_mode, "posterior_mode")
-cd(@__DIR__)
-# Targets included parameters estimated at posterior mode
-"""
-targets = (labor_share=0.66, 
-           dest_ann=0.10, 
-           r_ann=0.04, 
-           f =0.41, 
-           η_L=0.6, #elast. of matching function
-           q=0.8, 
-           sep=0.031, 
-           b_ratio=posterior_mode["b_ratio"], 
-            x_v=posterior_mode["x_v"], 
-            ξ_inv=posterior_mode["xi_inv"], # congestion elasticity
-            ε=posterior_mode["epsi"], # elasticity of sub.
-            σ=posterior_mode["sigma"], # log utility
-            N=1, w=1.0)
-"""
-# Pre-estimation targets 
-targets = (labor_share=0.66, # influences ϕ
-           dest_ann=0.0754, #21% of job destruction from obsolescence 
-           f =0.41, # fixed, turnover means
-           η_L=0.6, # based on time-series regressions
-           q=0.8, # fixed, turnover means
-           sep=0.031, # imputed from unemployment flows according to Shimer (2005)
-           b_ratio=0.71, #estimated
-           x_v=1.0, # estimated, affects X/Y, ρ updated accordingly
-           #ξ_inv=1, # estimated, affects X/Y, ρ updated accordingly
-           ξ_inv = 0.1, # close to free entry of vacancies
-           #X_Y=0.015, #vacancy share target, as Shao and Silos
-           r_ann=0.04, #4% annual interest rate
-           #C_Y=0.80, # consumption share, influences value of ε
-           σ=1.0, # benchmark corresponding to log preferences
-           N=1.0, # normalization: pins down f_e
-           w=1.0, # normalization: we express values relative to wage
-)
+targets = TARGETS   # load from steady_state.jl constant

@@ -1,5 +1,5 @@
 # Data Sources and File Index
-**Last updated:** May 12, 2026
+**Last updated:** May 20, 2026
 
 ## Data Sources
 
@@ -80,6 +80,7 @@ NFCI interaction variant:
 | `placebo_sev_delta_vac.csv` | Severity placebo: δ → v (cleanest result) |
 | `shock_persistence.csv` | AR(1): ρ_δ=0.617/0.647, ρ_LD=0.489/0.305 |
 | `var_calibration.csv` | VAR(1): ρ_δ=0.600, ρ_LD=0.510, β(endex)=0.228 |
+| `var_calibration_zd.csv` | **MODEL CALIB**: bivariate VAR(1) on HP-1600 log(z),log(δ); Cholesky z-first; ρ_z^Q=0.735→ρ_z^m=0.902, ρ_δ^Q=0.207→ρ_δ^m=0.592, σ_z^m=0.0092, σ_δ^m=0.0669 |
 | `recession_scatter_primary.png` | Cross-recession fig (paper) |
 | `state_scatter_primary.png` | Cross-state fig (paper) — fig:state_scatter |
 | `jf_table2_ext_2019_latex.tex` | JF Table 2 extension (preferred sample) |
@@ -102,8 +103,22 @@ NFCI interaction variant:
 | δ̄ | 0.940%/qtr (0.313%/month) | BDS employment-weighted exit rate |
 | τ̄ | 9.34%/qtr (3.11%/month) | Shimer (2012) total separation rate |
 | δ/τ | 10.1% | Ratio above |
-| ρ_δ | 0.617 (raw) / 0.647 (resid) | part6, 2001Q1+ window |
+| ρ_δ | 0.617 (raw) / 0.647 (resid) | part6, 2001Q1+ window, Bartik agg |
 | ρ_LD | 0.489 (raw) / 0.305 (resid) | part6, 2001Q1+ window |
 | corr(η^δ, η^LD) | +0.397 (raw) / +0.488 (resid) | part6 |
-| ρ_δ (VAR) | 0.600 | part2d, industry-level panel |
+| ρ_δ (VAR industry) | 0.600 | part2d, industry-level panel |
 | β (LD←δ) | +0.228 | part2d companion matrix |
+| **ρ_z^m (model)** | **0.902** | part6b; VAR(1) HP-1600 log(z), Cholesky, 1992Q3–2019Q4 |
+| **ρ_δ^m (model)** | **0.592** | part6b; VAR(1) HP-1600 log(δ) ⊥ z, Cholesky z-first |
+| **σ_z^m (model)** | **0.0092** | part6b; unconditional-variance-matched from quarterly |
+| **σ_δ^m (model)** | **0.0669** | part6b; structural δ shock ⊥ z innovation |
+| β(δ←z) quarterly | −1.050 (SE=0.830) | part6b; endogenous exit channel — NOT in shock process |
+| corr(u^z, u^δ) | −0.284 | part6b; pre-Cholesky; absorbed by model equilibrium |
+
+## Model Code Conventions (`Programs baseline/`, audited May 20, 2026)
+
+- **Naming:** `r` = discount rate, `ρ` = relative price N^(1/(ε-1)) — consistent with `steady_state.jl`
+- **κ:** matching cost paid per match (Pissarides 2009); resource constraint uses `κ·q·v`, not `κ·v`
+- **u LOM:** uses total `v_t = v_pret + e_t`; entrants participate in matching within period t (draft eq:v_lom)
+- **Equation order:** f[1] exit threshold, f[2] δ_e, f[3] JCC, f[4] business formation Euler (BGM), f[5] K value, f[6] MRP, f[7] Nash wage, f[8] vacancy creation, f[9]–f[33] remainder
+- **SS_symbolics:** x_c_ss = Y_c·(μ-1)/(μ·N) + ν_f (consistent with f[1]); C_ss includes X_c; Y_ss = C + ν_f·N_e

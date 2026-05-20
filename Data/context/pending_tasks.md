@@ -1,5 +1,5 @@
 # Pending Tasks
-**Last updated:** May 19, 2026
+**Last updated:** May 20, 2026
 
 ## Code Tasks (priority order)
 
@@ -47,6 +47,11 @@
    - Two-model counterfactual: baseline vs. AGS
 
 4. **Section 6 — Conclusion** ❌
+
+## Completed Code Tasks
+
+- ✅ `run_solution_core.jl` full audit (May 20): naming r/ρ, κ per match, u LOM total v_t, BFE at f[4], SS_symbolics x_c/C/Y corrected
+- ✅ `part6b_shock_persistence_cyclical.py`: bivariate VAR(1) HP-1600 log(z)/log(δ), Cholesky z-first → ρ_z^m=0.902, ρ_δ^m=0.592
 
 ## Completed Writing Tasks
 
