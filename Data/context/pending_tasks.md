@@ -1,7 +1,37 @@
 # Pending Tasks
-**Last updated:** May 20, 2026
+**Last updated:** May 20, 2026 (evening)
 
-## Code Tasks (priority order)
+## Model Mechanism Tasks (NEW — highest priority)
+
+See `Inspecting_mechanism_setup.md` for full design rationale and `run_solution_all_delta.jl` for implementation.
+
+1. **Run and debug `run_solution_all_delta.jl`** ⚠️ (written, not yet run)
+   - Solves baseline + high-δ (δ_e = τ) models, serializes `irf_all_delta.jls`
+   - Watch for π_s feasibility failure in Stage 2 under high δ_e; if hit, lower `Xc_Y` to 0.07
+   - Verify SS diagnostic printout: u, v, θ should match across variants; s ≈ 0 in high-δ
+
+2. **Write `run_solution_no_variety.jl`** ❌
+   - Comparison B: shut off variety effects by setting ζ = 0 in generalized CES
+   - Use `run_solution_general_CES.jl` as template (already has ζ parameterization)
+   - Recalibrate to same u, v, θ targets; serialize `irf_no_variety.jls`
+
+3. **Write `run_solution_no_endog_exit.jl`** ❌
+   - Comparison C: set p_0 = 0 (all destruction exogenous at baseline δ_e level)
+   - Simple modification of `run_solution.jl` targets: `(TARGETS..., p_0=0.0, dest_end_frac=0.0)`
+   - δ_e and τ unchanged; only endogenous amplification channel shut off
+   - Serialize `irf_no_endog_exit.jls`
+
+4. **Write `plot_mechanism_comparison.jl`** ❌
+   - Load all three `irf_*.jls` files + baseline `irf_z.jls` / `irf_delta.jls`
+   - Produce 4×2 panel figures (one for z shock, one for δ shock):
+     Panels: u, v, θ, labor_prod, N, N_e, exit_flow (δ_e×N in log dev)
+   - Layout option: one subplot per variable, all model variants overlaid
+   - Units: u and v in pp levels deviation (all variants share same SS u, v);
+     all other variables in 100×log deviations
+   - Three comparison lines per panel: baseline (solid), high-δ (dashed),
+     no-variety (dotted), no-endog-exit (dash-dot)
+
+## Empirical Code Tasks (priority order)
 
 1. **Wild cluster bootstrap** — `part5_wcrb.py` ❌
    - n=50 state clusters is at the lower bound of asymptotic SE reliability
@@ -52,6 +82,7 @@
 
 - ✅ `run_solution_core.jl` full audit (May 20): naming r/ρ, κ per match, u LOM total v_t, BFE at f[4], SS_symbolics x_c/C/Y corrected
 - ✅ `part6b_shock_persistence_cyclical.py`: bivariate VAR(1) HP-1600 log(z)/log(δ), Cholesky z-first → ρ_z^m=0.902, ρ_δ^m=0.592
+- ✅ `run_solution_all_delta.jl` written (May 20): baseline vs. high-δ (δ_e=τ, pure exogenous) comparison; computes exit_flow = δ_e×N; serializes `irf_all_delta.jls`
 
 ## Completed Writing Tasks
 
