@@ -45,16 +45,48 @@ include("steady_state.jl")
 include("impulse_response_plots.jl")
 include("time_series_fun.jl")
 
-function solution_interface(model, PAR)
-    eta    = eval_ShockVAR(PAR)
-    PAR_SS = eval_PAR_SS(PAR)
-    SS     = eval_SS(PAR_SS)
-    SS_err = eval_SS_error(PAR_SS, SS)
-    deriv  = eval_deriv(PAR_SS, SS)
+function solution_interface(model, PAR, SS_precomputed::Union{Vector{Float64},Nothing}=nothing)
+    # ── World-age fix ────────────────────────────────────────────────────────────
+    # eval_* functions are generated inside process_model via eval(Meta.parse(...)).
+    # When called from inside another function, Julia's world-age mechanism blocks
+    # direct dispatch. Base.invokelatest always uses the latest compiled method.
+    eta    = Base.invokelatest(eval_ShockVAR, PAR)
+    PAR_SS = Base.invokelatest(eval_PAR_SS,  PAR)
+
+    # ── Numeric SS ───────────────────────────────────────────────────────────────
+    # Prefer a pre-computed Float64 SS when the caller supplies one (fast path,
+    # avoids SymPy entirely).  Fall back to substituting model.SS symbolically
+    # for callers (e.g. run_solution.jl) that don't pass a pre-computed SS.
+    #
+    # Why the fallback is needed: eval_SS has a bug in its generation loop
+    # (`for ip in npar` iterates once instead of 1:npar), so it only substitutes
+    # the last parameter; the other 22 stay as live SymPy globals. Passing that
+    # Sym vector to eval_deriv causes a Float64 assignment crash.
+    if !isnothing(SS_precomputed)
+        SS = SS_precomputed
+    else
+        par_syms = [Sym("PAR[$i]") for i in eachindex(PAR)]
+        function sym_to_float(v)
+            for (p, val) in zip(model.parameters, PAR)
+                v = subs(v, p, val)
+            end
+            for (ps, val) in zip(par_syms, PAR)
+                v = subs(v, ps, val)
+            end
+            return Float64(v.evalf())
+        end
+        SS = [sym_to_float(model.SS[j]) for j in 1:length(model.SS)]
+    end
+
+    # ── Jacobian and residual (now with numeric SS) ──────────────────────────────
+    SS_err = Base.invokelatest(eval_SS_error, PAR_SS, SS)
+    deriv  = Base.invokelatest(eval_deriv,    PAR_SS, SS)
     SS_max = maximum(abs.(SS_err))
     println("Max SS residual: $SS_max")
     sol_mat = solve_model(model, deriv, eta)
     println("Model solved")
+
+    # SS is Vector{Float64}; exp recovers levels from the log-deviation representation
     ss = NamedTuple(zip(model.varnames, exp.(SS[1:model.nvar])))
     return (SS=SS, ss=ss, eta=eta, deriv=deriv, sol_mat=sol_mat)
 end
@@ -330,6 +362,112 @@ end
 #   - x_c and δ_e now appear explicitly in the SS vector
 #   - δ_e replaces all occurrences of δbar in LOM expressions
 #   - p_0, ψ, f_m replace scalar F
+
+# Numeric version of SS computation (used when PAR is available)
+function SS_numeric(PAR::Vector{Float64}, targets)
+    # Extract numeric parameter values from PAR
+    f_e, zbar, δbar, sbar, b, ϕ, r, σ, ε, A, η_L, κ, ξ_inv, x_m, ψ, f_m, p_0,
+        ρ_z, σ_z, ρ_δ, σ_δ, ρ_s, σ_s = PAR
+
+    @unpack N, w, f, q, X_Y, Xc_Y, dest_ann, dest_end_frac = targets
+
+    # ── Monthly rates ─────────────────────────────────────────────────────────
+    N_s    = N
+    w_s    = w
+
+    # Endogenous destruction rate (monthly) at SS: δ_e = 1-(1-dest_ann)^(1/12)
+    δ_e_s   = 1 - (1 - dest_ann)^(1/12)
+
+    # Exogenous destruction rate at SS: δ = (1-dest_end_frac)*δ_e
+    δ_s_ss  = (1 - dest_end_frac) * δ_e_s
+
+    # Effective job finding/filling (conditional on firm survival)
+    f_corr  = f / (1 - δ_e_s)
+    q_corr  = q / (1 - δ_e_s)
+
+    # Aggregate separation rate and SS s
+    sep_s   = targets.sep
+    s_ss    = (sep_s - δ_e_s) / (1 - δ_e_s)
+
+    # Matching and labor market
+    θ_s     = f_corr / q_corr
+    u_s     = sep_s / (sep_s + (1 - δ_e_s) * f_corr)
+    L_s     = 1 - u_s
+    v_s     = θ_s * u_s
+    e_s     = δ_e_s * (v_s + 1 - u_s)
+    v_prets = v_s - e_s
+
+    # Firms and relative price ρ = N^(1/(ε-1))
+    μ_s      = ε / (ε - 1)
+    ρ_val    = N_s^(1/(ε-1))
+
+    # ── Value functions ────────────────────────────────────────────────────────
+    β_s      = 1 / (1 + r)
+    τ_s      = sep_s
+    surplus_ratio = (r + τ_s) / (1 - δ_e_s) * (1 / (q_corr * targets.x_v))
+    K_s      = (1 - ϕ) / ϕ * (w_s - b) / (surplus_ratio + θ_s / targets.x_v)
+    κ_s      = (1 - targets.x_v) / targets.x_v * K_s / q_corr
+    Q_s      = K_s * (1 + r) / (r + δ_e_s)
+
+    # w_int from JCC (interior labor productivity)
+    w_int_s  = w_s + K_s + (r + τ_s) / (1 - δ_e_s) * (κ_s + K_s / q_corr)
+
+    # zbar pinned by w_int = ρ*z*zbar/μ at SS (z=1)
+    zbar_s   = μ_s * w_int_s / ρ_val
+
+    # Entry cost and recruiters
+    f_e_s    = zbar_s * (μ_s - 1) * L_s / N_s * (1 - δ_e_s) / (δ_e_s * μ_s + r)
+    ν_f_s    = ρ_val * f_e_s / μ_s
+    d_f_s    = (r + δ_e_s) / (1 - δ_e_s) * ν_f_s
+    N_e_s    = δ_e_s / (1 - δ_e_s) * N_s
+    L_e_s    = N_e_s * f_e_s / zbar_s
+    L_c_s    = L_s - L_e_s
+    Y_c_s    = ρ_val * zbar_s * L_c_s
+
+    # x_c at SS: consistent with f[1] = x_c - (Y_c*(μ-1)/(μ*N) + ν_f)
+    x_c_s    = Y_c_s * (μ_s - 1) / (μ_s * N_s) + ν_f_s
+    δ_e_sym  = δ_e_s   # numeric calibration target
+
+    # Continuation cost aggregate at SS
+    ψ_c_s    = ψ / (ψ + 1)
+    X_c_s    = N_s * p_0 * ψ_c_s * x_c_s
+
+    # x_m: pinned by entry condition
+    x_m_s    = Q_s / e_s^(ξ_inv)
+
+    # Consumption and output (resource constraint)
+    X_s      = e_s / (1 + ξ_inv) * Q_s + κ_s * q_corr * v_s
+    C_s      = Y_c_s - X_s - X_c_s
+    λ_s      = C_s^(-σ)
+    Y_s      = C_s + ν_f_s * N_e_s   # GDP
+
+    # ── Shock SS values = 1 ───────────────────────────────────────────────────
+    z_s  = 1.0
+    δ_s  = 1.0
+    s_s  = 1.0
+
+    # ── Data-consistent observables ───────────────────────────────────────────
+    labor_prod_s = Y_s / (ρ_val * L_s)
+    C_R_s        = C_s / ρ_val
+    Y_R_s        = Y_s / ρ_val
+    Y_cR_s       = Y_c_s / ρ_val
+    w_R_s        = w_s / ρ_val
+    ls_s         = w_s * L_s / Y_s
+
+    # ── Assemble SS vector ────────────────────────────────────────────────────
+    SS_block = [log(x) for x in [
+        u_s, N_s, v_prets, z_s, δ_s, s_s,
+        θ_s, q_corr, L_s, v_s, e_s, K_s, Q_s,
+        ρ_val, N_e_s, ν_f_s, d_f_s,
+        w_int_s, w_s, L_e_s, L_c_s, Y_c_s,
+        C_s, λ_s, Y_s,
+        x_c_s, δ_e_sym,
+        labor_prod_s, C_R_s, Y_R_s, Y_cR_s, w_R_s, ls_s
+    ]]
+
+    SS = vcat(SS_block, SS_block)   # current and future (same at SS)
+    return SS
+end
 
 function SS_symbolics(parameters::Vector{Sym{PyObject}}, targets)
 

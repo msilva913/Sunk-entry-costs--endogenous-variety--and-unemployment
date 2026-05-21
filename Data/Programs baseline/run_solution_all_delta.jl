@@ -3,8 +3,12 @@
 # Mechanism comparison: role of the LEVEL of δ (destruction rate)
 #
 # Compares two calibrations of the baseline model:
-#   (1) Baseline  — δ_e = δ̄ ≈ 1.08%/month, dest_end_frac = 0.5
-#   (2) High-δ    — δ_e = τ ≈ 3.1%/month, dest_end_frac = 0.0 (pure exogenous)
+#   (1) Baseline  — δ_e = δ̄ ≈ 1.08%/month, dest_end_frac = 0.0, p_0 = 0.0, Xc_Y = 0.0
+#   (2) High-δ    — δ_e = τ ≈ 3.1%/month,   dest_end_frac = 0.0, p_0 = 0.0, Xc_Y = 0.0
+#
+# Both variants shut off endogenous exit (p_0=0, dest_end_frac=0) so the only
+# moving part between them is the level of δ_e. Xc_Y=0 is required for internal
+# consistency: p_0=0 → cons=0 → X_c=0 → Xc_Y=0 in calibrate_shares.
 #
 # The high-δ calibration sets δ_e = τ so that s = 0 (all separations are firm
 # destruction events). This replicates the CK timing assumption — every
@@ -55,7 +59,10 @@ function solve_and_irf(targets_variant)
     PAR = [f_e; zbar; δbar; sbar; b; ϕ; r; σ; ε; A; η_L; κ; ξ_inv; x_m; ψ; f_m; p_0;
            ρ_z; σ_z; ρ_δ; σ_δ; ρ_s; σ_s]
 
-    SS  = SS_symbolics(parameters, targets_variant)
+    # Compute symbolic SS (needed by process_model to generate derivatives)
+    SS_symbolic = SS_symbolics(parameters, targets_variant)
+    # Compute numeric SS separately (to be passed to solution_interface)
+    SS_numeric_val = SS_numeric(PAR, targets_variant)
     f   = gen_model_equations()
 
     model = (parameters = parameters, estimate = estimate, estimation = position,
@@ -68,21 +75,29 @@ function solve_and_irf(targets_variant)
              ne = ne,
              f = f,
              nf = nvar,
-             SS = SS, PAR_SS = parameters[:],
+             SS = SS_symbolic, PAR_SS = parameters[:],
              flag_order = flag_order, flag_deviation = flag_deviation,
              flag_SSsolver = flag_SSsolver)
     process_model(model)
 
-    sol = solution_interface(model, PAR)
-    @unpack ss, SS, sol_mat, eta = sol
+    # Pass precomputed numeric SS to skip problematic symbolic substitution
+    sol = solution_interface(model, PAR, SS_numeric_val)
+    @unpack ss, SS, sol_mat = sol   # do NOT unpack eta: sol.eta is Matrix{Sym} (symbolic zeros), not Float64
 
-    eta_z = eta[:, 1]
-    eta_δ = eta[:, 2]
+    # Build numeric single-shock eta columns directly from the scalar σ parameters.
+    # State order: [u, N, v_pret, z, δ, s] — shocks hit rows 4 (z), 5 (δ), 6 (s).
+    # Shaped as 6×1 matrices so eta[i,:] returns a 1-element Float64 vector inside
+    # simulate_model, matching sim_shocks[:,1] when ne=1.
+    eta_z_col = reshape([0.0, 0.0, 0.0, σ_z, 0.0, 0.0], nx, 1)
+    eta_δ_col = reshape([0.0, 0.0, 0.0, 0.0, σ_δ, 0.0], nx, 1)
 
-    irf_z = simulate_model(model, sol_mat, T_IR, eta_z, SS, flag_IR, flag_logdev)
+    # ne=1: one shock fired at a time; sim_shocks has 1 column, matching eta_*_col
+    model_1shock = (; model..., ne = 1)
+
+    irf_z = simulate_model(model_1shock, sol_mat, T_IR, eta_z_col, SS, flag_IR, flag_logdev)
     irf_z = 100 .* DataFrame(irf_z, varnames)
 
-    irf_δ = simulate_model(model, sol_mat, T_IR, eta_δ, SS, flag_IR, flag_logdev)
+    irf_δ = simulate_model(model_1shock, sol_mat, T_IR, eta_δ_col, SS, flag_IR, flag_logdev)
     irf_δ = 100 .* DataFrame(irf_δ, varnames)
 
     # Append exit flow δ_e*N in log deviations
@@ -100,7 +115,9 @@ println("\n" * "="^60)
 println("Solving BASELINE model (δ_e = δ̄ ≈ 1.08%/month)")
 println("="^60)
 
-targets_base = TARGETS   # from steady_state.jl
+# Remove endogenous exit and zero fixed costs (Xc_Y=0 is required when p_0=0:
+# cons = (ψ/(1+ψ))*p_0 = 0 → X_c = 0 → Xc_Y = 0 for internal consistency in calibrate_shares).
+targets_base = (TARGETS..., dest_end_frac=0.0, p_0=0.0, Xc_Y=0.0)
 
 out_base = solve_and_irf(targets_base)
 println("Baseline SS: u=$(round(out_base.ss.u, digits=4)), " *
@@ -129,6 +146,7 @@ targets_high_δ = (TARGETS...,
     dest_ann      = dest_ann_high,   # implies δ_e = τ monthly
     dest_end_frac = 0.0,             # all destruction exogenous → s = 0
     p_0           = 0.0,             # no endogenous exit distribution mass
+    Xc_Y          = 0.0,            # required: cons=0 when p_0=0 → X_c=0 → Xc_Y=0
 )
 
 out_high_δ = solve_and_irf(targets_high_δ)

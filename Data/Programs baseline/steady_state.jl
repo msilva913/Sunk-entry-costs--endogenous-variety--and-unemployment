@@ -534,14 +534,22 @@ function calibrate_shares(targets)
     #   Xc_Yc ≡ X_c/Y_c (endogenous fixed cost share within consumption sector)
     #   Yc_YG = (r+δ_e)/(r+δ_e+δ_e*π_s)
     #   YG_Y  = 1 + X_Y + Xc_Y (gross output / GDP)
-    function loss_xc(xc_yc)
-        π_s_trial = 1 / ε - xc_yc
-        Yc_YG = (r + δ_e) / (r + δ_e + δ_e * π_s_trial)
-        YG_Y  = 1 + X_Y + Xc_Y
-        return Xc_Y / (Yc_YG * YG_Y) - xc_yc
+    # When Xc_Y = 0 (no aggregate fixed costs, e.g. p_0 = 0 variants),
+    # loss_xc = 0 - xc_yc so the root is trivially xc_yc = 0.
+    # Skip find_zero to avoid a bracketing-interval error.
+    if Xc_Y == 0.0
+        Xc_Yc = 0.0
+        π_s   = 1 / ε
+    else
+        function loss_xc(xc_yc)
+            π_s_trial = 1 / ε - xc_yc
+            Yc_YG = (r + δ_e) / (r + δ_e + δ_e * π_s_trial)
+            YG_Y  = 1 + X_Y + Xc_Y
+            return Xc_Y / (Yc_YG * YG_Y) - xc_yc
+        end
+        Xc_Yc = find_zero(loss_xc, (0.01, 0.5))
+        π_s   = 1 / ε - Xc_Yc
     end
-    Xc_Yc = find_zero(loss_xc, (0.01, 0.5))
-    π_s   = 1 / ε - Xc_Yc
 
     L_c = (r + δ_e) * L / (r + δ_e + δ_e * π_s * μ)
     L_e = L - L_c
@@ -554,9 +562,17 @@ function calibrate_shares(targets)
         return (μ - 1) / μ * (1 - cons_trial) * (r + δ_e) /
                (r + δ_e + cons_trial * (1 - δ_e)) - π_s
     end
-    cons = find_zero(loss_psi, 0.1)
-    ψ_c  = cons / p_0
-    ψ    = ψ_c / (1 - ψ_c)
+    # When p_0 = 0 the continuous cost distribution has no mass: cons = 0 always
+    # and ψ is irrelevant (never enters model equations). Skip the root-find to
+    # avoid 0/0 in ψ_c = cons/p_0.
+    if p_0 == 0.0
+        cons = 0.0
+        ψ    = 1.5   # placeholder — doesn't affect model when p_0 = 0
+    else
+        cons = find_zero(loss_psi, 0.1)
+        ψ_c  = cons / p_0
+        ψ    = ψ_c / (1 - ψ_c)
+    end
 
     # Pre-compute surplus ratio for Stage 4
     surplus_ratio = (r + τ) / (1 - δ_e) / (q_corr * x_v)
@@ -593,9 +609,17 @@ function calibrate_shares(targets)
     # ------------------------------------------------------------------
     # Stage 5: Recover remaining parameters
     # ------------------------------------------------------------------
-    ζ       = (surv_prob - (1 - p_0)) / p_0   # ζ = (x_c/f_m)^ψ at SS
-    dest_el = ψ * ζ / (1 - ζ)
-    f_m     = x_c / ζ^(1 / ψ)
+    # When p_0 = 0: surv_prob = 1 and (1-p_0) = 1, so numerator = 0 and denominator = 0.
+    # ζ and f_m are irrelevant when p_0 = 0 (F(x) = 1 for all x regardless of f_m).
+    if p_0 == 0.0
+        ζ       = 0.0
+        dest_el = 0.0
+        f_m     = 1.0   # placeholder — doesn't affect model when p_0 = 0
+    else
+        ζ       = (surv_prob - (1 - p_0)) / p_0   # ζ = (x_c/f_m)^ψ at SS
+        dest_el = ψ * ζ / (1 - ζ)
+        f_m     = x_c / ζ^(1 / ψ)
+    end
 
     ϕ   = (w - b) / (w_int - K + θ * (K + q_corr * κ) - b)
     x_m = Q / e^ξ_inv

@@ -61,39 +61,44 @@ PAR = [f_e; zbar; δbar; sbar; b; ϕ; r; σ; ε; A; η_L; κ; ξ_inv; x_m; ψ; f
        ρ_z; σ_z; ρ_δ; σ_δ; ρ_s; σ_s]
 
 sol = solution_interface(model, PAR)
-@unpack ss, SS, sol_mat, eta = sol
+@unpack ss, SS, sol_mat = sol   # do NOT unpack eta: sol.eta is Matrix{Sym} (symbolic zeros), not Float64
 # Export: model, targets, PAR, sol (save output using serialization)
 model_output = (model, targets, PAR, sol)
 serialize("model_output.jls", model_output)
 
 
 ## Impulse responses ##
-# eta is 6×3: rows = state variables [u,N,v_pret,z,δ,s], cols = [z,δ,s] shocks
+# Build numeric single-shock eta columns directly from scalar σ parameters.
+# State order: [u, N, v_pret, z, δ, s] — shocks hit rows 4 (z), 5 (δ), 6 (s).
+# Shaped as 6×1 matrices so eta[i,:] returns a 1-element Float64 vector inside
+# simulate_model, matching sim_shocks[:,1] when ne=1.
 flag_IR     = true
 flag_logdev = true
 T_IR        = 60   # 5 years at monthly frequency
 
-# Each IRF fires one column of eta at t=1
-eta_z = eta[:, 1]   # z shock (col 1)
-eta_δ = eta[:, 2]   # δ shock (col 2)
-eta_s = eta[:, 3]   # s shock (col 3)
+eta_z_col = reshape([0.0, 0.0, 0.0, σ_z, 0.0, 0.0], nx, 1)
+eta_δ_col = reshape([0.0, 0.0, 0.0, 0.0, σ_δ, 0.0], nx, 1)
+eta_s_col = reshape([0.0, 0.0, 0.0, 0.0, 0.0, σ_s], nx, 1)
+
+# ne=1: one shock fired at a time; sim_shocks has 1 column, matching eta_*_col
+model_1shock = (; model..., ne = 1)
 
 # Technology shock
-irf_z = simulate_model(model, sol_mat, T_IR, eta_z, SS, flag_IR, flag_logdev)
+irf_z = simulate_model(model_1shock, sol_mat, T_IR, eta_z_col, SS, flag_IR, flag_logdev)
 irf_z = 100 .* DataFrame(irf_z, varnames)
 gen_irf(irf_z)
 savefig("z_shock.png")
 serialize("irf_z.jls", irf_z)
 
 # Permanent exit (δ) shock: core Beveridge curve prediction
-irf_δ = simulate_model(model, sol_mat, T_IR, eta_δ, SS, flag_IR, flag_logdev)
+irf_δ = simulate_model(model_1shock, sol_mat, T_IR, eta_δ_col, SS, flag_IR, flag_logdev)
 irf_δ = 100 .* DataFrame(irf_δ, varnames)
 gen_irf(irf_δ)
 savefig("delta_shock.png")
 serialize("irf_delta.jls", irf_δ)
 
 # Worker separation (s) shock
-irf_s = simulate_model(model, sol_mat, T_IR, eta_s, SS, flag_IR, flag_logdev)
+irf_s = simulate_model(model_1shock, sol_mat, T_IR, eta_s_col, SS, flag_IR, flag_logdev)
 irf_s = 100 .* DataFrame(irf_s, varnames)
 gen_irf(irf_s)
 savefig("s_shock.png")
