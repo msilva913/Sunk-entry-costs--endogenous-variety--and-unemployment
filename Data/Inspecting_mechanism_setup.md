@@ -1,5 +1,5 @@
 # Inspecting the Mechanism — Design Notes
-**Last updated:** May 20, 2026 (evening)
+**Last updated:** May 21, 2026
 
 ---
 
@@ -50,24 +50,56 @@ If calibration fails, lower Xc_Y from 0.10 to 0.07 in `targets_high_δ`.
 
 ---
 
-### Comparison B — Endogenous Exit  (`run_solution_no_endog_exit.jl`) ❌ to write
+### Comparison B — Endogenous Exit  (`run_solution_endog_exit.jl`) ✅ written and run
 **Question:** What does the x_c amplification add beyond a fixed δ_e shock?
 
 **Implementation:**
-- Baseline: as above
-- No-endog-exit: `(TARGETS..., p_0=0.0, dest_end_frac=0.0)` — δ_e stays at baseline
-  level but is now fully exogenous (Λ = 1 always, x_c irrelevant)
-- This is a re-parameterization of the baseline; same SS u, v, θ, δ_e by construction
+- Full baseline: `(TARGETS..., b_ratio=0.9, x_v=0.5)` — dest_end_frac=0.5, p_0=0.5, Xc_Y=0.10
+- Exog exit: `(TARGETS..., dest_end_frac=0.0, p_0=0.0, Xc_Y=0.0, b_ratio=0.9, x_v=0.5)`
+  — δ_e stays at same SS level (same dest_ann) but x_c is irrelevant
+- Plot script: `plot_endog_exit_comparison.jl` → `mechanism_B_z_shock.pdf`, `mechanism_B_delta_shock.pdf`
+- Calibrated parameters close: ϕ (0.659 vs 0.640), κ (0.058 vs 0.063) — comparison is clean
 
-**Mechanism:** After a δ shock, endogenous exit amplifies because falling profits push
-x_c down → more marginal firms exit → δ_e rises above the exogenous shock alone. This
-amplification is absent with p_0 = 0. Key visible effect: exit_flow = δ_e×N should show
-a larger and more persistent spike in baseline vs. no-endog-exit, even for the same δ shock.
+**IRF results (May 21, 2026):**
+
+δ shock:
+- Endog exit has SMALLER u response (peak 0.028 pp at h≈3) vs exog (peak 0.055 pp at h≈6)
+- N trough: endog −0.05%, exog −0.10% (roughly half)
+- exit_flow (δ_e×N): nearly identical in both models (~6.5% spike at h=1, rapid decay)
+- N_e trough: endog −0.05%, exog −0.25% (larger entry depression in exog)
+
+z shock:
+- Endog exit has LARGER θ (1.2% vs 0.9% peak) and N (0.30% vs 0.25% peak)
+- u and v responses similar in shape, endog slightly deeper u trough (−0.030 vs −0.022 pp)
+- K and N_e responses nearly identical at impact
+
+**Interpretation — two key findings:**
+
+1. DOMINANT FACTOR for δ shock: The exogenous destruction parameter δbar is halved by
+   construction (δbar_endog = 0.00326 vs δbar_exog = 0.00651) because dest_end_frac = 0.5
+   routes half the SS destruction through x_c. Since δ_e = 1−(1−δ·δbar)·F(x_c), the δ shock
+   fires through δ·δbar, giving half the direct δ_e impulse in the endog model. The smaller
+   u/θ/N responses are primarily a mechanical exposure effect, not a dynamic x_c buffer story.
+
+2. CALIBRATED ψ ≈ 0.014 in endog model: The continuation cost distribution is nearly degenerate
+   (density f(x_c) → 0 as ψ → 0). F(x_c) barely responds to changes in profitability. The
+   "x_c jump variable" dynamic amplification mechanism is quantitatively nearly inactive at this
+   calibration. For ψ to matter, it would need to be of order 1 (Broer et al. 2025 use ψ = 1).
+
+3. For z shock: larger endog responses come from lower f_e (20.3 vs 32.7) and lower δbar
+   (less N drag in the LOM), not from the x_c channel (which is dormant with ψ ≈ 0.014).
+
+**Design implication:** Comparison B as currently configured primarily illustrates the
+EXPOSURE effect of dest_end_frac on the δ shock channel. To cleanly isolate the dynamic
+x_c mechanism, either: (a) target ψ ≈ 1.0 directly in calibration, or (b) shock total δ_e
+directly rather than the exogenous component δ. Current results are still valid for showing
+that endogenous exit changes the propagation of δ shocks, but the mechanism is exposure-
+based rather than dynamic-buffering-based.
 
 **Note on dest_el:** Broer et al. (IER 2025) use separation elasticity ψ as a calibration
-target (their preferred ψ = 1). Your `dest_el = ψ_shape × ζ/(1-ζ)` is the analogous object.
-Rather than targeting dest_el directly (infeasibility risk), report it as an outcome:
-baseline dest_el vs. 0 in no-endog-exit. This provides external validation via Broer.
+target (their preferred ψ = 1). Calibrated ψ = 0.014 here is far below their value, which
+may explain the dormant x_c channel. Report implied dest_el as an outcome alongside ψ to
+provide external validation context.
 
 ---
 
@@ -90,44 +122,50 @@ dampens this second-round amplification.
 
 ---
 
-## Plot Design (settled)
+## Plot Design (settled — May 21, 2026)
 
-**Layout:** Two figures — one for z shock, one for δ shock. Each figure is a **4×2 grid**
-(7 panels, one blank or use for legend):
+Each comparison has its own pair of figures (z shock + δ shock), each a **4×2 portrait grid**
+suitable for a single journal column. Variables chosen to trace the transmission chain top to bottom.
 
-| Panel | Variable | Units |
-|-------|----------|-------|
-| 1 | u (unemployment rate) | pp levels deviation |
-| 2 | v (vacancy rate) | pp levels deviation |
-| 3 | θ (market tightness) | 100×log dev |
-| 4 | labor_prod | 100×log dev |
-| 5 | N (firm mass) | 100×log dev |
-| 6 | N_e (entry flow) | 100×log dev |
-| 7 | exit_flow = δ_e×N | 100×log dev |
+| Row | Left panel | Right panel | Units |
+|-----|-----------|-------------|-------|
+| 1 | u | v | pp levels deviation |
+| 2 | θ | w_int | 100×log dev |
+| 3 | N | N_e | 100×log dev |
+| 4 | K (Comp. A) or exit_flow (Comp. B) | Q (Comp. A) or exit_flow (Comp. B) | 100×log dev |
 
-**Why u and v in levels:** All variants share the same steady-state u and v (by calibration
-design), so pp deviations are directly comparable across lines and directly comparable to
-empirical IRFs in Section 4.
+**Why w_int not labor_prod:** labor_prod = μ × w_int; identical in log-dev since μ is constant.
+w_int enters the JCC directly — the more mechanistically interpretable choice.
 
-**Why exit_flow not δ_e alone:** δ_e×N is the exit flow — symmetric to N_e as entry flow,
-directly corresponds to the BED Deaths instrument used empirically. Plots both the rate
-and the mass effect simultaneously. δ_e in levels can be added as a small supplementary
-panel for Comparison A (where δ_e moves a lot) if needed.
+**Why Q in Comparison A:** K and Q side-by-side reveal the short-duration asset amplification
+(same K response, much larger Q response under high-δ). Q ≡ e in log-dev with ξ_inv=1.
 
-**Lines per panel (4 total):**
-- Baseline (solid black)
-- High-δ / Comparison A (dashed blue) — level-of-δ channel
-- No-endog-exit / Comparison B (dash-dot red) — endogenous exit channel
-- No-variety / Comparison C (dotted orange) — variety channel
+**Why exit_flow in Comparison B:** δ_e×N shows the total destruction flow directly. Under
+exog exit, d log(exit_flow) = d log(N); under endog exit, δ_e also moves. The gap is the
+x_c contribution (but note: at ψ ≈ 0.014, gap is small for δ shock).
+
+**Color convention:**
+- Baseline (solid black) — always the richer/fuller model
+- Comparison A alternative: royalblue dashed   (high-δ level)
+- Comparison B alternative: crimson dashed      (exogenous exit)
+- Comparison C alternative: (reserved)          (no variety, future)
 
 ---
 
 ## Implementation Order
 
-1. Run `run_solution_all_delta.jl` → debug → serialize `irf_all_delta.jls`
-2. Write + run `run_solution_no_endog_exit.jl` → serialize `irf_no_endog_exit.jls`
-3. Write + run `run_solution_no_variety.jl` (from `run_solution_general_CES.jl`) → serialize `irf_no_variety.jls`
-4. Write `plot_mechanism_comparison.jl` loading all four IRF files → produce figures
+1. ✅ Run `run_solution_all_delta.jl` → `irf_all_delta.jls`
+   Plot: `plot_mechanism_comparison.jl` → `mechanism_A_z_shock.pdf`, `mechanism_A_delta_shock.pdf`
+
+2. ✅ Run `run_solution_endog_exit.jl` → `irf_endog_exit.jls`
+   Plot: `plot_endog_exit_comparison.jl` → `mechanism_B_z_shock.pdf`, `mechanism_B_delta_shock.pdf`
+
+3. ❌ Write + run `run_solution_no_variety.jl` → `irf_no_variety.jls`
+   Use `run_solution_general_CES.jl` as template; set ζ=0 so ρ=1 regardless of N.
+   Plot: extend `plot_mechanism_comparison.jl` or new `plot_variety_comparison.jl`
+
+4. ❌ Consider whether to re-calibrate Comparison B targeting ψ ≈ 1.0 to activate the
+   dynamic x_c mechanism (see calibration design note in Comparison B section above).
 
 ---
 

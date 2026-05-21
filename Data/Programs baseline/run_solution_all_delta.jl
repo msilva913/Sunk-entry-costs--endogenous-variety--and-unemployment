@@ -117,7 +117,7 @@ println("="^60)
 
 # Remove endogenous exit and zero fixed costs (Xc_Y=0 is required when p_0=0:
 # cons = (ψ/(1+ψ))*p_0 = 0 → X_c = 0 → Xc_Y = 0 for internal consistency in calibrate_shares).
-targets_base = (TARGETS..., dest_end_frac=0.0, p_0=0.0, Xc_Y=0.0)
+targets_base = (TARGETS..., dest_end_frac=0.0, p_0=0.0, Xc_Y=0.0, b_ratio=0.9, x_v=0.5)
 
 out_base = solve_and_irf(targets_base)
 println("Baseline SS: u=$(round(out_base.ss.u, digits=4)), " *
@@ -147,6 +147,8 @@ targets_high_δ = (TARGETS...,
     dest_end_frac = 0.0,             # all destruction exogenous → s = 0
     p_0           = 0.0,             # no endogenous exit distribution mass
     Xc_Y          = 0.0,            # required: cons=0 when p_0=0 → X_c=0 → Xc_Y=0
+    b_ratio       = 0.9,            # higher replacement ratio (exercise)
+    x_v           = 0.5,            # same vacancy share target as baseline
 )
 
 out_high_δ = solve_and_irf(targets_high_δ)
