@@ -1,35 +1,47 @@
 # Pending Tasks
-**Last updated:** May 20, 2026 (evening)
+**Last updated:** May 21, 2026
 
-## Model Mechanism Tasks (NEW — highest priority)
+## Model Mechanism Tasks
 
-See `Inspecting_mechanism_setup.md` for full design rationale and `run_solution_all_delta.jl` for implementation.
+See `Inspecting_mechanism_setup.md` for full design rationale. All three comparisons use
+`b_ratio=0.9, x_v=0.5` as shared calibration settings (activated May 21). Figures are
+4×2 portrait grids (rows: u/v, θ/w_int, N/N_e, asset values or exit diagnostic).
 
-1. **Run and debug `run_solution_all_delta.jl`** ⚠️ (written, not yet run)
-   - Solves baseline + high-δ (δ_e = τ) models, serializes `irf_all_delta.jls`
-   - Watch for π_s feasibility failure in Stage 2 under high δ_e; if hit, lower `Xc_Y` to 0.07
-   - Verify SS diagnostic printout: u, v, θ should match across variants; s ≈ 0 in high-δ
+### Comparison A — Level of δ (CK timing)   ✅ COMPLETE
+- Files: `run_solution_all_delta.jl`, `plot_mechanism_comparison.jl`
+- Output: `irf_all_delta.jls`, `mechanism_A_z_shock.pdf`, `mechanism_A_delta_shock.pdf`
+- Key finding: high-δ (δ_e=τ) shows larger N response to z shock (LOM multiplier 4.8×)
+  and larger Q response to δ shock (short-duration asset amplification); baseline
+  (low δ_e) shows more persistence in δ shock due to slow N recovery.
 
-2. **Write `run_solution_no_variety.jl`** ❌
-   - Comparison B: shut off variety effects by setting ζ = 0 in generalized CES
-   - Use `run_solution_general_CES.jl` as template (already has ζ parameterization)
-   - Recalibrate to same u, v, θ targets; serialize `irf_no_variety.jls`
+### Comparison B — Endogenous vs. Exogenous Exit   ✅ COMPLETE
+- Files: `run_solution_endog_exit.jl`, `plot_endog_exit_comparison.jl`
+- Output: `irf_endog_exit.jls`, `mechanism_B_z_shock.pdf`, `mechanism_B_delta_shock.pdf`
+- Key finding: δ shock response is SMALLER under endog exit, primarily because
+  dest_end_frac=0.5 halves δbar (δbar_endog=0.00326 vs δbar_exog=0.00651); the
+  dynamic x_c amplification mechanism is dormant at calibrated ψ≈0.014.
+- Calibrated ψ≈0.014 is far below Broer et al. (2025) preferred ψ=1; report implied
+  dest_el as outcome alongside ψ for external validation.
 
-3. **Write `run_solution_no_endog_exit.jl`** ❌
-   - Comparison C: set p_0 = 0 (all destruction exogenous at baseline δ_e level)
-   - Simple modification of `run_solution.jl` targets: `(TARGETS..., p_0=0.0, dest_end_frac=0.0)`
-   - δ_e and τ unchanged; only endogenous amplification channel shut off
-   - Serialize `irf_no_endog_exit.jls`
+### Comparison B (extension) — Re-calibrate targeting ψ ≈ 1.0   ❌ PENDING
+- Motivation: at ψ≈0.014, the x_c continuation-cost margin is nearly dormant; the
+  current Comparison B illustrates exposure effect (δbar halved) not dynamic buffering.
+  Targeting ψ≈1.0 directly (as in Broer et al. IER 2025) would activate the x_c channel.
+- Implementation: add `ψ_target=1.0` to `calibrate_shares` targets in `run_solution_endog_exit.jl`
+  and re-run; or add a third variant to the existing comparison.
+- Decision required: is the current exposure-effect result sufficient for the paper, or
+  does the mechanism section need to show the dynamic x_c story?
 
-4. **Write `plot_mechanism_comparison.jl`** ❌
-   - Load all three `irf_*.jls` files + baseline `irf_z.jls` / `irf_delta.jls`
-   - Produce 4×2 panel figures (one for z shock, one for δ shock):
-     Panels: u, v, θ, labor_prod, N, N_e, exit_flow (δ_e×N in log dev)
-   - Layout option: one subplot per variable, all model variants overlaid
-   - Units: u and v in pp levels deviation (all variants share same SS u, v);
-     all other variables in 100×log deviations
-   - Three comparison lines per panel: baseline (solid), high-δ (dashed),
-     no-variety (dotted), no-endog-exit (dash-dot)
+### Comparison C — Variety Effects (N → ρ → w_int → JCC)   ❌ PENDING
+- Files to write: `run_solution_no_variety.jl`, `plot_variety_comparison.jl` (or extend
+  `plot_mechanism_comparison.jl`)
+- Template: `run_solution_general_CES.jl` (has ζ parameterization)
+- Implementation: set ζ=0 so ρ=N^0=1 regardless of N; recalibrate to same targets
+- Serialize `irf_no_variety.jls`
+- Mechanism: after δ shock, N↓ → ρ↓ → w_int=ρ·z/μ↓ → JCC tightens → vacancies
+  suppressed; shutting ζ=0 removes this amplification, directly answering "what can
+  your model do that AGS cannot?"
+- Color convention: Comparison C alternative uses a reserved color (TBD)
 
 ## Empirical Code Tasks (priority order)
 
@@ -82,7 +94,11 @@ See `Inspecting_mechanism_setup.md` for full design rationale and `run_solution_
 
 - ✅ `run_solution_core.jl` full audit (May 20): naming r/ρ, κ per match, u LOM total v_t, BFE at f[4], SS_symbolics x_c/C/Y corrected
 - ✅ `part6b_shock_persistence_cyclical.py`: bivariate VAR(1) HP-1600 log(z)/log(δ), Cholesky z-first → ρ_z^m=0.902, ρ_δ^m=0.592
-- ✅ `run_solution_all_delta.jl` written (May 20): baseline vs. high-δ (δ_e=τ, pure exogenous) comparison; computes exit_flow = δ_e×N; serializes `irf_all_delta.jls`
+- ✅ `run_solution_all_delta.jl` (May 20–21): baseline vs. high-δ (δ_e=τ, pure exogenous); b_ratio=0.9, x_v=0.5; serializes `irf_all_delta.jls`
+- ✅ `plot_mechanism_comparison.jl` (May 21): 4×2 portrait (u/v, θ/w_int, N/N_e, K/Q); K+Q row reveals short-duration asset amplification; interpreted comments added
+- ✅ `run_solution_endog_exit.jl` (May 21): full baseline (endog exit) vs. exog exit; b_ratio=0.9, x_v=0.5; appends exit_flow=δ_e+N; serializes `irf_endog_exit.jls`
+- ✅ `plot_endog_exit_comparison.jl` (May 21): 4×2 portrait with exit_flow replacing Q; comprehensive IRF interpretation comments added (δbar halving dominant, ψ≈0.014 dormant x_c)
+- ✅ `Inspecting_mechanism_setup.md` (May 21): Comparison B results and two-factor interpretation documented; plot design table and implementation order updated
 
 ## Completed Writing Tasks
 
