@@ -71,47 +71,49 @@ function plot_mechanism_B(irf_endog, irf_exog, ss_endog, ss_exog, shock_label, f
     v_e = to_pp(irf_endog.v, ss_endog.v)
     v_x = to_pp(irf_exog.v,  ss_exog.v)
 
-    lendog = "Full baseline (endog. exit)"
-    lexog  = "Exog. exit (δ_e = δ̄)"
+    lendog = L"Baseline (endog. exit)"
+    lexog  = L"Exog. exit ($\bar\delta$ fixed, $\tau$ fixed)"
     cs = [:black :crimson]
     ls = [:solid :dash]
 
+    # 4×2 grid. Do NOT set legend=false at top level — that overrides per-subplot
+    # settings. Instead, pass legend=false to each plot! call individually.
     p = Plots.plot(
         layout         = (4, 2),
         size           = (700, 900),
-        legend         = :topright,
         titlefontsize  = 10,
         tickfontsize   = 8,
         labelfontsize  = 9,
-        legendfontsize = 7,
         left_margin    = 6Plots.mm,
-        bottom_margin  = 3Plots.mm,
+        bottom_margin  = 4Plots.mm,
         right_margin   = 2Plots.mm,
     )
 
     # ── Row 1: Labor market outcomes ─────────────────────────────────────────
 
-    # Panel 1 — u (pp dev from SS)
+    # Panel 1 — u (pp dev from SS); no legend here
     plot!(p[1], t, [u_e u_x],
-          label     = [lendog lexog],
+          label     = false,
           title     = L"u",
           ylabel    = "pp deviation",
           xlabel    = "",
           color     = cs, linestyle = ls)
 
-    # Panel 2 — v (pp dev from SS)
+    # Panel 2 — v: shared legend lives here (topright, both lines described)
     plot!(p[2], t, [v_e v_x],
-          label     = [lendog lexog],
-          title     = L"v",
-          ylabel    = "pp deviation",
-          xlabel    = "",
-          color     = cs, linestyle = ls)
+          label          = [lendog lexog],
+          legend         = :topright,
+          legendfontsize = 7,
+          title          = L"v",
+          ylabel         = "pp deviation",
+          xlabel         = "",
+          color          = cs, linestyle = ls)
 
     # ── Row 2: Price signals ─────────────────────────────────────────────────
 
     # Panel 3 — θ (market tightness)
     plot!(p[3], t, [irf_endog.θ irf_exog.θ],
-          label     = [lendog lexog],
+          label     = false,
           title     = L"\theta",
           ylabel    = "% deviation",
           xlabel    = "",
@@ -119,7 +121,7 @@ function plot_mechanism_B(irf_endog, irf_exog, ss_endog, ss_exog, shock_label, f
 
     # Panel 4 — w_int (marginal revenue product = labor_prod / μ)
     plot!(p[4], t, [irf_endog.w_int irf_exog.w_int],
-          label     = [lendog lexog],
+          label     = false,
           title     = L"w_{\mathrm{int}}",
           ylabel    = "% deviation",
           xlabel    = "",
@@ -129,7 +131,7 @@ function plot_mechanism_B(irf_endog, irf_exog, ss_endog, ss_exog, shock_label, f
 
     # Panel 5 — N (firm mass / product variety stock)
     plot!(p[5], t, [irf_endog.N irf_exog.N],
-          label     = [lendog lexog],
+          label     = false,
           title     = L"N",
           ylabel    = "% deviation",
           xlabel    = "",
@@ -137,7 +139,7 @@ function plot_mechanism_B(irf_endog, irf_exog, ss_endog, ss_exog, shock_label, f
 
     # Panel 6 — N_e (new varieties created; BGM entry margin)
     plot!(p[6], t, [irf_endog.N_e irf_exog.N_e],
-          label     = [lendog lexog],
+          label     = false,
           title     = L"N_e",
           ylabel    = "% deviation",
           xlabel    = "",
@@ -153,7 +155,7 @@ function plot_mechanism_B(irf_endog, irf_exog, ss_endog, ss_exog, shock_label, f
 
     # Panel 7 — K (per-period vacancy dividend)
     plot!(p[7], t, [irf_endog.K irf_exog.K],
-          label     = [lendog lexog],
+          label     = false,
           title     = L"K",
           ylabel    = "% deviation",
           xlabel    = "months",
@@ -161,14 +163,14 @@ function plot_mechanism_B(irf_endog, irf_exog, ss_endog, ss_exog, shock_label, f
 
     # Panel 8 — exit flow δ_e × N
     plot!(p[8], t, [irf_endog.exit_flow irf_exog.exit_flow],
-          label     = [lendog lexog],
+          label     = false,
           title     = L"\delta_e \times N",
           ylabel    = "% deviation",
           xlabel    = "months",
           color     = cs, linestyle = ls)
 
     display(p)
-    savefig(filename)
+    savefig(p, filename)
     println("Saved: $filename")
     return p
 end
@@ -208,90 +210,79 @@ end
 
 # =============================================================================
 # NOTES ON IRF SCALE AND SHAPE — Comparison B (endogenous vs. exogenous exit)
-# Last updated: May 21, 2026
+# Last updated: May 22, 2026
 # =============================================================================
 #
-# ── What this comparison isolates ────────────────────────────────────────────
+# ── Comparison design (updated) ───────────────────────────────────────────────
 #
-# Comparison A varied the LEVEL of δ_e (baseline δ̄ vs. high-δ = τ), holding
-# the exit structure fixed (exogenous only). Comparison B holds the LEVEL of
-# δ_e fixed at the same SS value and varies whether exit is endogenous or not:
-#   Full baseline: δ_e = 1 − (1−δ·δ̄)·F(x_c),  dest_end_frac = 0.5
-#   Exog. exit:    δ_e = δ·δ̄ (x_c irrelevant, p_0 = 0, dest_end_frac = 0)
-# Both models target the same annual destruction rate dest_ann = 0.0754 (BED),
-# so δ_e_SS ≈ 0.0065 in both. However, because dest_end_frac = 0.5, the
-# EXOGENOUS component δbar is halved in the endog model (0.00326 vs 0.00651).
+# The comparison holds fixed δbar (exogenous destruction component) and τ (total
+# separation rate) across both specifications. This cleanly isolates the x_c
+# amplification channel:
 #
-# ── Calibrated parameters (b_ratio=0.9, x_v=0.5) ───────────────────────────
+#   Full baseline (endog): δ_e ≈ 0.00653/month, δbar ≈ 0.00326 (dest_end_frac=0.5)
+#                          τ = 0.031, s derived; x_c margin active (dest_elast=5)
+#   Exog. exit:            δ_e = δbar_endog ≈ 0.00326 (halved by design)
+#                          τ = 0.031 (same), s_exog > s_endog automatically
+#                          x_c margin absent (p_0=0, dest_end_frac=0)
 #
-# Key parameters that are similar across models:
-#   ϕ:   0.659 (endog) vs 0.640 (exog)   — nearly identical; Nash wage not a confounder
-#   κ:   0.058 (endog) vs 0.063 (exog)   — nearly identical; JCC not a confounder
-#   z:   1.369 (endog) vs 1.375 (exog)   — same SS productivity
+# Identification logic:
+#   (a) Same δbar → same direct transmission of any δ shock through δ_e.
+#       A proportional shock to δ generates the same first-period δ_e impulse
+#       in both models; any IRF difference is due to the x_c channel, not
+#       differential shock exposure.
+#   (b) Same τ → approximately same SS u, v, θ. pp-deviation IRFs are directly
+#       comparable. The higher s_exog is a derived consequence of keeping τ
+#       fixed with lower δ_e, not an independent structural assumption.
 #
-# Key parameters that differ structurally:
-#   δbar: 0.00326 (endog) vs 0.00651 (exog)  — HALF as large by construction
-#   ψ:    0.014  (endog) vs 1.5    (exog)     — very flat distribution in endog
-#   f_m:  25.1   (endog) vs 1.0    (exog)     — scale of continuation cost distribution
-#   f_e:  20.3   (endog) vs 32.7   (exog)     — lower sunk entry cost in endog
+# Previous design (same dest_ann → same δ_e, different δbar) is retained as an
+# appendix exercise illustrating the pure "exposure effect" of dest_end_frac.
 #
-# ── δ shock: why endog exit shows SMALLER u, θ, N responses ─────────────────
+# ── Calibrated parameters (b_ratio=0.9, x_v=0.5, dest_elast_target=5) ───────
 #
-# The IRFs show a counterintuitive result: the endogenous exit model has
-# smaller labor market responses to the δ shock (~0.028 pp u peak at h=3)
-# than the exogenous exit model (~0.055 pp at h=6). Two factors explain this:
+# Parameters that should be similar (design check):
+#   δbar:  0.00326 (endog) = 0.00326 (exog)   ← equal by construction
+#   τ:     0.031   (endog) ≈ 0.031  (exog)    ← equal by target (sep=0.031)
+#   u,v,θ: approximately equal                 ← implied by same τ, f, q
 #
-# FACTOR 1 — HALVED SHOCK TRANSMISSION (dominant):
-#   δ_e = 1 − (1−δ·δbar)·F(x_c). The δ shock fires through the δ·δbar term.
-#   With δbar_endog = 0.00326 = δbar_exog/2, the same proportional δ shock
-#   generates half the direct δ_e impulse in the endog model. This is a
-#   mechanical consequence of dest_end_frac = 0.5 routing half the SS
-#   destruction through x_c rather than the exogenous δ channel.
-#   Result: the exog model receives twice the direct vacancy/firm destruction
-#   impulse from the δ shock, leading to deeper N troughs (~0.10% vs ~0.05%)
-#   and more prolonged u elevation.
+# Parameters that differ structurally (as designed):
+#   δ_e:   0.00653 (endog) vs 0.00326 (exog)  ← exog = δbar_endog
+#   s:     s_endog < s_exog                    ← exog compensates via higher s
+#   ψ:     ~0.033 (endog) vs 1.5 (exog placeholder, irrelevant with p_0=0)
+#   dest_el: 5.0 (endog by target) vs 0.0 (exog, no endogenous exit)
+#   f_e, z: may differ due to different π_s in each model
 #
-# FACTOR 2 — NEARLY INACTIVE x_c MARGIN (ψ ≈ 0):
-#   The continuation cost distribution shape parameter ψ = 0.014 in the endog
-#   calibration (vs. ψ = 1.5 in the exog model, which is irrelevant since p_0=0).
-#   The density at the threshold f(x_c) ∝ ψ × (x_c/f_m)^{ψ-1} → 0 when ψ → 0.
-#   F(x_c) barely responds to changes in x_c with ψ this small. The "x_c buffer
-#   mechanism" (endogenous exit absorbing part of the shock) is quantitatively
-#   negligible at this calibration. The smaller u/N response is almost entirely
-#   due to Factor 1.
+# ── δ shock: mechanism ────────────────────────────────────────────────────────
 #
-# ROBUSTNESS: The direction (endog smaller) is mechanically robust as long as
-#   dest_end_frac > 0, because that always implies δbar_endog < δbar_exog for
-#   the same δ_e target. The MAGNITUDE of the difference scales with dest_end_frac.
+# With δbar equated, the same proportional δ shock generates the same direct
+# first-period δ_e impulse in both models. Any difference in the IRFs reflects
+# the x_c dynamic amplification in the endog model:
+#   - δ↑ → δ_e↑ → x_c falls (fewer firms find continuation worthwhile) →
+#     endogenous exit rises → additional N destruction beyond exog impulse.
+# The magnitude of this amplification depends on dest_elast = ψ×ζ/(1−ζ) = 5.
+# At the current calibration ζ≈0.993, ψ≈0.033, so the density f(x_c) at the
+# threshold is still low — amplification visible but moderate.
+# The gap in N and u responses between endog and exog lines is the pure x_c
+# contribution: endog should show larger u, deeper N trough (amplification),
+# or faster recovery depending on whether x_c buffers or amplifies.
 #
-# ── z shock: why endog exit shows LARGER θ, N responses ─────────────────────
+# ── z shock: mechanism ───────────────────────────────────────────────────────
 #
-# For the z shock, the δ shock transmission channel is irrelevant (δ doesn't
-# move with z). The larger responses in the endog model reflect:
-#   (a) Lower f_e (20.3 vs 32.7): same Q → more N_e → more N accumulation
-#   (b) Lower δbar: the N LOM coefficient (1-δ_e) is the same at SS but the
-#       exogenous drag on N is smaller (δbar = 0.00326 vs 0.00651), so N
-#       accumulates faster from any given N_e impulse
-#   (c) The ψ ≈ 0 x_c channel barely contributes to z amplification either
-# Result: endog model N peaks at ~0.30% vs ~0.25%, θ at ~1.2% vs ~0.9%
+# The δ shock transmission channel is irrelevant for z. Differences reflect:
+#   (a) In the endog model: z↑ → π_s rises → x_c rises → F(x_c) rises →
+#       endogenous exit falls → δ_e falls → N accumulates faster (positive
+#       amplification through x_c). Magnitude governed by dest_elast.
+#   (b) Different f_e between models (from different π_s): affects entry margin.
+# The z-shock comparison is less clean because f_e differs; interpret with care.
 #
 # ── exit_flow (δ_e × N) panel interpretation ─────────────────────────────────
 #
-# δ shock: Both models show nearly identical exit_flow spikes (~6.5% at h=1).
-#   Under exog exit: larger N drop × constant δ_e
-#   Under endog exit: smaller N drop × similar δ_e (ψ≈0 means δ_e barely rises
-#   through x_c, so total exit_flow ≈ same). The gap between models is small.
+# δ shock: With same δbar, the direct δ_e impulse is equated. Any gap between
+#   endog and exog exit_flow at h=1 is the pure x_c contribution (endogenous
+#   exit responding to the shock). At dest_elast=5, this gap may be visible.
+#   At h>1, persistence difference reflects slower N recovery in endog model if
+#   x_c amplifies, or faster if x_c partially mean-reverts.
 #
-# z shock: Endog model exit_flow slightly larger (~0.25% peak vs ~0.20%) because
-#   higher N accumulation × slightly lower δ_e (x_c rising reduces δ_e, but
-#   barely with ψ≈0; the effect is mainly the N stock being larger).
-#
-# ── Design note for future calibrations ──────────────────────────────────────
-#
-# If the goal is to isolate the dynamic x_c mechanism, the calibration needs
-# ψ to be larger (e.g., ψ = 1.0–1.5 as in Broer et al. 2025). At ψ ≈ 0,
-# the endogenous exit margin exists on paper but is nearly dormant dynamically.
-# Comparison B as currently configured primarily illustrates the EXPOSURE effect
-# of dest_end_frac (half the destruction is shielded from the δ shock) rather
-# than the dynamic x_c amplification story.
+# z shock: Endog exit_flow should show more movement than exog (x_c responds to
+#   profitability: z↑ → x_c↑ → F(x_c)↑ → exit rate falls → exit_flow ≈ δ_e·N
+#   falls; both δ_e falling and N rising). The exog exit_flow tracks N only.
 # =============================================================================

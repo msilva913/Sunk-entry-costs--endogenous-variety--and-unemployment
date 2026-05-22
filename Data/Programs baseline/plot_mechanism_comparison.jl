@@ -65,47 +65,49 @@ function plot_mechanism_A(irf_base, irf_high, ss_base, ss_high, shock_label, fil
     v_b = to_pp(irf_base.v, ss_base.v)
     v_h = to_pp(irf_high.v, ss_high.v)
 
-    lbase = "Baseline (δ_e = δ̄)"
-    lhigh = "High-δ (δ_e = τ)"
+    lbase = L"Baseline ($\delta_e = \bar{\delta}$)"
+    lhigh = L"High-$\delta$ ($\delta_e = \tau$)"
     cs = [:black :royalblue]
     ls = [:solid :dash]
 
+    # 4×2 grid. Do NOT set legend=false at top level — that overrides per-subplot
+    # settings. Instead, pass legend=false to each plot! call individually.
     p = Plots.plot(
         layout        = (4, 2),
-        size          = (700, 900),
-        legend        = :topright,
+        size          = (850, 900),
         titlefontsize = 10,
         tickfontsize  = 8,
         labelfontsize = 9,
-        legendfontsize= 7,
         left_margin   = 6Plots.mm,
-        bottom_margin = 3Plots.mm,
+        bottom_margin = 4Plots.mm,
         right_margin  = 2Plots.mm,
     )
 
     # ── Row 1: Labor market outcomes ─────────────────────────────────────────
 
-    # Panel 1 — u (pp dev from SS)
+    # Panel 1 — u (pp dev from SS); legend=false here, panel 2 carries it
     plot!(p[1], t, [u_b u_h],
-          label     = [lbase lhigh],
+          label     = false,
           title     = L"u",
           ylabel    = "pp deviation",
           xlabel    = "",
           color     = cs, linestyle = ls)
 
-    # Panel 2 — v (pp dev from SS)
+    # Panel 2 — v: shared legend lives here (top-right, both lines described)
     plot!(p[2], t, [v_b v_h],
-          label     = [lbase lhigh],
-          title     = L"v",
-          ylabel    = "pp deviation",
-          xlabel    = "",
-          color     = cs, linestyle = ls)
+          label          = [lbase lhigh],
+          legend         = :topright,
+          legendfontsize = 7,
+          title          = L"v",
+          ylabel         = "pp deviation",
+          xlabel         = "",
+          color          = cs, linestyle = ls)
 
     # ── Row 2: Price signals ─────────────────────────────────────────────────
 
     # Panel 3 — θ (market tightness)
     plot!(p[3], t, [irf_base.θ irf_high.θ],
-          label     = [lbase lhigh],
+          label     = false,
           title     = L"\theta",
           ylabel    = "% deviation",
           xlabel    = "",
@@ -114,7 +116,7 @@ function plot_mechanism_A(irf_base, irf_high, ss_base, ss_high, shock_label, fil
     # Panel 4 — w_int (marginal revenue product of labor = labor_prod / μ;
     #            identical to labor_prod in log-dev since markup μ is constant)
     plot!(p[4], t, [irf_base.w_int irf_high.w_int],
-          label     = [lbase lhigh],
+          label     = false,
           title     = L"w_{\mathrm{int}}",
           ylabel    = "% deviation",
           xlabel    = "",
@@ -124,7 +126,7 @@ function plot_mechanism_A(irf_base, irf_high, ss_base, ss_high, shock_label, fil
 
     # Panel 5 — N (firm mass / product variety stock)
     plot!(p[5], t, [irf_base.N irf_high.N],
-          label     = [lbase lhigh],
+          label     = false,
           title     = L"N",
           ylabel    = "% deviation",
           xlabel    = "",
@@ -132,7 +134,7 @@ function plot_mechanism_A(irf_base, irf_high, ss_base, ss_high, shock_label, fil
 
     # Panel 6 — N_e (new varieties created; BGM entry margin)
     plot!(p[6], t, [irf_base.N_e irf_high.N_e],
-          label     = [lbase lhigh],
+          label     = false,
           title     = L"N_e",
           ylabel    = "% deviation",
           xlabel    = "",
@@ -146,7 +148,7 @@ function plot_mechanism_A(irf_base, irf_high, ss_base, ss_high, shock_label, fil
 
     # Panel 7 — K (per-period vacancy dividend; drives JCC)
     plot!(p[7], t, [irf_base.K irf_high.K],
-          label     = [lbase lhigh],
+          label     = false,
           title     = L"K",
           ylabel    = "% deviation",
           xlabel    = "months",
@@ -154,14 +156,13 @@ function plot_mechanism_A(irf_base, irf_high, ss_base, ss_high, shock_label, fil
 
     # Panel 8 — Q (present value of K; Q = x_m·e with ξ_inv = 1)
     plot!(p[8], t, [irf_base.Q irf_high.Q],
-          label     = [lbase lhigh],
+          label     = false,
           title     = L"Q \;(= x_m \cdot e)",
           ylabel    = "% deviation",
           xlabel    = "months",
           color     = cs, linestyle = ls)
 
-    display(p)
-    savefig(filename)
+    savefig(p, filename)
     println("Saved: $filename")
     return p
 end

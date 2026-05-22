@@ -425,11 +425,13 @@ Parameter taxonomy (must match draft Section 5.2):
               Christiano, Eichenbaum & Trabandt (2016) estimate total hiring expenditure
               at 1–2% of GDP. 1.5% is pure vacancy/recruiting expenditure (excluding
               training). This is a calibration target, not an SMM moment.
-    Xc_Y:     Fixed cost share of GDP = 10%. Hard-coded target in Stage 2; pins π_s.
-              Abraham, Bormans, Konings & Roeger (2019): fixed costs ~10–15% of EU value
-              added. U.S. overhead labor (Bils & Klenow 2004): ~6% of manufacturing output.
-              10% is an upper bound — keep conservatively low to avoid profit squeeze.
-              WARNING: π_s = 1/ε − Xc/Yc. With ε=4.3, feasible range is Xc_Y ≲ 0.13.
+    Xc_Y:     Fixed cost share of GDP = 10%. Hard-coded target in Stage 2 (LEGACY PATH);
+              pins π_s. Abraham, Bormans, Konings & Roeger (2019): fixed costs ~10–15% of
+              EU value added. U.S. overhead labor (Bils & Klenow 2004): ~6% of
+              manufacturing output. 10% is an upper bound — keep conservatively low to
+              avoid profit squeeze.
+              WARNING: superseded by dest_elast_target when that field is supplied.
+              With ε=4.3, feasible range is Xc_Yc ≲ 20%; see calibrate_shares docstring.
               Sensitivity: run (TARGETS..., Xc_Y=0.07) for lower bound.
     dest_ann: Annual product destruction rate — BED Deaths, employment-weighted.
     f, q:     Gross JOLTS rates; corrected by (1-δ_e) inside Stage 1 calibration.
@@ -443,6 +445,16 @@ Parameter taxonomy (must match draft Section 5.2):
     dest_end_frac (ω_δ), p_0, b_ratio, x_v, ξ_inv, σ, and shock processes ρ_x, σ_x.
     The TARGETS tuple holds prior/default values for these during steady-state checks
     and standalone calibration runs; they are overridden by the SMM sampler at runtime.
+
+  OPTIONAL TARGET (mechanism comparisons only):
+    dest_elast_target: Elasticity of δ_e w.r.t. x_c = ψ×ζ/(1−ζ) at SS. When supplied,
+      REPLACES the Xc_Y target in Stages 2-3. ψ is computed analytically as
+      ψ = dest_elast_target×(1−ζ)/ζ, then cons and π_s follow. Xc_Y becomes an
+      outcome (reported, not targeted). Feasibility: given ε=4.3, dest_elast_target ≲ 10
+      keeps the implied fixed cost share Xc_Yc below ~18% (plausible range from lit).
+      At current calibration, ζ ≈ 0.993, so ψ ≈ dest_elast_target × 0.007.
+      Reference: Broer, Harbo Hansen, Krusell & Östling (IER 2025) use ψ=1 implying
+      dest_elast ≈ 142 at their calibrated ζ — not directly comparable here.
 
   NOTE on p_0 and ω_δ identification:
     - p_0 (mass on continuous part of F) is not pinned by any long-run aggregate moment.
@@ -478,26 +490,43 @@ const TARGETS = (
 """
     calibrate_shares(targets) → NamedTuple
 
-Calibrate model parameters to match empirical targets in four sequential stages:
+Calibrate model parameters to match empirical targets in four sequential stages.
 
-  Stage 1 — Direct conversions (targets → model primitives):
+Two mutually exclusive paths through Stages 2-3, selected by which target is supplied:
+
+  PATH A (legacy, default) — targets Xc_Y:
+    Stage 2: root-find Xc_Yc s.t. Xc_Y = Xc_Yc × Yc_YG × YG_Y → pins π_s = 1/ε − Xc_Yc
+    Stage 3: root-find cons s.t. π_s(cons) = π_s → pins ψ = (cons/p_0)/(1 − cons/p_0)
+    dest_elast = ψ×ζ/(1−ζ) is an OUTCOME (reported in Stage 5).
+
+  PATH B (mechanism comparisons) — targets dest_elast_target:
+    Triggered when target NamedTuple contains field `dest_elast_target` (non-nothing).
+    Stages 2-3 (analytic, no root-find):
+      ζ   = (surv_prob − (1−p_0))/p_0            [determined in Stage 1]
+      ψ   = dest_elast_target × (1−ζ)/ζ           [direct inversion of dest_elast formula]
+      cons = ψ/(1+ψ) × p_0
+      π_s = (μ−1)/μ × (1−cons) × (r+δ_e)/(r+δ_e + cons×(1−δ_e))
+    Xc_Y = Xc_Yc × Yc_YG / YG_Y is an OUTCOME (reported after Stage 4).
+    Feasibility: with ε=4.3, dest_elast_target ≲ 10 keeps Xc_Yc ≲ 18% (plausible);
+    values above ~20 push Xc_Yc toward 20% and produce warnings.
+    Note: ζ ≈ 0.993 at baseline calibration, so ψ ≈ dest_elast_target × 0.007.
+    Example: dest_elast_target=5 → ψ≈0.033, Xc_Yc≈14.5%; dest_elast_target=2 ≈ current default.
+
+  Stage 1 (both paths) — Direct conversions:
     dest_ann, dest_end_frac → δ_e, δ; r_ann → r; f, q (gross) → f_corr, q_corr
-    (note: f_corr = f/(1-δ_e) because JOLTS rates are gross; model uses conditional rates)
 
-  Stage 2 — Root-find Xc_Yc (fixed cost / consumption output):
-    targets Xc_Y → pins π_s (retail profit share)
-
-  Stage 3 — Root-find cons (distribution mass fraction):
-    targets π_s → pins cons, then ψ, f_m
-
-  Stage 4 — Root-find Q (sunk entry value):
+  Stage 4 (both paths) — Root-find Q (sunk entry value):
     targets X_Y, x_v → pins Q, K, κ, z, f_e, x_c, x_m, ϕ
 
-Returns 17 parameters suitable for constructing ParaCalib.
+Returns NamedTuple of 18 parameters (including dest_el — calibrated distribution elasticity).
 """
 function calibrate_shares(targets)
-    @unpack X_Y, Xc_Y, dest_ann, dest_end_frac, p_0, f, η_L, q, sep, b_ratio,
+    @unpack X_Y, dest_ann, dest_end_frac, p_0, f, η_L, q, sep, b_ratio,
             x_v, ξ_inv, ε, r_ann, σ, N, w = targets
+    # Optional targets — use get() for backward compatibility with older call sites
+    Xc_Y              = get(targets, :Xc_Y, 0.10)
+    dest_elast_target = get(targets, :dest_elast_target, nothing)
+    use_dest_elast    = !isnothing(dest_elast_target) && p_0 > 0.0
 
     # ------------------------------------------------------------------
     # Stage 1: Direct conversions
@@ -516,6 +545,7 @@ function calibrate_shares(targets)
     #   (1 - δ_e) * f_corr = f_target  ⟹  f_corr = f_target / (1 - δ_e)
     f_corr = f / (1 - δ_e)
     q_corr = q / (1 - δ_e)
+    
     θ  = f_corr / q_corr
     u  = τ / (τ + (1 - δ_e) * f_corr)
     v  = θ * u
@@ -527,52 +557,89 @@ function calibrate_shares(targets)
     b   = b_ratio * w
     ρ   = N^(1 / (ε - 1))
 
-    # ------------------------------------------------------------------
-    # Stage 2: Solve for profit share via fixed-cost ratio
-    # ------------------------------------------------------------------
-    # Relationship: Xc_Y = Xc_Yc * Yc_YG * (1/YG_Y)
-    #   Xc_Yc ≡ X_c/Y_c (endogenous fixed cost share within consumption sector)
-    #   Yc_YG = (r+δ_e)/(r+δ_e+δ_e*π_s)
-    #   YG_Y  = 1 + X_Y + Xc_Y (gross output / GDP)
-    # When Xc_Y = 0 (no aggregate fixed costs, e.g. p_0 = 0 variants),
-    # loss_xc = 0 - xc_yc so the root is trivially xc_yc = 0.
-    # Skip find_zero to avoid a bracketing-interval error.
-    if Xc_Y == 0.0
-        Xc_Yc = 0.0
-        π_s   = 1 / ε
-    else
-        function loss_xc(xc_yc)
-            π_s_trial = 1 / ε - xc_yc
-            Yc_YG = (r + δ_e) / (r + δ_e + δ_e * π_s_trial)
-            YG_Y  = 1 + X_Y + Xc_Y
-            return Xc_Y / (Yc_YG * YG_Y) - xc_yc
-        end
-        Xc_Yc = find_zero(loss_xc, (0.01, 0.5))
-        π_s   = 1 / ε - Xc_Yc
-    end
-
-    L_c = (r + δ_e) * L / (r + δ_e + δ_e * π_s * μ)
-    L_e = L - L_c
+    # ζ_ss = (x_c/f_m)^ψ at SS — determined entirely by surv_prob and p_0.
+    # Available to both calibration paths; placeholder 0.0 when p_0 = 0.
+    ζ_ss = (p_0 > 0.0) ? (surv_prob - (1 - p_0)) / p_0 : 0.0
 
     # ------------------------------------------------------------------
-    # Stage 3: Solve for cost distribution mass fraction
+    # Stages 2-3: Determine π_s, cons, ψ
+    #
+    # PATH A (legacy): Xc_Y target → π_s → cons → ψ  (two root-finds)
+    # PATH B (new):    dest_elast_target → ψ → cons → π_s  (analytic, no root-find)
+    # p_0 = 0 case: no endogenous exit — cons=0, ψ=placeholder, π_s=1/ε
     # ------------------------------------------------------------------
-    # π_s(cons) = [(μ-1)/μ] * (1-cons) * (r+δ_e) / (r+δ_e + cons*(1-δ_e))
-    function loss_psi(cons_trial)
-        return (μ - 1) / μ * (1 - cons_trial) * (r + δ_e) /
-               (r + δ_e + cons_trial * (1 - δ_e)) - π_s
-    end
-    # When p_0 = 0 the continuous cost distribution has no mass: cons = 0 always
-    # and ψ is irrelevant (never enters model equations). Skip the root-find to
-    # avoid 0/0 in ψ_c = cons/p_0.
     if p_0 == 0.0
+        # ── No endogenous exit: distribution irrelevant ──────────────
         cons = 0.0
-        ψ    = 1.5   # placeholder — doesn't affect model when p_0 = 0
+        ψ    = 1.5      # placeholder — never enters model equations when p_0 = 0
+        π_s  = 1 / ε
+
+    elseif use_dest_elast
+        # ── PATH B: dest_elast_target → ψ (analytic) ────────────────
+        # Inversion of dest_elast = ψ × ζ/(1−ζ) at the calibrated SS ζ.
+        # ζ_ss is fixed by Stage 1 (from surv_prob and p_0), so ψ follows directly.
+        0 < ζ_ss < 1 || error(
+            "ζ_ss = $(round(ζ_ss,digits=6)) not in (0,1). " *
+            "Check surv_prob = $(round(surv_prob,digits=6)) and p_0 = $p_0.")
+        ψ    = dest_elast_target * (1 - ζ_ss) / ζ_ss
+        cons = ψ / (1 + ψ) * p_0
+        π_s  = (μ - 1) / μ * (1 - cons) * (r + δ_e) / (r + δ_e + cons * (1 - δ_e))
+
+        # Feasibility checks
+        Xc_Yc_implied = 1 / ε - π_s    # fixed cost share of consumption output
+        if π_s ≤ 0.0
+            error(
+                "dest_elast_target = $dest_elast_target is infeasible: " *
+                "π_s = $(round(π_s, digits=4)) ≤ 0. " *
+                "Fixed costs exceed full markup. Reduce dest_elast_target or ε.")
+        end
+        if Xc_Yc_implied > 0.20
+            @warn(
+                "dest_elast_target = $dest_elast_target implies " *
+                "Xc_Yc = $(round(Xc_Yc_implied*100, digits=1))% of consumption output. " *
+                "Abraham et al. (2019) cite 10–15%; U.S. estimates suggest ≤ 10%. " *
+                "Consider reducing dest_elast_target.")
+        end
+        println("  [PATH B] dest_elast_target=$(dest_elast_target) → " *
+                "ζ_ss=$(round(ζ_ss,digits=4)), " *
+                "ψ=$(round(ψ,digits=4)), " *
+                "cons=$(round(cons,digits=4)), " *
+                "π_s=$(round(π_s,digits=4)), " *
+                "Xc_Yc_implied=$(round(Xc_Yc_implied*100,digits=1))%")
+
     else
+        # ── PATH A (legacy): Xc_Y → π_s → cons → ψ ─────────────────
+        # Stage 2: root-find Xc_Yc s.t. Xc_Y = Xc_Yc × Yc_YG / YG_Y
+        #   Xc_Yc ≡ X_c/Y_c;  Yc_YG = (r+δ_e)/(r+δ_e+δ_e*π_s);  YG_Y = 1+X_Y+Xc_Y
+        # When Xc_Y = 0, the root is trivially xc_yc = 0; skip find_zero.
+        if Xc_Y == 0.0
+            Xc_Yc = 0.0
+            π_s   = 1 / ε
+        else
+            function loss_xc(xc_yc)
+                π_s_trial = 1 / ε - xc_yc
+                Yc_YG = (r + δ_e) / (r + δ_e + δ_e * π_s_trial)
+                YG_Y  = 1 + X_Y + Xc_Y
+                return Xc_Y / (Yc_YG * YG_Y) - xc_yc
+            end
+            Xc_Yc = find_zero(loss_xc, (0.01, 0.5))
+            π_s   = 1 / ε - Xc_Yc
+        end
+
+        # Stage 3: root-find cons s.t. π_s(cons) = π_s
+        #   π_s(cons) = [(μ-1)/μ] * (1-cons) * (r+δ_e) / (r+δ_e + cons*(1-δ_e))
+        function loss_psi(cons_trial)
+            return (μ - 1) / μ * (1 - cons_trial) * (r + δ_e) /
+                   (r + δ_e + cons_trial * (1 - δ_e)) - π_s
+        end
         cons = find_zero(loss_psi, 0.1)
         ψ_c  = cons / p_0
         ψ    = ψ_c / (1 - ψ_c)
     end
+
+    # L_c: employment in the consumption sector, derived from π_s (both paths)
+    L_c = (r + δ_e) * L / (r + δ_e + δ_e * π_s * μ)
+    L_e = L - L_c
 
     # Pre-compute surplus ratio for Stage 4
     surplus_ratio = (r + τ) / (1 - δ_e) / (q_corr * x_v)
@@ -624,8 +691,16 @@ function calibrate_shares(targets)
     ϕ   = (w - b) / (w_int - K + θ * (K + q_corr * κ) - b)
     x_m = Q / e^ξ_inv
 
+    # PATH B only: report implied Xc_Y so the caller can check plausibility.
+    # X_c and Q_out.Y are already available from the Stage 4 unpack above.
+    if use_dest_elast
+        Xc_Y_implied = X_c / Q_out.Y
+        println("  [PATH B] implied Xc_Y (GDP share) = $(round(Xc_Y_implied*100, digits=2))%  " *
+                "(dest_el=$(round(dest_el, digits=3)), ψ=$(round(ψ, digits=4)))")
+    end
+
     return (;
         f_e, δ, z, b, ϕ, r, σ, ε, A, η_L,
-        κ, ξ_inv, x_m, s, ψ, p_0, f_m
+        κ, ξ_inv, x_m, s, ψ, p_0, f_m, dest_el
     )
 end

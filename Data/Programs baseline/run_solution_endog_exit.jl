@@ -2,18 +2,51 @@
 # =============================================================================
 # Mechanism comparison B: role of ENDOGENOUS EXIT
 #
-# Compares two calibrations:
+# Compares two calibrations that share the same EXOGENOUS destruction parameter
+# δbar and the same total separation rate τ:
+#
 #   (1) Full baseline — endogenous exit active
-#         dest_end_frac = 0.5, p_0 = 0.5, Xc_Y = 0.10
-#         δ_e = δ̄ ≈ 1.08%/month (50% endogenous, 50% exogenous)
+#         dest_end_frac = 0.5, p_0 = 0.5
+#         dest_elast_target = 5.0  ← pins x_c channel elasticity directly
+#         δ_e_endog = dest_ann-implied rate (~0.653%/month)
+#         δbar_endog = (1−dest_end_frac) × δ_e_endog ≈ 0.326%/month
+#         τ = sep = 0.031 (target), s_endog derived
 #
 #   (2) Exogenous exit — endogenous exit shut off
 #         dest_end_frac = 0.0, p_0 = 0.0, Xc_Y = 0.0
-#         δ_e = δ̄ (same level; only the margin changes)
+#         dest_ann_exog set so δ_e_exog = δbar_endog ← SAME exog. destruction
+#         τ = sep = 0.031 (SAME target) → s rises to compensate for lower δ_e
+#         x_c margin absent
 #
-# Both variants share the same δ_e LEVEL at SS so the comparison isolates the
-# endogenous exit amplification channel (x_c margin, continuation cost
-# distribution) from the pure-level effect studied in Comparison A.
+# COMPARISON DESIGN (May 22, 2026):
+#   Key identification principle: to isolate the x_c dynamic amplification
+#   mechanism, the comparison must hold fixed everything except the presence
+#   of the endogenous margin. This requires:
+#
+#   (a) Same δbar: the exog shock to δ fires through δ·δbar. If δbar differs
+#       across models, the same proportional δ shock generates different
+#       first-period δ_e impulses, confounding the comparison. Setting
+#       dest_ann_exog = annual(δbar_endog) equates this direct transmission.
+#
+#   (b) Same τ (total separation rate): achieved by keeping sep=0.031 as a
+#       target in both models. With lower δ_e_exog, s_exog rises automatically
+#       inside calibrate_shares so that τ = 1−(1−δ_e)(1−s) = 0.031 in both.
+#       This keeps steady-state u, v, θ approximately equal and makes pp-
+#       deviation IRF comparisons valid.
+#
+#   The residual structural difference between models is purely the x_c margin:
+#   endog has a continuation cost threshold that responds to profitability,
+#   exog does not. Any IRF difference is attributable to that channel alone.
+#   Note: s_exog > s_endog (separation rate compensates for absent endogenous
+#   destruction) — a structural difference in the separation margin, but one
+#   that is small in magnitude and directly implied by the τ-fixing condition.
+#
+# PREVIOUS VERSION (appendix exercise):
+#   The prior design (same dest_ann, same δ_e, different δbar) is available
+#   as the "exposure-effect" comparison: it shows that routing half of SS
+#   destruction through the endogenous margin halves the model's exposure to
+#   the δ shock. Useful as an appendix robustness check but not the clean
+#   mechanism comparison for the main text.
 #
 # Both calibrations use:
 #   b_ratio = 0.9   (same as Comparison A exercise)
@@ -24,7 +57,7 @@
 # =============================================================================
 
 include("run_solution_core.jl")
-
+using JLD2 
 # ── Shared shock process parameters (monthly, from part6b) ────────────────────
 ρ_z = 0.902
 σ_z = 0.0092
@@ -98,40 +131,77 @@ function solve_and_irf_B(targets_variant)
 end
 
 # =============================================================================
+# Pre-compute δbar_endog so the exog model can match it exactly.
+# δbar = (1 − dest_end_frac) × δ_e is the exogenous component of destruction
+# in the endog model. Setting dest_ann_exog = annual(δbar_endog) ensures both
+# models receive the same direct impulse from a proportional δ shock.
+# =============================================================================
+const dest_end_frac_endog = 0.5
+const δ_e_endog     = 1 - (1 - TARGETS.dest_ann)^(1/12)
+const δbar_endog    = (1 - dest_end_frac_endog) * δ_e_endog #exogenous component of destruction in endog model
+const dest_ann_exog = 1 - (1 - δbar_endog)^12   # annual rate matching δbar_endog
+
+println("── δbar pre-computation ─────────────────────────────────────")
+println("  δ_e_endog   = $(round(δ_e_endog,    digits=6))/month " *
+        "(dest_ann = $(TARGETS.dest_ann))")
+println("  δbar_endog  = $(round(δbar_endog,   digits=6))/month " *
+        "(exog. component, dest_end_frac = $dest_end_frac_endog)")
+println("  dest_ann_exog = $(round(dest_ann_exog, digits=6)) " *
+        "(annual rate for exog model; = annual(δbar_endog))")
+println("  Implied s_exog > s_endog: sep=0.031 target unchanged, " *
+        "lower δ_e means higher conditional separation to keep τ fixed.")
+
+# =============================================================================
 # (1) Full baseline: endogenous exit active
 # =============================================================================
 println("\n" * "="^60)
 println("Solving FULL BASELINE (endogenous exit, b_ratio=0.9, x_v=0.5)")
 println("="^60)
 
-targets_endog = (TARGETS..., b_ratio=0.9, x_v=0.5)
+# dest_elast_target pins the x_c channel elasticity directly (PATH B in
+# calibrate_shares). Xc_Y is an outcome, not a target.
+# dest_elast = 5 → ψ ≈ 0.033, Xc_Yc ≈ 14.5% (Abraham et al. 2019 range).
+targets_endog = (TARGETS..., b_ratio=0.9, x_v=0.5, dest_elast_target=5.0)
 
 out_endog = solve_and_irf_B(targets_endog)
 println("Full baseline SS: u=$(round(out_endog.ss.u,   digits=4)), " *
         "δ_e=$(round(out_endog.ss.δ_e, digits=5)), " *
         "s=$(round(out_endog.cal.s,    digits=5)), " *
-        "x_c=$(round(out_endog.ss.x_c, digits=4))")
+        "x_c=$(round(out_endog.ss.x_c, digits=4)), " *
+        "dest_el=$(round(out_endog.cal.dest_el, digits=3)), " *
+        "ψ=$(round(out_endog.cal.ψ,    digits=4))")
 
 # =============================================================================
-# (2) Exogenous exit: endogenous margin shut off, same δ_e level
+# (2) Exogenous exit: endogenous margin shut off
 #
-# dest_end_frac = 0.0 → δ_e = δ (purely exogenous)
-# p_0 = 0.0          → no continuation cost distribution mass
-# Xc_Y = 0.0         → required: cons = 0 when p_0 = 0 → X_c = 0 → Xc_Y = 0
-# δ_e level unchanged (dest_ann unchanged from TARGETS) so the only difference
-# from the full baseline is the removal of the endogenous margin.
+# Design: same δbar as endog model, same τ target (sep=0.031 unchanged).
+#   dest_ann_exog → δ_e_exog = δbar_endog   [same exog. destruction]
+#   dest_end_frac = 0.0 → all destruction is exogenous
+#   p_0 = 0.0, Xc_Y = 0.0 → no continuation cost distribution
+#   sep = 0.031 (unchanged) + lower δ_e → s_exog > s_endog automatically
+#
+# Structural difference from endog model: x_c margin absent. All other
+# steady-state labor market objects (u, v, θ) are approximately equal.
 # =============================================================================
 println("\n" * "="^60)
-println("Solving EXOGENOUS EXIT baseline (b_ratio=0.9, x_v=0.5)")
+println("Solving EXOGENOUS EXIT (same δbar, same τ, b_ratio=0.9, x_v=0.5)")
 println("="^60)
 
-targets_exog = (TARGETS..., dest_end_frac=0.0, p_0=0.0, Xc_Y=0.0,
-                b_ratio=0.9, x_v=0.5)
+targets_exog = (TARGETS...,
+    dest_ann      = dest_ann_exog,  # δ_e_exog = δbar_endog: same exog. destruction
+    dest_end_frac = 0.0,            # all destruction is exogenous
+    p_0           = 0.0,            # no continuation cost distribution
+    Xc_Y          = 0.0,            # X_c = 0 when p_0 = 0
+    b_ratio       = 0.9,
+    x_v           = 0.5)
+    # sep = 0.031 inherited from TARGETS: τ fixed, s rises automatically
 
 out_exog = solve_and_irf_B(targets_exog)
 println("Exog. exit SS: u=$(round(out_exog.ss.u,   digits=4)), " *
         "δ_e=$(round(out_exog.ss.δ_e, digits=5)), " *
-        "s=$(round(out_exog.cal.s,    digits=5))")
+        "s=$(round(out_exog.cal.s,    digits=5)), " *
+        "Δs = $(round(out_exog.cal.s - out_endog.cal.s, digits=5)) " *
+        "(s rises to compensate for absent endogenous exit)")
 
 # =============================================================================
 # Serialize all output for plotting
@@ -144,20 +214,41 @@ output_B = (
 )
 serialize("irf_endog_exit.jls", output_B)
 println("\nSaved: irf_endog_exit.jls")
-
+@save "model_results.jld2" output_B # for external readability
 # =============================================================================
 # Quick diagnostic: print key SS differences
 # =============================================================================
 println("\n── Steady-State Comparison ──────────────────────────────────────")
-for field in [:u, :v, :θ, :δ_e, :N, :N_e, :x_c, :K, :Q]
+println("  [Design check: δbar should be equal; τ should be equal; δ_e should differ]")
+τ_endog = compute_separation_rate(out_endog.ss.δ_e, out_endog.cal.s)
+τ_exog  = compute_separation_rate(out_exog.ss.δ_e,  out_exog.cal.s)
+
+println("  τ:       endog=$(round(τ_endog, digits=5))  " *
+        "exog=$(round(τ_exog, digits=5))  ← should match sep=$(TARGETS.sep)")
+println("  δ_e:     endog=$(round(out_endog.ss.δ_e, digits=5))  " *
+        "exog=$(round(out_exog.ss.δ_e,  digits=5))  ← exog = δbar_endog by design")
+δbar_check = (1 - dest_end_frac_endog) * out_endog.ss.δ_e
+println("  δbar:    endog=$(round(δbar_check, digits=5))  " *
+        "exog=$(round(out_exog.ss.δ_e, digits=5))  ← should be equal")
+println("  s:       endog=$(round(out_endog.cal.s, digits=5))  " *
+        "exog=$(round(out_exog.cal.s,  digits=5))  ← exog higher: compensates for lower δ_e")
+println()
+
+for field in [:u, :v, :θ, :N, :N_e, :K, :Q]
     e_val = getfield(out_endog.ss, field)
     x_val = getfield(out_exog.ss,  field)
-    println("  $field:  endog=$(round(e_val, digits=5))  " *
-            "exog=$(round(x_val, digits=5))")
+    println("  $field:  endog=$(round(e_val, digits=5))  exog=$(round(x_val, digits=5))")
 end
-println("  s:  endog=$(round(out_endog.cal.s, digits=5))  " *
-        "exog=$(round(out_exog.cal.s,  digits=5))")
-println("  κ:  endog=$(round(out_endog.cal.κ, digits=5))  " *
-        "exog=$(round(out_exog.cal.κ,  digits=5))")
-println("  ϕ:  endog=$(round(out_endog.cal.ϕ, digits=5))  " *
-        "exog=$(round(out_exog.cal.ϕ,  digits=5))")
+
+println("  κ:       endog=$(round(out_endog.cal.κ,       digits=5))  " *
+        "exog=$(round(out_exog.cal.κ,       digits=5))")
+println("  ϕ:       endog=$(round(out_endog.cal.ϕ,       digits=5))  " *
+        "exog=$(round(out_exog.cal.ϕ,       digits=5))")
+println("  ψ:       endog=$(round(out_endog.cal.ψ,       digits=4))  " *
+        "exog=$(round(out_exog.cal.ψ,       digits=4))  (exog: placeholder, p_0=0)")
+println("  dest_el: endog=$(round(out_endog.cal.dest_el, digits=3))  " *
+        "exog=$(round(out_exog.cal.dest_el, digits=3))  (exog=0 by construction)")
+println("\n  Calibration note:")
+println("    Endog: dest_elast_target=$(targets_endog.dest_elast_target) [PATH B]")
+println("    Exog:  dest_ann=$(round(dest_ann_exog,digits=6)) → δ_e=δbar_endog; " *
+        "Xc_Y=0.0 [PATH A, trivial]")

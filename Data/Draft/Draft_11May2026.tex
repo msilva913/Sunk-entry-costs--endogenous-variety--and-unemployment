@@ -28,9 +28,10 @@
 %\usepackage{amssymb}
 \graphicspath{ 
 	{"C:/Users/msilva913/Documents/GitHub/Sunk_entry_costs_endogenous_variety_unemployment"}
-	{"C:/Users/msilva913/Documents/GitHub/Sunk_entry_costs_endogenous_variety_unemployment/Programs baseline"}
-	{"C:/Users/msilv/Documents/Github/Sunk-entry-costs--endogenous-variety--and-unemployment"}
-	{"C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unemployment/Programs baseline"}
+	{"C:/Users/msilva913/Documents/GitHub/Sunk_entry_costs_endogenous_variety_unemployment/Data/Programs baseline"}
+	{"C:/Users/msilva913/Documents/GitHub/Sunk_entry_costs_endogenous_variety_unemployment/Data/Bartek analysis/data/results"}
+	{"C:/Users/msilv/Documents/Github/Sunk_entry_costs_endogenous_variety_unemployment"}
+	{"C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unemployment/Data/Programs baseline"}
 	{"C:/Users/msilv/Dropbox/Documents - Copy/Research/Sunk vacancy costs endogenous product variety labor market frictions/Draft/figs"}
 	{"C:/Users/msilva913/Dropbox/Documents - Copy/Research/Sunk vacancy costs endogenous product variety labor market frictions/Draft/figs"}
 	{"C:/Users/msilv/Dropbox/Documents - Copy/Research/Sunk vacancy costs endogenous product variety labor market frictions/Draft/figs"}
@@ -2494,49 +2495,258 @@ The second set consists of empirically identified impulse responses from the
 	% Include moments generated at posterior mean
 	\subsection{Impulse responses}
 	% Describe transmission mechanism of impulse responses
-	\subsection{Inspecting the mechanism}
-	We begin by emphasizing the significance of variety effects by comparing the impulse responses of our model with those of a similar model where $\zeta=0$. Importantly, both versions maintain consistent markup, labor share of income, and other calibrated targets. As illustrated in Figure\ref{fig:variety_effects_irf_z_comparison}, we observe that unemployment exhibits increased persistence, which is closely linked to changes in business formation and the corresponding measure of product lines. Given that the number of firms, and consequently the relative price $p$, is predetermined, the immediate response of unemployment remains unaffected by variety effects.
-%	\begin{figure}[H]
-%		\includegraphics[width=\textwidth]{"variety_effects_irf_z_comparison"}
-%		\centering
-%		\caption{}
-%		\label{fig:variety_effects_irf_z_comparison}
-%	\end{figure}
-	Second, we investigate the impact of risk aversion by comparing the effects of a destruction shock in our baseline model to those in a risk-neutral environment, typical of the benchmark search model, as depicted in Figure \ref{fig:risk_aversion_comparison_delta_shock}. Our primary finding is that labor market variables are generally insensitive to the consumption smoothing motive. This result arises from two factors: (1) the finite elasticity of vacancy creation inherently encourages smoothing of vacancy creation, and (2) new vacancies constitute a small portion of the overall vacancy stock. However, with either more elastic vacancy creation or increased product destruction, the responses of vacancies and unemployment would differ. Notably, risk aversion significantly influences the responses of business formation, consumption, and output. In the absence of convex adjustment costs in business formation, a persistent destruction shock substantially diminishes the present discounted value of profits under risk neutrality. Essentially, the incentive to initiate a new product line declines with a persistent destruction shock, leading households to favor scaling back business formation and increasing consumption instead. In a risk-neutral scenario, a destruction shock would prompt consumption and output to rise alongside unemployment, thereby limiting their role in driving business cycle dynamics. Therefore, when considering the dynamics of business formation—key macroeconomic aggregates—the degree of risk aversion becomes crucial.
-%	\begin{figure}[H]
-%		\includegraphics[width=\textwidth]{"risk_aversion_comparison_delta_shock"}
-%		\centering
-%		\caption{}
-%		\label{fig:risk_aversion_comparison_delta_shock}
-%	\end{figure}
-	
-	Third, we explore the impact of the inverse elasticity of vacancy creation $\xi^{-1}$. Specifically, we compare the baseline response to the model recalibrated with $\xi^{-1}=0.5$.  In this analysis, we focus on the responses to both technology and destruction shocks, noting significant differences between the two scenarios.
-	
-	Figure \ref{fig:elastic_comparison_delta_shock} illustrates the responses under a destruction shock. With increased elasticity in vacancy creation, the number of new vacancies rises, which mitigates the increase in unemployment. This effect also leads to a smaller decline in business formation and output. Importantly, despite the heightened elasticity in entry, the negative correlation between unemployment and vacancies persists, maintaining the integrity of the Beveridge curve.
-%	\begin{figure}[H]
-%		\includegraphics[width=\textwidth]{"elastic_comparison_delta_shock"}
-%		\centering
-%		\caption{}
-%		\label{fig:elastic_comparison_delta_shock}
-%	\end{figure}
-	
-	Figure \ref{fig:elastic_comparison_tech_shock} depicts the responses to a contractionary technology shock. With more elastic vacancy creation, the number of new vacancies declines significantly, leading to a substantial reduction in the overall vacancy stock and, consequently, a pronounced increase in unemployment. However, the responses of business formation, consumption, and output remain relatively unchanged. Thus, increased elasticity in vacancy creation amplifies the impact of technology shocks while diminishing the effects of destruction shocks. In other words, incorporating finitely elastic vacancy creation into the benchmark search model allows destruction shocks to have a more pronounced effect on unemployment, while reducing the influence of technology shocks.
-%	\begin{figure}[H]
-%		\includegraphics[width=\textwidth]{"elastic_comparison_tech_shock"}
-%		\centering
-%		\caption{}
-%		\label{fig:elastic_comparison_tech_shock}
-%	\end{figure}
-	
-	\citet{pissarides_2009} proposes fixed matching costs as a means to make average hiring costs less cyclical, so that job creation becomes more sensitive to fluctuations in technology. This logic applies in our model as well, so we omit the impulse responses. However, Figure \ref{fig:kappa_comparison_delta_shock} shows that the responses are nearly identical in the case of a destruction shock.
-%	\begin{figure}[H]
-%		\includegraphics[width=\textwidth]{"kappa_comparison_delta_shock"}
-%		\centering
-%		\caption{}
-%		\label{fig:kappa_comparison_delta_shock}
-%	\end{figure}
-	\textcolor{red}{To do: include plot for corresponding BGM model}
-	Finally, we compare a technology shock in this framework to \citet{bilbiie_2012}. There are several key differences. First, labor reponds only via the extensive margin. It is predetermined on impact and can only expand gradually. A Frisch elasticity of labor supply of one produces a similar response of output on impact. 
+	\subsection{Inspecting the mechanism}\label{sec:mechanism_irfs}
+
+	Here we quantify novel features of the model mechanism. Across specifications, we set replacement-income ratio $b/w^{int}=0.9$,
+	a sunk-cost share of recruiting expenditure $x_v=0.5$, and an
+	endogenous exit share $\omega_\delta=0.5$, which routes half of
+	steady-state destruction through the continuation-cost margin.
+	The exit-elasticity target is $\psi\zeta/(1-\zeta)=5$---the
+	percent increase in the endogenous exit rate for a one-percent
+	rise in the continuation-cost threshold---which pins the shape
+	parameter $\psi\approx0.033$ analytically.\footnote{With the
+	survival quantile $\zeta\approx0.993$ at the calibrated exit
+	rate, feasibility limits the destruction elasticity to roughly
+	10 before implied fixed-cost shares exceed 18\,\% of output.}
+	The resulting steady state has a monthly destruction rate
+	$\delta_e\approx0.653\%$, exogenous component
+	$\bar\delta\approx0.326\%$, total separation rate $\tau=3.1\%$,
+	and unemployment $u\approx6.8\%$.
+
+	\medskip\noindent\textbf{Shock calibration.}
+	The stochastic processes for technology and firm destruction are
+	disciplined by a bivariate VAR(1) estimated on
+	HP($\lambda=1{,}600$)-filtered log aggregate labor productivity
+	and log aggregate exit rate over 1992Q3--2019Q4.
+	Identification follows a Cholesky decomposition with technology
+	ordered first, consistent with the model's within-period timing
+	in which aggregate productivity is realized before firm-level
+	continuation decisions; the identified destruction innovation is
+	therefore orthogonal to contemporaneous technology.
+	Converting quarterly autoregressive coefficients to monthly gives
+	$\rho_z=0.902$ and $\sigma_z=0.0092$ for technology, and
+	$\rho_\delta=0.592$ and $\sigma_\delta=0.0669$ for destruction,
+	entering equations~\eqref{eq:ar1_z} and~\eqref{eq:ar1_delta}
+	directly. The destruction shock has a monthly half-life of roughly
+	two months, so prolonged unemployment responses to $\delta$ shocks
+	reflect propagation through the firm and vacancy stocks rather
+	than the persistence of the driving process itself.
+
+	\medskip\noindent\textbf{Choice of shocks and comparisons.}
+	We report impulse responses to the $z$ and $\delta$ shocks
+	throughout and abstract from the $s$ shock.
+	The separation shock provides a useful theoretical benchmark:
+	it raises $\tau$ and unemployment but triggers immediate vacancy
+	reposting and leaves $N_t$ unchanged, generating symmetric and
+	transient dynamics that do not engage the model's novel mechanisms.
+	The $z$ and $\delta$ shocks, by contrast, interact with the
+	firm-stock state $N_t$ through the variety channel in
+	equation~\eqref{eq:recruiter_compensation} and through the firm
+	and vacancy laws of motion in equations~\eqref{eq:N_lom_eq}
+	and~\eqref{eq:v_lom}, which is precisely where the model departs
+	from the augmented Gabrovski-Silva benchmark.
+
+	We organize the comparisons around three counterfactuals.
+	\emph{Comparison~A} examines the role of the level of $\delta_e$
+	at steady state: the baseline ($\delta_e=\bar\delta\ll\tau$)
+	is contrasted with a high-$\delta$ variant ($\delta_e=\tau$,
+	$p_0=0$) that replicates the \citet{coles_2018}
+	timing assumption while holding all other calibration targets
+	fixed. This comparison extends \citet{gabrovski_2025},
+	who document the LOM-multiplier mechanism for technology shocks,
+	to the $\delta$-shock dimension.
+	\emph{Comparison~B} isolates the endogenous exit margin: we set $p_0=0$ and equate the exogenous destruction
+	parameter $\bar\delta$. We keep the aggregate separation rate $\tau$ the same, which requires $s$ in the counterfactual to compensate for the loss of endogenous destruction. 
+	\emph{Comparison~C} (forthcoming) will set $\zeta=0$ so that
+	$\rho_t\equiv1$ regardless of $N_t$, removing the
+	$N_t\to\rho_t\to w_t^{int}\to\mathrm{JCC}$ channel and
+	quantifying what the baseline offers beyond the augmented
+	Gabrovski-Silva framework without product variety.
+
+	\medskip\noindent\textbf{Comparison A: the level of destruction.}
+	Figures~\ref{fig:mechA_z} and~\ref{fig:mechA_delta} report
+	impulse responses to one-standard-deviation $z$ and $\delta$
+	shocks. Each panel traces the transmission chain from labor
+	market outcomes (rows~1--2) through the extensive margin
+	(row~3) to the vacancy-creation chain (row~4).
+
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.82\textwidth]{mechanism_A_z_shock}
+		\caption{Comparison A --- impulse responses to a one-standard-deviation
+		technology shock. Solid black: baseline
+		($\delta_e=\bar\delta\approx0.653\%$/month).
+		Dashed blue: high-$\delta$ variant
+		($\delta_e=\tau=3.1\%$/month; CK timing, $p_0=0$).
+		Row~1 in percentage-point level deviation from steady state;
+		rows~2--4 in $100\times\log$ deviation.}
+		\label{fig:mechA_z}
+	\end{figure}
+
+	\begin{figure}[h]
+		\centering
+		\includegraphics[width=0.82\textwidth]{mechanism_A_delta_shock}
+		\caption{Comparison A --- impulse responses to a
+		one-standard-deviation destruction shock.
+		Lines and units as in Figure~\ref{fig:mechA_z}.}
+		\label{fig:mechA_delta}
+	\end{figure}
+
+	Under the \emph{technology shock} (Figure~\ref{fig:mechA_z}),
+	the high-$\delta$ variant generates a substantially larger
+	response of $N_t$ despite a nearly identical response of the
+	per-period vacancy dividend $K_t$.
+	The mechanism is encoded in the firm law of
+	motion~\eqref{eq:N_lom_eq}, which log-linearizes to
+	\begin{align}\label{eq:N_lom_ll}
+		\hat{N}_{t+1}
+		= (1-\delta_e)\,\hat{N}_t \;+\; \delta_e\,\hat{N}_t^e,
+	\end{align}
+	where hats denote log-deviations from steady state and we use
+	the steady-state relation $N^e/N=\delta_e/(1-\delta_e)$.
+	The loading on the entry flow equals $\delta_e$ itself, so the
+	four-fold increase in $\delta_e$ from baseline to the
+	high-$\delta$ variant translates a given entry response into a
+	commensurately larger accumulation of product lines.
+	A complementary channel operates through the vacancy
+	value. Equations~\eqref{eq:Kdef} and~\eqref{eq:entry_eq}
+	imply that $Q_t$ is the present value of future $K_t$ flows
+	discounted at rate $\beta(1-\delta_e)$, so a lower $\delta_e$
+	implies a longer-duration vacancy asset with a larger $Q/K$
+	ratio at steady state. The same proportional increase in $K_t$
+	therefore produces a larger proportional increase in $Q_t$ and,
+	through $Q_t=x_m e_t^{\xi^{-1}}$ in~\eqref{eq:entry_eq},
+	a larger response of new vacancy postings $e_t$.
+	In the high-$\delta$ variant, the shorter asset duration reverses
+	this ordering, producing the larger $Q_t$ and $e_t$ responses
+	visible in row~4 of Figure~\ref{fig:mechA_z}.
+
+	Under the \emph{destruction shock} (Figure~\ref{fig:mechA_delta}),
+	the comparison reverses in persistence.
+	The high-$\delta$ variant absorbs the initial destruction with a
+	deeper $N$ trough but recovers markedly faster.
+	From~\eqref{eq:N_lom_ll}, the steady-state replacement rate
+	$N^e/N=\delta_e/(1-\delta_e)$ is proportional to $\delta_e$,
+	so a high-$\delta$ economy repairs destroyed product lines at
+	a faster absolute rate each period.
+	In the baseline, the monthly replacement rate is only
+	$0.66\%$ of the firm stock.
+	After a destruction impulse the variety depression is therefore
+	long-lived: $\rho_t=N_t^{1/(\varepsilon-1)}$ stays depressed,
+	the interior wage
+	$w_t^{int}=\rho_t z_t\bar{z}/\mu$
+	(equation~\eqref{eq:recruiter_compensation}) remains low,
+	and the job creation condition~\eqref{eq:jcc_eq} stays tight,
+	suppressing vacancy creation and prolonging the recovery of
+	$\theta_t$ and $u_t$.
+	In the high-$\delta$ variant the same chain operates at roughly
+	four times the speed, compressing unemployment persistence and
+	yielding faster convergence to steady state.
+	The central quantitative message of Comparison~A is therefore
+	that a model calibrated to the empirical ratio
+	$\delta/\tau\approx10\%$ necessarily operates with a
+	low-churning firm stock, which amplifies the persistence of
+	destruction shocks through the $N$-recovery channel
+	independently of any endogenous exit or variety mechanism.
+
+	\medskip\noindent\textbf{Comparison B: endogenous versus exogenous exit.}
+	Figures~\ref{fig:mechB_z} and~\ref{fig:mechB_delta} compare
+	the full baseline with an exogenous-exit model in which
+	$p_0=0$ and $\omega_\delta=0$.
+	The identification design equates $\bar\delta$ across
+	specifications and holds $\tau$ fixed by raising $s$ in
+	the exogenous model; by equations~\eqref{eq:N_lom_eq},
+	\eqref{eq:v_lom}, and~\eqref{eq:u_lom}, this keeps
+	steady-state $u$, $v$, and $\theta$ approximately equal so
+	that percentage-point IRF differences are directly comparable.
+
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.82\textwidth]{mechanism_B_z_shock}
+		\caption{Comparison B --- impulse responses to a one-standard-deviation
+		technology shock. Solid black: full baseline (endogenous exit,
+		$\omega_\delta=0.5$, $\psi\approx0.033$). Dashed crimson:
+		exogenous exit ($\bar\delta$ equated, $\tau$ fixed, $s$
+		rises to compensate). Units as in Figure~\ref{fig:mechA_z}.}
+		\label{fig:mechB_z}
+	\end{figure}
+
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.82\textwidth]{mechanism_B_delta_shock}
+		\caption{Comparison B --- impulse responses to a
+		one-standard-deviation destruction shock. Lines and units
+		as in Figure~\ref{fig:mechB_z}.}
+		\label{fig:mechB_delta}
+	\end{figure}
+
+	For the \emph{destruction shock} (Figure~\ref{fig:mechB_delta}),
+	the endogenous-exit model generates a smaller impact response
+	and, more strikingly, a \emph{faster} recovery of unemployment
+	than the exogenous model. The constrained specification
+	propagates the $\delta$ shock more persistently. The explanation
+	lies in the design constraint itself.
+	To equate $\bar\delta$ while eliminating endogenous exit, the
+	exogenous model must set
+	$\delta_{e,\mathrm{exog}}=\bar\delta_\mathrm{endog}\approx0.326\%$/month,
+	roughly half of $\delta_{e,\mathrm{endog}}\approx0.653\%$.
+	From~\eqref{eq:N_lom_ll} this halves the firm-stock replacement
+	rate, so after the destruction impulse---which is identical
+	across models by construction---the exogenous model's variety
+	stock recovers at half the speed.
+	The sustained depression of $N_t$ keeps $\rho_t$ and $w_t^{int}$
+	low through~\eqref{eq:recruiter_compensation}, holding the job
+	creation condition tight and prolonging unemployment.
+	Greater persistence under exogenous exit is therefore a
+	consequence of the low-churning firm stock that the $\tau$-fixing
+	condition imposes on the exogenous model, not evidence against
+	the endogenous exit channel.
+
+	The dynamic contribution of the $x^c$ margin itself---through
+	which a $\delta$ shock amplifies exit by reducing profitability
+	and lowering the continuation threshold---is present but
+	quantitatively modest at the calibrated $\psi\approx0.033$.
+	The exit-flow panel ($\delta_{e,t}\times N_t$) shows that the
+	endogenous and exogenous responses are nearly indistinguishable
+	at impact, confirming that the $x^c$ amplification is dormant
+	at the baseline calibration and that the dominant effect of
+	endogenous exit in Comparison~B is the re-routing of destruction
+	exposure through $\omega_\delta$ rather than dynamic feedback.
+	Activating the dynamic $x^c$ channel more strongly would require
+	$\psi$ of order unity, as in \citet{broer_2025}, which would in
+	turn require relaxing the fixed-cost share target.
+
+	For the \emph{technology shock} (Figure~\ref{fig:mechB_z}),
+	the endogenous-exit model generates larger responses of $N_t$
+	and $N_t^e$.
+	Two forces contribute. First, a positive $z$ shock raises
+	firm profitability, pushing up the continuation threshold $x_t^c$
+	and reducing endogenous exit, reinforcing the $N_t$ expansion
+	beyond what entry alone generates.
+	Second, the endogenous model calibrates a lower sunk entry
+	cost $f_e$, because the higher steady-state profit share under
+	exogenous exit implies a larger $f_e$ through the free-entry
+	condition~\eqref{eq:free_entry}; for the same signal from the
+	variety Euler~\eqref{eq:euler_bf}, the endogenous model
+	therefore supports a larger entry flow.
+	The latter is a calibration artefact rather than a structural
+	mechanism, so the $z$-shock comparison in Comparison~B should
+	be interpreted with care.
+
+	\medskip\noindent\textbf{Comparison C: variety effects} (forthcoming).
+	The third comparison will set $\zeta=0$ so that $\rho_t\equiv1$
+	regardless of $N_t$, removing the link between product variety
+	and the interior wage in equation~\eqref{eq:recruiter_compensation}.
+	Under the full model, a $\delta$ shock depresses $N_t$, which
+	lowers $\rho_t$, which reduces $w_t^{int}$, which tightens the
+	job creation condition~\eqref{eq:jcc_eq} and simultaneously
+	suppresses vacancy creation while unemployment rises---the
+	two-sided Beveridge curve response that the empirical evidence
+	in Section~\ref{sec:empirics} identifies.
+	Setting $\zeta=0$ will remove this second-round amplification
+	and quantify directly how much of the model's propagation of
+	destruction shocks rests on the product-variety channel that
+	the augmented Gabrovski-Silva framework cannot generate.
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	\section{Conclusion}\label{ref:conclusion}
 	\newpage
