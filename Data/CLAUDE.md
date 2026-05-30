@@ -2,7 +2,7 @@
 **Last updated:** May 20, 2026 · **Author:** Mario Silva
 **Code style:** clean, succinct, interpretable by empirical macroeconomist
 
-**Draft writing style: **clean, suffinct, applied macroeconomist
+**Draft writing style: **clean, succinct, applied macroeconomist
 
 ---
 

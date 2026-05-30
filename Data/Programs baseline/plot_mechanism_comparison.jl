@@ -54,16 +54,22 @@ function to_pp(irf_col, ss_val)
 end
 
 # ── Main plotting function ────────────────────────────────────────────────────
-function plot_mechanism_A(irf_base, irf_high, ss_base, ss_high, shock_label, filename)
+function plot_mechanism_A(irf_base, irf_high, ss_base, ss_high, shock_label, filename;
+                          flip_sign=false)
 
     T = nrow(irf_base)
     t = 0:(T-1)
+    sgn = flip_sign ? -1 : 1
 
-    # u and v: convert from 100×log-dev to pp level deviation
-    u_b = to_pp(irf_base.u, ss_base.u)
-    u_h = to_pp(irf_high.u, ss_high.u)
-    v_b = to_pp(irf_base.v, ss_base.v)
-    v_h = to_pp(irf_high.v, ss_high.v)
+    # Scale all IRF columns by sgn (negation for negative shock convention)
+    irf_b = sgn == 1 ? irf_base : DataFrame(Dict(c => sgn .* irf_base[!, c] for c in names(irf_base)))
+    irf_h = sgn == 1 ? irf_high : DataFrame(Dict(c => sgn .* irf_high[!, c] for c in names(irf_high)))
+
+    # u and v: convert from 100×log-dev to pp level deviation (then apply sign)
+    u_b = to_pp(irf_b.u, ss_base.u)
+    u_h = to_pp(irf_h.u, ss_high.u)
+    v_b = to_pp(irf_b.v, ss_base.v)
+    v_h = to_pp(irf_h.v, ss_high.v)
 
     lbase = L"Baseline ($\delta_e = \bar{\delta}$)"
     lhigh = L"High-$\delta$ ($\delta_e = \tau$)"
@@ -106,7 +112,7 @@ function plot_mechanism_A(irf_base, irf_high, ss_base, ss_high, shock_label, fil
     # ── Row 2: Price signals ─────────────────────────────────────────────────
 
     # Panel 3 — θ (market tightness)
-    plot!(p[3], t, [irf_base.θ irf_high.θ],
+    plot!(p[3], t, [irf_b.θ irf_h.θ],
           label     = false,
           title     = L"\theta",
           ylabel    = "% deviation",
@@ -115,7 +121,7 @@ function plot_mechanism_A(irf_base, irf_high, ss_base, ss_high, shock_label, fil
 
     # Panel 4 — w_int (marginal revenue product of labor = labor_prod / μ;
     #            identical to labor_prod in log-dev since markup μ is constant)
-    plot!(p[4], t, [irf_base.w_int irf_high.w_int],
+    plot!(p[4], t, [irf_b.w_int irf_h.w_int],
           label     = false,
           title     = L"w_{\mathrm{int}}",
           ylabel    = "% deviation",
@@ -125,7 +131,7 @@ function plot_mechanism_A(irf_base, irf_high, ss_base, ss_high, shock_label, fil
     # ── Row 3: Extensive margin ──────────────────────────────────────────────
 
     # Panel 5 — N (firm mass / product variety stock)
-    plot!(p[5], t, [irf_base.N irf_high.N],
+    plot!(p[5], t, [irf_b.N irf_h.N],
           label     = false,
           title     = L"N",
           ylabel    = "% deviation",
@@ -133,7 +139,7 @@ function plot_mechanism_A(irf_base, irf_high, ss_base, ss_high, shock_label, fil
           color     = cs, linestyle = ls)
 
     # Panel 6 — N_e (new varieties created; BGM entry margin)
-    plot!(p[6], t, [irf_base.N_e irf_high.N_e],
+    plot!(p[6], t, [irf_b.N_e irf_h.N_e],
           label     = false,
           title     = L"N_e",
           ylabel    = "% deviation",
@@ -147,7 +153,7 @@ function plot_mechanism_A(irf_base, irf_high, ss_base, ss_high, shock_label, fil
     # Since ξ_inv = 1: Q = x_m·e ⟹ d log Q ≡ d log e (entrant vacancies).
 
     # Panel 7 — K (per-period vacancy dividend; drives JCC)
-    plot!(p[7], t, [irf_base.K irf_high.K],
+    plot!(p[7], t, [irf_b.K irf_h.K],
           label     = false,
           title     = L"K",
           ylabel    = "% deviation",
@@ -155,7 +161,7 @@ function plot_mechanism_A(irf_base, irf_high, ss_base, ss_high, shock_label, fil
           color     = cs, linestyle = ls)
 
     # Panel 8 — Q (present value of K; Q = x_m·e with ξ_inv = 1)
-    plot!(p[8], t, [irf_base.Q irf_high.Q],
+    plot!(p[8], t, [irf_b.Q irf_h.Q],
           label     = false,
           title     = L"Q \;(= x_m \cdot e)",
           ylabel    = "% deviation",
@@ -170,7 +176,7 @@ end
 # ── Produce figures ───────────────────────────────────────────────────────────
 println("\nPlotting z shock...")
 p_z = plot_mechanism_A(base.irf_z, high_δ.irf_z, base.ss, high_δ.ss,
-                       "z", "mechanism_A_z_shock.pdf")
+                       "z", "mechanism_A_z_shock.pdf"; flip_sign=true)
 
 println("\nPlotting δ shock...")
 p_δ = plot_mechanism_A(base.irf_δ, high_δ.irf_δ, base.ss, high_δ.ss,

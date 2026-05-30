@@ -60,16 +60,22 @@ function to_pp(irf_col, ss_val)
 end
 
 # ── Main plotting function ────────────────────────────────────────────────────
-function plot_mechanism_B(irf_endog, irf_exog, ss_endog, ss_exog, shock_label, filename)
+function plot_mechanism_B(irf_endog, irf_exog, ss_endog, ss_exog, shock_label, filename;
+                          flip_sign=false)
 
     T = nrow(irf_endog)
     t = 0:(T-1)
+    sgn = flip_sign ? -1 : 1
+
+    # Scale all IRF columns by sgn (negation for negative shock convention)
+    irf_e = sgn == 1 ? irf_endog : DataFrame(Dict(c => sgn .* irf_endog[!, c] for c in names(irf_endog)))
+    irf_x = sgn == 1 ? irf_exog  : DataFrame(Dict(c => sgn .* irf_exog[!, c]  for c in names(irf_exog)))
 
     # u and v: convert from 100×log-dev to pp level deviation
-    u_e = to_pp(irf_endog.u, ss_endog.u)
-    u_x = to_pp(irf_exog.u,  ss_exog.u)
-    v_e = to_pp(irf_endog.v, ss_endog.v)
-    v_x = to_pp(irf_exog.v,  ss_exog.v)
+    u_e = to_pp(irf_e.u, ss_endog.u)
+    u_x = to_pp(irf_x.u, ss_exog.u)
+    v_e = to_pp(irf_e.v, ss_endog.v)
+    v_x = to_pp(irf_x.v, ss_exog.v)
 
     lendog = L"Baseline (endog. exit)"
     lexog  = L"Exog. exit ($\bar\delta$ fixed, $\tau$ fixed)"
@@ -79,14 +85,14 @@ function plot_mechanism_B(irf_endog, irf_exog, ss_endog, ss_exog, shock_label, f
     # 4×2 grid. Do NOT set legend=false at top level — that overrides per-subplot
     # settings. Instead, pass legend=false to each plot! call individually.
     p = Plots.plot(
-        layout         = (4, 2),
-        size           = (700, 900),
-        titlefontsize  = 10,
-        tickfontsize   = 8,
-        labelfontsize  = 9,
-        left_margin    = 6Plots.mm,
-        bottom_margin  = 4Plots.mm,
-        right_margin   = 2Plots.mm,
+        layout        = (4, 2),
+        size          = (850, 900),
+        titlefontsize = 10,
+        tickfontsize  = 8,
+        labelfontsize = 9,
+        left_margin   = 6Plots.mm,
+        bottom_margin = 4Plots.mm,
+        right_margin  = 2Plots.mm,
     )
 
     # ── Row 1: Labor market outcomes ─────────────────────────────────────────
@@ -112,7 +118,7 @@ function plot_mechanism_B(irf_endog, irf_exog, ss_endog, ss_exog, shock_label, f
     # ── Row 2: Price signals ─────────────────────────────────────────────────
 
     # Panel 3 — θ (market tightness)
-    plot!(p[3], t, [irf_endog.θ irf_exog.θ],
+    plot!(p[3], t, [irf_e.θ irf_x.θ],
           label     = false,
           title     = L"\theta",
           ylabel    = "% deviation",
@@ -120,7 +126,7 @@ function plot_mechanism_B(irf_endog, irf_exog, ss_endog, ss_exog, shock_label, f
           color     = cs, linestyle = ls)
 
     # Panel 4 — w_int (marginal revenue product = labor_prod / μ)
-    plot!(p[4], t, [irf_endog.w_int irf_exog.w_int],
+    plot!(p[4], t, [irf_e.w_int irf_x.w_int],
           label     = false,
           title     = L"w_{\mathrm{int}}",
           ylabel    = "% deviation",
@@ -130,7 +136,7 @@ function plot_mechanism_B(irf_endog, irf_exog, ss_endog, ss_exog, shock_label, f
     # ── Row 3: Extensive margin ──────────────────────────────────────────────
 
     # Panel 5 — N (firm mass / product variety stock)
-    plot!(p[5], t, [irf_endog.N irf_exog.N],
+    plot!(p[5], t, [irf_e.N irf_x.N],
           label     = false,
           title     = L"N",
           ylabel    = "% deviation",
@@ -138,7 +144,7 @@ function plot_mechanism_B(irf_endog, irf_exog, ss_endog, ss_exog, shock_label, f
           color     = cs, linestyle = ls)
 
     # Panel 6 — N_e (new varieties created; BGM entry margin)
-    plot!(p[6], t, [irf_endog.N_e irf_exog.N_e],
+    plot!(p[6], t, [irf_e.N_e irf_x.N_e],
           label     = false,
           title     = L"N_e",
           ylabel    = "% deviation",
@@ -154,7 +160,7 @@ function plot_mechanism_B(irf_endog, irf_exog, ss_endog, ss_exog, shock_label, f
     #   The gap between the two lines is therefore the pure x_c contribution.
 
     # Panel 7 — K (per-period vacancy dividend)
-    plot!(p[7], t, [irf_endog.K irf_exog.K],
+    plot!(p[7], t, [irf_e.K irf_x.K],
           label     = false,
           title     = L"K",
           ylabel    = "% deviation",
@@ -162,7 +168,7 @@ function plot_mechanism_B(irf_endog, irf_exog, ss_endog, ss_exog, shock_label, f
           color     = cs, linestyle = ls)
 
     # Panel 8 — exit flow δ_e × N
-    plot!(p[8], t, [irf_endog.exit_flow irf_exog.exit_flow],
+    plot!(p[8], t, [irf_e.exit_flow irf_x.exit_flow],
           label     = false,
           title     = L"\delta_e \times N",
           ylabel    = "% deviation",
@@ -178,7 +184,7 @@ end
 # ── Produce figures ───────────────────────────────────────────────────────────
 println("\nPlotting z shock...")
 p_z = plot_mechanism_B(endog.irf_z, exog.irf_z, endog.ss, exog.ss,
-                       "z", "mechanism_B_z_shock.pdf")
+                       "z", "mechanism_B_z_shock.pdf"; flip_sign=true)
 
 println("\nPlotting δ shock...")
 p_δ = plot_mechanism_B(endog.irf_δ, exog.irf_δ, endog.ss, exog.ss,
