@@ -122,3 +122,13 @@ NFCI interaction variant:
 - **u LOM:** uses total `v_t = v_pret + e_t`; entrants participate in matching within period t (draft eq:v_lom)
 - **Equation order:** f[1] exit threshold, f[2] δ_e, f[3] JCC, f[4] business formation Euler (BGM), f[5] K value, f[6] MRP, f[7] Nash wage, f[8] vacancy creation, f[9]–f[33] remainder
 - **SS_symbolics:** x_c_ss = Y_c·(μ-1)/(μ·N) + ν_f (consistent with f[1]); C_ss includes X_c; Y_ss = C + ν_f·N_e
+
+## steady_state.jl architecture (as of May 31, 2026)
+
+Four top-level functions:
+- `calibrate_shares(targets)`: PATH A (Xc_Y) or PATH B (dest_elast_target). Returns 18-param NamedTuple. ϕ is residual from Nash in Stage 5. Current baseline uses PATH B with dest_elast_target=5.0.
+- `steady_state(para; init=0.51)`: 2×2 solver in (log θ, log x_c). Standard.
+- `steady_state_free_entry(para)`: 1D solver for ξ_inv=0. K=x_m*(r+δ_e)/(1+r) constant in θ. Outer root-find over θ (JCC), inner over δ_e (exit consistency). ϕ from para; w from Nash. **Currently finds high-θ branch** — fix: bracket solver with (log(0.1), log(0.6)).
+- `calibrate_shares_free_entry(targets, κ_fixed, b_w_int_target)`: free-entry calibration. DROP x_v; INHERIT κ=κ_fixed; TARGET b/w_int → pins w_int=b/b_w_int_target → z analytically; ϕ residual from Nash. Called as: `calibrate_shares_free_entry(targets, cal.κ, cal.b/steady.w_int)`.
+
+Notation change (May 2026): survival quantile renamed \varsigma throughout draft (was \zeta, clashed with variety taste parameter). Eight locations updated in Draft_11May2026.tex.

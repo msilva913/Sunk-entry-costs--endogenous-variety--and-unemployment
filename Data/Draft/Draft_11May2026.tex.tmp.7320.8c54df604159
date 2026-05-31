@@ -3349,7 +3349,7 @@ $d\chi^c/\bar\chi^c = \hat\chi_{c,t}$:
     \;=\; \frac{\bar\Lambda}{\bar\delta_e}\,\bar\delta\,\hat\delta_{t-1}
     \;-\; \frac{(1-\bar\delta)\,p_0\psi\varsigma}{\bar\delta_e}\,\hat\chi_{c,t}.
 \end{align}
-Define the \emph{exit elasticity} $\varepsilon_x$ as the elasticity of the endogenous exit
+Define the \emph{exit elasticity} as the elasticity of the endogenous exit
 probability $(1-\Lambda_t)$ with respect to $\chi^c$:
 \begin{align}\label{eq:dest_elast_def}
     \varepsilon_x \;\equiv\;
@@ -3541,7 +3541,7 @@ term is absent; a negative shock gives $\hat{K}^z<0$ via the JCC surplus
 channel, so $\hat{e}^z<0$: entry contracts.  The signs therefore differ
 across shocks --- $\hat{e}^\delta>0$, $\hat{e}^z<0$ --- and the role this
 plays in shaping amplification is discussed in
-\ref{app:additional_comparisons}.
+Appendix~\ref{app:additional_comparisons}.
 
 \paragraph{Transmission chain summary.}
 The equations above trace two distinct propagation chains from any aggregate
@@ -3578,150 +3578,12 @@ For a \emph{technology shock} ($z\downarrow$):
 \end{equation*}
 In both chains, the $N\to w^{int}$ link~\eqref{eq:wint_ll} generates a
 second-round amplification absent in models without product variety
-(Comparison~C).  The entry sign is opposite across shocks ---
-$\hat{e}^\delta>0$ cushions the direct vacancy destruction while
-$\hat{e}^z<0$ compounds the JCC-driven vacancy contraction --- a
-distinction that drives the asymmetric role of $\xi$ documented in
-Appendix~\ref{app:additional_comparisons}.
-
-% ============================================================
-\section{Impulse responses: additional comparisons}
-\label{app:additional_comparisons}
-% ============================================================
-
-\subsection{Comparison D: role of entry elasticity ($\xi$)}
-\label{app:comparison_D}
-
-Figures~\ref{fig:mechD_z} and~\ref{fig:mechD_delta} compare impulse
-responses under the baseline ($\xi_{\mathrm{inv}}=1.0$, solid black) and a
-near-free-entry counterfactual ($\xi_{\mathrm{inv}}=0.1$, dashed blue).
-Both calibrations match the same empirical targets; $\xi_{\mathrm{inv}}$
-is the only structural difference, so all parameter changes --- lower $Q$
-and $K$, higher Nash share $\phi$ --- are endogenous to the recalibration.
-Sign conventions follow Comparisons~A--C: the $z$~figure shows a
-\emph{negative} technology shock and the $\delta$~figure shows a positive
-destruction shock, placing both on a scale where unemployment rises.
-The log-linearized equations underlying the discussion are derived in
-Appendix~\ref{app:loglin}, equations~\eqref{eq:K_decomp}--\eqref{eq:e_ll_delta}.
-
-The entry response $e_t=G(Q_t)$ is the mechanism that connects the
-model to \citet{coles_2018}.  As shown in
-Remark~\ref{rem:nesting}, setting $s_t=0$ and $\sigma=\kappa=0$ recovers
-the \citeauthor{coles_2018} model exactly.  In that limit, all vacancies
-arise from new postings, and $\xi$ governs the elasticity of entry to the
-vacancy value $Q$.  For destruction shocks, duration shortening raises $K$
-and $Q$, generating an entry surplus that partially cushions the direct
-vacancy destruction.  The parameter $\xi$ controls the strength of this
-cushion: higher $\xi$ (lower $\xi_{\mathrm{inv}}$) amplifies the entry
-response and weakens the net downward pressure on vacancies.
-Whether $u$ and $v$ comove positively or negatively after a destruction
-shock therefore depends on $\xi$ --- and, as discussed below, on the
-level of $\bar\delta_e$.  Empirically, $u$ and $v$ comove
-\emph{negatively} following destruction shocks (Beveridge curve
-recessions), which requires the direct vacancy destruction to dominate
-the entry cushion.  This places a lower bound on $\xi_{\mathrm{inv}}$:
-too close to free entry, and the model generates the wrong sign of
-$u$-$v$ comovement for $\delta$ shocks.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.82\textwidth]{mechanism_D_z_shock}
-    \caption{Comparison D --- impulse responses to a one-standard-deviation
-    \emph{negative} technology shock.
-    Solid black: baseline ($\xi_{\mathrm{inv}}=1.0$).
-    Dashed blue: near-free-entry ($\xi_{\mathrm{inv}}=0.1$, recalibrated).
-    Row~1 in percentage-point level deviation from steady state;
-    rows~2--4 in $100\times\log$ deviation.}
-    \label{fig:mechD_z}
-\end{figure}
-
-Under the \emph{negative technology shock} (Figure~\ref{fig:mechD_z}),
-lowering $\xi_{\mathrm{inv}}$ substantially amplifies the labor-market
-response.  The mechanism runs through entry.  A negative $z$ shock
-depresses $w^{int}$, compressing the JCC surplus and lowering $K$.
-Via~\eqref{eq:Q_ll2}, $Q$ falls, and by~\eqref{eq:e_ll} new vacancy
-postings contract: $\hat{e}^z<0$.  With the near-constant cost schedule
-($\xi_{\mathrm{inv}}=0.1$, $\xi=10$), the same $\hat{Q}$ movement
-generates a ten-fold larger $\hat{e}$ response, so entry collapses more
-sharply.  The vacancy pool contracts further, $\theta$ falls more, and
-the $N\to\rho\to w^{int}$ feedback loop --- $N$ falling faster,
-$\rho=N^{1/(\varepsilon-1)}$ contracting, $w^{int}$ falling further ---
-amplifies unemployment substantially relative to the baseline.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.82\textwidth]{mechanism_D_delta_shock}
-    \caption{Comparison D --- impulse responses to a one-standard-deviation
-    positive destruction shock.
-    Lines and units as in Figure~\ref{fig:mechD_z}.}
-    \label{fig:mechD_delta}
-\end{figure}
-
-Under the \emph{destruction shock} (Figure~\ref{fig:mechD_delta}), the
-effect of $\xi$ is reversed.  A positive $\delta$ shock triggers duration
-shortening: the vacancy asset's expected life falls, concentrating value
-in the current-period dividend and raising $K$~\eqref{eq:K_decomp}.  Via
-the extended vacancy-value equation~\eqref{eq:Q_ll_delta}, $Q$ rises and
-entry \emph{expands}: $\hat{e}^\delta>0$.  This entry expansion --- the
-same $G(Q_t)$ channel as in \citet{coles_2018} --- partially backfills
-vacancies destroyed by the direct $\hat\delta_e\uparrow$ impulse, muting
-the decline in $\theta$ and the rise in $u$.  A larger $\xi$ amplifies
-this cushioning, so the near-free-entry calibration generates \emph{less}
-unemployment amplification from destruction shocks.
-
-Whether the entry cushion is large enough to reverse the sign of
-$u$-$v$ comovement is a joint function of $\xi$ and $\bar\delta_e$,
-not of $\xi$ alone.  To see this, consider the free-entry limit
-$\xi_{\mathrm{inv}}\to 0$.  There $Q\approx x_m$ is pinned and
-$K=x_m(r+\delta_e)/(1+r)$ rises with $\delta_e$ (duration shortening);
-the JCC then determines $\theta$, which \emph{falls} --- the LHS of the
-job-creation condition rises with $K$ while the RHS, proportional to
-$(1-\delta_e)(w^{int}-K-b)$, falls on both margins.  Total vacancies
-$v=\theta u$ therefore have an ambiguous sign: positive $u$-$v$
-comovement requires the $u$ rise to exceed the $\theta$ fall, which
-depends on how large a share of total separation flows through the
-$\delta$ channel.
-
-At \citeauthor{coles_2018}'s calibration, $\delta_e=\tau$ (all separation
-is destruction), so a $\delta$ shock raises $u$ sharply; the duration
-shortening simultaneously generates a large entry surplus; and vacancies
-comove \emph{positively} with unemployment --- the Beveridge curve shift
-that is CK's central contribution.  In that model, avoiding
-counterfactual positive comovement requires $\xi$ to be sufficiently
-bounded away from free entry.
-
-The baseline calibration of the present model, disciplined by BED Deaths
-data, delivers $\bar\delta_e/\bar\tau\approx 0.21$: only one-fifth of
-total separation flows through firm destruction.  At this low $\bar\delta_e$,
-the proportional $u$ rise from a $\delta$ shock is small --- most
-separations are not of the $\delta$ type --- and the duration shortening
-effect on $K$ is correspondingly weak.  The $\theta$ decline therefore
-dominates, and vacancies fall following destruction shocks
-\emph{even at free entry}.  Figure~\ref{fig:mechD_delta} confirms this:
-at $\xi_{\mathrm{inv}}=0.1$, vacancies decline after an initial one-period
-positive bump, and
-the baseline at $\xi_{\mathrm{inv}}=1.0$ shows a stronger decline still.
-
-This is a key virtue of disciplining $\delta$ with data rather than
-setting $\delta_e=\tau$ as in \citet{coles_2018}: the empirically
-calibrated destruction rate endogenously preserves negative $u$-$v$
-comovement across the entire range of $\xi$ shown here, including free
-entry.  Convex entry costs ($\xi_{\mathrm{inv}}>0$) are not needed to
-prevent the CK Beveridge curve shift; the low empirical $\bar\delta_e$
-already rules it out.  The role of $\xi$ is then purely quantitative ---
-governing the strength of the cushioning and hence the \emph{degree} of
-negative comovement --- rather than determining its sign.
-
-In the limit $\xi\to\infty$, $\hat{e}^\delta=\xi\hat{Q}\to 0$: the entry
-cushion disappears and destruction shocks hit the vacancy stock with no
-replenishment.  The central message of Comparison~D is therefore the
-asymmetry across shock types together with this robustness result: the
-empirically calibrated $\bar\delta_e$ makes negative $u$-$v$ comovement
-for $\delta$ shocks robust to the entry-elasticity specification, while
-$\xi$ remains the key determinant of technology-shock amplification.
-
-% ------ placeholder for additional comparisons ------
-
+(Comparison~C).  The entry sign is opposite across shocks: $\hat{e}^\delta>0$
+cushions the vacancy destruction while $\hat{e}^z<0$ compounds it.
+Comparison~D isolates the role of $\xi$: raising $\xi$ amplifies the
+entry contraction for $z$~shocks (more amplification) while amplifying
+the entry offset for $\delta$~shocks (less amplification), explaining the
+asymmetric IRF responses in Figure~\ref{fig:mechD}.
 
 \section{Limiting cases}
 \label{app:limiting_cases}

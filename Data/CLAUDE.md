@@ -1,8 +1,8 @@
 # CLAUDE.md — Empirical LP Project (Firm Entry/Exit DSGE)
 **Last updated:** May 20, 2026 · **Author:** Mario Silva
-**Code style:** clean, succinct, interpretable by empirical macroeconomist
+**Code style:** clean, succinct, interpretable by empirical macroeconomist. 
 
-**Draft writing style: **clean, succinct, applied macroeconomist
+**Draft writing style: **clean, succinct, applied macroeconomist/theorist
 
 ---
 
@@ -44,8 +44,8 @@ Data/Bartek analysis/
 **QU placebo fails:** corr(β_unemp, β_vac) = −0.971 across horizons — demand contamination signature
 **Vacancy convention:** outcome is vacancy RATE = V/LF × 100 in pp, levels difference. Never log. Symmetric to unemployment rate.
 **Calibration:** δ̄ = 1.079%/qtr (BED Deaths), τ̄ = 9.34%/qtr, δ/τ = 11.6% — NOTE: up from 10.1% with closings×π; Section 5 needs update
-**Paper draft:** `Draft/Draft_11May2026.tex` — Intro + Sections 2–4.2 complete; prop:bgm_nest + proof complete; 4.3 partially drafted
-**Model code:** `Programs baseline/run_solution_core.jl` audited May 20: r=discount rate, ρ=relative price (consistent with steady_state.jl); κ=matching cost paid per match (κ·q·v in RC); u LOM uses total v_t=v_pret+e_t; BFE at f[4] after JCC.
+**Paper draft:** `Draft/Draft_11May2026.tex` — Intro + Sections 2–4.2 complete; prop:bgm_nest + proof complete; 4.3 partially drafted. D5 extended: K decomposition eq:K_decomp–eq:e_ll_delta (δ shocks: K↑ via duration shortening → e↑). New appendix app:additional_comparisons with Comparison D (ξ role, CK connection).
+**Model code:** `Programs baseline/run_solution_core.jl` audited May 20: r=discount rate, ρ=relative price (consistent with steady_state.jl); κ=matching cost paid per match (κ·q·v in RC); u LOM uses total v_t=v_pret+e_t; BFE at f[4] after JCC. Comparison D: `run_solution_entry_elasticity.jl` / `plot_xi_inv_comparison.jl`; ξ_inv=1.0 vs 0.1; serializes `irf_xi_inv.jls`.
 
 ---
 

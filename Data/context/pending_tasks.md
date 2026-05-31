@@ -32,16 +32,41 @@ See `Inspecting_mechanism_setup.md` for full design rationale. All three compari
 - Decision required: is the current exposure-effect result sufficient for the paper, or
   does the mechanism section need to show the dynamic x_c story?
 
-### Comparison C — Variety Effects (N → ρ → w_int → JCC)   ❌ PENDING
-- Files to write: `run_solution_no_variety.jl`, `plot_variety_comparison.jl` (or extend
-  `plot_mechanism_comparison.jl`)
-- Template: `run_solution_general_CES.jl` (has ζ parameterization)
-- Implementation: set ζ=0 so ρ=N^0=1 regardless of N; recalibrate to same targets
-- Serialize `irf_no_variety.jls`
-- Mechanism: after δ shock, N↓ → ρ↓ → w_int=ρ·z/μ↓ → JCC tightens → vacancies
-  suppressed; shutting ζ=0 removes this amplification, directly answering "what can
-  your model do that AGS cannot?"
-- Color convention: Comparison C alternative uses a reserved color (TBD)
+### Comparison C — Variety Effects (N → ρ → w_int → JCC)   ✅ COMPLETE
+- Files: `run_solution_no_variety.jl`, `plot_no_variety_comparison.jl`
+- Output: `irf_no_variety.jls`, `mechanism_C_z_shock.pdf`, `mechanism_C_delta_shock.pdf`
+- Implementation: set ρ≡1 by replacing f[13] in model equations post-gen; dedicated
+  `calibrate_shares_no_variety()` with ρ=1 hardwired in Stage 4
+- Targets: dest_end_frac=0.5, p_0=0.5, dest_elast_target=5.0, b_ratio=0.9, x_v=0.5
+- Color: darkorange dotted for no-variety arm
+- Draft: Section 4.3 Comparison C text + figure environments added (mechanism_C_z_shock, mechanism_C_delta_shock)
+- Notation: survival quantile renamed \varsigma (was \zeta) throughout draft to avoid clash with variety taste parameter
+
+### Comparison D — Role of Entry Elasticity (ξ_inv)   ✅ COMPLETE
+- Files: `run_solution_entry_elasticity.jl`, `plot_xi_inv_comparison.jl`
+- Output: `irf_xi_inv.jls`, `mechanism_D_z_shock.pdf`, `mechanism_D_delta_shock.pdf`
+- Comparison: baseline ξ_inv=1.0 vs. near-free-entry ξ_inv=0.1 (both recalibrated; ϕ, κ, x_m adjust)
+- Key findings: lower ξ_inv amplifies z-shock amplification (larger entry collapse via G(Q) channel)
+  and attenuates δ-shock unemployment response (stronger entry cushion from duration shortening).
+  At baseline δ_e/τ≈21%, negative u-v comovement for δ shocks is robust across full ξ range
+  including free entry — empirically calibrated δ̄_e rules out CK Beveridge curve shift.
+- New appendix section: app:additional_comparisons ("Impulse responses: additional comparisons"),
+  subsection app:comparison_D. Placeholder ready for future comparisons.
+- D5 extended: eq:K_decomp, eq:Q_ll_delta, eq:e_ll_delta (full K decomposition for δ shocks;
+  corrected transmission chain showing K↑ → Q↑ → e↑ for δ shocks, not K↓)
+
+### Free-entry comparison (steady_state_checks.jl)   ❌ PENDING (lower priority)
+- Goal: side-by-side baseline (ξ_inv=1) vs. free-entry (ξ_inv=0) in steady_state_checks.jl
+- Purpose: show ξ_inv has no handle on z-shock amplification (ϕ always recalibrates)
+- Identification swap: DROP x_v; ADD b/w_int target (=baseline 0.8586); INHERIT κ; ϕ residual
+- Functions written: `calibrate_shares_free_entry(targets, κ_fixed, b_w_int_target)` and
+  `steady_state_free_entry(para)` — both in steady_state.jl
+- Current failure: θ=1.80 found instead of ~0.51; JCC has two branches at ϕ=0.624;
+  solver init log(0.51) may land near wrong branch
+- Most promising fix: use bracketed solver in steady_state_free_entry,
+  e.g. find_zero(jcc_res, (log(0.1), log(0.6))) to force low-θ branch
+- Key insight: ϕ genuinely differs at free entry (0.624 vs 0.670) because K halves;
+  this is correct behavior but shifts the JCC curve
 
 ## Empirical Code Tasks (priority order)
 
@@ -94,6 +119,7 @@ See `Inspecting_mechanism_setup.md` for full design rationale. All three compari
 
 - ✅ `run_solution_core.jl` full audit (May 20): naming r/ρ, κ per match, u LOM total v_t, BFE at f[4], SS_symbolics x_c/C/Y corrected
 - ✅ `part6b_shock_persistence_cyclical.py`: bivariate VAR(1) HP-1600 log(z)/log(δ), Cholesky z-first → ρ_z^m=0.902, ρ_δ^m=0.592
+- ✅ `run_solution_entry_elasticity.jl` + `plot_xi_inv_comparison.jl` (May 31): Comparison D complete; see above
 - ✅ `run_solution_all_delta.jl` (May 20–21): baseline vs. high-δ (δ_e=τ, pure exogenous); b_ratio=0.9, x_v=0.5; serializes `irf_all_delta.jls`
 - ✅ `plot_mechanism_comparison.jl` (May 21): 4×2 portrait (u/v, θ/w_int, N/N_e, K/Q); K+Q row reveals short-duration asset amplification; interpreted comments added
 - ✅ `run_solution_endog_exit.jl` (May 21): full baseline (endog exit) vs. exog exit; b_ratio=0.9, x_v=0.5; appends exit_flow=δ_e+N; serializes `irf_endog_exit.jls`
@@ -101,6 +127,11 @@ See `Inspecting_mechanism_setup.md` for full design rationale. All three compari
 - ✅ `Inspecting_mechanism_setup.md` (May 21): Comparison B results and two-factor interpretation documented; plot design table and implementation order updated
 
 ## Completed Writing Tasks
+
+- ✅ Appendix D5 paragraph 9: K decomposition for δ shocks (eq:K_decomp, eq:Q_ll_delta, eq:e_ll_delta);
+  corrected transmission chains; sign asymmetry ê^δ>0, ê^z<0 explained via duration shortening
+- ✅ New appendix section: "Impulse responses: additional comparisons" (app:additional_comparisons);
+  Comparison D with CK connection, ξ governs cushioning strength, δ_e/τ robustness result
 
 - ✅ `prop:bgm_nest` (Nesting LR-BGM) + LR-BGM definition paragraph — Section 3 after Remark 1
 - ✅ Proof of `prop:bgm_nest` — Appendix C (three-block: LOM eq:N_lom_eq, Euler eq:N_euler_eq, GDP eq:gdp)

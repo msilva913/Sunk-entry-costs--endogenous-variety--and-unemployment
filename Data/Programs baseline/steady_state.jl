@@ -410,6 +410,100 @@ function steady_state(para; init=0.51)
     )
 end
 
+"""
+    steady_state_free_entry(para)
+
+Steady-state solver for the free-entry limit (xi_inv = 0).
+
+At xi_inv = 0: K = (r+delta_e)/(1+r) * x_m is constant in theta, Q = x_m.
+The exit condition pins x_c directly from (theta, delta_e), collapsing the
+2x2 system to a 1D root-find over theta (JCC), with an inner 1D root-find
+over delta_e for exit-condition self-consistency.
+
+phi is taken from para (calibrated); w follows from Nash.
+Returns the same NamedTuple shape as steady_state.
+"""
+function steady_state_free_entry(para)
+    @unpack f_e, δ, s, z, b, ϕ, r, ε, A, η_L, κ, x_m, ψ, p_0 = para
+    μ    = compute_markup(ε)
+    cons = (ψ / (1 + ψ)) * p_0
+
+    # All intermediates at (θ, δ_e): single compact pass
+    function vars_at(θ, δ_e)
+        τ     = compute_separation_rate(δ_e, s)
+        π_s   = (μ-1)/μ * (1-cons) * (r+δ_e) / (r+δ_e + cons*(1-δ_e))
+        K     = x_m * (r+δ_e) / (1+r)
+        f, q  = jf(θ, A, η_L), vf(θ, A, η_L)
+        L     = L_fun(θ, δ_e, para)
+        N     = π_s * z * L * (1-δ_e) / (f_e * ((r+δ_e)/μ + δ_e*π_s))
+        ρ     = N^(1/(ε-1))
+        L_c   = (r+δ_e) * L / (r+δ_e + δ_e*π_s*μ)
+        x_c   = ρ * z * L_c / (ε*N) + ρ*f_e/μ
+        w_int = ρ * z / μ
+        return (; τ, π_s, K, f, q, L, L_c, N, ρ, x_c, w_int)
+    end
+
+    # Inner: δ_e self-consistency given θ
+    solve_δ_e_fe(θ) = find_zero(δ_e_t -> δ_e_fun(vars_at(θ, δ_e_t).x_c, para) - δ_e_t,
+                                (1e-6, 0.3))
+
+    # Outer: JCC residual; ϕ from para, w from Nash
+    function jcc_res(log_θ)
+        θ   = exp(log_θ)
+        δ_e = solve_δ_e_fe(θ)
+        v   = vars_at(θ, δ_e)
+        lhs = (κ + v.K/v.q) * (v.τ + r + (1-δ_e)*ϕ*v.q*θ)
+        rhs = (1-δ_e) * (1-ϕ) * (v.w_int - v.K - b)
+        return rhs - lhs
+    end
+
+    θ   = exp(find_zero(jcc_res, (log(0.1), log(0.6))))
+    δ_e = solve_δ_e_fe(θ)
+    v   = vars_at(θ, δ_e)
+    @unpack τ, π_s, K, f, q, L, L_c, N, ρ, x_c, w_int = v
+
+    u    = 1 - L
+    w    = ϕ * (w_int - K + θ*(K + q*κ)) + (1-ϕ)*b
+    L_e  = L - L_c
+    N_e  = δ_e * N / (1-δ_e)
+    vv   = θ * u
+    e    = δ_e * (vv + 1 - u)
+    Q    = x_m
+    X_v  = e * x_m
+    ν_f  = ρ * f_e / μ
+    d_f  = (r+δ_e) / (1-δ_e) * ν_f
+    X_c  = N * cons * x_c
+    X    = X_v + κ * vv * q
+    Y_c  = ρ * z * L_c
+    C    = Y_c - X - X_c
+    Y    = C + ν_f * N_e
+    J    = Q + (1+r)/(1-δ_e) * K/q
+    M    = Q*vv + J*L + (N+N_e)*ν_f
+    x_v  = (K/q) / (κ + K/q)
+
+    labor_share      = w * L / Y
+    profit_share_ret = π_s * Y_c / Y
+    profit_share_rec = ((w_int - w) * L - X) / Y
+    dest_end_frac    = (δ_e - δ) / δ_e
+    dest_el          = dest_elast(para, x_c)
+
+    println("Steady-state (free entry): theta=$(round(θ,digits=6)), " *
+            "delta_e=$(round(δ_e,digits=6)), N=$(round(N,digits=6)), " *
+            "w=$(round(w,digits=6)), b/w_int=$(round(b/w_int,digits=6))")
+
+    return (;
+        θ, δ_e, x_c, N, f, q, u, v=vv, v_pret=vv-e, e, K, ρ, N_e,
+        ν_f, d_f, w_int, w, L, L_e, L_c, Q, J,
+        X_v, X, X_c, C, Y_c, Y, labor_share, dest_end_frac,
+        labor_prod=Y/(ρ*L), cons_share=C/Y, inv_new_firm_share=ν_f*N_e/Y,
+        vacancy_share=X/Y, sunk_vac_cost_share=X_v/Y,
+        M, entrant_vac_share=e/vv, x_v, search_wedge=w/w_int,
+        recruiter_share=w_int*L/Y, μ, ann_int_rate=(1+r)^12-1,
+        π_s, profit_share_rec, profit_share_ret, dest_el
+    )
+end
+
+
 # =============================================================================
 # Calibration
 # =============================================================================
@@ -576,8 +670,6 @@ function calibrate_shares(targets)
 
     elseif use_dest_elast
         # ── PATH B: dest_elast_target → ψ (analytic) ────────────────
-        # Inversion of dest_elast = ψ × ζ/(1−ζ) at the calibrated SS ζ.
-        # ζ_ss is fixed by Stage 1 (from surv_prob and p_0), so ψ follows directly.
         0 < ζ_ss < 1 || error(
             "ζ_ss = $(round(ζ_ss,digits=6)) not in (0,1). " *
             "Check surv_prob = $(round(surv_prob,digits=6)) and p_0 = $p_0.")
@@ -586,7 +678,7 @@ function calibrate_shares(targets)
         π_s  = (μ - 1) / μ * (1 - cons) * (r + δ_e) / (r + δ_e + cons * (1 - δ_e))
 
         # Feasibility checks
-        Xc_Yc_implied = 1 / ε - π_s    # fixed cost share of consumption output
+        Xc_Yc_implied = 1 / ε - π_s
         if π_s ≤ 0.0
             error(
                 "dest_elast_target = $dest_elast_target is infeasible: " *
@@ -609,9 +701,6 @@ function calibrate_shares(targets)
 
     else
         # ── PATH A (legacy): Xc_Y → π_s → cons → ψ ─────────────────
-        # Stage 2: root-find Xc_Yc s.t. Xc_Y = Xc_Yc × Yc_YG / YG_Y
-        #   Xc_Yc ≡ X_c/Y_c;  Yc_YG = (r+δ_e)/(r+δ_e+δ_e*π_s);  YG_Y = 1+X_Y+Xc_Y
-        # When Xc_Y = 0, the root is trivially xc_yc = 0; skip find_zero.
         if Xc_Y == 0.0
             Xc_Yc = 0.0
             π_s   = 1 / ε
@@ -627,7 +716,6 @@ function calibrate_shares(targets)
         end
 
         # Stage 3: root-find cons s.t. π_s(cons) = π_s
-        #   π_s(cons) = [(μ-1)/μ] * (1-cons) * (r+δ_e) / (r+δ_e + cons*(1-δ_e))
         function loss_psi(cons_trial)
             return (μ - 1) / μ * (1 - cons_trial) * (r + δ_e) /
                    (r + δ_e + cons_trial * (1 - δ_e)) - π_s
@@ -647,12 +735,11 @@ function calibrate_shares(targets)
     # ------------------------------------------------------------------
     # Stage 4: Solve for vacancy value Q
     # ------------------------------------------------------------------
-    # Output consistency: Y implied by X/X_Y should equal Y from national accounts
     function loss_Q(Q_trial)
         Q_trial = abs(Q_trial)
         K     = Q_trial * (r + δ_e) / (1 + r)
         κ     = (1 - x_v) / x_v * K / q_corr
-        X     = e / (1 + ξ_inv) * Q_trial + κ * q_corr * v   # sunk + flow recruiting
+        X     = e / (1 + ξ_inv) * Q_trial + κ * q_corr * v
         w_int = surplus_ratio * K + w + K
         z     = (μ / ρ) * w_int
         f_e   = π_s * z * L_c * (1 - δ_e) * μ / (N * (r + δ_e))
@@ -663,7 +750,7 @@ function calibrate_shares(targets)
         X_c   = N * cons * x_c
         C     = Y_c - X - X_c
         Y_new = C + ν_f * N_e
-        Y_rec = X / X_Y                   # Y implied by recruiting share target
+        Y_rec = X / X_Y
         loss_val = 100 * (Y_rec - Y_new) / (Y_rec + Y_new)
         return loss_val, (; w_int, κ, z, f_e, K, d_f, ν_f, x_c, X_c, X, C, Y_c, Y=Y_new)
     end
@@ -676,14 +763,12 @@ function calibrate_shares(targets)
     # ------------------------------------------------------------------
     # Stage 5: Recover remaining parameters
     # ------------------------------------------------------------------
-    # When p_0 = 0: surv_prob = 1 and (1-p_0) = 1, so numerator = 0 and denominator = 0.
-    # ζ and f_m are irrelevant when p_0 = 0 (F(x) = 1 for all x regardless of f_m).
     if p_0 == 0.0
         ζ       = 0.0
         dest_el = 0.0
-        f_m     = 1.0   # placeholder — doesn't affect model when p_0 = 0
+        f_m     = 1.0
     else
-        ζ       = (surv_prob - (1 - p_0)) / p_0   # ζ = (x_c/f_m)^ψ at SS
+        ζ       = (surv_prob - (1 - p_0)) / p_0
         dest_el = ψ * ζ / (1 - ζ)
         f_m     = x_c / ζ^(1 / ψ)
     end
@@ -691,8 +776,6 @@ function calibrate_shares(targets)
     ϕ   = (w - b) / (w_int - K + θ * (K + q_corr * κ) - b)
     x_m = Q / e^ξ_inv
 
-    # PATH B only: report implied Xc_Y so the caller can check plausibility.
-    # X_c and Q_out.Y are already available from the Stage 4 unpack above.
     if use_dest_elast
         Xc_Y_implied = X_c / Q_out.Y
         println("  [PATH B] implied Xc_Y (GDP share) = $(round(Xc_Y_implied*100, digits=2))%  " *
@@ -702,5 +785,115 @@ function calibrate_shares(targets)
     return (;
         f_e, δ, z, b, ϕ, r, σ, ε, A, η_L,
         κ, ξ_inv, x_m, s, ψ, p_0, f_m, dest_el
+    )
+end
+
+"""
+    calibrate_shares_free_entry(targets, κ_fixed, b_w_int_target) → NamedTuple
+
+Free-entry (ξ_inv = 0) calibration.
+
+Stages 1–3 identical to calibrate_shares. Stage 4 differs:
+  - ξ_inv = 0: Q = x_m, K = (r+δ_e)/(1+r)*Q, X_v = e*Q.
+  - x_v dropped as target; κ inherited (κ_fixed).
+  - b/w_int targeted directly (b_w_int_target) → w_int = b/b_w_int_target → z = μ*w_int/ρ.
+  - Root-find over Q to satisfy X_Y; ϕ recovered from Nash in Stage 5.
+"""
+function calibrate_shares_free_entry(targets, κ_fixed::Float64, b_w_int_target::Float64)
+    @unpack X_Y, dest_ann, dest_end_frac, p_0, f, η_L, q, sep, b_ratio,
+            ξ_inv, ε, r_ann, σ, N, w = targets
+    Xc_Y              = get(targets, :Xc_Y, 0.10)
+    dest_elast_target = get(targets, :dest_elast_target, nothing)
+    use_dest_elast    = !isnothing(dest_elast_target) && p_0 > 0.0
+
+    δ_e       = 1 - (1 - dest_ann)^(1 / 12)
+    δ         = (1 - dest_end_frac) * δ_e
+    surv_prob = (1 - δ_e) / (1 - δ)
+    μ  = compute_markup(ε)
+    τ  = sep
+    s  = (τ - δ_e) / (1 - δ_e)
+    r  = (1 + r_ann)^(1 / 12) - 1
+    f_corr = f / (1 - δ_e)
+    q_corr = q / (1 - δ_e)
+    θ  = f_corr / q_corr
+    u  = τ / (τ + (1 - δ_e) * f_corr)
+    v  = θ * u
+    L  = 1 - u
+    A  = f_corr / θ^(1 - η_L)
+    e   = δ_e * (v + 1 - u)
+    N_e = δ_e / (1 - δ_e) * N
+    b   = b_ratio * w
+    ρ   = N^(1 / (ε - 1))
+    ζ_ss = (p_0 > 0.0) ? (surv_prob - (1 - p_0)) / p_0 : 0.0
+
+    if p_0 == 0.0
+        cons = 0.0;  ψ = 1.5;  π_s = 1 / ε
+    elseif use_dest_elast
+        0 < ζ_ss < 1 || error("ζ_ss = $(round(ζ_ss,digits=6)) not in (0,1).")
+        ψ    = dest_elast_target * (1 - ζ_ss) / ζ_ss
+        cons = ψ / (1 + ψ) * p_0
+        π_s  = (μ - 1) / μ * (1 - cons) * (r + δ_e) / (r + δ_e + cons * (1 - δ_e))
+        π_s ≤ 0.0 && error("dest_elast_target infeasible: π_s = $(round(π_s,digits=4)) ≤ 0.")
+        1/ε - π_s > 0.20 && @warn("Xc_Yc = $(round((1/ε-π_s)*100,digits=1))% > 20%.")
+    else
+        if Xc_Y == 0.0
+            Xc_Yc = 0.0;  π_s = 1 / ε
+        else
+            Xc_Yc = find_zero(xc -> begin
+                π_t = 1/ε - xc
+                Xc_Y / ((r+δ_e)/(r+δ_e+δ_e*π_t) * (1+X_Y+Xc_Y)) - xc
+            end, (0.01, 0.5))
+            π_s = 1/ε - Xc_Yc
+        end
+        cons = find_zero(c -> (μ-1)/μ*(1-c)*(r+δ_e)/(r+δ_e+c*(1-δ_e)) - π_s, 0.1)
+        ψ_c  = cons / p_0;  ψ = ψ_c / (1 - ψ_c)
+    end
+
+    L_c = (r + δ_e) * L / (r + δ_e + δ_e * π_s * μ)
+    L_e = L - L_c
+    κ   = κ_fixed
+    w_int = b / b_w_int_target
+    z     = (μ / ρ) * w_int
+
+    function loss_Q_fe(Q_trial)
+        Q_trial = abs(Q_trial)
+        K     = Q_trial * (r + δ_e) / (1 + r)
+        X_v   = e * Q_trial
+        X     = X_v + κ * q_corr * v
+        f_e_t = π_s * z * L_c * (1 - δ_e) * μ / (N * (r + δ_e))
+        ν_f_t = ρ * f_e_t / μ
+        Y_c_t = ρ * z * L_c
+        x_c_t = Y_c_t / (ε * N) + ν_f_t
+        X_c_t = N * cons * x_c_t
+        C_t   = Y_c_t - X - X_c_t
+        Y_new = C_t + ν_f_t * N_e
+        Y_rec = X / X_Y
+        loss_val = 100 * (Y_rec - Y_new) / (Y_rec + Y_new)
+        return loss_val, (; K, f_e=f_e_t, ν_f=ν_f_t, Y_c=Y_c_t, x_c=x_c_t,
+                            X_c=X_c_t, X, C=C_t, Y=Y_new, d_f=(r+δ_e)/(1-δ_e)*ν_f_t)
+    end
+
+    Q_opt = find_zero(Q -> loss_Q_fe(Q)[1], 1.0)
+    Q     = abs(Q_opt)
+    _, Q_out = loss_Q_fe(Q)
+    @unpack K, f_e, ν_f, Y_c, x_c, X_c, X, C, d_f = Q_out
+
+    if p_0 == 0.0
+        ζ = 0.0;  dest_el = 0.0;  f_m = 1.0
+    else
+        ζ       = (surv_prob - (1 - p_0)) / p_0
+        dest_el = ψ * ζ / (1 - ζ)
+        f_m     = x_c / ζ^(1 / ψ)
+    end
+
+    ϕ   = (w - b) / (w_int - K + θ * (K + q_corr * κ) - b)
+    x_m = Q
+
+    println("  [FREE ENTRY] ϕ=$(round(ϕ,digits=4)), b/w_int=$(round(b/w_int,digits=4)), " *
+            "κ=$(round(κ,digits=6)), K=$(round(K,digits=6)), Q=$(round(Q,digits=4))")
+
+    return (;
+        f_e, δ, z, b, ϕ, r, σ, ε, A, η_L,
+        κ, ξ_inv=0.0, x_m, s, ψ, p_0, f_m, dest_el
     )
 end
