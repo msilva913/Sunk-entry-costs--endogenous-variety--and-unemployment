@@ -2,8 +2,7 @@
 **Last updated:** May 20, 2026 · **Author:** Mario Silva
 **Code style:** clean, succinct, interpretable by empirical macroeconomist. 
 
-**Draft writing style: **clean, succinct, applied macroeconomist/theorist
-
+**Draft writing style: **clean, succinct, applied macroeconomist/theorist. Avoid writing Appendix before appendix reference because that causes "Appendix to be printed twice.
 ---
 
 ## Project in one paragraph
