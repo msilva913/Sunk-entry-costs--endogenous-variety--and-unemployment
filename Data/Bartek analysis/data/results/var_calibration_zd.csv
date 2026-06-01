@@ -1,15 +1,15 @@
 param,freq,value,note
-rho_z,quarterly,0.7348502623414448,"own-persistence of z (diagonal A1[0,0])"
-rho_delta,quarterly,0.20691825524489504,"own-persistence of delta (diagonal A1[1,1])"
-sigma_z,quarterly,0.00582097580046002,"structural z shock SD in log-cycle units (P[0,0])"
-sigma_delta,quarterly,0.05516550913309481,"structural delta shock SD orthogonal to z (P[1,1])"
-beta_dz,quarterly,-1.0497212341201798,"endogenous exit response to z (A1[1,0]); not in shock process"
-alpha_zd,quarterly,-0.001912464954189383,"z response to delta (A1[0,1]); expected near zero"
-corr_uu,quarterly,-0.28373677898977884,reduced-form innovation corr (pre-Cholesky)
-rho_z,monthly,0.9024011037819175,rho_q^(1/3)
-rho_delta,monthly,0.5914702918267939,rho_q^(1/3)
-sigma_z,monthly,0.009162181590433392,unconditional-variance-matched from quarterly
-sigma_delta,monthly,0.06693518154291012,unconditional-variance-matched from quarterly
+rho_z,quarterly,0.734850262339198,"own-persistence of z (diagonal A1[0,0])"
+rho_delta,quarterly,0.2069182552450886,"own-persistence of delta (diagonal A1[1,1])"
+sigma_z,quarterly,0.0058209758004537015,"structural z shock SD in log-cycle units (P[0,0])"
+sigma_delta,quarterly,0.05516550913310052,"structural delta shock SD orthogonal to z (P[1,1])"
+beta_dz,quarterly,-1.0497212341198283,"endogenous exit response to z (A1[1,0]); not in shock process"
+alpha_zd,quarterly,-0.0019124649541907028,"z response to delta (A1[0,1]); expected near zero"
+corr_uu,quarterly,-0.28373677898964844,reduced-form innovation corr (pre-Cholesky)
+rho_z,monthly,0.9024011037809978,rho_q^(1/3)
+rho_delta,monthly,0.5914702918269783,rho_q^(1/3)
+sigma_z,monthly,0.009162181590415376,unconditional-variance-matched from quarterly
+sigma_delta,monthly,0.06693518154292549,unconditional-variance-matched from quarterly
 hp_lambda,n/a,1600,HP filter smoothing parameter
 sample_start,n/a,1992Q3,common sample start
 sample_end,n/a,2019Q4,common sample end

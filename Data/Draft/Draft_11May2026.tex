@@ -2514,22 +2514,74 @@ The second set consists of empirically identified impulse responses from the
 
 	\medskip\noindent\textbf{Shock calibration.}
 	The stochastic processes for technology and firm destruction are
-	disciplined by a bivariate VAR(1) estimated on
-	HP($\lambda=1{,}600$)-filtered log aggregate labor productivity
-	and log aggregate exit rate over 1992Q3--2019Q4.
-	Identification follows a Cholesky decomposition with technology
-	ordered first, consistent with the model's within-period timing
+	disciplined by a bivariate structural VAR(1) estimated at quarterly
+	frequency on the HP($\lambda=1{,}600$)-filtered cyclical components
+	of log labor productivity $z_t$ (BLS nonfarm business output per
+	hour, PRS85006163) and log aggregate firm destruction $\delta_t$
+	(BLS BED Deaths, national employment-weighted exit rate) over
+	1992Q3--2019Q4 ($T=110$).\footnote{The $\delta$ series is the
+	national employment-weighted BED Deaths exit rate---the same
+	underlying series that enters the Bartik instrument's national
+	rates---aggregated directly rather than Bartik-weighted. Using the
+	Bartik aggregate would conflate the shock process with the
+	instrument construction.}
+	The reduced-form system is
+	\begin{equation}
+		\begin{pmatrix}\log z_t \\ \log \delta_t\end{pmatrix}
+		= A_1
+		\begin{pmatrix}\log z_{t-1} \\ \log \delta_{t-1}\end{pmatrix}
+		+ \mathbf{u}_t, \qquad
+		\mathbf{u}_t \sim \mathcal{N}(\mathbf{0},\,\Sigma),
+		\label{eq:var_zd}
+	\end{equation}
+	with estimated companion matrix and pre-identification innovation
+	correlation:
+	\begin{equation}
+		\hat{A}_1 =
+		\begin{pmatrix} 0.735 & -0.002 \\ -1.050 & 0.207 \end{pmatrix},
+		\qquad
+		\widehat{\operatorname{corr}}(u^z_t,\,u^\delta_t) = -0.284.
+		\label{eq:var_zd_coefs}
+	\end{equation}
+	Structural shocks are identified by a Cholesky decomposition
+	ordering technology first, consistent with the within-period timing
 	in which aggregate productivity is realized before firm-level
-	continuation decisions; the identified destruction innovation is
-	therefore orthogonal to contemporaneous technology.
-	Converting quarterly autoregressive coefficients to monthly gives
-	$\rho_z=0.902$ and $\sigma_z=0.0092$ for technology, and
-	$\rho_\delta=0.592$ and $\sigma_\delta=0.0669$ for destruction,
+	continuation decisions.
+	With $P$ the lower-triangular Cholesky factor of $\hat{\Sigma}$,
+	the structural innovations are
+	$\varepsilon^z_t = u^z_t/P_{11}$ and
+	$\varepsilon^\delta_t = (u^\delta_t - P_{21}\varepsilon^z_t)/P_{22}$,
+	so $\operatorname{Cov}(\varepsilon^z,\varepsilon^\delta)=0$ by
+	construction.
+
+	The two off-diagonal entries of $\hat{A}_1$ are excluded from the
+	model's exogenous shock processes, for distinct reasons.
+	The entry $\hat{a}_{21}=-1.050$ (HC3 SE~$=0.830$) reflects the
+	tendency of exit to rise following productivity declines; this
+	channel is generated endogenously by the model through the JCC and
+	the continuation-cost threshold $\chi^c_t$, so including it in the
+	exogenous process would double-count the mechanism under study.
+	The entry $\hat{a}_{12}=-0.002$ is two orders of magnitude smaller
+	in absolute value and is consistent with $z$ being an autonomous
+	technology process unaffected by market-structure shocks.
+	Treating both off-diagonal terms as equilibrium outcomes rather than
+	primitive forcing processes leaves the diagonal entries as the
+	persistence parameters of the exogenous shocks.
+
+	The quarterly diagonal persistence parameters are converted to
+	monthly via $\rho^m=(\rho^Q)^{1/3}$, reflecting the cube-root
+	relationship between quarterly and monthly AR(1) coefficients.
+	Innovation standard deviations are rescaled to match the
+	unconditional variance of the quarterly process:
+	$\sigma^m = \sigma^Q\sqrt{(1-(\rho^Q)^2)/(1-(\rho^m)^2)}$.
+	This yields $\rho_z=0.902$, $\sigma_z=0.0092$ for technology and
+	$\rho_\delta=0.592$, $\sigma_\delta=0.0669$ for destruction,
 	entering equations~\eqref{eq:ar1_z} and~\eqref{eq:ar1_delta}
-	directly. The destruction shock has a monthly half-life of roughly
-	two months, so prolonged unemployment responses to $\delta$ shocks
-	reflect propagation through the firm and vacancy stocks rather
-	than the persistence of the driving process itself.
+	directly.
+	The destruction shock has a monthly half-life of roughly two months,
+	so prolonged unemployment responses to $\delta$ shocks reflect
+	propagation through the firm and vacancy stocks rather than the
+	persistence of the driving process itself.
 
 	\medskip\noindent\textbf{Choice of shocks and comparisons.}
 	We report impulse responses to the $z$ and $\delta$ shocks
