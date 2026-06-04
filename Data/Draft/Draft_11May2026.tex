@@ -93,7 +93,9 @@
 \begin{document}
 	\begin{frontmatter}
 		\begin{abstract}
-			How do business formation and exit dynamics influence job creation and destruction? We develop a unified model of endogenous business formation and exit and labor market frictions and study its implications for unemployment and vacancy dynamics. Monopolistically competitive producers use labor and face exit risk from product obsolescence and stochastic fixed costs. Creating businesses and vacancies both require sunk costs, making them partially predetermined: if a product line survives, unfilled vacancies are reposted. We estimate the model via Bayesian simulated method of moments using aggregate technology, product destruction, and match separation shocks. When a firm exits, it immediately eliminates jobs and posted vacancies and reduces product variety, so vacancy persistence closely tracks product-line longevity. By contrast, match separation shocks destroy only filled jobs, generating counterfactual positive comovement of unemployment and vacancies. The loss of variety also dampens job creation and employment via an aggregate demand externality. Adverse technology shocks induce exit among high-cost firms, amplifying labor-market effects. Quantitatively, the model matches the volatility, autocorrelation, and cross-correlation of unemployment, vacancies, business formation, employment-to-unemployment transitions, and establishment exit, with technology and destruction shocks playing the predominant roles.
+			How do business formation and exit dynamics influence job creation and destruction? We develop a unified model of endogenous business formation and exit and labor market frictions and study its implications for unemployment and vacancy dynamics. Monopolistically competitive producers use labor and face exit risk from product obsolescence and stochastic fixed costs. Creating businesses and vacancies both require sunk costs, making them partially predetermined: if a product line survives, unfilled vacancies are reposted. We show analytically that the business formation block primarily impacts the labor market via taste for diversity and endogenous exit. We also show that, under mild conditions, destruction shocks generative negative comovement of unemployment and vacancies, whereas match separation shock generate (counterfactual) positive comovement. When a firm exits, it immediately eliminates jobs and posted vacancies and reduces product variety, so vacancy persistence closely tracks product-line longevity. By contrast, match separation shocks destroy only filled jobs, generating counterfactual positive comovement of unemployment and vacancies.
+			Adverse technology shocks induce exit among high-cost firms, amplifying labor-market effects. We estimate the model by Bayesian means on conditional moments--an impulse response of labor market variables to a destruction shock obtained via a Bartik instrument--and unconditional labor market moments.
+			Quantitatively, the model matches the volatility, autocorrelation, and cross-correlation of unemployment, vacancies, business formation, employment-to-unemployment transitions, and establishment exit, with technology and destruction shocks playing the predominant roles.
 		\end{abstract}
 		%\begin{keyword}
 		%	labor market frictions \sep sunk entry costs \sep estimation \\
@@ -1254,7 +1256,7 @@ are in \ref{app:limiting_cases}.
 \begin{proposition}[Independence of labor market block]
 	\label{prop:independence}
 	Consider general CES preferences with elasticity of 
-	substitution $\varepsilon$ held fixed. The labor market 
+	substitution $\varepsilon$. The labor market 
 	block $\{u_{t+1}, v_t, e_t, Q_t, K_t, w_t\}_{t=0}^{\infty}$ 
 	can be solved independently of the business formation 
 	block if and only if $\sigma=0$, $\zeta=0$, and $p_0=0$.
@@ -3764,8 +3766,7 @@ the extended vacancy-value equation~\eqref{eq:Q_ll_delta}, $Q$ rises and
 entry \emph{expands}: $\hat{e}^\delta>0$.  This entry expansion --- the
 same $G(Q_t)$ channel as in \citet{coles_2018} --- partially backfills
 vacancies destroyed by the direct $\hat\delta_e\uparrow$ impulse, muting
-the decline in $\theta$ and the rise in $u$.  A larger $\xi$ amplifies
-this cushioning, so the near-free-entry calibration generates \emph{less}
+the decline in $\theta$ and the rise in $u$.  A larger $\xi$ increases cushioning, so the near-free-entry calibration generates \emph{less}
 unemployment amplification from destruction shocks.
 
 Whether the entry cushion is large enough to reverse the sign of
