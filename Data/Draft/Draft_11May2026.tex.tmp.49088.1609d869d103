@@ -1440,18 +1440,19 @@ This section establishes the asymmetry analytically, motivating the paper's focu
 		$s_t$ shock raises unemployment and vacancies simultaneously at
 		horizon $h=1$, generating positive $u$--$v$ comovement.
 		\item \emph{($s$ shock, endogenous exit.)}
-		Under DS-CES with
-		\begin{equation}\label{eq:gN_cond}
-			f_e\bar{N} < \frac{\bar{z}(1-\bar{u})(\varepsilon-2)}{\varepsilon-1},
-		\end{equation}
-		the preceding result extends to the full model ($p_0>0$) if the
+		The preceding result extends to the full model ($p_0>0$) if the
 		reposting inflow $(1-\delta_t)\Lambda_{t+1}(1-u_t)$ weakly
 		dominates the endogenous exit drain
 		$(1-\delta_t)F'(\chi^c_{t+1})|\partial\chi^c_{t+1}/\partial s_t|
 		\cdot[(1-q(\theta_t))v_t+s_t(1-u_t)]$
 		on the pre-committed vacancy stock.
-		The drain is increasing in $\rho_s$, so the condition holds for
-		all $\rho_s\in[0,\bar\rho_s)$ for some $\bar\rho_s>0$.
+		The drain is increasing in $\rho_s$: at $\rho_s=0$, only
+		the current-period profit component of $\chi^c_{t+1}$ responds
+		to $s_t$; at $\rho_s>0$, the option value component
+		of~\eqref{eq:cutoff_eq} also falls, since persistent lower
+		employment reduces expected future $Y^c$ and hence the entry
+		option value. The condition therefore holds for all
+		$\rho_s\in[0,\bar\rho_s)$ for some $\bar\rho_s>0$.
 		\item \emph{($\delta$ shock.)} A positive $\delta_t$ shock raises
 		unemployment and reduces total vacancies at horizon $h=1$,
 		generating negative $u$--$v$ comovement, provided entry does not
@@ -1466,22 +1467,6 @@ This section establishes the asymmetry analytically, motivating the paper's focu
 \end{proposition}
 \noindent See \ref{app:proof_ds} for the proof.
 
-Define $g(N,u)\equiv d^f(N,u)+f_e\rho(N)/\mu$ as the continuation
-profit threshold: a firm survives whenever its fixed-cost draw satisfies
-$\chi^c\leq g$.
-Under DS-CES, $g_N$ balances two opposing forces: flow profit
-$d^f\propto N^{(2-\varepsilon)/(\varepsilon-1)}$ combines a
-market-share dilution effect ($1/N$) and a love-of-variety demand
-expansion ($\rho(N)\propto N^{1/(\varepsilon-1)}$), with net exponent
-$(2-\varepsilon)/(\varepsilon-1)$ negative for $\varepsilon>2$, so
-dilution dominates and $d^f$ falls in $N$; and an option value of
-entry $f_e\rho(N)/\mu\propto N^{1/(\varepsilon-1)}$, which always
-rises in $N$.
-Condition~\eqref{eq:gN_cond} ensures the profit decline dominates
-the option-value rise ($g_N<0$, $\det J>1$): $\varepsilon>2$ is
-necessary (it makes the right-hand side positive), while the bound
-on $f_e\bar{N}$ ensures the option-value channel does not overturn
-it. Both hold at standard calibrations.
 
 From the vacancy law of motion~\eqref{eq:v_lom}, a positive $\delta_t$
 shock raises $\delta_{e,t+1}$ and thereby destroys a fraction
@@ -4310,12 +4295,12 @@ With $p_0>0$, $(1-\delta_{e,t+1})=(1-\delta_t)\Lambda_{t+1}$
 where $\Lambda_{t+1}=F(\chi^c_{t+1})$ is the endogenous survival
 probability.
 The reposting channel becomes
-\begin{align}\label{eq:dv_ds_full}
+\[
 	\frac{\partial\,v_{pre,t+1}}{\partial s_t}
 	= (1-\delta_t)\Lambda_{t+1}(1-u_t)
 	  + (1-\delta_t)\frac{\partial\Lambda_{t+1}}{\partial s_t}
 	  \bigl[(1-q(\theta_t))v_t+s_t(1-u_t)\bigr].
-\end{align}
+\]
 The sign of the second term is $\partial\Lambda_{t+1}/\partial s_t
 = F'(\chi^c_{t+1})\cdot\partial\chi^c_{t+1}/\partial s_t$ with
 $F'>0$; signing $\partial\chi^c_{t+1}/\partial s_t$ requires
@@ -4356,12 +4341,12 @@ By the implicit function theorem:
 	\frac{\partial\chi^c_{t+1}}{\partial s_t}
 	= \frac{g_u}{\det J}\cdot\frac{\partial u_{t+1}}{\partial s_t}.
 \]
-Under DS-CES, $g_N\propto z(1-u)(2-\varepsilon)/(\varepsilon-1)+f_eN$,
-so condition~\eqref{eq:gN_cond} is equivalent to $g_N<0$, giving
-$\det J=1-(1-\delta_t)F'(\chi^c)B_t\,g_N>1$.
-This signs $\partial\chi^c_{t+1}/\partial s_t$ negative: it rules out
-the case in which feedback from lower $N$ to higher per-firm
-profitability reverses the direct employment channel $g_u<0$.
+The Jacobian condition $\det J>0$---maintained as the standard
+local-uniqueness assumption\footnote{Automatic when $g_N\leq 0$.
+When $g_N>0$, requires $(1-\delta_t)F'(\chi^c)B_t\,g_N<1$.}---is
+precisely what signs this expression negative: it rules out the
+case where the feedback from lower $N$ to higher profitability
+reverses the direct employment channel $g_u<0$.
 With $\det J>0$:
 \[
 	\frac{\partial\chi^c_{t+1}}{\partial s_t}<0,
@@ -4398,39 +4383,24 @@ The entry channel (Channel~2 from Part~1) is non-negative throughout.
 \emph{Part~3: $\delta$ shock.}
 
 \emph{Unemployment.}
-Consider a positive $\delta_t$ shock with $s_t$ fixed at its
-steady-state value $\bar{s}$ (a pure destruction shock).
-Then $\delta_{e,t+1}$ rises, so
-$\partial\tau_{t+1}/\partial\delta_t
-= \partial\delta_{e,t+1}/\partial\delta_t
-  \cdot(1-\bar{s})>0$,
-and the same unemployment argument as Part~1 yields
+With $s_t=0$, a positive $\delta_t$ raises $\delta_{e,t+1}$ and hence
+$\tau_{t+1}=\delta_{e,t+1}+\bar{s}(1-\delta_{e,t+1})$, so
+$\partial\tau_{t+1}/\partial\delta_t>0$.
+The same argument as Part~1 then gives
 $\partial u_{t+1}/\partial\delta_t>0$.
 
 \emph{Vacancies.}
-By Lemma~\ref{lem:vpre},
-\[
-  \left|\frac{\partial v_{pre,t+1}}{\partial\delta_t}\right|
-  = \Lambda_{t+1}\bigl[(1-q(\theta_t))v_t + \bar{s}(1-u_t)\bigr]
-  \;\xrightarrow{\text{s.s.}}\;
-  (1-\bar{q})\bar{v} + \bar{s}(1-\bar{u}) > 0,
-\]
-a quantity bounded away from zero for any $\bar\delta_e/\bar\tau\in(0,1)$.
-The entry response partially cushions this: from the
-$K$-decomposition~\eqref{eq:K_decomp}, the duration-shortening
-contribution to $\hat{K}^\delta$ carries coefficient
-$\bar\delta_e/(r+\bar\delta_e)$, so
-\[
-  \frac{\partial e_{t+1}}{\partial\delta_t}
-  \;\propto\;
-  \frac{\bar\delta_e}{r+\bar\delta_e}
-  \;\to\; 0
-  \quad\text{as}\quad
-  \bar\delta_e/\bar\tau\to 0.
-\]
-For $\bar\delta_e/\bar\tau$ sufficiently small, the entry cushion
-is therefore strictly less than the pre-committed vacancy destruction,
-so $\partial v_{t+1}/\partial\delta_t<0$, establishing
+By Lemma~\ref{lem:vpre}, $\partial v_{pre,t+1}/\partial\delta_t<0$
+unconditionally. The entry response partially offsets this: duration
+shortening under a $\delta$ shock raises $K$ (see decomposition
+\eqref{eq:K_decomp}), increasing $Q$ and stimulating $e_{t+1}$. Total
+vacancies fall if and only if this cushion is incomplete:
+$\partial e_{t+1}/\partial\delta_t<|\partial v_{pre,t+1}/\partial\delta_t|$.
+When $\bar\delta_e/\bar\tau$ is small, the $\delta$ channel accounts
+for only a small fraction of total separations; the proportional
+destruction of pre-committed vacancies is large relative to the entry
+stimulus, and the condition is satisfied. Under this sufficient
+condition, $\partial v_{t+1}/\partial\delta_t<0$, establishing
 negative $u$--$v$ comovement at $h=1$.
 \end{proof}
 

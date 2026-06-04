@@ -1466,6 +1466,7 @@ This section establishes the asymmetry analytically, motivating the paper's focu
 \end{proposition}
 \noindent See \ref{app:proof_ds} for the proof.
 
+\begin{remark}
 Define $g(N,u)\equiv d^f(N,u)+f_e\rho(N)/\mu$ as the continuation
 profit threshold: a firm survives whenever its fixed-cost draw satisfies
 $\chi^c\leq g$.
@@ -1482,6 +1483,7 @@ the option-value rise ($g_N<0$, $\det J>1$): $\varepsilon>2$ is
 necessary (it makes the right-hand side positive), while the bound
 on $f_e\bar{N}$ ensures the option-value channel does not overturn
 it. Both hold at standard calibrations.
+\end{remark}
 
 From the vacancy law of motion~\eqref{eq:v_lom}, a positive $\delta_t$
 shock raises $\delta_{e,t+1}$ and thereby destroys a fraction

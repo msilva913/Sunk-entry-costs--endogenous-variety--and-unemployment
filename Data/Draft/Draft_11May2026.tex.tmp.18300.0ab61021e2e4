@@ -1466,22 +1466,19 @@ This section establishes the asymmetry analytically, motivating the paper's focu
 \end{proposition}
 \noindent See \ref{app:proof_ds} for the proof.
 
-Define $g(N,u)\equiv d^f(N,u)+f_e\rho(N)/\mu$ as the continuation
-profit threshold: a firm survives whenever its fixed-cost draw satisfies
-$\chi^c\leq g$.
-Under DS-CES, $g_N$ balances two opposing forces: flow profit
-$d^f\propto N^{(2-\varepsilon)/(\varepsilon-1)}$ combines a
-market-share dilution effect ($1/N$) and a love-of-variety demand
-expansion ($\rho(N)\propto N^{1/(\varepsilon-1)}$), with net exponent
-$(2-\varepsilon)/(\varepsilon-1)$ negative for $\varepsilon>2$, so
-dilution dominates and $d^f$ falls in $N$; and an option value of
-entry $f_e\rho(N)/\mu\propto N^{1/(\varepsilon-1)}$, which always
-rises in $N$.
-Condition~\eqref{eq:gN_cond} ensures the profit decline dominates
-the option-value rise ($g_N<0$, $\det J>1$): $\varepsilon>2$ is
-necessary (it makes the right-hand side positive), while the bound
-on $f_e\bar{N}$ ensures the option-value channel does not overturn
-it. Both hold at standard calibrations.
+\begin{remark}
+The right-hand side of~\eqref{eq:gN_cond} is positive whenever
+$\varepsilon>2$, so that restriction is necessary for the condition
+to be satisfiable. Economically, $\varepsilon>2$ ensures that higher
+variety intensifies product-market competition faster than it raises
+variety-adjusted wages, making per-firm profits decreasing in $N$
+($g_N<0$) and hence $\det J>1$. The exit drain is then
+self-dampening: as $N$ falls following a separation shock, the rise in
+per-firm profitability is bounded, and the reposting inflow dominates.
+Condition~\eqref{eq:gN_cond} holds at all standard macro calibrations,
+where entry costs $f_e\bar{N}$ are small relative to aggregate flow
+profits $\bar{z}(1-\bar{u})$.
+\end{remark}
 
 From the vacancy law of motion~\eqref{eq:v_lom}, a positive $\delta_t$
 shock raises $\delta_{e,t+1}$ and thereby destroys a fraction
