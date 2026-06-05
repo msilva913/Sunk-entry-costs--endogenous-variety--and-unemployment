@@ -1,5 +1,5 @@
 # Key Empirical Findings
-**Last updated:** May 12, 2026
+**Last updated:** June 5, 2026
 
 ## Shock Persistence (part6, 2001Q1+ window)
 
@@ -138,9 +138,20 @@ The λ=100k reversal is confirmed as an over-smoothing artifact: across HP-1600 
 
 - **Introduction**: Complete
 - **Section 2 Environment**: Complete
-- **Section 3 Equilibrium**: Substantially complete (3.10 δ-vs-s mechanism pending)
+- **Section 3 Equilibrium**: **Complete**
   - `prop:bgm_nest` (Nesting LR-BGM) + LR-BGM definition paragraph: **Complete**
   - Proof of `prop:bgm_nest` in Appendix C: **Complete**
+  - `prop:ds_asymmetry` = **Proposition 5** (δ–s asymmetry, 3 parts) + Remark + Proof in `app:proof_ds`: **Complete/updated** (June 5, 2026)
+    - **Statement:**
+      - Part 1 (s, exog exit, p_0=0): any ρ_s∈[0,1) → u↑ and v↑ simultaneously at h=1 (positive u-v comovement)
+      - Part 2 (s, endog exit, p_0>0, DS-CES): if eq:gN_cond holds ($f_e\bar N < \bar z(1-\bar u)(\varepsilon-2)/(\varepsilon-1)$) and reposting inflow weakly dominates endogenous-exit drain on pre-committed vacancies → positive comovement for ρ_s∈[0,ρ̄_s)
+      - Part 3 (δ shock): u↑ and v↓ (negative u-v comovement) if entry doesn't fully offset pre-committed vacancy destruction; sufficient condition: δ̄_e/τ̄ small → entry cushion coefficient $\bar\delta_e/(r+\bar\delta_e)\to 0$; holds at calibrated δ_e/τ≈0.21 including under free entry
+    - **Proof structure (app:proof_ds):**
+      - `lem:vpre` (Pre-committed vacancy destruction): $\partial v_{pre,t+1}/\partial\delta_t = -\Lambda_{t+1}[(1-q(\theta_t))v_t+s_t(1-u_t)] < 0$; bracket is predetermined w.r.t. δ_t
+      - Part 1 proof: two channels — Channel 1 (reposting): $\partial v_{pre}/\partial s_t = (1-\delta_{e,t+1})(1-u_t)>0$; Channel 2 (entry): Sub-step (a) pre-entry tightness θ^pre falls (u rises more than v_pre); Sub-step (b) $K_{t+1}$ rises because $q(\theta_{t+1})>\bar q$; hence $Q_{t+1}>\bar Q$, entry rises. Combined: $\partial v_{t+1}/\partial s_t>0$. Free-entry footnote: Channel 2 vanishes but Channel 1 remains.
+      - Part 2 proof: signs ∂χ^c_{t+1}/∂s_t via 2×2 Jacobian of joint (χ^c, N) system; g_u<0 (higher u → lower profits → lower cutoff); condition eq:gN_cond ↔ g_N<0 ↔ det J>1; implies ∂χ^c/∂s_t<0 → ∂Λ/∂s_t<0 (endogenous exit rises); drain is increasing in ρ_s, minimized at ρ_s=0, so dominance of reposting at ρ_s=0 suffices
+      - Part 3 proof: uses lem:vpre for |∂v_pre/∂δ_t|>0; entry cushion from K-decomp carries coefficient $\bar\delta_e/(r+\bar\delta_e)\to 0$ as $\bar\delta_e/\bar\tau\to 0$, so ∂e/∂δ_t < |∂v_pre/∂δ_t| for δ̄_e/τ̄ small
+    - **Remark after proposition:** defines g(N,u)≡d^f(N,u)+f_eρ(N)/μ as continuation-profit threshold; g_N<0 balances dilution effect ($d^f\propto N^{(2-ε)/(ε-1)}$, net exponent negative for ε>2) vs. option-value rise ($f_eρ(N)/μ\propto N^{1/(ε-1)}$); condition~\eqref{eq:gN_cond} ensures dilution dominates; quantitative note: at δ̄_e/τ̄≈0.21, negative u-v comovement robust across full ξ range (cf. app:comparison_D)
 - **Section 4.1 Instrument construction**: Complete
 - **Section 4.2 LP specification**: Complete
 - **Section 4.3 Results**: Partially drafted (severity placebo and joint LP paragraphs pending)
@@ -158,7 +169,7 @@ The λ=100k reversal is confirmed as an over-smoothing artifact: across HP-1600 
   - Bold cells where HP-100k is sign-opposite to both other filters (7 cells)
 - **Appendix C proofs**: Props 1–6 complete; Prop 7 pending
 
-Key notation: χ_t^c (not x_t^c), Λ_t ≡ F_χ(χ_t^c), eq:/tab:/fig:/sec: label prefixes throughout. Draft file: `Draft/Draft_11May2026.tex`.
+Key notation: χ_t^c (not x_t^c), Λ_t ≡ F_χ(χ_t^c), eq:/tab:/fig:/sec: label prefixes throughout. Draft file: `Draft/Draft.tex`.
 
 ## prop:bgm_nest — Proof Structure (Appendix C)
 

@@ -1,6 +1,6 @@
 This is BibTeX, Version 0.99e
 Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
-The top-level auxiliary file: Draft_11May2026.aux
+The top-level auxiliary file: Draft.aux
 Reallocating 'name_of_file' (item size: 1) to 13 items.
 The style file: econometrica.bst
 Reallocating 'name_of_file' (item size: 1) to 11 items.
@@ -23,7 +23,7 @@ Warning--empty journal in colciago_2021
 Done.
 You've used 25 entries,
             2327 wiz_defined-function locations,
-            676 strings with 7400 characters,
+            676 strings with 7380 characters,
 and the built_in function-call counts, 12615 in all, are:
 = -- 1270
 > -- 666

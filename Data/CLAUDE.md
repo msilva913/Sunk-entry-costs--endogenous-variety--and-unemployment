@@ -1,8 +1,10 @@
 # CLAUDE.md — Empirical LP Project (Firm Entry/Exit DSGE)
-**Last updated:** May 20, 2026 · **Author:** Mario Silva
+**Last updated:** June 4, 2026 · **Author:** Mario Silva
 **Code style:** clean, succinct, interpretable by empirical macroeconomist. 
 
 **Draft writing style: **clean, succinct, applied macroeconomist/theorist. Avoid writing Appendix before appendix reference because that causes "Appendix to be printed twice.
+
+**Priority**: core findings must mark clear departure with respect to Coles and Kelishomi (2018)
 ---
 
 ## Project in one paragraph
@@ -43,7 +45,7 @@ Data/Bartek analysis/
 **QU placebo fails:** corr(β_unemp, β_vac) = −0.971 across horizons — demand contamination signature
 **Vacancy convention:** outcome is vacancy RATE = V/LF × 100 in pp, levels difference. Never log. Symmetric to unemployment rate.
 **Calibration:** δ̄ = 1.079%/qtr (BED Deaths), τ̄ = 9.34%/qtr, δ/τ = 11.6% — NOTE: up from 10.1% with closings×π; Section 5 needs update
-**Paper draft:** `Draft/Draft_11May2026.tex` — Intro + Sections 2–4.2 complete; prop:bgm_nest + proof complete; 4.3 partially drafted. D5 extended: K decomposition eq:K_decomp–eq:e_ll_delta (δ shocks: K↑ via duration shortening → e↑). New appendix app:additional_comparisons with Comparison D (ξ role, CK connection).
+**Paper draft:** `Draft/Draft_11May2026.tex` — Intro + Sections 2–4.2 complete; prop:bgm_nest + proof complete; 4.3 partially drafted. D5 extended: K decomposition eq:K_decomp–eq:e_ll_delta. New appendix app:additional_comparisons with Comparison D (ξ role, CK connection). **prop:ds_asymmetry complete** (3 parts: s/exog, s/endog, δ): Part 2 condition eq:gN_cond ($f_e\bar N < \bar z(1-\bar u)(\varepsilon-2)/(\varepsilon-1)$, requires ε>2 + small entry costs); Remark defines g(N,u), explains dilution-vs-variety tradeoff. Proof: Channel 2 formal (sub-steps a/b via N_{t+1} predetermination); Part 3 uses K-decomp coefficient $\bar\delta_e/(r+\bar\delta_e)\to 0$ as δ/τ→0.
 **Model code:** `Programs baseline/run_solution_core.jl` audited May 20: r=discount rate, ρ=relative price (consistent with steady_state.jl); κ=matching cost paid per match (κ·q·v in RC); u LOM uses total v_t=v_pret+e_t; BFE at f[4] after JCC. Comparison D: `run_solution_entry_elasticity.jl` / `plot_xi_inv_comparison.jl`; ξ_inv=1.0 vs 0.1; serializes `irf_xi_inv.jls`.
 
 ---
@@ -51,7 +53,7 @@ Data/Bartek analysis/
 ## Priority tasks right now
 
 1. Draft Section 4.3 Results (δ→u, δ→v IRF narrative; severity placebo paragraph; joint LP robustness)
-2. Draft Section 3.10 (δ-vs-s asymmetry mechanism proposition)
+2. ~~Draft Section 3.10~~ **DONE** — prop:ds_asymmetry (3-part) replaces 3.10
 3. Wild cluster bootstrap (`part5_wcrb.py`) — n=50 clusters at lower reliability bound
 4. GFC diagnostic for LD unemployment (`part7d_ld_gfc.py`)
 

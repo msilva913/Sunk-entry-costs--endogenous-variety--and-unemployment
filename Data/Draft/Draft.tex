@@ -94,7 +94,7 @@
 	\begin{frontmatter}
 		\begin{abstract}
 		Vacancies comove positively with establishment entry and negatively with exit; states with higher exit rates accumulate larger labor market gaps during recessions. We develop a model of endogenous business formation and exit with labor market frictions to explain these patterns. Monopolistically competitive firms rent labor from specialized recruiters and face exit risk from product obsolescence and stochastic fixed costs. Both business creation and vacancy posting require sunk costs, making them partially predetermined.
-		Three results follow. First, the business formation margin affects labor markets through love of variety and the endogenous exit rate. Second, because vacancy posting is a sunk cost, exiting firms simultaneously eliminate jobs and posted vacancies, so destruction shocks generate negative unemployment-vacancy comovement—shifting the Beveridge curve outward. Third, match separation shocks destroy only filled positions; firms optimally repost, generating positive unemployment-vacancy comovement—a counterfactual signature that helps identify the shocks. Both shock types produce second-round amplification through further exit and reduced product variety.
+		Three results follow. First, the business formation margin affects labor markets through love of variety and the endogenous exit rate. Second, because vacancy posting is a sunk cost, exiting firms simultaneously eliminate jobs and posted vacancies, so destruction shocks shift the Beveridge curve outward--even if vacancies can respond elastically. Third, match separation shocks destroy only filled positions; firms optimally repost, generating positive unemployment-vacancy comovement. Both technology and destruction shocks produce second-round amplification through further exit and reduced product variety.
 		We estimate by Bayesian methods targeting conditional moments—impulse responses to a Bartik-identified destruction shock—and unconditional labor market moments. Technology and destruction shocks account for the predominant share of labor market volatility.
 		\end{abstract}
 		%\begin{keyword}
@@ -125,7 +125,9 @@
 	quarters of total unemployment excess over twenty quarters from 
 	recession onset. The 2008--09 recession generated a smaller peak unemployment rate of 9.9 percent yet produced 76.6 percentage-point 
 	quarters of cumulative damage and a recovery stretching across six 
-	years. The standard Diamond--Mortensen--Pissarides (DMP) framework, 
+	years. 
+	
+	The standard Diamond--Mortensen--Pissarides (DMP) framework, 
 	in which all separations are identical and firms repost vacancies 
 	freely after any job loss, offers no structural account of why two 
 	recessions of comparable peak unemployment can generate such 
@@ -139,16 +141,18 @@
 		each received substantial attention in the literature; we focus on 
 		firm destruction and its interaction with endogenous business 
 		formation.} When a firm exits, its vacancies vanish permanently and 
-	must be rebuilt from scratch at sunk cost; recovery requires not 
+	must be rebuilt from scratch at sunk cost.  Recovery requires not 
 	merely a rebound in profitability but a costly reconstruction of the 
 	vacancy stock, generating a persistent outward shift of the 
 	Beveridge curve. Provided vacancy continuation is sufficiently cheap  relative to initial creation, surviving firms repost after separation, so the aggregate vacancy stock partially self-corrects even while unemployment remains elevated, producing a transitory displacement along the Beveridge curve rather than a persistent  outward shift.	
+	
+	
 	\citet{coles_2018} show that extending the DMP model with finitely 
 	elastic vacancy creation enables separation shocks to generate a 
 	downward-sloping Beveridge curve and, jointly with technology shocks, 
 	fit a broad set of labor market moments well. But CK assume a single 
 	separation shock, conflating firm destruction and match dissolution 
-	into one margin. \citet{gabrovski_2025} build on CK by distinguishing 
+	into one margin, and separations are entirely exogenous. \citet{gabrovski_2025} build on CK by distinguishing 
 	between destruction of a product line $\delta$ and breakdown of a 
 	match $s$, and show that under technology shocks alone, for 
 	empirically relevant values of $\delta$, the model generates mild 
@@ -170,7 +174,7 @@
 	producers can employ a mass of workers, avoiding any mechanical link 
 	between employment and the range of product lines: $u_t$, $v_{t-1}$, 
 	and $N_t$ are jointly determined in equilibrium without an accounting 
-	restriction. Second, we endogenize firm exit, so that $\delta_t$ 
+	restriction. Second, we endogenize firm exit, so that the aggregate destruction rate $\delta_t^e$ 
 	responds to aggregate productivity and separation conditions: a 
 	recession that reduces profitability or raises separation rates 
 	induces higher exit, further depleting the vacancy stock and product variety and further suppressing job creation. Together these 
@@ -178,7 +182,7 @@
 	incentives --- while a match-separation shock raises $u_t$ but does not directly affect $v_{t-1}$ or $N_t$. We argue quantitatively that this three-channel amplification helps account for the cross-recession gap in cumulative labor market damage, and we identify the key 
 	structural parameters using Bayesian simulated method of moments on unconditional moments, extended with Bayesian impulse response 
 	matching to an externally identified firm-destruction shock.
-	
+	\subsection{Motivating reduced form evidence}
 	% Empirical motivation
 	Three empirical facts motivate treating firm destruction as a 
 	distinct and quantitatively important margin. \textit{First, establishment closings and openings constitute a large and cyclically sensitive component of gross job flows}. Table~\ref{tab:jf_t2_ext_2024} extends Table 2 in \citet{jaimovich_2008} through 2024Q4 using Business Economics Database (BED) data. Columns 1--2 of Table~\ref{tab:jf_t2_ext_2024} report the average fraction of quarterly gross job gains (losses) accounted for by opening (closing) establishments. Columns 3 and 4 report the ratio of the cyclical standard deviation of entry/exit flows to that of total flows, using the Hamilton (2018) regression filter ($h=8, p=4$) applied to raw levels. Columns 5 and 6 repeat the calculation with the HP filter ($\lambda=1600$), which closely reproduces \citet{jaimovich_2008}'s benchmark of approximately 0.33 in the original 1992--2006 sample.
@@ -740,52 +744,7 @@
 	formally the asymmetric transmission of $\delta$ and $s$ shocks 
 	that motivates the paper's empirical strategy.
 	
-	\begin{table}[H]
-		\centering
-		\footnotesize
-		\setlength{\tabcolsep}{0.15cm}
-		\begin{tabular}{l|cccc}
-			\toprule
-			& \makecell{Finitely elastic\\ vacancies} 
-			& \makecell{Endogenous\\variety} 
-			& \makecell{Endogenous\\separation} 
-			& \makecell{Separate destruction\\margin} \\
-			\midrule
-			Bilbiie, Ghironi, and Melitz (2012) 
-			& NA & \checkmark & NA & NA \\
-			Coles and Kelishomi (2018) 
-			& \checkmark & $\times$ & $\times$ & $\times$ \\
-			Broer, Druedahl, Harmenberg, and \"{O}berg (2025) 
-			& \checkmark & $\times$ & \checkmark & $\times$ \\
-			Gabrovski and Silva (2025) 
-			& \checkmark & $\times$ & $\times$ & \checkmark \\
-			Shao and Silos (2013) 
-			& \checkmark & \checkmark & $\times$ & $\times$ \\
-			%Schaal and Taschereau-Dumouchel (2019) 
-			%& $\times$ & \checkmark & $\times$ & $\times$ \\
-			Christiano, Eichenbaum, and Trabandt (2016) 
-			& $\times$ & $\times$ & $\times$ & $\times$ \\
-			Colciago, Fasani, and Rossi (2021) 
-			& $\times$ & \checkmark & $\times$ & $\times$ \\
-			Cacciatore and Fiori (2016) 
-			& $\times$ & \checkmark & \checkmark & $\times$ \\
-		%	Schaal (2017) 
-		%	& $\times$ & $\times$ & \checkmark & $\times$ \\
-			\textbf{This paper} 
-			& \checkmark & \checkmark & \checkmark & \checkmark \\
-			\bottomrule
-		\end{tabular}
-		\caption{Comparison of model ingredients. 
-			\emph{Finitely elastic vacancies}: sunk vacancy creation 
-			costs generating a positive vacancy value. 
-			\emph{Endogenous variety}: equilibrium number of product 
-			lines responds to economic conditions. 
-			\emph{Endogenous separation}: firm exit driven by 
-			idiosyncratic profitability draws. 
-			\emph{Separate destruction margin}: exogenous product-line 
-			destruction distinguished from match separation.}
-		\label{tab:ingredients_comparison}
-	\end{table}
+	
 	
 	\subsection{Household problem}
 	
@@ -1360,11 +1319,14 @@ through the limit passage.
 		+\tau_t\left[(1-u_{t-1})
 		+f(\theta_{t-1})u_{t-1}\right]
 	\end{align}
-	together with $e_t=G(Q_t)$, 
-	$m_t=\beta(C_t/C_{t-1})^{-\sigma}$, 
-	$C_t=z_t(1-u_t)-X_t$, and stochastic processes 
-	\eqref{eq:ar1_z}--\eqref{eq:ar1_s}, with 
-	$\delta_{e,t}=\delta_{t-1}$ since endogenous exit 
+	together with $e_t=G(Q_t)$,
+	$m_t=\beta(C_t/C_{t-1})^{-\sigma}$,
+	\begin{equation}\label{eq:rc_limit}
+		C_t = z_t(1-u_t)-X_t,
+	\end{equation}
+	and stochastic processes
+	\eqref{eq:ar1_z}--\eqref{eq:ar1_s}, with
+	$\delta_{e,t}=\delta_{t-1}$ since endogenous exit
 	is absent by construction.
 \end{proposition}
 
@@ -1466,7 +1428,6 @@ This section establishes the asymmetry analytically, motivating the paper's focu
 \end{proposition}
 \noindent See \ref{app:proof_ds} for the proof.
 
-\begin{remark}
 Define $g(N,u)\equiv d^f(N,u)+f_e\rho(N)/\mu$ as the continuation
 profit threshold: a firm survives whenever its fixed-cost draw satisfies
 $\chi^c\leq g$.
@@ -1483,7 +1444,6 @@ the option-value rise ($g_N<0$, $\det J>1$): $\varepsilon>2$ is
 necessary (it makes the right-hand side positive), while the bound
 on $f_e\bar{N}$ ensures the option-value channel does not overturn
 it. Both hold at standard calibrations.
-\end{remark}
 
 From the vacancy law of motion~\eqref{eq:v_lom}, a positive $\delta_t$
 shock raises $\delta_{e,t+1}$ and thereby destroys a fraction
@@ -2977,6 +2937,53 @@ The second set consists of empirically identified impulse responses from the
 	\appendix
 
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	\section{Relation to literature} 
+	\begin{table}[H]
+		\centering
+		\footnotesize
+		\setlength{\tabcolsep}{0.15cm}
+		\begin{tabular}{l|cccc}
+			\toprule
+			& \makecell{Finitely elastic\\ vacancies} 
+			& \makecell{Endogenous\\variety} 
+			& \makecell{Endogenous\\separation} 
+			& \makecell{Separate destruction\\margin} \\
+			\midrule
+			Bilbiie, Ghironi, and Melitz (2012) 
+			& NA & \checkmark & NA & NA \\
+			Coles and Kelishomi (2018) 
+			& \checkmark & $\times$ & $\times$ & $\times$ \\
+			Broer, Druedahl, Harmenberg, and \"{O}berg (2025) 
+			& \checkmark & $\times$ & \checkmark & $\times$ \\
+			Gabrovski and Silva (2025) 
+			& \checkmark & $\times$ & $\times$ & \checkmark \\
+			Shao and Silos (2013) 
+			& \checkmark & \checkmark & $\times$ & $\times$ \\
+			%Schaal and Taschereau-Dumouchel (2019) 
+			%& $\times$ & \checkmark & $\times$ & $\times$ \\
+			Christiano, Eichenbaum, and Trabandt (2016) 
+			& $\times$ & $\times$ & $\times$ & $\times$ \\
+			Colciago, Fasani, and Rossi (2021) 
+			& $\times$ & \checkmark & $\times$ & $\times$ \\
+			Cacciatore and Fiori (2016) 
+			& $\times$ & \checkmark & \checkmark & $\times$ \\
+			%	Schaal (2017) 
+			%	& $\times$ & $\times$ & \checkmark & $\times$ \\
+			\textbf{This paper} 
+			& \checkmark & \checkmark & \checkmark & \checkmark \\
+			\bottomrule
+		\end{tabular}
+		\caption{Comparison of model ingredients. 
+			\emph{Finitely elastic vacancies}: sunk vacancy creation 
+			costs generating a positive vacancy value. 
+			\emph{Endogenous variety}: equilibrium number of product 
+			lines responds to economic conditions. 
+			\emph{Endogenous separation}: firm exit driven by 
+			idiosyncratic profitability draws. 
+			\emph{Separate destruction margin}: exogenous product-line 
+			destruction distinguished from match separation.}
+		\label{tab:ingredients_comparison}
+	\end{table}
 	\section{Data sources}\label{app:data_sources}
 
 	\begin{table}[H]
@@ -4110,14 +4117,17 @@ are unchanged.
 The resulting system
 \eqref{eq:jcc_ags}--\eqref{eq:u_ags} together
 with $e_t=G(Q_t)$, $m_t=\beta(C_t/C_{t-1})^{-\sigma}$,
-$C_t=z_t(1-u_t)-X_t$, and stochastic processes
-\eqref{eq:ar1_z}--\eqref{eq:ar1_s} is well-posed:
-it inherits a unique bounded equilibrium from
-standard DSGE existence conditions, since it is
-a special case of the baseline model with
-$N_t=1$ fixed, which satisfies the Blanchard-Kahn
-conditions on the labor market block established
-in the baseline analysis.
+\eqref{eq:rc_limit}, and stochastic processes
+\eqref{eq:ar1_z}--\eqref{eq:ar1_s} is well-posed.
+At $\sigma=0$ the stochastic discount factor is
+$m_t=\beta$, the system reduces to a scalar
+expectational equation for $Q_t$ with characteristic
+root $\beta(1-\bar\delta_e)<1$, and the unique
+bounded solution follows directly by ruling out
+explosive paths.
+For $\sigma>0$, local uniqueness is maintained as
+a standard regularity condition and verified
+numerically as part of the baseline model solution.
 
 \subsection*{Proof of Proposition~\ref{prop:bgm_nest}}
 
