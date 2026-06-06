@@ -23,43 +23,43 @@ Warning--empty journal in colciago_2021
 Done.
 You've used 25 entries,
             2327 wiz_defined-function locations,
-            676 strings with 7380 characters,
-and the built_in function-call counts, 12615 in all, are:
-= -- 1270
+            676 strings with 7423 characters,
+and the built_in function-call counts, 12490 in all, are:
+= -- 1256
 > -- 666
-< -- 2
+< -- 1
 + -- 218
 - -- 196
-* -- 1157
-:= -- 2370
+* -- 1148
+:= -- 2360
 add.period$ -- 26
 call.type$ -- 25
-change.case$ -- 149
+change.case$ -- 150
 chr.to.int$ -- 25
 cite$ -- 26
-duplicate$ -- 441
-empty$ -- 796
+duplicate$ -- 433
+empty$ -- 784
 format.name$ -- 220
-if$ -- 2447
+if$ -- 2414
 int.to.chr$ -- 1
 int.to.str$ -- 0
-missing$ -- 26
+missing$ -- 25
 newline$ -- 87
 num.names$ -- 150
-pop$ -- 114
+pop$ -- 113
 preamble$ -- 1
 purify$ -- 149
 quote$ -- 0
-skip$ -- 419
+skip$ -- 411
 stack$ -- 0
-substring$ -- 809
-swap$ -- 91
-text.length$ -- 2
+substring$ -- 790
+swap$ -- 85
+text.length$ -- 1
 text.prefix$ -- 0
 top$ -- 1
 type$ -- 272
 warning$ -- 1
-while$ -- 150
+while$ -- 147
 width$ -- 0
 write$ -- 308
 (There were 5 error messages)

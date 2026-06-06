@@ -1,5 +1,7 @@
 # CLAUDE.md — Empirical LP Project (Firm Entry/Exit DSGE)
 **Last updated:** June 4, 2026 · **Author:** Mario Silva
+**Publication objective** applied theory, quantitative macro paper publishable in top field journal like Journal of Monetary Economics/Americal Economic Journal:Macroeconomics and potentially in Journal of Political Economy.
+
 **Code style:** clean, succinct, interpretable by empirical macroeconomist. 
 
 **Draft writing style: **clean, succinct, applied macroeconomist/theorist. Avoid writing Appendix before appendix reference because that causes "Appendix to be printed twice.
@@ -36,6 +38,9 @@ Data/Bartek analysis/
 
 ---
 
+## Other key files:
+See Key Papers for most important/closely related papers.
+
 ## Quick-reference: most important facts
 
 **Baseline instrument:** δ Bartik (BED Deaths), v2 residualized, σ̂ = 17.4 pp, sample 2001Q1–2019Q4
@@ -53,8 +58,7 @@ Data/Bartek analysis/
 ## Priority tasks right now
 
 1. Draft Section 4.3 Results (δ→u, δ→v IRF narrative; severity placebo paragraph; joint LP robustness)
-2. ~~Draft Section 3.10~~ **DONE** — prop:ds_asymmetry (3-part) replaces 3.10
-3. Wild cluster bootstrap (`part5_wcrb.py`) — n=50 clusters at lower reliability bound
-4. GFC diagnostic for LD unemployment (`part7d_ld_gfc.py`)
+2. Wild cluster bootstrap (`part5_wcrb.py`) — n=50 clusters at lower reliability bound
+3. GFC diagnostic for LD unemployment (`part7d_ld_gfc.py`)
 
 See [`context/pending_tasks.md`](context/pending_tasks.md) for full list.

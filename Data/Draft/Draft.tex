@@ -170,11 +170,25 @@
 	lines $N_t$ becomes a third independent state variable: greater 
 	product diversity raises the return to posting vacancies, while 
 	greater employment raises the resources available for product-line 
-	formation. We segment the product and labor markets so that 
-	producers can employ a mass of workers, avoiding any mechanical link 
-	between employment and the range of product lines: $u_t$, $v_{t-1}$, 
-	and $N_t$ are jointly determined in equilibrium without an accounting 
-	restriction. Second, we endogenize firm exit, so that the aggregate destruction rate $\delta_t^e$ 
+	formation. The two-way feedback between employment and product variety
+	constitutes an aggregate demand externality in the sense of
+	\citet{schaal_2019}: each new product line raises the welfare-based
+	relative price $\rho(N_t)$, which enters recruiter compensation
+	$w^{int}_t = \rho(N_t)z_t/\mu$ directly and raises the return to
+	vacancy creation, while greater employment expands the resources
+	available for new product-line formation, closing the loop. We segment the product and
+	labor markets so that producers can employ a mass of workers, and thereby do not mechanically link employment and product lines one-for-one as \citet{schaal_2019}. Instead, $u_t$, $v_{t-1}$, and $N_t$ are jointly determined
+	in equilibrium without an accounting
+	restriction.\footnote{In \citet{schaal_2019}, each matched
+		worker--firm pair produces one variety of an intermediate good,
+		so employment and the range of goods fluctuate one-for-one. The
+		demand externality therefore operates simultaneously through both
+		matching and variety. In our setting, firms employ multiple
+		workers per product line, so employment adds output within
+		existing varieties while the variety externality operates
+		separately through firm entry, governed by the business-formation
+		Euler equation. This separation is what allows $u_t$,
+		$v_{t-1}$, and $N_t$ to be independent state variables.} Second, we endogenize firm exit, so that the aggregate destruction rate $\delta_t^e$ 
 	responds to aggregate productivity and separation conditions: a 
 	recession that reduces profitability or raises separation rates 
 	induces higher exit, further depleting the vacancy stock and product variety and further suppressing job creation. Together these 
@@ -3583,7 +3597,7 @@ precisely because it generates a sustained $\tilde\tau_t>0$ through
 $\tilde\delta_{e,t}>0$ and, via the variety channel~\eqref{eq:wint_ll}, a
 sustained $\tilde{f}_{t-1}<0$ through the depressed JCC.
 
-\paragraph{7.\ Vacancy LOM.}
+\paragraph{7.\ Vacancy LOM}
 From~\eqref{eq:v_lom}, splitting into predetermined and new-entrant
 components:
 \begin{align}\label{eq:v_ll}
@@ -4659,4 +4673,4 @@ $N_{RC}(\theta)$ exactly once.  Hence a unique equilibrium obtains.
 	%Now consider the effect of $\varepsilon$ under general-CES preferences.  In this case, there is no effect on the relative price.  The only impact of $\varepsilon$ is on markups $\mu=\varepsilon/(\varepsilon-1)$.  Lower markups increase
 		\bibliographystyle{econometrica}
 	\bibliography{references}
-	\end{document}         
+	\end{document}          
