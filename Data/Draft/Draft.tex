@@ -594,7 +594,7 @@
 	\emph{before} matching. The law of motion for active product lines 
 	is
 	\begin{align}
-		N_{t}=(1-\delta_{t-1})F(x_{t}^c)(N_{t-1}+N_{t-1}^e) 
+		N_{t}=(1-\delta_{t-1})F(\chi_{t}^c)(N_{t-1}+N_{t-1}^e) 
 		\label{eq:firm_law_motion}
 	\end{align}
 	where $N_{t-1}^e$ denotes last-period entrants. The entry lag 
@@ -673,8 +673,7 @@
 	This lag, combined with sunk vacancy creation costs, is the 
 	source of predetermination: vacancies and employment are 
 	partially predetermined with respect to current shocks.
-	Here is the complete timing figure code:
-	latex\tikzset{>=latex}
+\tikzset{>=latex}
 	\begin{figure}[H]
 		\centering
 		\resizebox{\textwidth}{!}{%
@@ -748,13 +747,12 @@
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	
 	This section derives equilibrium given the environment of 
-	Section~\ref{sec:environment}. Table~\ref{tab:ingredients_comparison} 
-	positions the paper relative to the closest antecedents across 
-	four model dimensions. Equilibrium comprises three blocks: a 
+	Section~\ref{sec:environment}. We then show that equilibrium comprises three blocks: a 
 	business formation block governing the evolution of product lines 
 	and firm values, a labor market block governing vacancy creation, 
 	matching, and wage determination, and stochastic processes for 
-	the three structural shocks. Section~\ref{sec:mechanism} derives 
+	the three structural shocks. Table~\ref{tab:ingredients_comparison} 
+	positions the paper relative to the closest antecedents across these dimensions. Section~\ref{sec:mechanism} derives 
 	formally the asymmetric transmission of $\delta$ and $s$ shocks 
 	that motivates the paper's empirical strategy.
 	
@@ -796,16 +794,16 @@
 	Euler equation, familiar from BGM and extended here to 
 	incorporate endogenous exit:
 	\begin{align}\label{eq:euler_firm}
-		\nu_t^f = \mathbb{E}_t m_{t+1}(1-\delta_t)F(x_{t+1}^c)
+		\nu_t^f = \mathbb{E}_t m_{t+1}(1-\delta_t)F(\chi_{t+1}^c)
 		(\nu_{t+1}^f+d_{t+1}^f)
 	\end{align}
 	Equation~\eqref{eq:euler_firm} equates the current firm value to 
 	the expected discounted sum of next-period firm value and 
 	dividends, adjusted for the stochastic discount factor 
-	$m_{t+1}$ and the survival probability $(1-\delta_t)F(x_{t+1}^c)$, 
+	$m_{t+1}$ and the survival probability $(1-\delta_t)F(\chi_{t+1}^c)$, 
 	which combines the probability of surviving exogenous destruction 
 	$(1-\delta_t)$ and the probability of drawing a continuation 
-	cost below the equilibrium cutoff $F(x_{t+1}^c)$.
+	cost below the equilibrium cutoff $\chi_{t+1}^c$, with probability $F(\chi_{t+1}^c)$.
 	
 	\subsection{Recruiters}
 	\label{sec:recruiters}
@@ -836,16 +834,16 @@
 	
 	The value of an unfilled vacancy for product line $j$ satisfies
 	\begin{align}\label{eq:value_recruiter_unmatched}
-		Q_{t}^j &= \mathbb{E}_t m_{t+1}(1-\delta_t)F(x_{t+1}^c)
+		Q_{t}^j &= \mathbb{E}_t m_{t+1}(1-\delta_t)F(\chi_{t+1}^c)
 		\bigl[(1-q(\theta_t))Q_{t+1}^j
 		+q(\theta_{t})J_{t+1}^j\bigr]-q(\theta_t)\kappa \notag \\
-		&= \mathbb{E}_t m_{t+1}(1-\delta_t)F(x_{t+1}^c)
+		&= \mathbb{E}_t m_{t+1}(1-\delta_t)F(\chi_{t+1}^c)
 		\bigl[Q_{t+1}^j+q(\theta_t)
 		(J_{t+1}^j-Q_{t+1}^j)\bigr]-q(\theta_t)\kappa
 	\end{align}
 	An unmatched recruiter survives to next period only if the 
 	product line survives both exogenous destruction and the 
-	continuation-cost draw, with probability $(1-\delta_t)F(x_{t+1}^c)$. 
+	continuation-cost draw, with probability $(1-\delta_t)F(\chi_{t+1}^c)$. 
 	In the next period, the vacancy fills with probability 
 	$q(\theta_t)$, generating value $J_{t+1}^j$, or remains unfilled 
 	with probability $1-q(\theta_t)$. The matching cost $\kappa$ 
@@ -858,13 +856,13 @@
 	holding a vacancy this period relative to next:
 	\begin{align}\label{eq:K}
 		K_t \equiv Q_t - 
-		\mathbb{E}_t m_{t+1}(1-\delta_t)F(x_{t+1}^c)Q_{t+1}
+		\mathbb{E}_t m_{t+1}(1-\delta_t)F(\chi_{t+1}^c)Q_{t+1}
 	\end{align}
-	Rearranging~\eqref{eq:value_recruiter_unmatched} places the 
+	Inserting \eqref{eq:K} into \eqref{eq:value_recruiter_unmatched} and rearranging places the 
 	average hiring cost on the left-hand side:
 	\begin{align}\label{eq:average_hiring_cost}
 		\kappa+\frac{K_t}{q(\theta_t)} = 
-		\mathbb{E}_t m_{t+1}(1-\delta_t)F(x_{t+1}^c)
+		\mathbb{E}_t m_{t+1}(1-\delta_t)F(\chi_{t+1}^c)
 		(J_{t+1}^j-Q_{t+1})
 	\end{align}
 	
@@ -903,7 +901,7 @@
 		\citet{mortensen_1994}.}
 	\begin{align}\label{eq:value_recruiter_matched}
 		J_{t} = w_t^{int}-w_t + \mathbb{E}_{t}m_{t+1}
-		(1-\delta_t)F(x_{t+1}^c)
+		(1-\delta_t)F(\chi_{t+1}^c)
 		\bigl(s_t Q_{t+1}+(1-s_t)J_{t+1}\bigr)
 	\end{align}
 	The recruiter receives $w_t^{int}$ from the retailer and 
@@ -924,7 +922,7 @@
 	job creation condition:
 	\begin{align}\label{eq:jcc}
 		\kappa+\frac{K_t}{q(\theta_t)} = 
-		\mathbb{E}_t m_{t+1}(1-\delta_{t})F(x_{t+1}^c)
+		\mathbb{E}_t m_{t+1}(1-\delta_{t})F(\chi_{t+1}^c)
 		\left(w_{t+1}^{int}-w_{t+1}-K_{t+1}
 		+(1-s_{t+1})\left(\kappa+\frac{K_{t+1}}{q(\theta_{t+1})}
 		\right)\right)
@@ -950,7 +948,7 @@
 	\end{align}
 	where $\phi$ is the worker's bargaining power.\footnote{The 
 		wage equation \eqref{eq:wage_eq} has the same general form as 
-		\citet{shao_2013}, their equations 21 and 22; their setting 
+		\citet{shao_2013}, their equations 21 and 22. Their setting 
 		includes capital affecting $w_t^{int}$ and writes the wage 
 		using the vacancy value $Q_t$ rather than the flow value 
 		$K_t$.} Recruiter compensation $w_t^{int}=\rho(N_t)z_t/
@@ -970,7 +968,7 @@
 	condition:
 	\begin{align}\label{eq:jcc_wage}
 		\kappa+\frac{K_t}{q(\theta_t)} = 
-		\mathbb{E}_t m_{t+1}(1-\delta_{t})F(x_{t+1}^c)
+		\mathbb{E}_t m_{t+1}(1-\delta_{t})F(\chi_{t+1}^c)
 		\Biggl[&(1-\phi)\left(w_{t+1}^{int}
 		-K_{t+1}-b\right) \notag \\
 		&-\phi\theta_{t+1}\left(K_{t+1}
@@ -984,19 +982,19 @@
 	
 	A retailer selling variety $j$ rents labor from recruiters at 
 	wage $w_t^{int,j}$. At the beginning of each period, before 
-	production, the firm draws a continuation cost $\chi\sim F_\chi$ 
-	in units of the consumption basket, where $F_\chi$ is a mixture 
+	production, the firm draws a continuation cost $\chi\sim F$ 
+	in units of the consumption basket, where $F$ is a mixture 
 	between a mass point at zero with probability $1-p_0$ and a 
 	bounded power law:
 	\begin{align}\label{eq:F_chi}
-		F_\chi(\chi) = (1-p_0) + p_0\left(\frac{\chi}{\chi_m}
+		F(\chi) = (1-p_0) + p_0\left(\frac{\chi}{\chi_m}
 		\right)^\psi, 
 		\quad \chi\in[0,\,\chi_m]
 	\end{align}
 	A firm with draw $\chi>\chi_t^c$ exits; one with $\chi\leq\chi_t^c$ 
 	pays the cost and continues. Define the survival probability:
 	\begin{align}\label{eq:Lambda}
-		\Lambda_t \equiv F_\chi(\chi_t^c) = (1-p_0) 
+		\Lambda_t \equiv F(\chi_t^c) = (1-p_0) 
 		+ p_0\left(\frac{\chi_t^c}{\chi_m}\right)^\psi
 	\end{align}
 	so that the endogenous exit rate is $1-\Lambda_t = 
@@ -1016,7 +1014,7 @@
 		\,\nu_{t+1}^{ef}\right\}
 	\end{align}
 	where $\nu_t^{ef}\equiv(1/\Lambda_t)\int_0^{\chi_t^c}
-	\nu_t^f(\tilde{\chi})\,dF_\chi(\tilde{\chi})$ is the expected 
+	\nu_t^f(\tilde{\chi})\,dF(\tilde{\chi})$ is the expected 
 	firm value conditional on survival, and $\rho^d(y_t)$ is the 
 	inverse demand curve from~\eqref{eq:demand}, equal in symmetric 
 	equilibrium to $\rho(N_t)$. The profit maximization problem 
@@ -1151,7 +1149,7 @@
 	\subsection{Definition of equilibrium}\label{sec:def_eq}
 	
 	\begin{definition}\label{def:equilibrium}
-		Given $\rho(N)$, $\mu(N)$, $F_\chi$, initial exogenous 
+		Given $\rho(N)$, $\mu(N)$, $F$, initial exogenous 
 		states $\{z_0,\delta_0,s_0\}$, and initial endogenous 
 		states $\{v_{-1},u_{-1},u_0,N_0\}$, an equilibrium is 
 		a sequence $\{N_t, C_t, \chi_t^c, Y_t^c, \theta_t, 
@@ -3884,7 +3882,7 @@ z_t/\mu$ depends on $N_t$ only through $\mu(N_t)$;
 but under general CES with $\zeta=0$, $\mu$ is a 
 constant independent of $N_t$, so $w_t^{int}=z_t/\mu$ 
 is exogenous to the labor market block. Under $p_0=0$, 
-$\Lambda_t = F_\chi(\chi_t^c) = 1-p_0 = 1$ for all 
+$\Lambda_t = F(\chi_t^c) = 1-p_0 = 1$ for all 
 $\chi_t^c$, so $\delta_{e,t}=1-(1-\delta_{t-1})\Lambda_t 
 = \delta_{t-1}$ depends only on the exogenous shock.
 
@@ -3931,7 +3929,7 @@ depends on $N_{t+1}$ through $w_{t+1}^{int}$,
 breaking separability.
 
 \emph{$p_0>0$}: With $p_0>0$, 
-$\Lambda_t=F_\chi(\chi_t^c)<1$ for $\chi_t^c<\chi_m$, 
+$\Lambda_t=F(\chi_t^c)<1$ for $\chi_t^c<\chi_m$, 
 and $\chi_t^c$ satisfies the cutoff condition 
 \eqref{eq:cutoff_eq} which depends on $Y_t^c$, 
 $N_t$, and $\mu(N_t)$ --- all determined in the 
@@ -4145,7 +4143,7 @@ numerically as part of the baseline model solution.
 
 \subsection*{Proof of Proposition~\ref{prop:bgm_nest}}
 
-Set $p_0=0$. Then $F_\chi(0)=0$, so no firm pays a
+Set $p_0=0$. Then $F(0)=0$, so no firm pays a
 continuation cost: $X_t^c=0$, $\Lambda_t=1$, and
 $\delta_{e,t}=\delta_{t-1}$ for all $t$.
 
@@ -4673,4 +4671,4 @@ $N_{RC}(\theta)$ exactly once.  Hence a unique equilibrium obtains.
 	%Now consider the effect of $\varepsilon$ under general-CES preferences.  In this case, there is no effect on the relative price.  The only impact of $\varepsilon$ is on markups $\mu=\varepsilon/(\varepsilon-1)$.  Lower markups increase
 		\bibliographystyle{econometrica}
 	\bibliography{references}
-	\end{document}          
+	\end{document}                                                                                                                            
