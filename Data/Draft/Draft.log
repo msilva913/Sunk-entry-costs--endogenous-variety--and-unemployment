@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.2) (preloaded format=pdflatex 2026.5.15)  7 JUN 2026 15:34
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.2) (preloaded format=pdflatex 2026.5.15)  7 JUN 2026 16:03
 entering extended mode
  \write18 enabled.
  %&-line parsing enabled.
@@ -1157,12 +1157,7 @@ _uv_baseline.png  used on input line 2133.
 (pdftex.def)             Requested size: 447.35611pt x 186.57452pt.
  [37 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and
 -unemployment/Data/Bartek analysis/data/results/lp_irf_delta_uv_baseline.png>] 
-[38] [39] [40]
-
-Package natbib Warning: Citation `chernozhukov_2003' on page 41 undefined on in
-put line 2322.
-
-[41]
+[38] [39] [40] [41]
 
 LaTeX Warning: Reference `app:weighting_robustness' on page 42 undefined on inp
 ut line 2375.
@@ -1173,7 +1168,7 @@ LaTeX Warning: `!h' float specifier changed to `!ht'.
 
 [43] [44] [45] [46] [47]
 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unem
-ployment/Data/Programs baseline/mechanism_A_z_shock.pdf, id=856, 600.87082pt x 
+ployment/Data/Programs baseline/mechanism_A_z_shock.pdf, id=859, 600.87082pt x 
 642.22638pt>
 File: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and
 -unemployment/Data/Programs baseline/mechanism_A_z_shock.pdf Graphic file (type
@@ -1187,7 +1182,7 @@ genous-variety--and-unemployment/Data/Programs baseline/mechanism_A_z_shock.pdf
  [48] [49 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety
 --and-unemployment/Data/Programs baseline/mechanism_A_z_shock.pdf>]
 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unem
-ployment/Data/Programs baseline/mechanism_A_delta_shock.pdf, id=942, 598.244pt 
+ployment/Data/Programs baseline/mechanism_A_delta_shock.pdf, id=945, 598.244pt 
 x 642.22833pt>
 File: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and
 -unemployment/Data/Programs baseline/mechanism_A_delta_shock.pdf Graphic file (
@@ -1200,7 +1195,7 @@ genous-variety--and-unemployment/Data/Programs baseline/mechanism_A_delta_shock
 (pdftex.def)             Requested size: 398.7348pt x 428.06624pt.
  [50]
 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unem
-ployment/Data/Programs baseline/mechanism_B_z_shock.pdf, id=955, 598.244pt x 64
+ployment/Data/Programs baseline/mechanism_B_z_shock.pdf, id=958, 598.244pt x 64
 2.22939pt>
 File: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and
 -unemployment/Data/Programs baseline/mechanism_B_z_shock.pdf Graphic file (type
@@ -1216,7 +1211,7 @@ genous-variety--and-unemployment/Data/Programs baseline/mechanism_B_z_shock.pdf
 s/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unemployment
 /Data/Programs baseline/mechanism_B_z_shock.pdf>]
 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unem
-ployment/Data/Programs baseline/mechanism_B_delta_shock.pdf, id=1049, 602.4939p
+ployment/Data/Programs baseline/mechanism_B_delta_shock.pdf, id=1052, 602.4939p
 t x 642.23134pt>
 File: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and
 -unemployment/Data/Programs baseline/mechanism_B_delta_shock.pdf Graphic file (
@@ -1231,7 +1226,7 @@ genous-variety--and-unemployment/Data/Programs baseline/mechanism_B_delta_shock
 [54 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-
 unemployment/Data/Programs baseline/mechanism_B_delta_shock.pdf>]
 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unem
-ployment/Data/Programs baseline/mechanism_C_z_shock.pdf, id=1102, 598.244pt x 6
+ployment/Data/Programs baseline/mechanism_C_z_shock.pdf, id=1105, 598.244pt x 6
 42.22736pt>
 File: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and
 -unemployment/Data/Programs baseline/mechanism_C_z_shock.pdf Graphic file (type
@@ -1245,7 +1240,7 @@ genous-variety--and-unemployment/Data/Programs baseline/mechanism_C_z_shock.pdf
  [55] [56 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety
 --and-unemployment/Data/Programs baseline/mechanism_C_z_shock.pdf>]
 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unem
-ployment/Data/Programs baseline/mechanism_C_delta_shock.pdf, id=1174, 602.4939p
+ployment/Data/Programs baseline/mechanism_C_delta_shock.pdf, id=1177, 602.4939p
 t x 642.23036pt>
 File: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and
 -unemployment/Data/Programs baseline/mechanism_C_delta_shock.pdf Graphic file (
@@ -1288,7 +1283,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 3023--3023
  []
 
 [59] [60]
-<bed_deaths_by_supersector.png, id=1251, 931.8012pt x 369.5406pt>
+<bed_deaths_by_supersector.png, id=1254, 931.8012pt x 369.5406pt>
 File: bed_deaths_by_supersector.png Graphic file (type png)
 <use bed_deaths_by_supersector.png>
 Package pdftex.def Info: bed_deaths_by_supersector.png  used on input line 3058
@@ -1297,7 +1292,7 @@ Package pdftex.def Info: bed_deaths_by_supersector.png  used on input line 3058
  [61] [62 <./bed_deaths_by_supersector.png>]
 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unem
 ployment/Data/Bartek analysis/data/results/lp_joint_delta_ld_vacancy.png, id=12
-66, 1003.1076pt x 427.3566pt>
+69, 1003.1076pt x 427.3566pt>
 File: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and
 -unemployment/Data/Bartek analysis/data/results/lp_joint_delta_ld_vacancy.png G
 raphic file (type png)
@@ -1361,7 +1356,7 @@ Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 (hyperref)                removing `math shift' on input line 3736.
 
 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unem
-ployment/Data/Programs baseline/mechanism_D_z_shock.pdf, id=1534, 602.4939pt x 
+ployment/Data/Programs baseline/mechanism_D_z_shock.pdf, id=1537, 602.4939pt x 
 642.22736pt>
 File: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and
 -unemployment/Data/Programs baseline/mechanism_D_z_shock.pdf Graphic file (type
@@ -1374,7 +1369,7 @@ genous-variety--and-unemployment/Data/Programs baseline/mechanism_D_z_shock.pdf
 (pdftex.def)             Requested size: 398.7348pt x 425.04732pt.
 [77]
 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unem
-ployment/Data/Programs baseline/mechanism_D_delta_shock.pdf, id=1546, 602.4939p
+ployment/Data/Programs baseline/mechanism_D_delta_shock.pdf, id=1549, 602.4939p
 t x 642.23134pt>
 File: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and
 -unemployment/Data/Programs baseline/mechanism_D_delta_shock.pdf Graphic file (
@@ -1395,11 +1390,7 @@ n by the ex-oge-nous pro-cesses $\OMS/cmsy/m/n/12 f\OML/cmm/m/it/12 z[]; ^^N[];
  u[]\OMS/cmsy/m/n/12 g$\T1/cmr/m/n/12 ,
  []
 
-[82] [83] [84] [85] [86] [87] [88] [89] (Draft.bbl [90] [91])
-
-Package natbib Warning: There were undefined citations.
-
-[92] (Draft.aux)
+[82] [83] [84] [85] [86] [87] [88] [89] (Draft.bbl [90] [91]) [92] (Draft.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-03-20>
@@ -1415,10 +1406,10 @@ Package rerunfilecheck Info: File `Draft.out' has not changed.
 (rerunfilecheck)             Checksum: C6688D61E8527D48754E6C1CEC10E2ED;9218.
  ) 
 Here is how much of TeX's memory you used:
- 27920 strings out of 467691
- 542332 string characters out of 5414987
- 951253 words of memory out of 5000000
- 56154 multiletter control sequences out of 15000+600000
+ 27924 strings out of 467691
+ 542429 string characters out of 5414987
+ 951315 words of memory out of 5000000
+ 56157 multiletter control sequences out of 15000+600000
  654746 words of font info for 109 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  84i,19n,104p,2326b,851s stack positions out of 10000i,1000n,20000p,200000b,200000s
@@ -1464,9 +1455,9 @@ msilv/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy6.pfb><C
 amsfonts/cm/cmti12.pfb><C:/Users/msilv/AppData/Local/Programs/MiKTeX/fonts/type
 1/public/amsfonts/symbols/msam10.pfb><C:/Users/msilv/AppData/Local/Programs/MiK
 TeX/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on Draft.pdf (92 pages, 2366245 bytes).
+Output written on Draft.pdf (92 pages, 2367269 bytes).
 PDF statistics:
- 2609 PDF objects out of 2984 (max. 8388607)
- 338 named destinations out of 1000 (max. 500000)
+ 2613 PDF objects out of 2984 (max. 8388607)
+ 339 named destinations out of 1000 (max. 500000)
  488 words of extra memory for PDF output out of 10000 (max. 10000000)
 

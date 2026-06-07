@@ -10,7 +10,6 @@ I was expecting a `,' or a `}'---line 16 of file references.bib
  :         year={2020}
 (Error may have been on previous line)
 I'm skipping whatever remains of this entry
-Warning--I didn't find a database entry for "chernozhukov_2003"
 Name 2 in "Bilbiie, Florin O. and Ghironi, Fabio, and Melitz, Marc J." has a comma at the end for entry bilbiie_2012
 while executing---line 1193 of file econometrica.bst
 Name 2 in "Bilbiie, Florin O. and Ghironi, Fabio, and Melitz, Marc J." has a comma at the end for entry bilbiie_2012
@@ -21,45 +20,45 @@ Name 2 in "Bilbiie, Florin O. and Ghironi, Fabio, and Melitz, Marc J." has a com
 while executing---line 1283 of file econometrica.bst
 Warning--empty journal in colciago_2021
 Done.
-You've used 25 entries,
+You've used 26 entries,
             2327 wiz_defined-function locations,
-            676 strings with 7423 characters,
-and the built_in function-call counts, 12490 in all, are:
-= -- 1256
-> -- 666
+            680 strings with 7510 characters,
+and the built_in function-call counts, 13033 in all, are:
+= -- 1310
+> -- 696
 < -- 1
-+ -- 218
-- -- 196
-* -- 1148
-:= -- 2360
-add.period$ -- 26
-call.type$ -- 25
-change.case$ -- 150
-chr.to.int$ -- 25
-cite$ -- 26
-duplicate$ -- 433
-empty$ -- 784
-format.name$ -- 220
-if$ -- 2414
++ -- 230
+- -- 204
+* -- 1200
+:= -- 2463
+add.period$ -- 27
+call.type$ -- 26
+change.case$ -- 156
+chr.to.int$ -- 26
+cite$ -- 27
+duplicate$ -- 450
+empty$ -- 817
+format.name$ -- 232
+if$ -- 2518
 int.to.chr$ -- 1
 int.to.str$ -- 0
-missing$ -- 25
-newline$ -- 87
-num.names$ -- 150
-pop$ -- 113
+missing$ -- 26
+newline$ -- 90
+num.names$ -- 156
+pop$ -- 117
 preamble$ -- 1
-purify$ -- 149
+purify$ -- 155
 quote$ -- 0
-skip$ -- 411
+skip$ -- 428
 stack$ -- 0
-substring$ -- 790
-swap$ -- 85
+substring$ -- 828
+swap$ -- 88
 text.length$ -- 1
 text.prefix$ -- 0
 top$ -- 1
-type$ -- 272
+type$ -- 283
 warning$ -- 1
-while$ -- 147
+while$ -- 154
 width$ -- 0
-write$ -- 308
+write$ -- 320
 (There were 5 error messages)
