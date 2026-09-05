@@ -1,5 +1,55 @@
 # Pending Tasks
-**Last updated:** June 5, 2026
+**Last updated:** September 5, 2026 (status re-verified against repo after 3-month pause;
+previous update June 5, 2026)
+
+## ⛔ Blockers for Section 5 (do these first)
+
+**B1. Resolve the $\delta_e$ calibration contradiction.** ⛔ HIGH
+The paper's stated departure from Coles-Kelishomi is that $\delta$ is set from BED Deaths
+rather than from the aggregate separation rate — but the calibration does not implement it.
+- Draft §5.1 says $\bar\delta \approx 1.1\%$/quarter (BED Deaths) → **annual 4.25%**,
+  monthly 0.361%, $\delta_e/\tau = 0.116$.
+- Draft §5.2 external block + `tab:calib_targets` say $\delta_e^{ann}=7.54\%$, monthly
+  0.651%, from Jaimovich-Siu 21% × $\tau=3.1\%$ → $\delta_e/\tau = 0.210$.
+- `Programs baseline/steady_state.jl:566` has `dest_ann = 0.0754` with the comment
+  "[BED Deaths, emp-weighted]" — the value is the Jaimovich number, the label is BED.
+This is a 1.8× difference in the steady-state level of the paper's central shock. It moves
+the entry-cushion coefficient $\bar\delta_e/(r+\bar\delta_e)$ in Proposition 5 Part 3, the
+$\delta_e/\tau\approx0.21$ quantitative claim at `Draft.tex:1481`, and Comparison D.
+Note the direction: the BED value (0.116) makes Part 3's sufficient condition *easier* to
+satisfy, so fixing this strengthens the proposition. Decide one source, then propagate to
+§5.1, §5.2, `tab:calib_targets`, `steady_state.jl`, and every mechanism figure.
+
+**B2. Wild cluster bootstrap must return the full $\Omega_\beta$.** ⛔ HIGH — `part5_wcrb.py` ❌
+`part5_lp.py` runs each horizon as a separate regression and saves only a scalar clustered
+`se` per $h$. `eq:ql_irf` needs the $42\times42$ covariance across $h=0..20$ **and** across
+the two outcomes. Bootstrap SEs alone are not sufficient. See
+[`estimation_design.md`](estimation_design.md).
+
+**B3. Estimation code does not exist.** ⛔ HIGH
+`run_solution_core.jl:112` still reads `estimate = []  # filled in when SMM is wired up`;
+`priors = (;)`; `run_solution.jl` carries placeholder $\rho_s=0.90$, $\sigma_s=0.010$.
+Missing: $\Omega_m$ (block bootstrap), a refreshed $m(\theta)$ simulator at $\lambda=1{,}600$
+covering $\{u,v,s,f,\delta,N^e,z\}$, a $\beta(\theta)$ extractor matching the LP object, and
+a sampler. The repo's `posterior_mode.mat` is from the **old Matlab/Dynare model** — do not
+reuse. Also unresolved: the scale/units mapping between $\hat\beta$ (pp per 1-SD of a Bartik
+instrument, time-FE-absorbed) and $\beta(\theta)$ (aggregate model IRF).
+
+**B4. Draft cross-references are broken.** ⚠️ LOW effort, do opportunistically
+From `Draft.log`: undefined `sec:conclusion`, `app:robustness`, `app:weighting_robustness`,
+`eq:labor_C_N`; multiply-defined `eq:profit_share`. `app:weighting_robustness` is promised
+by the §5.2 weighting discussion and needs to be written, not just relabelled.
+
+## Status corrections found on re-verification (Sept 5, 2026)
+
+- Section 4.3 **severity-placebo paragraph is written** (`Draft.tex:2176-2196`), contrary to
+  the June entry below. Still missing from 4.3: the $\delta$-LD correlation paragraph and an
+  in-text joint-LP sentence (currently only a bare pointer to `app:diagnostics`).
+- `part7b_sloos.py` **exists and has been run**, but its outputs
+  (`lp_irf_delta_sloos_*.csv`, `instr_sd = 11.16`) predate the May 14 switch to BED Deaths +
+  v2 and are **stale**. Same for `lp_irf_delta_gfc.csv`. Both need a re-run against the
+  current instrument ($\hat\sigma = 17.4$ pp) before being cited.
+- `part7d_ld_gfc.py` does not exist; the GFC diagnostic has never been run as specified.
 
 ## Model Mechanism Tasks
 
@@ -70,18 +120,23 @@ See `Inspecting_mechanism_setup.md` for full design rationale. All three compari
 
 ## Empirical Code Tasks (priority order)
 
-1. **Wild cluster bootstrap** — `part5_wcrb.py` ❌
+1. **Wild cluster bootstrap** — `part5_wcrb.py` ❌ — **see blocker B2 above**
    - n=50 state clusters is at the lower bound of asymptotic SE reliability
    - Use `wildboottest` or `linearmodels` bootstrap; supplement all main LP tables
+   - NOT just SEs: must persist the full cross-horizon, cross-outcome covariance
+     (42×42 for h=0..20 × {u,v}). That matrix is Ω_β in `eq:ql_irf` and nothing
+     in the pipeline currently produces it.
 
 2. **GFC diagnostic for LD unemployment** — `part7d_ld_gfc.py` ❌
    - LD unemployment IRF rises monotonically through h=20, inconsistent with ρ_LD≈0.3
    - Apply GFC_{t+h} outcome-quarter control dummy to test whether GFC drives the pattern
 
-3. **SLOOS C&I interaction** — `part7b_sloos.py` ❌
+3. **SLOOS C&I interaction** — `part7b_sloos.py` ⚠️ WRITTEN, RUN, but OUTPUT STALE
    - Replace NFCI_risk with Senior Loan Officer Opinion Survey C&I net tightening (FRED)
    - Tests whether NFCI result reflects credit supply vs. recession severity
-   - Directly relevant to industry-credit-conditions hypothesis for r(δ,LD)=0.423
+   - Directly relevant to industry-credit-conditions hypothesis for r(δ,LD)=0.334
+   - Existing `lp_irf_delta_sloos_*.csv` were produced 2026-04-09 with instr_sd=11.16,
+     i.e. the pre-BED-Deaths instrument. Re-run before citing.
 
 4. **Pre-GFC sample restriction** ❌
    - Add `max_qt="2007Q4"` option to `run_lp()` in `part5_lp.py`
@@ -99,16 +154,22 @@ See `Inspecting_mechanism_setup.md` for full design rationale. All three compari
 
 1. ~~**Section 3.10 — δ vs. s asymmetry mechanism**~~ ✅ DONE — superseded by `prop:ds_asymmetry` (Proposition 5, complete June 5, 2026). Formal 3-part proposition + lem:vpre + full proof in app:proof_ds. See findings.md for full structure.
 
-2. **Section 4.3 — Results** (partially drafted) ⚠️
-   - δ→u IRF numbers confirmed: peak +1.50 pp at h=20, significant from h=0
-   - δ→v IRF numbers confirmed: trough −0.44 pp at h=14, significant from h=3
-   - Needs: severity placebo paragraph, δ-LD correlation paragraph, joint LP robustness
+2. **Section 4.3 — Results** (mostly drafted) ⚠️
+   - Numbers in the draft are the BED-Deaths baseline: δ→u plateau +1.71 pp at h=17–20
+     (sig. from h=0); δ→v trough −0.58 pp at h=18 (sig. from h=2). The +1.50/−0.44
+     figures listed here in June came from the superseded closings×π instrument.
+   - ✅ severity placebo paragraph is written (`Draft.tex:2176–2196`)
+   - Still needs: δ–LD correlation paragraph; an in-text joint-LP sentence (the section
+     currently ends with a bare, malformed `\ref{app:diagnostics}`)
 
-3. **Section 5 — Quantitative analysis** ❌
-   - Update calibration section to four-stage sequential approach
-   - BSMM: unconditional moments (Shimer 2005/2012 + BED exit rate)
-   - Bayesian IRF matching: δ→u and δ→v from Bartik LP
-   - Two-model counterfactual: baseline vs. AGS
+3. **Section 5 — Quantitative analysis** ⚠️ design written, results absent
+   - ✅ Calibration written as the four-stage sequential approach (`tab:calib_targets`)
+   - ✅ BSMM design + two-block weighting written (`eq:posterior`) — see
+     [`estimation_design.md`](estimation_design.md)
+   - ❌ §5.4 `sec:posterior` is an empty stub (three TODO comments only)
+   - ❌ Blocked on B1 (which δ_e?), B2 (Ω_β), B3 (no estimation code exists)
+   - ❌ `app:weighting_robustness` promised in §5.2 but never written
+   - ❌ Two-model counterfactual (baseline vs. AGS) — not started
 
 4. **Section 6 — Conclusion** ❌
 

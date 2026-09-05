@@ -1,5 +1,6 @@
 # Key Empirical Findings
-**Last updated:** June 5, 2026
+**Last updated:** September 5, 2026 — empirical results below are unchanged since
+June 5; see the re-verification note at the end of the file for what has drifted.
 
 ## Shock Persistence (part6, 2001Q1+ window)
 
@@ -181,3 +182,35 @@ Three-block proof mirroring prop:ags style:
 5. **Closing remark**: isomorphism holds for any realization of {1-u_t, X_t}, not that equilibrium distributions coincide
 
 Key: isomorphism at GDP level (eq:gdp), not gross output (eq:rc). X_t nets out as intermediate input on both sides.
+
+---
+
+## Re-verification note — September 5, 2026
+
+Repo has been untouched since commit `a2be612` (June 7, 2026). Checked the draft-status
+claims above against `Draft.tex` and the code. Corrections:
+
+**Draft status has advanced past what §"Paper Draft Status" records.**
+- §4.3 Results: severity-placebo paragraph **is written** (`Draft.tex:2176–2196`), with the
+  current BED-Deaths numbers (+1.71 pp / −0.58 pp). Outstanding: δ–LD correlation paragraph,
+  an in-text joint-LP sentence, and a malformed `\ref` at the end of the section.
+- §5.2: the estimation framework is fully written, including the resolution of the
+  conditional/unconditional moment question (`eq:ql_irf`, `eq:posterior`, degrees-of-freedom
+  normalization, filter-asymmetry argument). Extracted to
+  [`estimation_design.md`](estimation_design.md) so it is not buried in prose.
+- §5.4 `sec:posterior` is still three TODO comments. §6 Conclusion still empty.
+- June 6–7 commits were notation cleanup ($F_\chi \to F$, $x^c \to \chi^c$), a
+  Schaal-Dumouchel aggregate-demand-externality paragraph in the intro, and repositioning of
+  `tab:ingredients_comparison`. No new results.
+
+**Broken references in `Draft.log`:** undefined `sec:conclusion`, `app:robustness`,
+`app:weighting_robustness`, `eq:labor_C_N`; multiply-defined `eq:profit_share`.
+
+**Two results cited above are produced by stale runs.** `lp_irf_delta_sloos_*.csv`
+(2026-04-09) and `lp_irf_delta_gfc.csv` (2026-05-12) both predate the May 14 switch to BED
+Deaths + v2 residualization; their `instr_sd` is 11.16, not 17.4. Re-run before citing.
+
+**Calibration contradiction (blocker B1).** The δ̄ used in the model code
+(`dest_ann = 0.0754`, i.e. δ_e/τ = 0.210, Jaimovich-Siu) is not the BED Deaths rate the
+paper claims to use (4.25%/yr, δ_e/τ = 0.116). The "δ_e/τ ≈ 0.21" claims in the
+Proposition 5 discussion (`Draft.tex:1481`) and Comparison D rest on the former.

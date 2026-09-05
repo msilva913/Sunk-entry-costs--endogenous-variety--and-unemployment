@@ -1,5 +1,5 @@
 # Data Sources and File Index
-**Last updated:** May 20, 2026
+**Last updated:** September 5, 2026
 
 ## Data Sources
 
@@ -42,7 +42,8 @@ y_{s,t+h} - y_{s,t-1} = α_s + α_t + β_h · B̃^δ_{s,t} + γ₁ · y_{s,t-1} 
 - `y = u_{s,t}`: unemployment rate (LAUS, pp) — eq:lp in draft
 - `y = v_{s,t} = 100 × V/L`: vacancy rate (JOLTS/LAUS, pp) — **NOT log vacancy**
 - Both outcomes in percentage points; β_h is pp change per 1-SD shock
-- β_h scaled by `instr_sd = 14.0 pp` (cross-sectional SD of B̃^δ)
+- β_h scaled by `instr_sd = 17.4 pp` (SD of B̃^δ; the 14.0 value was the pre-May-14
+  closings×π instrument and is stale wherever it still appears)
 - Sample: 2001Q1–2019Q4; state+time FE; SE clustered at state (n=50)
 - h = 0, 1, …, 20 quarters
 
@@ -100,9 +101,17 @@ NFCI interaction variant:
 
 | Parameter | Value | Source |
 |-----------|-------|--------|
-| δ̄ | 0.940%/qtr (0.313%/month) | BDS employment-weighted exit rate |
+| δ̄ | **1.079%/qtr (0.361%/month; 4.25%/yr)** | **BED Deaths**, employment-weighted (supersedes the 0.940%/qtr BDS figure) |
 | τ̄ | 9.34%/qtr (3.11%/month) | Shimer (2012) total separation rate |
-| δ/τ | 10.1% | Ratio above |
+| δ/τ | **11.6%** | Ratio above |
+
+> ⚠️ **Unresolved contradiction (blocker B1).** `steady_state.jl:566` sets
+> `dest_ann = 0.0754` — labelled "[BED Deaths, emp-weighted]" but actually the
+> Jaimovich-Siu 21% × τ figure, i.e. δ_e = 0.651%/month, 1.94%/qtr, δ_e/τ = 0.210.
+> The draft carries both numbers: §5.1 cites BED Deaths ≈1.1%/qtr while §5.2's
+> external block and `tab:calib_targets` use 7.54%/yr. Pick one before estimating;
+> the choice moves every mechanism IRF and the δ̄_e/(r+δ̄_e) entry-cushion coefficient
+> in Proposition 5 Part 3. See [`pending_tasks.md`](pending_tasks.md) §B1.
 | ρ_δ | 0.617 (raw) / 0.647 (resid) | part6, 2001Q1+ window, Bartik agg |
 | ρ_LD | 0.489 (raw) / 0.305 (resid) | part6, 2001Q1+ window |
 | corr(η^δ, η^LD) | +0.397 (raw) / +0.488 (resid) | part6 |
