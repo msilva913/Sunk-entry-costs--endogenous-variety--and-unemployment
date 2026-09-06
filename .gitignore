@@ -1,2 +1,6 @@
 Main.asv
 Data/Draft_21Feb2026.pdf
+
+# Editor autosave snapshots of the draft (a batch of these was committed by
+# accident once and had to be removed in e9e8dd2)
+*.tex.tmp.*

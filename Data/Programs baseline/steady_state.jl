@@ -42,7 +42,25 @@ compute_separation_rate(δ_e, s) = 1 - (1 - δ_e) * (1 - s)
 
 """
     compute_unemployment(τ, f, δ_e)
-Steady-state unemployment from flow balance.
+
+Steady-state unemployment from the flow balance implied by the unemployment law
+of motion (draft eq:u_ss; model equation f[23]):
+
+    u' = [1 - (1-δ_e)f]u + τ(1-u)   ⟹   (1-δ_e)·f·u = τ(1-u)
+    ⟹  u = τ / (τ + (1-δ_e)f)
+
+**Convention A (pre-matching).** Matches formed at t reach t+1 only if the firm
+survives, hence (1-δ_e) on the outflow from unemployment; the separation rate τ
+applies to the *inherited* stock 1-u only, so a match cannot dissolve before it
+has produced. The vacancy LOM reposts on the same base, 1-u, and the pair
+conserves job positions exactly:
+
+    v_pre' + L' = (1-δ_e)(v + L)
+
+This is the Gabrovski-Silva (JEDC) convention, shared with the old Dynare
+`model.mod`. It is retained deliberately so the model nests GS — see
+`Notes/LOM_timing_consistency.md` for the full derivation, the alternative
+post-matching convention, and why the two must not be mixed.
 """
 compute_unemployment(τ, f, δ_e) = τ / (τ + (1 - δ_e) * f)
 
@@ -182,6 +200,7 @@ function L_fun(θ, δ_e, para)
     @unpack s, A, η_L = para
     f = jf(θ, A, η_L)
     τ = compute_separation_rate(δ_e, s)
+    # L = 1 - u, with u = tau/(tau+(1-delta_e)f). Convention A; see compute_unemployment.
     return (1 - δ_e) * f / (τ + (1 - δ_e) * f)
 end
 
@@ -193,6 +212,16 @@ function e_fun(θ, δ_e, para)
     @unpack s, A, η_L = para
     f = jf(θ, A, η_L)
     τ = compute_separation_rate(δ_e, s)
+    u = compute_unemployment(τ, f, δ_e)
+
+    # e = δ_e*(v + L) = δ_e*(θu + L)  — draft eq:e_ss.
+    #
+    # Derivation from the SS vacancy LOM under Convention A, where the reposting
+    # base (1-u) equals the base the u LOM applies τ to, and (1-δ_e)qv = τ(1-u):
+    #     e = δ_e·v + (1-δ_e)qv - (1-δ_e)s(1-u)
+    #       = δ_e·v + (1-u)[τ - (1-δ_e)s]
+    #       = δ_e·v + (1-u)·δ_e            [τ - (1-δ_e)s = δ_e]
+    #       = δ_e(v + 1 - u).
     return δ_e * (θ * τ + (1 - δ_e) * f) / (τ + (1 - δ_e) * f)
 end
 
@@ -345,7 +374,16 @@ function steady_state(para; init=0.51)
         return [r1, r2], vars
     end
 
-    sol = LeastSquaresOptim.optimize(x -> loss(x)[1], [log(init), log(δ / 2.0)], Dogleg())
+    # Initial guess. The x_c seed was previously log(δ/2) — of order 1e-3, while
+    # the true cutoff is O(10), a ~9-unit gap in log space. Dogleg tolerated that
+    # for some target sets and walked into a spurious θ→0 corner (q capped at 1,
+    # v_pret < 0) for others; Comparison A's p_0=0 arm was one of the latter.
+    # Seed instead from the exit condition x_c = Y_c/(εN) + ρ f_e/μ, whose second
+    # term ν_f = ρ f_e/μ dominates and is known analytically at N = ρ = 1.
+    # Exposed September 5, 2026: before SS_numeric became a mapper over this
+    # function, the mechanism runners never called it, so the fragility was latent.
+    x_c_seed = max(f_e / μ, 1e-6)
+    sol = LeastSquaresOptim.optimize(x -> loss(x)[1], [log(init), log(x_c_seed)], Dogleg())
     sol.converged || @warn "Solver did not fully converge (ssr=$(sol.ssr))"
     println("Steady-state solver: converged=$(sol.converged) in $(sol.iterations) iterations")
 
@@ -641,7 +679,7 @@ function calibrate_shares(targets)
     q_corr = q / (1 - δ_e)
     
     θ  = f_corr / q_corr
-    u  = τ / (τ + (1 - δ_e) * f_corr)
+    u  = compute_unemployment(τ, f_corr, δ_e)
     v  = θ * u
     L  = 1 - u
     A  = f_corr / θ^(1 - η_L)
@@ -816,7 +854,7 @@ function calibrate_shares_free_entry(targets, κ_fixed::Float64, b_w_int_target:
     f_corr = f / (1 - δ_e)
     q_corr = q / (1 - δ_e)
     θ  = f_corr / q_corr
-    u  = τ / (τ + (1 - δ_e) * f_corr)
+    u  = compute_unemployment(τ, f_corr, δ_e)
     v  = θ * u
     L  = 1 - u
     A  = f_corr / θ^(1 - η_L)

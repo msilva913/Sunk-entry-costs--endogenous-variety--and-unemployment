@@ -1,33 +1,173 @@
 # Principles for Any Agent Working on This Project
+**Last updated:** September 6, 2026 (§13 corrected; §17–21 added for the estimation phase;
+non-negotiable rules N1–N15 added)
 
-1. **δ vs. s asymmetry is the core.** Every empirical choice should be evaluated against testing this asymmetry.
+Standing rules. If one of these looks wrong for the task at hand, that is a decision — put
+it in [`decisions.md`](decisions.md) rather than quietly departing from it.
 
-2. **Vacancy outcome is vacancy RATE = vacancies/labor force × 100, in percentage points — symmetric to unemployment rate.** Never use log vacancy rate or log vacancy level. The pipeline uses `vac_rate = V/LF × 100` and takes levels difference `v_{s,t+h} − v_{s,t−1}`. All axis labels, captions, and draft text must say "vacancy rate." Do not change this convention.
+## Substance
 
-3. **LD is the primary s-type instrument** (not total separations). QU is the structural placebo — but it currently fails (see findings.md §QU Placebo). TS is appendix/comparability only.
+1. **δ vs. s asymmetry is the core.** Every empirical and modeling choice should be
+   evaluated against whether it sharpens the test of that asymmetry.
 
-4. **No financial frictions in the model.** Do not introduce them beyond the NFCI interaction term.
+2. **The vacancy outcome is the vacancy RATE = vacancies/labor force × 100, in percentage
+   points** — symmetric to the unemployment rate. Never log vacancy rate, never log vacancy
+   level. The pipeline uses `vac_rate = V/LF × 100` and takes the levels difference
+   `v_{s,t+h} − v_{s,t−1}`. All axis labels, captions, and draft text must say
+   "vacancy rate." Do not change this convention.
+
+3. **LD is the primary s-type instrument** (not total separations). QU is the structural
+   placebo — and it currently fails (`findings.md` §QU Placebo). TS is appendix and
+   comparability only.
+
+4. **No financial frictions in the model.** Do not introduce them beyond the NFCI
+   interaction term in the empirics.
 
 5. **LOO always.** National shock rates must leave out the state being instrumented.
 
-6. **COVID cap: 2019Q4** for all LP outcomes. Instruments can extend further.
+6. **COVID cap: 2019Q4** for all LP outcomes. Instruments may extend further.
 
-7. **Single-responsibility pipeline.** Data fetching, instrument construction, and regression are in separate scripts.
+7. **Single-responsibility pipeline.** Data fetching, instrument construction, and
+   regression live in separate scripts.
 
 8. **State FIPS as zero-padded 2-digit strings** throughout.
 
-9. **Vacancy aggregation = average** (stock measure), not sum. Separation aggregation = sum (flow measure).
+9. **Vacancy aggregation = average** (stock measure). Separation aggregation = **sum**
+   (flow measure).
 
-10. **The δ financial state-dependence and the s monotonic rise are puzzles**, not confirmations. Flag them explicitly in paper text.
+10. **The δ financial state-dependence and the monotone s IRF are puzzles**, not
+    confirmations. Flag them explicitly in the draft.
 
-11. **QU placebo failure is the leading diagnostic.** Until QU vacancy IRF is flat/insignificant, instrument identification is not established. v2 did not fix this — industry credit conditions are the next candidate.
+11. **The QU placebo failure is the leading diagnostic.** Until the QU vacancy IRF is
+    flat and insignificant, instrument identification is not established. v2 did not fix it;
+    industry credit conditions were the next candidate and are unlikely to be pursued
+    ([D7](decisions.md)). Do not describe identification as settled.
 
-12. **Data source for industry VA is FRED** (`FRED_API_KEY` env var). BEA direct API is blocked. Use `run_v2_locally.py` for full v2 run; after first run, results are cached.
+12. **Industry VA comes from FRED** (`FRED_API_KEY`). The BEA direct API is blocked. Use
+    `run_v2_locally.py` for a full v2 run; results are cached afterwards.
 
-13. **r(δ,LD) = 0.423 survives v2 residualization.** Shared variation is not industry demand or aggregate productivity. Industry-specific financial conditions (credit supply) are the leading candidate. See findings.md §Instrument Correlation.
+13. **r(δ,LD) = 0.334 survives v2 residualization** (down from 0.423 under the old
+    closings×π instrument; the switch to BED Deaths on May 14, 2026 is what reduced it).
+    The shared variation is not industry demand or aggregate productivity. Industry-specific
+    financial conditions remain the leading candidate. `findings.md` §Instrument Correlation.
 
-14. **Joint LP (part5_joint_lp.py) is a robustness check for δ, not a structural result for LD.** The δ vacancy IRF is stable across joint vs. separate specs. The LD zero in the joint spec reflects identification limits, not confirmed reposting.
+14. **The joint LP is a robustness check for δ, not a structural result for LD.** The δ
+    vacancy IRF is stable across joint and separate specs. The LD zero in the joint spec
+    reflects identification limits, not confirmed reposting.
 
-15. **δ→vacancy severity placebo is the paper's headline validation.** Both interactions (u^nat level and change) are uniformly insignificant across all h=0..20. This is the cleanest available external validity check.
+15. **The δ→vacancy severity placebo is the paper's headline validation.** Both
+    interactions (u^nat level and change) are uniformly insignificant across h = 0..20.
+    It is the cleanest external-validity check available.
 
-16. **Figures in paper must be generated by core pipeline scripts**, not external or ad-hoc code. `lp_irf_delta_uv_baseline.png` is generated by section 8g of `part5_lp.py`.
+16. **Figures in the paper must be generated by core pipeline scripts**, not ad-hoc code.
+    `lp_irf_delta_uv_baseline.png` comes from §8g of `part5_lp.py`.
+
+## Estimation phase (added September 2026)
+
+17. **One canonical target set.** Before any estimation run, exactly one target
+    configuration is canonical, and it is written in `data_and_files.md`. Today there are
+    three in circulation ([D2](decisions.md)). Mechanism comparisons may deviate, but each
+    deviation must be stated in the runner's header comment.
+
+18. **Filter symmetry is non-negotiable.** Whatever is done to the data must be done to the
+    simulated series: log-levels, HP λ=1,600. Model IRFs for Block B are read unfiltered off
+    the state space, because the LP is estimated in level differences. Never filter one side
+    only.
+
+19. **Weighting matrices are full matrices, not diagonals.** Ω_β must carry the cross-horizon
+    and cross-outcome covariance; Ω_m must be HAC. Substituting a diagonal of squared
+    standard errors would silently misweight the objective — if a diagonal is used as a
+    temporary stand-in, say so in the output.
+
+20. **Never reuse `posterior_mode.mat`.** Those files belong to the previous Matlab/Dynare
+    generation of the model and do not correspond to the current parameter vector.
+    `run_solution_general_CES.jl` still loads one; treat that script as legacy.
+
+21. **Placeholders must be labelled as placeholders.** `run_solution.jl` carries
+    ρ_s = 0.90, σ_s = 0.010 with no empirical basis. Any number that has not been estimated
+    or externally sourced gets an inline comment saying so, and never reaches the draft.
+
+---
+
+# Non-negotiable rules
+
+These override convenience, speed, and any instruction that conflicts with them. They are
+not style preferences.
+
+## Conduct
+
+**N1. Anti-blind compliance.** Treat every request as a hypothesis, not an order. No
+structural edit, parameter change, or measurement redefinition without a full model-wide
+audit of what it touches. The `SS_numeric` free-entry bug (September 2026) survived four
+months precisely because a plausible-looking local change was never audited against the rest
+of the system.
+
+**N2. Mandatory pushback.** If a suggestion violates project context or economic logic, say
+so. Give a diagnosis and a consistent alternative rather than complying and hoping. Silent
+compliance with a wrong instruction is the most expensive failure mode here.
+
+**N3. Instruction clarity.** If an instruction is unclear, ask before executing. Do not
+guess at intent and then build on the guess.
+
+## Writing
+
+**N4. Voice.** Applied macroeconomist. Smooth, intuitive integration of economic theory and
+empirical evidence. Emulate the prose in Mario Silva's papers
+(<https://mariorafaelsilva.com>). **American English**, not British. Write "behavior" with
+no *u*, "modeling" with one *l*, "analyze" and "normalize" with a *z*.
+
+**N5. Sentences.** Break long sentences into shorter ones. Prefer a period to a dash or a
+semicolon. Em-dashes in particular should be rare.
+
+**N6. Exhibits.** Figure and table captions describe only the objects displayed, succinctly.
+All interpretation, mechanism analysis, and intuition belongs in the body text. A caption
+that explains *why* a line moves is in the wrong place.
+
+## Code
+
+**N7. Coding style.** Succinct. Good programming practice, written so an applied
+macroeconomist can read it. Comments should connect code to economic intuition, not restate
+the syntax.
+
+## LaTeX conventions
+
+**N8.** `\paragraph{}` headers must not end with a period. `elsarticle` appends one,
+producing a double period.
+
+**N9.** Appendix cross-references use bare `\ref{}` (e.g. `\ref{app:solution}`), never
+`Appendix~\ref{}`. The appendix package prepends "Appendix" itself, producing
+"Appendix Appendix A."
+
+**N10.** A table or figure immediately before a `\newpage` (e.g. before `\bibliography`)
+must use `[H]` placement, not `[h]`. Otherwise LaTeX may defer the float past the break.
+
+## Literature grounding and anti-fabrication — strictly enforced
+
+**N11. No blind citations.** Never fabricate, guess, or approximate a citation, paper title,
+publication year, or literature claim.
+
+**N12. DOI requirement.** Every external academic source referenced in the text carries its
+DOI or an official database ID (RePEc handle, PubMed ID).
+
+**N13. Mandatory quotes.** Any claim about existing literature, referee arguments, or
+historical economic thought includes a direct verbatim quotation from the source.
+
+**N14. Fallback.** If a paper, citation, or DOI cannot be verified with active search tools
+or the context files, state **"Citation unverified; source missing."** Do not guess.
+
+## Reproducibility — strictly enforced
+
+**N15.** Every number, statistic, or derived quantity appearing in the draft — in tables,
+figures, or body text — must be computed inside the formal program files that constitute the
+replication workflow the draft is populated from. Never compute a draft-bound quantity in a
+standalone calculation, an ad-hoc script, or a session tool and paste the result into the
+manuscript. If a needed quantity is not yet produced by any program, add its computation to
+the appropriate program first, then read the output.
+
+> **How N15 is satisfied for Section 5.3.** The mechanism section quotes ~24 numbers.
+> All of them are emitted by `Programs baseline/mechanism_stats.jl`, which reads the same
+> serialized IRFs the figures are drawn from and writes `mechanism_stats.txt`. The prose
+> carries the literals rather than \input-ing the generated macros, by decision: the text
+> stays readable, and `mechanism_stats.txt` is the authority the numbers are checked
+> against. **Re-run the script after any mechanism runner and diff the output before
+> editing Section 5.3.** A number in the draft that is not in that file is a violation.

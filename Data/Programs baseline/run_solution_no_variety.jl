@@ -77,7 +77,7 @@ function calibrate_shares_no_variety(targets)
     f_corr = f / (1 - δ_e)
     q_corr = q / (1 - δ_e)
     θ  = f_corr / q_corr
-    u  = τ / (τ + (1 - δ_e) * f_corr)
+    u  = compute_unemployment(τ, f_corr, δ_e)
     v  = θ * u
     L  = 1 - u
     A  = f_corr / θ^(1 - η_L)

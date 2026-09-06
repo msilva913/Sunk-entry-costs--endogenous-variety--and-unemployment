@@ -91,6 +91,10 @@ Augmented LP adds B^k × ū^nat_t and B^k × Δu^nat_t interactions:
 
 **s × NFCI:** β_h grows and becomes significant from h=7 onward even at average conditions. Monotonically rising s IRF survives NFCI interaction — not explained by financial amplification.
 
+> ⚠️ **The SLOOS companion results are stale.** `lp_irf_delta_sloos_*.csv` (2026-04-09) and
+> `lp_irf_delta_gfc.csv` (2026-05-12) both predate the May 14 switch to BED Deaths + v2;
+> their `instr_sd` is 11.16, not 17.4. Re-run before citing either in the draft.
+
 ## LD Vacancy Interpretation — Why Persistently Negative
 
 JOLTS LD mixes three events: (a) exogenous match dissolution → reposting [model's s shock], (b) deliberate workforce reduction → no reposting, (c) partial establishment closure → vacancy withdrawn. Cases (b) and (c) are firm-level idiosyncratic, survive industry-VA residualization, and produce simultaneous LD + vacancy withdrawal. **Resolution requires firm-level data.** Decision: LD→vacancy moved to appendix; τ calibrated as external moment (3.1%/month) rather than identified from IRF.
@@ -135,82 +139,114 @@ The λ=100k reversal is confirmed as an over-smoothing artifact: across HP-1600 
 
 σ(θ)/σ(z) = 11.70
 
-## Paper Draft Status (as of May 19, 2026)
 
-- **Introduction**: Complete
-- **Section 2 Environment**: Complete
-- **Section 3 Equilibrium**: **Complete**
-  - `prop:bgm_nest` (Nesting LR-BGM) + LR-BGM definition paragraph: **Complete**
-  - Proof of `prop:bgm_nest` in Appendix C: **Complete**
-  - `prop:ds_asymmetry` = **Proposition 5** (δ–s asymmetry, 3 parts) + Remark + Proof in `app:proof_ds`: **Complete/updated** (June 5, 2026)
-    - **Statement:**
-      - Part 1 (s, exog exit, p_0=0): any ρ_s∈[0,1) → u↑ and v↑ simultaneously at h=1 (positive u-v comovement)
-      - Part 2 (s, endog exit, p_0>0, DS-CES): if eq:gN_cond holds ($f_e\bar N < \bar z(1-\bar u)(\varepsilon-2)/(\varepsilon-1)$) and reposting inflow weakly dominates endogenous-exit drain on pre-committed vacancies → positive comovement for ρ_s∈[0,ρ̄_s)
-      - Part 3 (δ shock): u↑ and v↓ (negative u-v comovement) if entry doesn't fully offset pre-committed vacancy destruction; sufficient condition: δ̄_e/τ̄ small → entry cushion coefficient $\bar\delta_e/(r+\bar\delta_e)\to 0$; holds at calibrated δ_e/τ≈0.21 including under free entry
-    - **Proof structure (app:proof_ds):**
-      - `lem:vpre` (Pre-committed vacancy destruction): $\partial v_{pre,t+1}/\partial\delta_t = -\Lambda_{t+1}[(1-q(\theta_t))v_t+s_t(1-u_t)] < 0$; bracket is predetermined w.r.t. δ_t
-      - Part 1 proof: two channels — Channel 1 (reposting): $\partial v_{pre}/\partial s_t = (1-\delta_{e,t+1})(1-u_t)>0$; Channel 2 (entry): Sub-step (a) pre-entry tightness θ^pre falls (u rises more than v_pre); Sub-step (b) $K_{t+1}$ rises because $q(\theta_{t+1})>\bar q$; hence $Q_{t+1}>\bar Q$, entry rises. Combined: $\partial v_{t+1}/\partial s_t>0$. Free-entry footnote: Channel 2 vanishes but Channel 1 remains.
-      - Part 2 proof: signs ∂χ^c_{t+1}/∂s_t via 2×2 Jacobian of joint (χ^c, N) system; g_u<0 (higher u → lower profits → lower cutoff); condition eq:gN_cond ↔ g_N<0 ↔ det J>1; implies ∂χ^c/∂s_t<0 → ∂Λ/∂s_t<0 (endogenous exit rises); drain is increasing in ρ_s, minimized at ρ_s=0, so dominance of reposting at ρ_s=0 suffices
-      - Part 3 proof: uses lem:vpre for |∂v_pre/∂δ_t|>0; entry cushion from K-decomp carries coefficient $\bar\delta_e/(r+\bar\delta_e)\to 0$ as $\bar\delta_e/\bar\tau\to 0$, so ∂e/∂δ_t < |∂v_pre/∂δ_t| for δ̄_e/τ̄ small
-    - **Remark after proposition:** defines g(N,u)≡d^f(N,u)+f_eρ(N)/μ as continuation-profit threshold; g_N<0 balances dilution effect ($d^f\propto N^{(2-ε)/(ε-1)}$, net exponent negative for ε>2) vs. option-value rise ($f_eρ(N)/μ\propto N^{1/(ε-1)}$); condition~\eqref{eq:gN_cond} ensures dilution dominates; quantitative note: at δ̄_e/τ̄≈0.21, negative u-v comovement robust across full ξ range (cf. app:comparison_D)
-- **Section 4.1 Instrument construction**: Complete
-- **Section 4.2 LP specification**: Complete
-- **Section 4.3 Results**: Partially drafted (severity placebo and joint LP paragraphs pending)
-- **Section 5.1 CK comparison**: Complete (compressed)
-- **Section 5.2 Calibration and estimation**: Substantially revised ⚠️
-  - Filter switched to λ=1,600 throughout
-  - Table 4 updated with new moments
-  - Moments paragraph rewritten with correct signs and notation (τ→s)
-  - QL justification paragraphs complete
-  - Parameter taxonomy and calibration algorithm complete
-  - Posterior estimates / IRFs / mechanism: stub sections only
-- **Section 6 Conclusion**: Not started
-- **Appendix B (Instrument diagnostics)**: New subsection `app:filter_robustness` added
-  - Table B.6: Dynamic correlations by filter (HP-1600, HP-100k, Hamilton; 3-column)
-  - Bold cells where HP-100k is sign-opposite to both other filters (7 cells)
-- **Appendix C proofs**: Props 1–6 complete; Prop 7 pending
+## Model Mechanism Findings (Comparisons A–D)
 
-Key notation: χ_t^c (not x_t^c), Λ_t ≡ F_χ(χ_t^c), eq:/tab:/fig:/sec: label prefixes throughout. Draft file: `Draft/Draft.tex`.
+Shared settings unless noted: `b_ratio=0.9, x_v=0.5`; B and D additionally use PATH B
+(`dest_elast_target=5.0`). Files and outputs are listed in [`pipeline.md`](pipeline.md)
+Part 2. ⚠️ All four were produced at δ_e/τ = 0.210 and would need regenerating under
+[D1](decisions.md).
 
-## prop:bgm_nest — Proof Structure (Appendix C)
+**A — level of δ (CK timing).** High-δ (δ_e = τ, pure exogenous) shows a larger N response
+to a z shock (LOM multiplier 4.8×) and a larger Q response to a δ shock (short-duration
+asset amplification). The baseline (low δ_e) shows more persistence after a δ shock because
+N recovers slowly.
 
-Three-block proof mirroring prop:ags style:
-1. **Setup**: p_0=0 → F_χ(0)=0 → X_t^c=0, Λ_t=1, δ_{e,t}=δ_{t-1}
-2. **Firm LOM** (eq:N_lom_eq): substituting Λ=1 + gross-output identity Y^c = z(1-u)ρ/μ → parenthesized term = N^e_{t-1} = BGM entry flow
-3. **Business formation Euler** (eq:N_euler_eq): Λ_{t+1}=1, X^c=0 → μ-ratio form with ν^f = f_e ρ(N) = BGM equity asset pricing
-4. **Resource constraint** (eq:gdp, NOT eq:rc): Y^c = C + X_t under p_0=0; net X_t → Y_t = C_t + ν^f N^e = BGM eq. (3)
-5. **Closing remark**: isomorphism holds for any realization of {1-u_t, X_t}, not that equilibrium distributions coincide
+**B — endogenous vs. exogenous exit.** ⚠️ **Redesigned May 22, 2026.** The current design
+(`run_solution_endog_exit.jl`, and what the draft §5.3 reports) equates δ̄ *and* τ across the
+two specifications so that the residual difference is purely the χ^c margin: the exogenous specification sets
+δ_{e,exog} = δ̄_endog ≈ 0.326%/month, about half of δ_{e,endog} ≈ 0.653%, and s rises to hold
+τ = 3.1% fixed.
 
-Key: isomorphism at GDP level (eq:gdp), not gross output (eq:rc). X_t nets out as intermediate input on both sides.
+Current finding: the endogenous-exit specification **recovers faster**, the mirror image of
+Comparison A. From `eq:N_lom_ll` the entry coefficient is δ_e and the survival coefficient
+(1−δ_e), so the higher steady-state destruction rate implies a higher *replacement* rate. The
+exogenous specification's low-churn firm stock keeps N depressed longer, sustaining the
+ρ↓ → w^int↓ → θ↓ chain and prolonging unemployment. The χ^c margin is a secondary channel
+whose sign is ambiguous (a δ↑ impulse raises per-firm profit via market share but lowers ν_f
+via ρ).
+
+The **superseded** "exposure-effect" design — same `dest_ann`, same δ_e, different δ̄, giving
+"δ-shock response is smaller under endogenous exit because δ̄ is halved" — is retained in the
+runner's header as a possible appendix robustness check. Do not cite it as the Comparison B
+result.
+
+This also resolves the apparent ψ conflict: **ψ ≈ 0.014 came from PATH A** (the old
+`Xc_Y`-targeted design, where ψ is an outcome), while **ψ ≈ 0.033 is the PATH B value**
+(`dest_elast_target = 5.0`, `steady_state.jl:607` and draft §5.3). Both are correct for their
+own path; only 0.033 applies to the current comparison. See [D2](decisions.md).
+
+**C — variety effects (N → ρ → w^int → JCC).** Implemented by forcing ρ ≡ 1 (replacing f[13]
+post-generation) with a dedicated `calibrate_shares_no_variety()`. Isolates the variety
+externality operating through recruiter compensation.
+
+**D — entry elasticity ξ_inv (baseline 1.0 vs. near-free-entry 0.1, both recalibrated).**
+Lower ξ_inv *amplifies* z-shock amplification (larger entry collapse via the G(Q) channel)
+and *attenuates* the δ-shock unemployment response (stronger entry cushion from duration
+shortening). **Headline:** at the calibrated δ_e/τ, negative u–v comovement after a δ shock
+is robust across the full ξ range including free entry — the empirically calibrated δ̄_e
+rules out the CK Beveridge-curve shift. Appendix `app:comparison_D`; the K decomposition
+(`eq:K_decomp`, `eq:Q_ll_delta`, `eq:e_ll_delta`) gives the corrected transmission chain
+K↑ → Q↑ → e↑ for δ shocks, with sign asymmetry ê^δ > 0 vs. ê^z < 0.
+
+## Where the draft status lives
+
+Section-by-section draft status, proposition inventory, and proof structures moved to
+[`draft_status.md`](draft_status.md) on September 5, 2026. This file is empirical results only.
 
 ---
 
-## Re-verification note — September 5, 2026
+## D1/M5 diagnostic — first run, September 5, 2026  ⛔ RETRACTED
 
-Repo has been untouched since commit `a2be612` (June 7, 2026). Checked the draft-status
-claims above against `Draft.tex` and the code. Corrections:
+> **All numbers in this section are invalid.** The perturbation was linearized around a point
+> with `Max SS residual` = 22.07 / 14.47 / 12.21 (free-entry condition `f[18]` violated — see
+> [`pending_tasks.md`](pending_tasks.md) §STOP). The steady state reported below came from
+> `SS_numeric`, not from the verified `steady_state.jl`; the two disagree by ~2.4× on ν_f.
+> Correct steady-state values from `steady_state.jl`: labor share 0.836–0.883 (not 0.98–1.20),
+> π_s = +0.083 to +0.088 (not negative), entry/Y ≈ 0.065 (not 0.13–0.22), X^c/Y ≈ 0.16 (not
+> 0.32–0.55). The moment and IRF results below must be regenerated after the fix.
+> Retained only as a record of how the bug was found.
 
-**Draft status has advanced past what §"Paper Draft Status" records.**
-- §4.3 Results: severity-placebo paragraph **is written** (`Draft.tex:2176–2196`), with the
-  current BED-Deaths numbers (+1.71 pp / −0.58 pp). Outstanding: δ–LD correlation paragraph,
-  an in-text joint-LP sentence, and a malformed `\ref` at the end of the section.
-- §5.2: the estimation framework is fully written, including the resolution of the
-  conditional/unconditional moment question (`eq:ql_irf`, `eq:posterior`, degrees-of-freedom
-  normalization, filter-asymmetry argument). Extracted to
-  [`estimation_design.md`](estimation_design.md) so it is not buried in prose.
-- §5.4 `sec:posterior` is still three TODO comments. §6 Conclusion still empty.
-- June 6–7 commits were notation cleanup ($F_\chi \to F$, $x^c \to \chi^c$), a
-  Schaal-Dumouchel aggregate-demand-externality paragraph in the intro, and repositioning of
-  `tab:ingredients_comparison`. No new results.
+`run_solution_delta_target.jl`, three specifications differing only in `dest_ann`. Θ_e at hand-set
+defaults (`b_ratio=0.9, x_v=0.5, ξ_inv=1.0, p_0=0.5, ω_δ=0.5, dest_elast_target=5.0`);
+ρ_s, σ_s are placeholders. **Not an estimated fit — read the ordering, not the levels.**
 
-**Broken references in `Draft.log`:** undefined `sec:conclusion`, `app:robustness`,
-`app:weighting_robustness`, `eq:labor_C_N`; multiply-defined `eq:profit_share`.
+Steady states confirm the design: u, v, θ identical across specifications; only δ_e moves.
 
-**Two results cited above are produced by stale runs.** `lp_irf_delta_sloos_*.csv`
-(2026-04-09) and `lp_irf_delta_gfc.csv` (2026-05-12) both predate the May 14 switch to BED
-Deaths + v2 residualization; their `instr_sd` is 11.16, not 17.4. Re-run before citing.
+| | BED (0.0320) | CODE (0.0754) | BGM (0.0963) | data |
+|---|---|---|---|---|
+| δ_e/τ | 0.087 | 0.210 | 0.271 | — |
+| ν_f | 44.25 | 24.95 | 20.52 | — |
+| Q | 10.96 | 4.56 | 3.53 | — |
+| σ(θ)/σ(labor_prod) | 0.48 | 0.85 | 1.11 | **11.70** |
+| δ→u peak (pp) | 0.012 | 0.028 | 0.035 | +1.71 |
+| δ→u peak horizon (qtr) | 1 | 1 | 1 | **17–20** |
+| δ→v trough horizon (qtr) | 3 | 3 | 3 | **18** |
 
-**Calibration contradiction (blocker B1).** The δ̄ used in the model code
-(`dest_ann = 0.0754`, i.e. δ_e/τ = 0.210, Jaimovich-Siu) is not the BED Deaths rate the
-paper claims to use (4.25%/yr, δ_e/τ = 0.116). The "δ_e/τ ≈ 0.21" claims in the
-Proposition 5 discussion (`Draft.tex:1481`) and Comparison D rest on the former.
+**What is confirmed.** Amplification is monotone in δ_e (0.48 → 0.85 → 1.11), exactly as
+Comparisons A and B predict: a lower destruction rate means a slower-turning firm stock and a
+smaller LOM multiplier on entry. Firm value ν_f and vacancy value Q rise sharply as δ_e falls
+(longer-lived firms are worth more). The mechanism intuition holds.
+
+**What is not confirmed — and blocks the D1 decision.** All three specifications miss the amplification
+target by roughly an order of magnitude, and all three put the δ→u peak at h=1 quarter against
+the LP's h=17–20. **δ_e is therefore not the binding constraint**, and the diagnostic cannot
+adjudicate D1 until the prior problems below are resolved.
+
+**Candidate causes, in order of suspicion:**
+
+1. **Observable mapping for labor productivity is probably wrong.** Model `labor_prod = Y/(ρL)`
+   has SD 0.0387 against 0.0128 in the data (3× too volatile) and correlates **0.9975 with
+   N^e** — it is tracking the entry/investment term in Y = C + ν_f·N^e, not technology.
+   Measured output per hour (PRS85006163) is far smoother. Candidates: Y_c/L_c (gross output
+   per worker), or a differently deflated series. This inflates the denominator of every RSD
+   and must be settled before any moment is believed. **Belongs in §5.2 as an explicit
+   observable-mapping table.**
+2. **Θ_e are not estimated.** σ(u)=0.016 vs 0.1496 and σ(v)=0.026 vs 0.1419 — both far too
+   smooth; cor(u,v) is −0.17 to −0.48 against −0.80. Finding a poor fit at hand-set parameters
+   is weak evidence about the model.
+3. **ρ_s, σ_s are placeholders** with no empirical basis (`principles.md` §21).
+4. **The hump-shape gap may be structural.** A one-quarter peak against an h=17–20 empirical
+   peak is a large qualitative gap, and it is not obvious that Θ_e alone can close it. If it
+   cannot, Block B will fight Block M hard, and that is better discovered now than after the
+   sampler is built. This is the single most important thing to chase next.

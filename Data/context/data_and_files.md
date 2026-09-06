@@ -101,17 +101,21 @@ NFCI interaction variant:
 
 | Parameter | Value | Source |
 |-----------|-------|--------|
-| δ̄ | **1.079%/qtr (0.361%/month; 4.25%/yr)** | **BED Deaths**, employment-weighted (supersedes the 0.940%/qtr BDS figure) |
-| τ̄ | 9.34%/qtr (3.11%/month) | Shimer (2012) total separation rate |
-| δ/τ | **11.6%** | Ratio above |
+| τ̄ | 9.30%/qtr (3.10%/month) | Shimer (2012) total separation rate; `TARGETS.sep = 0.031` |
+| δ̄_e (deaths, 2001–2019) | **0.718%/qtr (0.239%/month; 2.84%/yr)** | BLS BED published rate `BDS…110008RQ5`, total private |
+| δ̄_e (deaths, 1993–2019) | 0.812%/qtr (3.21%/yr) | same series, longer window |
+| **δ_e/τ** | **0.077 (2001–2019) / 0.087 (1993–2019)** | **Recommended primary target — see [D1](decisions.md)** |
+| BED closings rate | 1.205%/qtr (2001–2019) | `…110006RQ5`. Includes temporary shutdowns — *not* the model object |
+| BED gross job losses | 6.362%/qtr (2001–2019) | `…110004RQ5`. Denominator of JF Table 2 col 2 |
+| closings / gross losses | 18.9% (2001–2019), 19.7% (1993–2019) | Reproduces JF's ~21% and `part11`'s 19.5% |
+| deaths / gross losses | ~12% | The deaths analogue of JF's statistic |
 
-> ⚠️ **Unresolved contradiction (blocker B1).** `steady_state.jl:566` sets
-> `dest_ann = 0.0754` — labelled "[BED Deaths, emp-weighted]" but actually the
-> Jaimovich-Siu 21% × τ figure, i.e. δ_e = 0.651%/month, 1.94%/qtr, δ_e/τ = 0.210.
-> The draft carries both numbers: §5.1 cites BED Deaths ≈1.1%/qtr while §5.2's
-> external block and `tab:calib_targets` use 7.54%/yr. Pick one before estimating;
-> the choice moves every mechanism IRF and the δ̄_e/(r+δ̄_e) entry-cushion coefficient
-> in Proposition 5 Part 3. See [`pending_tasks.md`](pending_tasks.md) §B1.
+> ⚠️ The previously recorded δ̄ = 1.079%/qtr (δ/τ = 11.6%) is **too high**: `observables.py`
+> runs to `final = '2025-10-01'`, so its mean includes the 2020 COVID quarters, and it divides
+> by PAYEMS (total nonfarm) rather than private employment. Recompute pre-COVID before the
+> number enters `tab:calib_targets`. The 4.13%/yr figure that briefly appeared here was an
+> arithmetic error and has no standing — see the correction note in [D1](decisions.md).
+
 | ρ_δ | 0.617 (raw) / 0.647 (resid) | part6, 2001Q1+ window, Bartik agg |
 | ρ_LD | 0.489 (raw) / 0.305 (resid) | part6, 2001Q1+ window |
 | corr(η^δ, η^LD) | +0.397 (raw) / +0.488 (resid) | part6 |
@@ -124,20 +128,21 @@ NFCI interaction variant:
 | β(δ←z) quarterly | −1.050 (SE=0.830) | part6b; endogenous exit channel — NOT in shock process |
 | corr(u^z, u^δ) | −0.284 | part6b; pre-Cholesky; absorbed by model equilibrium |
 
-## Model Code Conventions (`Programs baseline/`, audited May 20, 2026)
+> ⚠️ **δ̄ is contested — see [D1](decisions.md).** The table above reports the BED Deaths
+> measurement (4.25%/yr, δ_e/τ = 0.116). `steady_state.jl:566` instead sets
+> `dest_ann = 0.0754` — labelled "[BED Deaths, emp-weighted]" but actually the Jaimovich-Floetotto
+> 21% × τ figure (0.651%/month, 1.94%/qtr, δ_e/τ = 0.210) — and every mechanism figure was
+> produced at that value. Draft §5.1 cites the former, §5.2 the latter. Resolve before
+> estimating.
 
-- **Naming:** `r` = discount rate, `ρ` = relative price N^(1/(ε-1)) — consistent with `steady_state.jl`
-- **κ:** matching cost paid per match (Pissarides 2009); resource constraint uses `κ·q·v`, not `κ·v`
-- **u LOM:** uses total `v_t = v_pret + e_t`; entrants participate in matching within period t (draft eq:v_lom)
-- **Equation order:** f[1] exit threshold, f[2] δ_e, f[3] JCC, f[4] business formation Euler (BGM), f[5] K value, f[6] MRP, f[7] Nash wage, f[8] vacancy creation, f[9]–f[33] remainder
-- **SS_symbolics:** x_c_ss = Y_c·(μ-1)/(μ·N) + ν_f (consistent with f[1]); C_ss includes X_c; Y_ss = C + ν_f·N_e
+> ⚠️ **There is no single canonical target set — see [D2](decisions.md).**
+> `TARGETS` in `steady_state.jl` defaults to PATH A with `b_ratio = 0.71, x_v = 1.0`;
+> the mechanism comparisons override to PATH B (`dest_elast_target = 5.0`) with
+> `b_ratio = 0.9, x_v = 0.5`; the draft documents PATH A. Once D2 is settled, write the
+> winning target set here and treat it as canonical.
 
-## steady_state.jl architecture (as of May 31, 2026)
+## Model code
 
-Four top-level functions:
-- `calibrate_shares(targets)`: PATH A (Xc_Y) or PATH B (dest_elast_target). Returns 18-param NamedTuple. ϕ is residual from Nash in Stage 5. Current baseline uses PATH B with dest_elast_target=5.0.
-- `steady_state(para; init=0.51)`: 2×2 solver in (log θ, log x_c). Standard.
-- `steady_state_free_entry(para)`: 1D solver for ξ_inv=0. K=x_m*(r+δ_e)/(1+r) constant in θ. Outer root-find over θ (JCC), inner over δ_e (exit consistency). ϕ from para; w from Nash. **Currently finds high-θ branch** — fix: bracket solver with (log(0.1), log(0.6)).
-- `calibrate_shares_free_entry(targets, κ_fixed, b_w_int_target)`: free-entry calibration. DROP x_v; INHERIT κ=κ_fixed; TARGET b/w_int → pins w_int=b/b_w_int_target → z analytically; ϕ residual from Nash. Called as: `calibrate_shares_free_entry(targets, cal.κ, cal.b/steady.w_int)`.
-
-Notation change (May 2026): survival quantile renamed \varsigma throughout draft (was \zeta, clashed with variety taste parameter). Eight locations updated in Draft_11May2026.tex.
+Moved to [`pipeline.md`](pipeline.md) Part 2 (model conventions, equation order,
+`steady_state.jl` architecture, PATH A/B), so that all "how the code works" material lives
+in one file. This file is data sources, file locations, and empirical targets only.

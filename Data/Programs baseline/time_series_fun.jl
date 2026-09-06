@@ -8,6 +8,7 @@ using TexTables
 using TypedTables
 using GLM
 using LinearAlgebra
+using SparseArrays
 
 columns(M) = (view(M, :, i) for i in 1:size(M, 2))
 
@@ -201,20 +202,35 @@ end
 #    return y - τ
 # end
 
+"""
+    hp_filter(y, lambda)
+
+Hodrick-Prescott cyclical component: `y - trend`, where
+
+    trend = argmin_τ  Σ(y_t - τ_t)² + λ Σ(τ_{t+1} - 2τ_t + τ_{t-1})²
+          = (I + λ D'D)^{-1} y
+
+with `D` the (n-2)×n **second**-difference operator. `I + λD'D` is pentadiagonal, so
+the solve is sparse and O(n).
+
+FIXED September 5, 2026. The previous implementation built the *tridiagonal*
+matrix `Tridiagonal(-λ, 1+2λ, -λ)`, which is `I + λD'D` for the **first**-difference
+operator — a Whittaker/random-walk smoother, not the HP filter. At λ=1,600 it returned
+a "cycle" with ~5x the correct standard deviation and correlation ≈0.26 with the true
+HP cycle (verified against `statsmodels.tsa.filters.hp_filter`). Any model-side second
+moment computed with the old version is invalid; see context/pending_tasks.md.
+"""
 function hp_filter(y, lambda::Real)
     n = length(y)
-    
-    # Create the tridiagonal matrix manually
-    d = fill(1 + 2lambda, n)
-    dl = fill(-lambda, n-1)
-    du = fill(-lambda, n-1)
-    
-    A = Tridiagonal(dl, d, du)
-    
-    trend = A \ y
-    
-    cycle = y - trend
-    return cycle
+    n < 5 && return y .- mean(y)   # HP is not identified for very short series
+
+    # Second-difference operator D: (n-2) x n, rows [1 -2 1]
+    D = spdiagm(n - 2, n, 0 => ones(n - 2), 1 => fill(-2.0, n - 2), 2 => ones(n - 2))
+
+    A = sparse(I, n, n) + lambda * (D' * D)   # pentadiagonal
+    trend = A \ collect(float.(y))
+
+    return y .- trend
 end
 
 function time_series_object(out::Matrix, fields::Vector{Symbol})

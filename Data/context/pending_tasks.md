@@ -1,214 +1,155 @@
 # Pending Tasks
-**Last updated:** September 5, 2026 (status re-verified against repo after 3-month pause;
-previous update June 5, 2026)
+**Last updated:** September 5, 2026 · **Branch:** `Organize_Project_State_Estimation`
 
-## ⛔ Blockers for Section 5 (do these first)
+Actionable work only. **Decisions** (things to choose, not do) live in
+[`decisions.md`](decisions.md); **draft section status** lives in
+[`draft_status.md`](draft_status.md); **results** live in [`findings.md`](findings.md).
 
-**B1. Resolve the $\delta_e$ calibration contradiction.** ⛔ HIGH
-The paper's stated departure from Coles-Kelishomi is that $\delta$ is set from BED Deaths
-rather than from the aggregate separation rate — but the calibration does not implement it.
-- Draft §5.1 says $\bar\delta \approx 1.1\%$/quarter (BED Deaths) → **annual 4.25%**,
-  monthly 0.361%, $\delta_e/\tau = 0.116$.
-- Draft §5.2 external block + `tab:calib_targets` say $\delta_e^{ann}=7.54\%$, monthly
-  0.651%, from Jaimovich-Siu 21% × $\tau=3.1\%$ → $\delta_e/\tau = 0.210$.
-- `Programs baseline/steady_state.jl:566` has `dest_ann = 0.0754` with the comment
-  "[BED Deaths, emp-weighted]" — the value is the Jaimovich number, the label is BED.
-This is a 1.8× difference in the steady-state level of the paper's central shock. It moves
-the entry-cushion coefficient $\bar\delta_e/(r+\bar\delta_e)$ in Proposition 5 Part 3, the
-$\delta_e/\tau\approx0.21$ quantitative claim at `Draft.tex:1481`, and Comparison D.
-Note the direction: the BED value (0.116) makes Part 3's sufficient condition *easier* to
-satisfy, so fixing this strengthens the proposition. Decide one source, then propagate to
-§5.1, §5.2, `tab:calib_targets`, `steady_state.jl`, and every mechanism figure.
+The paper is theory-complete and empirics-complete. Section 5 is the entire remaining
+critical path.
 
-**B2. Wild cluster bootstrap must return the full $\Omega_\beta$.** ⛔ HIGH — `part5_wcrb.py` ❌
+---
+
+## 🛑 STOP — the perturbation solutions are linearized around a non-steady state
+
+**Discovered September 5, 2026. This precedes everything else on the critical path.**
+
+`solution_interface` prints `Max SS residual` and then proceeds unconditionally — it never
+asserts the residual is small (`run_solution_core.jl:85`). The residual is **not small**:
+
+| runner / case | Max SS residual |
+|---|---|
+| `run_solution_entry_elasticity.jl` baseline (Comparison D, ξ_inv=1.0) | **14.468** |
+| `run_solution_entry_elasticity.jl` low-ξ (Comparison D, ξ_inv=0.1) | **14.178** |
+| `run_solution_delta_target.jl` BED / CODE / BGM | **22.074 / 14.468 / 12.209** |
+
+**Root cause — it is the free-entry condition `f[18]`.** Verified to all printed digits:
+residual = ν_f(SS) − ρ·f_e(cal)/μ.
+
+`SS_numeric` (`run_solution_core.jl:367`) recomputes the steady state from scratch instead of
+calling `steady_state(cal)`. It derives its own entry cost
+`f_e_s = zbar_s·(μ−1)·L_s/N_s·(1−δ_e)/(δ_e·μ + r)` and sets `ν_f_s = ρ·f_e_s/μ` — but the
+`PAR` vector handed to the solver carries `cal.f_e` from `calibrate_shares`. The two disagree
+by roughly 2.4× (CODE case: implied f_e = 32.5 in `SS_numeric` vs `cal.f_e` = 13.66), so free
+entry fails by exactly their difference.
+
+`steady_state.jl` itself is **fine** — `steady_state_checks.jl` asserts `f[16]`, `f[18]`,
+`f[19]`, `f[20]`, the JCC, the Nash wage and both LOMs at 1e-12, and all pass under
+`dest_ann` ∈ {0.0320, 0.0754, 0.0963}. The bug is only in the second, redundant SS
+construction used as the linearization point.
+
+**Scope — every runner that passes `SS_numeric` to `solution_interface`:**
+`run_solution_all_delta.jl` (A), `run_solution_endog_exit.jl` (B), `run_solution_no_variety.jl`
+(C), `run_solution_entry_elasticity.jl` (D), `run_solution_delta_target.jl`. **All four
+mechanism comparisons in §5.3 are affected**, as are the D1/M5 diagnostic numbers in
+`findings.md` (now retracted — see that file).
+
+**Fix, in order:**
+1. **Guard first**: ` SS_max < 1e-8` in `solution_interface` so this can never pass
+   silently again. Two lines, and it will immediately fail every mechanism runner — which is
+   the correct behavior.
+2. **Replace `SS_numeric`** with a thin mapper that calls `steady_state(cal)` and orders its
+   output into the SS vector. That construction is already verified. Deleting the duplicate
+   removes the whole class of bug.
+3. Re-run Comparisons A–D and regenerate `mechanism_*.pdf`.
+4. Only then revisit D1/M5.
+
+**LOM timing inconsistency — DECISION PENDING.** The u LOM (`f[23]`, `eq:u_lom`) uses a post-matching separation base while the v LOM (`f[22]`, `eq:v_lom`) uses a pre-matching reposting base. The mixture leaks job positions at rate (1-δ_e)·s·q·v. Gabrovski-Silva and the old Dynare model use the pre-matching convention consistently and conserve positions exactly, so the v LOM is the unchanged equation and the u LOM is what moved. Full analysis, both fix options, and the implications for GS: [`../Notes/LOM_timing_consistency.md`](../Notes/LOM_timing_consistency.md).
+
+**Related bug — FIXED Sept 5, 2026.** `run_solution_core.jl` f[16] computed the vacancy
+creation cost as `X = e·ξ_inv/(1+ξ_inv)·Q + κqv`. Correct form is `e/(1+ξ_inv)·Q + κqv`
+(draft eq. 29, p. 20): sunk posting costs are the integral of the marginal schedule
+Q = x_m·e^ξ_inv, giving ∫₀^e x_m u^ξ_inv du = e·Q/(1+ξ_inv); the second term is fixed
+matching costs. Provenance confirmed by MS: it came from the original ξ/(ξ+1) transcribed
+symbol-for-symbol with ξ→ξ_inv rather than inverted (ξ = 1/ξ_inv ⇒ ξ/(ξ+1) = 1/(1+ξ_inv)).
+`steady_state.jl:362,742` and `SS_numeric` (line 439) always had it right, so this was an
+inconsistency between f[16] and every other use. The two expressions coincide at ξ_inv = 1,
+so only **Comparison D's ξ_inv = 0.1 case** was affected — by 10× in the sunk-cost term.
+
+---
+
+## Critical path to a complete draft
+
+Steps 1–3 are gates; nothing downstream is worth doing until they clear.
+**But fix the steady-state bug above first — none of these numbers mean anything until then.**
+
+**1. Settle [D1](decisions.md) (which δ̄_e), [D2](decisions.md) (PATH A or B), and
+[D3](decisions.md) (β̂ ↔ β(θ) scaling).** ⛔
+Then write the winning target set into `data_and_files.md` as canonical, and regenerate any
+mechanism figure affected by D1/D2.
+
+**2. `part5_wcrb.py` — wild cluster bootstrap → full Ω_β.** ⛔
 `part5_lp.py` runs each horizon as a separate regression and saves only a scalar clustered
-`se` per $h$. `eq:ql_irf` needs the $42\times42$ covariance across $h=0..20$ **and** across
-the two outcomes. Bootstrap SEs alone are not sufficient. See
-[`estimation_design.md`](estimation_design.md).
+`se`. `eq:ql_irf` needs the **42×42** covariance across h = 0..20 and across both outcomes;
+LP coefficients are strongly correlated across horizons by construction. Persist the matrix
+(`omega_beta.npy`), not bootstrap SEs. n = 50 clusters is at the lower bound of asymptotic
+reliability, so this doubles as the paper's inference robustness.
 
-**B3. Estimation code does not exist.** ⛔ HIGH
-`run_solution_core.jl:112` still reads `estimate = []  # filled in when SMM is wired up`;
-`priors = (;)`; `run_solution.jl` carries placeholder $\rho_s=0.90$, $\sigma_s=0.010$.
-Missing: $\Omega_m$ (block bootstrap), a refreshed $m(\theta)$ simulator at $\lambda=1{,}600$
-covering $\{u,v,s,f,\delta,N^e,z\}$, a $\beta(\theta)$ extractor matching the LP object, and
-a sampler. The repo's `posterior_mode.mat` is from the **old Matlab/Dynare model** — do not
-reuse. Also unresolved: the scale/units mapping between $\hat\beta$ (pp per 1-SD of a Bartik
-instrument, time-FE-absorbed) and $\beta(\theta)$ (aggregate model IRF).
+**3. `moments_bootstrap.py` — block bootstrap → Ω_m.** ⛔
+Block length 8 quarters. Nothing currently computes the covariance of the empirical moments.
 
-**B4. Draft cross-references are broken.** ⚠️ LOW effort, do opportunistically
-From `Draft.log`: undefined `sec:conclusion`, `app:robustness`, `app:weighting_robustness`,
-`eq:labor_C_N`; multiply-defined `eq:profit_share`. `app:weighting_robustness` is promised
-by the §5.2 weighting discussion and needs to be written, not just relabelled.
+**4. Refresh `second_moments.jl` for Block M.** ⛔
+Currently λ = 100,000 and only 8 series. Needs λ = 1,600 and all seven series
+{u, v, s, f, δ, N^e, z}, returning m(θ) in exactly the row order of `tab:smm_moments`.
+Validate against the empirical table at the calibrated point.
 
-## Status corrections found on re-verification (Sept 5, 2026)
+**5. `model_irf.jl` — β(θ) extractor.** ⛔
+Map the state-space solution to a model IRF in the LP's units and normalization (per D3):
+1-SD δ shock, u and v in pp, quarterly, h = 0..20, level difference vs. t−1.
 
-- Section 4.3 **severity-placebo paragraph is written** (`Draft.tex:2176-2196`), contrary to
-  the June entry below. Still missing from 4.3: the $\delta$-LD correlation paragraph and an
-  in-text joint-LP sentence (currently only a bare pointer to `app:diagnostics`).
-- `part7b_sloos.py` **exists and has been run**, but its outputs
-  (`lp_irf_delta_sloos_*.csv`, `instr_sd = 11.16`) predate the May 14 switch to BED Deaths +
-  v2 and are **stale**. Same for `lp_irf_delta_gfc.csv`. Both need a re-run against the
-  current instrument ($\hat\sigma = 17.4$ pp) before being cited.
-- `part7d_ld_gfc.py` does not exist; the GFC diagnostic has never been run as specified.
+**6. Objective + priors, then the sampler.** ⛔
+`run_solution_core.jl:112` still reads `estimate = []`; `priors = (;)`. Evaluate the
+log-posterior kernel once at the calibrated point and confirm both quadratic forms are
+O(K) before sampling.
 
-## Model Mechanism Tasks
+**7. Write §5.4 `sec:posterior`, `app:weighting_robustness`, and §6 Conclusion.** ⛔
+Plus the AGS two-model counterfactual.
 
-See `Inspecting_mechanism_setup.md` for full design rationale. All three comparisons use
-`b_ratio=0.9, x_v=0.5` as shared calibration settings (activated May 21). Figures are
-4×2 portrait grids (rows: u/v, θ/w_int, N/N_e, asset values or exit diagnostic).
+---
 
-### Comparison A — Level of δ (CK timing)   ✅ COMPLETE
-- Files: `run_solution_all_delta.jl`, `plot_mechanism_comparison.jl`
-- Output: `irf_all_delta.jls`, `mechanism_A_z_shock.pdf`, `mechanism_A_delta_shock.pdf`
-- Key finding: high-δ (δ_e=τ) shows larger N response to z shock (LOM multiplier 4.8×)
-  and larger Q response to δ shock (short-duration asset amplification); baseline
-  (low δ_e) shows more persistence in δ shock due to slow N recovery.
+## Empirical code tasks (secondary)
 
-### Comparison B — Endogenous vs. Exogenous Exit   ✅ COMPLETE
-- Files: `run_solution_endog_exit.jl`, `plot_endog_exit_comparison.jl`
-- Output: `irf_endog_exit.jls`, `mechanism_B_z_shock.pdf`, `mechanism_B_delta_shock.pdf`
-- Key finding: δ shock response is SMALLER under endog exit, primarily because
-  dest_end_frac=0.5 halves δbar (δbar_endog=0.00326 vs δbar_exog=0.00651); the
-  dynamic x_c amplification mechanism is dormant at calibrated ψ≈0.014.
-- Calibrated ψ≈0.014 is far below Broer et al. (2025) preferred ψ=1; report implied
-  dest_el as outcome alongside ψ for external validation.
+| # | Task | Status |
+|---|---|---|
+| E1 | **Re-run `part7b_sloos.py`** against the current instrument — existing output is from 2026-04-09 with `instr_sd`=11.16 (pre-BED-Deaths) | ⚠️ stale output |
+| E2 | **Re-run the GFC diagnostic** — `lp_irf_delta_gfc.csv` is from 2026-05-12, also pre-Deaths | ⚠️ stale output |
+| E3 | **`part7d_ld_gfc.py`** — GFC_{t+h} outcome-quarter dummy, to test whether the GFC drives the monotone LD unemployment IRF (inconsistent with ρ_LD ≈ 0.3) | ❌ never written |
+| E4 | **Pre-GFC sample restriction** — add a `max_qt="2007Q4"` option to `run_lp()` in `part5_lp.py`; same question as E3 from the other side | ❌ |
+| E5 | **Refresh the BED cache to 2024Q4** — run `refresh_bed_cache.py` locally (BLS rate limits block it in a sandbox); the `ext_2024` sample in part11 currently truncates at 2021Q4, and `raw_data.pkl` δ ends 2021Q4 | ❌ |
+| E6 | **Run `part2b_residualize_shocks_v3.py` once**, or delete the appendix promise from the draft — see [D8](decisions.md) | ❌ |
+| E7 | **`build_report_html.py`** — needs `conda install -c conda-forge pandoc` locally | ❌ optional |
 
-### Comparison B (extension) — Re-calibrate targeting ψ ≈ 1.0   ❌ PENDING
-- Motivation: at ψ≈0.014, the x_c continuation-cost margin is nearly dormant; the
-  current Comparison B illustrates exposure effect (δbar halved) not dynamic buffering.
-  Targeting ψ≈1.0 directly (as in Broer et al. IER 2025) would activate the x_c channel.
-- Implementation: add `ψ_target=1.0` to `calibrate_shares` targets in `run_solution_endog_exit.jl`
-  and re-run; or add a third variant to the existing comparison.
-- Decision required: is the current exposure-effect result sufficient for the paper, or
-  does the mechanism section need to show the dynamic x_c story?
+## Paper writing tasks (secondary)
 
-### Comparison C — Variety Effects (N → ρ → w_int → JCC)   ✅ COMPLETE
-- Files: `run_solution_no_variety.jl`, `plot_no_variety_comparison.jl`
-- Output: `irf_no_variety.jls`, `mechanism_C_z_shock.pdf`, `mechanism_C_delta_shock.pdf`
-- Implementation: set ρ≡1 by replacing f[13] in model equations post-gen; dedicated
-  `calibrate_shares_no_variety()` with ρ=1 hardwired in Stage 4
-- Targets: dest_end_frac=0.5, p_0=0.5, dest_elast_target=5.0, b_ratio=0.9, x_v=0.5
-- Color: darkorange dotted for no-variety arm
-- Draft: Section 4.3 Comparison C text + figure environments added (mechanism_C_z_shock, mechanism_C_delta_shock)
-- Notation: survival quantile renamed \varsigma (was \zeta) throughout draft to avoid clash with variety taste parameter
+| # | Task | Status |
+|---|---|---|
+| P1 | **§4.3** — add the δ–LD correlation paragraph and an in-text joint-LP sentence; fix the malformed `\ref` that ends the section | ⚠️ |
+| P2 | **Fix broken cross-references** — undefined `sec:conclusion`, `app:robustness`, `app:weighting_robustness`, `eq:labor_C_N`; multiply-defined `eq:profit_share` | ⚠️ |
+| P3b | **Reconcile `Draft.tex:421` with the new δ_e**: the intro endorses Gabrovski-Silva's 6–10%/yr range while the calibration would use 3.2%. Rewrite to explain why the added channels (ω_δ, variety, ξ) permit a lower empirically-grounded δ — or report an estimated δ_e instead | ⚠️ **new, created by [D1](decisions.md)** |
+| P3 | **Cite the Blanchard-Kahn notes** — `Notes/Baseline_Blanchard_Kahn.md` establishes BK under ε > 1 and that endogenous exit strengthens BK. Currently uncited; worth a footnote or a short appendix subsection | ❌ |
+| P4 | **§5.2 rewrite** to match whichever calibration path D2 selects | blocked on D2 |
 
-### Comparison D — Role of Entry Elasticity (ξ_inv)   ✅ COMPLETE
-- Files: `run_solution_entry_elasticity.jl`, `plot_xi_inv_comparison.jl`
-- Output: `irf_xi_inv.jls`, `mechanism_D_z_shock.pdf`, `mechanism_D_delta_shock.pdf`
-- Comparison: baseline ξ_inv=1.0 vs. near-free-entry ξ_inv=0.1 (both recalibrated; ϕ, κ, x_m adjust)
-- Key findings: lower ξ_inv amplifies z-shock amplification (larger entry collapse via G(Q) channel)
-  and attenuates δ-shock unemployment response (stronger entry cushion from duration shortening).
-  At baseline δ_e/τ≈21%, negative u-v comovement for δ shocks is robust across full ξ range
-  including free entry — empirically calibrated δ̄_e rules out CK Beveridge curve shift.
-- New appendix section: app:additional_comparisons ("Impulse responses: additional comparisons"),
-  subsection app:comparison_D. Placeholder ready for future comparisons.
-- D5 extended: eq:K_decomp, eq:Q_ll_delta, eq:e_ll_delta (full K decomposition for δ shocks;
-  corrected transmission chain showing K↑ → Q↑ → e↑ for δ shocks, not K↓)
+## Model tasks (secondary)
 
-### Free-entry comparison (steady_state_checks.jl)   ❌ PENDING (lower priority)
-- Goal: side-by-side baseline (ξ_inv=1) vs. free-entry (ξ_inv=0) in steady_state_checks.jl
-- Purpose: show ξ_inv has no handle on z-shock amplification (ϕ always recalibrates)
-- Identification swap: DROP x_v; ADD b/w_int target (=baseline 0.8586); INHERIT κ; ϕ residual
-- Functions written: `calibrate_shares_free_entry(targets, κ_fixed, b_w_int_target)` and
-  `steady_state_free_entry(para)` — both in steady_state.jl
-- Current failure: θ=1.80 found instead of ~0.51; JCC has two branches at ϕ=0.624;
-  solver init log(0.51) may land near wrong branch
-- Most promising fix: use bracketed solver in steady_state_free_entry,
-  e.g. find_zero(jcc_res, (log(0.1), log(0.6))) to force low-θ branch
-- Key insight: ϕ genuinely differs at free entry (0.624 vs 0.670) because K halves;
-  this is correct behavior but shifts the JCC curve
+| # | Task | Status |
+|---|---|---|
+| M1 | ~~Comparison B extension at ψ ≈ 1.0~~ — folded into [D2](decisions.md): estimate `dest_elast_target` and report the implied ψ, rather than recalibrating | ✅ superseded |
+| M2 | **Free-entry steady state** in `steady_state_checks.jl` — solver lands on the θ=1.80 branch; fix is a bracketed solve over `(log(0.1), log(0.6))`. See [D9](decisions.md) | ❌ low priority |
+| M3 | ~~Verify the calibrated ψ~~ ✅ **resolved Sept 5, 2026**: 0.014 is the PATH A outcome, 0.033 the PATH B outcome. Only 0.033 applies to the current Comparison B | ✅ |
+| M5 | **Pre-estimation diagnostic** — `run_solution_delta_target.jl` ✅ **written and run Sept 5, 2026**. Compares dest_ann ∈ {0.0320 BED, 0.0754 code, 0.0963 BGM} on σ(θ)/σ(labor_prod) vs 11.70 and δ→u persistence vs the LP peak at h=17–20. Serializes `irf_delta_target.jls`. See [D1](decisions.md) | ✅ **run Sept 5, 2026** — see findings.md §D1/M5. Does NOT settle D1: all three specifications miss amplification by ~10× and peak at h=1 vs the LP h=17–20 |
+| M7 | 🔴 **Fix the observable mapping for labor productivity.** Model `labor_prod = Y/(ρL)` has SD 0.0387 vs 0.0128 in data and correlates 0.9975 with N^e — it tracks the ν_f·N^e entry term in Y, not technology. Every RSD in Block M has this in the denominator. Candidates: Y_c/L_c, or a differently deflated series. Then write an explicit observable-mapping table into §5.2 | ❌ **blocks Block M** |
+| M8 | 🔴 **Chase the hump-shape gap**: model δ→u peaks at h=1 quarter, LP at h=17–20. If Θ_e cannot close this, Block B and Block M will fight. Establish before building the sampler | ❌ |
+| M6 | **`hp_filter` was not the HP filter** — fixed in `time_series_fun.jl` Sept 5, 2026 (was a first-difference/Whittaker smoother: ~5× the correct cycle SD, corr 0.26 with true HP at λ=1600). Now pentadiagonal, matches `statsmodels.hpfilter` to 1e-12. **Any model-side second moment computed before this date is invalid**, incl. anything from `second_moments.jl`/`second_moments_GS.jl` | ✅ fixed |
+| M9 | 🔴 **Reproducibility remediation (principles.md N15).** The Sept 5, 2026 rewrite of §5.3 introduced ~24 numbers (firm-stock and shock half-lives, f_e levels, IRF peaks/troughs, exit-flow decomposition, w_int gap) computed in ad-hoc Julia sessions, not emitted by any program. ✅ **Closed Sept 6, 2026.** `mechanism_stats.jl` emits 66 quantities to `mechanism_stats.txt` and `mechanism_stats.tex`, all reproducing the values in §5.3. **Decision (MS):** the prose keeps the literals rather than `\input`-ing the macros. The numbers are checked against `mechanism_stats.txt` during draft updates, and that file is the authority. Re-run the script after any mechanism runner and diff it before touching §5.3 | ✅ |
+| M4 | **Consider fixing the `eval_SS` toolkit bug** (`for ip in npar` iterates once) so callers need not pass a pre-computed SS — matters once the sampler calls the solver thousands of times | ❌ |
 
-## Empirical Code Tasks (priority order)
+---
 
-1. **Wild cluster bootstrap** — `part5_wcrb.py` ❌ — **see blocker B2 above**
-   - n=50 state clusters is at the lower bound of asymptotic SE reliability
-   - Use `wildboottest` or `linearmodels` bootstrap; supplement all main LP tables
-   - NOT just SEs: must persist the full cross-horizon, cross-outcome covariance
-     (42×42 for h=0..20 × {u,v}). That matrix is Ω_β in `eq:ql_irf` and nothing
-     in the pipeline currently produces it.
+## Completed
 
-2. **GFC diagnostic for LD unemployment** — `part7d_ld_gfc.py` ❌
-   - LD unemployment IRF rises monotonically through h=20, inconsistent with ρ_LD≈0.3
-   - Apply GFC_{t+h} outcome-quarter control dummy to test whether GFC drives the pattern
-
-3. **SLOOS C&I interaction** — `part7b_sloos.py` ⚠️ WRITTEN, RUN, but OUTPUT STALE
-   - Replace NFCI_risk with Senior Loan Officer Opinion Survey C&I net tightening (FRED)
-   - Tests whether NFCI result reflects credit supply vs. recession severity
-   - Directly relevant to industry-credit-conditions hypothesis for r(δ,LD)=0.334
-   - Existing `lp_irf_delta_sloos_*.csv` were produced 2026-04-09 with instr_sd=11.16,
-     i.e. the pre-BED-Deaths instrument. Re-run before citing.
-
-4. **Pre-GFC sample restriction** ❌
-   - Add `max_qt="2007Q4"` option to `run_lp()` in `part5_lp.py`
-   - Tests whether monotonically rising s/LD IRF is GFC-driven
-
-5. **Refresh BED cache to 2024Q4** ❌
-   - Run `refresh_bed_cache.py` locally (blocked in sandbox by BLS API rate limit)
-   - Current `ext_2024` sample in part11 truncates at 2021Q4
-
-6. **build_report_html.py** ❌
-   - Pandoc-based Markdown → HTML with base64-embedded figures
-   - Requires `conda install -c conda-forge pandoc` locally
-
-## Paper Writing Tasks (priority order)
-
-1. ~~**Section 3.10 — δ vs. s asymmetry mechanism**~~ ✅ DONE — superseded by `prop:ds_asymmetry` (Proposition 5, complete June 5, 2026). Formal 3-part proposition + lem:vpre + full proof in app:proof_ds. See findings.md for full structure.
-
-2. **Section 4.3 — Results** (mostly drafted) ⚠️
-   - Numbers in the draft are the BED-Deaths baseline: δ→u plateau +1.71 pp at h=17–20
-     (sig. from h=0); δ→v trough −0.58 pp at h=18 (sig. from h=2). The +1.50/−0.44
-     figures listed here in June came from the superseded closings×π instrument.
-   - ✅ severity placebo paragraph is written (`Draft.tex:2176–2196`)
-   - Still needs: δ–LD correlation paragraph; an in-text joint-LP sentence (the section
-     currently ends with a bare, malformed `\ref{app:diagnostics}`)
-
-3. **Section 5 — Quantitative analysis** ⚠️ design written, results absent
-   - ✅ Calibration written as the four-stage sequential approach (`tab:calib_targets`)
-   - ✅ BSMM design + two-block weighting written (`eq:posterior`) — see
-     [`estimation_design.md`](estimation_design.md)
-   - ❌ §5.4 `sec:posterior` is an empty stub (three TODO comments only)
-   - ❌ Blocked on B1 (which δ_e?), B2 (Ω_β), B3 (no estimation code exists)
-   - ❌ `app:weighting_robustness` promised in §5.2 but never written
-   - ❌ Two-model counterfactual (baseline vs. AGS) — not started
-
-4. **Section 6 — Conclusion** ❌
-
-## Completed Code Tasks
-
-- ✅ `run_solution_core.jl` full audit (May 20): naming r/ρ, κ per match, u LOM total v_t, BFE at f[4], SS_symbolics x_c/C/Y corrected
-- ✅ `part6b_shock_persistence_cyclical.py`: bivariate VAR(1) HP-1600 log(z)/log(δ), Cholesky z-first → ρ_z^m=0.902, ρ_δ^m=0.592
-- ✅ `run_solution_entry_elasticity.jl` + `plot_xi_inv_comparison.jl` (May 31): Comparison D complete; see above
-- ✅ `run_solution_all_delta.jl` (May 20–21): baseline vs. high-δ (δ_e=τ, pure exogenous); b_ratio=0.9, x_v=0.5; serializes `irf_all_delta.jls`
-- ✅ `plot_mechanism_comparison.jl` (May 21): 4×2 portrait (u/v, θ/w_int, N/N_e, K/Q); K+Q row reveals short-duration asset amplification; interpreted comments added
-- ✅ `run_solution_endog_exit.jl` (May 21): full baseline (endog exit) vs. exog exit; b_ratio=0.9, x_v=0.5; appends exit_flow=δ_e+N; serializes `irf_endog_exit.jls`
-- ✅ `plot_endog_exit_comparison.jl` (May 21): 4×2 portrait with exit_flow replacing Q; comprehensive IRF interpretation comments added (δbar halving dominant, ψ≈0.014 dormant x_c)
-- ✅ `Inspecting_mechanism_setup.md` (May 21): Comparison B results and two-factor interpretation documented; plot design table and implementation order updated
-
-## Completed Writing Tasks
-
-- ✅ Appendix D5 paragraph 9: K decomposition for δ shocks (eq:K_decomp, eq:Q_ll_delta, eq:e_ll_delta);
-  corrected transmission chains; sign asymmetry ê^δ>0, ê^z<0 explained via duration shortening
-- ✅ New appendix section: "Impulse responses: additional comparisons" (app:additional_comparisons);
-  Comparison D with CK connection, ξ governs cushioning strength, δ_e/τ robustness result
-
-- ✅ `prop:bgm_nest` (Nesting LR-BGM) + LR-BGM definition paragraph — Section 3 after Remark 1
-- ✅ Proof of `prop:bgm_nest` — Appendix C (three-block: LOM eq:N_lom_eq, Euler eq:N_euler_eq, GDP eq:gdp)
-- ✅ Section 4.2 LP specification: generic y_{s,t} formulation with label eq:lp
-- ✅ Figure placement: fig:delta_distribution in §4.1; fig:delta_uv_irf in §4.2
-- ✅ Vacancy convention corrected throughout: pp levels difference, not log (Principle 15)
-- ✅ lp_irf_delta_uv_baseline.png now generated by part5_lp.py section 8g (_plt_diagnostics)
-- ✅ instrument_delta_distribution.png generated by part3_resid_instruments.py standalone block
-- ✅ Section 5.1 CK comparison compressed
-- ✅ Section 5.2: filter switched to λ=1,600; Table 4 updated; moments paragraph rewritten; QL justification added; τ→s notation fixed
-- ✅ Prop 6 (DS-CES equilibria) restated for DS-CES; detailed 5-step proof in new appendix section
-- ✅ Prop 5 (prop:ds_asymmetry, δ-s asymmetry) updated with formal lem:vpre + 3-part proof in app:proof_ds (June 5, 2026); draft renamed to `Draft/Draft.tex`
-- ✅ Appendix B new subsection `app:filter_robustness`: 3-filter dynamic correlation table with bold HP-100k outlier cells
-- ✅ `observables.py`: BED Deaths via BLS API (dataclass 08), 1994 CPS correction, BAWBATOTALSAUS, plt.show() fix
-- ✅ `labor_market_dyn_corr_by_filter.py`: standalone script producing dynamic correlation plots and CSV by filter
-
-## Specification Decisions Still Open
-
-- **Primary LP for paper**: joint (part5_joint_lp.py) or separate (part5_lp.py)?
-  Current recommendation: separate LP as primary; joint as robustness for δ. δ vacancy IRF stable across both.
-- **v3 residualization** (+ monetary policy sensitivity φ_j × ΔMP_t): coded but not yet run; appears in draft as appendix robustness.
-- **Industry credit control** (Route B): would further reduce r(δ,LD) and potentially validate separate LPs. Sources: BofA/ICE OAS by sector (Bloomberg), or Compustat leverage. Not yet implemented.
+Comparisons A–D are complete; their findings are in [`findings.md`](findings.md) and their
+files in [`pipeline.md`](pipeline.md). The full completed-work log through June 7, 2026 —
+`run_solution_core.jl` audit, the λ=1,600 switch, the BED Deaths switch, Propositions 1–6
+and their proofs, the §4.2/§4.3 and §5.1/§5.2 drafting, `app:filter_robustness` — is in the
+git history (`git log --since=2026-04-01`) and reflected in the status tables of
+[`draft_status.md`](draft_status.md). It is no longer duplicated here.

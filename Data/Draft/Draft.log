@@ -1,11 +1,11 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.2) (preloaded format=pdflatex 2026.5.15)  7 JUN 2026 16:03
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.7.14)  6 SEP 2026 17:07
 entering extended mode
- \write18 enabled.
+ restricted \write18 enabled.
  %&-line parsing enabled.
 **./Draft.tex
 (Draft.tex
 LaTeX2e <2025-11-01>
-L3 programming layer <2026-03-20>
+L3 programming layer <2025-12-24>
 
 (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/latex/elsarticle\elsarticle.c
 ls
@@ -14,11 +14,11 @@ Document Class: elsarticle 2026/01/09, 3.5: Elsevier Ltd
 Package: fontenc 2025/07/18 v2.1d Standard LaTeX package
 )
 (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/latex/l3kernel\expl3.sty
-Package: expl3 2026-03-20 L3 programming layer (loader) 
+Package: expl3 2025-12-24 L3 programming layer (loader) 
 
 (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/latex/l3backend\l3backend-pdf
 tex.def
-File: l3backend-pdftex.def 2026-02-18 L3 backend support: PDF output (pdfTeX)
+File: l3backend-pdftex.def 2025-10-09 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count275
 ))
 (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/latex/l3packages/xparse\xpars
@@ -29,7 +29,7 @@ Package: xparse 2025-10-09 L3 Experimental document command parser
 Package: etoolbox 2025/10/02 v2.5m e-TeX tools for LaTeX (JAW)
 \etb@tempcnta=\count276
 )
-\@bls=\dimen150
+\@bls=\dimen148
 
 (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/latex/base\article.cls
 Document Class: article 2025/01/22 v1.4n Standard LaTeX document class
@@ -46,7 +46,7 @@ File: size12.clo 2025/01/22 v1.4n Standard LaTeX file (size option)
 \c@table=\count284
 \abovecaptionskip=\skip49
 \belowcaptionskip=\skip50
-\bibindent=\dimen151
+\bibindent=\dimen149
 )
 (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/latex/graphics\graphicx.sty
 Package: graphicx 2024/12/31 v1.2e Enhanced LaTeX Graphics (DPC,SPQR)
@@ -70,8 +70,8 @@ Package graphics Info: Driver file: pdftex.def on input line 106.
 (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/latex/graphics-def\pdftex.def
 File: pdftex.def 2025/09/29 v1.2d Graphics/color driver for pdftex
 ))
-\Gin@req@height=\dimen152
-\Gin@req@width=\dimen153
+\Gin@req@height=\dimen150
+\Gin@req@width=\dimen151
 )
 \c@tnote=\count285
 \c@fnote=\count286
@@ -84,11 +84,11 @@ File: pdftex.def 2025/09/29 v1.2d Graphics/color driver for pdftex
 \elsarticlehighlightsbox=\box54
 \elsarticlegrabsbox=\box55
 \keybox=\box56
-\Columnwidth=\dimen154
-\space@left=\dimen155
+\Columnwidth=\dimen152
+\space@left=\dimen153
 \els@boxa=\box57
 \els@boxb=\box58
-\leftMargin=\dimen156
+\leftMargin=\dimen154
 \@enLab=\toks19
 \@sep=\skip51
 \@@sep=\skip52
@@ -103,7 +103,7 @@ LaTeX Info: Redefining \cite on input line 694.
 \splwrite=\write3
 \openout3 = `Draft.spl'.
 
-\appnamewidth=\dimen157
+\appnamewidth=\dimen155
 )
 (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\amssymb.sty
 Package: amssymb 2013/01/14 v3.01 AMS font symbols
@@ -127,11 +127,11 @@ Package: amstext 2024/11/17 v2.01 AMS text
 (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsgen.sty
 File: amsgen.sty 1999/11/30 v2.0 generic functions
 \@emptytoks=\toks21
-\ex@=\dimen158
+\ex@=\dimen156
 ))
 (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsbsy.sty
 Package: amsbsy 1999/11/29 v1.2d Bold Symbols
-\pmbraise@=\dimen159
+\pmbraise@=\dimen157
 )
 (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsopn.sty
 Package: amsopn 2022/04/08 v2.04 operator names
@@ -153,7 +153,7 @@ LaTeX Info: Redefining \big on input line 721.
 LaTeX Info: Redefining \Big on input line 722.
 LaTeX Info: Redefining \bigg on input line 723.
 LaTeX Info: Redefining \Bigg on input line 724.
-\big@size=\dimen160
+\big@size=\dimen158
 LaTeX Font Info:    Redeclaring font encoding OML on input line 742.
 LaTeX Font Info:    Redeclaring font encoding OMS on input line 743.
 \macc@depth=\count297
@@ -171,12 +171,12 @@ LaTeX Info: Redefining \Relbar on input line 970.
 \column@=\count302
 \maxfields@=\count303
 \andhelp@=\toks23
-\eqnshift@=\dimen161
-\alignsep@=\dimen162
-\tagshift@=\dimen163
-\tagwidth@=\dimen164
-\totwidth@=\dimen165
-\lineht@=\dimen166
+\eqnshift@=\dimen159
+\alignsep@=\dimen160
+\tagshift@=\dimen161
+\tagwidth@=\dimen162
+\totwidth@=\dimen163
+\lineht@=\dimen164
 \@envbody=\toks24
 \multlinegap=\skip56
 \multlinetaggap=\skip57
@@ -208,7 +208,7 @@ Package: psfrag 1998/04/11 v3.04 PSfrag (MCG)
 
 Excluding comment 'comment')
 (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\hyperref.sty
-Package: hyperref 2026-04-24 v7.01q Hypertext links for LaTeX
+Package: hyperref 2025-07-12 v7.01o Hypertext links for LaTeX
 
 (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/generic/iftex\iftex.sty
 Package: iftex 2024/12/12 v1.0g TeX engine tests
@@ -244,7 +244,7 @@ Package pdftexcmds Info: \pdfdraftmode found.
 Package: hycolor 2020-01-27 v1.10 Color options for hyperref/bookmark (HO)
 )
 (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\nameref.sty
-Package: nameref 2026-01-29 v2.58 Cross-referencing by name of section
+Package: nameref 2025-06-21 v2.57 Cross-referencing by name of section
 
 (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/latex/refcount\refcount.sty
 Package: refcount 2019/12/15 v3.6 Data extraction from label references (HO)
@@ -263,11 +263,11 @@ ty
 Package: stringenc 2019/11/29 v1.12 Convert strings between diff. encodings (HO
 )
 )
-\@linkdim=\dimen167
+\@linkdim=\dimen165
 \Hy@linkcounter=\count307
 \Hy@pagecounter=\count308
  (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\pd1enc.def
-File: pd1enc.def 2026-04-24 v7.01q Hyperref: PDFDocEncoding definition (HO)
+File: pd1enc.def 2025-07-12 v7.01o Hyperref: PDFDocEncoding definition (HO)
 Now handling font encoding PD1 ...
 ... no UTF-8 mapping file for font encoding PD1
 ) (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/generic/intcalc\intcalc.sty
@@ -275,26 +275,26 @@ Package: intcalc 2019/12/15 v1.3 Expandable calculations with integers (HO)
 )
 \Hy@SavedSpaceFactor=\count309
  (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\puenc.def
-File: puenc.def 2026-04-24 v7.01q Hyperref: PDF Unicode definition (HO)
+File: puenc.def 2025-07-12 v7.01o Hyperref: PDF Unicode definition (HO)
 Now handling font encoding PU ...
 ... no UTF-8 mapping file for font encoding PU
 )
-Package hyperref Info: Option `colorlinks' set `true' on input line 4070.
-Package hyperref Info: Hyper figures OFF on input line 4199.
-Package hyperref Info: Link nesting OFF on input line 4204.
-Package hyperref Info: Hyper index ON on input line 4207.
-Package hyperref Info: Plain pages OFF on input line 4214.
-Package hyperref Info: Backreferencing OFF on input line 4219.
+Package hyperref Info: Option `colorlinks' set `true' on input line 4066.
+Package hyperref Info: Hyper figures OFF on input line 4195.
+Package hyperref Info: Link nesting OFF on input line 4200.
+Package hyperref Info: Hyper index ON on input line 4203.
+Package hyperref Info: Plain pages OFF on input line 4210.
+Package hyperref Info: Backreferencing OFF on input line 4215.
 Package hyperref Info: Implicit mode ON; LaTeX internals redefined.
-Package hyperref Info: Bookmarks ON on input line 4466.
+Package hyperref Info: Bookmarks ON on input line 4462.
 \c@Hy@tempcnt=\count310
 
 (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/latex/url\url.sty
 \Urlmuskip=\muskip18
 Package: url 2013/09/16  ver 3.4  Verb mode for urls, etc.
 )
-LaTeX Info: Redefining \url on input line 4805.
-\XeTeXLinkMargin=\dimen168
+LaTeX Info: Redefining \url on input line 4801.
+\XeTeXLinkMargin=\dimen166
 
 (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/generic/bitset\bitset.sty
 Package: bitset 2019/12/09 v1.3 Handle bit-vector datatype (HO)
@@ -305,15 +305,15 @@ Package: bigintcalc 2019/12/15 v1.5 Expandable calculations on big integers (HO
 )
 ))
 \Fld@menulength=\count311
-\Field@Width=\dimen169
-\Fld@charsize=\dimen170
-Package hyperref Info: Hyper figures OFF on input line 6091.
-Package hyperref Info: Link nesting OFF on input line 6096.
-Package hyperref Info: Hyper index ON on input line 6099.
-Package hyperref Info: backreferencing OFF on input line 6106.
-Package hyperref Info: Link coloring ON on input line 6109.
-Package hyperref Info: Link coloring with OCG OFF on input line 6116.
-Package hyperref Info: PDF/A mode OFF on input line 6121.
+\Field@Width=\dimen167
+\Fld@charsize=\dimen168
+Package hyperref Info: Hyper figures OFF on input line 6078.
+Package hyperref Info: Link nesting OFF on input line 6083.
+Package hyperref Info: Hyper index ON on input line 6086.
+Package hyperref Info: backreferencing OFF on input line 6093.
+Package hyperref Info: Link coloring ON on input line 6096.
+Package hyperref Info: Link coloring with OCG OFF on input line 6103.
+Package hyperref Info: PDF/A mode OFF on input line 6108.
 \Hy@abspage=\count312
 \c@Item=\count313
 \c@Hfootnote=\count314
@@ -321,7 +321,7 @@ Package hyperref Info: PDF/A mode OFF on input line 6121.
 Package hyperref Info: Driver (autodetected): hpdftex.
 
 (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\hpdftex.def
-File: hpdftex.def 2026-04-24 v7.01q Hyperref driver for pdfTeX
+File: hpdftex.def 2025-07-12 v7.01o Hyperref driver for pdfTeX
 \Fld@listcount=\count315
 \c@bookmark@seq@number=\count316
 
@@ -344,8 +344,8 @@ Package: mathtools 2024/10/04 v1.31 mathematical typesetting tools
 Package: calc 2025/03/01 v4.3b Infix arithmetic (KKT,FJ)
 \calc@Acount=\count317
 \calc@Bcount=\count318
-\calc@Adimen=\dimen171
-\calc@Bdimen=\dimen172
+\calc@Adimen=\dimen169
+\calc@Bdimen=\dimen170
 \calc@Askip=\skip62
 \calc@Bskip=\skip63
 LaTeX Info: Redefining \setlength on input line 86.
@@ -357,30 +357,30 @@ LaTeX Info: Redefining \addtolength on input line 87.
 Package: mhsetup 2021/03/18 v1.4 programming setup (MH)
 )
 \g_MT_multlinerow_int=\count320
-\l_MT_multwidth_dim=\dimen173
+\l_MT_multwidth_dim=\dimen171
 \origjot=\skip65
-\l_MT_shortvdotswithinadjustabove_dim=\dimen174
-\l_MT_shortvdotswithinadjustbelow_dim=\dimen175
-\l_MT_above_intertext_sep=\dimen176
-\l_MT_below_intertext_sep=\dimen177
-\l_MT_above_shortintertext_sep=\dimen178
-\l_MT_below_shortintertext_sep=\dimen179
+\l_MT_shortvdotswithinadjustabove_dim=\dimen172
+\l_MT_shortvdotswithinadjustbelow_dim=\dimen173
+\l_MT_above_intertext_sep=\dimen174
+\l_MT_below_intertext_sep=\dimen175
+\l_MT_above_shortintertext_sep=\dimen176
+\l_MT_below_shortintertext_sep=\dimen177
 \xmathstrut@box=\box61
-\xmathstrut@dim=\dimen180
+\xmathstrut@dim=\dimen178
 ) (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/latex/makecell\makecell.sty
 Package: makecell 2009/08/03 V0.1e Managing of Tab Column Heads and Cells
 
 (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/latex/tools\array.sty
 Package: array 2025/09/25 v2.6n Tabular extension package (FMi)
-\col@sep=\dimen181
+\col@sep=\dimen179
 \ar@mcellbox=\box62
-\extrarowheight=\dimen182
+\extrarowheight=\dimen180
 \NC@list=\toks32
 \extratabsurround=\skip66
 \backup@length=\skip67
 \ar@cellbox=\box63
 )
-\rotheadsize=\dimen183
+\rotheadsize=\dimen181
 \c@nlinenum=\count321
 \TeXr@lab=\toks33
 )
@@ -389,23 +389,23 @@ Package: alltt 2024/07/07 v2.0g defines alltt environment
 )
 (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/latex/booktabs\booktabs.sty
 Package: booktabs 2020/01/12 v1.61803398 Publication quality tables
-\heavyrulewidth=\dimen184
-\lightrulewidth=\dimen185
-\cmidrulewidth=\dimen186
-\belowrulesep=\dimen187
-\belowbottomsep=\dimen188
-\aboverulesep=\dimen189
-\abovetopsep=\dimen190
-\cmidrulesep=\dimen191
-\cmidrulekern=\dimen192
-\defaultaddspace=\dimen193
+\heavyrulewidth=\dimen182
+\lightrulewidth=\dimen183
+\cmidrulewidth=\dimen184
+\belowrulesep=\dimen185
+\belowbottomsep=\dimen186
+\aboverulesep=\dimen187
+\abovetopsep=\dimen188
+\cmidrulesep=\dimen189
+\cmidrulekern=\dimen190
+\defaultaddspace=\dimen191
 \@cmidla=\count322
 \@cmidlb=\count323
-\@aboverulesep=\dimen194
-\@belowrulesep=\dimen195
+\@aboverulesep=\dimen192
+\@belowrulesep=\dimen193
 \@thisruleclass=\count324
 \@lastruleclass=\count325
-\@thisrulewidth=\dimen196
+\@thisrulewidth=\dimen194
 )
 (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/latex/tools\longtable.sty
 Package: longtable 2025-10-13 v4.24 Multi-page Table package (DPC)
@@ -414,7 +414,7 @@ Package: longtable 2025-10-13 v4.24 Multi-page Table package (DPC)
 \LTpre=\skip70
 \LTpost=\skip71
 \LTchunksize=\count326
-\LTcapwidth=\dimen197
+\LTcapwidth=\dimen195
 \LT@head=\box64
 \LT@firsthead=\box65
 \LT@foot=\box66
@@ -446,11 +446,11 @@ Package: trimspaces 2009/09/17 v1.1 Trim spaces around a token list
 )
 (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/latex/tools\tabularx.sty
 Package: tabularx 2023/12/11 v2.12a `tabularx' package (DPC)
-\TX@col@width=\dimen198
-\TX@old@table=\dimen199
-\TX@old@col=\dimen256
-\TX@target=\dimen257
-\TX@delta=\dimen258
+\TX@col@width=\dimen196
+\TX@old@table=\dimen197
+\TX@old@col=\dimen198
+\TX@target=\dimen199
+\TX@delta=\dimen256
 \TX@cols=\count331
 \TX@ftn=\toks35
 )
@@ -462,14 +462,14 @@ Package: caption 2023/08/05 v3.6o Customizing captions (AR)
 
 (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/latex/caption\caption3.sty
 Package: caption3 2023/07/31 v2.4d caption3 kernel (AR)
-\caption@tempdima=\dimen259
-\captionmargin=\dimen260
-\caption@leftmargin=\dimen261
-\caption@rightmargin=\dimen262
-\caption@width=\dimen263
-\caption@indent=\dimen264
-\caption@parindent=\dimen265
-\caption@hangindent=\dimen266
+\caption@tempdima=\dimen257
+\captionmargin=\dimen258
+\caption@leftmargin=\dimen259
+\caption@rightmargin=\dimen260
+\caption@width=\dimen261
+\caption@indent=\dimen262
+\caption@parindent=\dimen263
+\caption@hangindent=\dimen264
 Package caption Info: elsarticle document class detected.
 
 (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/latex/caption\caption-elsarti
@@ -489,7 +489,7 @@ Package caption Info: threeparttable package is loaded.
 )
 \c@KVtest=\count334
 \sf@farskip=\skip73
-\sf@captopadj=\dimen267
+\sf@captopadj=\dimen265
 \sf@capskip=\skip74
 \sf@nearskip=\skip75
 \c@subfigure=\count335
@@ -508,14 +508,14 @@ Package: ifvtex 2019/10/25 v1.7 ifvtex legacy package. Use iftex instead.
 \Gm@cnth=\count341
 \Gm@cntv=\count342
 \c@Gm@tempcnt=\count343
-\Gm@bindingoffset=\dimen268
-\Gm@wd@mp=\dimen269
-\Gm@odd@mp=\dimen270
-\Gm@even@mp=\dimen271
-\Gm@layoutwidth=\dimen272
-\Gm@layoutheight=\dimen273
-\Gm@layouthoffset=\dimen274
-\Gm@layoutvoffset=\dimen275
+\Gm@bindingoffset=\dimen266
+\Gm@wd@mp=\dimen267
+\Gm@odd@mp=\dimen268
+\Gm@even@mp=\dimen269
+\Gm@layoutwidth=\dimen270
+\Gm@layoutheight=\dimen271
+\Gm@layouthoffset=\dimen272
+\Gm@layoutvoffset=\dimen273
 \Gm@dimlist=\toks36
 
 (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/latex/geometry\geometry.cfg))
@@ -535,24 +535,24 @@ Package pict2e Info: Driver file for pict2e: p2e-pdftex.def on input line 114.
 File: p2e-pdftex.def 2016/02/05 v0.1u Driver-dependant file (RN,HjG,JT)
 )
 \pIIe@GRAPH=\toks37
-\@arclen=\dimen276
-\@arcrad=\dimen277
-\pIIe@tempdima=\dimen278
-\pIIe@tempdimb=\dimen279
-\pIIe@tempdimc=\dimen280
-\pIIe@tempdimd=\dimen281
-\pIIe@tempdime=\dimen282
-\pIIe@tempdimf=\dimen283
+\@arclen=\dimen274
+\@arcrad=\dimen275
+\pIIe@tempdima=\dimen276
+\pIIe@tempdimb=\dimen277
+\pIIe@tempdimc=\dimen278
+\pIIe@tempdimd=\dimen279
+\pIIe@tempdime=\dimen280
+\pIIe@tempdimf=\dimen281
 )
 \diagbox@boxa=\box70
 \diagbox@boxb=\box71
 \diagbox@boxm=\box72
-\diagbox@wd=\dimen284
-\diagbox@ht=\dimen285
-\diagbox@insepl=\dimen286
-\diagbox@insepr=\dimen287
-\diagbox@outsepl=\dimen288
-\diagbox@outsepr=\dimen289
+\diagbox@wd=\dimen282
+\diagbox@ht=\dimen283
+\diagbox@insepl=\dimen284
+\diagbox@insepr=\dimen285
+\diagbox@outsepl=\dimen286
+\diagbox@outsepr=\dimen287
 )
 (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/latex/epstopdf-pkg\epstopdf.s
 ty
@@ -602,8 +602,8 @@ y
 (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgfutil
 -common.tex
 \pgfutil@everybye=\toks40
-\pgfutil@tempdima=\dimen290
-\pgfutil@tempdimb=\dimen291
+\pgfutil@tempdima=\dimen288
+\pgfutil@tempdimb=\dimen289
 )
 (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgfutil
 -latex.def
@@ -633,16 +633,16 @@ Package: pgfsys 2025-08-29 v3.1.11a (3.1.11a)
 libraryfiltered.code.tex
 \pgfkeys@tmptoks=\toks43
 ))
-\pgf@x=\dimen292
-\pgf@y=\dimen293
-\pgf@xa=\dimen294
-\pgf@ya=\dimen295
-\pgf@xb=\dimen296
-\pgf@yb=\dimen297
-\pgf@xc=\dimen298
-\pgf@yc=\dimen299
-\pgf@xd=\dimen300
-\pgf@yd=\dimen301
+\pgf@x=\dimen290
+\pgf@y=\dimen291
+\pgf@xa=\dimen292
+\pgf@ya=\dimen293
+\pgf@xb=\dimen294
+\pgf@yb=\dimen295
+\pgf@xc=\dimen296
+\pgf@yc=\dimen297
+\pgf@xd=\dimen298
+\pgf@yd=\dimen299
 \w@pgf@writea=\write6
 \r@pgf@reada=\read2
 \c@pgf@counta=\count352
@@ -706,7 +706,7 @@ Package: pgfcore 2025-08-29 v3.1.11a (3.1.11a)
 code.tex)
 (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathparse
 r.code.tex
-\pgfmath@dimen=\dimen302
+\pgfmath@dimen=\dimen300
 \pgfmath@count=\count359
 \pgfmath@box=\box76
 \pgfmath@toks=\toks47
@@ -742,32 +742,32 @@ tex)
 (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
 epoints.code.tex
 File: pgfcorepoints.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgf@picminx=\dimen303
-\pgf@picmaxx=\dimen304
-\pgf@picminy=\dimen305
-\pgf@picmaxy=\dimen306
-\pgf@pathminx=\dimen307
-\pgf@pathmaxx=\dimen308
-\pgf@pathminy=\dimen309
-\pgf@pathmaxy=\dimen310
-\pgf@xx=\dimen311
-\pgf@xy=\dimen312
-\pgf@yx=\dimen313
-\pgf@yy=\dimen314
-\pgf@zx=\dimen315
-\pgf@zy=\dimen316
+\pgf@picminx=\dimen301
+\pgf@picmaxx=\dimen302
+\pgf@picminy=\dimen303
+\pgf@picmaxy=\dimen304
+\pgf@pathminx=\dimen305
+\pgf@pathmaxx=\dimen306
+\pgf@pathminy=\dimen307
+\pgf@pathmaxy=\dimen308
+\pgf@xx=\dimen309
+\pgf@xy=\dimen310
+\pgf@yx=\dimen311
+\pgf@yy=\dimen312
+\pgf@zx=\dimen313
+\pgf@zy=\dimen314
 )
 (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
 epathconstruct.code.tex
 File: pgfcorepathconstruct.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgf@path@lastx=\dimen317
-\pgf@path@lasty=\dimen318
+\pgf@path@lastx=\dimen315
+\pgf@path@lasty=\dimen316
 )
 (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
 epathusage.code.tex
 File: pgfcorepathusage.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgf@shorten@end@additional=\dimen319
-\pgf@shorten@start@additional=\dimen320
+\pgf@shorten@end@additional=\dimen317
+\pgf@shorten@start@additional=\dimen318
 )
 (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
 escopes.code.tex
@@ -780,14 +780,14 @@ File: pgfcorescopes.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
 egraphicstate.code.tex
 File: pgfcoregraphicstate.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgflinewidth=\dimen321
+\pgflinewidth=\dimen319
 )
 (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
 etransformations.code.tex
 File: pgfcoretransformations.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgf@pt@x=\dimen322
-\pgf@pt@y=\dimen323
-\pgf@pt@temp=\dimen324
+\pgf@pt@x=\dimen320
+\pgf@pt@y=\dimen321
+\pgf@pt@temp=\dimen322
 )
 (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
 equick.code.tex
@@ -804,12 +804,12 @@ File: pgfcorepathprocessing.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
 earrows.code.tex
 File: pgfcorearrows.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgfarrowsep=\dimen325
+\pgfarrowsep=\dimen323
 )
 (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcor
 eshade.code.tex
 File: pgfcoreshade.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\pgf@max=\dimen326
+\pgf@max=\dimen324
 \pgf@sys@shading@range@num=\count362
 \pgf@shadingcount=\count363
 )
@@ -850,8 +850,8 @@ File: pgfmoduleplot.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/latex/pgf/compatibility\pgfco
 mp-version-0-65.sty
 Package: pgfcomp-version-0-65 2025-08-29 v3.1.11a (3.1.11a)
-\pgf@nodesepstart=\dimen327
-\pgf@nodesepend=\dimen328
+\pgf@nodesepstart=\dimen325
+\pgf@nodesepend=\dimen326
 )
 (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/latex/pgf/compatibility\pgfco
 mp-version-1-18.sty
@@ -869,8 +869,8 @@ ty
 (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgffor.
 code.tex
 Package: pgffor 2025-08-29 v3.1.11a (3.1.11a)
-\pgffor@iter=\dimen329
-\pgffor@skip=\dimen330
+\pgffor@iter=\dimen327
+\pgffor@skip=\dimen328
 \pgffor@stack=\toks50
 \pgffor@toks=\toks51
 ))
@@ -882,16 +882,16 @@ Package: tikz 2025-08-29 v3.1.11a (3.1.11a)
 aryplothandlers.code.tex
 File: pgflibraryplothandlers.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 \pgf@plot@mark@count=\count364
-\pgfplotmarksize=\dimen331
+\pgfplotmarksize=\dimen329
 )
-\tikz@lastx=\dimen332
-\tikz@lasty=\dimen333
-\tikz@lastxsaved=\dimen334
-\tikz@lastysaved=\dimen335
-\tikz@lastmovetox=\dimen336
-\tikz@lastmovetoy=\dimen337
-\tikzleveldistance=\dimen338
-\tikzsiblingdistance=\dimen339
+\tikz@lastx=\dimen330
+\tikz@lasty=\dimen331
+\tikz@lastxsaved=\dimen332
+\tikz@lastysaved=\dimen333
+\tikz@lastmovetox=\dimen334
+\tikz@lastmovetoy=\dimen335
+\tikzleveldistance=\dimen336
+\tikzsiblingdistance=\dimen337
 \tikz@figbox=\box82
 \tikz@figbox@bg=\box83
 \tikz@tempbox=\box84
@@ -929,7 +929,7 @@ File: tikzlibraryarrows.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/generic/pgf/libraries\pgflibr
 aryarrows.code.tex
 File: pgflibraryarrows.code.tex 2025-08-29 v3.1.11a (3.1.11a)
-\arrowsize=\dimen340
+\arrowsize=\dimen338
 ))
 (C:\Users\msilv\AppData\Local\Programs\MiKTeX\tex/generic/pgf/frontendlayer/tik
 z/libraries\tikzlibraryshapes.multipart.code.tex
@@ -988,13 +988,13 @@ LaTeX Font Info:    ... okay on input line 93.
 ii
 [Loading MPS to PDF converter (version 2006.09.02).]
 \scratchcounter=\count373
-\scratchdimen=\dimen341
+\scratchdimen=\dimen339
 \scratchbox=\box106
 \nofMPsegments=\count374
 \nofMParguments=\count375
 \everyMPshowfont=\toks52
 \MPscratchCnt=\count376
-\MPscratchDim=\dimen342
+\MPscratchDim=\dimen340
 \MPnumerator=\count377
 \makeMPintoPDFobject=\count378
 \everyMPtoPDFconversion=\toks53
@@ -1168,7 +1168,7 @@ LaTeX Warning: `!h' float specifier changed to `!ht'.
 
 [43] [44] [45] [46] [47]
 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unem
-ployment/Data/Programs baseline/mechanism_A_z_shock.pdf, id=859, 600.87082pt x 
+ployment/Data/Programs baseline/mechanism_A_z_shock.pdf, id=860, 600.87082pt x 
 642.22638pt>
 File: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and
 -unemployment/Data/Programs baseline/mechanism_A_z_shock.pdf Graphic file (type
@@ -1177,12 +1177,12 @@ File: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and
 unemployment/Data/Programs baseline/mechanism_A_z_shock.pdf>
 Package pdftex.def Info: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endo
 genous-variety--and-unemployment/Data/Programs baseline/mechanism_A_z_shock.pdf
-  used on input line 2671.
+  used on input line 2685.
 (pdftex.def)             Requested size: 398.7348pt x 426.19322pt.
  [48] [49 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety
 --and-unemployment/Data/Programs baseline/mechanism_A_z_shock.pdf>]
 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unem
-ployment/Data/Programs baseline/mechanism_A_delta_shock.pdf, id=945, 598.244pt 
+ployment/Data/Programs baseline/mechanism_A_delta_shock.pdf, id=947, 598.244pt 
 x 642.22833pt>
 File: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and
 -unemployment/Data/Programs baseline/mechanism_A_delta_shock.pdf Graphic file (
@@ -1191,12 +1191,12 @@ type pdf)
 unemployment/Data/Programs baseline/mechanism_A_delta_shock.pdf>
 Package pdftex.def Info: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endo
 genous-variety--and-unemployment/Data/Programs baseline/mechanism_A_delta_shock
-.pdf  used on input line 2761.
+.pdf  used on input line 2802.
 (pdftex.def)             Requested size: 398.7348pt x 428.06624pt.
- [50]
+ [50] [51]
 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unem
-ployment/Data/Programs baseline/mechanism_B_z_shock.pdf, id=958, 598.244pt x 64
-2.22939pt>
+ployment/Data/Programs baseline/mechanism_B_z_shock.pdf, id=964, 598.244pt x 64
+2.23134pt>
 File: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and
 -unemployment/Data/Programs baseline/mechanism_B_z_shock.pdf Graphic file (type
  pdf)
@@ -1204,15 +1204,15 @@ File: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and
 unemployment/Data/Programs baseline/mechanism_B_z_shock.pdf>
 Package pdftex.def Info: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endo
 genous-variety--and-unemployment/Data/Programs baseline/mechanism_B_z_shock.pdf
-  used on input line 2781.
-(pdftex.def)             Requested size: 398.7348pt x 428.06694pt.
- [51 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and
--unemployment/Data/Programs baseline/mechanism_A_delta_shock.pdf>] [52 <C:/User
+  used on input line 2822.
+(pdftex.def)             Requested size: 398.7348pt x 428.06824pt.
+ [52 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and
+-unemployment/Data/Programs baseline/mechanism_A_delta_shock.pdf>] [53 <C:/User
 s/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unemployment
 /Data/Programs baseline/mechanism_B_z_shock.pdf>]
 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unem
-ployment/Data/Programs baseline/mechanism_B_delta_shock.pdf, id=1052, 602.4939p
-t x 642.23134pt>
+ployment/Data/Programs baseline/mechanism_B_delta_shock.pdf, id=1058, 602.4939p
+t x 642.22939pt>
 File: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and
 -unemployment/Data/Programs baseline/mechanism_B_delta_shock.pdf Graphic file (
 type pdf)
@@ -1220,14 +1220,14 @@ type pdf)
 unemployment/Data/Programs baseline/mechanism_B_delta_shock.pdf>
 Package pdftex.def Info: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endo
 genous-variety--and-unemployment/Data/Programs baseline/mechanism_B_delta_shock
-.pdf  used on input line 2821.
-(pdftex.def)             Requested size: 398.7348pt x 425.04994pt.
- [53]
-[54 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-
-unemployment/Data/Programs baseline/mechanism_B_delta_shock.pdf>]
+.pdf  used on input line 2875.
+(pdftex.def)             Requested size: 398.7348pt x 425.04866pt.
+
+[54] [55 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety-
+-and-unemployment/Data/Programs baseline/mechanism_B_delta_shock.pdf>]
 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unem
-ployment/Data/Programs baseline/mechanism_C_z_shock.pdf, id=1105, 598.244pt x 6
-42.22736pt>
+ployment/Data/Programs baseline/mechanism_C_z_shock.pdf, id=1112, 598.244pt x 6
+42.23538pt>
 File: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and
 -unemployment/Data/Programs baseline/mechanism_C_z_shock.pdf Graphic file (type
  pdf)
@@ -1235,13 +1235,14 @@ File: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and
 unemployment/Data/Programs baseline/mechanism_C_z_shock.pdf>
 Package pdftex.def Info: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endo
 genous-variety--and-unemployment/Data/Programs baseline/mechanism_C_z_shock.pdf
-  used on input line 2878.
-(pdftex.def)             Requested size: 398.7348pt x 428.06558pt.
- [55] [56 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety
---and-unemployment/Data/Programs baseline/mechanism_C_z_shock.pdf>]
+  used on input line 2941.
+(pdftex.def)             Requested size: 398.7348pt x 428.07094pt.
+ [56]
+[57 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-
+unemployment/Data/Programs baseline/mechanism_C_z_shock.pdf>]
 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unem
-ployment/Data/Programs baseline/mechanism_C_delta_shock.pdf, id=1177, 602.4939p
-t x 642.23036pt>
+ployment/Data/Programs baseline/mechanism_C_delta_shock.pdf, id=1183, 602.4939p
+t x 642.22939pt>
 File: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and
 -unemployment/Data/Programs baseline/mechanism_C_delta_shock.pdf Graphic file (
 type pdf)
@@ -1249,50 +1250,50 @@ type pdf)
 unemployment/Data/Programs baseline/mechanism_C_delta_shock.pdf>
 Package pdftex.def Info: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endo
 genous-variety--and-unemployment/Data/Programs baseline/mechanism_C_delta_shock
-.pdf  used on input line 2914.
-(pdftex.def)             Requested size: 398.7348pt x 425.0493pt.
- [57 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and
--unemployment/Data/Programs baseline/mechanism_C_delta_shock.pdf>] [58]
-Overfull \hbox (30.8985pt too wide) in paragraph at lines 2957--2996
+.pdf  used on input line 2983.
+(pdftex.def)             Requested size: 398.7348pt x 425.04866pt.
+ [58] [59 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety
+--and-unemployment/Data/Programs baseline/mechanism_C_delta_shock.pdf>] [60]
+Overfull \hbox (30.8985pt too wide) in paragraph at lines 3026--3065
  [][] 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 3009--3009
+Underfull \hbox (badness 10000) in paragraph at lines 3078--3078
 []|\T1/cmr/m/n/10 BED es-tab-lish-ment
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 3010--3010
+Underfull \hbox (badness 10000) in paragraph at lines 3079--3079
 []|\T1/cmr/m/n/10 QCEW em-ploy-ment
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 3011--3011
+Underfull \hbox (badness 10000) in paragraph at lines 3080--3080
 []|\T1/cmr/m/n/10 Layoffs & dis-charges
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 3014--3014
+Underfull \hbox (badness 10000) in paragraph at lines 3083--3083
 []|\T1/cmr/m/n/10 Labor pro-duc-tiv-ity
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 3023--3023
+Underfull \hbox (badness 10000) in paragraph at lines 3092--3092
 []|\T1/cmr/m/n/10 Business for-ma-tions
  []
 
-[59] [60]
-<bed_deaths_by_supersector.png, id=1254, 931.8012pt x 369.5406pt>
+[61] [62]
+<bed_deaths_by_supersector.png, id=1265, 931.8012pt x 369.5406pt>
 File: bed_deaths_by_supersector.png Graphic file (type png)
 <use bed_deaths_by_supersector.png>
-Package pdftex.def Info: bed_deaths_by_supersector.png  used on input line 3058
+Package pdftex.def Info: bed_deaths_by_supersector.png  used on input line 3127
 .
 (pdftex.def)             Requested size: 486.25761pt x 192.8445pt.
- [61] [62 <./bed_deaths_by_supersector.png>]
+ [63] [64 <./bed_deaths_by_supersector.png>]
 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unem
 ployment/Data/Bartek analysis/data/results/lp_joint_delta_ld_vacancy.png, id=12
-69, 1003.1076pt x 427.3566pt>
+79, 1003.1076pt x 427.3566pt>
 File: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and
 -unemployment/Data/Bartek analysis/data/results/lp_joint_delta_ld_vacancy.png G
 raphic file (type png)
@@ -1300,12 +1301,12 @@ raphic file (type png)
 unemployment/Data/Bartek analysis/data/results/lp_joint_delta_ld_vacancy.png>
 Package pdftex.def Info: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endo
 genous-variety--and-unemployment/Data/Bartek analysis/data/results/lp_joint_del
-ta_ld_vacancy.png  used on input line 3117.
+ta_ld_vacancy.png  used on input line 3186.
 (pdftex.def)             Requested size: 486.25761pt x 207.16336pt.
- [63 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and
+ [65 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and
 -unemployment/Data/Bartek analysis/data/results/lp_joint_delta_ld_vacancy.png>]
- [64]
-Overfull \hbox (3.7806pt too wide) in paragraph at lines 3204--3211
+ [66]
+Overfull \hbox (3.7806pt too wide) in paragraph at lines 3273--3280
 []\T1/cmr/m/n/12 Table [][]C.7[][] re-ports dy-namic cross-correlations $[]\OT1
 /cmr/m/n/12 (\OML/cmm/m/it/12 ^^N[]; x[]\OT1/cmr/m/n/12 )$ \T1/cmr/m/n/12 for $
 \OML/cmm/m/it/12 x \OMS/cmsy/m/n/12 2 f\OML/cmm/m/it/12 u; v\OMS/cmsy/m/n/12 g$
@@ -1313,51 +1314,51 @@ Overfull \hbox (3.7806pt too wide) in paragraph at lines 3204--3211
 4\OML/cmm/m/it/12 ; [] ; \OT1/cmr/m/n/12 +4\OMS/cmsy/m/n/12 g$
  []
 
-[65] [66] [67]
+[67] [68] [69]
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 3309.
-
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\psi' on input line 3309.
+(hyperref)                removing `math shift' on input line 3378.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 3309.
+(hyperref)                removing `\psi' on input line 3378.
 
 
-LaTeX Warning: Reference `eq:labor_C_N' on page 68 undefined on input line 3315
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 3378.
+
+
+LaTeX Warning: Reference `eq:labor_C_N' on page 70 undefined on input line 3384
 .
 
-[68] [69] [70] [71] [72] [73] [74] [75]
-Overfull \hbox (37.7426pt too wide) detected at line 3703
+[70] [71] [72] [73] [74] [75] [76] [77]
+Overfull \hbox (37.7426pt too wide) detected at line 3772
 [] \OMS/cmsy/m/n/12 " []  [] " []  [] "\OML/cmm/m/it/12 ;  [] \OMS/cmsy/m/n/12 
 #  []  []  [] " []  [] " []  [] " []  [] " []\OML/cmm/m/it/12 :
  []
 
 
-Overfull \hbox (18.99457pt too wide) detected at line 3722
+Overfull \hbox (18.99457pt too wide) detected at line 3791
 [] \OMS/cmsy/m/n/12 # []  [] # []  [] #\OML/cmm/m/it/12 ;  [] \OMS/cmsy/m/n/12 
 # []  [] # []  [] # []  [] # []  [] # []  [] # []\OML/cmm/m/it/12 :
  []
 
-[76]
+[78]
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 3736.
-
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\xi' on input line 3736.
+(hyperref)                removing `math shift' on input line 3805.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 3736.
+(hyperref)                removing `\xi' on input line 3805.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 3805.
 
 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unem
-ployment/Data/Programs baseline/mechanism_D_z_shock.pdf, id=1537, 602.4939pt x 
-642.22736pt>
+ployment/Data/Programs baseline/mechanism_D_z_shock.pdf, id=1547, 600.87082pt x
+ 642.23538pt>
 File: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and
 -unemployment/Data/Programs baseline/mechanism_D_z_shock.pdf Graphic file (type
  pdf)
@@ -1365,12 +1366,13 @@ File: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and
 unemployment/Data/Programs baseline/mechanism_D_z_shock.pdf>
 Package pdftex.def Info: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endo
 genous-variety--and-unemployment/Data/Programs baseline/mechanism_D_z_shock.pdf
-  used on input line 3772.
-(pdftex.def)             Requested size: 398.7348pt x 425.04732pt.
-[77]
+  used on input line 3841.
+(pdftex.def)             Requested size: 398.7348pt x 426.19919pt.
+[79] [80 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety-
+-and-unemployment/Data/Programs baseline/mechanism_D_z_shock.pdf>]
 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unem
-ployment/Data/Programs baseline/mechanism_D_delta_shock.pdf, id=1549, 602.4939p
-t x 642.23134pt>
+ployment/Data/Programs baseline/mechanism_D_delta_shock.pdf, id=1605, 602.4939p
+t x 642.22939pt>
 File: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and
 -unemployment/Data/Programs baseline/mechanism_D_delta_shock.pdf Graphic file (
 type pdf)
@@ -1378,22 +1380,21 @@ type pdf)
 unemployment/Data/Programs baseline/mechanism_D_delta_shock.pdf>
 Package pdftex.def Info: C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endo
 genous-variety--and-unemployment/Data/Programs baseline/mechanism_D_delta_shock
-.pdf  used on input line 3797.
-(pdftex.def)             Requested size: 398.7348pt x 425.04994pt.
- [78 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and
--unemployment/Data/Programs baseline/mechanism_D_z_shock.pdf>] [79 <C:/Users/ms
-ilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unemployment/Dat
-a/Programs baseline/mechanism_D_delta_shock.pdf>] [80] [81]
-Overfull \hbox (0.669pt too wide) in paragraph at lines 4020--4026
+.pdf  used on input line 3869.
+(pdftex.def)             Requested size: 398.7348pt x 425.04866pt.
+ [81 <C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and
+-unemployment/Data/Programs baseline/mechanism_D_delta_shock.pdf>] [82] [83] [8
+4]
+Overfull \hbox (0.669pt too wide) in paragraph at lines 4108--4114
 \T1/cmr/m/n/12 This is a non-lin-ear pre-de-ter-mined vari-able equa-tion drive
 n by the ex-oge-nous pro-cesses $\OMS/cmsy/m/n/12 f\OML/cmm/m/it/12 z[]; ^^N[];
  u[]\OMS/cmsy/m/n/12 g$\T1/cmr/m/n/12 ,
  []
 
-[82] [83] [84] [85] [86] [87] [88] [89] (Draft.bbl [90] [91]) [92] (Draft.aux)
+[85] [86] [87] [88] [89] [90] [91] [92] (Draft.bbl [93] [94]) [95] (Draft.aux)
  ***********
 LaTeX2e <2025-11-01>
-L3 programming layer <2026-03-20>
+L3 programming layer <2025-12-24>
  ***********
 
 
@@ -1403,13 +1404,13 @@ LaTeX Warning: There were undefined references.
 LaTeX Warning: There were multiply-defined labels.
 
 Package rerunfilecheck Info: File `Draft.out' has not changed.
-(rerunfilecheck)             Checksum: C6688D61E8527D48754E6C1CEC10E2ED;9218.
+(rerunfilecheck)             Checksum: 70293C0694318D7859268E1C80180DA6;9240.
  ) 
 Here is how much of TeX's memory you used:
- 27924 strings out of 467691
- 542429 string characters out of 5414987
- 951315 words of memory out of 5000000
- 56157 multiletter control sequences out of 15000+600000
+ 27889 strings out of 467871
+ 540772 string characters out of 5418376
+ 946861 words of memory out of 5000000
+ 55939 multiletter control sequences out of 15000+600000
  654746 words of font info for 109 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  84i,19n,104p,2326b,851s stack positions out of 10000i,1000n,20000p,200000b,200000s
@@ -1455,9 +1456,9 @@ msilv/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy6.pfb><C
 amsfonts/cm/cmti12.pfb><C:/Users/msilv/AppData/Local/Programs/MiKTeX/fonts/type
 1/public/amsfonts/symbols/msam10.pfb><C:/Users/msilv/AppData/Local/Programs/MiK
 TeX/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on Draft.pdf (92 pages, 2367269 bytes).
+Output written on Draft.pdf (95 pages, 2375259 bytes).
 PDF statistics:
- 2613 PDF objects out of 2984 (max. 8388607)
- 339 named destinations out of 1000 (max. 500000)
+ 2626 PDF objects out of 2984 (max. 8388607)
+ 342 named destinations out of 1000 (max. 500000)
  488 words of extra memory for PDF output out of 10000 (max. 10000000)
 
