@@ -1,6 +1,6 @@
 # Key Empirical Findings
-**Last updated:** September 5, 2026 — empirical results below are unchanged since
-June 5; see the re-verification note at the end of the file for what has drifted.
+**Last updated:** September 6, 2026. The empirical (LP) results below are unchanged since
+June 5. Model-side results were re-run after the September 5–6 code fixes; see §D1/M5.
 
 ## Shock Persistence (part6, 2001Q1+ window)
 
@@ -196,57 +196,55 @@ Section-by-section draft status, proposition inventory, and proof structures mov
 
 ---
 
-## D1/M5 diagnostic — first run, September 5, 2026  ⛔ RETRACTED
+## D1/M5 diagnostic — re-run September 6, 2026 (supersedes the retracted first run)
 
-> **All numbers in this section are invalid.** The perturbation was linearized around a point
-> with `Max SS residual` = 22.07 / 14.47 / 12.21 (free-entry condition `f[18]` violated — see
-> [`pending_tasks.md`](pending_tasks.md) §STOP). The steady state reported below came from
-> `SS_numeric`, not from the verified `steady_state.jl`; the two disagree by ~2.4× on ν_f.
-> Correct steady-state values from `steady_state.jl`: labor share 0.836–0.883 (not 0.98–1.20),
-> π_s = +0.083 to +0.088 (not negative), entry/Y ≈ 0.065 (not 0.13–0.22), X^c/Y ≈ 0.16 (not
-> 0.32–0.55). The moment and IRF results below must be regenerated after the fix.
-> Retained only as a record of how the bug was found.
+The September 5 run was invalid: it predated the `SS_numeric` fix (residuals 22/14/12), the
+`hp_filter` fix (a first-difference smoother inflating σ(labor_prod) ~5x), the LOM convention
+restoration, and the X-formula fix. Re-run after all of them, residuals now 3.6e-15 to 1.8e-13.
 
-`run_solution_delta_target.jl`, three specifications differing only in `dest_ann`. Θ_e at hand-set
-defaults (`b_ratio=0.9, x_v=0.5, ξ_inv=1.0, p_0=0.5, ω_δ=0.5, dest_elast_target=5.0`);
-ρ_s, σ_s are placeholders. **Not an estimated fit — read the ordering, not the levels.**
-
-Steady states confirm the design: u, v, θ identical across specifications; only δ_e moves.
+Θ_e are still hand-set (`b_ratio=0.9, x_v=0.5, ξ_inv=1.0, p_0=0.5, ω_δ=0.5,
+dest_elast_target=5.0`), and ρ_s, σ_s remain placeholders. Read the ordering, not the levels.
 
 | | BED (0.0320) | CODE (0.0754) | BGM (0.0963) | data |
 |---|---|---|---|---|
 | δ_e/τ | 0.087 | 0.210 | 0.271 | — |
-| ν_f | 44.25 | 24.95 | 20.52 | — |
-| Q | 10.96 | 4.56 | 3.53 | — |
-| σ(θ)/σ(labor_prod) | 0.48 | 0.85 | 1.11 | **11.70** |
-| δ→u peak (pp) | 0.012 | 0.028 | 0.035 | +1.71 |
+| σ(θ)/σ(labor_prod) | 1.02 | 2.21 | 2.93 | **11.70** |
+| δ→u peak (pp) | 0.012 | 0.027 | 0.035 | +1.71 |
 | δ→u peak horizon (qtr) | 1 | 1 | 1 | **17–20** |
-| δ→v trough horizon (qtr) | 3 | 3 | 3 | **18** |
+| δ→v trough horizon (qtr) | 4 | 3 | 3 | **18** |
 
-**What is confirmed.** Amplification is monotone in δ_e (0.48 → 0.85 → 1.11), exactly as
-Comparisons A and B predict: a lower destruction rate means a slower-turning firm stock and a
-smaller LOM multiplier on entry. Firm value ν_f and vacancy value Q rise sharply as δ_e falls
-(longer-lived firms are worth more). The mechanism intuition holds.
+**What changed from the retracted run.** Amplification roughly tripled (was 0.48/0.85/1.11),
+almost entirely from the `hp_filter` fix removing spurious variance from the denominator.
+σ(labor_prod) is now 0.0143 against 0.0128 in the data, so the "3x too volatile" symptom
+behind **M7** is resolved. The degeneracy is not: cor(labor_prod, N^e) = 0.99, so model
+measured productivity is still nearly a monotone function of entry.
 
-**What is not confirmed — and blocks the D1 decision.** All three specifications miss the amplification
-target by roughly an order of magnitude, and all three put the δ→u peak at h=1 quarter against
-the LP's h=17–20. **δ_e is therefore not the binding constraint**, and the diagnostic cannot
-adjudicate D1 until the prior problems below are resolved.
+**What did not change.** The δ→u peak sits at h=1 quarter for every δ_e in the range. The
+hump-shape gap (**M8**) is invariant to δ_e and cannot be fixed by choosing it.
 
-**Candidate causes, in order of suspicion:**
+**What δ_e does buy.** Amplification is monotone and materially sensitive: 1.02 → 2.93 across
+the range, a factor of ~2.9. So δ_e is not irrelevant to Block M, contrary to the retracted
+run's conclusion. It is simply unable to close a gap to 11.70 on its own, falling 4x short
+even at the BGM value.
 
-1. **Observable mapping for labor productivity is probably wrong.** Model `labor_prod = Y/(ρL)`
-   has SD 0.0387 against 0.0128 in the data (3× too volatile) and correlates **0.9975 with
-   N^e** — it is tracking the entry/investment term in Y = C + ν_f·N^e, not technology.
-   Measured output per hour (PRS85006163) is far smoother. Candidates: Y_c/L_c (gross output
-   per worker), or a differently deflated series. This inflates the denominator of every RSD
-   and must be settled before any moment is believed. **Belongs in §5.2 as an explicit
-   observable-mapping table.**
-2. **Θ_e are not estimated.** σ(u)=0.016 vs 0.1496 and σ(v)=0.026 vs 0.1419 — both far too
-   smooth; cor(u,v) is −0.17 to −0.48 against −0.80. Finding a poor fit at hand-set parameters
-   is weak evidence about the model.
-3. **ρ_s, σ_s are placeholders** with no empirical basis (`principles.md` §21).
-4. **The hump-shape gap may be structural.** A one-quarter peak against an h=17–20 empirical
-   peak is a large qualitative gap, and it is not obvious that Θ_e alone can close it. If it
-   cannot, Block B will fight Block M hard, and that is better discovered now than after the
-   sampler is built. This is the single most important thing to chase next.
+## The placeholder s shock flips the Beveridge curve
+
+Running the BED calibration with σ_s = 0 isolates it:
+
+| | with placeholder s shock | s shock silenced | data |
+|---|---|---|---|
+| cor(u,v) | **+0.761** | **−0.911** | **−0.804** |
+| σ(θ)/σ(labor_prod) | 1.02 | 0.75 | 11.70 |
+| σ(u) | 0.0111 | 0.0044 | 0.1496 |
+
+The model's unconditional Beveridge curve is fine, and slightly steeper than the data, which
+is the right side to be on before a properly calibrated s shock pulls it back. The positive
+correlation is an artifact of ρ_s = 0.90, σ_s = 0.010, which have no empirical basis
+(`principles.md` §21). The s shock is also doing most of the volatility work: silencing it
+cuts σ(u) by 60%.
+
+**Implication for sequencing.** Block M moments cannot discriminate among δ_e values while the
+s process is a placeholder, because it contaminates every correlation in the table and
+supplies much of the volatility. Calibrating ρ_s and σ_s is now the binding task for Block M,
+ahead of anything involving δ_e.
+

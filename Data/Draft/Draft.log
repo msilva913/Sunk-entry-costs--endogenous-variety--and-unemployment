@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.7.14)  6 SEP 2026 17:07
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.7.14)  6 SEP 2026 17:14
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1409,7 +1409,7 @@ Package rerunfilecheck Info: File `Draft.out' has not changed.
 Here is how much of TeX's memory you used:
  27889 strings out of 467871
  540772 string characters out of 5418376
- 946861 words of memory out of 5000000
+ 946867 words of memory out of 5000000
  55939 multiletter control sequences out of 15000+600000
  654746 words of font info for 109 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
@@ -1456,9 +1456,9 @@ msilv/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy6.pfb><C
 amsfonts/cm/cmti12.pfb><C:/Users/msilv/AppData/Local/Programs/MiKTeX/fonts/type
 1/public/amsfonts/symbols/msam10.pfb><C:/Users/msilv/AppData/Local/Programs/MiK
 TeX/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on Draft.pdf (95 pages, 2375259 bytes).
+Output written on Draft.pdf (95 pages, 2374530 bytes).
 PDF statistics:
- 2626 PDF objects out of 2984 (max. 8388607)
+ 2624 PDF objects out of 2984 (max. 8388607)
  342 named destinations out of 1000 (max. 500000)
  488 words of extra memory for PDF output out of 10000 (max. 10000000)
 

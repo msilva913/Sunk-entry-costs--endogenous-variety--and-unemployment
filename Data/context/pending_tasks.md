@@ -1,5 +1,5 @@
 # Pending Tasks
-**Last updated:** September 5, 2026 · **Branch:** `Organize_Project_State_Estimation`
+**Last updated:** September 6, 2026 · **Branch:** `Organize_Project_State_Estimation`
 
 Actionable work only. **Decisions** (things to choose, not do) live in
 [`decisions.md`](decisions.md); **draft section status** lives in
@@ -10,9 +10,11 @@ critical path.
 
 ---
 
-## 🛑 STOP — the perturbation solutions are linearized around a non-steady state
+## ✅ RESOLVED — the perturbation solutions were linearized around a non-steady state
 
-**Discovered September 5, 2026. This precedes everything else on the critical path.**
+**Found September 5, fixed September 5–6, 2026 (commit d902b68).** Residuals are now 1e-13
+to 1e-15 across all four comparisons and the diagnostic. Kept for the record because the
+failure mode is instructive: it was silent for four months.
 
 `solution_interface` prints `Max SS residual` and then proceeds unconditionally — it never
 asserts the residual is small (`run_solution_core.jl:85`). The residual is **not small**:
@@ -41,8 +43,8 @@ construction used as the linearization point.
 **Scope — every runner that passes `SS_numeric` to `solution_interface`:**
 `run_solution_all_delta.jl` (A), `run_solution_endog_exit.jl` (B), `run_solution_no_variety.jl`
 (C), `run_solution_entry_elasticity.jl` (D), `run_solution_delta_target.jl`. **All four
-mechanism comparisons in §5.3 are affected**, as are the D1/M5 diagnostic numbers in
-`findings.md` (now retracted — see that file).
+mechanism comparisons in §5.3 were affected**, as were the D1/M5 diagnostic numbers.
+All have since been re-run; see `findings.md` §D1/M5.
 
 **Fix, in order:**
 1. **Guard first**: ` SS_max < 1e-8` in `solution_interface` so this can never pass
@@ -54,7 +56,7 @@ mechanism comparisons in §5.3 are affected**, as are the D1/M5 diagnostic numbe
 3. Re-run Comparisons A–D and regenerate `mechanism_*.pdf`.
 4. Only then revisit D1/M5.
 
-**LOM timing inconsistency — DECISION PENDING.** The u LOM (`f[23]`, `eq:u_lom`) uses a post-matching separation base while the v LOM (`f[22]`, `eq:v_lom`) uses a pre-matching reposting base. The mixture leaks job positions at rate (1-δ_e)·s·q·v. Gabrovski-Silva and the old Dynare model use the pre-matching convention consistently and conserve positions exactly, so the v LOM is the unchanged equation and the u LOM is what moved. Full analysis, both fix options, and the implications for GS: [`../Notes/LOM_timing_consistency.md`](../Notes/LOM_timing_consistency.md).
+**LOM timing inconsistency — RESOLVED Sept 6, 2026 (Convention A).** The u LOM (`f[23]`, `eq:u_lom`) uses a post-matching separation base while the v LOM (`f[22]`, `eq:v_lom`) uses a pre-matching reposting base. The mixture leaks job positions at rate (1-δ_e)·s·q·v. Gabrovski-Silva and the old Dynare model use the pre-matching convention consistently and conserve positions exactly, so the v LOM is the unchanged equation and the u LOM is what moved. `f[23]` was restored to Convention A so the model nests GS. Full analysis and the implications for GS: [`../Notes/LOM_timing_consistency.md`](../Notes/LOM_timing_consistency.md).
 
 **Related bug — FIXED Sept 5, 2026.** `run_solution_core.jl` f[16] computed the vacancy
 creation cost as `X = e·ξ_inv/(1+ξ_inv)·Q + κqv`. Correct form is `e/(1+ξ_inv)·Q + κqv`
@@ -70,13 +72,29 @@ so only **Comparison D's ξ_inv = 0.1 case** was affected — by 10× in the sun
 
 ## Critical path to a complete draft
 
-Steps 1–3 are gates; nothing downstream is worth doing until they clear.
-**But fix the steady-state bug above first — none of these numbers mean anything until then.**
+**Resume here.** The STOP block above is cleared: the steady state is fixed and all four
+mechanism comparisons solve at machine precision.
 
-**1. Settle [D1](decisions.md) (which δ̄_e), [D2](decisions.md) (PATH A or B), and
-[D3](decisions.md) (β̂ ↔ β(θ) scaling).** ⛔
-Then write the winning target set into `data_and_files.md` as canonical, and regenerate any
-mechanism figure affected by D1/D2.
+**0. Owed: the D1 + s-shock cascade.** ⛔ **START HERE**
+Two changes are pending that both invalidate every mechanism IRF, so they are bundled to
+avoid regenerating twice.
+
+- **D1 is settled** at `dest_ann = 0.0320` (δ_e/τ = 0.087) but **not yet implemented**.
+  `steady_state.jl` still holds 0.0754; the line carries a loud comment saying so.
+- **ρ_s, σ_s are placeholders** (0.90, 0.010) with no empirical basis, and they flip the
+  model's unconditional Beveridge correlation to **+0.76** against −0.80 in the data.
+  Silencing the s shock gives −0.911, so the model itself is fine. See `findings.md`
+  §"The placeholder s shock flips the Beveridge curve". Calibrate them from the data —
+  `part6` has ρ_LD ≈ 0.31–0.49 and the Shimer τ series is already built.
+
+Then, in one pass: set `dest_ann`, re-run Comparisons A–D, regenerate the eight
+`mechanism_*.pdf`, re-run `mechanism_stats.jl`, and update §5.3 against its output. Also
+§5.2's external block, `tab:calib_targets` row 1, the two "δ̄_e/τ̄ ≈ 0.21" claims
+(`Draft.tex:1481` and `app:comparison_D`), and **P3b** (the intro's endorsement of
+Gabrovski-Silva's 6–10 %/yr range, which 3.2% sits below).
+
+**1. Settle [D2](decisions.md) (PATH A or B) and [D3](decisions.md) (β̂ ↔ β(θ) scaling).** ⛔
+D1 is done. Then write the winning target set into `data_and_files.md` as canonical.
 
 **2. `part5_wcrb.py` — wild cluster bootstrap → full Ω_β.** ⛔
 `part5_lp.py` runs each horizon as a separate regression and saves only a scalar clustered

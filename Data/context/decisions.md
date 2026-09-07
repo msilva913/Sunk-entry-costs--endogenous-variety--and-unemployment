@@ -1,5 +1,5 @@
 # Decision Register
-**Last updated:** September 5, 2026 · **Branch:** `Organize_Project_State_Estimation`
+**Last updated:** September 6, 2026 (D1 settled) · **Branch:** `Organize_Project_State_Estimation`
 
 Every open decision that must be settled before estimation, plus the ones already settled
 that agents keep re-litigating. One entry = one decision. When you settle one, move it to
@@ -10,213 +10,91 @@ Status key: 🔴 blocks estimation · 🟠 blocks a paper section · 🟡 improv
 
 ---
 
-## 🔴 D1. Which δ̄_e? BED Deaths (2.83%/yr) or Jaimovich-Floetotto (7.54%/yr)
+## ✅ D1. Which δ̄_e? — SETTLED September 6, 2026
 
-### Canonical derivation — read this first
+**Decision: BED establishment deaths, employment-weighted, 1993–2019.**
+`dest_ann = 0.0320` (3.2 %/yr, 0.271 %/month), **δ_e/τ = 0.087.**
+Window chosen by MS for the longer sample; 2001–2019 would give 0.077.
 
-```
-1. SOURCE   BLS BED, dataclass 08 "deaths" = establishments with zero employment
-            in the third month of 4 consecutive quarters (i.e. no re-entry within
-            a year). Total private. Published RATE series:
-            BDS0000000000000000110008RQ5
-              = "percentage employment lost from establishment deaths", quarterly.
-            Already employment-weighted, with employment in the denominator —
-            the same denominator as tau, so the two are directly comparable.
+### Why this number
 
-2. WINDOW   Sample mean over 2001Q1-2019Q4 (matches the LP sample; pre-COVID per
-            principles.md 6)                                   ->  0.718 %/qtr
+1. **The status quo was an arithmetic error.** `dest_ann = 0.0754` came from
+   Jaimovich-Floetotto's 21% × τ. Their 21% is a share of *gross job losses*; τ is the
+   *total separation rate*. Mixing the denominators inflates δ̄_e by roughly 1.8×. Applied to
+   its own base, JF's share gives ~1.3 %/qtr, close to the BED measurement. Settled
+   independently of any question about model fit.
 
-3. FREQ     Quarterly -> monthly. Flows are additive within the quarter
-            (principles.md 9), so divide by 3                  ->  0.2393 %/mo
+2. **Employment weighting, not counts.** δ_e/τ is by construction a share of separations, so
+   both must be worker flows. Decisively, the δ Bartik instrument *is* employment-weighted
+   BED Deaths, so calibrating to anything else would have the empirical section and the
+   calibration describing different objects.
 
-4. ANNUAL   Compound: 1-(1-0.002393)^12                        ->  2.83 %/yr
-            This is `dest_ann`. steady_state.jl Stage 1 inverts it exactly:
-            delta_e = 1-(1-dest_ann)^(1/12) = 0.2393 %/mo  [round-trips]
+3. **Establishments, not firms.** BDS firm deaths (2.26 %/yr employment-weighted,
+   δ_e/τ = 0.061) are *lower* than BED establishment deaths, since a firm death requires
+   every establishment to exit. Consistency with the instrument decides it. Note this
+   reverses an earlier argument in this file that BED was a lower bound because product
+   lines die inside surviving firms — the firm-level number is lower, not higher.
 
-5. RATIO    delta_e / tau = 0.2393 / 3.10                      ->  0.077
-            tau = 3.10 %/mo (TARGETS.sep, Shimer/JOLTS total separation rate)
-```
+### The weighting tension, and how the paper handles it
 
-**Target: `dest_ann` = 0.0283, δ_e/τ = 0.077.** On the longer 1993–2019 window:
-0.812 %/qtr → 0.2707 %/mo → `dest_ann` = 0.0320, δ_e/τ = 0.087. Prefer the ratio as the
-primary target and derive `dest_ann` from it (see recommendation below).
+Under DS-CES symmetry one δ_e serves as both the fraction of *product lines* destroyed
+(driving ρ(N)) and the fraction of *employment* destroyed by exit (driving τ). In the data
+these differ by 3.7×: firm deaths are 2.26% of employment but 8.33% of firms, because dying
+firms are small. The model has no size heterogeneity and cannot match both.
 
-Three judgment calls are embedded, all flagged below: the **window** (2001–2019 vs 1993–2019,
-worth ~0.01 in the ratio), **deaths not closings** (settled — closings include temporary
-shutdowns), and **establishment vs firm** (open — BED is establishment-level, BDS is firm-level).
+**MS decision: footnote the choice.** State that symmetry forces one δ_e to serve both
+margins, that we match the employment-weighted flow, and that this understates variety
+destruction. Do not bury it.
 
----
+### Measurement menu, for the record
 
-### Where the target sits in the literature
-
-| | %/qtr | %/yr | δ_e/τ |
-|---|---|---|---|
-| Coles-Kelishomi (δ_e = τ) | 9.30 | 32.3 | 1.000 |
-| BGM 2012 (δ = 0.025/qtr) | 2.50 | 9.6 | 0.269 |
-| Gabrovski-Silva JEDC preferred range | 1.54–2.60 | **6–10** | 0.165–0.280 |
-| Code now (`dest_ann = 0.0754`) | 1.95 | 7.6 | 0.210 |
-| **Our target (BED deaths, 1993–2019)** | **0.81** | **3.2** | **0.087** |
-
-⚠️ **This creates a new inconsistency with the paper's own introduction.** `Draft.tex:421`
-cites Gabrovski-Silva approvingly: annual destruction rates "in the range of 6–10%" generate
-dynamic correlations that closely match the data. Our target is **3.2%, about half the floor
-of that range** — not marginally lower but outside it. The intro currently endorses a range
-the calibration would abandon. This must be addressed explicitly, not quietly.
-
-**Why the model may nonetheless fit at 3.2% where GS needed 6–10%.** The offsetting forces
-are exactly the channels this model adds and GS lacks: the endogenous-exit margin ω_δ (a
-profit-sensitive destruction rate that supplies cyclical exit without requiring a high
-*exogenous* rate), the variety externality ρ(N) → w^int → JCC, and finitely elastic entry ξ.
-This is a genuinely attractive story — the richer model matches the data at an empirically
-defensible δ where a leaner one needed an inflated one — but **it is a conjecture until the
-estimation runs.** Do not write it into the draft as established.
-
-**The countervailing measurement argument — take seriously.** The model's δ destroys *product
-lines*; BED measures *establishment* deaths. A surviving multi-product firm that discontinues
-a product line is δ in the model and invisible in BED. So the BED deaths rate is arguably a
-**lower bound** on δ, not a point estimate, and something between 3.2% and 10% could be
-defensible on measurement grounds alone. (This cuts against the D1 correction and partly
-rehabilitates a higher number — though not via the JF route, which remains an arithmetic
-error regardless.)
-
-**Preferred resolution: move δ_e into Θ_e and estimate it**, with a prior anchored at the BED
-deaths rate as a lower bound and enough mass to reach the BGM/GS range. Three advantages: it
-converts the tension into a result rather than an assumption; the posterior for δ_e becomes a
-reportable finding directly comparable to CK, BGM, and GS; and it lets the data adjudicate the
-product-line-vs-establishment gap that no measurement can settle. Fixing δ_e externally at
-either 3.2% or 7.5% asserts an answer the paper is well placed to estimate.
-
-**Diagnostic — RUN September 5, 2026, and it does not settle D1.**
-`run_solution_delta_target.jl` compares dest_ann ∈ {0.0320, 0.0754, 0.0963}. Full results in
-[`findings.md`](findings.md) §D1/M5. Summary:
-
-- ✅ The mechanism ordering is confirmed: σ(θ)/σ(labor_prod) = 0.48 / 0.85 / 1.11, monotone in
-  δ_e, exactly as Comparisons A and B predict.
-- ❌ **All three specifications miss the amplification target (11.70) by an order of magnitude, and all
-  three put the δ→u peak at h = 1 quarter against the LP's h = 17–20.** δ_e is not the binding
-  constraint, so the decision rule above does not discriminate.
-
-**D1 therefore stays open, but its priority drops.** Three prior problems have to be fixed
-before any δ_e choice can be evaluated: the observable mapping for labor productivity (model
-`labor_prod` is 3× too volatile and 0.9975-correlated with N^e — it is tracking entry, not
-technology), the fact that Θ_e are hand-set rather than estimated, and the hump-shape gap in
-the δ→u response. See `findings.md` for the ranked list.
-
-The **measurement** argument for the BED number is unaffected by any of this — 0.0754 remains
-an arithmetic error regardless of how the model fits. If a number must be written into
-`steady_state.jl` today, use 0.0320 (or 0.0320's 1993–2019 sibling) and revisit after the
-observable mapping is fixed.
-
----
-
-**The conflict.** Three places, two numbers:
-
-| Where | Value | Implied δ_e/τ |
+| measure | %/yr | δ_e/τ |
 |---|---|---|
-| Draft §5.1 (`sec:ck_comparison`) | δ̄ ≈ 1.079%/qtr = **4.25%/yr** (BED Deaths, emp-weighted) | 0.116 |
-| Draft §5.2 external block + `tab:calib_targets` | δ_e^ann = **7.54%/yr** (Jaimovich-Floetotto 21% × τ=3.1%/mo) | 0.210 |
-| `steady_state.jl:566` | `dest_ann = 0.0754`, commented `[BED Deaths, emp-weighted]` | 0.210 |
+| BDS firm deaths, employment-weighted | 2.26 | 0.061 |
+| BED estab deaths, emp-weighted, 2001–19 | 2.84 | 0.077 |
+| **BED estab deaths, emp-weighted, 1993–19 — CHOSEN** | **3.21** | **0.087** |
+| BDS job destruction from estab deaths | 4.50 | 0.124 |
+| BDS estabs at dying firms / all estabs | 6.57 | 0.182 |
+| Code's old JF-derived value | 7.6 | 0.210 |
+| BDS firm deaths, count-weighted | 8.33 | 0.233 |
+| BGM 2012 | 9.6 | 0.269 |
+| BDS establishment exits, count-weighted | 9.93 | 0.280 |
+| Coles-Kelishomi (δ_e = τ) | 32.3 | 1.000 |
 
-The code's *value* is Jaimovich; the code's *comment* is BED. Every mechanism figure
-(Comparisons A–D) and the "δ̄_e/τ̄ ≈ 0.21" claim at `Draft.tex:1481` were produced at 0.210.
+### Why fixed rather than estimated
 
-**Why it matters.** §5.1 states that setting δ from BED Deaths rather than from the
-aggregate separation rate is one of the paper's two departures from Coles-Kelishomi. As
-things stand, the paper claims that departure and does not implement it. Separately, the
-entry-cushion coefficient in Proposition 5 Part 3 is δ̄_e/(r+δ̄_e), so the choice scales the
-paper's central quantitative claim.
+The register previously recommended moving δ_e into Θ_e. Rejected, on the corrected
+diagnostic (`findings.md` §D1/M5 re-run):
 
-### Verified September 5, 2026 — the two numbers are not rival estimates; 0.0754 is a denominator error
+- δ_e moves amplification by a factor of ~2.9 across the candidate range
+  (σ(θ)/σ(labor_prod) 1.02 → 2.93) but cannot reach the 11.70 target even at the BGM value,
+  falling 4× short.
+- The δ→u peak sits at h = 1 quarter for *every* δ_e. The hump-shape gap (**M8**) is
+  invariant to it.
+- The binding Block M problem is elsewhere: with ρ_s, σ_s at placeholder values the
+  unconditional cor(u,v) is **+0.76** against −0.80 in the data. Silencing the s shock gives
+  −0.911. Every correlation in the moment table is contaminated until the s process is
+  calibrated.
 
-**What the δ series actually is.** `part2_shock_rates.py` and `observables.py` both use BLS
-BED **dataclass 08 (Deaths)**, series `BDS0000000000000000110008LQ5`: employment at
-establishments with zero employment in the third month of **four consecutive quarters**
-following their last quarter with positive employment. So yes — the instrument's δ counts
-only establishments that do **not** re-enter within at least a year. Deaths ⊂ Closings;
-closings include temporary and seasonal shutdowns that reopen. `observables.py` forms
-`delta = deaths_employment_t / payems_t`, so it is employment-weighted with total employment
-in the denominator — the same denominator as τ. **δ_e and τ are already commensurate.**
+Freeing a cleanly measured parameter while known misspecification sits upstream would let
+δ_e absorb blame for the s process and for M8. Fix it at the measurement, resolve those,
+then revisit whether it needs to be free.
 
-**What Jaimovich & Floetotto's 21% is.** JF Table 2, column 2 is the share of *gross job
-losses* from closing establishments: `sum(L_C)/sum(L)`, BED elem0006 over elem0004. The
-denominator is gross job losses — net employment declines at contracting and closing
-establishments — **not** total separations. Total separations are far larger because they
-include quits and replacement churn that produce no net job destruction. Note also that JF
-use **closings**, not deaths.
+### Consequences to carry out
 
-**The arithmetic.** Published BED rates, total private, % of employment per quarter, fetched
-from the BLS API (v1, series `BDS...11{0008,0006,0004}RQ5`):
-
-| window | deaths | closings | gross job losses | δ_e/τ if deaths | δ_e/τ if closings | closings as % of gross losses |
-|---|---|---|---|---|---|---|
-| 1993–2019 | 0.812 | 1.315 | 6.681 | **0.087** | 0.141 | 19.7 % |
-| 2001–2019 (LP sample) | 0.718 | 1.205 | 6.362 | **0.077** | 0.130 | 18.9 % |
-| 2010–2019 | 0.603 | 1.073 | 5.815 | **0.065** | 0.115 | 18.5 % |
-
-The closings share of gross losses (19.7 % over 1993–2019) reproduces both JF's ~21 % and
-`part11`'s 19.5 %, which confirms the identification of their statistic. **The deaths share of
-gross losses is only ~12 %.**
-
-Two conclusions:
-
-- **21 % × τ is not a valid construction of δ̄_e.** It applies a share whose denominator is
-  gross job losses to the total separation rate, inflating δ̄_e to 1.95 %/qtr — more than
-  double the measured deaths rate (0.72–0.81) and still well above the closings rate
-  (1.21–1.32). Nothing in BED supports 1.95 %/qtr as an exit rate.
-- **Even applied correctly, JF's share targets *closings*, not deaths.** Closings include
-  temporary and seasonal shutdowns that reopen within a year — which are not permanent
-  product-line destruction, and not what the Bartik instrument measures.
-
-> ⚠️ **Correction, September 5, 2026.** An earlier version of this entry claimed
-> "19.5 % × 5.38 = 1.05 %/qtr → 4.13 %/yr" as independent confirmation of the BED figure.
-> That was wrong twice over: `BDS...110005RQ5` is *losses at contracting establishments*, not
-> total gross losses (the repo labels it correctly in `BED_data_construct.py:16`); and the
-> calculation is circular in any case, since JF's share was computed from that same base, so
-> share × base merely recovers the closings rate. The 4.13 % figure has no standing — use the
-> direct measurements in the table above.
-
-**Why JF's choice was reasonable for them.** Closings, not deaths, is the natural object for
-a paper about the cyclicality of the operating-establishment margin and markup variation, and
-deaths require a four-quarter confirmation lag, so in 2008 the deaths series was both shorter
-and published with substantial delay. Their choice is sound for their question; it just does
-not transfer to a δ_e/τ ratio.
-
-**Recommendation: target δ_e/τ ≈ 0.08 directly, from BED Deaths on the 2001–2019 LP sample.**
-That is δ_e = 0.718 %/qtr = 0.239 %/month, δ_e^ann = **2.84 %**. Use 1993–2019 (δ_e/τ = 0.087,
-δ_e^ann = 3.21 %) if the longer window is preferred for a steady-state target; the choice
-between them is second-order, and both are far from 0.21.
-
-Rationale beyond the arithmetic: deaths is the measurement the empirical section is already
-built on (the δ Bartik instrument *is* dataclass 08), and a lower δ̄_e/τ̄ *strengthens* Prop. 5
-Part 3, whose sufficient condition is "δ̄_e/τ̄ small". The §5.2 paragraph should cite the BED
-Deaths rate directly and drop the JF routing entirely.
-
-**Prefer targeting the ratio, not `dest_ann`.** δ_e/τ is the economically meaningful object —
-it is the share of separations attributable to permanent firm exit, and it is what
-Proposition 5 Part 3 and the Coles-Kelishomi comparison both turn on (CK set δ_e = τ, i.e.
-δ_e/τ = 1). Making it the primary target and deriving `dest_ann` from it also makes the
-departure from CK legible at a glance.
-
-⚠️ **Why the draft's 1.079 %/qtr / 11.6 % is too high — resolved.** `observables.py` sets
-`final = '2025-10-01'`, so its δ series runs to the end of the BED cache (2021Q4) and the mean
-**includes the 2020 COVID quarters**. It also divides by PAYEMS (total nonfarm, including
-government) rather than private employment, which biases the *level* the other way. A
-steady-state target should be computed pre-COVID, consistent with the LP's 2019Q4 cap
-(`principles.md` §6). Recompute on 2001Q1–2019Q4 before the number enters `tab:calib_targets`.
-
-⚠️ **Open sub-question: establishments or firms?** BED measures *establishment* deaths, so a
-multi-establishment firm closing one location counts as exit. The model's object is a firm /
-product line. The superseded 0.940 %/qtr figure came from BDS, which is firm-level. If the
-firm-level rate is materially lower, δ_e/τ falls further — again in the direction that helps
-Prop. 5. `bds2022.csv` and `BDS_Extension.md` are in the repo; worth a check before finalizing.
-
-The cost of switching is re-running every mechanism figure.
-
-**If chosen, propagate to:** `steady_state.jl:566`; the §5.2 external-block paragraph;
-`tab:calib_targets` row 1; the ≈0.21 claims at `Draft.tex:1481` and in `app:comparison_D`;
-Comparisons A–D figures; the calibration table in [`data_and_files.md`](data_and_files.md).
-
----
+- `steady_state.jl` `TARGETS.dest_ann`: 0.0754 → 0.0320, and correct the source comment.
+- Re-run Comparisons A–D, regenerate the eight figures, re-run `mechanism_stats.jl`, and
+  update §5.3 against its output.
+- Draft §5.2 external block and `tab:calib_targets` row 1.
+- The "δ̄_e/τ̄ ≈ 0.21" claims at `Draft.tex:1481` and in `app:comparison_D` become ≈ 0.087.
+  Prop. 5 Part 3's condition is "δ̄_e/τ̄ small", so the lower value *strengthens* it.
+- **P3b**: the intro endorses Gabrovski-Silva's 6–10 %/yr range at `Draft.tex:421`. At 3.2%
+  we are at half the floor. GS needed that range in a model without endogenous exit, the
+  variety externality, or finitely elastic entry. Whether those compensate is a result the
+  estimation delivers, not an assumption — write it as an open question.
+- **N15**: the chosen number must be emitted by a program. `observables.py` currently computes
+  δ over a COVID-contaminated window (`final = 2025-10-01`). Add a pre-COVID calibration
+  target computation there before the number is treated as sourced.
 
 ## 🔴 D2. Which calibration path is the estimation baseline — PATH A or PATH B?
 

@@ -601,7 +601,16 @@ const TARGETS = (
     # --- Hard-coded calibration targets ---
     X_Y           = 0.015,  # Recruiting cost share of GDP [CET 2016] — Stage 4 target
     Xc_Y          = 0.10,   # Fixed cost share of GDP [Abraham et al. 2019] — Stage 2 target
-    dest_ann      = 0.0754, # Annual product destruction rate [BED Deaths, emp-weighted]
+    # ⚠️ SUPERSEDED VALUE — D1 settled Sept 6, 2026 at dest_ann = 0.0320.
+    # 0.0754 is NOT the BED Deaths rate, despite what this comment used to claim. It is
+    # Jaimovich-Floetotto's 21% (a share of GROSS JOB LOSSES) multiplied by τ (the total
+    # SEPARATION rate) — mismatched denominators, inflating δ_e by ~1.8×. The measured
+    # BED Deaths rate, employment-weighted, 1993–2019, is 3.2 %/yr → δ_e/τ = 0.087.
+    # Still 0.0754 here only because changing it invalidates the mechanism figures and every
+    # number in draft §5.3; the switch is bundled with the ρ_s/σ_s calibration so one
+    # regeneration covers both. See context/decisions.md D1 for the full argument and the
+    # list of consequences.
+    dest_ann      = 0.0754, # ← change to 0.0320 when running the D1 cascade
     f             = 0.41,   # Gross job-finding rate [JOLTS] — corrected ÷(1-δ_e) in Stage 1
     η_L           = 0.6,    # Matching elasticity [Petrongolo & Pissarides 2001]
     q             = 0.8,    # Gross vacancy-filling rate [JOLTS] — corrected ÷(1-δ_e) in Stage 1
