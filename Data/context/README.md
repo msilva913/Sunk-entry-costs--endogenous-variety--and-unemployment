@@ -14,6 +14,7 @@ open rather than the file that owns the topic.
 | [`findings.md`](findings.md) | All empirical and model-mechanism results with numbers | Draft status, tasks |
 | [`draft_status.md`](draft_status.md) | Section-by-section draft state; proposition inventory and proof structures | Results, tasks |
 | [`data_and_files.md`](data_and_files.md) | Data sources, FRED IDs, file locations, empirical targets | How the code works |
+| [`parameters.md`](parameters.md) | All structural parameters: economic meaning, classification, identifying moments | Code implementation details |
 | [`pipeline.md`](pipeline.md) | Both pipelines: script inventory, run order, code conventions | What the results were |
 
 ## Reading order when picking the project back up

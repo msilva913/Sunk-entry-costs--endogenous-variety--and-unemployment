@@ -49,10 +49,11 @@ function solution_interface(model, PAR, SS_precomputed::Union{Vector{Float64},No
                             ss_tol::Float64=1e-8)
     # ── World-age fix ────────────────────────────────────────────────────────────
     # eval_* functions are generated inside process_model via eval(Meta.parse(...)).
-    # When called from inside another function, Julia's world-age mechanism blocks
-    # direct dispatch. Base.invokelatest always uses the latest compiled method.
-    eta    = Base.invokelatest(eval_ShockVAR, PAR)
-    PAR_SS = Base.invokelatest(eval_PAR_SS,  PAR)
+    # Julia 1.12 warns on any binding access in a world prior to its definition.
+    # getfield(Main, :sym) defers the lookup to runtime, avoiding the warning;
+    # invokelatest then dispatches at the latest world age.
+    eta    = Base.invokelatest(getfield(Main, :eval_ShockVAR), PAR)
+    PAR_SS = Base.invokelatest(getfield(Main, :eval_PAR_SS),  PAR)
 
     # ── Numeric SS ───────────────────────────────────────────────────────────────
     # Prefer a pre-computed Float64 SS when the caller supplies one (fast path,
@@ -80,8 +81,8 @@ function solution_interface(model, PAR, SS_precomputed::Union{Vector{Float64},No
     end
 
     # ── Jacobian and residual (now with numeric SS) ──────────────────────────────
-    SS_err = Base.invokelatest(eval_SS_error, PAR_SS, SS)
-    deriv  = Base.invokelatest(eval_deriv,    PAR_SS, SS)
+    SS_err = Base.invokelatest(getfield(Main, :eval_SS_error), PAR_SS, SS)
+    deriv  = Base.invokelatest(getfield(Main, :eval_deriv),    PAR_SS, SS)
     SS_max = maximum(abs.(SS_err))
     println("Max SS residual: $SS_max")
 

@@ -1,0 +1,143 @@
+WARNING: Detected access to binding `Main.eval_ShockVAR` in a world prior to its definition world.
+  Julia 1.12 has introduced more strict world age semantics for global bindings.
+  !!! This code may malfunction under Revise.
+  !!! This code will error in future versions of Julia.
+Hint: Add an appropriate `invokelatest` around the access to this binding.
+To make this warning an error, and hence obtain a stack trace, use `julia --depwarn=error`.
+WARNING: Detected access to binding `Main.eval_PAR_SS` in a world prior to its definition world.
+  Julia 1.12 has introduced more strict world age semantics for global bindings.
+  !!! This code may malfunction under Revise.
+  !!! This code will error in future versions of Julia.
+Hint: Add an appropriate `invokelatest` around the access to this binding.
+To make this warning an error, and hence obtain a stack trace, use `julia --depwarn=error`.
+WARNING: Detected access to binding `Main.eval_SS_error` in a world prior to its definition world.
+  Julia 1.12 has introduced more strict world age semantics for global bindings.
+  !!! This code may malfunction under Revise.
+  !!! This code will error in future versions of Julia.
+Hint: Add an appropriate `invokelatest` around the access to this binding.
+To make this warning an error, and hence obtain a stack trace, use `julia --depwarn=error`.
+WARNING: Detected access to binding `Main.eval_deriv` in a world prior to its definition world.
+  Julia 1.12 has introduced more strict world age semantics for global bindings.
+  !!! This code may malfunction under Revise.
+  !!! This code will error in future versions of Julia.
+Hint: Add an appropriate `invokelatest` around the access to this binding.
+To make this warning an error, and hence obtain a stack trace, use `julia --depwarn=error`.
+
+====================================================================
+Solving  BED  (measured, D1)   dest_ann = 0.032
+====================================================================
+  [PATH B] dest_elast_target=5.0 → ζ_ss=0.9973, ψ=0.0136, cons=0.0067, π_s=0.1091, Xc_Yc_implied=12.3%
+  [PATH B] implied Xc_Y (GDP share) = 13.54%  (dest_el=5.0, ψ=0.0136)
+  [PATH B] dest_elast_target=5.0 → ζ_ss=0.9973, ψ=0.0136, cons=0.0067, π_s=0.1091, Xc_Yc_implied=12.3%
+  [PATH B] implied Xc_Y (GDP share) = 13.54%  (dest_el=5.0, ψ=0.0136)
+Steady-state solver: converged=true in 3 iterations
+Max SS residual: 3.55271367880050e-15
+Model solved
+
+====================================================================
+Solving  CODE (status quo)   dest_ann = 0.0754
+====================================================================
+  [PATH B] dest_elast_target=5.0 → ζ_ss=0.9935, ψ=0.0329, cons=0.0159, π_s=0.0875, Xc_Yc_implied=14.5%
+  [PATH B] implied Xc_Y (GDP share) = 16.13%  (dest_el=5.0, ψ=0.0329)
+  [PATH B] dest_elast_target=5.0 → ζ_ss=0.9935, ψ=0.0329, cons=0.0159, π_s=0.0875, Xc_Yc_implied=14.5%
+  [PATH B] implied Xc_Y (GDP share) = 16.13%  (dest_el=5.0, ψ=0.0329)
+Steady-state solver: converged=true in 3 iterations
+Max SS residual: 1.83020265609457e-13
+Model solved
+
+====================================================================
+Solving  BGM  (2012)   dest_ann = 0.0963
+====================================================================
+  [PATH B] dest_elast_target=5.0 → ζ_ss=0.9916, ψ=0.0425, cons=0.0204, π_s=0.0834, Xc_Yc_implied=14.9%
+  [PATH B] implied Xc_Y (GDP share) = 16.63%  (dest_el=5.0, ψ=0.0425)
+  [PATH B] dest_elast_target=5.0 → ζ_ss=0.9916, ψ=0.0425, cons=0.0204, π_s=0.0834, Xc_Yc_implied=14.9%
+  [PATH B] implied Xc_Y (GDP share) = 16.63%  (dest_el=5.0, ψ=0.0425)
+Steady-state solver: converged=true in 4 iterations
+Max SS residual: 8.88178419700125e-15
+Model solved
+
+
+====================================================================
+STEADY STATE
+====================================================================
+                      BED  (measured, D1)CODE (status quo)BGM  (2012)    
+  u                   0.07029        0.07029        0.07029        
+  v                   0.03603        0.03603        0.03603        
+  θ                   0.5125         0.5125         0.5125         
+  δ_e                 0.00271        0.00651        0.0084         
+  N                   1.0            1.0            1.0            
+  N_e                 0.00271        0.00655        0.00847        
+  ν_f                 22.1723        10.48419       8.30861        
+  K                   0.06534        0.04444        0.04107        
+  Q                   10.96099       4.55676        3.52899        
+  δ_e/τ               0.0873         0.21           0.2711         
+  ϕ (Nash resid.)     0.5795         0.6695         0.6867         
+
+====================================================================
+BLOCK M MOMENTS   (HP λ=1600, quarterly, T=60000 months)
+====================================================================
+
+── BED  (measured, D1) ──
+8×8 DataFrame
+ Row │ Variable    SD         RSD      Cor(x, u)   Cor(x, v)   Cor(x, labor_prod)  Cor(x, x_{-1})  Cor(x, x_{-2})
+     │ String      Any        Any      Any         Any         Any                 Any             Any
+─────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   1 │ u           0.0807935  5.66394  1.0         0.995406    0.050678            0.703326        0.316668
+   2 │ v           0.158452   11.1081  0.995406    1.0         0.032099            0.707112        0.324304
+   3 │ θ           0.0784124  5.49702  0.981106    0.995122    0.0126473           0.714721        0.339631
+   4 │ τ_rate      0.123597   8.66463  0.881326    0.884565    0.029549            0.64063         0.274422
+   5 │ f_rate      0.031365   2.19881  0.981106    0.995122    0.0126473           0.714721        0.339631
+   6 │ δ_e         0.0320175  2.24455  0.00450233  0.00315405  -0.00435164         0.287616        -0.0398549
+   7 │ N_e         0.244242   17.1223  -0.350608   -0.373188   0.907475            0.672225        0.315344
+   8 │ labor_prod  0.0142645  1.0      0.050678    0.032099    1.0                 0.677546        0.326053
+
+── CODE (status quo) ──
+8×8 DataFrame
+ Row │ Variable    SD         RSD      Cor(x, u)  Cor(x, v)  Cor(x, labor_prod)  Cor(x, x_{-1})  Cor(x, x_{-2})
+     │ String      Any        Any      Any        Any        Any                 Any             Any
+─────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────
+   1 │ u           0.0706248  4.80802  1.0        0.94697    0.0703831           0.706911        0.324886
+   2 │ v           0.138073   9.3998   0.94697    1.0        0.0182173           0.713031        0.33629
+   3 │ θ           0.0747231  5.08702  0.804657   0.952768   -0.0328609          0.757647        0.426873
+   4 │ τ_rate      0.107085   7.29017  0.862736   0.878455   0.0162775           0.640068        0.274074
+   5 │ f_rate      0.0298893  2.03481  0.804657   0.952768   -0.0328609          0.757647        0.426873
+   6 │ δ_e         0.0323371  2.20145  0.0471452  0.0059236  -0.0319054          0.305143        -0.0179636
+   7 │ N_e         0.182416   12.4186  -0.24569   -0.339444  0.915904            0.650237        0.281424
+   8 │ labor_prod  0.014689   1.0      0.0703831  0.0182173  1.0                 0.673454        0.319284
+
+── BGM  (2012) ──
+8×8 DataFrame
+ Row │ Variable    SD         RSD      Cor(x, u)  Cor(x, v)     Cor(x, labor_prod)  Cor(x, x_{-1})  Cor(x, x_{-2})
+     │ String      Any        Any      Any        Any           Any                 Any             Any
+─────┼─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   1 │ u           0.0665273  4.5018   1.0        0.887343      0.0795317           0.715276        0.342637
+   2 │ v           0.128315   8.68286  0.887343   1.0           0.0222653           0.717802        0.345985
+   3 │ θ           0.0757699  5.12723  0.62468    0.914377      -0.0321244          0.790464        0.4937
+   4 │ τ_rate      0.0990276  6.70105  0.843247   0.868058      0.0113787           0.639299        0.273589
+   5 │ f_rate      0.0303079  2.05089  0.62468    0.914377      -0.0321244          0.790464        0.4937
+   6 │ δ_e         0.0325045  2.19953  0.0787455  -0.000595665  -0.0467627          0.313994        -0.00712246
+   7 │ N_e         0.166481   11.2655  -0.184676  -0.321338     0.917205            0.638417        0.263861
+   8 │ labor_prod  0.0147779  1.0      0.0795317  0.0222653     1.0                 0.671567        0.31632
+
+====================================================================
+HEADLINE DIAGNOSTICS
+====================================================================
+                                  BED  (measured, D1)CODE (status quo)BGM  (2012)    
+  σ(θ)/σ(labor_prod)              5.5            5.09           5.13              target 11.7
+  δ→u peak (pp)                   0.012          0.027          0.035             LP: +1.71
+  δ→u peak horizon (qtrs)         1              1              1                 LP: 17–20
+  δ→u at h=20 (pp)                0.007          0.011          0.012          
+  δ→v trough (pp)                 -0.009         -0.018         -0.022            LP: −0.58
+  δ→v trough horizon (qtrs)       4              3              3                 LP: 18
+
+INTERPRETATION GUIDE
+  • If σ(θ)/σ(labor_prod) is broadly similar across specs → δ_e can be FIXED at
+    the measured BED value; D1 resolves to 0.0320 and no further work is needed.
+  • If amplification falls sharply in the BED arm while δ→u persistence improves
+    → the two estimation blocks disagree on δ_e. Move δ_e into Θ_e with a prior
+    anchored at 0.0320 as a lower bound (D1's preferred resolution), and let the
+    posterior adjudicate the product-line-vs-establishment measurement gap.
+  • Note the IRF scale is NOT comparable to the LP levels until D3 is settled —
+    compare SHAPE and PEAK HORIZON, not magnitude, against the LP column.
+
+Saved: irf_delta_target.jls

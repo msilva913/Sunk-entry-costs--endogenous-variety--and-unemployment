@@ -43,7 +43,7 @@
 #
 # DECISION RULE
 # -------------
-# If σ(θ)/σ(labor_prod) at BED is close to the CODE/BGM arms, δ_e can be fixed
+# If σ(θ)/σ(labor_prod) at BED is close to the CODE/BGM specs, δ_e can be fixed
 # at the measured value and D1 is settled. If amplification collapses while the
 # δ→u persistence improves, the two blocks disagree and δ_e should move into Θ_e
 # with a prior anchored at the BED value as a lower bound (see D1).
@@ -61,8 +61,8 @@ include("run_solution_core.jl")
 σ_z = 0.0092
 ρ_δ = 0.592
 σ_δ = 0.0669
-ρ_s = 0.90        # PLACEHOLDER — not estimated (principles.md §21)
-σ_s = 0.010       # PLACEHOLDER — not estimated (principles.md §21)
+ρ_s = 0.8741      # part6b: AR(1) on s = (τ−δ_e)/(1−δ_e), 1992Q3–2019Q4
+σ_s = 0.0854      # part6b: AR(1) residual SD. Was 0.010, a placeholder 8.5× too small
 
 T_IR        = 63      # 63 months = 21 quarters = LP horizons h = 0..20 inclusive
 T_SM        = 60_000  # months of stochastic simulation for Block M moments
@@ -76,7 +76,31 @@ const TARGET_AMP  = 11.70     # σ(θ)/σ(z) in Table 4 (tab:smm_moments)
 # Helper: calibrate, solve, and return IRFs + simulated moments.
 # Mirrors solve_and_irf_D in run_solution_entry_elasticity.jl.
 # =============================================================================
-function solve_and_diagnose(targets_variant, label)
+function build_model_once()
+    f = gen_model_equations()
+    # SS_symbolics needs a valid targets_variant for the symbolic expressions;
+    # any spec works — process_model only uses SS to build eval_SS, which we
+    # bypass via SS_precomputed.
+    dummy_targets = (shared..., dest_ann = specs[1][2])
+    SS_sym = SS_symbolics(parameters, dummy_targets)
+    model = (parameters = parameters, estimate = estimate, estimation = position,
+             npar      = length(parameters), ns = length(estimate),
+             priors    = priors,
+             x = x, y = y, xp = xp, yp = yp, variables = variables,
+             varnames  = varnames,
+             nx = nx, ny = ny, nvar = nvar,
+             e = ex, eta = eta,
+             ne = ne,
+             f = f,
+             nf = nvar,
+             SS = SS_sym, PAR_SS = parameters[:],
+             flag_order = flag_order, flag_deviation = flag_deviation,
+             flag_SSsolver = flag_SSsolver)
+    process_model(model)
+    return model
+end
+
+function solve_and_diagnose(model, targets_variant, label)
     cal = calibrate_shares(targets_variant)
     @unpack f_e, δ, s, z, b, ϕ, r, σ, ε, A, η_L, κ, ξ_inv, x_m, ψ, f_m, p_0 = cal
 
@@ -91,24 +115,7 @@ function solve_and_diagnose(targets_variant, label)
     PAR = [f_e; zbar; δbar; sbar; b; ϕ; r; σ; ε; A; η_L; κ; ξ_inv; x_m; ψ; f_m; p_0;
            ρ_z; σ_z; ρ_δ; σ_δ; ρ_s; σ_s]
 
-    SS_symbolic    = SS_symbolics(parameters, targets_variant)
     SS_numeric_val = SS_numeric(PAR, targets_variant)
-    f              = gen_model_equations()
-
-    model = (parameters = parameters, estimate = estimate, estimation = position,
-             npar      = length(parameters), ns = length(estimate),
-             priors    = priors,
-             x = x, y = y, xp = xp, yp = yp, variables = variables,
-             varnames  = varnames,
-             nx = nx, ny = ny, nvar = nvar,
-             e = ex, eta = eta,
-             ne = ne,
-             f = f,
-             nf = nvar,
-             SS = SS_symbolic, PAR_SS = parameters[:],
-             flag_order = flag_order, flag_deviation = flag_deviation,
-             flag_SSsolver = flag_SSsolver)
-    process_model(model)
 
     sol = solution_interface(model, PAR, SS_numeric_val)
     # NB: do NOT unpack `eta` here — assigning it anywhere in this function would
@@ -138,8 +145,7 @@ end
 # Block M moment construction.
 #
 # This is a prototype of the m(θ) simulator that Section 5.2 requires: it
-# replaces second_moments.jl, which is stale (λ = 100,000, and missing s, f and
-# N^e). Filter symmetry with the data side is mandatory — principles.md §18.
+# replaces second_moments.jl. Filter symmetry with the data side is mandatory — principles.md §18.
 #
 # NOTE the model counterpart of "labor productivity" in tab:smm_moments is the
 # VARIABLE labor_prod (= Y/(ρL), equation f[26]), NOT the technology shock z.
@@ -160,6 +166,7 @@ function simulated_moments(model, sol_mat, eta_full, SS, ss, η_L, sbar)
     δ_e_lvl = ss.δ_e .* exp.(sim.δ_e)
     s_lvl   = sbar   .* exp.(sim.s)
     τ_lvl   = δ_e_lvl .+ s_lvl .* (1 .- δ_e_lvl)
+
     sim[!, :τ_rate] = log.(τ_lvl ./ mean(τ_lvl))
 
     mom_vars = [:u, :v, :θ, :τ_rate, :f_rate, :δ_e, :N_e, :labor_prod]
@@ -207,77 +214,108 @@ shared = (TARGETS...,
     ξ_inv             = 1.0,
 )
 
-arms = [
+specs = [
     ("BED  (measured, D1)",  0.0320),
     ("CODE (status quo)",    0.0754),
     ("BGM  (2012)",          0.0963),
 ]
 
+println("\nBuilding symbolic model (once) ...")
+model = build_model_once()
+println("Symbolic model ready.\n")
+
 results = Dict{String,Any}()
-for (label, dest_ann) in arms
+for (label, dest_ann) in specs
     println("\n" * "="^68)
     println("Solving  $label   dest_ann = $dest_ann")
     println("="^68)
-    results[label] = solve_and_diagnose((shared..., dest_ann = dest_ann), label)
+    results[label] = solve_and_diagnose(model, (shared..., dest_ann = dest_ann), label)
 end
 
 # =============================================================================
 # Report
 # =============================================================================
+using Printf
+
+sig3(x) = round(x, sigdigits=3)
+fmt3(x) = x isa Number ? rpad(string(sig3(x)), 15) : rpad(string(x), 15)
+
+function display_moments(mom)
+    dm = copy(mom)
+    dm.SD  = sig3.(Float64.(dm.SD)  .* 100)
+    dm.RSD = sig3.(Float64.(dm.RSD))
+    for c in names(dm)
+        c == "Variable" && continue
+        dm[!, c] = sig3.(Float64.(dm[!, c]))
+    end
+    show(stdout, MIME("text/plain"), dm)
+    println()
+end
+
 τ_monthly = shared.sep
 
 println("\n\n" * "="^68)
 println("STEADY STATE")
 println("="^68)
-println(rpad("", 22), join([rpad(l, 15) for (l, _) in arms]))
+println(rpad("", 22), join([rpad(l, 15) for (l, _) in specs]))
 for field in [:u, :v, :θ, :δ_e, :N, :N_e, :ν_f, :K, :Q]
-    vals = [string(round(getfield(results[l].ss, field), digits=5)) for (l, _) in arms]
-    println(rpad("  $field", 22), join([rpad(v, 15) for v in vals]))
+    vals = [fmt3(getfield(results[l].ss, field)) for (l, _) in specs]
+    println(rpad("  $field", 22), join(vals))
 end
 println(rpad("  δ_e/τ", 22),
-        join([rpad(string(round(results[l].ss.δ_e / τ_monthly, digits=4)), 15) for (l, _) in arms]))
+        join([fmt3(results[l].ss.δ_e / τ_monthly) for (l, _) in specs]))
 println(rpad("  ϕ (Nash resid.)", 22),
-        join([rpad(string(round(results[l].cal.ϕ, digits=4)), 15) for (l, _) in arms]))
+        join([fmt3(results[l].cal.ϕ) for (l, _) in specs]))
 
 println("\n" * "="^68)
 println("BLOCK M MOMENTS   (HP λ=$(Int(MOM_LAMBDA)), quarterly, T=$(T_SM) months)")
+println("  SD in percent (log-dev × 100); RSD and correlations dimensionless")
 println("="^68)
-for (l, _) in arms
+for (l, _) in specs
     println("\n── $l ──")
-    show(stdout, MIME("text/plain"), results[l].mom)
-    println()
+    display_moments(results[l].mom)
 end
 
 println("\n" * "="^68)
 println("HEADLINE DIAGNOSTICS")
 println("="^68)
-println(rpad("", 34), join([rpad(l, 15) for (l, _) in arms]))
+println(rpad("", 34), join([rpad(l, 15) for (l, _) in specs]))
 
-amp = Dict(l => results[l].mom[results[l].mom.Variable .== "θ", "RSD"][1] for (l, _) in arms)
+amp = Dict(l => results[l].mom[results[l].mom.Variable .== "θ", "RSD"][1] for (l, _) in specs)
 println(rpad("  σ(θ)/σ(labor_prod)", 34),
-        join([rpad(string(round(amp[l], digits=2)), 15) for (l, _) in arms]),
+        join([fmt3(amp[l]) for (l, _) in specs]),
         "   target $TARGET_AMP")
 
-dg = Dict(l => irf_diagnostics(results[l].irf_δ, results[l].ss) for (l, _) in arms)
+cor_uv = Dict(l => results[l].mom[results[l].mom.Variable .== "u", "Cor(x, v)"][1] for (l, _) in specs)
+println(rpad("  cor(u, v)", 34),
+        join([fmt3(cor_uv[l]) for (l, _) in specs]),
+        "   target −0.804")
+
+sd_u = Dict(l => Float64(results[l].mom[results[l].mom.Variable .== "u", "SD"][1]) * 100 for (l, _) in specs)
+println(rpad("  σ(u) (%)", 34),
+        join([fmt3(sd_u[l]) for (l, _) in specs]),
+        "   target 14.96")
+
+dg = Dict(l => irf_diagnostics(results[l].irf_δ, results[l].ss) for (l, _) in specs)
 println(rpad("  δ→u peak (pp)", 34),
-        join([rpad(string(round(dg[l].u_peak, digits=3)), 15) for (l, _) in arms]),
+        join([fmt3(dg[l].u_peak) for (l, _) in specs]),
         "   LP: +1.71")
 println(rpad("  δ→u peak horizon (qtrs)", 34),
-        join([rpad(string(dg[l].u_peak_h), 15) for (l, _) in arms]),
+        join([rpad(string(dg[l].u_peak_h), 15) for (l, _) in specs]),
         "   LP: 17–20")
 println(rpad("  δ→u at h=20 (pp)", 34),
-        join([rpad(string(round(dg[l].u_h20, digits=3)), 15) for (l, _) in arms]))
+        join([fmt3(dg[l].u_h20) for (l, _) in specs]))
 println(rpad("  δ→v trough (pp)", 34),
-        join([rpad(string(round(dg[l].v_peak, digits=3)), 15) for (l, _) in arms]),
+        join([fmt3(dg[l].v_peak) for (l, _) in specs]),
         "   LP: −0.58")
 println(rpad("  δ→v trough horizon (qtrs)", 34),
-        join([rpad(string(dg[l].v_peak_h), 15) for (l, _) in arms]),
+        join([rpad(string(dg[l].v_peak_h), 15) for (l, _) in specs]),
         "   LP: 18")
 
 println("""
 
 INTERPRETATION GUIDE
-  • If σ(θ)/σ(labor_prod) is broadly similar across arms → δ_e can be FIXED at
+  • If σ(θ)/σ(labor_prod) is broadly similar across specs → δ_e can be FIXED at
     the measured BED value; D1 resolves to 0.0320 and no further work is needed.
   • If amplification falls sharply in the BED arm while δ→u persistence improves
     → the two estimation blocks disagree on δ_e. Move δ_e into Θ_e with a prior
@@ -290,9 +328,9 @@ INTERPRETATION GUIDE
 pack(l, d) = (ss=results[l].ss, cal=results[l].cal, irf_z=results[l].irf_z,
               irf_δ=results[l].irf_δ, mom=results[l].mom, dest_ann=d, label=l)
 
-output_E = (bed  = pack(arms[1][1], arms[1][2]),
-            code = pack(arms[2][1], arms[2][2]),
-            bgm  = pack(arms[3][1], arms[3][2]))
+output_E = (bed  = pack(specs[1][1], specs[1][2]),
+            code = pack(specs[2][1], specs[2][2]),
+            bgm  = pack(specs[3][1], specs[3][2]))
 
 serialize("irf_delta_target.jls", output_E)
 println("Saved: irf_delta_target.jls")

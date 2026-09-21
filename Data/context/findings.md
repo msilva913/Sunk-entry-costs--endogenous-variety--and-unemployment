@@ -243,8 +243,74 @@ correlation is an artifact of ρ_s = 0.90, σ_s = 0.010, which have no empirical
 (`principles.md` §21). The s shock is also doing most of the volatility work: silencing it
 cuts σ(u) by 60%.
 
-**Implication for sequencing.** Block M moments cannot discriminate among δ_e values while the
-s process is a placeholder, because it contaminates every correlation in the table and
-supplies much of the volatility. Calibrating ρ_s and σ_s is now the binding task for Block M,
-ahead of anything involving δ_e.
+## D1/M5 diagnostic with calibrated s process — September 21, 2026
+
+Supersedes the placeholder-s diagnostic above. Shock processes are now empirically calibrated
+from part6b: ρ_s = 0.874, σ_s = 0.0854 (AR(1) on s = (τ−δ_e)/(1−δ_e), HP-1600 log cycles,
+1992Q3–2019Q4). σ_s was 8.5× larger than the 0.010 placeholder. Other shocks unchanged:
+ρ_z = 0.902, σ_z = 0.0092, ρ_δ = 0.592, σ_δ = 0.0669.
+
+Θ_e remain hand-set (`b_ratio=0.9, x_v=0.5, ξ_inv=1.0, p_0=0.5, dest_elast_target=5.0`).
+
+**Block M moments (HP λ=1600, T=60,000 months, SD in percent):**
+
+| | BED (0.0320) | CODE (0.0754) | BGM (0.0963) | data |
+|---|---|---|---|---|
+| δ_e/τ | 0.087 | 0.210 | 0.271 | — |
+| **cor(u, v)** | **+0.995** | **+0.947** | **+0.887** | **−0.804** |
+| σ(θ)/σ(LP) | 5.50 | 5.09 | 5.13 | **11.70** |
+| σ(u) (%) | 8.08 | 7.06 | 6.65 | **14.96** |
+| σ(v) (%) | 15.8 | 13.8 | 12.8 | 14.19 |
+| cor(u, LP) | +0.051 | +0.070 | +0.080 | −0.009 |
+| ρ₁(u) | 0.703 | 0.707 | 0.715 | 0.792 |
+| δ→u peak (pp) | 0.012 | 0.027 | 0.035 | +1.71 |
+| δ→u peak horizon (qtr) | 1 | 1 | 1 | **17–20** |
+| δ→v trough (pp) | −0.009 | −0.018 | −0.022 | −0.58 |
+| δ→v trough horizon (qtr) | 4 | 3 | 3 | **18** |
+
+**What improved vs. placeholder s.** Amplification jumped from ~1–3 to ~5.1–5.5 (5× gain).
+σ(u) rose from 1.1% to 6.7–8.1% (about half of the data's 15.0%). The s shock generates
+θ volatility while barely moving measured labor productivity, as predicted. σ(v) is now
+close to the data target at BED (15.8% model vs 14.2% data).
+
+**What got worse.** cor(u,v) moved from +0.76 to **+0.995** at BED — near-perfect positive
+comovement, opposite the data's −0.80. This is Prop 5 Part 1: the calibrated s shock
+dominates the simulation and pushes u and v in the same direction (separations → u↑, but
+surviving firms repost → v↑). The δ mechanism generates the right sign but is quantitatively
+overwhelmed.
+
+**What is flat across specs.** Amplification barely varies with δ_e (5.50 vs 5.09 vs 5.13).
+The D1 choice therefore does not affect Block M performance, confirming that **δ_e can be
+fixed at the BED measurement (0.0320)** and D1 is settled for Block M purposes.
+
+**Two binding problems.**
+
+1. **Beveridge curve.** The s shock is the dominant separation force (cor(cycle_s, cycle_τ)
+   = 0.997 in the data) and it produces the wrong Beveridge sign in the model. The δ mechanism
+   is too small to offset it. ω_δ (the endogenous exit share) is the main lever: if estimation
+   pushes ω_δ high enough, part of what looks like match separation in the data actually
+   destroys product lines in the model, restoring negative u-v comovement. The z shock also
+   helps (right Beveridge sign on its own).
+
+2. **δ→u peak horizon.** The δ IRF peaks at h=1 quarter across all specs, vs h=17–20 in the
+   LP. The immediate peak reflects the direct separation effect dominating the slow-building
+   N-variety channel. Two parameters matter:
+   - **ξ_inv** (inverse elasticity of vacancy creation cost): higher ξ_inv makes entry more
+     costly to scale up, so destroyed firms are replaced more slowly and N stays depressed
+     longer. Comparison D confirms: low ξ_inv (near free entry) attenuates the δ→u response
+     because the entry cushion absorbs destruction quickly. Higher ξ_inv removes that cushion
+     and could shift the peak later.
+   - **ε** (elasticity of substitution across varieties): lower ε strengthens the variety
+     externality (N→ρ→w^int→θ), so a given N depression has a larger labor market effect.
+     This amplifies the slow-building indirect channel relative to the direct separation.
+   ξ_inv governs how *long* N stays depressed; ε governs how *much* it drags on θ. Both could
+   help, but the comparison is also confounded by D3: the LP measures a cross-state differential
+   response with time FEs, not an aggregate time-series IRF. Settling D3 may reveal the gap is
+   partly an apples-to-oranges issue.
+
+**Implication for estimation.** The calibrated shock processes confirm that external
+calibration alone cannot match both the Beveridge curve and amplification simultaneously.
+Estimation (§5.4) is genuinely necessary: the objective function must target cor(u,v)
+directly, and the estimator must find the parameter combination (especially ω_δ and possibly
+ξ_inv) that reconciles the two blocks.
 

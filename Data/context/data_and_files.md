@@ -81,7 +81,9 @@ NFCI interaction variant:
 | `placebo_sev_delta_vac.csv` | Severity placebo: δ → v (cleanest result) |
 | `shock_persistence.csv` | AR(1): ρ_δ=0.617/0.647, ρ_LD=0.489/0.305 |
 | `var_calibration.csv` | VAR(1): ρ_δ=0.600, ρ_LD=0.510, β(endex)=0.228 |
-| `var_calibration_zd.csv` | **MODEL CALIB**: bivariate VAR(1) on HP-1600 log(z),log(δ); Cholesky z-first; ρ_z^Q=0.735→ρ_z^m=0.902, ρ_δ^Q=0.207→ρ_δ^m=0.592, σ_z^m=0.0092, σ_δ^m=0.0669 |
+| `shock_calibration.csv` | **MODEL CALIB** (renamed from `var_calibration_zd.csv`, Sept 21, 2026): one row per series for z, δ, τ, s. z and δ from the bivariate VAR(1) on HP-1600 logs, Cholesky z-first; τ and s from univariate AR(1). Monthly: ρ_z=0.902, σ_z=0.00916; ρ_δ=0.592, σ_δ=0.0669; ρ_s=0.874, σ_s=0.0854. τ is reported as a diagnostic, not a model shock |
+| `cycles_panel.png` | HP-1600 log cycles for all four series, common sample 1992Q3–2019Q4 |
+| `separation_decomposition.png` | τ, δ, s in levels and cycles; shows τ = δ + (1−δ)s. cor(cycle_s, cycle_τ) = 0.997 |
 | `recession_scatter_primary.png` | Cross-recession fig (paper) |
 | `state_scatter_primary.png` | Cross-state fig (paper) — fig:state_scatter |
 | `jf_table2_ext_2019_latex.tex` | JF Table 2 extension (preferred sample) |
@@ -125,6 +127,9 @@ NFCI interaction variant:
 | **ρ_δ^m (model)** | **0.592** | part6b; VAR(1) HP-1600 log(δ) ⊥ z, Cholesky z-first |
 | **σ_z^m (model)** | **0.0092** | part6b; unconditional-variance-matched from quarterly |
 | **σ_δ^m (model)** | **0.0669** | part6b; structural δ shock ⊥ z innovation |
+| **ρ_s^m (model)** | **0.874** | part6b (Sept 21, 2026); AR(1) on s = (τ−δ_e)/(1−δ_e), same window. Replaces the 0.90 placeholder |
+| **σ_s^m (model)** | **0.0854** | part6b; AR(1) residual SD. Replaces the 0.010 placeholder — **8.5× larger** |
+| s̄ (match separation) | 0.0213 /month | part6b; vs τ̄ = 0.0235 and δ̄_e = 0.00222 over 1992Q3–2021Q4 |
 | β(δ←z) quarterly | −1.050 (SE=0.830) | part6b; endogenous exit channel — NOT in shock process |
 | corr(u^z, u^δ) | −0.284 | part6b; pre-Cholesky; absorbed by model equilibrium |
 
