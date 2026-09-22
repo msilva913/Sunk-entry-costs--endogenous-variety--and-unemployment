@@ -19,11 +19,12 @@ open rather than the file that owns the topic.
 
 ## Reading order when picking the project back up
 
-1. `../CLAUDE.md` — one-paragraph framing and current priorities
-2. **`decisions.md`** — what is unsettled; this is where the branch's work is
-3. `pending_tasks.md` — the critical path
-4. `estimation_design.md` — if the task touches estimation
-5. The rest as needed
+1. **`session_handout_20260921b.md`** — latest session handout with progress and next steps
+2. `../CLAUDE.md` — one-paragraph framing and current priorities
+3. **`decisions.md`** — what is unsettled; this is where the branch's work is
+4. `pending_tasks.md` — the critical path
+5. `estimation_design.md` — if the task touches estimation
+6. The rest as needed
 
 ## Conventions
 

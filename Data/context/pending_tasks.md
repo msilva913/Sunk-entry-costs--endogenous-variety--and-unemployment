@@ -1,5 +1,5 @@
 # Pending Tasks
-**Last updated:** September 6, 2026 · **Branch:** `Organize_Project_State_Estimation`
+**Last updated:** September 21, 2026 · **Branch:** `Organize_Project_State_Estimation`
 
 Actionable work only. **Decisions** (things to choose, not do) live in
 [`decisions.md`](decisions.md); **draft section status** lives in
@@ -81,11 +81,10 @@ avoid regenerating twice.
 
 - **D1 is settled** at `dest_ann = 0.0320` (δ_e/τ = 0.087) but **not yet implemented**.
   `steady_state.jl` still holds 0.0754; the line carries a loud comment saying so.
-- **ρ_s, σ_s are placeholders** (0.90, 0.010) with no empirical basis, and they flip the
-  model's unconditional Beveridge correlation to **+0.76** against −0.80 in the data.
-  Silencing the s shock gives −0.911, so the model itself is fine. See `findings.md`
-  §"The placeholder s shock flips the Beveridge curve". Calibrate them from the data —
-  `part6` has ρ_LD ≈ 0.31–0.49 and the Shimer τ series is already built.
+- **ρ_s, σ_s are now calibrated** (ρ_s = 0.874, σ_s = 0.0854, from part6b AR(1) on
+  s = (τ−δ_e)/(1−δ_e), HP-1600, 1992Q3–2019Q4). ✅ Sept 21, 2026. The calibrated s
+  worsened the Beveridge curve (cor(u,v) = +0.995 at BED) but improved amplification 5×.
+  See `findings.md` §"D1/M5 diagnostic with calibrated s process".
 
 Then, in one pass: set `dest_ann`, re-run Comparisons A–D, regenerate the eight
 `mechanism_*.pdf`, re-run `mechanism_stats.jl`, and update §5.3 against its output. Also
@@ -136,6 +135,7 @@ Plus the AGS two-model counterfactual.
 | E5 | **Refresh the BED cache to 2024Q4** — run `refresh_bed_cache.py` locally (BLS rate limits block it in a sandbox); the `ext_2024` sample in part11 currently truncates at 2021Q4, and `raw_data.pkl` δ ends 2021Q4 | ❌ |
 | E6 | **Run `part2b_residualize_shocks_v3.py` once**, or delete the appendix promise from the draft — see [D8](decisions.md) | ❌ |
 | E7 | **`build_report_html.py`** — needs `conda install -c conda-forge pandoc` locally | ❌ optional |
+| E8 | 🔴 **Bartik instrument persistence test (D10).** In `part5_lp.py`, add lagged B^δ_{i,t-1},...,B^δ_{i,t-p} as controls (p=4–8) and re-estimate the δ→u and δ→v IRFs. Also report the within-state autocorrelation of B^δ after time FEs. If the peak horizon collapses from h=17–20, the hump is a Wold/persistence artifact and the model's immediate-spike shape is correct. **This gates M8 and the Block B estimation design.** | ❌ **new, high priority** |
 
 ## Paper writing tasks (secondary)
 
@@ -156,7 +156,7 @@ Plus the AGS two-model counterfactual.
 | M3 | ~~Verify the calibrated ψ~~ ✅ **resolved Sept 5, 2026**: 0.014 is the PATH A outcome, 0.033 the PATH B outcome. Only 0.033 applies to the current Comparison B | ✅ |
 | M5 | **Pre-estimation diagnostic** — `run_solution_delta_target.jl` ✅ **written and run Sept 5, 2026**. Compares dest_ann ∈ {0.0320 BED, 0.0754 code, 0.0963 BGM} on σ(θ)/σ(labor_prod) vs 11.70 and δ→u persistence vs the LP peak at h=17–20. Serializes `irf_delta_target.jls`. See [D1](decisions.md) | ✅ **run Sept 5, 2026** — see findings.md §D1/M5. Does NOT settle D1: all three specifications miss amplification by ~10× and peak at h=1 vs the LP h=17–20 |
 | M7 | 🔴 **Fix the observable mapping for labor productivity.** Model `labor_prod = Y/(ρL)` has SD 0.0387 vs 0.0128 in data and correlates 0.9975 with N^e — it tracks the ν_f·N^e entry term in Y, not technology. Every RSD in Block M has this in the denominator. Candidates: Y_c/L_c, or a differently deflated series. Then write an explicit observable-mapping table into §5.2 | ❌ **blocks Block M** |
-| M8 | 🔴 **Chase the hump-shape gap**: model δ→u peaks at h=1 quarter, LP at h=17–20. If Θ_e cannot close this, Block B and Block M will fight. Establish before building the sampler | ❌ |
+| M8 | 🔴 **Hump-shape gap is structural, not parametric.** Swept ξ_inv ∈ [0.5, 8] and ε ∈ [1.5, 4.3]: peak never moves past h=2. System approaches unit root but never hump-shaped. ε < 3 hits BK violation. **Before adding a propagation mechanism, test whether the LP peak is a Bartik instrument persistence artifact — see [D10](decisions.md) and E8.** | ⚠️ **diagnosis complete Sept 21, gates on E8** |
 | M6 | **`hp_filter` was not the HP filter** — fixed in `time_series_fun.jl` Sept 5, 2026 (was a first-difference/Whittaker smoother: ~5× the correct cycle SD, corr 0.26 with true HP at λ=1600). Now pentadiagonal, matches `statsmodels.hpfilter` to 1e-12. **Any model-side second moment computed before this date is invalid**, incl. anything from `second_moments.jl`/`second_moments_GS.jl` | ✅ fixed |
 | M9 | 🔴 **Reproducibility remediation (principles.md N15).** The Sept 5, 2026 rewrite of §5.3 introduced ~24 numbers (firm-stock and shock half-lives, f_e levels, IRF peaks/troughs, exit-flow decomposition, w_int gap) computed in ad-hoc Julia sessions, not emitted by any program. ✅ **Closed Sept 6, 2026.** `mechanism_stats.jl` emits 66 quantities to `mechanism_stats.txt` and `mechanism_stats.tex`, all reproducing the values in §5.3. **Decision (MS):** the prose keeps the literals rather than `\input`-ing the macros. The numbers are checked against `mechanism_stats.txt` during draft updates, and that file is the authority. Re-run the script after any mechanism runner and diff it before touching §5.3 | ✅ |
 | M4 | **Consider fixing the `eval_SS` toolkit bug** (`for ip in npar` iterates once) so callers need not pass a pre-computed SS — matters once the sampler calls the solver thousands of times | ❌ |

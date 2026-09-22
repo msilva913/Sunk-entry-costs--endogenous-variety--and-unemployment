@@ -1,5 +1,5 @@
 # Decision Register
-**Last updated:** September 6, 2026 (D1 settled) · **Branch:** `Organize_Project_State_Estimation`
+**Last updated:** September 21, 2026 (D10 added) · **Branch:** `Organize_Project_State_Estimation`
 
 Every open decision that must be settled before estimation, plus the ones already settled
 that agents keep re-litigating. One entry = one decision. When you settle one, move it to
@@ -298,6 +298,49 @@ solve over `(log(0.1), log(0.6))`. Purpose is expositional only — showing ξ_i
 on z-shock amplification — and Comparison D already makes the substantive point.
 
 **Recommendation: fix if it takes an hour, otherwise drop.** Not on the critical path.
+
+---
+
+## 🔴 D10. Is the Bartik LP peak horizon (h=17–20) a propagation fact or a persistence artifact?
+
+**The problem.** The model's δ→u IRF peaks at h=1 quarter under every feasible parameter
+combination (sweeps over ξ_inv ∈ [0.5, 8.0] and ε ∈ [1.5, 4.3]; see `findings.md`). The
+LP estimates δ→u peaking at h=17–20. The gap is structural, not parametric: no parameter
+adjustment within the model can generate a hump-shaped response.
+
+**Before adding a propagation mechanism, the LP itself should be interrogated.** Two
+concerns, both testable:
+
+**1. Bartik instrument persistence (the Plagborg-Møller & Wolf 2021 point).** Industry
+composition (the ω_{ij} weights) changes slowly, and industry-level death rates are
+persistent. If state i gets a high Bartik shock at t because, e.g., manufacturing is
+declining, it gets a high Bartik shock at t+1, t+2, ... for the same reason. The LP:
+
+> y_{i,t+h} = α_i + γ_t + β_h · B^δ_{i,t} + X'Γ + ε
+
+does not control for B^δ_{i,t+1}, ..., B^δ_{i,t+h}. So β_h at large h conflates the
+*propagation* of a single-period shock with the *cumulative effect* of serially correlated
+future shocks hitting the same states. The LP IRF is a Wold representation, not a structural
+IRF; the hump shape could reflect instrument persistence rather than slow propagation.
+
+**Test:** Add lagged instruments B^δ_{i,t-1}, ..., B^δ_{i,t-p} as controls and check
+whether the peak horizon collapses. If it does, the hump is an artifact of instrument
+persistence, and the model's immediate-spike-and-decay is structurally correct.
+
+**2. BED Deaths as a lagging indicator.** An establishment "death" in BED data requires
+zero employment for two consecutive quarters. The official death therefore lags the
+economic process that led to it (declining demand, layoffs, gradual wind-down). β_h at
+h=17–20 may partly reflect this measurement lag.
+
+**Recommendation:** Run the lagged-instrument test before committing to a propagation
+mechanism. If the peak survives the controls, the model genuinely needs a new channel
+(financial accelerator, network effects, multi-period firm wind-down). If the peak
+collapses, Block B should target the *scale and persistence tail* of δ→u, not the peak
+horizon — and M8 is dissolved.
+
+**This gates the estimation design.** If the peak horizon is a moment target in Block B,
+the estimator will fight it and potentially distort every other parameter. If it is dropped
+or reinterpreted, Block B becomes much more tractable.
 
 ---
 

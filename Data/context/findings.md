@@ -314,3 +314,58 @@ Estimation (§5.4) is genuinely necessary: the objective function must target co
 directly, and the estimator must find the parameter combination (especially ω_δ and possibly
 ξ_inv) that reconciles the two blocks.
 
+## ξ_inv × ε sweep — structural impossibility of hump-shaped δ→u — September 21, 2026
+
+**Question:** Can any parameter combination within the current model structure shift the
+δ→u peak from h=1 to the LP's h=17–20?
+
+**Sweep 1: ξ_inv alone** (BED spec, ε=4.3, all else at defaults):
+
+| ξ_inv | peak_h (qtrs) | u_peak (pp) | u_h20 (pp) | u_h20/u_peak |
+|-------|---------------|-------------|------------|--------------|
+| 0.5   | 1             | 0.0114      | 0.006      | 0.52         |
+| 1.0   | 1             | 0.0115      | 0.007      | 0.64         |
+| 2.0   | 1             | 0.0116      | 0.009      | 0.76         |
+| 3.0   | 1             | 0.0116      | 0.009      | 0.82         |
+| 5.0   | 2             | 0.0117      | 0.010      | 0.87         |
+| 8.0   | 2             | 0.0118      | 0.011      | 0.90         |
+
+Even at ξ_inv = 8 (G(e) = e⁹/9), the peak moves only from h=1 to h=2.
+
+**Sweep 2: ξ_inv × ε jointly** (BED spec, all else at defaults):
+
+| ε   | ξ_inv | peak_h | u_h20/u_peak | max\|eig(hx)\| |
+|-----|-------|--------|--------------|----------------|
+| 4.3 | 1.0   | 1      | 0.64         | 0.993          |
+| 4.3 | 8.0   | 2      | 0.90         | 0.998          |
+| 3.0 | 1.0   | 1      | 0.75         | 0.997          |
+| 3.0 | 3.0   | 2      | 0.91         | 0.999          |
+| 3.0 | 5.0   | 2      | 0.95         | 0.999          |
+| 3.0 | 8.0   | 2      | 0.98         | 1.000          |
+| 2.0 | any   | —      | FAILED       | BK violation   |
+| 1.5 | any   | —      | FAILED       | BK violation   |
+
+**Finding: the model cannot generate a hump-shaped δ→u IRF.** Three results:
+1. The peak never moves past h=2, regardless of ξ_inv and ε.
+2. Higher ξ_inv and lower ε push the dominant eigenvalue toward a unit root (max|eig|→1),
+   making the IRF extremely persistent (flat) but never hump-shaped.
+3. ε < 3 causes Blanchard-Kahn violations (indeterminacy) — the variety channel has
+   a hard determinacy ceiling.
+
+**Economics.** The δ shock destroys firms and their jobs contemporaneously (f[24], f[23]).
+Workers become unemployed in the period of the shock. The indirect channel (N↓ → ρ↓ → θ↓
+→ u stays elevated) slows the *recovery* but can never make the cumulative effect *exceed*
+the initial impact. That would require the indirect channel to dominate the direct
+separation, which it cannot: N↓ depresses θ by a fraction, while δ↑ destroys jobs by a
+multiple. This is structural, not parametric.
+
+**Implication: either a new propagation mechanism or skepticism of the Bartik LP's peak
+horizon.** See [D10](decisions.md) for the latter.
+
+**News shocks considered and rejected.** A news shock to δ (agents learn k periods in
+advance that a product line will be destroyed) would mechanically produce a hump shape.
+However, the Bartik LP is identified from a contemporaneous shock at h=0, not from
+anticipated future destruction. The hump in the data means a surprise contemporaneous
+shock takes 17–20 quarters to fully work through unemployment — a propagation
+phenomenon, not an anticipation phenomenon.
+

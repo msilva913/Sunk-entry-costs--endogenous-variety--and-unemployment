@@ -61,7 +61,7 @@ i.e., what would change in the model if this parameter moved.
 |--------|-----------|---------|-----------------|-------------|-----------|
 | b/w | `b_ratio` | 0.71 (PATH A) / 0.90 (PATH B) | Replacement ratio (unemployment benefit / wage) | σ(θ), σ(u), amplification σ(θ)/σ(LP) | **The Hagedorn-Manovskii lever.** Higher b → smaller surplus → larger % surplus fluctuations → more amplification. The single most powerful parameter for the Shimer puzzle. Also affects ϕ (recovered) |
 | σ | `sigma` | 1.0 | Inverse IES (risk aversion / intertemporal substitution) | cor(u, LP), ρ₁(u), consumption dynamics | σ = 1 is log utility. Higher σ → more consumption smoothing → dampens hours response to shocks |
-| ξ⁻¹ | `xi_inv` | 1.0 | Inverse elasticity of entry cost G(e) = e^(1+ξ)/(1+ξ) | σ(N_e), **δ→u persistence (peak horizon)**, σ(v) | **Entry friction lever.** Higher ξ⁻¹ → steeper entry cost → slower replacement of destroyed firms → N stays depressed longer → more persistent IRFs. Near free entry (ξ⁻¹→0) attenuates δ→u (Comparison D) |
+| ξ⁻¹ | `xi_inv` | 1.0 | Inverse elasticity of entry cost G(e) = e^(1+ξ)/(1+ξ) | σ(N_e), δ→u persistence tail, σ(v) | **Entry friction lever.** Higher ξ⁻¹ → steeper entry cost → slower replacement of destroyed firms → N stays depressed longer → more persistent IRFs. Near free entry (ξ⁻¹→0) attenuates δ→u (Comparison D). **Sept 21 sweep: ξ_inv ∈ [0.5, 8] shifts the δ→u peak only from h=1 to h=2 — persistence improves (unit-root limit) but the peak never becomes hump-shaped. Structural limitation, not parametric.** |
 | x_v | `x_v` | 1.0 (PATH A) / 0.5 (PATH B) | Sunk share of total recruiting cost (x_v·f_e vs κ) | σ(v), cor(v, u) | Split between sunk and flow vacancy costs. Higher x_v → more of the cost is sunk → stronger option-value dynamics in vacancy creation |
 
 ### Endogenous exit margin
@@ -104,7 +104,8 @@ The two estimation blocks identify different subsets of Θ_e:
 **Parameters that pull in opposite directions on different moments** (the identification tension):
 - ω_δ: higher → better Beveridge curve, but also higher δ_e volatility which may overshoot σ(δ_e)
 - b/w: higher → more amplification, but also makes wages less responsive to θ, affecting IRF shapes
-- ξ⁻¹: higher → more persistent δ→u, but also less entry → lower σ(N_e)
+- ξ⁻¹: higher → more persistent δ→u, but also less entry → lower σ(N_e). **Cannot shift peak horizon** (Sept 21 sweep)
+- ε: lower → stronger variety channel, but ε < 3 hits BK violation (determinacy ceiling for the persistence channel)
 
 ---
 
