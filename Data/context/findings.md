@@ -1,5 +1,6 @@
 # Key Empirical Findings
-**Last updated:** September 23, 2026. E8 (Bartik persistence test) ran September 22–23.
+**Last updated:** September 23, 2026. E8 (Bartik persistence test) ran September 22–23;
+literature review of δ calibration added the same day.
 Model-side results were re-run after the September 5–6 code fixes; see §D1/M5.
 
 ## Shock Persistence (part6, 2001Q1+ window)
@@ -189,6 +190,51 @@ is robust across the full ξ range including free entry — the empirically cali
 rules out the CK Beveridge-curve shift. Appendix `app:comparison_D`; the K decomposition
 (`eq:K_decomp`, `eq:Q_ll_delta`, `eq:e_ll_delta`) gives the corrected transmission chain
 K↑ → Q↑ → e↑ for δ shocks, with sign asymmetry ê^δ > 0 vs. ê^z < 0.
+
+## How the literature calibrates δ — September 23, 2026
+
+Read from the sources in `Key papers/` (text mirror under `Key papers/markdown/`). Full
+discussion: [`../Notes/delta_calibration_and_the_reposting_margin.md`](../Notes/delta_calibration_and_the_reposting_margin.md).
+
+| Paper | δ (annual) | δ/τ | Basis | Shocks |
+|---|---|---|---|---|
+| Coles & Kelishomi (2018) | 32.3 % | **1.00** | δ_e ≡ τ by construction | separation |
+| Bilbiie, Ghironi & Melitz (2012) | 10 % | n/a | Product destruction incl. within-firm churn | **z only** |
+| Shao & Silos (2013) | ~10.8 % | **0.26** | Residual from Σ = 0.035 after choosing s to hit u ≈ 5.4 % | **z only** |
+| Gabrovski & Silva (JEDC) | 10 % | **0.26** | JOLTS layoffs and discharges net of recalls | **z only** |
+| **This paper** | **3.2 %** | **0.087** | BED establishment deaths, employment-weighted | z, δ, s |
+
+**Three findings, in order of importance.**
+
+1. **No antecedent shocks the separation margin except CK.** BGM, Shao-Silos, and GS are all
+   driven by a productivity shock as the single source of exogenous volatility, holding δ and
+   s fixed. GS match the Beveridge curve with z alone — as our model does with s silenced
+   (−0.911). CK shocks separations but sets δ_e ≡ τ, so every separation destroys a vacancy
+   and the curve is mechanical. **Our Beveridge problem is a consequence of being the first
+   to shock a decomposed separation margin, not of a low δ̄_e.**
+
+2. **BGM and this paper agree on measurement.** BGM's target covers product destruction "by
+   existing and exiting firms": 44 % of output over five years, of which 30.4 points are at
+   continuing firms. Netting out gives ≈**2.7 %/yr** from exiting firms against our 3.2 %.
+   Their 10 % is larger only because one parameter must carry within-firm churn.
+
+3. **The measurements bracket δ, they do not identify it.** BED deaths is a directly observed
+   **lower** bound; GS's permanent layoffs and BGM's product destruction are **upper** bounds;
+   Shao-Silos identifies nothing (residual from an unemployment target). Interval ≈
+   [3.2 %, 10 %]/yr. See the D1 reframe in [`decisions.md`](decisions.md).
+
+**Why the GS implementation overshoots.** Layoffs net of recalls measures worker-job
+attachment, not position survival. A worker never recalled may be replaced by a new hire into
+the same position, which is a reposted separation. GS themselves assign firing for cause to
+the separation shock, yet the recall adjustment does not remove it. Their own BDS figure of
+≈14 %/yr for separations at exiting *and shrinking* establishments, which they call an
+over-estimate, points the same way.
+
+**Shao-Silos detail.** Same accounting as ours (Σ = τ + (1−τ)s, τ the no-repost rate), but
+Σ = 0.035 is taken from Shimer and s is chosen so steady-state unemployment matches the
+free-entry benchmark (≈5.4 %), leaving τ = 0.009 as a residual. One job per firm, so exit
+destroys exactly one position by construction. Their agreement with GS at 0.26 is
+coincidence, not corroboration.
 
 ## Where the draft status lives
 

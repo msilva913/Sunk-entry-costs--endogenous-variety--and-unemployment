@@ -138,6 +138,21 @@ Plus the AGS two-model counterfactual.
 
 ---
 
+## Reposting margin — opened September 23, 2026
+
+From [`../Notes/delta_calibration_and_the_reposting_margin.md`](../Notes/delta_calibration_and_the_reposting_margin.md)
+and [D11](decisions.md). These gate Block B alongside [D10](decisions.md), because they
+change what Block B targets.
+
+| # | Task | Status |
+|---|---|---|
+| R1 | **Decide D11**: does the reposting margin enter this paper? Structural change touching the v LOM, Prop. 5, and Θ_e. Not a calibration tweak | 🔴 **decision, gates the rest** |
+| R2 | **Verify λ̄ and σ_s are separately identified** on simulated data. Both move σ(v) and cor(u,v); the LD IRF is what should separate them. If they are not, λ̄ must be fixed on a reported grid and the paper must say so | 🔴 do before committing to R1 |
+| R3 | **Derive the threshold λ̄\*** at which the s→v response flips sign, and redo Prop. 5 Part 1 as a conditional result. `lem:vpre` and the Part 2 Jacobian both touch the reposting channel | ❌ blocked on R1 |
+| R4 | **Revisit [D4](decisions.md)/S6** if R1 is yes. They retire the LD→vacancy IRF, which is the natural identifying moment for λ̄ and its elasticity | ❌ blocked on R1 |
+| R5 | **Add to §5.2**: the GS and Shao-Silos comparison, the bracketing argument for δ_e, and the CK-consistency argument for why three shocks are required rather than chosen | ⚠️ do regardless of R1 |
+| R6 | **Decide whether δ_e moves into Θ_e** with a prior on [3.2%, 10%]/yr. Only safe once the reposting margin exists, otherwise δ_e absorbs its blame | ❌ blocked on R1 |
+
 ## Empirical code tasks (secondary)
 
 | # | Task | Status |

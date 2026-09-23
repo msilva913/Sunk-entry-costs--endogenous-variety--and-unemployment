@@ -48,7 +48,7 @@ file owns what.
 | File | Contents |
 |------|----------|
 | [`context/README.md`](context/README.md) | **Index and reading order.** Start here |
-| [`context/decisions.md`](context/decisions.md) | **Decision register**: D1–D10 (D1 settled, D2/D3 open, D10 partial), S1–S9 settled, each with a recommendation and a reason |
+| [`context/decisions.md`](context/decisions.md) | **Decision register**: D1–D11 (D1 settled, D2/D3/D11 open, D10 partial), S1–S9 settled, each with a recommendation and a reason |
 | [`context/pending_tasks.md`](context/pending_tasks.md) | Actionable work, ordered; the critical path to a complete draft |
 | [`context/estimation_design.md`](context/estimation_design.md) | How conditional (IRF) and unconditional moments combine, determinacy, what is missing, build order |
 | [`context/findings.md`](context/findings.md) | All empirical and model-mechanism results with numbers |

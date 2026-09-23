@@ -19,7 +19,7 @@ the estimation design, `data_and_files.md` for numerical targets, `findings.md` 
 | η_L | `eta_L` | 0.6 | Matching elasticity w.r.t. unemployment | Petrongolo & Pissarides (2001); Hosios condition |
 | ε | `epsilon` | 4.3 | Elasticity of substitution across varieties (CES aggregator) | BGM (2012) / Compustat markup μ ≈ 1.30. Controls strength of **variety channel**: N→ρ→w^int→θ. Lower ε → stronger variety externality → more amplification from firm turnover |
 | τ̄ | `sep` | 3.1%/mo | Total separation rate | Shimer (2005/2012), JOLTS. Sets the level of match turnover |
-| δ̄_e | `dest_ann` | 3.2%/yr | Permanent establishment exit rate | BLS BED Deaths, emp-weighted, 1993–2019. D1 settled at 0.0320. Sets δ_e/τ ≈ 0.087 |
+| δ̄_e | `dest_ann` | 3.2%/yr | Permanent establishment exit rate | BLS BED Deaths, emp-weighted, 1993–2019. D1 settled at 0.0320. Sets δ_e/τ ≈ 0.087. ⚠️ **A directly observed *lower bound*, not a point estimate** — the literature brackets δ at [3.2%, 10%]/yr. Candidate to move into Θ_e with a prior on that interval once [D11](decisions.md) is resolved. See [`../Notes/delta_calibration_and_the_reposting_margin.md`](../Notes/delta_calibration_and_the_reposting_margin.md) |
 | f̄ | `f` | 0.41/mo | Gross job-finding rate | JOLTS. Pins matching efficiency A via q(θ) |
 | q̄ | `q` | 0.80/mo | Gross vacancy-filling rate | JOLTS. Pins θ̄ via θ = f/q |
 | N̄ | `N` | 1.0 | Steady-state firm mass | Normalization |
@@ -83,6 +83,28 @@ i.e., what would change in the model if this parameter moved.
 | σ_s | `sigma_s` | 0.0854 | Monthly innovation SD of match separation shock | **σ(u), σ(v), cor(u, v)**, σ(θ)/σ(LP) | 8.5× larger than the 0.010 placeholder. The s shock drives most of the business cycle volatility and the (wrong-sign) Beveridge correlation. See Prop 5 Part 1 |
 
 ---
+
+---
+
+## Prospective parameters — not in the model yet
+
+Conditional on [D11](decisions.md). Full argument in
+[`../Notes/delta_calibration_and_the_reposting_margin.md`](../Notes/delta_calibration_and_the_reposting_margin.md).
+
+| Symbol | Economic meaning | How disciplined | Intuition |
+|---|---|---|---|
+| λ̄ = G(Q̄) | Steady-state **reposting rate**: fraction of match separations after which the firm reposts the vacancy | LD→vacancy IRF (sign and magnitude); cor(u,v) in Block M | λ̄ = 1 is the current model. λ̄ < 1 makes s destroy positions as well as matches, which is the lever on the Beveridge curve. **The binding one** — raising δ̄_e does not fix cor(u,v), this does |
+| elasticity of λ_t to Q_t | Responsiveness of reposting to the value of a position | Shape of the LD→vacancy IRF across horizons | Makes reposting procyclical and position destruction countercyclical. **Cannot be calibrated at all** — the object exists only inside the model |
+
+Two modeling constraints worth recording, because both are easy to get wrong:
+
+- A **constant λ is not structural**. Reposting falls when position values fall, i.e. in
+  recessions, which is exactly when the Beveridge curve shifts. A fixed λ holds it constant
+  there and would be a reduced form dressed as a mechanism.
+- A **homogeneous reposting fee does not produce λ ∈ (0,1)**. All positions being identical,
+  the decision is all-or-nothing. An interior rate requires *dispersion* in the reposting
+  cost, exactly as the firm-level exit margin requires the distribution F to deliver an
+  interior χ^c.
 
 ## Parameter-to-moment intuition map
 

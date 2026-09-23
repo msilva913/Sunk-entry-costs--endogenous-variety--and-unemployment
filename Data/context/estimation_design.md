@@ -69,9 +69,17 @@ clean exogenous variation in δ.
 x ∈ {z, δ, s}. ⚠️ The contents depend on [D2](decisions.md) — under PATH B, ψ is pinned by
 `dest_elast_target` rather than estimated, which changes the dimension of Θ_e.
 
+⚠️ **[D11](decisions.md) would change Θ_e further.** If the reposting margin enters, Θ_e gains
+the steady-state reposting rate λ̄ and the elasticity of λ_t to Q_t, and δ_e may move from the
+external block into Θ_e with a prior on [3.2 %, 10 %]/yr. Both changes are contingent on D11
+and neither should be coded before it is settled.
+
 **External:** r = 4%/yr, η_L = 0.6, ε = 4.3 (μ ≈ 1.30), τ = 3.1%/month, and δ_e, settled by
 [D1](decisions.md) at `dest_ann = 0.0320` (δ_e/τ = 0.087) — fixed, not estimated. ⏳ The value
-is not yet in the code; `steady_state.jl:613` still holds 0.0754.
+is not yet in the code; `steady_state.jl:613` still holds 0.0754. ⚠️ Treat δ_e as a directly
+observed **lower bound** rather than a point estimate: the literature brackets it at
+[3.2 %, 10 %]/yr. It stays external only while the reposting margin is missing, because
+otherwise it absorbs that misspecification. See the D1 reframe and [D11](decisions.md).
 
 **Dependent Θ_d:** recovered per draw by the four-stage calibration in
 `steady_state.jl::calibrate_shares` → z, ϕ, f_e, A, s, ψ, χ_m, x_m, κ, δ.

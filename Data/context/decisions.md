@@ -61,6 +61,38 @@ destruction. Do not bury it.
 | BDS establishment exits, count-weighted | 9.93 | 0.280 |
 | Coles-Kelishomi (δ_e = τ) | 32.3 | 1.000 |
 
+### ⚠️ Reframed September 23, 2026 — the measurements bracket δ_e, they do not identify it
+
+The literature review in
+[`../Notes/delta_calibration_and_the_reposting_margin.md`](../Notes/delta_calibration_and_the_reposting_margin.md)
+changes how this entry should be read. No measurement identifies the model's δ:
+
+- **BED deaths (3.2 %/yr)** is a directly observed **lower bound**. It misses product lines
+  and positions destroyed inside surviving firms.
+- **Permanent layoffs (GS, ~10 %/yr)** is an **upper bound**. Recall rates measure
+  worker-job attachment, not position survival, so a position refilled by a different worker
+  counts as permanent.
+- **Product destruction (BGM, 8.8–10 %/yr)** is an upper bound for the exit interpretation:
+  roughly two-thirds of it occurs at continuing firms. Netting that out gives ≈2.7 %/yr from
+  exiting firms, close to our 3.2 %. **BGM and this paper do not disagree about measurement.**
+- **Shao-Silos (0.9 %/month)** identifies nothing about destruction; it is a residual from an
+  unemployment-rate target.
+
+So the literature supplies an interval of roughly **[3.2 %, 10 %]/yr**, not a point. δ_e is
+properly *prior information*, not a calibrated constant.
+
+**This does not reopen D1 now, and the sequencing matters.** With no reposting margin in the
+model, an estimated δ_e would be pulled upward by the estimator trying to rescue cor(u,v),
+landing on a value that reflects the missing margin rather than the destruction rate. That is
+exactly the absorption problem the section below describes. So:
+
+- **Now:** hold δ_e at the observed lower bound, and describe it in the draft *as* a lower
+  bound rather than as the truth.
+- **Once [D11](#-d11-does-the-reposting-margin-enter-this-paper) is resolved and the margin
+  exists:** move δ_e into Θ_e with a prior supported on [3.2 %, 10 %], mass near the lower
+  end. The posterior then reports the size of the middle margin, which is a result worth
+  having.
+
 ### Why fixed rather than estimated
 
 The register previously recommended moving δ_e into Θ_e. Rejected, on the corrected
@@ -253,6 +285,19 @@ identified from second moments plus the externally calibrated τ, and that this 
 limitation.** Feeding a contaminated LD IRF into the likelihood would be worse than omitting
 it.
 
+### ⚠️ [D11](#-d11-does-the-reposting-margin-enter-this-paper) cuts against this — September 23, 2026
+
+The premise above is that LD is *contaminated*, because it mixes match dissolution with
+reposting against deliberate reduction and partial closure. Under the three-margin reading
+that mixture is not contamination. It is exactly the object a reposting margin
+parameterizes, and the persistently negative LD→vacancy IRF is the middle margin showing up
+in the data.
+
+**If D11 resolves in favor of the reposting margin, this decision must be revisited**: the
+LD→vacancy IRF becomes the natural identifying moment for the reposting rate and its
+elasticity, and should enter Block B rather than the appendix. If D11 resolves against, the
+recommendation above stands unchanged.
+
 ---
 
 ## 🟠 D5. Comparison B — is the χ^c channel adequately exercised?
@@ -410,6 +455,81 @@ the shock's. See also the D3 overlap note above.
 **Status:** 🟡 partially resolved. E8 ran (p=4, 8, 12, 16) and identified the problem.
 The estimation design can proceed under option (a) immediately, or wait for the option (b)
 test to determine if the full IRF path is usable.
+
+---
+
+## 🔴 D11. Does the reposting margin enter this paper?
+
+**Opened September 23, 2026.** Full argument:
+[`../Notes/delta_calibration_and_the_reposting_margin.md`](../Notes/delta_calibration_and_the_reposting_margin.md).
+
+**The problem.** The model's unconditional Beveridge correlation is **+0.995** against
+**−0.804** in the data. Two findings locate the cause:
+
+1. **Raising δ̄_e does not fix it.** At BGM's 9.6 %/yr, three times our value and above both
+   Gabrovski-Silva and Shao-Silos, cor(u,v) is still **+0.887**. The level of δ̄_e is not the
+   binding constraint.
+2. **Silencing the s shock fixes it completely** (−0.911). The Beveridge mechanics are sound.
+   What breaks them is the s shock under *costless reposting*.
+
+**Why no antecedent has this problem.** BGM, Shao-Silos, and GS are all driven by a
+productivity shock as the single source of exogenous volatility; they hold δ and s fixed. CK
+does shock separations but has one margin with δ_e ≡ τ, so every separation destroys a
+vacancy and the Beveridge curve is mechanical.
+
+**Why we cannot avoid it.** CK's contribution is that *separation shocks* drive Beveridge
+dynamics. Decomposing that one shocked margin into δ and s obliges us to shock **both**.
+Shocking δ while holding s fixed would assert the match-dissolution component is acyclical,
+which is false (σ_s = 0.0854, cor(cycle_s, cycle_τ) = 0.997) and is an arbitrary restriction
+on exactly the margin CK identify as the driver. Three shocks is required, not chosen.
+
+**The missing middle.** Three margins exist in the data; the literature and this paper fold
+the middle one into opposite neighbors.
+
+| Margin | Destroys product line? | Destroys position? | Rate |
+|---|---|---|---|
+| Establishment death | Yes | Yes | 3.2 %/yr |
+| **Permanent position cut at a surviving firm** | **No** | **Yes** | *the missing middle* |
+| Match separation, reposted | No | No | remainder |
+
+GS and Shao-Silos fold the middle into δ, overstating variety destruction. We fold it into s,
+understating vacancy destruction. Our own LD→vacancy IRF (persistently negative, trough
+−0.45 pp) is that margin showing up in the data.
+
+**The fix, and why it must be a cost not a constant.** A reduced-form reposting fraction λ
+will not survive review. It is the only mechanical margin in a model where entry, exit, and
+vacancy creation all optimize, and — decisively — it is **not invariant to the shocks being
+studied**. If reposting is a decision, firms repost less when position values fall, i.e. in
+recessions, which is exactly when the Beveridge curve shifts. A constant λ holds it fixed
+there.
+
+A *homogeneous* reposting fee also fails: all positions being identical, the decision is
+all-or-nothing, λ ∈ {0,1}. **An interior reposting rate requires dispersion in the reposting
+cost**, exactly as the firm-level exit margin requires F to deliver an interior χ^c. So:
+draw c from a distribution G, repost iff Q_t ≥ c, giving λ_t = G(Q_t), procyclical, with
+countercyclical position destruction. λ = 1 is nested.
+
+**Identification.** The LD→vacancy IRF identifies both the level λ̄ (sign and magnitude) and
+the elasticity (shape across horizons). This gives the LD arm of Block B a structural job for
+the first time and cuts against [D4](#-d4-does-the-sld-irf-enter-the-quasi-likelihood-block)
+/ S6, which currently retire that IRF.
+
+**Recommendation: estimate, do not calibrate.** No clean data object exists — recall rates
+measure worker attachment not position survival, BED contraction nets within the quarter and
+is frequency-dependent, JOLTS reports a stock. λ̄ adjudicates a headline moment, so fixing it
+assumes the answer. And the elasticity cannot be calibrated at all; it exists only inside the
+model. Note this is the mirror of the D1 logic: δ_e is fixed *because* it is cleanly measured,
+while λ *is* the misspecification and is the right thing to free.
+
+**Costs, honestly.** Prop. 5 Part 1 becomes conditional on λ̄ above a threshold λ̄*, and the
+proof must be redone (`lem:vpre` and the Part 2 Jacobian both touch the channel). More
+seriously, with λ̄ < 1 both shocks lower vacancies, so the headline δ–s asymmetry becomes
+quantitative rather than a sign result. Mitigations: the *variety* asymmetry is untouched,
+since only δ moves N and so only δ produces a persistent outward shift; and λ̄* becomes a
+reportable, testable threshold.
+
+**Open sub-question:** verify λ̄ and σ_s are separately identified on simulated data before
+committing. Both move σ(v) and cor(u,v). If not, λ̄ must be fixed on a reported grid.
 
 ---
 

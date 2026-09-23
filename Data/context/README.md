@@ -9,7 +9,7 @@ status notes to whichever file was open rather than the file that owns the topic
 | File | Owns | Does **not** own |
 |---|---|---|
 | [`principles.md`](principles.md) | Standing rules (1–21) **and the non-negotiable rules N1–N15** that constrain every choice | Anything provisional — that is a decision |
-| [`decisions.md`](decisions.md) | Decisions D1–D10 (D1 settled; D2, D3 open; D10 partial) + settled S1–S9, each with reasons | Tasks. A decision is a choice; a task is work |
+| [`decisions.md`](decisions.md) | Decisions D1–D11 (D1 settled; D2, D3, D11 open; D10 partial) + settled S1–S9, each with reasons | Tasks. A decision is a choice; a task is work |
 | [`pending_tasks.md`](pending_tasks.md) | Actionable work, ordered; the critical path | Decisions, results, draft status |
 | [`estimation_design.md`](estimation_design.md) | How Blocks M and B combine; what is missing to run it; build order | Empirical results |
 | [`findings.md`](findings.md) | All empirical and model-mechanism results with numbers | Draft status, tasks |
@@ -41,6 +41,7 @@ status notes to whichever file was open rather than the file that owns the topic
 
 | Path | Contents |
 |---|---|
+| `../Notes/delta_calibration_and_the_reposting_margin.md` | **Sept 23, 2026.** Why δ̄_e = 3.2 % against BGM/GS/Shao-Silos at 10 %; why raising δ̄_e cannot fix the Beveridge curve; the reposting rate λ and whether to estimate it. Recommends keeping [D1](decisions.md) settled |
 | `../Notes/Baseline_Blanchard_Kahn.md` | BK conditions, full baseline (DS-CES, p_0 = 0). BK holds for ε > 1; endogenous exit strengthens it |
 | `../Notes/AGS_Blanchard_Kahn.md` | BK conditions for the AGS σ = 0 case |
 | `../Inspecting_mechanism_setup.md` | Design rationale for mechanism Comparisons A–D |
