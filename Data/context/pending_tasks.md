@@ -147,7 +147,7 @@ change what Block B targets.
 | # | Task | Status |
 |---|---|---|
 | R1 | **Decide D11**: does the reposting margin enter this paper? Structural change touching the v LOM, Prop. 5, and Θ_e. Not a calibration tweak | 🔴 **decision, gates the rest** |
-| R2 | **Verify λ̄ and σ_s are separately identified** on simulated data. Both move σ(v) and cor(u,v); the LD IRF is what should separate them. If they are not, λ̄ must be fixed on a reported grid and the paper must say so | 🔴 do before committing to R1 |
+| R2 | **Verify λ̄, σ_s, and δ_e are separately identified** on simulated data. All three move cor(u,v), and λ̄ and δ_e do so through the *same* channel — the share of separations that destroy a vacancy — so cor(u,v) alone cannot separate them. The LD IRF is what should. If it does not, λ̄ must be fixed on a reported grid and the paper must say so. This is also the reason to hold δ_e fixed while λ̄ is estimated rather than freeing both | 🔴 do before committing to R1 |
 | R3 | **Derive the threshold λ̄\*** at which the s→v response flips sign, and redo Prop. 5 Part 1 as a conditional result. `lem:vpre` and the Part 2 Jacobian both touch the reposting channel | ❌ blocked on R1 |
 | R4 | **Revisit [D4](decisions.md)/S6** if R1 is yes. They retire the LD→vacancy IRF, which is the natural identifying moment for λ̄ and its elasticity | ❌ blocked on R1 |
 | R5 | **Add to §5.2**: the GS and Shao-Silos comparison, the bracketing argument for δ_e, and the CK-consistency argument for why three shocks are required rather than chosen | ⚠️ do regardless of R1 |

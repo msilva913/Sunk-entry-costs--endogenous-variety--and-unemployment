@@ -211,7 +211,11 @@ discussion: [`../Notes/delta_calibration_and_the_reposting_margin.md`](../Notes/
    s fixed. GS match the Beveridge curve with z alone — as our model does with s silenced
    (−0.911). CK shocks separations but sets δ_e ≡ τ, so every separation destroys a vacancy
    and the curve is mechanical. **Our Beveridge problem is a consequence of being the first
-   to shock a decomposed separation margin, not of a low δ̄_e.**
+   to shock a decomposed separation margin, not of a low δ̄_e.** Note δ̄_e does help: cor(u,v)
+   improves monotonically from +0.995 to +0.887 across [0.087, 0.271]. But that is 0.108 of a
+   gap near 1.8, and the relation is convex — at δ_e = τ the identity forces s̄ = 0 and
+   cor(u,v) must equal the s-silenced −0.911, so the leverage is concentrated above the range
+   measurement allows.
 
 2. **BGM and this paper agree on measurement.** BGM's target covers product destruction "by
    existing and exiting firms": 44 % of output over five years, of which 30.4 points are at

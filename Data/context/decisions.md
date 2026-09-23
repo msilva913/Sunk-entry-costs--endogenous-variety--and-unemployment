@@ -466,11 +466,19 @@ test to determine if the full IRF path is usable.
 **The problem.** The model's unconditional Beveridge correlation is **+0.995** against
 **−0.804** in the data. Two findings locate the cause:
 
-1. **Raising δ̄_e does not fix it.** At BGM's 9.6 %/yr, three times our value and above both
-   Gabrovski-Silva and Shao-Silos, cor(u,v) is still **+0.887**. The level of δ̄_e is not the
-   binding constraint.
+1. **Raising δ̄_e helps monotonically but cannot get there.** cor(u,v) improves from +0.995 to
+   **+0.887** as δ̄_e/τ̄ rises from 0.087 to 0.271. The direction is right and the mechanism is
+   real. But that is 0.108 of a gap of roughly 1.8, across the entire defensible range.
+   The relationship is also strongly convex: at δ_e = τ the identity forces s̄ = 0 and
+   cor(u,v) must equal the s-silenced −0.911, so the average slope to that endpoint is about
+   −2.1 per unit of δ̄_e/τ̄ against a local slope near −0.59 in the measured region.
+   **Almost all of the leverage δ_e offers lies in a region the measurement rules out.**
 2. **Silencing the s shock fixes it completely** (−0.911). The Beveridge mechanics are sound.
    What breaks them is the s shock under *costless reposting*.
+3. **δ_e and λ̄ are complements working through one channel** — the share of separations that
+   destroy a vacancy. So cor(u,v) alone cannot separate them, which extends the
+   λ̄-versus-σ_s identification concern below to a three-way problem and argues for holding
+   δ_e fixed while λ̄ is estimated rather than freeing both.
 
 **Why no antecedent has this problem.** BGM, Shao-Silos, and GS are all driven by a
 productivity shock as the single source of exogenous volatility; they hold δ and s fixed. CK
