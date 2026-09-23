@@ -1,5 +1,5 @@
 # Data Sources and File Index
-**Last updated:** September 5, 2026
+**Last updated:** September 23, 2026
 
 ## Data Sources
 
@@ -106,17 +106,22 @@ NFCI interaction variant:
 | τ̄ | 9.30%/qtr (3.10%/month) | Shimer (2012) total separation rate; `TARGETS.sep = 0.031` |
 | δ̄_e (deaths, 2001–2019) | **0.718%/qtr (0.239%/month; 2.84%/yr)** | BLS BED published rate `BDS…110008RQ5`, total private |
 | δ̄_e (deaths, 1993–2019) | 0.812%/qtr (3.21%/yr) | same series, longer window |
-| **δ_e/τ** | **0.077 (2001–2019) / 0.087 (1993–2019)** | **Recommended primary target — see [D1](decisions.md)** |
+| **δ_e/τ** | **0.087 (1993–2019) — CANONICAL** | **Settled by [D1](decisions.md), Sept 6, 2026.** `dest_ann = 0.0320`. The 2001–2019 window gives 0.077; MS chose the longer window |
 | BED closings rate | 1.205%/qtr (2001–2019) | `…110006RQ5`. Includes temporary shutdowns — *not* the model object |
 | BED gross job losses | 6.362%/qtr (2001–2019) | `…110004RQ5`. Denominator of JF Table 2 col 2 |
 | closings / gross losses | 18.9% (2001–2019), 19.7% (1993–2019) | Reproduces JF's ~21% and `part11`'s 19.5% |
 | deaths / gross losses | ~12% | The deaths analogue of JF's statistic |
 
-> ⚠️ The previously recorded δ̄ = 1.079%/qtr (δ/τ = 11.6%) is **too high**: `observables.py`
-> runs to `final = '2025-10-01'`, so its mean includes the 2020 COVID quarters, and it divides
-> by PAYEMS (total nonfarm) rather than private employment. Recompute pre-COVID before the
-> number enters `tab:calib_targets`. The 4.13%/yr figure that briefly appeared here was an
-> arithmetic error and has no standing — see the correction note in [D1](decisions.md).
+> ⚠️ **Retracted measurements, kept so they are not resurrected.** δ̄ = 1.079%/qtr
+> (δ/τ = 11.6%) is **too high**: `observables.py` runs to `final = '2025-10-01'`, so its mean
+> includes the 2020 COVID quarters, and it divides by PAYEMS (total nonfarm) rather than
+> private employment. The 4.13%/yr figure that briefly appeared here was an arithmetic error
+> and has no standing. See the correction note in [D1](decisions.md).
+>
+> ⏳ **Open N15 obligation.** The canonical 0.087 must be emitted by a program before it
+> enters `tab:calib_targets`. Add a pre-COVID calibration-target computation to
+> `observables.py`; today the number is sourced only to the BLS published series, not to the
+> replication workflow.
 
 | ρ_δ | 0.617 (raw) / 0.647 (resid) | part6, 2001Q1+ window, Bartik agg |
 | ρ_LD | 0.489 (raw) / 0.305 (resid) | part6, 2001Q1+ window |
@@ -133,12 +138,15 @@ NFCI interaction variant:
 | β(δ←z) quarterly | −1.050 (SE=0.830) | part6b; endogenous exit channel — NOT in shock process |
 | corr(u^z, u^δ) | −0.284 | part6b; pre-Cholesky; absorbed by model equilibrium |
 
-> ⚠️ **δ̄ is contested — see [D1](decisions.md).** The table above reports the BED Deaths
-> measurement (4.25%/yr, δ_e/τ = 0.116). `steady_state.jl:566` instead sets
-> `dest_ann = 0.0754` — labelled "[BED Deaths, emp-weighted]" but actually the Jaimovich-Floetotto
-> 21% × τ figure (0.651%/month, 1.94%/qtr, δ_e/τ = 0.210) — and every mechanism figure was
-> produced at that value. Draft §5.1 cites the former, §5.2 the latter. Resolve before
-> estimating.
+> ✅ **δ̄ is settled — [D1](decisions.md), September 6, 2026.** BED establishment deaths,
+> employment-weighted, 1993–2019: `dest_ann = 0.0320` (3.21%/yr), **δ_e/τ = 0.087**.
+>
+> ⏳ **But not yet implemented.** `steady_state.jl:613` still sets `dest_ann = 0.0754` — the
+> Jaimovich-Floetotto 21% × τ figure (δ_e/τ = 0.210), which mixes a gross-job-loss share with
+> a separation rate — behind a comment saying so. Every mechanism figure and every §5.3
+> number is still at 0.210. The switch is the "Step 0 cascade" in
+> [`pending_tasks.md`](pending_tasks.md); it is bundled with the ρ_s/σ_s calibration so one
+> regeneration covers both.
 
 > ⚠️ **There is no single canonical target set — see [D2](decisions.md).**
 > `TARGETS` in `steady_state.jl` defaults to PATH A with `b_ratio = 0.71, x_v = 1.0`;

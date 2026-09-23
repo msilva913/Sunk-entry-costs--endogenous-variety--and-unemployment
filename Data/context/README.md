@@ -1,14 +1,15 @@
 # Context Folder — Index
 **Last reorganized:** September 5, 2026 (branch `Organize_Project_State_Estimation`)
+**Last consistency pass:** September 23, 2026 (branch `instruments_LP_coefficient`)
 
-Seven files, each with one job. If you are about to write something here, check this table
-first — most duplication in the past came from appending status notes to whichever file was
-open rather than the file that owns the topic.
+Nine files, each with one job, plus the dated session handouts. If you are about to write
+something here, check this table first — most duplication in the past came from appending
+status notes to whichever file was open rather than the file that owns the topic.
 
 | File | Owns | Does **not** own |
 |---|---|---|
 | [`principles.md`](principles.md) | Standing rules (1–21) **and the non-negotiable rules N1–N15** that constrain every choice | Anything provisional — that is a decision |
-| [`decisions.md`](decisions.md) | Open decisions (D1–D9) + settled ones (S1–S9) with reasons | Tasks. A decision is a choice; a task is work |
+| [`decisions.md`](decisions.md) | Decisions D1–D10 (D1 settled; D2, D3 open; D10 partial) + settled S1–S9, each with reasons | Tasks. A decision is a choice; a task is work |
 | [`pending_tasks.md`](pending_tasks.md) | Actionable work, ordered; the critical path | Decisions, results, draft status |
 | [`estimation_design.md`](estimation_design.md) | How Blocks M and B combine; what is missing to run it; build order | Empirical results |
 | [`findings.md`](findings.md) | All empirical and model-mechanism results with numbers | Draft status, tasks |

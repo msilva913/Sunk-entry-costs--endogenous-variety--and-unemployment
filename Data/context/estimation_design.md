@@ -1,5 +1,5 @@
 # Estimation Design — Conditional + Unconditional Moments
-**Last updated:** September 5, 2026 · **Status:** design settled in the draft; **no code written**
+**Last updated:** September 23, 2026 · **Status:** design settled in the draft; **no code written**
 
 The design lives in the draft's §5.2 prose (`sec:calib`). This file states it compactly,
 records what is missing to run it, and points at the decisions that must be settled first.
@@ -20,6 +20,16 @@ correlation in cyclical residuals at all lags, so this is needed regardless of �
 h = 0..20, so **K_β = 42**. Gaussian quasi-likelihood in the Christiano-Eichenbaum-Trabandt
 (2016) sense, `eq:ql_irf`. Weight Ω_β: sampling covariance of the LP estimator, wild cluster
 bootstrap, 50 state clusters.
+
+> ⚠️ **K_β = 42 is contingent, not settled — [D10](decisions.md), September 22–23, 2026.**
+> E8 showed the baseline LP's long-horizon coefficients are not well identified: the
+> instrument is near-unit-root within state (ρ = 0.91 at quarterly lag 1), and controlling
+> for it moves the δ→u peak from h=17 to h=10–13 with magnitudes ranging 0.95–1.86 pp. Only
+> δ→u at h=0–2 and the δ→v trough at h=4–6 are stable across specifications. Whether the
+> full 42-dimensional path survives as the target depends on **E9** (run the identical LP on
+> model-simulated panel data). If E9 fails, Block B shrinks to the stable short-horizon
+> features and K_β falls accordingly. **Do not build Ω_β at 42×42 before E9 answers this** —
+> the dimension of the object depends on it.
 
 **Combination rule — degrees-of-freedom normalization.** Each quadratic form is divided by
 its own dimension:
@@ -59,8 +69,9 @@ clean exogenous variation in δ.
 x ∈ {z, δ, s}. ⚠️ The contents depend on [D2](decisions.md) — under PATH B, ψ is pinned by
 `dest_elast_target` rather than estimated, which changes the dimension of Θ_e.
 
-**External:** r = 4%/yr, η_L = 0.6, ε = 4.3 (μ ≈ 1.30), τ = 3.1%/month, and δ_e — whose
-value is [D1](decisions.md), unresolved.
+**External:** r = 4%/yr, η_L = 0.6, ε = 4.3 (μ ≈ 1.30), τ = 3.1%/month, and δ_e, settled by
+[D1](decisions.md) at `dest_ann = 0.0320` (δ_e/τ = 0.087) — fixed, not estimated. ⏳ The value
+is not yet in the code; `steady_state.jl:613` still holds 0.0754.
 
 **Dependent Θ_d:** recovered per draw by the four-stage calibration in
 `steady_state.jl::calibrate_shares` → z, ϕ, f_e, A, s, ψ, χ_m, x_m, κ, δ.
@@ -100,8 +111,8 @@ prior truncation on ε is needed for determinacy.
 4. **No β(θ) extractor.** Nothing maps the state-space solution to a model IRF conforming to
    the LP object (1-SD δ shock, u and v in pp, quarterly, h = 0..20, levels difference vs.
    t−1). Blocked on [D3](decisions.md).
-5. **No sampler.** `run_solution_core.jl:112` still reads `estimate = []  # filled in when
-   SMM is wired up`; `priors = (;)`. `run_solution.jl` carries placeholder ρ_s = 0.90,
+5. **No sampler.** `run_solution_core.jl:131` still reads `estimate = []  # filled in when
+   SMM is wired up`; `:133` reads `priors = (;)`. `run_solution.jl` carries placeholder ρ_s = 0.90,
    σ_s = 0.010. The repo's `posterior_mode.mat` belongs to the **old Matlab/Dynare
    generation** of the model — do not reuse it.
 
@@ -109,10 +120,14 @@ prior truncation on ε is needed for determinacy.
 
 ## Suggested build order
 
-Each step is testable on its own, and the first three are unblocked once D1–D3 are settled.
+Each step is testable on its own. Step 0 was added September 23, 2026: E9 now precedes
+everything, because it fixes the dimension of the Block B target.
 
-1. **D1, D2, D3 settled** → freeze one canonical target set in `data_and_files.md`.
-2. **`part5_wcrb.py`** → `omega_beta.npy` (42×42) + a diagonal-vs-clustered-SE sanity check.
+0. **E9 — model-side LP test** → resolves [D10](decisions.md), and per the D3 overlap note
+   may also resolve [D3](decisions.md). Determines K_β.
+1. **D2, D3 settled** (D1 already is) → freeze one canonical target set in `data_and_files.md`.
+2. **`part5_wcrb.py`** → `omega_beta.npy`, dimension set by step 0 (42×42 only if the full
+   path survives) + a diagonal-vs-clustered-SE sanity check.
 3. **`moments_bootstrap.py`** → `omega_m.npy` via block bootstrap, block length 8.
 4. **Refresh `second_moments.jl`** → λ=1,600, all seven series, returning m(θ) in exactly
    the order of `tab:smm_moments`. Verify against the empirical table on simulated data at

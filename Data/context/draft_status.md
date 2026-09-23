@@ -1,6 +1,7 @@
 # Draft Status — `Draft/Draft.tex`
-**Last updated:** September 5, 2026 (verified section by section against the `.tex` and
-`Draft.log`; supersedes the "as of May 19" status that used to live in `findings.md`)
+**Last updated:** September 23, 2026 (§5.4/§6 and the LaTeX problems re-verified against the
+`.tex` and `Draft.log`; previous full section-by-section pass September 5, 2026, which
+superseded the "as of May 19" status that used to live in `findings.md`)
 
 Notation: χ_t^c (not x_t^c), Λ_t ≡ F(χ_t^c), ς for the survival quantile (renamed from ζ,
 which clashed with the variety taste parameter). Label prefixes `eq:`/`tab:`/`fig:`/`sec:`/
@@ -16,16 +17,16 @@ which clashed with the variety taste parameter). Label prefixes `eq:`/`tab:`/`fi
 | 2 Environment | ✅ complete | — |
 | 3 Equilibrium (household, recruiters, wages, retailers, entry/exit, aggregation, definition) | ✅ complete | — |
 | 3.x Limiting cases | ✅ complete | — |
-| 3.x Shock transmission and the δ–s asymmetry (`sec:mechanism`) | ✅ complete | δ_e/τ ≈ 0.21 claim at `Draft.tex:1481` depends on [D1](decisions.md) |
+| 3.x Shock transmission and the δ–s asymmetry (`sec:mechanism`) | ✅ complete | δ_e/τ ≈ 0.21 claim at `Draft.tex:1481` → 0.087 in the [D1](decisions.md) cascade |
 | 3.x Steady state | ✅ complete | — |
 | 4.1 Instrument construction | ✅ complete | — |
 | 4.2 LP specification | ✅ complete | — |
 | 4.3 Results | ⚠️ mostly drafted | δ–LD correlation paragraph; an in-text joint-LP sentence; the section ends with a bare, malformed `\ref{app:diagnostics}` |
-| 5.1 Relationship to Coles and Kelishomi | ✅ complete (compressed) | δ̄ figure depends on [D1](decisions.md) |
+| 5.1 Relationship to Coles and Kelishomi | ✅ complete (compressed) | δ̄ figure updates in the [D1](decisions.md) cascade |
 | 5.2 Calibration and estimation | ⚠️ design complete, contested | Documents PATH A while the figures use PATH B ([D2](decisions.md)); β̂ ↔ β(θ) mapping unstated ([D3](decisions.md)); `app:weighting_robustness` promised but unwritten |
-| 5.3 Inspecting the mechanism | ✅ complete (Comparisons A–D) | Figures must be regenerated if [D1](decisions.md) or [D2](decisions.md) change |
-| 5.4 Posterior estimates (`sec:posterior`) | ❌ **empty stub** — three TODO comments | Blocked on the whole estimation build |
-| 6 Conclusion | ❌ not started | `sec:conclusion` is referenced but undefined |
+| 5.3 Inspecting the mechanism | ✅ complete (Comparisons A–D) | ⏳ **Regeneration owed.** Every figure and all ~24 numbers were produced at δ_e/τ = 0.210; [D1](decisions.md) is settled at 0.087. Re-run the four runners and `mechanism_stats.jl`, then diff before editing. [D2](decisions.md) may force a second pass |
+| 5.4 Posterior estimates (`sec:posterior`) | ❌ **empty stub** — `Draft.tex:3012–3015`, three comment lines (posterior-prior plots, estimates table, moments at the posterior mean) | Blocked on the whole estimation build |
+| 6 Conclusion | ❌ not started — `Draft.tex:3016` is a bare `\section{Conclusion}` followed by `\newpage\appendix` | Also mislabelled `ref:conclusion`; see LaTeX problems below |
 
 ## Appendix status
 
@@ -43,11 +44,16 @@ which clashed with the variety taste parameter). Label prefixes `eq:`/`tab:`/`fi
 | `app:weighting_robustness` | ❌ promised in §5.2, does not exist |
 | `app:robustness` | ❌ referenced, does not exist |
 
-## Known LaTeX problems (`Draft.log`)
+## Known LaTeX problems (`Draft.log`, re-verified September 23, 2026)
 
 - Undefined: `sec:conclusion`, `app:robustness`, `app:weighting_robustness`, `eq:labor_C_N`
 - Multiply defined: `eq:profit_share`
 - Malformed `\ref` at the end of §4.3 and in the §5.2 footnote (`documented in\ref{...}`)
+
+**`sec:conclusion` has a diagnosed one-line cause.** `Draft.tex:3016` reads
+`\section{Conclusion}\label{ref:conclusion}` — the label is `ref:conclusion` while every
+reference points at `sec:conclusion`. Renaming the label fixes it. The section body is still
+empty, so the fix is cosmetic until §6 is written.
 
 ---
 
@@ -86,8 +92,9 @@ parts, plus a Remark and `lem:vpre`, proved in `app:proof_ds`.
   then positive comovement for ρ_s ∈ [0, ρ̄_s).
 - **Part 3** (δ shock): u↑ and v↓ — negative comovement — if entry does not fully offset
   pre-committed vacancy destruction. Sufficient condition: δ̄_e/τ̄ small, so the entry-cushion
-  coefficient δ̄_e/(r+δ̄_e) → 0. ⚠️ The quantitative claim is stated at δ_e/τ ≈ 0.21; under
-  [D1](decisions.md) it would become 0.116, which *strengthens* the result.
+  coefficient δ̄_e/(r+δ̄_e) → 0. ⚠️ The quantitative claim is still stated at δ_e/τ ≈ 0.21 in
+  four places (`Draft.tex:1481`, `:2787`, `:3646`, `:3921`). [D1](decisions.md) settled it at
+  **0.087**, which *strengthens* the result. The retracted 0.116 has no standing.
 
 Proof structure:
 - `lem:vpre` (pre-committed vacancy destruction):

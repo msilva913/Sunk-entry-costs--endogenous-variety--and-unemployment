@@ -1,5 +1,5 @@
 # Pending Tasks
-**Last updated:** September 21, 2026 · **Branch:** `Organize_Project_State_Estimation`
+**Last updated:** September 23, 2026 · **Branch:** `instruments_LP_coefficient`
 
 Actionable work only. **Decisions** (things to choose, not do) live in
 [`decisions.md`](decisions.md); **draft section status** lives in
@@ -16,8 +16,8 @@ critical path.
 to 1e-15 across all four comparisons and the diagnostic. Kept for the record because the
 failure mode is instructive: it was silent for four months.
 
-`solution_interface` prints `Max SS residual` and then proceeds unconditionally — it never
-asserts the residual is small (`run_solution_core.jl:85`). The residual is **not small**:
+`solution_interface` printed `Max SS residual` and then proceeded unconditionally — it never
+asserted the residual was small. The residual was **not small**:
 
 | runner / case | Max SS residual |
 |---|---|
@@ -28,8 +28,8 @@ asserts the residual is small (`run_solution_core.jl:85`). The residual is **not
 **Root cause — it is the free-entry condition `f[18]`.** Verified to all printed digits:
 residual = ν_f(SS) − ρ·f_e(cal)/μ.
 
-`SS_numeric` (`run_solution_core.jl:367`) recomputes the steady state from scratch instead of
-calling `steady_state(cal)`. It derives its own entry cost
+`SS_numeric` recomputed the steady state from scratch instead of
+calling `steady_state(cal)`. It derived its own entry cost
 `f_e_s = zbar_s·(μ−1)·L_s/N_s·(1−δ_e)/(δ_e·μ + r)` and sets `ν_f_s = ρ·f_e_s/μ` — but the
 `PAR` vector handed to the solver carries `cal.f_e` from `calibrate_shares`. The two disagree
 by roughly 2.4× (CODE case: implied f_e = 32.5 in `SS_numeric` vs `cal.f_e` = 13.66), so free
@@ -46,15 +46,21 @@ construction used as the linearization point.
 mechanism comparisons in §5.3 were affected**, as were the D1/M5 diagnostic numbers.
 All have since been re-run; see `findings.md` §D1/M5.
 
-**Fix, in order:**
-1. **Guard first**: ` SS_max < 1e-8` in `solution_interface` so this can never pass
-   silently again. Two lines, and it will immediately fail every mechanism runner — which is
-   the correct behavior.
-2. **Replace `SS_numeric`** with a thin mapper that calls `steady_state(cal)` and orders its
-   output into the SS vector. That construction is already verified. Deleting the duplicate
-   removes the whole class of bug.
-3. Re-run Comparisons A–D and regenerate `mechanism_*.pdf`.
-4. Only then revisit D1/M5.
+**Fix, in order — all four done; verified against the code September 23, 2026:**
+1. ✅ **Guard.** `run_solution_core.jl:97` now raises an `error()` when `SS_max > ss_tol`,
+   naming the worst equation. The comment above it explains why this must never be
+   downgraded to a warning: a first-order solution around a non-steady point still returns a
+   well-formed `gx`/`hx` and plausible-looking IRFs, so the failure is silent by construction.
+2. ✅ **`SS_numeric` replaced.** It now calls `steady_state(cal)` (`run_solution_core.jl:461`)
+   and asserts that every entry of the incoming `PAR` vector matches the calibration it
+   derived (`:455`), so the two constructions can no longer drift apart.
+   ⚠️ **Residual latent defect:** `SS_symbolics` (`:498`) still carries the original bug — its
+   `f_e` uses the gross Lerner share (μ−1) in place of the net profit share π_s·μ, i.e. it
+   solves the p_0 = 0 / X_c = 0 model. It is inert only because every current runner passes
+   `SS_precomputed`, which bypasses `eval_SS`. **Never use its output as a linearization
+   point.** Fix it first if the symbolic SS path is ever revived.
+3. ✅ Comparisons A–D re-run; residuals 3.6e-15 to 1.8e-13.
+4. ✅ D1/M5 revisited; see `findings.md` §D1/M5 and [D1](decisions.md).
 
 **LOM timing inconsistency — RESOLVED Sept 6, 2026 (Convention A).** The u LOM (`f[23]`, `eq:u_lom`) uses a post-matching separation base while the v LOM (`f[22]`, `eq:v_lom`) uses a pre-matching reposting base. The mixture leaks job positions at rate (1-δ_e)·s·q·v. Gabrovski-Silva and the old Dynare model use the pre-matching convention consistently and conserve positions exactly, so the v LOM is the unchanged equation and the u LOM is what moved. `f[23]` was restored to Convention A so the model nests GS. Full analysis and the implications for GS: [`../Notes/LOM_timing_consistency.md`](../Notes/LOM_timing_consistency.md).
 
@@ -75,12 +81,18 @@ so only **Comparison D's ξ_inv = 0.1 case** was affected — by 10× in the sun
 **Resume here.** The STOP block above is cleared: the steady state is fixed and all four
 mechanism comparisons solve at machine precision.
 
-**0. Owed: the D1 + s-shock cascade.** ⛔ **START HERE**
+**0a. [E9] Model-side LP test.** ⛔ **START HERE** — see the table under "Empirical code
+tasks" for the full statement, and [D10](decisions.md) for the design caveat about matching
+the *instrument's* persistence rather than the shock's. This gates the Block B design, and
+per the D3 overlap note it may also settle D3. Nothing downstream of Block B should be built
+until it is answered.
+
+**0b. Owed: the D1 + s-shock cascade.** ⛔
 Two changes are pending that both invalidate every mechanism IRF, so they are bundled to
 avoid regenerating twice.
 
 - **D1 is settled** at `dest_ann = 0.0320` (δ_e/τ = 0.087) but **not yet implemented**.
-  `steady_state.jl` still holds 0.0754; the line carries a loud comment saying so.
+  `steady_state.jl:613` still holds 0.0754; the line carries a loud comment saying so.
 - **ρ_s, σ_s are now calibrated** (ρ_s = 0.874, σ_s = 0.0854, from part6b AR(1) on
   s = (τ−δ_e)/(1−δ_e), HP-1600, 1992Q3–2019Q4). ✅ Sept 21, 2026. The calibrated s
   worsened the Beveridge curve (cor(u,v) = +0.995 at BED) but improved amplification 5×.
@@ -88,12 +100,14 @@ avoid regenerating twice.
 
 Then, in one pass: set `dest_ann`, re-run Comparisons A–D, regenerate the eight
 `mechanism_*.pdf`, re-run `mechanism_stats.jl`, and update §5.3 against its output. Also
-§5.2's external block, `tab:calib_targets` row 1, the two "δ̄_e/τ̄ ≈ 0.21" claims
-(`Draft.tex:1481` and `app:comparison_D`), and **P3b** (the intro's endorsement of
+§5.2's external block, `tab:calib_targets` row 1, the four "δ̄_e/τ̄ ≈ 0.21" claims
+(`Draft.tex:1481`, `:2787`, `:3646`, `:3921`), and **P3b** (the intro's endorsement of
 Gabrovski-Silva's 6–10 %/yr range, which 3.2% sits below).
 
 **1. Settle [D2](decisions.md) (PATH A or B) and [D3](decisions.md) (β̂ ↔ β(θ) scaling).** ⛔
-D1 is done. Then write the winning target set into `data_and_files.md` as canonical.
+D1 is decided. Then write the winning target set into `data_and_files.md` as canonical.
+D3 should be settled *after* E9, not before — E9 determines which of D3's options is
+affordable.
 
 **2. `part5_wcrb.py` — wild cluster bootstrap → full Ω_β.** ⛔
 `part5_lp.py` runs each horizon as a separate regression and saves only a scalar clustered
@@ -115,7 +129,7 @@ Map the state-space solution to a model IRF in the LP's units and normalization 
 1-SD δ shock, u and v in pp, quarterly, h = 0..20, level difference vs. t−1.
 
 **6. Objective + priors, then the sampler.** ⛔
-`run_solution_core.jl:112` still reads `estimate = []`; `priors = (;)`. Evaluate the
+`run_solution_core.jl:131` still reads `estimate = []`; `:133` reads `priors = (;)`. Evaluate the
 log-posterior kernel once at the calibrated point and confirm both quadratic forms are
 O(K) before sampling.
 
@@ -136,7 +150,7 @@ Plus the AGS two-model counterfactual.
 | E6 | **Run `part2b_residualize_shocks_v3.py` once**, or delete the appendix promise from the draft — see [D8](decisions.md) | ❌ |
 | E7 | **`build_report_html.py`** — needs `conda install -c conda-forge pandoc` locally | ❌ optional |
 | E8 | ✅ **Bartik instrument persistence test (D10).** Implemented in `part5_lp.py` section [11], branch `instruments_LP_coefficient`. Ran p ∈ {4, 8, 12, 16}. **Result:** δ→u peak not stable across lag orders (h=10–13, β=0.95–1.86 pp); δ→v trough h=4–6 robust (−0.55 to −0.65 pp). Baseline LP overstates peak horizon. See [D10](decisions.md). | ✅ **completed Sept 22–23, 2026** |
-| E9 | 🔴 **Model-side LP test (D10 option b).** Run the baseline LP specification on model-simulated panel data (50 "states" with heterogeneous industry shares, calibrated ρ_δ=0.592). If the model's LP also builds up monotonically due to shock persistence, baseline-to-baseline matching is valid and the full IRF path is a usable Block B target. If the model LP peaks at h=1–2, fall back to short-horizon targeting (option a). **This gates the Block B estimation design.** | ❌ **new, high priority** |
+| E9 | 🔴 **Model-side LP test (D10 option b).** Run the baseline LP specification on model-simulated panel data (50 "states" with heterogeneous industry shares). If the model's LP also builds up monotonically, baseline-to-baseline matching is valid and the full IRF path is a usable Block B target. If the model LP peaks at h=1–2, fall back to short-horizon targeting (option a). **This gates the Block B estimation design, and per the D3 overlap note may also settle [D3](decisions.md).** ⚠️ **Design caveat:** the simulated panel must reproduce the *instrument's* quarterly autocorrelation (ρ ≈ 0.91), not the shock's (ρ_δ = 0.592 monthly ≈ 0.21 quarterly). That requires industry-level δ processes with their own serial correlation plus heterogeneous state exposure — not 50 independent draws of the aggregate model. Otherwise the test fails for a reason unrelated to propagation. Infrastructure exists: `simulate_model` (`solution_functions.jl:783`) and `simulated_moments` in `run_solution_delta_target.jl:154` as a template. | ❌ **high priority — START HERE** |
 
 ## Paper writing tasks (secondary)
 

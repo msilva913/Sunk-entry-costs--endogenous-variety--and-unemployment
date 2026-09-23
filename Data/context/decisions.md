@@ -1,5 +1,5 @@
 # Decision Register
-**Last updated:** September 22, 2026 (D10 updated with E8 results) · **Branch:** `Organize_Project_State_Estimation`
+**Last updated:** September 23, 2026 · **Branch:** `instruments_LP_coefficient`
 
 Every open decision that must be settled before estimation, plus the ones already settled
 that agents keep re-litigating. One entry = one decision. When you settle one, move it to
@@ -82,12 +82,19 @@ then revisit whether it needs to be free.
 
 ### Consequences to carry out
 
-- `steady_state.jl` `TARGETS.dest_ann`: 0.0754 → 0.0320, and correct the source comment.
+⏳ **None of these are done as of September 23, 2026.** `steady_state.jl:613` still holds
+`dest_ann = 0.0754` behind a warning comment, so every mechanism figure and every §5.3 number
+is still at δ_e/τ = 0.210. The work is tracked as the "Step 0 cascade" in
+[`pending_tasks.md`](pending_tasks.md).
+
+- `steady_state.jl:613` `TARGETS.dest_ann`: 0.0754 → 0.0320, and correct the source comment.
 - Re-run Comparisons A–D, regenerate the eight figures, re-run `mechanism_stats.jl`, and
   update §5.3 against its output.
 - Draft §5.2 external block and `tab:calib_targets` row 1.
-- The "δ̄_e/τ̄ ≈ 0.21" claims at `Draft.tex:1481` and in `app:comparison_D` become ≈ 0.087.
-  Prop. 5 Part 3's condition is "δ̄_e/τ̄ small", so the lower value *strengthens* it.
+- The "δ̄_e/τ̄ ≈ 0.21" claims become ≈ 0.087. There are **four** of them, verified
+  September 23, 2026: `Draft.tex:1481` (`sec:mechanism`), `:2787` (§5.3), `:3646` and
+  `:3921` (both in `app:comparison_D`). Prop. 5 Part 3's condition is "δ̄_e/τ̄ small", so the
+  lower value *strengthens* it.
 - **P3b**: the intro endorses Gabrovski-Silva's 6–10 %/yr range at `Draft.tex:421`. At 3.2%
   we are at half the floor. GS needed that range in a model without endogenous exit, the
   variety externality, or finitely elastic entry. Whether those compensate is a result the
@@ -213,6 +220,18 @@ of scope. So the realistic options, in descending order of rigour:
 in §5.2** when stating that the cross-regional design identifies relative propagation. Framing
 it as a deliberate, literature-grounded choice converts an obvious referee objection into a
 paragraph that shows command of the method.
+
+### ⚠️ Overlap with D10 — noted September 23, 2026
+
+**Option 1 above and D10 option (b), below, are the same exercise.** D10 option (b) — run the identical LP specification on
+model-simulated panel data — *is* the GMNS "simulate the regression inside the model"
+prescription. Task **E9** in [`pending_tasks.md`](pending_tasks.md) builds it.
+
+Consequence: if E9 is built properly, option 1 stops being "probably out of scope" and
+becomes available, and D3's recommendation should be revisited and likely upgraded from
+option 2 (shape-only) to option 1. Conversely, if E9 is scoped narrowly — just to answer the
+Wold-contamination question — it will not deliver a D3-grade model-implied cross-regional
+coefficient. **Scope E9 with both purposes in mind.**
 
 Sources: [GMNS, NBER WP 26881](https://www.nber.org/system/files/working_papers/w26881/w26881.pdf) ·
 [Wolf, "The Missing Intercept"](https://economics.mit.edu/sites/default/files/publications/missing_intercept.pdf)
@@ -347,6 +366,25 @@ baseline and augmented IRF shapes.
 **Recommendation (tentative):** Test option (b) first — it has the highest payoff (preserves
 the full IRF matching design) and requires only one model simulation with the LP run on
 top. If it fails (model LP peaks at h=1–2 even in Wold form), fall back to option (a).
+
+### ⚠️ Design caveat for E9 — added September 23, 2026
+
+Option (b) compares two *different* kinds of persistence, and the test is only informative if
+the simulation reproduces the right one.
+
+- The data-side persistence is in the **instrument**: ρ(B̃^δ) = 0.91 at quarterly lag 1. It
+  comes from slow-moving industry composition times serially correlated *industry-level*
+  death rates.
+- The model-side persistence is in the **shock**: ρ_δ = 0.592 monthly, i.e. ≈ **0.21
+  quarterly** — a factor of four lower.
+
+If E9 simulates 50 independent draws of the aggregate model and builds a shift-share
+instrument on top, the simulated instrument will inherit ρ ≈ 0.21, the model LP will show no
+buildup, and option (b) will be rejected for a reason that has nothing to do with the model's
+propagation. To be informative the simulated panel needs **industry-level δ processes with
+their own serial correlation and heterogeneous state exposure**, so that the simulated
+instrument's autocorrelation is comparable to 0.91. Match the instrument's persistence, not
+the shock's. See also the D3 overlap note above.
 
 **Status:** 🟡 partially resolved. E8 ran (p=4, 8, 12, 16) and identified the problem.
 The estimation design can proceed under option (a) immediately, or wait for the option (b)

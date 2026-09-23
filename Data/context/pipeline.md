@@ -1,5 +1,6 @@
 # Pipeline — Empirical and Model Code
-**Last updated:** September 5, 2026 (script inventory re-verified against the repo;
+**Last updated:** September 23, 2026 (added the ξ sweeps and E8; corrected the
+`run_solution_delta_target.jl` status. Full inventory re-verification September 5, 2026;
 previous update May 12, 2026, which was missing 13 scripts and the entire model side)
 
 Two independent pipelines:
@@ -27,7 +28,7 @@ They meet only at estimation, which does not exist yet — see
 | `part2b_residualize_shocks.py` | **v2** residualization on Δlog p_t + Δlog VA_{j,t−1} | ✅ | `shock_rates_{delta,ld,qu}_resid.parquet` |
 | `part3_resid_instruments.py` | Bartik aggregation for ν^δ, ν^LD, ν^QU | ✅ | `{delta,ld,qu}_instrument_resid_base2006.csv` |
 | `part4_outcomes.py` | LAUS unemployment + JOLTS state vacancies | ✅ | `laus_quarterly.parquet` |
-| `part5_lp.py` | All panel LPs, both outcomes; §8g emits the paper figure | ✅ | IRF CSVs + plots |
+| `part5_lp.py` | All panel LPs, both outcomes; §8g emits the paper figure; **§11 is the E8 instrument-persistence diagnostic** (within-state autocorrelation of B̃^δ + augmented LP with p lagged instruments) | ✅ | IRF CSVs + plots, `irf_delta_augmented_comparison.png` |
 
 ### Supporting and diagnostic scripts
 
@@ -62,6 +63,12 @@ They meet only at estimation, which does not exist yet — see
 | `part5_wcrb.py` | Wild cluster bootstrap → **full 42×42 Ω_β** (not just SEs) | 🔴 estimation |
 | `moments_bootstrap.py` | Block bootstrap → Ω_m, block length 8 | 🔴 estimation |
 | `part7d_ld_gfc.py` | GFC dummy diagnostic for the monotone LD unemployment IRF | 🟡 |
+| **E9 model-side LP** (name TBD; Julia, or Julia simulation → Python LP) | Simulate a 50-"state" panel and run the baseline LP on it, to settle [D10](decisions.md) | 🔴 estimation — **highest priority** |
+
+> ⚠️ **Known bug.** `overlay_plot_irf` in `part5_lp.py` §8 crashes with
+> `OSError: Invalid argument` when writing `lp_irf_delta_ld_qu_overlay.png` — a PIL or
+> matplotlib version problem in the `econ2315` conda environment, not a logic error. The
+> call is wrapped in `try/except` so the rest of §8 still runs. Low priority.
 
 ### Run order for a fresh start
 
@@ -125,7 +132,7 @@ StatsBase, SymPy, TexTables, TypedTables.
 |---|---|
 | `solution_functions.jl` | Perturbation toolkit (Salazar-Perez & Seoane 2023). Not modified. |
 | `steady_state.jl` | **Canonical.** `calibrate_shares` (4 stages, PATH A/B — see [D2](decisions.md)), `steady_state`, and the free-entry variants. Holds `const TARGETS`. |
-| `run_solution_core.jl` | The 33-equation model system, symbolic parameters/variables, and `solution_interface`. Audited May 20, 2026. |
+| `run_solution_core.jl` | The 33-equation model system, symbolic parameters/variables, and `solution_interface`. Audited May 20, 2026. **`:97`** hard-errors when the steady-state residual exceeds tolerance — never downgrade it to a warning. **`:411` `SS_numeric`** now calls `steady_state(cal)` and asserts `PAR` consistency at `:455`. ⚠️ **`:498` `SS_symbolics` still carries the original gross-Lerner-share defect** — latent only because every runner passes `SS_precomputed`. Never use its output as a linearization point. `:131` still reads `estimate = []` |
 | `run_solution.jl` | Thin baseline runner; serializes `model_output.jls`. Carries **placeholder** ρ_s = 0.90, σ_s = 0.010. |
 | `time_series_fun.jl` | `simulate_model`, `monthly_to_quarterly`, `hp_filter`, `hamilton_filter`, `moments`. ⚠️ `hp_filter` was **fixed Sept 5, 2026** — it had been a first-difference smoother, not HP. `moments(...)` requires `lags=2` (two autocorrelation labels are hard-coded) |
 | `impulse_response_plots.jl` | Shared IRF plotting helpers |
@@ -152,12 +159,23 @@ carrying hard-coded figures. Wiring that up is the remaining half of M9.
 
 | Runner | Purpose | Output |
 |---|---|---|
-| `run_solution_delta_target.jl` | **D1/M5 diagnostic** — dest_ann ∈ {0.0320 BED, 0.0754 code, 0.0963 BGM}; reports steady state, Block M moments at HP λ=1,600, and δ→u/δ→v IRF persistence in quarters. Decides whether δ_e can be fixed or must be estimated. ⏳ written, not yet run | `irf_delta_target.jls` |
+| `run_solution_delta_target.jl` | **D1/M5 diagnostic** — dest_ann ∈ {0.0320 BED, 0.0754 code, 0.0963 BGM}; reports steady state, Block M moments at HP λ=1,600, and δ→u/δ→v IRF persistence in quarters. Decided that δ_e can be fixed. ✅ **run September 6, 2026** (after the `SS_numeric`/`hp_filter` fixes) and **re-run September 21, 2026** with the calibrated s process. Results in [`findings.md`](findings.md) §D1/M5 | `irf_delta_target.jls` |
 
-This runner also doubles as the **prototype m(θ) simulator** for Block M: it is the
-first code in the repo to build model moments at λ=1,600 over the full series set
+| `run_xi_sweep.jl` | ξ_inv ∈ {0.5, 1, 2, 3, 5, 8} at the BED spec — does entry-cost convexity move the δ→u peak horizon? | ✅ run September 21, 2026. Peak never passes h=2 |
+| `run_xi_eps_sweep.jl` | Joint ξ_inv × ε sweep — same question plus the variety channel; also maps the Blanchard-Kahn ceiling | ✅ run September 21, 2026. ε < 3 violates BK |
+
+The two sweeps were written as scratch and committed in `dd0fcdf`. They establish the
+**structural impossibility of a hump-shaped δ→u IRF** recorded in
+[`findings.md`](findings.md), which is what motivated [D10](decisions.md) and E8. Keep them:
+they are the evidence for that claim and will be re-run if the model gains a propagation
+mechanism.
+
+`run_solution_delta_target.jl` also doubles as the **prototype m(θ) simulator** for Block M:
+it is the first code in the repo to build model moments at λ=1,600 over the full series set
 {u, v, θ, τ, f, δ_e, N^e, labor_prod}. Promote it to a standalone module when wiring
-the estimation (see `estimation_design.md` build step 4).
+the estimation (see `estimation_design.md` build step 4). Its `simulated_moments` function
+(line 154) and `simulate_model` (`solution_functions.jl:783`) are also the starting point
+for **E9**, the model-side LP test.
 
 
 Comparisons B and D use **PATH B** (`dest_elast_target = 5.0`) plus `b_ratio = 0.9,

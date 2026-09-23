@@ -1,5 +1,5 @@
 # Key Empirical Findings
-**Last updated:** September 22, 2026. E8 (Bartik persistence test) added Sept 22.
+**Last updated:** September 23, 2026. E8 (Bartik persistence test) ran September 22–23.
 Model-side results were re-run after the September 5–6 code fixes; see §D1/M5.
 
 ## Shock Persistence (part6, 2001Q1+ window)
@@ -144,8 +144,9 @@ The λ=100k reversal is confirmed as an over-smoothing artifact: across HP-1600 
 
 Shared settings unless noted: `b_ratio=0.9, x_v=0.5`; B and D additionally use PATH B
 (`dest_elast_target=5.0`). Files and outputs are listed in [`pipeline.md`](pipeline.md)
-Part 2. ⚠️ All four were produced at δ_e/τ = 0.210 and would need regenerating under
-[D1](decisions.md).
+Part 2. ⚠️ All four were produced at δ_e/τ = 0.210. [D1](decisions.md) is settled at 0.087,
+so **regeneration is owed, not hypothetical** — see the Step 0 cascade in
+[`pending_tasks.md`](pending_tasks.md). Re-run `mechanism_stats.jl` with them (N15).
 
 **A — level of δ (CK timing).** High-δ (δ_e = τ, pure exogenous) shows a larger N response
 to a z shock (LOM multiplier 4.8×) and a larger Q response to a δ shock (short-duration
