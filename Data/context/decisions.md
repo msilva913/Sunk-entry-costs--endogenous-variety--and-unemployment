@@ -306,46 +306,51 @@ on z-shock amplification — and Comparison D already makes the substantive poin
 **Original question (Sept 21).** Is the Bartik LP peak horizon (h=17–20) a propagation
 fact or a persistence artifact?
 
-**E8 result (Sept 22).** The lagged-instrument test was run (p=4, 8, 12). Key findings:
+**E8 result (Sept 22–23).** The lagged-instrument test was run (p=4, 8, 12, 16). Key findings:
 
 1. **Instrument persistence confirmed.** Within-state autocorrelation of B̃^δ (after time
    FEs) has median ρ=0.91 at lag 1, 0.79 at lag 8. 90–100% of states significant at all lags.
-2. **δ→u peak shifts from h=17 to h=10** across all three lag orders. Magnitude drops
-   22–44% (1.71 → 0.95–1.35 pp). Robust to lag-order choice.
+2. **δ→u peak horizon is not stable.** Shifts from h=17 (baseline) to h=10 (p=4–12) to
+   h=13 (p=16). Peak magnitude ranges 0.95–1.86 pp — the p=16 coefficient *exceeds* the
+   baseline (1.86 vs 1.71). This drift is symptomatic of extracting an innovation signal
+   from a near-unit-root process: the identifying variation shrinks with each added lag.
 3. **Non-monotone shape emerges:** significant at h=0–2, insignificant at h=3–8, second
-   rise peaking at h=10. This rise–zero–rise pattern is stable across p=4, 8, 12.
-4. **δ→v early trough at h=4–6** is robust (−0.55 pp, p<0.01 at all lag orders). Late-
-   horizon vacancy effects (h=12+) are less stable.
-5. **Asymmetry:** unemployment peak collapses 7 quarters, vacancy early trough is unchanged.
+   rise at h=9–13. Stable across all four lag orders, but unprecedented in theory.
+4. **δ→v early trough at h=4–6** is robust (−0.55 to −0.65 pp, p<0.01 at all lag orders).
+5. **Asymmetry:** unemployment peak location unstable, vacancy early trough rock-solid.
 
-**The new problem.** The corrected δ→u IRF has a theoretically unprecedented shape. No
-standard DSGE, search, or RBC model generates an impulse response that rises, falls to
-zero at intermediate horizons, then rises again. Presenting this augmented LP as the
-primary empirical target would require substantial defense with no obvious theoretical
-framework to anchor it.
+**The core tension.** The baseline LP is not robust to persistence controls — the peak
+horizon moves substantially. But the augmented LP produces a shape no known model
+generates and whose peak location and magnitude drift with the lag order. Neither spec
+gives a clean IRF target for estimation.
 
 **Remaining concern: BED Deaths as a lagging indicator.** An establishment "death" in
 BED data requires zero employment for two consecutive quarters. The official death
 therefore lags the economic process. This measurement lag could contribute to both the
-baseline and augmented IRF shapes, but the augmented LP should partially absorb it
-(past lagged deaths proxy for the slow-reporting process).
+baseline and augmented IRF shapes.
 
 **Options going forward:**
-- **(a)** Present the baseline LP as a reduced-form Wold IRF with instrument persistence
-  caveat, and target only scale + sign (not peak horizon) in Block B.
-- **(b)** Present the augmented LP and defend the non-monotone shape — requires finding
-  a theoretical mechanism or an econometric explanation for the dip at h=3–8.
-- **(c)** Target only the robust features that both specs agree on: positive δ→u impact
-  at h=0–2, negative δ→v at h=4–6, overall scale. Treat the peak horizon as uninformative.
+- **(a)** Target only robust short-horizon features (h=0–2 for u, h=4–6 for v) plus scale.
+  Treat the peak horizon as uninformative. Conservative but defensible.
+- **(b)** **Baseline-to-baseline matching.** Run the same LP specification on model-simulated
+  panel data. If the model's shock persistence (ρ_δ=0.592) produces comparable Wold
+  contamination to the data's instrument persistence (ρ=0.91), the comparison is
+  apples-to-apples and the full baseline IRF is a valid target — both sides are "wrong"
+  in the same way. **This preserves the original Bayesian IRF matching design.** Must be
+  tested: if the model LP peaks at h=1–2 even in the Wold representation, the asymmetry
+  invalidates this approach.
+- **(c)** Hybrid: match full baseline path but verify with model-side LP that the Wold
+  contamination is comparable; horizon-reweight Block B if not.
+- **(d)** Present the augmented LP and defend the non-monotone shape — requires finding
+  a theoretical or econometric explanation for the dip at h=3–8. High burden of proof.
 
-**Recommendation (tentative):** Option (c). Both specs agree on sign, significance at
-short horizons, and scale. The peak horizon is contaminated by instrument persistence in
-the baseline and produces a puzzling shape in the augmented version. Block B should match
-scale and sign, not the peak location.
+**Recommendation (tentative):** Test option (b) first — it has the highest payoff (preserves
+the full IRF matching design) and requires only one model simulation with the LP run on
+top. If it fails (model LP peaks at h=1–2 even in Wold form), fall back to option (a).
 
-**Status:** 🟡 partially resolved. E8 ran and clarified the problem but opened a new
-question about interpretation. The estimation design can proceed under option (c) without
-waiting for the non-monotone shape to be resolved.
+**Status:** 🟡 partially resolved. E8 ran (p=4, 8, 12, 16) and identified the problem.
+The estimation design can proceed under option (a) immediately, or wait for the option (b)
+test to determine if the full IRF path is usable.
 
 ---
 
