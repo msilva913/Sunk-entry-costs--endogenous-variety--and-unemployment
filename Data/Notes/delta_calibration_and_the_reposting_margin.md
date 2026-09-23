@@ -196,12 +196,32 @@ margin pushes the Beveridge correlation the wrong way:
 |---|---|---|---|---|---|
 | cor(u, v) | **+0.995** | +0.947 | +0.887 | **−0.911** | **−0.804** |
 
-**Raising δ̄_e does not fix this.** At BGM's 9.6 %/yr — three times our value, above both GS
-and Shao-Silos — cor(u,v) is still +0.887. Recalibrating δ upward buys almost nothing on the
-moment it is supposed to buy.
+**Raising δ̄_e helps, monotonically, but nowhere near enough.** cor(u,v) improves steadily,
+from +0.995 to +0.887 as δ̄_e/τ̄ goes from 0.087 to 0.271. The direction is right and the
+mechanism is real: a larger δ_e means more separations destroy vacancies. But the improvement
+over the entire empirically defensible range is 0.108, against a gap of about 1.8 to the
+data. Raising δ̄_e is a partial remedy, not a solution, and even the most aggressive defensible
+value leaves the correlation strongly positive.
+
+**The relationship is also strongly convex, and the measured range sits in its flat part.**
+This follows from the model's own accounting. At δ_e = τ the identity s = (τ−δ_e)/(1−δ_e)
+gives s̄ = 0: the s shock has nothing to scale, and cor(u,v) must equal the s-silenced value
+of −0.911. So the full path runs from +0.995 at δ̄_e/τ̄ = 0.087 to −0.911 at δ̄_e/τ̄ = 1. The
+average slope over that path is about −2.1 per unit of δ̄_e/τ̄, while the local slope in the
+measured region is about −0.59, roughly 28 % of it. **Almost all of the Beveridge improvement
+available from δ_e is concentrated in a region the measurement rules out.** That is why
+δ_e cannot be the instrument of the fix, even though it pushes the right way.
 
 **Silencing the s shock fixes it completely**, at −0.911. The Beveridge mechanics are sound.
 What breaks them is the s shock under costless reposting.
+
+**δ_e and λ̄ are complements, not substitutes, and this creates an identification concern.**
+Both work through the same channel: the share of separations that destroy a vacancy rather
+than recycle it. Raising δ_e moves separations into the destroying margin; lowering λ̄ makes
+the non-destroying margin destroy. Because they act on the same moment through the same
+channel, cor(u,v) alone will not separate them. This extends the λ̄-versus-σ_s identification
+concern in §7.5 to a three-way problem, and it is a further argument for holding δ_e fixed
+while λ̄ is estimated, rather than freeing both at once.
 
 ### 4.3 Why no antecedent faces this
 
@@ -395,8 +415,11 @@ them. Verify on simulated data before the sampler runs. If they are not separate
 
 **1. Keep δ̄_e fixed at 3.2 %/yr for now, and describe it as a lower bound.** The GS critique
 of the concept lands, but their measure is an upper bound and ours is the only directly
-observed quantity. More importantly, raising δ̄_e does not deliver the moment it is supposed
-to. Reopening this now would cost a full regeneration and buy +0.887 instead of +0.995.
+observed quantity. Raising δ̄_e does push cor(u,v) the right way, and that should be said
+rather than denied — but the whole defensible range buys 0.108 of a gap of about 1.8, and
+reopening this now would cost a full regeneration of every mechanism figure to move from
++0.995 to +0.887. The return does not justify it, and the estimation is the right place to
+revisit the level once the reposting margin exists.
 
 **2. Reframe §3 of the paper's calibration discussion around bracketing, not choosing.** The
 literature supplies an interval of roughly [3.2 %, 10 %], not a point. Say so, and say that
