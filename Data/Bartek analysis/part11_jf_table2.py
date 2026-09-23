@@ -141,10 +141,13 @@ SAMPLES = {
     "ext_2024": ("1992Q3", "2024Q4"),
 }
 SAMPLE_LABELS = {
-    "jf_orig":  "Original JF period (1992Q3--2006Q3)",
-    "ext_2019": "Extended to 2019Q4 (COVID cutoff, preferred)",
-    "ext_2024": "Extended to 2024Q4 (BED end)",
+    "jf_orig":  "Original JF period",
+    "ext_2019": "Extended to the COVID cutoff, preferred",
+    "ext_2024": "Extended to the end of the BED cache",
 }
+# Labels deliberately carry no dates. The realized window is appended at write
+# time from the data actually used, because the requested end date and the
+# cache end date have silently diverged before (see E5).
 # NOTE: The BED cache (bed_gross_flows_correct.parquet) currently ends at
 # 2021Q4 (sandbox limitation). Run refresh_bed_cache.py locally to extend
 # through 2024Q4; the ext_2024 sample will then cover the full BED history.
@@ -168,14 +171,22 @@ def load_bed_panel() -> pd.DataFrame:
     to their true economic content.
 
     Returns a DataFrame with columns:
-        pip_code, quarter_label, G, G_O, L, L_C
+        pip_code, quarter_label, G, G_O, L, L_C, L_D
     where
         G   = total gross job gains       (BED elem 0001)
         G_O = gains at opening estabs     (BED elem 0001 - elem 0002)
         L   = total gross job losses      (BED elem 0004)
         L_C = losses at closing estabs    (BED elem 0006)
+        L_D = losses at dying estabs      (BED elem 0008)
     and pip_code in {'10','20',...,'80','41','42','43'} for 12 supersectors.
     Total-private aggregate is constructed by summing the 12 supersectors.
+
+    Closings vs deaths.  A closing is an establishment that reports zero
+    third-month employment after a quarter of positive employment.  A death is a
+    closing that stays at zero for four consecutive quarters, so it excludes
+    temporary shutdowns.  Deaths are the model's delta margin; closings are what
+    Jaimovich-Floetotto could measure, since BED deaths were not published until
+    May 2009.  Reporting both puts the temporary component on the same row.
     """
     path = f"{CACHE_DIR}/bed_gross_flows_correct.parquet"
     df = pd.read_parquet(path)
@@ -188,21 +199,36 @@ def load_bed_panel() -> pd.DataFrame:
     df["G"]   = df["expanding"]
     df["G_O"] = df["expanding"] - df["openings"]   # births
     df["L"]   = df["contracting"]
-    df["L_C"] = df["closings"]                     # deaths
+    df["L_C"] = df["closings"]                     # elem 0006, NOT deaths
 
     # Drop the aggregate pip_code='00' (goods-producing, not total private)
     ind = df[df["pip_code"] != "00"][
         ["pip_code", "quarter_label", "G", "G_O", "L", "L_C"]
     ].reset_index(drop=True)
 
+    # Deaths (elem 0008) arrive in a separate cache keyed on industry_code.
+    deaths = (pd.read_parquet(f"{CACHE_DIR}/bed_deaths_national_12ind.parquet")
+                .rename(columns={"industry_code": "pip_code",
+                                 "deaths_nat":    "L_D"}))
+    ind = ind.merge(deaths, on=["pip_code", "quarter_label"], how="left")
+
+    # The deaths cache ends earlier than the gross-flows cache (see E5). Keep the
+    # panel on the common window so every column in a row covers one sample.
+    n_missing = int(ind["L_D"].isna().sum())
+    if n_missing:
+        last_death_q = deaths["quarter_label"].max()
+        print(f"  [deaths] cache ends {last_death_q}; dropping {n_missing} "
+              f"industry-quarter cells with no deaths observation")
+        ind = ind.dropna(subset=["L_D"]).reset_index(drop=True)
+
+    cols = ["G", "G_O", "L", "L_C", "L_D"]
+
     # Build total-private aggregate by summing 12 supersectors
-    agg = (ind.groupby("quarter_label")[["G", "G_O", "L", "L_C"]]
-              .sum()
-              .reset_index())
+    agg = ind.groupby("quarter_label")[cols].sum().reset_index()
     agg["pip_code"] = "TOTAL"
 
     panel = pd.concat(
-        [agg[["pip_code", "quarter_label", "G", "G_O", "L", "L_C"]], ind],
+        [agg[["pip_code", "quarter_label"] + cols], ind],
         ignore_index=True,
     ).sort_values(["pip_code", "quarter_label"]).reset_index(drop=True)
 
@@ -292,10 +318,17 @@ def hamilton_filter_cycle(x: np.ndarray, h: int = 8, p: int = 4) -> np.ndarray:
 # ---------------------------------------------------------------------------
 
 def compute_cols_12(sub: pd.DataFrame):
-    """Col 1: sum(G_O) / sum(G).  Col 2: sum(L_C) / sum(L)."""
-    c1 = sub["G_O"].sum() / sub["G"].sum()
-    c2 = sub["L_C"].sum() / sub["L"].sum()
-    return c1, c2
+    """
+    Mean shares.  Col 1: sum(G_O)/sum(G).  Col 2: sum(L_C)/sum(L).
+    Col 2d: sum(L_D)/sum(L), the permanent-exit analogue of col 2.
+
+    Col 2 minus col 2d is the temporary-shutdown component of the closings
+    margin, which is what the delta instrument must exclude.
+    """
+    c1  = sub["G_O"].sum() / sub["G"].sum()
+    c2  = sub["L_C"].sum() / sub["L"].sum()
+    c2d = sub["L_D"].sum() / sub["L"].sum()
+    return c1, c2, c2d
 
 
 def compute_cols_34(sub: pd.DataFrame, filter_fn):
@@ -321,8 +354,9 @@ def compute_cols_34(sub: pd.DataFrame, filter_fn):
     cGO = filter_fn(sub["G_O"].values)
     cL  = filter_fn(sub["L"].values)
     cLC = filter_fn(sub["L_C"].values)
+    cLD = filter_fn(sub["L_D"].values)
 
-    return _rel_sd(cGO, cG), _rel_sd(cLC, cL)
+    return _rel_sd(cGO, cG), _rel_sd(cLC, cL), _rel_sd(cLD, cL)
 
 
 def compute_cols_56(sub: pd.DataFrame) -> tuple:
@@ -372,18 +406,19 @@ def compute_table(panel: pd.DataFrame) -> pd.DataFrame:
             if len(sub) < 15:
                 continue
 
-            c1, c2         = compute_cols_12(sub)
-            c3, c4         = compute_cols_34(sub, hamilton_filter_cycle)
-            c5, c6         = compute_cols_56(sub)
+            c1, c2, c2d    = compute_cols_12(sub)
+            c3, c4, c4d    = compute_cols_34(sub, hamilton_filter_cycle)
+            c5, c6, c6d    = compute_cols_56(sub)
 
             rows.append(dict(
                 sample=sname, pip=pip,
                 label_plain=INDUSTRY_LABELS_PLAIN.get(pip, pip),
                 label_tex=INDUSTRY_LABELS.get(pip, pip),
                 n=len(sub),
-                c1=c1, c2=c2,
-                c3=c3, c4=c4,
-                c5=c5, c6=c6,
+                q0=sub["quarter_label"].min(), q1=sub["quarter_label"].max(),
+                c1=c1, c2=c2, c2d=c2d,
+                c3=c3, c4=c4, c4d=c4d,
+                c5=c5, c6=c6, c6d=c6d,
             ))
 
     return pd.DataFrame(rows)
@@ -449,14 +484,16 @@ def write_text_table(res: pd.DataFrame, path: str):
         if abs(v) > noisy: return f"{v:7.1f}*"
         return f"{v:7.3f}"
 
-    hdr = (f"{'Industry':<44} {'C1':>6} {'C2':>6}"
-           f" {'C3-Ham':>7} {'C4-Ham':>7} {'C5-HP':>7} {'C6-HP':>7}  {'N':>3}")
+    hdr = (f"{'Industry':<44} {'gO':>6} {'gC':>6} {'gD':>6}"
+           f" {'Ham-O':>7} {'Ham-C':>7} {'Ham-D':>7}"
+           f" {'HP-O':>7} {'HP-C':>7} {'HP-D':>7}  {'N':>3}")
 
     for sname in SAMPLES:
         sub = res[res["sample"] == sname]
         lines += [
             "",
-            f"SAMPLE: {SAMPLE_LABELS[sname]}",
+            f"SAMPLE: {SAMPLE_LABELS[sname]}"
+            f"   [realized window: {sub.iloc[0].q0}-{sub.iloc[0].q1}]",
             "-" * 120, hdr, "-" * 120,
         ]
         for pip in ORDERED_PIPS:
@@ -465,9 +502,9 @@ def write_text_table(res: pd.DataFrame, path: str):
                 continue
             r = r.iloc[0]
             lines.append(
-                f"{r.label_plain:<44} {r.c1:6.3f} {r.c2:6.3f}"
-                f" {fmt_val(r.c3)} {fmt_val(r.c4)}"
-                f" {fmt_val(r.c5)} {fmt_val(r.c6)}  {r.n:3.0f}"
+                f"{r.label_plain:<44} {r.c1:6.3f} {r.c2:6.3f} {r.c2d:6.3f}"
+                f" {fmt_val(r.c3)} {fmt_val(r.c4)} {fmt_val(r.c4d)}"
+                f" {fmt_val(r.c5)} {fmt_val(r.c6)} {fmt_val(r.c6d)}  {r.n:3.0f}"
             )
         lines.append("  * noisy estimate (|ratio| > 5; typically a small-count industry series)")
 
@@ -509,16 +546,21 @@ def write_text_table(res: pd.DataFrame, path: str):
 
 # Compact note line inside the tabular (between midrule and bottomrule)
 _NOTE_LINE = (
-    r"\multicolumn{7}{p{0.92\linewidth}}{\footnotesize"
+    r"\multicolumn{10}{p{0.98\linewidth}}{\footnotesize"
     r" \textit{Notes.}"
-    r" $\bar{g}^O$ ($\bar{g}^C$): mean share of gross job gains (losses)"
-    r" from opening (closing) establishments, $\sum G_O/\sum G$."
-    r" Cols 3--4: relative std dev $\sigma^O/\sigma$ ($\sigma^C/\sigma$)"
-    r" via Hamilton (2018) filter ($h{=}8$, $p{=}4$), raw levels;"
-    r" robust to GFC/Covid outliers."
-    r" Cols 5--6: same statistic via HP filter ($\lambda{=}1600$);"
+    r" $\bar{g}^O$ ($\bar{g}^C$, $\bar{g}^D$): mean share of gross job gains"
+    r" (losses) from opening (closing, dying) establishments, e.g."
+    r" $\sum L_D/\sum L$."
+    r" A death is a closing that reports zero employment for four consecutive"
+    r" quarters, so $\bar{g}^C-\bar{g}^D$ is the temporary-shutdown component."
+    r" Closings columns replicate Jaimovich \& Floetotto (2008, JME) Table~2,"
+    r" whose sample predates the publication of BED deaths; deaths columns are"
+    r" the permanent-exit margin used in the model."
+    r" $\sigma^k/\sigma$: relative std dev of the $k$ flow against total flows,"
+    r" raw levels, via the Hamilton (2018) filter ($h{=}8$, $p{=}4$, robust to"
+    r" GFC/Covid outliers) and the HP filter ($\lambda{=}1600$)."
     r" HP values for total private in the original sample ($\approx 0.33$)"
-    r" closely match Jaimovich \& Floetotto (2008, JME) Table~2."
+    r" closely match Jaimovich \& Floetotto Table~2."
     r" Values $<1$: extensive margin less volatile than total flows."
     r" $^{*}$ Noisy estimate ($|\text{ratio}|>5$).} \\"
 )
@@ -531,12 +573,15 @@ def _latex_table_body(res: pd.DataFrame, sname: str) -> list:
     Caption includes a concise sample-specific finding.
     """
     sub = res[res["sample"] == sname]
-    label = SAMPLE_LABELS[sname]
     tot = sub[sub["pip"] == "TOTAL"].iloc[0]
 
+    # Label the realized window, not the requested one. The BED caches end before
+    # the ext_2024 request, so the nominal label overstated coverage (see E5).
+    label = f"{SAMPLE_LABELS[sname]}; estimated on {tot.q0}--{tot.q1}"
+
     caption_lines = [
-        r"\caption{Job Gains and Losses from Opening and Closing Establishments"
-        r" (\emph{" + label + r"}) \\[2pt]",
+        r"\caption{Job Gains and Losses from Opening, Closing, and Dying"
+        r" Establishments (\emph{" + label + r"}) \\[2pt]",
         r"  {\small\itshape Source: BLS Business Employment Dynamics (BED),"
         r" quarterly, 12 Bartik supersectors."
         r" Replication and extension of Jaimovich \& Floetotto (2008, JME) Table~2.}}",
@@ -552,15 +597,15 @@ def _latex_table_body(res: pd.DataFrame, sname: str) -> list:
         + caption_lines
         + [
             r"\label{tab:jf_t2_" + sname + r"}",
-            r"\begin{tabular}{lcccccc}",
+            r"\begin{tabular}{lccccccccc}",
             r"\toprule",
-            r" & \multicolumn{2}{c}{Mean share}"
-            r" & \multicolumn{2}{c}{Rel.\ std dev (Ham)}"
-            r" & \multicolumn{2}{c}{Rel.\ std dev (HP)} \\",
-            r"\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}",
-            r"Industry & $\bar{g}^O$ & $\bar{g}^C$"
-            r" & $\sigma^O/\sigma$ & $\sigma^C/\sigma$"
-            r" & $\sigma^O/\sigma$ & $\sigma^C/\sigma$ \\",
+            r" & \multicolumn{3}{c}{Mean share}"
+            r" & \multicolumn{3}{c}{Rel.\ std dev (Ham)}"
+            r" & \multicolumn{3}{c}{Rel.\ std dev (HP)} \\",
+            r"\cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(lr){8-10}",
+            r"Industry & $\bar{g}^O$ & $\bar{g}^C$ & $\bar{g}^D$"
+            r" & $\sigma^O/\sigma$ & $\sigma^C/\sigma$ & $\sigma^D/\sigma$"
+            r" & $\sigma^O/\sigma$ & $\sigma^C/\sigma$ & $\sigma^D/\sigma$ \\",
             r"\midrule",
         ]
     )
@@ -575,9 +620,9 @@ def _latex_table_body(res: pd.DataFrame, sname: str) -> list:
             lines.append(r"\midrule")
             lbl = r"\textbf{" + lbl + r"}"
         lines.append(
-            f"{lbl} & {r.c1:.3f} & {r.c2:.3f}"
-            f" & {fmt(r.c3)} & {fmt(r.c4)}"
-            f" & {fmt(r.c5)} & {fmt(r.c6)} \\\\"
+            f"{lbl} & {r.c1:.3f} & {r.c2:.3f} & {r.c2d:.3f}"
+            f" & {fmt(r.c3)} & {fmt(r.c4)} & {fmt(r.c4d)}"
+            f" & {fmt(r.c5)} & {fmt(r.c6)} & {fmt(r.c6d)} \\\\"
         )
 
     lines += [

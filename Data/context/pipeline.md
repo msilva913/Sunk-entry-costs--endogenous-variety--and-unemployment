@@ -3,7 +3,7 @@
 `run_solution_delta_target.jl` status. Full inventory re-verification September 5, 2026;
 previous update May 12, 2026, which was missing 13 scripts and the entire model side)
 
-Two independent pipelines:
+Two independent pipelines, plus one standalone utility ([§Paper library](#paper-library-utility)):
 
 - **Empirical (Python)** — `Data/Bartek analysis/`, subdirs `data/cache/`,
   `data/instruments/`, `data/results/`. Produces the Bartik instruments and LP IRFs.
@@ -88,8 +88,13 @@ longer needed.
 
 ### Technical conventions
 
-- **BED Deaths (dataclass 08)** — establishments absent 4+ consecutive quarters, i.e.
-  permanent exits. The δ numerator. Deaths ⊆ Closings; weighted mean ratio 0.90 (2001–2019).
+- **BED Deaths (dataclass 08)** — zero third-month employment in each of the four
+  consecutive quarters following the last quarter with positive employment, i.e. permanent
+  exits. The δ numerator. Deaths ⊆ Closings; weighted mean ratio 0.90 (2001–2019).
+  **The death is dated to the quarter of closure, not to the quarter of confirmation**, so
+  the series is correctly timed; the rule induces a publication lag and vintage revisions
+  only. See [D10](decisions.md) — this is why the recognition rule cannot explain the
+  δ→u peak at h = 17–20.
 - **LOO** — national shock rates always exclude the state being instrumented (denominator
   only; state-level deaths by supersector are not public).
 - **Base year** — 2006 QCEW shares, `agglvl=54`, private sector.
@@ -224,3 +229,28 @@ risk_neutral,simplified}.jl` (single-parameter sensitivity runs).
   inner over δ_e. **Currently converges to the wrong (high-θ) branch** — [D9](decisions.md).
 - `calibrate_shares_free_entry(targets, κ_fixed, b_w_int_target)` → free-entry calibration:
   drops `x_v`, inherits κ, targets b/w_int, leaves ϕ residual.
+
+---
+
+## Part 3 — Paper library utility
+
+`Data/Key papers/pdf_to_markdown.py` mirrors every PDF in `Key papers/` as plain text under
+`Key papers/markdown/`. It exists to make [`principles.md`](principles.md) **N11–N14**
+enforceable: a claim about the literature needs a verbatim quote, and checking one by
+scrolling a PDF is slow enough that it gets skipped.
+
+```
+cd "Data/Key papers" && python pdf_to_markdown.py     # new or changed PDFs only
+grep -rn "product destruction" markdown/              # check a claim across the library
+```
+
+| Point | Detail |
+|---|---|
+| Requires | the `pdftotext` executable. Ships with Git for Windows (`mingw64/bin`), already on PATH here |
+| Output | `Key papers/markdown/<slug>.md`, **gitignored** — derived from the committed PDFs, regenerates in seconds |
+| Page markers | `<!-- page N -->` between pages, so a quote can be cited by page. This is the point of the format, not decoration |
+| Ligatures | always expanded. BED-era PDFs store `ﬁ` as one glyph, so without this `grep finding` silently misses the word — the exact failure that makes you conclude a paper does not say something it says |
+| Default is quote-safe | `-layout` keeps line breaks and columns, so a phrase spanning a line break will **not** grep. `--reflow` fixes phrase search, `--dehyphenate` joins split words. Both stamp a warning in the file header: **do not quote from output generated with either flag** |
+
+Re-run after adding a paper. The PDFs remain the source of record; the Markdown is
+disposable.

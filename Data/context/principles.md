@@ -155,6 +155,24 @@ historical economic thought includes a direct verbatim quotation from the source
 **N14. Fallback.** If a paper, citation, or DOI cannot be verified with active search tools
 or the context files, state **"Citation unverified; source missing."** Do not guess.
 
+> **How to check a quote.** `Data/Key papers/` holds the PDFs.
+> `Key papers/pdf_to_markdown.py` mirrors them as greppable text with page markers, so a
+> claim can be verified and cited by page without opening a viewer:
+>
+> ```
+> grep -rn "product destruction" "Data/Key papers/markdown/"
+> ```
+>
+> Run the script after adding a paper. Two cautions, both learned the hard way:
+> a phrase spanning a line break will not match in the default output (use `--reflow`,
+> then quote from the unflagged copy), and text generated with `--reflow` or
+> `--dehyphenate` has been edited for search and **must not be quoted verbatim**.
+> Details in [`pipeline.md`](pipeline.md) Part 3.
+>
+> If a paper is not in `Key papers/`, N14 still applies. A web search result summarizing a
+> paper is not the paper. Say "Citation unverified; source missing" rather than quoting a
+> summary as if it were the source.
+
 ## Reproducibility — strictly enforced
 
 **N15.** Every number, statistic, or derived quantity appearing in the draft — in tables,

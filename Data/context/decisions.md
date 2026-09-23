@@ -343,10 +343,31 @@ horizon moves substantially. But the augmented LP produces a shape no known mode
 generates and whose peak location and magnitude drift with the lag order. Neither spec
 gives a clean IRF target for estimation.
 
-**Remaining concern: BED Deaths as a lagging indicator.** An establishment "death" in
-BED data requires zero employment for two consecutive quarters. The official death
-therefore lags the economic process. This measurement lag could contribute to both the
-baseline and augmented IRF shapes.
+**~~Remaining concern: BED Deaths as a lagging indicator.~~ RETIRED September 23, 2026.**
+The earlier entry said a BED death "requires zero employment for two consecutive quarters"
+and inferred that the official death lags the economic process, contributing to the IRF
+shape. **Both halves are wrong.**
+
+1. **The rule is four quarters, not two.** BLS defines a death as an establishment with zero
+   or no employment reported in the third month of *four consecutive quarters following the
+   last quarter with positive employment*. Writing q₀ for the last quarter with positive
+   employment: the establishment is a **closing** in q₀+1, and a **death** only if q₀+1
+   through q₀+4 are all zero. That is the closing quarter plus three further confirmed
+   quarters.
+2. **The death is dated to the quarter of closure, not to the quarter of confirmation.**
+   The four-quarter rule is a *confirmation requirement*, not a timing shift. A death
+   occurring in 2008Q4 is recorded in 2008Q4; it simply could not be known until 2009Q4.
+
+**Consequence for D10:** the recognition rule produces a publication lag of roughly a year
+and vintage revisions. It does **not** displace the δ series in time and therefore **cannot
+explain the δ→u peak at h = 17–20.** This candidate explanation is removed. E8's
+instrument-persistence finding remains the live one.
+
+Sources: [BLS BED concepts](https://www.bls.gov/opub/hom/bdm/concepts.htm); Sadeghi,
+"The births and deaths of business establishments in the United States," *Monthly Labor
+Review*, December 2008. ⚠️ Cite the Handbook, not the MLR article, if the rule is ever
+stated in the paper: the MLR article describes the *proposed* 2008 methodology (zero in a
+quarter plus the next four), which is not the rule the published series uses.
 
 **Options going forward:**
 - **(a)** Target only robust short-horizon features (h=0–2 for u, h=4–6 for v) plus scale.

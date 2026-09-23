@@ -198,51 +198,66 @@
 	\subsection{Motivating reduced form evidence}
 	% Empirical motivation
 	Three empirical facts motivate treating firm destruction as a 
-	distinct and quantitatively important margin. \textit{First, establishment closings and openings constitute a large and cyclically sensitive component of gross job flows}. Table~\ref{tab:jf_t2_ext_2024} extends Table 2 in \citet{jaimovich_2008} through 2024Q4 using Business Economics Database (BED) data. Columns 1--2 of Table~\ref{tab:jf_t2_ext_2024} report the average fraction of quarterly gross job gains (losses) accounted for by opening (closing) establishments. Columns 3 and 4 report the ratio of the cyclical standard deviation of entry/exit flows to that of total flows, using the Hamilton (2018) regression filter ($h=8, p=4$) applied to raw levels. Columns 5 and 6 repeat the calculation with the HP filter ($\lambda=1600$), which closely reproduces \citet{jaimovich_2008}'s benchmark of approximately 0.33 in the original 1992--2006 sample.
+	distinct and quantitatively important margin. \textit{First, establishment entry and exit constitute a large and cyclically sensitive component of gross job flows}. Table~\ref{tab:jf_t2_ext_2019} extends Table 2 in \citet{jaimovich_2008} through 2019Q4 using BLS Business Employment Dynamics (BED) data.\footnote{This table uses BED \emph{closings}, for comparability with \citet{jaimovich_2008}, whose Table 2 reports a mean closing share of 21.17 percent of quarterly gross job losses.  Their sample is 1992Q3--2005Q2 in the working paper version (SIEPR Discussion Paper 07-13).  Closings are the appropriate measure for their question, which concerns the number of firms actively competing in a period, and an establishment that is temporarily idle is not competing.  BED deaths were not published until May 2009, after their paper appeared, so the distinction was not available to them.  Our destruction measure is different.  The model's $\delta$ shock is the permanent elimination of a product line, so the analysis throughout the paper uses BED \emph{deaths}, constructed and defined in Section~\ref{sec:empirical_instr}.} The first three columns report the average fraction of quarterly gross job gains (losses) accounted for by opening (closing, dying) establishments. The next three report the ratio of the cyclical standard deviation of each flow to that of total flows, using the Hamilton (2018) regression filter ($h=8$, $p=4$) applied to raw levels. The final three repeat the calculation with the HP filter ($\lambda=1600$), which closely reproduces \citet{jaimovich_2008}'s benchmark of approximately $0.33$ over their original sample period. We stop the sample in 2019Q4. Extending it through the end of the BED data leaves the mean shares almost unchanged but collapses every cyclicality ratio, because the 2020 collapse inflates total job losses without a corresponding rise in permanent exit.
 	
-	Columns 1 and 2 show that closing establishments account for 19.3 percent of gross job losses on average across all private-sector supersectors 
-	--- a share that is remarkably stable across industries ranging from construction (20.5 percent) to financial activities (24.6 percent). The relative standard deviation columns show that closing-establishment 
-	flows are meaningfully cyclical under both Hamilton and HP filters, with the total-private closing share moving at 0.152 times the 
-	cyclical variation of unemployment under the Hamilton filter. 
-	Translating these shares into rates, the quarterly establishment 
-	exit rate averages 0.93 percent of base employment against a total 
-	quarterly separation rate of 9.3 percent: most separations are 
-	therefore not firm exits, which makes the $\delta$-vs-$s$ 
-	decomposition empirically tractable --- the two margins are 
-	separately measurable yet distinct enough that conflating them 
+	The mean-share columns show that closing establishments account for $19.5$
+	percent of gross job losses on average across all private-sector supersectors,
+	a share that is stable across industries ranging from construction ($20.6$
+	percent) to financial activities ($24.7$ percent). Dying establishments, the
+	permanent subset, account for $12.0$ percent. The difference between the two is
+	the temporary-shutdown component that the $\delta$ instrument must remove, and
+	it is close to two-fifths of the closings margin. Permanent exit remains large
+	in its own right. About one job loss in eight occurs at an establishment that
+	never reopens.
+
+	The relative standard deviation columns show that both margins move with the
+	cycle, and that the permanent margin is the less volatile of the two. For total
+	private, the closing flow moves at $0.239$ times the cyclical variation of
+	total job losses under the Hamilton filter, against $0.187$ for deaths. The HP
+	filter gives $0.223$ and $0.180$. The ordering holds in every supersector. The
+	gap is widest in natural resources and mining ($0.205$ against $0.104$), where
+	project-based and seasonal establishments suspend operations without exiting
+	permanently. Elsewhere the two are close, so the cyclical sensitivity that
+	\citet{jaimovich_2008} document is not an artifact of temporary shutdowns.
+	Permanent exit is itself cyclical, which is what the $\delta$ shock requires.
+
+	At $12.0$ percent of gross job losses, permanent exit is a minority of job
+	destruction but far from a rounding error. This is what makes the
+	$\delta$-versus-$s$ decomposition empirically tractable. The two margins are
+	separately measurable, and they are distinct enough that conflating them
 	materially distorts model predictions.
 	%%%%%%%%%%%%%%%%
 	\begin{table}[H]
-		\centering
-		\small
-		\begin{tabular}{lcccccc}
-			\toprule
-			& \multicolumn{2}{c}{Mean share} & \multicolumn{2}{c}{Rel.\ std dev (Ham)} & \multicolumn{2}{c}{Rel.\ std dev (HP)} \\
-			\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
-			Industry & $\bar{g}^O$ & $\bar{g}^C$ & $\sigma^O/\sigma$ & $\sigma^C/\sigma$ & $\sigma^O/\sigma$ & $\sigma^C/\sigma$ \\
-			\midrule
-			\midrule
-			\textbf{Total private} & 0.199 & 0.193 & 0.227 & 0.152 & 0.206 & 0.132 \\
-			Natural resources \& mining & 0.163 & 0.156 & 0.281 & 0.177 & 0.261 & 0.176 \\
-			Construction & 0.208 & 0.205 & 0.188 & 0.185 & 0.209 & 0.165 \\
-			Manufacturing & 0.123 & 0.137 & 0.214 & 0.109 & 0.219 & 0.093 \\
-			Wholesale trade & 0.203 & 0.226 & 0.251 & 0.184 & 0.260 & 0.143 \\
-			Retail trade & 0.169 & 0.152 & 0.202 & 0.142 & 0.210 & 0.124 \\
-			Transportation \& utilities & 0.163 & 0.169 & 0.236 & 0.118 & 0.194 & 0.097 \\
-			Information & 0.206 & 0.209 & 0.284 & 0.310 & 0.301 & 0.269 \\
-			Financial activities & 0.235 & 0.246 & 0.343 & 0.323 & 0.416 & 0.305 \\
-			Prof.~\& business services & 0.205 & 0.211 & 0.242 & 0.156 & 0.236 & 0.133 \\
-			Education \& health services & 0.203 & 0.211 & 0.307 & 0.151 & 0.246 & 0.125 \\
-			Leisure \& hospitality & 0.241 & 0.196 & 0.173 & 0.168 & 0.174 & 0.158 \\
-			Other services & 0.225 & 0.223 & 0.427 & 0.286 & 0.415 & 0.270 \\
-			\midrule
-			\multicolumn{7}{p{0.92\linewidth}}{\footnotesize \textit{Notes.} $\bar{g}^O$ ($\bar{g}^C$): mean share of gross job gains (losses) from opening (closing) establishments, $\sum G_O/\sum G$. Cols 3--4: relative std dev $\sigma^O/\sigma$ ($\sigma^C/\sigma$) via Hamilton (2018) filter ($h{=}8$, $p{=}4$), raw levels; robust to GFC/Covid outliers. Cols 5--6: same statistic via HP filter ($\lambda{=}1600$).} \\
-			\bottomrule
-		\end{tabular}
-		\caption{Job Gains and Losses from Opening and Closing Establishments (\emph{Extended to 2024Q4 (BED end)}) \\[2pt]
-			{\small\itshape Source: BLS Business Employment Dynamics (BED), quarterly, 12 Bartik supersectors. Replication and extension of Jaimovich \& Floetotto (2008, JME) Table~2.}}
-		\label{tab:jf_t2_ext_2024}
-	\end{table}
+\centering
+\small
+\caption{Job Gains and Losses from Opening, Closing, and Dying Establishments (\emph{Extended to the COVID cutoff, preferred; estimated on 1992Q3--2019Q4}) \\[2pt]
+  {\small\itshape Source: BLS Business Employment Dynamics (BED), quarterly, 12 Bartik supersectors. Replication and extension of Jaimovich \& Floetotto (2008, JME) Table~2.}}
+\label{tab:jf_t2_ext_2019}
+\begin{tabular}{lccccccccc}
+\toprule
+ & \multicolumn{3}{c}{Mean share} & \multicolumn{3}{c}{Rel.\ std dev (Ham)} & \multicolumn{3}{c}{Rel.\ std dev (HP)} \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(lr){8-10}
+Industry & $\bar{g}^O$ & $\bar{g}^C$ & $\bar{g}^D$ & $\sigma^O/\sigma$ & $\sigma^C/\sigma$ & $\sigma^D/\sigma$ & $\sigma^O/\sigma$ & $\sigma^C/\sigma$ & $\sigma^D/\sigma$ \\
+\midrule
+\midrule
+\textbf{Total private} & 0.200 & 0.195 & 0.120 & 0.269 & 0.239 & 0.187 & 0.275 & 0.223 & 0.180 \\
+Natural resources \& mining & 0.164 & 0.158 & 0.058 & 0.295 & 0.205 & 0.104 & 0.261 & 0.215 & 0.118 \\
+Construction & 0.208 & 0.206 & 0.108 & 0.188 & 0.198 & 0.139 & 0.212 & 0.192 & 0.133 \\
+Manufacturing & 0.125 & 0.139 & 0.102 & 0.234 & 0.123 & 0.092 & 0.260 & 0.119 & 0.091 \\
+Wholesale trade & 0.204 & 0.227 & 0.155 & 0.260 & 0.249 & 0.206 & 0.296 & 0.250 & 0.213 \\
+Retail trade & 0.172 & 0.154 & 0.109 & 0.239 & 0.223 & 0.185 & 0.311 & 0.257 & 0.232 \\
+Transportation \& utilities & 0.165 & 0.175 & 0.119 & 0.208 & 0.223 & 0.187 & 0.147 & 0.174 & 0.149 \\
+Information & 0.206 & 0.210 & 0.150 & 0.292 & 0.367 & 0.318 & 0.327 & 0.399 & 0.361 \\
+Financial activities & 0.235 & 0.247 & 0.170 & 0.352 & 0.387 & 0.331 & 0.481 & 0.455 & 0.410 \\
+Prof.~\& business services & 0.205 & 0.212 & 0.127 & 0.288 & 0.239 & 0.215 & 0.290 & 0.246 & 0.193 \\
+Education \& health services & 0.202 & 0.213 & 0.128 & 0.341 & 0.336 & 0.275 & 0.455 & 0.429 & 0.313 \\
+Leisure \& hospitality & 0.245 & 0.198 & 0.115 & 0.271 & 0.332 & 0.250 & 0.315 & 0.350 & 0.271 \\
+Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 & 0.301 \\
+\midrule
+\multicolumn{10}{p{0.98\linewidth}}{\footnotesize \textit{Notes.} $\bar{g}^O$ ($\bar{g}^C$, $\bar{g}^D$): mean share of gross job gains (losses) from opening (closing, dying) establishments, e.g. $\sum L_D/\sum L$. A death is a closing that reports zero employment for four consecutive quarters, so $\bar{g}^C-\bar{g}^D$ is the temporary-shutdown component. Closings columns replicate Jaimovich \& Floetotto (2008, JME) Table~2, whose sample predates the publication of BED deaths; deaths columns are the permanent-exit margin used in the model. $\sigma^k/\sigma$: relative std dev of the $k$ flow against total flows, raw levels, via the Hamilton (2018) filter ($h{=}8$, $p{=}4$, robust to GFC/Covid outliers) and the HP filter ($\lambda{=}1600$). HP values for total private in the original sample ($\approx 0.33$) closely match Jaimovich \& Floetotto Table~2. Values $<1$: extensive margin less volatile than total flows. $^{*}$ Noisy estimate ($|\text{ratio}|>5$).} \\
+\bottomrule
+\end{tabular}
+\end{table}
 	
 	
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1817,9 +1832,11 @@ Figure~\ref{fig:steady_state_curves_z}.
 	The underlying data source is the BLS Business Employment Dynamics
 	(BED) survey, which tracks establishment-level employment via state
 	unemployment insurance payroll records at quarterly frequency from
-	1992Q3.  An establishment is classified as a ``closing'' in a given
-	quarter if it exits the UI payroll base between consecutive March
-	reference dates.  Coverage is all private-sector establishments across
+	1992Q3.  BED dates each establishment by third-month employment.  An
+	establishment is classified as a ``closing'' in a given quarter if it
+	reported positive employment in the third month of the previous
+	quarter and reports zero employment in the third month of the current
+	quarter.  Coverage is all private-sector establishments across
 	12 supersectors and all 50 states.
 
 	Raw BED closings conflate two economically distinct events:
@@ -1843,18 +1860,37 @@ Figure~\ref{fig:steady_state_curves_z}.
 	\paragraph{BED Deaths as the measure of permanent exits}
 	We address this using a second BED data series that resolves the
 	permanence problem directly.  In addition to closings, BED separately
-	reports \emph{deaths} --- establishments absent from the UI payroll
-	base for four or more consecutive quarters --- which by construction
-	excludes temporary shutdowns.\footnote{BED data classes: 06 (Closings)
-	records establishments absent from the next quarterly payroll file;
-	08 (Deaths) records establishments absent for four or more consecutive
-	quarters.  Deaths $\subseteq$ Closings in every industry$\times$quarter
-	cell, so ratio is bounded above by unity by
-	construction.}  Since a temporarily closed establishment re-enters the
-	payroll base within one to three quarters, it never accumulates four
-	consecutive absences and therefore never appears in BED Deaths.  Our
-	$\delta$ instrument uses BED Deaths --- not raw closings --- as the
-	numerator of the national exit rate.
+	reports \emph{deaths}, which by construction exclude temporary
+	shutdowns.  Let $q_0$ denote the last quarter in which an
+	establishment reports positive third-month employment.  The
+	establishment is a closing in $q_0+1$.  It is a \emph{death} only if
+	it reports zero employment in the third month of each of the four
+	consecutive quarters $q_0+1$ through $q_0+4$.  A death is therefore a
+	closing that is followed by three further quarters of confirmed zero
+	employment.\footnote{BED data classes: 06 (Closings) and 08 (Deaths).
+	Deaths $\subseteq$ Closings in every industry$\times$quarter cell, so
+	the ratio is bounded above by unity by construction.}  Since a
+	temporarily closed establishment re-enters the payroll base within one
+	to three quarters, it never accumulates four consecutive zero
+	quarters and therefore never appears in BED Deaths.  Our $\delta$
+	instrument uses BED Deaths, not raw closings, as the numerator of the
+	national exit rate.
+
+	Two features of this definition matter for the empirical design.
+	First, the four-quarter rule is a \emph{confirmation} requirement, not
+	a dating rule.  BLS attributes the death to the quarter in which the
+	establishment closed, so the series is correctly timed even though it
+	can only be finalized four quarters later.  The rule induces a
+	publication lag and vintage revisions.  It does not shift the
+	destruction series forward in time, and so cannot by itself generate
+	delayed dynamics in the local projections of
+	Section~\ref{sec:empirical_results}.  Second, the criterion is
+	stricter than the annual Census Business Dynamics Statistics (BDS)
+	measure of establishment deaths, which compares employment in the
+	first quarter of consecutive years and therefore still counts an
+	establishment that is idle at the reference date but later reopens.
+	BED Deaths applies the spirit of the BDS permanence screen at
+	quarterly frequency, with a tighter permanence criterion.
 
 	Figure~\ref{fig:bed_deaths} shows employment-weighted mean BED Closings
 	and Deaths rates across 12 supersectors from 1992Q3 to 2019Q4, together
@@ -2391,11 +2427,50 @@ The second set consists of empirically identified impulse responses from the
 	
 	\emph{External block}: parameters set directly from microeconomic evidence or
 	long-run data. We fix the annual discount rate $r=4\%$ and the matching-function
-	elasticity $\eta_L=0.6$. Following \citet{jaimovich_2008}, 21\% of job
-	destruction is attributable to establishment exit; combined with an aggregate
-	monthly separation rate of $\tau=3.1\%$, this implies a monthly destruction
-	rate $\delta_e=0.651\%$ (annual: $7.54\%$). We set the elasticity of
-	substitution $\varepsilon=4.3$, implying a gross markup $\mu=\varepsilon/(\varepsilon-1)\approx1.30$.
+	elasticity $\eta_L=0.6$. We set the elasticity of substitution
+	$\varepsilon=4.3$, implying a gross markup
+	$\mu=\varepsilon/(\varepsilon-1)\approx1.30$. We calibrate the product
+	destruction rate to the same exit measure that identifies the $\delta$ shock in
+	Section~\ref{sec:empirical}. Employment-weighted BED establishment deaths
+	average $3.2\%$ per year over 1993--2019, or $\delta_e=0.271\%$ per month.
+	Against an aggregate monthly separation rate of $\tau=3.1\%$, this implies
+	$\bar\delta_e/\bar\tau=0.087$. Firm exit accounts for about one separation in
+	twelve.
+
+	\paragraph{Reconciling $\bar\delta_e$ with product-level destruction rates}
+	Our value lies well below the $10\%$ annual rate in \citet{bilbiie_2012}. The
+	gap is informative, and it reflects a difference in what the parameter is asked
+	to measure. BGM calibrate a single destruction shock to the product-level
+	evidence of \citet{bernard_2010}, which records the value lost through product
+	destruction at both continuing and exiting firms. Over a five-year horizon that
+	evidence attributes $44$ percent of output to product destruction, of which
+	$30.4$ points occur at firms that continue to operate. Netting out the
+	continuing-firm component leaves roughly $2.7$ percent per year attributable to
+	exiting firms, close to the $3.2$ percent we measure. BGM's higher rate is
+	therefore not a different reading of the same margin. Their single $\delta$ must
+	carry product churn inside surviving firms as well as destruction at exiting
+	ones.
+
+	Our model faces the same constraint and resolves it in the opposite direction.
+	Under symmetry one $\delta_e$ serves two roles. It is the fraction of product
+	lines withdrawn from the variety space, and it is the fraction of employment
+	destroyed by exit. These differ in the data, because dying establishments are
+	smaller than average and because product lines also die inside surviving firms.
+	We match the employment margin. The $\delta$ shock in this model destroys filled
+	jobs and pre-committed vacancies, and that destruction is what the asymmetry in
+	Proposition~\ref{prop:ds_asymmetry} turns on. The Bartik instrument is also
+	built from employment-weighted establishment deaths, so calibrating to a
+	different margin would leave the empirical and quantitative sections describing
+	different objects.
+
+	The cost is that the variety channel is calibrated conservatively. Product
+	destruction inside continuing firms withdraws varieties without appearing in
+	establishment deaths, so $\delta_e$ understates the movement in $N$ that a
+	broader product-level measure would deliver. Our results should be read as a
+	lower bound on the amplification contributed by the variety channel. We regard
+	this as the right trade for a model whose contribution is on the labor market
+	side, and we prefer it to introducing a second destruction margin disciplined
+	only by the ratio of two exit measures.
 	
 	\emph{Dependent block} $\Theta_d$: parameters implied jointly by the
 	normalizations, the external block, and a draw from $\Theta_e$ via the
