@@ -1,5 +1,5 @@
 # Decision Register
-**Last updated:** September 21, 2026 (D10 added) · **Branch:** `Organize_Project_State_Estimation`
+**Last updated:** September 22, 2026 (D10 updated with E8 results) · **Branch:** `Organize_Project_State_Estimation`
 
 Every open decision that must be settled before estimation, plus the ones already settled
 that agents keep re-litigating. One entry = one decision. When you settle one, move it to
@@ -301,46 +301,51 @@ on z-shock amplification — and Comparison D already makes the substantive poin
 
 ---
 
-## 🔴 D10. Is the Bartik LP peak horizon (h=17–20) a propagation fact or a persistence artifact?
+## 🟡 D10. What is the correct empirical target for the δ→u IRF shape?
 
-**The problem.** The model's δ→u IRF peaks at h=1 quarter under every feasible parameter
-combination (sweeps over ξ_inv ∈ [0.5, 8.0] and ε ∈ [1.5, 4.3]; see `findings.md`). The
-LP estimates δ→u peaking at h=17–20. The gap is structural, not parametric: no parameter
-adjustment within the model can generate a hump-shaped response.
+**Original question (Sept 21).** Is the Bartik LP peak horizon (h=17–20) a propagation
+fact or a persistence artifact?
 
-**Before adding a propagation mechanism, the LP itself should be interrogated.** Two
-concerns, both testable:
+**E8 result (Sept 22).** The lagged-instrument test was run (p=4, 8, 12). Key findings:
 
-**1. Bartik instrument persistence (the Plagborg-Møller & Wolf 2021 point).** Industry
-composition (the ω_{ij} weights) changes slowly, and industry-level death rates are
-persistent. If state i gets a high Bartik shock at t because, e.g., manufacturing is
-declining, it gets a high Bartik shock at t+1, t+2, ... for the same reason. The LP:
+1. **Instrument persistence confirmed.** Within-state autocorrelation of B̃^δ (after time
+   FEs) has median ρ=0.91 at lag 1, 0.79 at lag 8. 90–100% of states significant at all lags.
+2. **δ→u peak shifts from h=17 to h=10** across all three lag orders. Magnitude drops
+   22–44% (1.71 → 0.95–1.35 pp). Robust to lag-order choice.
+3. **Non-monotone shape emerges:** significant at h=0–2, insignificant at h=3–8, second
+   rise peaking at h=10. This rise–zero–rise pattern is stable across p=4, 8, 12.
+4. **δ→v early trough at h=4–6** is robust (−0.55 pp, p<0.01 at all lag orders). Late-
+   horizon vacancy effects (h=12+) are less stable.
+5. **Asymmetry:** unemployment peak collapses 7 quarters, vacancy early trough is unchanged.
 
-> y_{i,t+h} = α_i + γ_t + β_h · B^δ_{i,t} + X'Γ + ε
+**The new problem.** The corrected δ→u IRF has a theoretically unprecedented shape. No
+standard DSGE, search, or RBC model generates an impulse response that rises, falls to
+zero at intermediate horizons, then rises again. Presenting this augmented LP as the
+primary empirical target would require substantial defense with no obvious theoretical
+framework to anchor it.
 
-does not control for B^δ_{i,t+1}, ..., B^δ_{i,t+h}. So β_h at large h conflates the
-*propagation* of a single-period shock with the *cumulative effect* of serially correlated
-future shocks hitting the same states. The LP IRF is a Wold representation, not a structural
-IRF; the hump shape could reflect instrument persistence rather than slow propagation.
+**Remaining concern: BED Deaths as a lagging indicator.** An establishment "death" in
+BED data requires zero employment for two consecutive quarters. The official death
+therefore lags the economic process. This measurement lag could contribute to both the
+baseline and augmented IRF shapes, but the augmented LP should partially absorb it
+(past lagged deaths proxy for the slow-reporting process).
 
-**Test:** Add lagged instruments B^δ_{i,t-1}, ..., B^δ_{i,t-p} as controls and check
-whether the peak horizon collapses. If it does, the hump is an artifact of instrument
-persistence, and the model's immediate-spike-and-decay is structurally correct.
+**Options going forward:**
+- **(a)** Present the baseline LP as a reduced-form Wold IRF with instrument persistence
+  caveat, and target only scale + sign (not peak horizon) in Block B.
+- **(b)** Present the augmented LP and defend the non-monotone shape — requires finding
+  a theoretical mechanism or an econometric explanation for the dip at h=3–8.
+- **(c)** Target only the robust features that both specs agree on: positive δ→u impact
+  at h=0–2, negative δ→v at h=4–6, overall scale. Treat the peak horizon as uninformative.
 
-**2. BED Deaths as a lagging indicator.** An establishment "death" in BED data requires
-zero employment for two consecutive quarters. The official death therefore lags the
-economic process that led to it (declining demand, layoffs, gradual wind-down). β_h at
-h=17–20 may partly reflect this measurement lag.
+**Recommendation (tentative):** Option (c). Both specs agree on sign, significance at
+short horizons, and scale. The peak horizon is contaminated by instrument persistence in
+the baseline and produces a puzzling shape in the augmented version. Block B should match
+scale and sign, not the peak location.
 
-**Recommendation:** Run the lagged-instrument test before committing to a propagation
-mechanism. If the peak survives the controls, the model genuinely needs a new channel
-(financial accelerator, network effects, multi-period firm wind-down). If the peak
-collapses, Block B should target the *scale and persistence tail* of δ→u, not the peak
-horizon — and M8 is dissolved.
-
-**This gates the estimation design.** If the peak horizon is a moment target in Block B,
-the estimator will fight it and potentially distort every other parameter. If it is dropped
-or reinterpreted, Block B becomes much more tractable.
+**Status:** 🟡 partially resolved. E8 ran and clarified the problem but opened a new
+question about interpretation. The estimation design can proceed under option (c) without
+waiting for the non-monotone shape to be resolved.
 
 ---
 

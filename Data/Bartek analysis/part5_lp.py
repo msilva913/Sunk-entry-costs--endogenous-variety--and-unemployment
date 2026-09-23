@@ -173,6 +173,28 @@ def build_panel(instr: pd.DataFrame, instr_col: str,
     return panel
 
 
+def attach_lagged_instruments(panel: pd.DataFrame, instr_col: str,
+                              n_lags: int = 8) -> tuple:
+    """
+    Add n_lags temporal lags of the instrument to the panel.
+
+    Returns (panel_with_lags, lag_col_names).
+    Lags are set to NaN where the quarter sequence has a gap, so dropna
+    in run_lp_horizon handles sample trimming automatically.
+    """
+    panel = panel.copy()
+    lag_cols = []
+    for k in range(1, n_lags + 1):
+        col = f"{instr_col}_lag{k}"
+        panel[col] = panel.groupby("state_fips")[instr_col].shift(k)
+        ql_shifted = panel.groupby("state_fips")["quarter_label"].shift(k)
+        expected = quarter_shift(panel["quarter_label"], -k)
+        misaligned = ql_shifted.notna() & (ql_shifted != expected)
+        panel.loc[misaligned, col] = np.nan
+        lag_cols.append(col)
+    return panel, lag_cols
+
+
 def attach_gfc_interaction(panel: pd.DataFrame, instr_col: str) -> pd.DataFrame:
     """
     Add two GFC control columns to the panel:
@@ -207,7 +229,8 @@ def attach_gfc_interaction(panel: pd.DataFrame, instr_col: str) -> pd.DataFrame:
 # LP estimation -- single horizon
 # ---------------------------------------------------------------------------
 def run_lp_horizon(base_panel, h, shock_col,
-                   include_nfci=False, include_gfc=False, outcome="unemp"):
+                   include_nfci=False, include_gfc=False,
+                   lagged_instr_cols=None, outcome="unemp"):
     """
     Estimate the LP at horizon h.
 
@@ -263,6 +286,8 @@ def run_lp_horizon(base_panel, h, shock_col,
         required.append("instr_x_nfci")
     if include_gfc:
         required += ["instr_x_gfc", "gfc_outcome"]
+    if lagged_instr_cols:
+        required += lagged_instr_cols
     df = df.dropna(subset=required).copy()
 
     if len(df) < 100:
@@ -277,6 +302,8 @@ def run_lp_horizon(base_panel, h, shock_col,
         core.append("instr_x_nfci")
     if include_gfc:
         core += ["instr_x_gfc", "gfc_outcome"]
+    if lagged_instr_cols:
+        core += lagged_instr_cols
     X = sm.add_constant(
         pd.concat([df[core], state_dummies, time_dummies], axis=1),
         has_constant="add"
@@ -323,7 +350,8 @@ def run_lp_horizon(base_panel, h, shock_col,
 # LP estimation -- all horizons
 # ---------------------------------------------------------------------------
 def run_lp(panel, shock_col, label, include_nfci=False,
-           include_gfc=False, outcome="unemp") -> pd.DataFrame:
+           include_gfc=False, lagged_instr_cols=None,
+           outcome="unemp") -> pd.DataFrame:
     """Run LP for all horizons, scale to 1-SD units, return DataFrame."""
     outcome_tag = "-> vacancy rate" if outcome == "vacancy" else "-> unemp rate"
     tag = (" [+GFC]" if include_gfc else "") + (" [+NFCI]" if include_nfci else "")
@@ -343,6 +371,7 @@ def run_lp(panel, shock_col, label, include_nfci=False,
         res = run_lp_horizon(panel, h, shock_col,
                              include_nfci=include_nfci,
                              include_gfc=include_gfc,
+                             lagged_instr_cols=lagged_instr_cols,
                              outcome=outcome)
         if res is None:
             continue
@@ -824,7 +853,10 @@ def _plt_diagnostics():
         print(f"  Saved: {p}")
         _open_file(p)
 
-_plt_diagnostics()
+try:
+    _plt_diagnostics()
+except OSError as exc:
+    print(f"  [8] plot save failed ({exc}); continuing")
 
 # ---------------------------------------------------------------------------
 # [9] Summary table
@@ -868,3 +900,118 @@ if vac_ok:
     print(f"\n--- Natural scale (vacancy rate) ---")
     print(f"  Labor-force-weighted avg within-state SD of vac_rate: "
           f"{natural_scale:.3f} pp")
+
+# ===========================================================================
+# [11] Bartik instrument persistence diagnostic (E8)
+# ===========================================================================
+print("\n" + "="*72)
+print("[11] Bartik instrument persistence diagnostic")
+print("="*72)
+
+# --- 11a: Within-state autocorrelation of B̃^δ after absorbing time FEs ---
+print("\n--- 11a: Within-state autocorrelation of B̃^δ (after time FEs) ---")
+_fe_panel = delta_resid_post[["state_fips", "quarter_label", "bartik_delta"]].dropna().copy()
+_time_dum = pd.get_dummies(_fe_panel["quarter_label"], prefix="qt", drop_first=True, dtype=float)
+_X_fe = sm.add_constant(_time_dum, has_constant="add")
+_fe_resid = sm.OLS(_fe_panel["bartik_delta"], _X_fe).fit().resid
+_fe_panel["b_tilde"] = _fe_resid.values
+
+N_LAGS_AC = 12
+print(f"  {'lag':>4}  {'mean_rho':>9}  {'med_rho':>9}  {'pct_sig':>8}")
+for lag in range(1, N_LAGS_AC + 1):
+    rhos = []
+    for st, grp in _fe_panel.groupby("state_fips"):
+        g = grp.sort_values("quarter_label")
+        x = g["b_tilde"].values
+        if len(x) <= lag:
+            continue
+        r = np.corrcoef(x[lag:], x[:-lag])[0, 1]
+        if np.isfinite(r):
+            rhos.append(r)
+    rhos = np.array(rhos)
+    n_sig = np.sum(np.abs(rhos) > 2 / np.sqrt(len(_fe_panel["quarter_label"].unique())))
+    print(f"  {lag:4d}  {rhos.mean():9.3f}  {np.median(rhos):9.3f}  "
+          f"{100*n_sig/len(rhos):7.1f}%  (n={len(rhos)})")
+
+# --- 11b: Augmented LP across lag orders p=4, 8, 12 ---
+LAG_ORDERS = [4, 8, 12, 16]
+aug_results = {}
+
+for p in LAG_ORDERS:
+    print(f"\n--- 11b: Augmented LP (p={p} lagged instruments) ---")
+    aug_p, lag_cols_p = attach_lagged_instruments(delta_resid_post,
+                                                  "bartik_delta", n_lags=p)
+    print(f"  Panel rows before dropna: {len(aug_p):,}")
+
+    irf_u = run_lp(aug_p, "bartik_delta", f"delta augmented (p={p})",
+                    lagged_instr_cols=lag_cols_p, outcome="unemp")
+    irf_v = None
+    if vac_ok:
+        irf_v = run_lp(aug_p, "bartik_delta", f"delta augmented (p={p})",
+                        lagged_instr_cols=lag_cols_p, outcome="vacancy")
+    aug_results[p] = {"unemp": irf_u, "vacancy": irf_v}
+
+# --- 11c: Comparison table ---
+print("\n--- 11c: Baseline vs augmented comparison ---")
+print(f"  {'spec':<25}  {'outcome':>8}  {'peak_h':>6}  {'peak_beta':>10}  "
+      f"{'peak_se':>8}  {'peak_p':>7}  {'nobs':>6}")
+
+for outcome_key, df_base in [("unemp", irf_delta_resid),
+                              ("vacancy", irf_delta_vac if vac_ok else None)]:
+    entries = [("baseline", df_base)]
+    for p in LAG_ORDERS:
+        entries.append((f"augmented p={p}", aug_results[p][outcome_key]))
+    for lbl, df in entries:
+        if df is None or df.empty:
+            continue
+        pk = df.loc[df["beta"].abs().idxmax()]
+        print(f"  {lbl:<25}  {outcome_key:>8}  {int(pk['h']):>6}  "
+              f"{pk['beta']:>10.4f}  {pk['se']:>8.4f}  {pk['pval']:>7.3f}  "
+              f"{int(pk['nobs']):>6}")
+
+# --- 11d: Comparison plots (all lag orders) ---
+print("\n--- 11d: Saving comparison plots ---")
+
+_aug_colors = {4: "#2ca02c", 8: "#d62728", 12: "#ff7f0e", 16: "#9467bd"}
+_aug_markers = {4: "^", 8: "s", 12: "D", 16: "v"}
+
+fig, axes = plt.subplots(1, 2, figsize=(14, 6), sharey=False)
+
+for ax, outcome_label, df_base in [
+    (axes[0], "unemp", irf_delta_resid),
+    (axes[1], "vacancy", irf_delta_vac if vac_ok else None),
+]:
+    if df_base is None or df_base.empty:
+        ax.set_visible(False)
+        continue
+
+    h = df_base["h"].values
+    ax.fill_between(h, df_base["ci90_lo"], df_base["ci90_hi"],
+                    color="#1f77b4", alpha=0.12)
+    ax.plot(h, df_base["beta"], color="#1f77b4", lw=2, marker="o", ms=3,
+            label="baseline")
+
+    for p in LAG_ORDERS:
+        df_aug = aug_results[p][outcome_label]
+        if df_aug is None or df_aug.empty:
+            continue
+        ha = df_aug["h"].values
+        ax.plot(ha, df_aug["beta"], color=_aug_colors[p], lw=1.5,
+                marker=_aug_markers[p], ms=3, label=f"p={p}")
+
+    ax.axhline(0, color="black", lw=0.8)
+    for hh in range(4, int(h.max()) + 1, 4):
+        ax.axvline(hh, color="grey", lw=0.5, ls=":", alpha=0.6)
+    ylabel = ("pp change in vacancy rate\nper 1-SD shock"
+              if outcome_label == "vacancy"
+              else "pp change in unemp. rate\nper 1-SD shock")
+    ax.set_xlabel("horizon (quarters)")
+    ax.set_ylabel(ylabel)
+    ax.set_title(f"δ → {outcome_label}: baseline vs augmented LP")
+    ax.legend(fontsize=9)
+
+plt.tight_layout()
+comp_path = RESULTS_DIR / "irf_delta_augmented_comparison.png"
+fig.savefig(comp_path, dpi=150, bbox_inches="tight")
+plt.close(fig)
+print(f"  Saved: {comp_path}")
