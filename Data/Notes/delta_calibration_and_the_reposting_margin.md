@@ -1,6 +1,10 @@
 # Calibrating δ: product lines, positions, and the reposting margin
-**Written:** September 23, 2026 · **Branch:** `instruments_LP_coefficient`
+**Written:** September 23, 2026 · **Revised:** September 28, 2026 · **Branch:** `instruments_LP_coefficient`
 **Status:** analysis and recommendation. Nothing here is settled policy.
+**Sept 28 revision:** §7 rewritten. The reposting cost is drawn from F, the continuation cost
+distribution, scaled by α, using the *same* iid draw χ that decides continuation. This replaces
+the earlier separate-distribution G framing, keeps the model at two cost distributions, and
+generates the missing middle of §5. See §7.3, §7.3a.
 
 **Purpose.** δ̄_e = 3.2 %/yr looks low against every antecedent, and the model's unconditional
 Beveridge correlation has the wrong sign. These two facts are usually treated as one problem.
@@ -333,45 +337,132 @@ repost costs the same fee c_r. Then the firm reposts if and only if Q_t ≥ c_r,
 positions are identical the decision is all-or-nothing: λ_t ∈ {0, 1}. A homogeneous fee does
 not generate partial reposting; it simply scales the value of a vacancy.
 
-**An interior reposting rate requires dispersion in the reposting cost.** This is exactly why
-the firm-level exit margin needs the distribution F to deliver an interior cutoff χ^c.
+**An interior reposting rate requires dispersion.** A homogeneous fee compared against a
+homogeneous value gives a corner. For a smooth interior λ, either the reposting cost or the
+value it is compared against must vary across positions. This is the same reason the
+firm-level exit margin needs the distribution F to deliver an interior cutoff χ^c. The next
+subsection shows which source of dispersion is available here.
 
-### 7.3 The formulation
+### 7.3 The formulation: reposting cost scales with the continuation draw
 
-On separation, the firm draws a reposting cost c from a distribution G, and reposts if the
-value of a vacancy covers it:
+*This supersedes an earlier draft of this subsection, which drew the reposting cost from a
+separate distribution G and related it to the entry cost. The resolution below draws it from
+F, the continuation cost distribution, and explains why.*
+
+**Value dispersion is not available as the source.** The continuation cost χ is an iid
+per-period draw, following the Broer (2025) formulation the exit margin already uses. Every
+firm that continues this period faces the same distribution next period, so all continuing
+firms value an additional filled position identically. A homogeneous reposting fee then gives
+bang-bang reposting, λ_t ∈ {0,1}, not a smooth rate. There is no forward-looking firm-value
+dispersion for the reposting decision to exploit. The dispersion must come from the cost side.
+
+**The cost should not be tied to G.** The sunk cost x drawn from G pays for office space and
+HR infrastructure. That asset is durable and position-specific. It is not un-built when a
+match dissolves. So reposting a vacated slot does not re-incur x and does not scale with the
+original draw. G is the cost of creating capacity. Reposting uses capacity that already
+exists. The two are different objects, and tying reposting to G has no economic content.
+
+**The cost is drawn from F, scaled.** The reposting cost is the firm's continuation draw for
+the period, scaled by α:
 
 ```
-repost  ⟺  Q_t ≥ c ,        λ_t = G(Q_t)
+cost of reposting a vacated slot  =  α · χ ,   α ∈ (0, 1)
+repost a vacated slot  ⟺  Q_t ≥ α · χ  ⟺  χ ≤ Q_t / α
 ```
 
-The reposting rate is now endogenous and **procyclical**, so position destruction is
-countercyclical. The steady-state rate is λ̄ = G(Q̄), and the elasticity of λ with respect to
-Q is the new structural content.
+This uses the *same* iid draw χ that decides continuation. It adds one parameter, the scale
+α. The reposting cutoff χ^r ≡ Q_t / α is derived from α and the vacancy value, not free.
 
-Three properties recommend this.
+**Three regions on one draw.** The single draw χ sorts the firm into three outcomes:
 
-1. **It reuses machinery the model already has.** The endogenous exit margin draws
-   continuation costs from F with a mass point p_0 and a Pareto tail, and compares them to a
-   cutoff. G is the same construct one level down, at the position rather than the firm. The
-   same estimation treatment, the same class of distribution, and the same interpretation of
-   the mass point carry over.
-2. **It restores an internal symmetry.** The model currently lets firms decide whether to
-   continue a product line but forces them to refill every position. That asymmetry is hard
-   to defend on its own terms.
-3. **λ = 1 is nested**, at G degenerate below Q̄, so the cost of the current assumption is
-   directly reportable.
+| χ range | Product line | Vacated positions |
+|---|---|---|
+| [0, Q/α] | continue | reposted |
+| (Q/α, χ^c] | continue | **destroyed** |
+| (χ^c, ∞) | exit | destroyed with the line |
+
+The middle region is the object §5 called the missing middle: a surviving firm that cuts a
+position without withdrawing its product line. The scaled-draw rule generates it directly. A
+firm having a bad organizational period, high χ but not high enough to exit, economizes by
+letting its vacated slots lapse. One mechanism produces both the reposting margin and the
+missing middle.
+
+Because all of a firm's current separations share the one draw, reposting is all-or-nothing
+within a firm-period. The aggregate rate is smooth. It is the mass of continuing firms below
+χ^r, weighted by their separations, and the cutoffs move continuously with F.
+
+**The scale must satisfy α > Q/χ^c to bite.** The middle region is nonempty only if
+χ^r < χ^c, that is Q/α < χ^c, that is α > Q/χ^c. A vacancy is worth less than a producing
+line's continuation value, so Q/χ^c < 1, and the biting range is:
+
+```
+α ∈ (Q/χ^c, 1)
+```
+
+Reposting is cheaper than continuing the line, but not trivially cheap. If reposting is too
+cheap, α ≤ Q/χ^c, every continuing firm reposts and the margin does nothing. This resolves an
+apparent tension. The durable-asset logic says reposting should be cheap, α < 1. The
+Beveridge curve needs it costly enough to bite, α > Q/χ^c. Both hold inside the interval. The
+value of α is what the cor(u,v) and LD→v moments identify, and the estimate reports how much
+reposting friction the Beveridge curve demands.
+
+**λ = 1 is nested** when Q̄/α exceeds the support of F, at which point every continuing firm
+reposts. The cost of the current costless-reposting assumption is then directly reportable.
+
+### 7.3a Why the reposting and continuation costs share F
+
+Drawing both costs from the same distribution needs an economic rationale, not just a plea to
+parsimony. The rationale is a two-technology split.
+
+- **G is the distribution of costs to _create_ productive capacity.** Office space, capital,
+  HR infrastructure. One-time, sunk, durable.
+- **F is the distribution of idiosyncratic frictions in _operating and maintaining_ capacity
+  that already exists.** Recurring, drawn anew each period.
+
+Continuation and reposting are both operate-existing-capacity decisions. Continuation asks
+whether it is worth keeping the product line running given this period's friction draw.
+Reposting asks whether it is worth restoring a vacated slot to operation given the same draw.
+Entry is a create-capacity decision, so it draws from G. Reposting is not, so it draws from F.
+
+The friction F represents is the firm's period-by-period idiosyncratic cost of devoting
+organizational capacity to keeping units in operation. Managerial attention, compliance and
+certification, internal coordination, access to congested service and hiring markets. In a
+disrupted firm-period all of this is expensive. In a slack period it is free. The mass point
+1 − p_0 has one interpretation on both margins: periods with no binding disruption, where
+continuing and re-staffing are both costless. The power-law tail is the severity of
+disruption when it bites.
+
+The paper already commits to F for the exit margin, following Broer (2025). Once idiosyncratic
+fixed costs of adjustment are drawn from a common law each period, the consistent default is
+that the same law governs the position margin. Positing a second, unrelated cost distribution
+for reposting is the move that needs a positive justification. There is no evidence that the
+severity law of re-staffing frictions differs in shape from that of continuation frictions.
+
+**Same shape, different scale, same draw.** The two margins differ in scale, not shape.
+Maintaining a product line is a larger object than restoring one slot, and α captures that
+wedge. The family and the tail index ψ are shared; the level is not. Using the same draw χ,
+rather than an independent draw from a scaled F, is deliberate. Only the same draw produces
+the χ-gradient among continuing firms, and hence the missing middle. It is also more
+parsimonious: one draw, one scalar, a derived cutoff.
+
+This is a discipline, not a free assumption. Sharing F's shape forces the exit rate and the
+position-destruction rate to comove in a specific way. Both rise with idiosyncratic-friction
+severity. Both respond to aggregate conditions, but through their own value cutoffs, χ^c for
+exit and Q/α for reposting. The data can reject a common ψ.
 
 ### 7.4 Identification
 
-Two objects: the level λ̄, and the elasticity of λ_t with respect to Q_t.
+The margin adds one free parameter, the scale α. The level is λ̄ = F(Q̄/α). The
+responsiveness of λ_t to Q_t is not a separate parameter. It is the slope of F at Q̄/α, and
+F's shape (p_0, ψ, f_m) is already identified by the exit margin. So the reposting margin asks
+the data for one number, α, plus a consistency check that F's shape fits both margins.
 
-1. **The LD→vacancy IRF identifies both.** In the model an s shock raises v when λ̄ is high
-   and lowers it when λ̄ is low, with a threshold λ̄* where the sign flips. The empirical
-   response is negative and persistent, placing λ̄ below the threshold; its magnitude
-   identifies the level, and its *shape* over horizons identifies the elasticity, because
-   endogenous reposting makes the response deepen as Q falls. This gives the LD arm of Block B
-   a structural job for the first time and repays [D4](../context/decisions.md)/S6.
+1. **The LD→vacancy IRF identifies α.** In the model an s shock raises v when λ̄ is high and
+   lowers it when λ̄ is low, with a threshold λ̄* where the sign flips. The empirical response
+   is negative and persistent, placing λ̄ below the threshold. Its magnitude pins the level,
+   hence α, and its *shape* over horizons disciplines whether the shared F is consistent,
+   because reposting deepens the response as Q falls. This gives the LD arm of Block B a
+   structural job for the first time and repays [D4](../context/decisions.md)/S6.
 2. **cor(u,v) in Block M** moves monotonically in λ̄. Powerful, but it is the moment being
    explained, so it should not be the sole source.
 3. **BED gross job flows** bound λ̄ loosely. Gross job losses split into losses at closing
@@ -395,19 +486,25 @@ Note this is the mirror of the D1 logic and points the other way: δ_e is fixed 
 cleanly measured and freeing it would let it absorb misspecification. λ *is* the
 misspecification, so it is the right thing to free.
 
-**3. The elasticity cannot be calibrated at all.** Even granting an external value for λ̄,
-nothing in the data gives the responsiveness of reposting to the value of a position. That
-object exists only inside the model and must come from the likelihood.
+**3. The responsiveness is inherited from F, not free.** Under the scaled-draw formulation the
+responsiveness of reposting to the value of a position is the slope of F at Q̄/α, and F's shape
+is already pinned by the exit margin. So the only new object to estimate is the scale α. It
+must be estimated for the same two reasons: no clean data object measures it, and it
+adjudicates the Beveridge result.
 
-**Prior.** On λ̄, a Beta centered well below 1 with wide support. The recall-rate literature
-is the only external anchor and it is an upper bound on non-reposting, so it should shape the
-prior loosely rather than pin it. On the elasticity, a diffuse prior; the sign is the
-restriction worth imposing.
+**Prior.** On α, a prior with support inside (Q̄/χ̄^c, 1), the range that makes the margin bite
+while keeping reposting cheaper than continuation. The recall-rate literature bounds
+non-reposting from above and should shape the prior loosely rather than pin it. F's shape
+parameters keep their existing priors from the exit margin. The reposting margin adds no new
+shape prior.
 
-**Identification caveat to check before committing.** λ̄ and σ_s both move σ(v) and cor(u,v)
-and may be weakly separated by unconditional moments alone. The LD IRF is what should separate
-them. Verify on simulated data before the sampler runs. If they are not separately identified,
-λ̄ must be fixed on a reported grid, and the paper should say so plainly.
+**Identification caveat to check before committing.** Two checks. First, α and σ_s both move
+σ(v) and cor(u,v) and may be weakly separated by unconditional moments alone; the LD IRF is
+what should separate them. Second, α and F's scale f_m both affect the position-destruction
+rate, and they must be separated by the fact that exit compares χ to χ^c while reposting
+compares it to Q, so the two cutoffs move differently over the cycle. Verify both on simulated
+data before the sampler runs. If α is not separately identified, fix it on a reported grid and
+say so plainly.
 
 ---
 
@@ -428,9 +525,11 @@ we take the observed lower endpoint deliberately because it is conservative for 
 **3. Plan to move δ_e into Θ_e once the reposting margin exists**, with a prior on that
 interval. The posterior on δ_e then reports the size of the middle margin, which is a result.
 
-**4. Model reposting as a cost with dispersion, not as a constant λ.** Estimate the level and
-the elasticity. The constant-λ version should appear, if at all, as the special case that
-shows what the assumption was costing.
+**4. Model reposting as a cost drawn from F at scale α, not as a constant λ.** The reposting
+cost is α·χ, the firm's continuation draw scaled by α, compared against the vacancy value Q.
+This reuses the exit margin's distribution, adds one parameter, and generates the missing
+middle of §5 as a by-product. Estimate α. The constant-λ version should appear, if at all, as
+the special case that shows what the assumption was costing.
 
 **5. Put the CK-consistency argument in the paper.** That three shocks are required rather
 than chosen is the answer to the obvious referee question about why the antecedents do not
@@ -468,10 +567,11 @@ what Block B targets.
 |---|---|
 | 1 | Decide whether the reposting margin enters this paper. Gates Block B alongside [D10](../context/decisions.md) |
 | 2 | If yes: open a decision entry, and revisit [D4](../context/decisions.md)/S6, which retire the LD→vacancy IRF the margin needs for identification |
-| 3 | Verify λ̄ and σ_s are separately identified on simulated data |
+| 3 | Verify on simulated data that α is separately identified from both σ_s and F's scale f_m (see §7.5) |
 | 4 | Add the GS, Shao-Silos, and CK-consistency discussion to §5.2 |
 | 5 | Derive λ̄* and redo Prop. 5 Part 1 |
 | 6 | Decide whether δ_e moves into Θ_e in this paper or is deferred |
+| 7 | Confirm the scaled-draw formulation against the firm Bellman: same iid χ enters continuation (cutoff χ^c) and reposting (cutoff Q/α); check the calibrated point sits in the biting range α ∈ (Q/χ^c, 1) |
 
 ## Sources
 
@@ -486,4 +586,7 @@ All in `Key papers/`, with a greppable text mirror under `Key papers/markdown/`
 - Bernard, Redding & Schott (2010), *AER* 100(1), 70–97, DOI 10.1257/aer.100.1.70 — cited here
   via BGM's reporting; the paper itself is not in `Key papers/`
 - Coles & Kelishomi (2018) — δ_e ≡ τ, and the separation-shock design
+- Broer (2025), *The Unemployment Risk Channel in Business Cycle Fluctuations* — source of the
+  iid per-period fixed-cost formulation used for the exit margin, and reused here for reposting.
+  Citation unverified; full author list, venue, and DOI to be added
 - Model-side numbers: [`findings.md`](../context/findings.md) §D1/M5 with calibrated s
