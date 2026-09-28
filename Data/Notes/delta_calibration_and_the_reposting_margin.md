@@ -1,10 +1,12 @@
 # Calibrating δ: product lines, positions, and the reposting margin
 **Written:** September 23, 2026 · **Revised:** September 28, 2026 · **Branch:** `instruments_LP_coefficient`
 **Status:** analysis and recommendation. Nothing here is settled policy.
-**Sept 28 revision:** §7 rewritten. The reposting cost is drawn from F, the continuation cost
-distribution, scaled by α, using the *same* iid draw χ that decides continuation. This replaces
-the earlier separate-distribution G framing, keeps the model at two cost distributions, and
-generates the missing middle of §5. See §7.3, §7.3a.
+**Sept 28 revision:** Added §4.3a verifying that partial reposting is inescapable: the
+reposting inflow is an accounting identity (Prop. 5 Part 1, Channel 1), so no parameter escapes
+it, and every other lever is closed. Rewrote §7: the reposting cost is drawn from F, the
+continuation cost distribution, scaled by α, using the *same* iid draw χ that decides
+continuation. This replaces the earlier separate-distribution G framing, keeps the model at two
+cost distributions, and generates the missing middle of §5. See §4.3a, §7.3, §7.3a.
 
 **Purpose.** δ̄_e = 3.2 %/yr looks low against every antecedent, and the model's unconditional
 Beveridge correlation has the wrong sign. These two facts are usually treated as one problem.
@@ -239,6 +241,66 @@ The tension is therefore not a defect of our calibration. It is the first substa
 the decomposition reveals: **once you admit that most separations are not firm exits, and you
 shock that margin as consistency requires, the costless-reposting assumption inherited from
 the literature becomes untenable.** That is a finding, and the paper should present it as one.
+
+### 4.3a Why no parameter escapes the s-reposting identity
+
+The previous subsection asserts that costless reposting is untenable. This subsection verifies
+it is inescapable, not merely inconvenient. The claim is that at reasonable δ, with the s
+process the data delivers, no choice of parameters fits the Beveridge curve while separations
+are costlessly reposted. Some separations must fail to repost.
+
+**The reposting inflow is an accounting identity, not a parameter-dependent result.** Under
+costless reposting, the response of pre-committed vacancies to an s shock is (Prop. 5 Part 1,
+Channel 1):
+
+```
+∂v_pre,t+1 / ∂s_t = (1 − δ_{e,t+1})(1 − u_t) > 0
+```
+
+Every separation that is costlessly reposted returns next period as a vacancy. Proposition 5
+Part 1 proves u↑ and v↑ together for **any** ρ_s ∈ [0,1), and the accompanying footnote shows
+Channel 1 survives even under **free entry**, where the entry channel vanishes. So there is no
+region of (ξ_inv, ε, b/w, entry elasticity, …) in which the s shock lowers v while separations
+repost. The positive s contribution to cor(u,v) is structural, not calibrational.
+
+**Every other lever is closed:**
+
+- **Silence or shrink s.** Ruled out. σ_s = 0.0854 is data-pinned and s is strongly cyclical,
+  cor(cycle_s, cycle_τ) = 0.997. And s carries most of the business-cycle volatility, so
+  shrinking it to fix the sign destroys σ(u) and σ(v). This is the core tension: s must be
+  large for volatility and is the same thing breaking the sign. Moving σ_s cannot resolve it.
+- **Raise δ_e.** Ruled out quantitatively (§4.2). The whole defensible range buys 0.108 of a
+  gap of about 1.8, and Part 3 already relies on δ_e/τ small to get the *right* sign. δ works;
+  it is far too small to outweigh s.
+- **Amplify through b/w.** Scales all shocks, including s's positive contribution. It does not
+  touch the sign.
+- **Entry.** Channel 2 can only add to ∂v/∂s. Removing it, at free entry, still leaves
+  Channel 1 positive.
+
+The only quantity that multiplies Channel 1 is the reposting rate. Attenuating it, by letting
+some separations fail to repost, is the sole lever that reaches the culprit. **That is partial
+reposting by definition.**
+
+**What is and is not inescapable.** Two things must be separated:
+
+1. **λ < 1 in some form is inescapable** for the Beveridge sign, given reasonable δ and a
+   data-calibrated s. This is what the identity forces.
+2. **The endogenous α·χ machinery is not required to fit cor(u,v) alone.** A constant λ < 1
+   would hit that single moment. The endogenous version earns its extra structure elsewhere:
+   matching the conditional LD→v IRF, surviving the Lucas critique (§7.1), and delivering the
+   countercyclical position-destruction prediction.
+
+**The genuine alternatives are larger changes, not smaller.** A fourth shock tuned to negative
+comovement is a bigger conceptual change with weaker motivation, and it papers over the s
+puzzle rather than resolving it. A wage-block overhaul to make z dominate is untested and may
+not flip the sign, since real rigidity amplifies s's contribution too. Reinterpreting measured
+s as partly position destruction is partial reposting under another name. None is smaller or
+better-motivated.
+
+**The required intervention is partial, not a sledgehammer.** With s silenced, z and δ alone
+give cor(u,v) = −0.911, slightly *more* negative than the data's −0.804. So the data wants s
+to contribute a small *positive* amount, not zero. Only a moderate interior λ is needed to
+attenuate the reposting inflow to that level, which is exactly what an interior α delivers.
 
 ---
 
