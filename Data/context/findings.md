@@ -1,6 +1,7 @@
 # Key Empirical Findings
-**Last updated:** September 23, 2026. E8 (Bartik persistence test) ran September 22–23;
-literature review of δ calibration added the same day.
+**Last updated:** September 28, 2026. E8 (Bartik persistence test) ran September 22–23;
+literature review of δ calibration added the same day; reposting-margin mechanism and
+inescapability added September 28.
 Model-side results were re-run after the September 5–6 code fixes; see §D1/M5.
 
 ## Shock Persistence (part6, 2001Q1+ window)
@@ -487,4 +488,36 @@ Three options for Block B — see [D10](decisions.md):
   comparable LP contamination — testable by running the LP on simulated panels
 - **(c)** Hybrid: match full baseline path but verify with model-side LP that the Wold
   contamination is comparable; reweight toward short horizons if not
+
+## Reposting margin — mechanism and inescapability — September 23–28, 2026
+
+Full argument: [`../Notes/delta_calibration_and_the_reposting_margin.md`](../Notes/delta_calibration_and_the_reposting_margin.md);
+equations: [`model_equations.md`](model_equations.md) Block 2; decision: [D11](decisions.md).
+
+**The Beveridge-curve problem.** Model cor(u,v) = **+0.995** vs data **−0.804**. Raising δ̄_e
+helps only monotonically and weakly: +0.995 → **+0.887** across the entire defensible range
+(δ_e/τ 0.087 → 0.271), i.e. 0.108 of a ~1.8 gap, because the leverage is convex and concentrated
+in a region the measurement rules out. Silencing the s shock fixes it completely (**−0.911**,
+slightly past the data). So the culprit is the **s shock under costless reposting**.
+
+**Inescapability (verified, note §4.3a).** Under costless reposting the reposting inflow
+∂v_pre/∂s = (1−δ_e)(1−u) > 0 is an accounting identity — Prop. 5 Part 1, Channel 1, general in
+ρ_s and surviving free entry. With s data-calibrated (σ_s = 0.0854, cor(cycle_s,cycle_τ) = 0.997)
+and δ_e small, *no* parameter fits the Beveridge curve while separations costlessly repost. Some
+separations must fail to repost. Every other lever is closed (δ_e too small; b/w scales all
+shocks; entry can't reverse Channel 1). The required intervention is *partial* — since z+δ alone
+overshoot slightly (−0.911 vs −0.804), only a moderate interior reposting rate is needed.
+
+**The mechanism (formulation settled Sept 28).** A vacated position draws a reactivation cost
+α·χ, χ ~ F (the same distribution as firm exit), per position; reactivate iff (Q−K) ≈ Q ≥ α·χ,
+giving reposting rate **Λ_r = F((Q−K)/α) ≈ F(Q/α)** ∈ [1−p_0, 1]. Non-reactivated positions are
+permanently retired (the "missing middle": position destruction at surviving firms). One new
+parameter α, no new distribution, single firm size preserved. See [D11](decisions.md) and
+[parameters.md](parameters.md).
+
+**Dynamic payoffs (to be sized by simulation, R9).** Beyond the Beveridge sign (a recalibrated
+level effect), the channel is expected to deliver: **amplification** via procyclical reposting
+and via the reposting option in the JCC; and **persistence** via stock depletion — retired
+positions rebuild at the full cost Q, slowing recovery, potentially relevant to the δ→u
+peak-horizon gap ([M8](pending_tasks.md)). Not yet quantified.
 

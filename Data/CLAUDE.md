@@ -1,5 +1,5 @@
 # CLAUDE.md — Empirical LP Project (Firm Entry/Exit DSGE)
-**Last updated:** September 23, 2026 · **Author:** Mario Silva
+**Last updated:** September 28, 2026 · **Author:** Mario Silva
 **Current branch:** `instruments_LP_coefficient` (the most up-to-date version of the project)
 **Project paused June 7, 2026 – September 5, 2026.** Status re-verified against the repo on
 resumption; see [`context/pending_tasks.md`](context/pending_tasks.md) §Blockers.
@@ -55,6 +55,7 @@ file owns what.
 | [`context/draft_status.md`](context/draft_status.md) | Section-by-section draft state; proposition inventory and proof structures |
 | [`context/data_and_files.md`](context/data_and_files.md) | Data sources, FRED series IDs, file index, empirical targets, LP spec |
 | [`context/parameters.md`](context/parameters.md) | All structural parameters: Θ_ext / Θ_d / Θ_e, economic meaning, identifying moments |
+| [`context/model_equations.md`](context/model_equations.md) | All 33 model equations with interpretation (Block 1 = current; Block 2 = reposting-margin modifications, [D11](context/decisions.md)) |
 | [`context/pipeline.md`](context/pipeline.md) | Both pipelines (Python empirical + Julia model): scripts, run order, code conventions |
 | [`context/principles.md`](context/principles.md) | 21 standing rules every agent must follow |
 

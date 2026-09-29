@@ -16,11 +16,12 @@ status notes to whichever file was open rather than the file that owns the topic
 | [`draft_status.md`](draft_status.md) | Section-by-section draft state; proposition inventory and proof structures | Results, tasks |
 | [`data_and_files.md`](data_and_files.md) | Data sources, FRED IDs, file locations, empirical targets | How the code works |
 | [`parameters.md`](parameters.md) | All structural parameters: economic meaning, classification, identifying moments | Code implementation details |
+| [`model_equations.md`](model_equations.md) | All 33 model equations with economic interpretation (Block 1 = current full-reposting; Block 2 = partial-reposting modifications) | Calibration values, results |
 | [`pipeline.md`](pipeline.md) | Both pipelines: script inventory, run order, code conventions | What the results were |
 
 ## Reading order when picking the project back up
 
-1. **`session_handout_20260923.md`** — latest session handout (E8 persistence test results)
+1. **`session_handout_20260928.md`** — latest session handout (reposting-margin formulation settled)
 2. `../CLAUDE.md` — one-paragraph framing and current priorities
 3. **`decisions.md`** — what is unsettled; this is where the branch's work is
 4. `pending_tasks.md` — the critical path

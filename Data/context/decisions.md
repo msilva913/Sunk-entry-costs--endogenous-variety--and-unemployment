@@ -1,5 +1,5 @@
 # Decision Register
-**Last updated:** September 23, 2026 · **Branch:** `instruments_LP_coefficient`
+**Last updated:** September 28, 2026 (D11 reposting formulation settled) · **Branch:** `instruments_LP_coefficient`
 
 Every open decision that must be settled before estimation, plus the ones already settled
 that agents keep re-litigating. One entry = one decision. When you settle one, move it to
@@ -462,6 +462,40 @@ test to determine if the full IRF path is usable.
 
 **Opened September 23, 2026.** Full argument:
 [`../Notes/delta_calibration_and_the_reposting_margin.md`](../Notes/delta_calibration_and_the_reposting_margin.md).
+Full equation set: [`model_equations.md`](model_equations.md) Block 2.
+
+> **September 28, 2026 — the *formulation* is settled; whether the margin enters this paper is
+> still the open D11 question.** Four refinements this session (supersede the Sept 23 text below,
+> which used a separate distribution G, the symbol λ, and threshold Q):
+>
+> 1. **Inescapable, verified (note §4.3a).** The reposting inflow ∂v_pre/∂s = (1−δ_e)(1−u) > 0
+>    is an accounting identity (Prop. 5 Part 1, Channel 1), general in ρ_s and surviving free
+>    entry. With s data-calibrated and δ_e small, *no* parameter fits the Beveridge curve under
+>    costless reposting. Some separations must fail to repost; every other lever is closed.
+> 2. **Draw from F, per position (not a new distribution G).** Each vacated position draws a
+>    reactivation cost α·χ, χ ~ F, independent across positions. Reuses the exit margin's
+>    distribution; **one new parameter α**, no new distribution. Rationale: F is the cost of
+>    *operating* capacity, G the cost of *creating* it; reposting operates existing capacity.
+> 3. **Per-position, not per-firm — preserves one firm size.** Because χ is iid (Broer), a
+>    single per-firm draw would make firms carry different position stocks forward and break the
+>    DS-CES symmetric aggregation. Per-position draws + LLN make every firm repost the same
+>    fraction, so all stay symmetric. Notation: reposting rate **Λ_r** (not λ, which is marginal
+>    utility). Λ_r = F((Q−K)/α) ≈ F(Q/α); Λ_r ∈ [1−p_0, 1], so p_0 caps the margin; bites for
+>    α > Q̄/f_m.
+> 4. **Threshold = stock value Q−K ≈ Q, one-time reactivation (note §7.3b).** Reposting is a
+>    one-time keep-or-retire decision on a vacated slot; non-reactivated slots are permanently
+>    retired. The flow-value K threshold (a *recurring active-search-maintenance* model) was
+>    considered and rejected: it gives temporary withdrawal not permanent destruction, needs a
+>    dormant-position state, and delivers less persistence.
+>
+> **Dynamic payoffs beyond the Beveridge sign** (level is recalibrated away): amplification via
+> procyclical reposting *and* via the reposting option in the JCC; and **persistence via stock
+> depletion** — retired positions rebuild at full cost Q, slowing recovery, potentially bearing
+> on the δ→u peak-horizon gap ([M8](pending_tasks.md)). Both need simulation to size.
+>
+> **Still to derive:** the job creation condition with the reposting option (the separation
+> branch gains value Λ_r'·(vacancy value) − expected reactivation cost); see
+> [`model_equations.md`](model_equations.md) f[3] ⚠ and pending_tasks E10.
 
 **The problem.** The model's unconditional Beveridge correlation is **+0.995** against
 **−0.804** in the data. Two findings locate the cause:

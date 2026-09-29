@@ -1,5 +1,5 @@
 # Pending Tasks
-**Last updated:** September 23, 2026 · **Branch:** `instruments_LP_coefficient`
+**Last updated:** September 28, 2026 (reposting R-series updated; R7–R9 added) · **Branch:** `instruments_LP_coefficient`
 
 Actionable work only. **Decisions** (things to choose, not do) live in
 [`decisions.md`](decisions.md); **draft section status** lives in
@@ -138,20 +138,28 @@ Plus the AGS two-model counterfactual.
 
 ---
 
-## Reposting margin — opened September 23, 2026
+## Reposting margin — opened September 23, 2026 · formulation settled September 28
 
-From [`../Notes/delta_calibration_and_the_reposting_margin.md`](../Notes/delta_calibration_and_the_reposting_margin.md)
-and [D11](decisions.md). These gate Block B alongside [D10](decisions.md), because they
-change what Block B targets.
+From [`../Notes/delta_calibration_and_the_reposting_margin.md`](../Notes/delta_calibration_and_the_reposting_margin.md),
+[D11](decisions.md), and [`model_equations.md`](model_equations.md) Block 2. These gate Block B
+alongside [D10](decisions.md), because they change what Block B targets.
+
+**Formulation settled Sept 28** (notation: reposting rate **Λ_r**, not λ): per-position
+reactivation cost α·χ, χ ~ F; one-time keep-or-retire on each vacated slot; reactivate iff
+(Q−K) ≈ Q ≥ α·χ, giving Λ_r = F((Q−K)/α) ≈ F(Q/α). One new parameter α, no new distribution.
+Preserves single firm size. Inescapability verified (note §4.3a). See D11 Sept-28 banner.
 
 | # | Task | Status |
 |---|---|---|
-| R1 | **Decide D11**: does the reposting margin enter this paper? Structural change touching the v LOM, Prop. 5, and Θ_e. Not a calibration tweak | 🔴 **decision, gates the rest** |
-| R2 | **Verify λ̄, σ_s, and δ_e are separately identified** on simulated data. All three move cor(u,v), and λ̄ and δ_e do so through the *same* channel — the share of separations that destroy a vacancy — so cor(u,v) alone cannot separate them. The LD IRF is what should. If it does not, λ̄ must be fixed on a reported grid and the paper must say so. This is also the reason to hold δ_e fixed while λ̄ is estimated rather than freeing both | 🔴 do before committing to R1 |
-| R3 | **Derive the threshold λ̄\*** at which the s→v response flips sign, and redo Prop. 5 Part 1 as a conditional result. `lem:vpre` and the Part 2 Jacobian both touch the reposting channel | ❌ blocked on R1 |
-| R4 | **Revisit [D4](decisions.md)/S6** if R1 is yes. They retire the LD→vacancy IRF, which is the natural identifying moment for λ̄ and its elasticity | ❌ blocked on R1 |
+| R1 | **Decide D11**: does the reposting margin enter this paper? Formulation is settled; this is the go/no-go on the structural change (touches v LOM f[22], resource constraint f[16], JCC f[3], Prop. 5, Θ_e) | 🔴 **decision, gates the rest** |
+| R2 | **Verify α, σ_s, and δ_e are separately identified** on simulated data. All three move cor(u,v); α and δ_e do so through the *same* channel (share of separations that destroy a vacancy), so cor(u,v) alone cannot separate them, and α and F's scale f_m both move position destruction. The LD→v IRF is what should separate them (exit compares χ to χ^c, reposting to Q). If not, α fixed on a reported grid | 🔴 do before committing to R1 |
+| R3 | **Derive the threshold Λ_r\*** at which the s→v response flips sign, and redo Prop. 5 Part 1 as a conditional result. `lem:vpre` and the Part 2 Jacobian both touch the reposting channel | ❌ blocked on R1 |
+| R4 | **Revisit [D4](decisions.md)/S6** if R1 is yes. They retire the LD→vacancy IRF, which is the natural identifying moment for α (level and persistence) | ❌ blocked on R1 |
 | R5 | **Add to §5.2**: the GS and Shao-Silos comparison, the bracketing argument for δ_e, and the CK-consistency argument for why three shocks are required rather than chosen | ⚠️ do regardless of R1 |
 | R6 | **Decide whether δ_e moves into Θ_e** with a prior on [3.2%, 10%]/yr. Only safe once the reposting margin exists, otherwise δ_e absorbs its blame | ❌ blocked on R1 |
+| R7 | **Derive the job creation condition with the reposting option** (Bellman rebuild). The filled-job separation branch gains value Λ_r'·(vacancy value) − expected reactivation cost, replacing the full-reposting return. Pin down placement relative to the current (1−s'·sbar)(κ+K'/q') term and confirm f[5]/K. Threshold is Q−K ≈ Q (note §7.3b). See [`model_equations.md`](model_equations.md) f[3] ⚠ | ❌ **next analytical step; blocks code** |
+| R8 | **Implement in code** once R7 is done: add α, Λ_r (f[Λ_r]), modified f[22], f[16] (X_r), f[3] in `steady_state.jl` and `run_solution_core.jl`; nest λ=1 at α ≤ Q̄/f_m for regression tests | ❌ blocked on R7 |
+| R9 | **Simulate to size the dynamic payoffs**: amplification (procyclical Λ_r + JCC option) against σ(v), σ(u); and persistence via stock depletion — does reposting lengthen the δ→u response / move the peak? Ties to M8 (model-tasks table) and E9 (run the LP on model-simulated data) | ❌ blocked on R8 |
 
 ## Empirical code tasks (secondary)
 

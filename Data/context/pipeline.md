@@ -213,6 +213,10 @@ risk_neutral,simplified}.jl` (single-parameter sensitivity runs).
 - **Equation order** — f[1] exit threshold χ^c, f[2] δ_e, f[3] JCC, f[4] business-formation
   Euler (BGM), f[5] K value, f[6] MRP, f[7] Nash wage, f[8] vacancy creation, f[9]–f[30]
   static conditions / LOMs / observables, f[31]–f[33] AR(1) shocks.
+- **Full equation reference with interpretations** — [`model_equations.md`](model_equations.md):
+  Block 1 transcribes all 33 equations from `run_solution_core.jl` with economic interpretation;
+  Block 2 gives the proposed **reposting-margin** modifications (new Λ_r rate, modified f[22],
+  f[16], f[3]) — see [D11](decisions.md). Not yet in code.
 - **SS_symbolics** — `x_c_ss = Y_c·(μ−1)/(μ·N) + ν_f` (consistent with f[1]); `C_ss`
   includes `X_c`; `Y_ss = C + ν_f·N_e`.
 - **Known toolkit bug** — `eval_SS` iterates `for ip in npar` (once) instead of `1:npar`,

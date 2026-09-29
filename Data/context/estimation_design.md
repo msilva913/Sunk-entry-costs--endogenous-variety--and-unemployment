@@ -70,9 +70,13 @@ x ∈ {z, δ, s}. ⚠️ The contents depend on [D2](decisions.md) — under PAT
 `dest_elast_target` rather than estimated, which changes the dimension of Θ_e.
 
 ⚠️ **[D11](decisions.md) would change Θ_e further.** If the reposting margin enters, Θ_e gains
-the steady-state reposting rate λ̄ and the elasticity of λ_t to Q_t, and δ_e may move from the
-external block into Θ_e with a prior on [3.2 %, 10 %]/yr. Both changes are contingent on D11
-and neither should be coded before it is settled.
+**exactly one** parameter, the reposting-cost scale **α** (formulation settled Sept 28: per-position
+reactivation cost α·χ, χ ~ F, reposting rate Λ_r = F((Q−K)/α) ≈ F(Q/α); no new distribution, no
+separate elasticity parameter — the responsiveness is F's already-identified shape). And δ_e may
+move from the external block into Θ_e with a prior on [3.2 %, 10 %]/yr. Both changes are contingent
+on D11 and neither should be coded before it is settled. **Block B gains a structural role for the
+LD→v IRF**, which identifies α (level and persistence) — this reverses [D4](decisions.md)/S6. See
+[`model_equations.md`](model_equations.md) Block 2 and [parameters.md](parameters.md).
 
 **External:** r = 4%/yr, η_L = 0.6, ε = 4.3 (μ ≈ 1.30), τ = 3.1%/month, and δ_e, settled by
 [D1](decisions.md) at `dest_ann = 0.0320` (δ_e/τ = 0.087) — fixed, not estimated. ⏳ The value

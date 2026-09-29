@@ -69,7 +69,20 @@ i.e., what would change in the model if this parameter moved.
 | Symbol | Code name | Default | Economic meaning | Key moments | Intuition |
 |--------|-----------|---------|-----------------|-------------|-----------|
 | ω_δ | `dest_end_frac` | 0.5 | Endogenous share of total destruction: ω_δ = (δ_e − δ)/δ_e | **cor(u, v)** (Beveridge curve), cor(δ_e, u), cor(δ_e, z) | **The Beveridge curve lever.** Higher ω_δ → more of what the data calls "separation" actually destroys product lines in the model → more negative u-v comovement from the δ mechanism. This is the key parameter for reconciling the s-shock problem (Prop 5 Part 1) |
-| p_0 | `p_0` | 0.5 | Mass on continuous (Pareto) part of continuation cost distribution F | Interacts with ω_δ: shapes the nonlinearity of δ_e response | p_0 = 0: all firms face zero continuation cost → no endogenous exit margin. p_0 = 1: all firms draw from Pareto → maximum exit-margin responsiveness. Together with ψ, controls the curvature of the exit response |
+| p_0 | `p_0` | 0.5 | Mass on continuous (Pareto) part of continuation cost distribution F | Interacts with ω_δ: shapes the nonlinearity of δ_e response | p_0 = 0: all firms face zero continuation cost → no endogenous exit margin. p_0 = 1: all firms draw from Pareto → maximum exit-margin responsiveness. Together with ψ, controls the curvature of the exit response. **Also caps the reposting margin: max position destruction from non-reposting = p_0** (see α below) |
+
+### Reposting margin (proposed — [D11](decisions.md), not yet in code)
+
+Adds **one** estimated parameter, α, and **no new distribution** (reuses F). Enters only if D11
+resolves in favor of the margin. Full equations: [`model_equations.md`](model_equations.md) Block 2.
+
+| Symbol | Code name | Default | Economic meaning | Key moments | Intuition |
+|--------|-----------|---------|-----------------|-------------|-----------|
+| α | `alpha_r` (tbd) | tbd | Scale of the per-position reactivation cost α·χ, χ ~ F | **cor(u, v)**, LD→v IRF (level and persistence), σ(v) | On separation, each vacated position draws α·χ and is reactivated iff (Q−K) ≈ Q ≥ α·χ, giving reposting rate **Λ_r = F((Q−K)/α) ≈ F(Q/α)**. Higher α → costlier reposting → lower Λ_r → more position destruction → more negative cor(u,v). Bites for α > Q̄/f_m; below that, Λ_r = 1 (costless reposting, current model nested). One-time reactivation, per-position draws (preserves single firm size); threshold is the stock value Q−K not flow K (note §7.3b) |
+
+**Λ_r** (reposting rate, `Lambda_r`) is a *derived* object like δ_e, not a free parameter:
+Λ_r = F(Q/α), a tracked control with its own equation. Symbol is capital Λ_r, **not** λ (which
+is marginal utility of consumption).
 
 ### Shock processes (6 parameters)
 
