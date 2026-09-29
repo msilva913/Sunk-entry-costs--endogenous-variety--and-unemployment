@@ -266,19 +266,20 @@ the value of the vacancy obtained covers the cost:
 
 ```
 cost of reactivating a vacated position = α·χ,   χ ~ F,   α > 0
-reactivate  ⟺  (Q − K) ≥ α·χ  ⟺  χ ≤ (Q − K)/α  ≈  Q/α
+reactivate  ⟺  Q ≥ α·χ  ⟺  χ ≤ Q/α
 ```
 
-**Threshold is Q − K ≈ Q, not K.** A position vacated at Stage 5 matches next period, so what the
-firm obtains by reactivating is a next-period vacancy worth the discounted, survival-weighted
-Q', which equals Q − K (from f[5], K = Q − β·(λ'/λ)·SDF_surv·Q'). Since K ≈ (r+δ_e)·Q ≈ 0.6% of
-Q monthly, Q − K ≈ Q — the **gross/stock** value of the vacancy, not the tiny flow value K. Q is
-also the only threshold that yields a non-degenerate cyclical Λ_r; a K threshold pins Λ_r at its
-floor 1 − p_0. The alternative that would justify a K threshold — reposting as a *recurring
-per-period active-search maintenance* decision (pay each period to keep an idle-able position in
-the matching pool) — was considered and rejected: it models temporary withdrawal rather than the
-permanent position destruction the missing middle requires, needs a new dormant-position state,
-and delivers less persistence. See note §7.3 for the two stories and the verdict.
+**Threshold is Q** (the value of an unfilled vacancy). Confirmed by the R7 derivation (f[3]
+below) against the draft's recruiter block: on separation the recruiter obtains an unfilled
+vacancy worth Q_{t+1} (`eq:value_recruiter_matched`), which the Bellman already discounts, so
+reactivation compares α·χ to Q directly. *(An earlier draft of this file used Q − K; that was an
+over-refinement — the exact object is Q. K ≈ 0.6% of Q, so the numerical difference was
+negligible.)* Q is the only threshold that yields a non-degenerate cyclical Λ_r; a flow-value K
+threshold would pin Λ_r at its floor 1 − p_0. The alternative that would justify a K threshold —
+reposting as a *recurring per-period active-search maintenance* decision — was considered and
+rejected: it models temporary withdrawal rather than the permanent position destruction the
+missing middle requires, needs a new dormant-position state, and delivers less persistence. See
+note §7.3b for the two stories and the verdict.
 
 **Per-position draws, not one draw per firm.** The reposting cost is drawn independently for
 each of a firm's many positions, not once per firm. This is deliberate and preserves the
@@ -307,15 +308,14 @@ the SDF ratio λ'/λ. Capital Λ and lowercase λ coexist in the current code; �
 **f[new] Reposting rate** — give Λ_r its own defining equation (a tracked control, like δ_e and
 x_c, so its impulse response can be reported; or substitute inline as Λ is)
 ```
-Λ_r = F((Q − K)/α) ≈ F(Q/α) = min[ (1 − p_0) + p_0·(Q/(α·f_m))^ψ , 1 ]
+Λ_r = F(Q/α) = min[ (1 − p_0) + p_0·(Q/(α·f_m))^ψ , 1 ]
 ```
-The fraction of a surviving firm's vacated positions that are reactivated. The exact argument is
-the reactivation threshold (Q − K)/α; since K ≈ 0.6% of Q, Q/α is used below as the working
-form. Procyclical: when Q rises in booms, the threshold rises, Λ_r rises, so position destruction
-is countercyclical. Bounds: Λ_r ∈ [1 − p_0, 1]. The atom 1 − p_0 always reactivates (zero-cost
+The fraction of a surviving firm's vacated positions that are reactivated (threshold Q/α, derived
+in f[3]). Procyclical: when Q rises in booms, Q/α rises, Λ_r rises, so position destruction is
+countercyclical. Bounds: Λ_r ∈ [1 − p_0, 1]. The atom 1 − p_0 always reactivates (zero-cost
 positions), so the most that can ever be destroyed is fraction p_0 of separations — **p_0 caps
 the reposting margin's strength.** Full reposting (Block 1) is nested at α ≤ Q̄/f_m, where
-(Q−K)/α ≥ f_m ⟹ F = 1 ⟹ Λ_r = 1; the margin bites (Λ_r < 1) only for α > Q̄/f_m.
+Q/α ≥ f_m ⟹ F = 1 ⟹ Λ_r = 1; the margin bites (Λ_r < 1) only for α > Q̄/f_m.
 
 ## Modified equations
 
@@ -341,39 +341,76 @@ factoring is legitimate precisely because reposting ⊂ survival — if an *exit
 repost, the weight would not nest inside 1 − δ_e and the two destruction events would have to be
 written separately.
 
-**f[16] Resource constraint — MODIFIED (add reposting costs actually paid)**
+**f[3] Job creation condition — MODIFIED (derived R7, Sept 29)**
+
+Derivation grounds in the draft's recruiter block (`eq:value_recruiter_unmatched`,
+`eq:value_recruiter_matched`, `eq:jcc`). The **only** value function that changes is the matched
+recruiter's, and only its *separation branch*. In the draft, on separation (prob s_t) the
+recruiter obtains an unfilled vacancy worth Q_{t+1} — reposted for free. Under partial reposting
+that becomes the **reactivation option value**
+
+```
+Ψ_{t+1} = E_χ[ max(Q_{t+1} − α·χ, 0) ] = Q_{t+1}·Λ_r,t+1 − α·M_{t+1}
+Λ_r = F(Q/α),      M = ∫_0^{Q/α} χ dF(χ) = ψ_c·(Q/α)·(Λ_r − 1 + p_0),   ψ_c = ψ/(ψ+1)
+```
+
+**Threshold is Q, not Q − K** (corrects an earlier draft of this file). The recruiter obtains an
+unfilled vacancy worth Q_{t+1}; the draft's Bellman already discounts it by m(1−δ)F, so the
+reactivation compares α·χ to Q directly. Reactivate iff **Q ≥ α·χ ⟺ χ ≤ Q/α**.
+
+**Matched recruiter value** (modified `eq:value_recruiter_matched`):
+```
+J_t = w_int − w + β·(λ'/λ)·(1 − δ)·F(x_c')·[ s·(Q'·Λ_r' − α·M') + (1 − s)·J' ]
+```
+
+**Recruiter surplus** (`eq:value_recruiter_surplus` gains one term):
+```
+J_t − Q_t = w_int − w − K + (1 − s)(κ + K/q)  −  s·β(λ'/λ)(1−δ)F(x_c')·D'
+D_{t+1} ≡ Q' − Ψ' = Q'(1 − Λ_r') + α·M'      (the reposting shortfall)
+```
+D is the per-separated-position value lost relative to free full reposting: `α·M'` = reactivation
+costs paid by reposters, plus `Q'(1−Λ_r')` = vacancy value forgone by non-reposters.
+
+**Modified JCC.** Substituting the surplus into the unchanged average-hiring-cost relation
+`κ + K/q = E m(1−δ)F(J' − Q')`:
+```
+κ + K/q = β(λ'/λ)(1−δ)F(x_c')·[ w_int'−w'−K' + (1−s')(κ+K'/q') − s'·β(λ''/λ')(1−δ')F(x_c'')·D'' ]
+```
+The new term `− s'·(discounted D'')` is the extra penalty: a job created now may separate at t+1
+(prob s'), and that separation's reposting shortfall D is realized on the vacancy obtained at
+t+2, so it enters with a **nested** expectation. **Implementation note:** rather than substitute,
+keep the matched value J (or the surplus S = J − Q) as a tracked jump variable with its own
+Bellman (the modified `eq:value_recruiter_matched` above); this keeps the system first-order
+Markov and avoids the nested E. Under Λ_r = 1, D = 0 and f[3] collapses to Block 1.
+
+**f[5] Vacancy (capital) value — UNCHANGED in form.** The unfilled-vacancy Bellman and K =
+Q − β(λ'/λ)(1−δ)F(x_c')Q' do not involve the reposting decision (reposting acts on the *matched*
+value's separation branch). K inherits new equilibrium values through Q and the surplus, but its
+equation is untouched. Confirmed by the derivation.
+
+**f[16] Resource constraint — MODIFIED (add reactivation costs actually paid)**
 ```
 Y_c = C + X + X_c + X_r
-X_r = (1 − δ_e)·s·sbar·(1 − u) · α · E[χ | χ ≤ Q/α]
+X_r = (1 − δ_e)·s·sbar·(1 − u) · α·M = (1 − δ_e)·s·sbar·(1 − u) · ψ_c·Q·(Λ_r − 1 + p_0)
 ```
-Surviving firms' reposted positions each pay α·χ. Aggregate reposting expenditure X_r is the
-number of reposted positions, (1 − δ_e)·s·sbar·(1 − u)·Λ_r folded into the conditional mean,
-times the average reposting cost among reposters. The conditional mean E[χ | χ ≤ Q/α] over F
-takes the same atom-plus-power-law form as the continuation-cost aggregate X_c, so X_r is
-disciplined by (p_0, ψ, f_m, α), no new object. **⚠ to be derived:** the exact conditional-mean
-coefficient, matched to the draft's convention for X_c (the code writes X_c = N·p_0·ψ_c·x_c; X_r
-must use the analogous convention consistently).
+Reposters pay α·χ; the per-position mean among reposters is α·M = ψ_c·Q·(Λ_r − 1 + p_0) (closed
+form derived above), times the surviving separated positions. Resolves the earlier ⚠. Note the
+code writes the continuation aggregate as X_c = N·p_0·ψ_c·x_c, which implicitly takes
+(x_c/f_m)^ψ ≈ 1; X_r above keeps the (Λ_r − 1 + p_0) = p_0·(Q/(α·f_m))^ψ factor explicit. If the
+code's X_c convention is retained, apply it consistently to X_r.
 
-**f[3] Job creation condition — MODIFIED ⚠ to be derived**
-Economic change: the value of a filled job now accounts for possible position destruction on
-separation. Under full reposting the separation branch always returns a vacancy; under partial
-reposting it returns one only with probability Λ_r' (repost), net of the expected reposting cost.
-The saved-cost / continuation term currently written (1 − s'·sbar)(κ + K'/q') must be replaced by
-a term in which the separation event (prob s') carries the reposting option value
-Λ_r'·(value of a reposted vacancy) − (expected reposting cost), rather than a guaranteed return.
-The exact re-derivation is pending (note §9): it changes the surplus the JCC prices.
-
-**f[5] Vacancy (capital) value — MODIFIED ⚠ to be derived**
-The value of a vacancy is unchanged in form, but the *filled-job* value that feeds surplus now
-embeds the reposting option, so K and Q inherit the reposting margin through the JCC. Confirm
-whether f[5] itself needs a new term or only inherits the change through f[3].
-
-**f[1] / f[4] Exit threshold and firm value — MODIFIED ⚠ to be derived (second-order check)**
-A continuing firm now holds an *option to repost* its vacated positions, which adds value to
-continuation. In principle this raises ν_f and hence the exit cutoff x_c = R^f + ν_f. Check
-whether the reposting-option value is first-order or negligible; if first-order, f[1] and f[4]
-pick up a reposting-option term. This is where the reposting threshold Q/α and the exit cutoff
-x_c are linked, through Q and ν_f.
+**f[1] / f[4] / f[18] Exit threshold, firm value, free entry — UNCHANGED in form (confirmed Sept 29).**
+Checked against the draft's retailer block. The firm Bellman (`eq:firm_bellman`) contains only
+retail operating profit R^f = (μ−1)/μ·ρy (`eq:retail_profits`), the continuation-cost draw χ, and
+the discounted continuation value — no Q, K, J, or reposting object. Hence the cutoff
+x_c = R^f + ν_f (f[1]), the dividend d_f = Π^f/N with Π^f = Y_c/ε − X_c, and the
+business-formation Euler (f[4]) carry no reposting term. Recruiter profits Π^int = (w_int − w)L
+are a *separate* flow to the household (`Y = wL + Π^f + Π^int`), not part of ν_f or d_f. The
+recruiter/retailer segmentation makes the dependence triangular: the recruiter's Q, J, and the
+reposting option depend on retailer survival (1−δ)F(x_c), but the retailer's x_c, ν_f, d_f do
+**not** depend on reposting. Reposting is downstream of the exit decision. So the reposting
+option lives entirely in the recruiter's J → f[3]; f[1]/f[4]/f[18] move only through general
+equilibrium (aggregate Y_c, w_int, N → R^f), with no new term.
 
 ## Equations that do NOT change, and why
 

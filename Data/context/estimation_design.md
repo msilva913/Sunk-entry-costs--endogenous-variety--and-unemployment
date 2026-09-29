@@ -71,7 +71,7 @@ x ∈ {z, δ, s}. ⚠️ The contents depend on [D2](decisions.md) — under PAT
 
 ⚠️ **[D11](decisions.md) would change Θ_e further.** If the reposting margin enters, Θ_e gains
 **exactly one** parameter, the reposting-cost scale **α** (formulation settled Sept 28: per-position
-reactivation cost α·χ, χ ~ F, reposting rate Λ_r = F((Q−K)/α) ≈ F(Q/α); no new distribution, no
+reactivation cost α·χ, χ ~ F, reposting rate Λ_r = F(Q/α); no new distribution, no
 separate elasticity parameter — the responsiveness is F's already-identified shape). And δ_e may
 move from the external block into Θ_e with a prior on [3.2 %, 10 %]/yr. Both changes are contingent
 on D11 and neither should be coded before it is settled. **Block B gains a structural role for the

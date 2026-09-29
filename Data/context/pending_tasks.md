@@ -93,6 +93,11 @@ avoid regenerating twice.
 
 - **D1 is settled** at `dest_ann = 0.0320` (δ_e/τ = 0.087) but **not yet implemented**.
   `steady_state.jl:613` still holds 0.0754; the line carries a loud comment saying so.
+  ⚠️ **New (Sept 29): 0.0320 does NOT converge under the default PATH A (Xc_Y=0.10)** — the
+  Stage-4 Q root-find (`steady_state.jl:~805`) fails. It **does** converge under PATH B
+  (`dest_elast_target`, e.g. 5.0): verified δ_e/τ = 0.0873, u = 0.0703, ψ = 0.0136. So D1 is
+  **entangled with [D2](decisions.md)**: implement 0.0320 by making the default PATH B, not by
+  editing the `dest_ann` line alone. The §5.3 figures and the M5 diagnostic already use PATH B.
 - **ρ_s, σ_s are now calibrated** (ρ_s = 0.874, σ_s = 0.0854, from part6b AR(1) on
   s = (τ−δ_e)/(1−δ_e), HP-1600, 1992Q3–2019Q4). ✅ Sept 21, 2026. The calibrated s
   worsened the Beveridge curve (cor(u,v) = +0.995 at BED) but improved amplification 5×.
@@ -146,7 +151,7 @@ alongside [D10](decisions.md), because they change what Block B targets.
 
 **Formulation settled Sept 28** (notation: reposting rate **Λ_r**, not λ): per-position
 reactivation cost α·χ, χ ~ F; one-time keep-or-retire on each vacated slot; reactivate iff
-(Q−K) ≈ Q ≥ α·χ, giving Λ_r = F((Q−K)/α) ≈ F(Q/α). One new parameter α, no new distribution.
+Q ≥ α·χ, giving Λ_r = F(Q/α). One new parameter α, no new distribution.
 Preserves single firm size. Inescapability verified (note §4.3a). See D11 Sept-28 banner.
 
 | # | Task | Status |
@@ -157,7 +162,7 @@ Preserves single firm size. Inescapability verified (note §4.3a). See D11 Sept-
 | R4 | **Revisit [D4](decisions.md)/S6** if R1 is yes. They retire the LD→vacancy IRF, which is the natural identifying moment for α (level and persistence) | ❌ blocked on R1 |
 | R5 | **Add to §5.2**: the GS and Shao-Silos comparison, the bracketing argument for δ_e, and the CK-consistency argument for why three shocks are required rather than chosen | ⚠️ do regardless of R1 |
 | R6 | **Decide whether δ_e moves into Θ_e** with a prior on [3.2%, 10%]/yr. Only safe once the reposting margin exists, otherwise δ_e absorbs its blame | ❌ blocked on R1 |
-| R7 | **Derive the job creation condition with the reposting option** (Bellman rebuild). The filled-job separation branch gains value Λ_r'·(vacancy value) − expected reactivation cost, replacing the full-reposting return. Pin down placement relative to the current (1−s'·sbar)(κ+K'/q') term and confirm f[5]/K. Threshold is Q−K ≈ Q (note §7.3b). See [`model_equations.md`](model_equations.md) f[3] ⚠ | ❌ **next analytical step; blocks code** |
+| R7 | ✅ **Job creation condition with the reposting option — DERIVED Sept 29.** Only the matched-recruiter separation branch changes: s·Q' → s·Ψ', Ψ' = Q'·Λ_r' − α·M'. Surplus gains −s·β(λ'/λ)(1−δ)F(x_c')·D', D' = Q'(1−Λ_r')+αM' (reposting shortfall). **Threshold is exactly Q** (not Q−K — corrected). f[5]/K **unchanged in form**. **f[1]/f[4]/f[18] (retailer firm value, exit cutoff, free entry) confirmed unchanged** — the recruiter/retailer segmentation quarantines the reposting option in the recruiter's J; the retailer's ν_f/x_c/d_f carry no reposting term (checked against `eq:firm_bellman`). X_r closed form: (1−δ_e)s·sbar·(1−u)·ψ_c·Q·(Λ_r−1+p_0). Substituted JCC has a nested E → implement by keeping J (or surplus) as a tracked jump variable. See [`model_equations.md`](model_equations.md) f[3]/f[1] | ✅ **done; unblocks R8** |
 | R8 | **Implement in code** once R7 is done: add α, Λ_r (f[Λ_r]), modified f[22], f[16] (X_r), f[3] in `steady_state.jl` and `run_solution_core.jl`; nest λ=1 at α ≤ Q̄/f_m for regression tests | ❌ blocked on R7 |
 | R9 | **Simulate to size the dynamic payoffs**: amplification (procyclical Λ_r + JCC option) against σ(v), σ(u); and persistence via stock depletion — does reposting lengthen the δ→u response / move the peak? Ties to M8 (model-tasks table) and E9 (run the LP on model-simulated data) | ❌ blocked on R8 |
 

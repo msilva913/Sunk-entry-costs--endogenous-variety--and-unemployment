@@ -480,9 +480,8 @@ Full equation set: [`model_equations.md`](model_equations.md) Block 2.
 >    single per-firm draw would make firms carry different position stocks forward and break the
 >    DS-CES symmetric aggregation. Per-position draws + LLN make every firm repost the same
 >    fraction, so all stay symmetric. Notation: reposting rate **Λ_r** (not λ, which is marginal
->    utility). Λ_r = F((Q−K)/α) ≈ F(Q/α); Λ_r ∈ [1−p_0, 1], so p_0 caps the margin; bites for
->    α > Q̄/f_m.
-> 4. **Threshold = stock value Q−K ≈ Q, one-time reactivation (note §7.3b).** Reposting is a
+>    utility). Λ_r = F(Q/α); Λ_r ∈ [1−p_0, 1], so p_0 caps the margin; bites for α > Q̄/f_m.
+> 4. **Threshold = stock value Q, one-time reactivation (note §7.3b).** Reposting is a
 >    one-time keep-or-retire decision on a vacated slot; non-reactivated slots are permanently
 >    retired. The flow-value K threshold (a *recurring active-search-maintenance* model) was
 >    considered and rejected: it gives temporary withdrawal not permanent destruction, needs a
@@ -493,9 +492,12 @@ Full equation set: [`model_equations.md`](model_equations.md) Block 2.
 > depletion** — retired positions rebuild at full cost Q, slowing recovery, potentially bearing
 > on the δ→u peak-horizon gap ([M8](pending_tasks.md)). Both need simulation to size.
 >
-> **Still to derive:** the job creation condition with the reposting option (the separation
-> branch gains value Λ_r'·(vacancy value) − expected reactivation cost); see
-> [`model_equations.md`](model_equations.md) f[3] ⚠ and pending_tasks E10.
+> **JCC derived (R7, Sept 29).** Only the matched-recruiter separation branch changes:
+> s·Q' → s·Ψ', Ψ' = Q'·Λ_r' − α·M'; surplus gains −s·(discounted reposting shortfall D',
+> D' = Q'(1−Λ_r')+αM'). **Threshold is exactly Q** (not Q−K — corrected). f[5]/K unchanged in
+> form; X_r has a closed form. Implement by keeping the recruiter surplus as a tracked jump
+> variable (the substituted JCC has a nested expectation). See [`model_equations.md`](model_equations.md)
+> f[3]. Next: R8 (code) then R9 (simulate).
 
 **The problem.** The model's unconditional Beveridge correlation is **+0.995** against
 **−0.804** in the data. Two findings locate the cause:

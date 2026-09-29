@@ -610,7 +610,12 @@ const TARGETS = (
     # number in draft §5.3; the switch is bundled with the ρ_s/σ_s calibration so one
     # regeneration covers both. See context/decisions.md D1 for the full argument and the
     # list of consequences.
-    dest_ann      = 0.0754, # ← change to 0.0320 when running the D1 cascade
+    dest_ann      = 0.0754, # ⚠️ D1 (settled Sept 6, 2026) sets this to 0.0320 (BED Deaths, δ_e/τ=0.087),
+    # but 0.0320 does NOT converge under the default PATH A (Xc_Y=0.10) — the Stage-4 Q root-find
+    # (line ~805) fails. It DOES converge under PATH B (add dest_elast_target, e.g. 5.0), which is
+    # how §5.3 figures and the M5 diagnostic (run_solution_delta_target.jl) are built. So the D1
+    # cascade is entangled with D2: implement 0.0320 by switching the default to PATH B, not by
+    # editing this line alone. Verified Sept 29, 2026. See context/decisions.md D1/D2.
     f             = 0.41,   # Gross job-finding rate [JOLTS] — corrected ÷(1-δ_e) in Stage 1
     η_L           = 0.6,    # Matching elasticity [Petrongolo & Pissarides 2001]
     q             = 0.8,    # Gross vacancy-filling rate [JOLTS] — corrected ÷(1-δ_e) in Stage 1

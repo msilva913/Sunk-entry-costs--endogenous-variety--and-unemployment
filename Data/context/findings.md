@@ -509,8 +509,8 @@ shocks; entry can't reverse Channel 1). The required intervention is *partial* �
 overshoot slightly (−0.911 vs −0.804), only a moderate interior reposting rate is needed.
 
 **The mechanism (formulation settled Sept 28).** A vacated position draws a reactivation cost
-α·χ, χ ~ F (the same distribution as firm exit), per position; reactivate iff (Q−K) ≈ Q ≥ α·χ,
-giving reposting rate **Λ_r = F((Q−K)/α) ≈ F(Q/α)** ∈ [1−p_0, 1]. Non-reactivated positions are
+α·χ, χ ~ F (the same distribution as firm exit), per position; reactivate iff Q ≥ α·χ,
+giving reposting rate **Λ_r = F(Q/α)** ∈ [1−p_0, 1]. Non-reactivated positions are
 permanently retired (the "missing middle": position destruction at surviving firms). One new
 parameter α, no new distribution, single firm size preserved. See [D11](decisions.md) and
 [parameters.md](parameters.md).

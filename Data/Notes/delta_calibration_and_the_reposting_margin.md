@@ -10,7 +10,7 @@ the same fraction Λ_r = F(Q/α), which preserves the single firm size the DS-CE
 needs — a one-draw-per-firm version breaks it. The reposting rate is written **Λ_r** (not λ,
 which is marginal utility). Supersedes both the separate-distribution G framing and the
 same-draw α·χ framing. Added §7.3b settling the reactivation threshold: it is the stock value
-Q − K ≈ Q (one-time reactivation, permanent retirement of non-reactivated slots), not the flow
+the stock value Q (one-time reactivation, permanent retirement of non-reactivated slots), not the flow
 value K (a recurring active-search-maintenance model — considered and rejected). Aligned with
 [`../context/model_equations.md`](../context/model_equations.md) Block 2. See §4.3a, §7.3, §7.3a,
 §7.3b.
@@ -443,15 +443,18 @@ iff the value of the vacancy obtained covers the cost:
 
 ```
 cost of reactivating a vacated position  =  α · χ ,   χ ~ F,   α > 0
-reactivate  ⟺  (Q_t − K_t) ≥ α · χ  ⟺  χ ≤ (Q_t − K_t)/α  ≈  Q_t/α
+reactivate  ⟺  Q_t ≥ α · χ  ⟺  χ ≤ Q_t/α
 ```
 
-The threshold is the value of the vacancy obtained, which is the **gross/stock** value Q, not
-the flow value K. Precisely: a position vacated at the end of the period matches next period, so
-the firm obtains a next-period vacancy worth the discounted survival-weighted Q', which equals
-Q − K (from the vacancy Bellman K = Q − β·SDF·Q'). Since K ≈ (r+δ_e)·Q is roughly 0.6% of Q,
-Q − K ≈ Q. Whether the threshold is Q or K is the substance of the one-time-versus-recurring
-choice settled in §7.3b. This adds one parameter, the scale α, and no new distribution.
+The threshold is the value of the vacancy obtained, the **gross/stock** value Q, not the flow
+value K. The R7 derivation (`model_equations.md` f[3], against the draft's recruiter block
+`eq:value_recruiter_matched`) confirms this exactly: on separation the recruiter obtains an
+unfilled vacancy worth Q_{t+1}, which the Bellman already discounts, so reactivation compares α·χ
+to Q directly. (An earlier draft wrote the threshold as Q − K; that was an over-refinement — the
+exact object is Q, and K ≈ 0.6% of Q made the difference negligible anyway.) Whether the
+threshold is the stock value Q or the flow value K is the substance of the
+one-time-versus-recurring choice settled in §7.3b. This adds one parameter, the scale α, and no
+new distribution.
 
 **Per-position draws, not one per firm — this preserves the single firm size.** Broer's iid χ
 keeps all firms identical at production because exit is *terminal*: survivors reset each period
@@ -541,7 +544,7 @@ for reposting. The data can reject a common ψ.
 
 The reactivation threshold is the value of the vacancy obtained. There are two economically
 distinct ways to model what reposting *is*, and they imply different thresholds — the stock
-value Q (≈ Q − K) or the flow value K. Each has a plausible story.
+value Q or the flow value K. Each has a plausible story.
 
 **Story A — one-time reactivation (threshold ≈ Q).** When a worker leaves, the firm makes a
 discrete, lumpy decision about that specific slot: reactivate it for the search market, or retire
@@ -552,7 +555,7 @@ workstation. That cost is α·χ, idiosyncratic because it depends on the firm's
 state at the moment of separation. A reactivated slot becomes a durable vacancy that searches
 until it fills, at no further reposting cost. A retired slot is gone: the headcount line is cut,
 and to have it back later the firm must create a fresh position at the full cost Q. Reactivate
-iff Q − K ≈ Q ≥ α·χ. Empirical counterpart: requisition and headcount decisions — firms freeze
+iff Q ≥ α·χ. Empirical counterpart: requisition and headcount decisions — firms freeze
 or eliminate reqs after departures in bad times.
 
 **Story B — recurring active-search maintenance (threshold ≈ K).** The slot persists costlessly
@@ -583,8 +586,9 @@ bar. Story A wins on four dimensions that matter for this paper:
 
 B has the more vivid micro-story — recruiting intensity is genuinely recurring — so it is worth a
 sentence as an alternative interpretation, but its temporariness, extra machinery, and weaker
-persistence make it the wrong choice here. The model uses Story A: threshold Q − K ≈ Q, one-time
-reactivation at separation, permanent retirement of non-reactivated positions.
+persistence make it the wrong choice here. The model uses Story A: threshold Q (the stock value;
+R7 confirms it is exactly Q, not Q − K), one-time reactivation at separation, permanent
+retirement of non-reactivated positions.
 
 ### 7.4 Identification
 

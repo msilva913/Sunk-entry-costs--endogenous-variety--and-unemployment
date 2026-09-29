@@ -6,6 +6,17 @@ This session did two things: (1) finished the E8 Bartik-persistence robustness (
 change needed to fit the Beveridge curve. Whether the margin enters the paper (D11) is still
 the open decision; the mechanism is now pinned down.
 
+> **Sept 29 addendum (Tier 1 work).**
+> - **R7 done — JCC derived** against the draft's recruiter block. Only the matched-recruiter
+>   separation branch changes (s·Q' → s·Ψ', Ψ' = Q'·Λ_r' − α·M'); f[5]/K unchanged; X_r has a
+>   closed form. **Threshold corrected to exactly Q** (not Q − K — an over-refinement; the
+>   references below that still say Q − K are superseded). Recorded in `model_equations.md` f[3].
+>   Implement by keeping the recruiter surplus as a tracked jump variable (nested E otherwise).
+> - **D1 finding:** `dest_ann = 0.0320` does **not** converge under the default PATH A
+>   (`Xc_Y=0.10`) — the Stage-4 Q root-find fails. It **does** under PATH B (`dest_elast_target`).
+>   So D1 is entangled with D2: implement 0.0320 by making the default PATH B. The `dest_ann`
+>   line in `steady_state.jl` is left at 0.0754 with a comment; do not flip it alone.
+
 ## What to read first, in order
 
 1. This handout.
