@@ -1,5 +1,5 @@
 # Pending Tasks
-**Last updated:** September 28, 2026 (reposting R-series updated; R7–R9 added) · **Branch:** `instruments_LP_coefficient`
+**Last updated:** September 28, 2026 (reposting R-series updated; R7–R9 added) · **Branch:** `costly_vacancy_reposting`
 
 Actionable work only. **Decisions** (things to choose, not do) live in
 [`decisions.md`](decisions.md); **draft section status** lives in
@@ -172,7 +172,7 @@ Preserves single firm size. Inescapability verified (note §4.3a). See D11 Sept-
 | E5 | **Refresh the BED cache to 2024Q4** — run `refresh_bed_cache.py` locally (BLS rate limits block it in a sandbox); the `ext_2024` sample in part11 currently truncates at 2021Q4, and `raw_data.pkl` δ ends 2021Q4 | ❌ |
 | E6 | **Run `part2b_residualize_shocks_v3.py` once**, or delete the appendix promise from the draft — see [D8](decisions.md) | ❌ |
 | E7 | **`build_report_html.py`** — needs `conda install -c conda-forge pandoc` locally | ❌ optional |
-| E8 | ✅ **Bartik instrument persistence test (D10).** Implemented in `part5_lp.py` section [11], branch `instruments_LP_coefficient`. Ran p ∈ {4, 8, 12, 16}. **Result:** δ→u peak not stable across lag orders (h=10–13, β=0.95–1.86 pp); δ→v trough h=4–6 robust (−0.55 to −0.65 pp). Baseline LP overstates peak horizon. See [D10](decisions.md). | ✅ **completed Sept 22–23, 2026** |
+| E8 | ✅ **Bartik instrument persistence test (D10).** Implemented in `part5_lp.py` section [11] (on `instruments_LP_coefficient`, carried into `costly_vacancy_reposting`). Ran p ∈ {4, 8, 12, 16}. **Result:** δ→u peak not stable across lag orders (h=10–13, β=0.95–1.86 pp); δ→v trough h=4–6 robust (−0.55 to −0.65 pp). Baseline LP overstates peak horizon. See [D10](decisions.md). | ✅ **completed Sept 22–23, 2026** |
 | E9 | 🔴 **Model-side LP test (D10 option b).** Run the baseline LP specification on model-simulated panel data (50 "states" with heterogeneous industry shares). If the model's LP also builds up monotonically, baseline-to-baseline matching is valid and the full IRF path is a usable Block B target. If the model LP peaks at h=1–2, fall back to short-horizon targeting (option a). **This gates the Block B estimation design, and per the D3 overlap note may also settle [D3](decisions.md).** ⚠️ **Design caveat:** the simulated panel must reproduce the *instrument's* quarterly autocorrelation (ρ ≈ 0.91), not the shock's (ρ_δ = 0.592 monthly ≈ 0.21 quarterly). That requires industry-level δ processes with their own serial correlation plus heterogeneous state exposure — not 50 independent draws of the aggregate model. Otherwise the test fails for a reason unrelated to propagation. Infrastructure exists: `simulate_model` (`solution_functions.jl:783`) and `simulated_moments` in `run_solution_delta_target.jl:154` as a template. | ❌ **high priority — START HERE** |
 
 ## Paper writing tasks (secondary)

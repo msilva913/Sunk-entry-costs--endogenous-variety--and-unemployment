@@ -434,8 +434,8 @@ future shocks (Plagborg-Møller & Wolf 2021).
 
 > y_{i,t+h} = α_i + γ_{t+h} + β_h · B^δ_{i,t} + Σ_{k=1}^{p} φ_{k,h} · B^δ_{i,t-k} + X'Γ + ε
 
-Run for p ∈ {4, 8, 12, 16}. Implementation in `part5_lp.py` section [11], branch
-`instruments_LP_coefficient`.
+Run for p ∈ {4, 8, 12, 16}. Implementation in `part5_lp.py` section [11] (implemented on
+`instruments_LP_coefficient`, carried into `costly_vacancy_reposting`).
 
 **δ→u results (1-SD standardized, pp):**
 

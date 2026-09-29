@@ -1,5 +1,5 @@
 # Session Handout — September 28, 2026
-**Branch:** `instruments_LP_coefficient` · commit before this session's context edits.
+**Branch:** `costly_vacancy_reposting` (branched from `instruments_LP_coefficient`).
 
 This session did two things: (1) finished the E8 Bartik-persistence robustness (p=16), and
 (2) developed and settled the **formulation** of the reposting margin (D11), the structural

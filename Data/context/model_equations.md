@@ -1,5 +1,5 @@
 # Model Equations — Baseline and Partial-Reposting Extension
-**Created:** September 28, 2026 · **Branch:** `instruments_LP_coefficient`
+**Created:** September 28, 2026 · **Branch:** `costly_vacancy_reposting`
 **Source of truth for Block 1:** `Programs baseline/run_solution_core.jl` (33-equation system,
 audited May 20, 2026; SS-timing fixes September 5, 2026).
 

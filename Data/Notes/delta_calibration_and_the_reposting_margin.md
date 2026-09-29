@@ -1,5 +1,5 @@
 # Calibrating δ: product lines, positions, and the reposting margin
-**Written:** September 23, 2026 · **Revised:** September 28, 2026 · **Branch:** `instruments_LP_coefficient`
+**Written:** September 23, 2026 · **Revised:** September 28, 2026 · **Branch:** `costly_vacancy_reposting`
 **Status:** analysis and recommendation. Nothing here is settled policy.
 **Sept 28 revision:** Added §4.3a verifying that partial reposting is inescapable: the
 reposting inflow is an accounting identity (Prop. 5 Part 1, Channel 1), so no parameter escapes

@@ -1,5 +1,5 @@
 # Decision Register
-**Last updated:** September 28, 2026 (D11 reposting formulation settled) · **Branch:** `instruments_LP_coefficient`
+**Last updated:** September 28, 2026 (D11 reposting formulation settled) · **Branch:** `costly_vacancy_reposting`
 
 Every open decision that must be settled before estimation, plus the ones already settled
 that agents keep re-litigating. One entry = one decision. When you settle one, move it to

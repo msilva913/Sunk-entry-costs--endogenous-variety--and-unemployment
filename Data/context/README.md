@@ -1,6 +1,6 @@
 # Context Folder — Index
 **Last reorganized:** September 5, 2026 (branch `Organize_Project_State_Estimation`)
-**Last consistency pass:** September 23, 2026 (branch `instruments_LP_coefficient`)
+**Last consistency pass:** September 28, 2026 (branch `costly_vacancy_reposting`)
 
 Nine files, each with one job, plus the dated session handouts. If you are about to write
 something here, check this table first — most duplication in the past came from appending
