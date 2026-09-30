@@ -26,17 +26,24 @@
 \makeatother
 \newcommand{\ra}[1]{\renewcommand{\arraystretch}{#1}}
 %\usepackage{amssymb}
-\graphicspath{ 
-	{"C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unemployment"}
-	{"C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unemployment"}
+% Graphics paths. RELATIVE paths first: they are machine-independent and are the
+% reason this list no longer needs a line per username. They resolve against the
+% directory pdflatex is RUN from, so they work when compiling inside Data/Draft/
+% (the usual case). The absolute paths below are retained only as a fallback for
+% compiling from a different working directory or on another machine.
+% Do not delete the relative entries when adding a machine.
+\graphicspath{
+	{"./"}
+	{"../Bartek analysis/data/results/"}
+	{"../Programs baseline/"}
+	{"../"}
+	{"../../"}
+	{"C:/Users/m.silva/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unemployment/Data/Bartek analysis/data/results"}
+	{"C:/Users/m.silva/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unemployment/Data/Programs baseline"}
+	{"C:/Users/m.silva/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unemployment"}
 	{"C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unemployment/Data/Bartek analysis/data/results"}
 	{"C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unemployment/Data/Programs baseline"}
-	{"C:/Users/m.silva/Documents/Github/Sunk_entry_costs_endogenous_variety_unemployment"}
-	{"C:/Users/m.silva/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unemployment/Data/Programs baseline"}
-%	{"C:/Users/msilv/Dropbox/Documents - Copy/Research/Sunk vacancy costs endogenous product variety labor market frictions/Draft/figs"}
-%	{"C:/Users/m.silva/Dropbox/Documents - Copy/Research/Sunk vacancy costs endogenous product variety labor market frictions/Draft/figs"}
-%	{"C:/Users/m.silva/Dropbox/Documents - Copy/Research/Sunk vacancy costs endogenous product variety labor market frictions/Draft/figs"}
-%	{"C:/Users/m.silva/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unemployment/Data/Bartek analysis/data/results"}
+	{"C:/Users/msilv/Documents/GitHub/Sunk-entry-costs--endogenous-variety--and-unemployment"}
 }
 \usepackage{tabularx}
 \usepackage{comment}
@@ -645,17 +652,26 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	predetermined: current vacancies evolve as
 	\begin{align}
 		v_{t}=(1-\delta_{e,t})[(1-q(\theta_{t-1}))v_{t-1}+
-		\Lambda_{r,t-1}s_{t-1}(1-u_{t-1})]+e_{t}\label{eq:v_lom}
+		\Lambda_{r,t}s_{t-1}(1-u_{t-1})]+e_{t}\label{eq:v_lom}
 	\end{align}
 	Current vacancies are the sum of three components: 
 	(i)~unmatched vacancies from last period that survived product destruction; 
-	(ii)~filled jobs that experienced a match separation at end of 
-	$t-1$ but whose firm survived both margins and the activation cost; and (iii)~vacancies created by new 
-	entrants $e_t$, who enter at the start of $t$ before matching. 
-	Note that $(1-\delta_{e,t})$ multiplies both (i) and (ii): 
-	only firms surviving both exogenous destruction and the 
-	continuation-cost draw contribute to either term, so a shock 
-	to $\delta_t$ collapses the entire bracket simultaneously. The probability of reactivating the vacancy $\Lambda_{r,t}$ after separation depends on the vacancy value $Q_t$ and is derived in \ref{sec:recruiters}. Finally, the
+	(ii)~filled jobs that experienced a match separation at end of
+	$t-1$ but whose firm survived both margins and chose to reactivate
+	the vacancy; and (iii)~vacancies created by new
+	entrants $e_t$, who enter at the start of $t$ before matching.
+	Note that $(1-\delta_{e,t})$ multiplies both (i) and (ii):
+	only firms surviving both exogenous destruction and the
+	continuation-cost draw contribute to either term, so a shock
+	to $\delta_t$ collapses the entire bracket.
+	
+	The decision to reactivate a vacancy occurs at the same time as that of exit, just after the aggregate state is known.
+	A recruiter whose product line survives reactivates a position
+	vacated at the end of
+	$t-1$ whenever the recovered vacancy covers the cost, which happens with probability $\Lambda_{r,t}=F(Q_t/\alpha)$, derived in
+	Section~\ref{sec:recruiters}. Thus, $\Lambda_{r,t}$ carries
+	the same date as the survival term $(1-\delta_{e,t})$. The
+	complementary fraction $1-\Lambda_{r,t}$ of vacated positions is retired permanently. Finally, the
 	asymmetric implications of these laws of motion for the 
 	transmission of $\delta$ and $s$ shocks are derived formally 
 	in Section~\ref{sec:equilibrium}.
@@ -683,10 +699,35 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	$\delta_{t-1}$ --- the shocks that realised at end of $t-1$ --- 
 	which determines the total exit rate 
 	$\delta_{e,t}=1-(1-\delta_{t-1})F(\chi_t^c)$ and aggregate 
-	separation rate $\tau_t=\delta_{e,t}+s_{t-1}(1-\delta_{e,t})$. 
-	This lag, combined with sunk vacancy creation costs, is the 
-	source of predetermination: vacancies and employment are 
+	separation rate $\tau_t=\delta_{e,t}+s_{t-1}(1-\delta_{e,t})$.
+	This lag, combined with sunk vacancy creation costs, is the
+	source of predetermination: vacancies and employment are
 	partially predetermined with respect to current shocks.
+
+	Reactivation is settled at this same node, but it is the
+	recruiter's decision, not the retailer's. Recruiters hold
+	vacancies, so when a match dissolves it is the recruiter that owns
+	the vacated position and chooses whether to resume it. Retailer
+	exit still matters, because a position serving a withdrawn product
+	line is destroyed whatever the recruiter would have preferred; this
+	is the role of $(1-\delta_{e,t})$ in \eqref{eq:v_lom}. Conditional
+	on the product line surviving, the recruiter draws a cost from $F$
+	for each vacated position and resumes it whenever
+	$\alpha\chi\leq Q_t$. Exit and reactivation therefore share a stage
+	and a distribution, but they are taken by different agents against
+	different thresholds: the retailer compares its own draw to
+	$\chi_t^c$, while the recruiter compares $\alpha\chi$ to $Q_t$.
+	Because the recruiter conditions on the realized $Q_t$ rather than
+	on its expectation, $\Lambda_{r,t}$ is procyclical and position
+	destruction is countercyclical.
+
+	The segmentation also keeps aggregation simple. Positions are held
+	by recruiters and labor services are rented competitively, so how
+	vacated positions happen to be distributed across recruiters has no
+	effect on retailers: only the aggregate vacancy stock enters
+	matching. The law of large numbers delivers the aggregate
+	reactivation rate $\Lambda_{r,t}$, and the symmetric aggregation
+	underlying $\rho(N_t)$ is untouched.
 \tikzset{>=latex}
 	\begin{figure}[H]
 		\centering
@@ -717,8 +758,9 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 				\node[box] (B1) at (1.5, 3.2)
 				{Aggregate state realized};
 				
-				\node[box] (B2) at (5.5, 3.2)
-				{Exit if $\chi>\chi_t^c$\\Entry: $e_t{=}G(Q_t)$\\$N_t^e$ forms};
+				\node[ebox] (B2) at (5.5, 3.2)
+				{Exit if $\chi>\chi_t^c$\\Reactivate if $\alpha\chi{\leq}Q_t$\\
+					Entry: $e_t{=}G(Q_t)$\\$N_t^e$ forms};
 				
 				\node[box] (B3) at (9.5, 3.2)
 				{Produce ($z_t$)\\Bargain: $w_t^{int},w_t$\\Unemployed: $b$};
@@ -938,13 +980,11 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	Substituting~\eqref{eq:value_recruiter_surplus} into the 
 	right-hand side of~\eqref{eq:average_hiring_cost} yields the 
 	job creation condition:
-	\begin{align}\label{eq:jcc}
-		\kappa+\frac{K_t}{q(\theta_t)} = 
-		\mathbb{E}_t m_{t+1}(1-\delta_{t})F(\chi_{t+1}^c)
-		\left(w_{t+1}^{int}-w_{t+1}-K_{t+1}
-		+(1-s_{t+1})\left(\kappa+\frac{K_{t+1}}{q(\theta_{t+1})}
-		\right)\right)
-	\end{align}
+\begin{align}\label{eq:jcc}
+	\kappa+\frac{K_t}{q(\theta_t)} = 
+	\mathbb{E}_t m_{t+1}(1-\delta_t)F(\chi_{t+1}^c)
+	\left(J_{t+1}-Q_{t+1}\right)
+\end{align}
 	The left-hand side is the average hiring cost: the fixed 
 	matching cost $\kappa$ plus the flow cost $K_t/q(\theta_t)$, 
 	equal to the opportunity cost of holding the vacancy this 
@@ -984,16 +1024,12 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	Substituting~\eqref{eq:wage_eq} into~\eqref{eq:jcc} to 
 	eliminate $w_t$ yields the wage-substituted job creation 
 	condition:
-	\begin{align}\label{eq:jcc_wage}
-		\kappa+\frac{K_t}{q(\theta_t)} = 
-		\mathbb{E}_t m_{t+1}(1-\delta_{t})F(\chi_{t+1}^c)
-		\Biggl[&(1-\phi)\left(w_{t+1}^{int}
-		-K_{t+1}-b\right) \notag \\
-		&-\phi\theta_{t+1}\left(K_{t+1}
-		+q(\theta_{t+1})\kappa\right) \notag \\
-		&+(1-s_{t+1})\left(\kappa
-		+\frac{K_{t+1}}{q(\theta_{t+1})}\right)
-		\Biggr]
+	\begin{align}\label{eq:surplus_wage}
+		J_t-Q_t &= (1-\phi)\left(w_t^{int}-K_t-b\right)
+		-\phi\theta_t\left(K_t+q(\theta_t)\kappa\right) \notag \\
+		&\quad +(1-s_t)\left(\kappa+\frac{K_t}{q(\theta_t)}\right)
+		-s_t\mathbb{E}_tm_{t+1}(1-\delta_t)F(\chi_{t+1}^c)
+		\left(Q_{t+1}-Q_{t+1}^{rep}\right)
 	\end{align}
 	
 	\subsection{Retailers}\label{sec:retailers}
@@ -1110,10 +1146,54 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	and retail employment $L_t^c \equiv N_t l_t^c$. Aggregate 
 	continuation costs paid by surviving firms are
 	\begin{align}\label{eq:agg_fixed_costs}
-		X_t^c \equiv N_t\,E(\chi\,|\,\chi\leq\chi_t^c) 
-		= N_t p_0\psi_c\chi_t^c
+		X_t^c \equiv N_t\int_0^{\chi_t^c}\chi\,dF(\chi)
+		= N_t\,\psi_c\,\chi_t^c\,p_0
+		\left(\frac{\chi_t^c}{\chi_m}\right)^{\psi}
 	\end{align}
-	where $\psi_c\equiv\psi/(\psi+1)$. Aggregate retail profits 
+	where $\psi_c\equiv\psi/(\psi+1)$. The integral is the partial
+	expectation, not the conditional mean: firms drawing
+	$\chi>\chi_t^c$ exit and pay nothing, so the survival probability
+	is already embedded in $\int_0^{\chi_t^c}\chi\,dF$.  Equivalently
+	$X_t^c = N_t\Lambda_t\,E(\chi\,|\,\chi\leq\chi_t^c)$.
+	
+	Aggregate reactivation costs are paid by surviving firms that resume a position vacated at the end of $t-1$:
+	\begin{align}\label{eq:agg_repost_costs}
+		X_t^r \equiv (1-\delta_{e,t})\,s_{t-1}(1-u_{t-1})
+		\int_0^{Q_t/\alpha}\alpha\chi\,dF(\chi)
+	\end{align}
+	The per-position integral evaluates in closed form. Only
+	the power-law part of $F$ contributes, since the atom at zero
+	carries no cost, so
+	\begin{align}
+		\int_0^{Q_t/\alpha}\alpha\chi\,dF(\chi)
+		&= \frac{\alpha p_0\psi}{\chi_m^{\psi}}
+		\int_0^{Q_t/\alpha}\chi^{\psi}\,d\chi
+		= \frac{\alpha p_0\psi_c}{\chi_m^{\psi}}
+		\left(\frac{Q_t}{\alpha}\right)^{\psi+1} \notag \\
+		&= \psi_c\left(\alpha\cdot\frac{Q_t}{\alpha}\right)
+		p_0\left(\frac{Q_t}{\alpha\chi_m}\right)^{\psi}
+		= \psi_c Q_t\,p_0
+		\left(\frac{Q_t}{\alpha\chi_m}\right)^{\psi} \notag \\
+		&= \psi_c Q_t\left(\Lambda_{r,t}-1+p_0\right) \notag
+	\end{align}
+	The second line splits $(Q_t/\alpha)^{\psi+1}
+	=(Q_t/\alpha)(Q_t/\alpha)^{\psi}$, so the cost scale $\alpha$
+	cancels against the threshold and survives only inside the
+	ratio $Q_t/(\alpha\chi_m)$. The third line evaluates
+	\eqref{eq:F_chi} at the reactivation threshold,
+	$\Lambda_{r,t}=(1-p_0)+p_0\left(Q_t/(\alpha\chi_m)
+	\right)^{\psi}$, to replace the power term by
+	$\Lambda_{r,t}-1+p_0$.
+
+	The count $(1-\delta_{e,t})s_{t-1}(1-u_{t-1})$ is the same
+	count as the reposting inflow in \eqref{eq:v_lom} but
+	\emph{without} $\Lambda_{r,t}$: the integral is a partial
+	expectation and thus embeds the reactivation probability. The form also
+	makes the lower bound transparent. As
+	$\Lambda_{r,t}\to1-p_0$ only the zero-cost atom reactivates,
+	and $X_t^r\to0$: no reactivation costs are paid because the
+	only positions resumed are free ones.
+	 Aggregate retail profits 
 	gross of continuation costs are $\Pi_t^f = Y_t^c/
 	\varepsilon(N_t) - X_t^c$, and recruiter profits are 
 	$\Pi_t^{int} = (w_t^{int}-w_t)L_t$. The average per-firm 
@@ -1135,7 +1215,7 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	$Y_t^{Gross} = Y_t^c + \nu_t^f N_t^e$, real GDP net 
 	of intermediate inputs is:
 	\begin{align}\label{eq:gdp}
-		Y_t \equiv Y_t^{Gross} - X_t - X_t^c 
+		Y_t \equiv Y_t^{Gross} - X_t - X_t^c -X_t^r
 		= C_t + \nu_t^f N_t^e 
 		= w_tL_t + \Pi_t^f + \Pi_t^{int}
 	\end{align}
@@ -1170,8 +1250,8 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 		Given $\rho(N)$, $\mu(N)$, $F$, initial exogenous 
 		states $\{z_0,\delta_0,s_0\}$, and initial endogenous 
 		states $\{v_{-1},u_{-1},u_0,N_0\}$, an equilibrium is 
-		a sequence $\{N_t, C_t, \chi_t^c, Y_t^c, \theta_t, 
-		K_t, Q_t, e_t, v_t, u_t\}_{t=0}^\infty$ satisfying the 
+		a sequence $\{N_t, C_t, \chi_t^c, Y_t^c, \theta_t,
+		K_t, Q_t, J_t, e_t, v_t, u_t\}_{t=0}^\infty$ satisfying the
 		business formation block:
 		\begin{align}
 			\label{eq:N_lom_eq}
@@ -1186,7 +1266,7 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 			\left(\mu(N_{t+1})-1-\mu(N_{t+1})
 			\frac{X_{t+1}^c}{Y_{t+1}^c}\right)\right\} \\
 			\label{eq:rc}
-			Y_t^c &= C_t + X_t + X_t^c \\
+			Y_t^c &= C_t + X_t + X_t^c+X_t^r \\
 			\label{eq:cutoff_eq}
 			\chi_t^c &= \frac{Y_t^c(\mu(N_t)-1)}{\mu(N_t)N_t} 
 			+ \frac{f_e\rho(N_t)}{\mu(N_t)}
@@ -1194,26 +1274,34 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 		and the labor market block:
 		\begin{align}
 			\label{eq:jcc_eq}
-			\kappa+\frac{K_t}{q(\theta_t)} &= 
+			\kappa+\frac{K_t}{q(\theta_t)} &=
 			\mathbb{E}_t m_{t+1}(1-\delta_t)\Lambda_{t+1}
-			\left((1-\phi)\left(\frac{\rho(N_{t+1})z_{t+1}}
-			{\mu(N_{t+1})}-K_{t+1}-b\right) \right. \notag \\
-			&\quad\left. -\,\phi\theta_{t+1}
-			\left(K_{t+1}+q(\theta_{t+1})\kappa\right)
-			+(1-s_{t+1})\left(\kappa
-			+\frac{K_{t+1}}{q(\theta_{t+1})}\right)\right) \\
+			\left(J_{t+1}-Q_{t+1}\right) \\
+			\label{eq:surplus_eq}
+			J_t-Q_t &= (1-\phi)\left(\frac{\rho(N_t)z_t}
+			{\mu(N_t)}-K_t-b\right)
+			-\phi\theta_t\left(K_t+q(\theta_t)\kappa\right)
+			\notag \\
+			&\quad +(1-s_t)\left(\kappa
+			+\frac{K_t}{q(\theta_t)}\right)
+			-s_t\mathbb{E}_t m_{t+1}(1-\delta_t)\Lambda_{t+1}
+			\left(Q_{t+1}-Q_{t+1}^{rep}\right) \\
 			\label{eq:Kdef}
 			K_t &= Q_t - (1-\delta_t)\mathbb{E}_t 
 			m_{t+1}\Lambda_{t+1}Q_{t+1} \\
 			\label{eq:entry_eq}
 			e_t &= \left(\frac{Q_t}{x_m}\right)^\xi
 		\end{align}
-		together with laws of motion 
-		\eqref{eq:v_lom}--\eqref{eq:u_lom}, auxiliary 
-		definitions $\delta_{e,t}$ \eqref{eq:delta_e_lom}, 
-		$\tau_t$ \eqref{eq:tau_lom}, $\Lambda_t$ 
-		\eqref{eq:Lambda}, $X_t$ \eqref{eq:X_total}, $X_t^c$ 
-		\eqref{eq:agg_fixed_costs}, $m_t$ \eqref{eq:euler_shares}, and 
+		together with laws of motion
+		\eqref{eq:v_lom}--\eqref{eq:u_lom}, auxiliary
+		definitions $\delta_{e,t}$ \eqref{eq:delta_e_lom},
+		$\tau_t$ \eqref{eq:tau_lom}, $\Lambda_t$
+		\eqref{eq:Lambda}, $\Lambda_{r,t}=F(Q_t/\alpha)$,
+		$Q_t^{rep}$ \eqref{eq:Qrep},
+		$X_t$ \eqref{eq:X_total}, $X_t^c$
+		\eqref{eq:agg_fixed_costs}, $X_t^r$
+		\eqref{eq:agg_repost_costs}, $m_t$
+		\eqref{eq:euler_shares}, and
 		stochastic processes \eqref{eq:ar1_z}--\eqref{eq:ar1_s}.
 	\end{definition}
 	
@@ -1222,13 +1310,19 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	the firm LOM propagates the product-line stock, the 
 	business formation Euler governs entry, the resource 
 	constraint clears goods markets, and the cutoff equates 
-	the exit threshold to current profitability plus the 
-	option value of a new product line. The labor market 
-	block jointly 
-	determines $u_t, v_t, \theta_t$, $K_t$, and $Q_t$: the job 
-	creation condition equates average hiring cost to the 
-	present discounted value of a filled vacancy, and free 
-	entry pins down the vacancy creation margin. The two 
+	the exit threshold to current profitability plus the
+	option value of a new product line. The labor market
+	block jointly
+	determines $u_t, v_t, \theta_t$, $K_t$, $Q_t$, and $J_t$: the job
+	creation condition equates average hiring cost to the
+	present discounted value of a filled vacancy, and free
+	entry pins down the vacancy creation margin. The matched
+	value $J_t$ is carried as a separate jump variable rather
+	than substituted out of \eqref{eq:jcc_eq}. Under partial
+	reposting the surplus \eqref{eq:surplus_eq} is itself
+	forward-looking, because a separation at $t+1$ realizes its
+	reactivation shortfall $Q_{t+2}-Q_{t+2}^{rep}$ on the
+	vacancy obtained at $t+2$. Tracking $J_t$ allows the system to have a first-order representation. The two 
 	blocks interact through $\rho(N_t)$ and $\mu(N_t)$ 
 	in the job creation condition and through $\delta_t$ 
 	in the survival-adjusted discount factor 
@@ -1244,10 +1338,10 @@ are in \ref{app:limiting_cases}.
 
 \begin{proposition}[Independence of labor market block]
 	\label{prop:independence}
-	Consider general CES preferences with elasticity of 
-	substitution $\varepsilon$. The labor market 
-	block $\{u_{t+1}, v_t, e_t, Q_t, K_t, w_t\}_{t=0}^{\infty}$ 
-	can be solved independently of the business formation 
+	Consider general CES preferences with elasticity of
+	substitution $\varepsilon$. The labor market
+	block $\{u_{t+1}, v_t, e_t, Q_t, K_t, J_t, w_t\}_{t=0}^{\infty}$
+	can be solved independently of the business formation
 	block if and only if $\sigma=0$, $\zeta=0$, and $p_0=0$.
 \end{proposition}
 
@@ -1257,10 +1351,17 @@ discount factor. When $\zeta=0$, the taste for variety
 vanishes and $\rho(N_t)=1$, removing $N_t$ from recruiter 
 compensation $w_t^{int}=\rho(N_t)z_t/\mu(N_t)$ and from 
 the job creation condition while leaving $\mu$ and hence 
-the business formation block otherwise intact. When 
-$p_0=0$, endogenous exit is absent so $\Lambda_t=1$ and 
-$\delta_{e,t}=\delta_{t-1}$ depends only on the exogenous 
-shock. Under all three conditions, the labor market block 
+the business formation block otherwise intact. When
+$p_0=0$, endogenous exit is absent so $\Lambda_t=1$ and
+$\delta_{e,t}=\delta_{t-1}$ depends only on the exogenous
+shock. The same condition also removes partial reposting.
+Because reactivation costs are drawn from the same
+distribution $F$, setting $p_0=0$ makes $F$ a point mass at
+zero, so $\Lambda_{r,t}=1$, $Q_t^{rep}=Q_t$, and $X_t^r=0$:
+every vacated position is resumed at no cost and the
+reposting margin disappears along with the exit margin. Had
+reactivation costs been drawn from a separate distribution,
+a fourth condition would have been required. Under all three conditions, the labor market block 
 closes on its own; the business formation block then 
 determines $C_t$ and $N_t$ taking $u_t$ and $X_t$ as 
 given from the labor market block.
@@ -1317,10 +1418,37 @@ market block separates but that business formation
 becomes irrelevant to aggregate allocations entirely 
 --- a consequence of profits and entry costs 
 vanishing jointly at the same rate. 
-Proposition~\ref{prop:ags} below implements the 
-limiting economy directly via clone replacement, 
-maintaining $N_t=1$ by construction rather than 
+Proposition~\ref{prop:ags} below implements the
+limiting economy directly via clone replacement,
+maintaining $N_t=1$ by construction rather than
 through the limit passage.
+
+Clone replacement abstracts from the entry and exit
+decisions while preserving the destruction flow. Product
+lines are destroyed at the rate $\delta_t$ as in the
+baseline, and destruction continues to eliminate the filled
+jobs and pre-committed vacancies attached to the line. Each
+destroyed line is immediately replaced by an identical one,
+so the mass of lines is held at $N_t=1$ at all dates. Two
+things follow. There is no business formation margin,
+because entry is not a decision. And there is no variety
+effect, because $N_t$ never moves and $\rho=\mu=1$. What
+survives is the destruction channel itself: $\delta_t$ is
+now purely exogenous, since $\Lambda_t=1$ implies
+$\delta_{e,t}=\delta_{t-1}$, and it continues to operate as
+a shock to jobs and vacancies. That is the mechanism
+\citet{coles_2018} and \citet{gabrovski_2025} study, which
+makes this the natural point of contact with the existing
+literature and the natural benchmark against which to
+measure what the baseline's two additional channels
+contribute.
+
+In this counterfactual scenario, replacement is costless, so
+$\nu_t^f N_t^e$ drops out of the resource constraint. As the construction also
+sets $p_0=0$, it removes the reactivation margin along with
+endogenous exit. The comparison with
+the baseline therefore holds three channels at once, not
+two.
 
 \begin{proposition}[Clone-replacement equilibrium]
 	\label{prop:ags}
@@ -1360,15 +1488,24 @@ through the limit passage.
 	is absent by construction.
 \end{proposition}
 
-We dub this the \emph{augmented Gabrovski-Silva} 
-(AGS) model. Relative to AGS, the baseline model 
-adds two channels affecting labor market dynamics: 
-variety effects in the job creation condition 
-through $\rho(N_t)/\mu(N_t)$, and endogenous exit 
-through variation in the survival cutoff $\chi_t^c$, 
-as developed formally in Section~\ref{sec:mechanism} 
-and evaluated quantitatively in 
-Section~\ref{sec:quantitative}.
+We dub this the \emph{augmented Gabrovski-Silva}
+(AGS) model. Relative to AGS, the baseline model
+adds three channels affecting labor market dynamics:
+variety effects in the job creation condition
+through $\rho(N_t)/\mu(N_t)$, endogenous exit
+through variation in the survival cutoff $\chi_t^c$,
+and partial reactivation through $\Lambda_{r,t}$,
+which AGS loses because clone replacement sets
+$p_0=0$. The three are developed formally in
+Section~\ref{sec:mechanism} and evaluated
+quantitatively in Section~\ref{sec:quantitative}.
+Because a single comparison with AGS moves all
+three at once, the quantitative work isolates them
+one at a time instead: $\zeta\to0$ removes variety
+effects, $\omega_\delta\to0$ removes endogenous exit
+while leaving reactivation intact, and
+$\alpha\to0$ removes reactivation while leaving
+endogenous exit intact.
 
 \begin{remark}[Nested special cases of AGS]
 	\label{rem:nesting}
@@ -4052,17 +4189,30 @@ $\Lambda_t = F(\chi_t^c) = 1-p_0 = 1$ for all
 $\chi_t^c$, so $\delta_{e,t}=1-(1-\delta_{t-1})\Lambda_t 
 = \delta_{t-1}$ depends only on the exogenous shock.
 
-Under all three conditions, inspect the labor market 
-block \eqref{eq:jcc_eq}--\eqref{eq:entry_eq} and 
-laws of motion \eqref{eq:v_lom}--\eqref{eq:u_lom}. 
-With $m_{t+1}=\beta$, $w_t^{int}=z_t/\mu$, and 
-$\delta_{e,t}=\delta_{t-1}$, these equations form 
-a closed system in 
-$\{u_{t+1},v_t,e_t,Q_t,K_t,w_t\}_{t=0}^\infty$ 
-given exogenous states $\{z_t,\delta_t,s_t\}$ and 
-initial conditions $\{v_{-1},u_0\}$. No variable 
-from the business formation block 
-$\{N_t,C_t,Y_t^c,\chi_t^c\}$ appears. The labor 
+Under $p_0=0$ the distribution $F$ collapses to a
+point mass at zero, which removes the reposting
+margin as well as the exit margin. Every
+reactivation cost draw is $\alpha\chi=0$, so
+$\Lambda_{r,t}=F(Q_t/\alpha)=1$, the mean cost
+$\alpha\int_0^{Q_t/\alpha}\chi\,dF=0$, and hence
+$Q_t^{rep}=Q_t$ and $X_t^r=0$. The reposting term in
+the surplus \eqref{eq:surplus_eq} vanishes,
+\eqref{eq:v_lom} reverts to full reposting, and
+$X_t^r$ drops out of the resource constraint
+\eqref{eq:rc}.
+
+Under all three conditions, inspect the labor market
+block \eqref{eq:jcc_eq}--\eqref{eq:entry_eq} and
+laws of motion \eqref{eq:v_lom}--\eqref{eq:u_lom}.
+With $m_{t+1}=\beta$, $w_t^{int}=z_t/\mu$,
+$\delta_{e,t}=\delta_{t-1}$, and
+$\Lambda_{r,t}=1$, these equations form
+a closed system in
+$\{u_{t+1},v_t,e_t,Q_t,K_t,J_t,w_t\}_{t=0}^\infty$
+given exogenous states $\{z_t,\delta_t,s_t\}$ and
+initial conditions $\{v_{-1},u_0\}$. No variable
+from the business formation block
+$\{N_t,C_t,Y_t^c,\chi_t^c\}$ appears. The labor
 market block is therefore self-contained.
 
 Given the solution to the labor market block, 
@@ -4100,12 +4250,23 @@ and $\chi_t^c$ satisfies the cutoff condition
 \eqref{eq:cutoff_eq} which depends on $Y_t^c$, 
 $N_t$, and $\mu(N_t)$ --- all determined in the 
 business formation block. Hence 
-$\delta_{e,t}=1-(1-\delta_{t-1})\Lambda_t$ depends 
-on business formation variables. Since $\delta_{e,t}$ 
-enters both laws of motion 
-\eqref{eq:v_lom}--\eqref{eq:u_lom}, the labor 
-market block depends on the business formation 
+$\delta_{e,t}=1-(1-\delta_{t-1})\Lambda_t$ depends
+on business formation variables. Since $\delta_{e,t}$
+enters both laws of motion
+\eqref{eq:v_lom}--\eqref{eq:u_lom}, the labor
+market block depends on the business formation
 block.
+
+Partial reposting adds no further channel, so the
+three conditions remain necessary and sufficient. The
+reactivation rate $\Lambda_{r,t}=F(Q_t/\alpha)$ and
+the option value $Q_t^{rep}$ depend only on $Q_t$,
+which is itself a labor market variable, and the
+aggregate reactivation cost $X_t^r$ enters only the
+resource constraint \eqref{eq:rc} --- a flow from the
+labor market block into the business formation block,
+in the same direction as $X_t$, which leaves the
+recursive structure intact.
 
 \subsection*{Proof of Proposition~\ref{prop:double_limit}}
 
@@ -4275,9 +4436,25 @@ profitability, the exit decision is moot;
 $\chi_t^c=f_e$ is a constant that imposes no 
 restriction on aggregate allocations.
 
-The resource constraint \eqref{eq:rc}: since 
-$p_0=0$ under clone replacement (endogenous exit 
-is absent by construction), $X_t^c=0$. With 
+The resource constraint \eqref{eq:rc}: clone
+replacement is taken to operate through $p_0=0$, so
+$X_t^c=0$. This is worth stating explicitly, because
+endogenous exit is absent whenever $\Lambda_t=1$ and
+there are two ways to obtain that. Either $p_0=0$, or
+the cutoff weakly exceeds the support of $F$, which
+under clone replacement means $f_e\geq\chi_m$ since
+$\chi_t^c=f_e$. The two routes are not equivalent
+once reactivation is present. Setting $p_0=0$ removes
+both margins, since the exit and reactivation
+thresholds are evaluated on the same distribution,
+whereas $f_e\geq\chi_m$ leaves
+$\Lambda_{r,t}=F(Q_t/\alpha)<1$ whenever
+$Q_t<\alpha\chi_m$. Under the second route
+\eqref{eq:v_ags} would carry $\Lambda_{r,t}$,
+\eqref{eq:rc_limit} would carry $-X_t^r$, and
+\eqref{eq:jcc_ags} would carry the reactivation
+shortfall. The proposition as stated assumes the
+first. With 
 $\rho(1)=1$ and $\mu(1)=1$, $Y_t^c=z_t(1-u_t)$ 
 and $l_t^e=0$, giving $C_t=z_t(1-u_t)-X_t$, 
 which is \eqref{eq:rc_limit}.
@@ -4464,7 +4641,8 @@ Under $p_0=0$, the product-line LOM gives $N_{t+1}=(1-\delta_t)N_t$
 predetermined with respect to $s_t$. Consequently
 $w^{int}_{t+1}=\rho(N_{t+1})z_{t+1}/\mu$ is also predetermined.
 At $\rho_s=0$, future shocks revert to their mean, so the
-right-hand side of the JCC~\eqref{eq:jcc_wage} at $t+1$---which
+right-hand side of the JCC~\eqref{eq:jcc} at $t+1$---which through
+the surplus~\eqref{eq:surplus_wage}
 involves expected future $w^{int}$ and $s$---is invariant to $s_t$
 at leading order, pinning $C_{t+1}\equiv\kappa+K_{t+1}/q(\theta_{t+1})$
 near its steady-state value $\bar{C}$.

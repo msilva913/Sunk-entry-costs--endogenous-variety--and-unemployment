@@ -43,7 +43,8 @@ in four sequential stages. They are functions of the estimated and external para
 | s̄ | `s` | Match separation rate (SS level) | From identity s̄ = (τ̄ − δ̄_e)/(1 − δ̄_e) (Stage 1) | Sets the base level of non-destructive separations |
 | δ̄ | `delta` | Exogenous component of destruction | From ω_δ: δ̄ = δ̄_e·(1 − ω_δ) (Stage 3) | The primitive shock; endogenous exit amplifies it by 1/(1−ω_δ) |
 | ψ | `psi` | Shape of continuation cost Pareto tail | PATH B: from dest_elast_target (Stage 3). PATH A: from Xc/Y | Controls curvature of the endogenous exit margin F(χ^c). Higher ψ → sharper exit threshold → more responsive δ_e to shocks |
-| χ_m (x_m) | `x_m` | Upper bound of sunk entry cost distribution | From distribution normalization (Stage 3) | |
+| x_m | `x_m` | Upper bound of the **sunk entry cost** distribution G(x) = (x/x_m)^ξ (draft `eq` at L887) | From distribution normalization (Stage 3) | ⚠️ **Not** χ_m. This row previously read "χ_m (x_m)", conflating two different bounds — corrected Sept 30, 2026 |
+| χ_m | **`f_m`** | Upper bound of the **continuation cost** distribution F (draft `eq:F_chi`) | From ς and ψ (Stage 3) | **The draft's χ_m is the code's `f_m`, not `x_m`.** This is the bound Λ_r = F(Q/α) depends on, so getting it wrong silently breaks the reposting margin (R8) |
 | f_m | `f_m` | Scale of continuation cost distribution | From ζ and ψ (Stage 3) | |
 | κ | `kappa` | Per-period flow matching cost | From X/Y target (Stage 4) | Affects the flow cost of maintaining a vacancy |
 
@@ -152,6 +153,7 @@ The two estimation blocks identify different subsets of Θ_e:
 | ω_δ | `dest_end_frac` | Endogenous share |
 | ξ | 1/`xi_inv` | Entry cost elasticity |
 | χ^c | `x_c` (computed in SS) | Continuation cost cutoff |
-| F(χ^c) | `zeta_ss` (ζ) | Survival probability |
+| Λ = F(χ^c) | **`surv_prob`** | Survival probability |
+| ς | `zeta_ss` (ζ) | **Survival quantile**, the normalized Pareto-part factor (χ^c/χ_m)^ψ — *not* the survival probability. `steady_state.jl:708` sets `ζ_ss = (surv_prob − (1 − p_0))/p_0`, so Λ = (1 − p_0) + p_0·ς. ⚠️ This row previously mapped F(χ^c) → ζ, conflating the two; corrected Sept 30, 2026. They are numerically close only because Λ ≈ 0.9986 here, and diverge as p_0 falls |
 | ψ | `psi` | Pareto shape of continuation costs |
 | Xc/Yc | `Xc_Yc` | Fixed cost / value-added ratio |
