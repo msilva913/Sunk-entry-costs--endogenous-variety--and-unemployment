@@ -1,5 +1,5 @@
 # Pending Tasks
-**Last updated:** September 28, 2026 (reposting R-series updated; R7–R9 added) · **Branch:** `costly_vacancy_reposting`
+**Last updated:** September 30, 2026 (R10 draft-revision chunks: A/B written, C next) · **Branch:** `costly_vacancy_reposting`
 
 Actionable work only. **Decisions** (things to choose, not do) live in
 [`decisions.md`](decisions.md); **draft section status** lives in
@@ -165,6 +165,7 @@ Preserves single firm size. Inescapability verified (note §4.3a). See D11 Sept-
 | R7 | ✅ **Job creation condition with the reposting option — DERIVED Sept 29.** Only the matched-recruiter separation branch changes: s·Q' → s·Ψ', Ψ' = Q'·Λ_r' − α·M'. Surplus gains −s·β(λ'/λ)(1−δ)F(x_c')·D', D' = Q'(1−Λ_r')+αM' (reposting shortfall). **Threshold is exactly Q** (not Q−K — corrected). f[5]/K **unchanged in form**. **f[1]/f[4]/f[18] (retailer firm value, exit cutoff, free entry) confirmed unchanged** — the recruiter/retailer segmentation quarantines the reposting option in the recruiter's J; the retailer's ν_f/x_c/d_f carry no reposting term (checked against `eq:firm_bellman`). X_r closed form: (1−δ_e)s·sbar·(1−u)·ψ_c·Q·(Λ_r−1+p_0). Substituted JCC has a nested E → implement by keeping J (or surplus) as a tracked jump variable. See [`model_equations.md`](model_equations.md) f[3]/f[1] | ✅ **done; unblocks R8** |
 | R8 | **Implement in code** once R7 is done: add α, Λ_r (f[Λ_r]), modified f[22], f[16] (X_r), f[3] in `steady_state.jl` and `run_solution_core.jl`; nest λ=1 at α ≤ Q̄/f_m for regression tests | ❌ blocked on R7 |
 | R9 | **Simulate to size the dynamic payoffs**: amplification (procyclical Λ_r + JCC option) against σ(v), σ(u); and persistence via stock depletion — does reposting lengthen the δ→u response / move the peak? Ties to M8 (model-tasks table) and E9 (run the LP on model-simulated data) | ❌ blocked on R8 |
+| R10 | **Write the reposting equations into `Draft.tex`, in chunks** (user writes; assistant supplies structure). Plan: `~/.claude/plans/gentle-humming-snowflake.md`; resume guide: [`session_handout_20260930.md`](session_handout_20260930.md). **Chunk A** (recruiter block) ✅ written + notation fixed (Q^{rep}, no Ψ/M/D); ⚠ pending: restructure `eq:jcc`/`eq:jcc_wage` to the surplus-reference (non-nested) form. **Chunk B** (vacancy LOM) ✅ written; ⚠ pending: `eq:v_lom` `Λ_{r,t-1}→Λ_{r,t}` + minors. **Chunk C** (resource constraint / X_r) ❌ next — resolve the X_r/X_c convention. **Representation decisions:** keep surplus 𝒮=J−Q as a tracked jump so the JCC is single-period (no nested E); notation Q^{rep}/inline shortfall. Deferred: Prop 5, intro prose, param α (D2-entangled) | ⏳ **A/B written, C next** |
 
 ## Empirical code tasks (secondary)
 

@@ -645,18 +645,17 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	predetermined: current vacancies evolve as
 	\begin{align}
 		v_{t}=(1-\delta_{e,t})[(1-q(\theta_{t-1}))v_{t-1}+
-		s_{t-1}(1-u_{t-1})]+e_{t}\label{eq:v_lom}
+		\Lambda_{r,t-1}s_{t-1}(1-u_{t-1})]+e_{t}\label{eq:v_lom}
 	\end{align}
 	Current vacancies are the sum of three components: 
 	(i)~unmatched vacancies from last period that survived product destruction; 
 	(ii)~filled jobs that experienced a match separation at end of 
-	$t-1$ but whose firm survived both margins, reposted at no 
-	additional sunk cost; and (iii)~vacancies created by new 
+	$t-1$ but whose firm survived both margins and the activation cost; and (iii)~vacancies created by new 
 	entrants $e_t$, who enter at the start of $t$ before matching. 
 	Note that $(1-\delta_{e,t})$ multiplies both (i) and (ii): 
 	only firms surviving both exogenous destruction and the 
 	continuation-cost draw contribute to either term, so a shock 
-	to $\delta_t$ collapses the entire bracket simultaneously. The 
+	to $\delta_t$ collapses the entire bracket simultaneously. The probability of reactivating the vacancy $\Lambda_{r,t}$ after separation depends on the vacancy value $Q_t$ and is derived in \ref{sec:recruiters}. Finally, the
 	asymmetric implications of these laws of motion for the 
 	transmission of $\delta$ and $s$ shocks are derived formally 
 	in Section~\ref{sec:equilibrium}.
@@ -917,20 +916,24 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	\begin{align}\label{eq:value_recruiter_matched}
 		J_{t} = w_t^{int}-w_t + \mathbb{E}_{t}m_{t+1}
 		(1-\delta_t)F(\chi_{t+1}^c)
-		\bigl(s_t Q_{t+1}+(1-s_t)J_{t+1}\bigr)
+		\bigl(s_t\, Q_{t+1}^{rep}+(1-s_t)J_{t+1}\bigr)
 	\end{align}
 	The recruiter receives $w_t^{int}$ from the retailer and 
 	pays the worker $w_t$. Conditional on product-line survival, 
-	the match continues with probability $1-s_t$; otherwise the 
-	vacancy is reposted at no additional sunk cost.
+	the match continues with probability $1-s_t$. Otherwise the worker separates and the recruiter may reactivate the vacancy at cost $\alpha\chi$, with $\chi\sim F$ drawn from the same distribution as the continuation cost, scaled by $\alpha$. Reactivation is optimal when the recovered vacancy covers the cost, $Q_{t+1}\geq\alpha\chi$, which occurs with probability $\Lambda_{r,t+1}\equiv F(Q_{t+1}/\alpha)$. The expected value of a separated position is therefore the reactivation option value
+	\begin{align}\label{eq:Qrep}
+		Q_t^{rep}\equiv\mathbb{E}\bigl[\max\{Q_t-\alpha\chi,\,0\}\bigr]
+		= Q_t\Lambda_{r,t}-\alpha\int_{0}^{Q_t/\alpha}\chi\,dF(\chi),
+	\end{align}
+	the mass of reactivated vacancies valued at $Q_t$ net of the reactivation costs paid. Costless full reposting ($Q_t^{rep}=Q_t$) is nested as $\alpha\to0$.
 	
 	\paragraph{Job creation condition}
-	Subtracting~\eqref{eq:value_recruiter_unmatched} 
+	Subtracting~\eqref{eq:value_recruiter_unmatched}
 	from~\eqref{eq:value_recruiter_matched} and using the definition 
 	of $K_t$ yields recruiter surplus:
 	\begin{align}\label{eq:value_recruiter_surplus}
 		J_t - Q_t &= w_t^{int}-w_t - K_t 
-		+ (1-s_t)\left(\kappa+\frac{K_t}{q(\theta_t)}\right)
+		+ (1-s_t)\left(\kappa+\frac{K_t}{q(\theta_t)}\right)-s_t\mathbb{E}_tm_{t+1}(1-\delta_t)F(\chi_{t+1}^c)\left(Q_{t+1}-Q_{t+1}^{rep}\right)
 	\end{align}
 	Substituting~\eqref{eq:value_recruiter_surplus} into the 
 	right-hand side of~\eqref{eq:average_hiring_cost} yields the 

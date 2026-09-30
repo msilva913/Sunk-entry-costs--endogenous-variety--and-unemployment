@@ -21,7 +21,7 @@ status notes to whichever file was open rather than the file that owns the topic
 
 ## Reading order when picking the project back up
 
-1. **`session_handout_20260928.md`** — latest session handout (reposting-margin formulation settled)
+1. **`session_handout_20260930.md`** — latest session handout (draft reposting revision; resume at Chunk C)
 2. `../CLAUDE.md` — one-paragraph framing and current priorities
 3. **`decisions.md`** — what is unsettled; this is where the branch's work is
 4. `pending_tasks.md` — the critical path

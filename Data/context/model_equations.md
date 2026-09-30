@@ -314,8 +314,10 @@ The fraction of a surviving firm's vacated positions that are reactivated (thres
 in f[3]). Procyclical: when Q rises in booms, Q/α rises, Λ_r rises, so position destruction is
 countercyclical. Bounds: Λ_r ∈ [1 − p_0, 1]. The atom 1 − p_0 always reactivates (zero-cost
 positions), so the most that can ever be destroyed is fraction p_0 of separations — **p_0 caps
-the reposting margin's strength.** Full reposting (Block 1) is nested at α ≤ Q̄/f_m, where
-Q/α ≥ f_m ⟹ F = 1 ⟹ Λ_r = 1; the margin bites (Λ_r < 1) only for α > Q̄/f_m.
+the reposting margin's strength.** Λ_r *saturates* at 1 (all vacated positions repost) for
+α ≤ Q̄/f_m; the margin bites (Λ_r < 1) only for α > Q̄/f_m. Note this is quantity saturation, not
+the costless Block-1 benchmark — the fully costless current model is recovered only as α → 0 (see
+f[3] nesting), since at Λ_r = 1 with α > 0 all positions repost but still pay α·χ.
 
 ## Modified equations
 
@@ -350,9 +352,18 @@ recruiter obtains an unfilled vacancy worth Q_{t+1} — reposted for free. Under
 that becomes the **reactivation option value**
 
 ```
-Ψ_{t+1} = E_χ[ max(Q_{t+1} − α·χ, 0) ] = Q_{t+1}·Λ_r,t+1 − α·M_{t+1}
-Λ_r = F(Q/α),      M = ∫_0^{Q/α} χ dF(χ) = ψ_c·(Q/α)·(Λ_r − 1 + p_0),   ψ_c = ψ/(ψ+1)
+Q^rep_{t+1} = E_χ[ max(Q_{t+1} − α·χ, 0) ] = Q_{t+1}·Λ_r,t+1 − α·M_{t+1}
+Λ_r = F(Q/α),   M = ∫_0^{Q/α} χ dF(χ);   interior (Λ_r<1): α·M = ψ_c·Q·(Λ_r−1+p_0), ψ_c = ψ/(ψ+1)
 ```
+
+**Notation (aligned with `Draft.tex` `eq:Qrep`).** The draft writes this option value as **Q^rep**,
+renamed from an earlier `Ψ` that clashed visually with the shape index `ψ`. In the *draft* the mean
+integral is written inline (not given a symbol — a capital `M` would collide with the matching
+function `m`/the SDF), and the shortfall is written inline as `Q − Q^rep`, *not* `D` (plain `D`
+collides with the intermediary dividend `D^{int}` and the duration multiplier `\mathcal{D}`). This
+doc uses `M ≡ ∫_0^{Q/α} χ dF` as shorthand only. The closed form
+`α·M = ψ_c·Q·(Λ_r−1+p_0)` holds only in the **interior** regime `Q/α ≤ χ_m` (`Λ_r < 1`); in the
+saturated regime it is `α·∫_0^{χ_m} χ dF`.
 
 **Threshold is Q, not Q − K** (corrects an earlier draft of this file). The recruiter obtains an
 unfilled vacancy worth Q_{t+1}; the draft's Bellman already discounts it by m(1−δ)F, so the
@@ -360,28 +371,31 @@ reactivation compares α·χ to Q directly. Reactivate iff **Q ≥ α·χ ⟺ χ
 
 **Matched recruiter value** (modified `eq:value_recruiter_matched`):
 ```
-J_t = w_int − w + β·(λ'/λ)·(1 − δ)·F(x_c')·[ s·(Q'·Λ_r' − α·M') + (1 − s)·J' ]
+J_t = w_int − w + β·(λ'/λ)·(1 − δ)·F(x_c')·[ s·Q'^rep + (1 − s)·J' ]
 ```
 
 **Recruiter surplus** (`eq:value_recruiter_surplus` gains one term):
 ```
-J_t − Q_t = w_int − w − K + (1 − s)(κ + K/q)  −  s·β(λ'/λ)(1−δ)F(x_c')·D'
-D_{t+1} ≡ Q' − Ψ' = Q'(1 − Λ_r') + α·M'      (the reposting shortfall)
+J_t − Q_t = w_int − w − K + (1 − s)(κ + K/q)  −  s·β(λ'/λ)(1−δ)F(x_c')·(Q' − Q'^rep)
 ```
-D is the per-separated-position value lost relative to free full reposting: `α·M'` = reactivation
-costs paid by reposters, plus `Q'(1−Λ_r')` = vacancy value forgone by non-reposters.
+The shortfall `Q' − Q'^rep = Q'(1 − Λ_r') + α·M'` is the per-separated-position value lost relative
+to free full reposting: `α·M'` = reactivation costs paid by reposters, plus `Q'(1−Λ_r')` = vacancy
+value forgone by non-reposters.
 
 **Modified JCC.** Substituting the surplus into the unchanged average-hiring-cost relation
 `κ + K/q = E m(1−δ)F(J' − Q')`:
 ```
-κ + K/q = β(λ'/λ)(1−δ)F(x_c')·[ w_int'−w'−K' + (1−s')(κ+K'/q') − s'·β(λ''/λ')(1−δ')F(x_c'')·D'' ]
+κ + K/q = β(λ'/λ)(1−δ)F(x_c')·[ w_int'−w'−K' + (1−s')(κ+K'/q') − s'·β(λ''/λ')(1−δ')F(x_c'')·(Q''−Q''^rep) ]
 ```
-The new term `− s'·(discounted D'')` is the extra penalty: a job created now may separate at t+1
-(prob s'), and that separation's reposting shortfall D is realized on the vacancy obtained at
+The new term `− s'·(discounted (Q''−Q''^rep))` is the extra penalty: a job created now may separate
+at t+1 (prob s'), and that separation's shortfall `Q−Q^rep` is realized on the vacancy obtained at
 t+2, so it enters with a **nested** expectation. **Implementation note:** rather than substitute,
 keep the matched value J (or the surplus S = J − Q) as a tracked jump variable with its own
 Bellman (the modified `eq:value_recruiter_matched` above); this keeps the system first-order
-Markov and avoids the nested E. Under Λ_r = 1, D = 0 and f[3] collapses to Block 1.
+Markov and avoids the nested E. **Nesting:** the *costless* current model is recovered as **α → 0**
+(then Q^rep → Q and the shortfall → 0); note this differs from the f[22] LOM, whose *quantity* of
+reposted vacancies saturates at Λ_r = 1. At Λ_r = 1 with α > 0 all vacancies repost but costs are
+still paid (Q^rep < Q), so only α → 0 gives the fully costless benchmark.
 
 **f[5] Vacancy (capital) value — UNCHANGED in form.** The unfilled-vacancy Bellman and K =
 Q − β(λ'/λ)(1−δ)F(x_c')Q' do not involve the reposting decision (reposting acts on the *matched*
@@ -393,8 +407,9 @@ equation is untouched. Confirmed by the derivation.
 Y_c = C + X + X_c + X_r
 X_r = (1 − δ_e)·s·sbar·(1 − u) · α·M = (1 − δ_e)·s·sbar·(1 − u) · ψ_c·Q·(Λ_r − 1 + p_0)
 ```
-Reposters pay α·χ; the per-position mean among reposters is α·M = ψ_c·Q·(Λ_r − 1 + p_0) (closed
-form derived above), times the surviving separated positions. Resolves the earlier ⚠. Note the
+Reposters pay α·χ; the per-position mean among reposters is α·M = ψ_c·Q·(Λ_r − 1 + p_0) (interior
+regime Λ_r<1; closed form derived above), times the surviving separated positions. Resolves the
+earlier ⚠. Note the
 code writes the continuation aggregate as X_c = N·p_0·ψ_c·x_c, which implicitly takes
 (x_c/f_m)^ψ ≈ 1; X_r above keeps the (Λ_r − 1 + p_0) = p_0·(Q/(α·f_m))^ψ factor explicit. If the
 code's X_c convention is retained, apply it consistently to X_r.

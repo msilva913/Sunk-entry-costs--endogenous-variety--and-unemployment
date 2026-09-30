@@ -1,5 +1,5 @@
 # CLAUDE.md — Empirical LP Project (Firm Entry/Exit DSGE)
-**Last updated:** September 28, 2026 · **Author:** Mario Silva
+**Last updated:** September 30, 2026 · **Author:** Mario Silva
 **Current branch:** `costly_vacancy_reposting` (branched from `instruments_LP_coefficient`; the most up-to-date version of the project)
 **Project paused June 7, 2026 – September 5, 2026.** Status re-verified against the repo on
 resumption; see [`context/pending_tasks.md`](context/pending_tasks.md) §Blockers.
