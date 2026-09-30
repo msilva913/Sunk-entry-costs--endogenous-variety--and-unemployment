@@ -69,7 +69,10 @@ clean exogenous variation in δ.
 x ∈ {z, δ, s}. ⚠️ The contents depend on [D2](decisions.md) — under PATH B, ψ is pinned by
 `dest_elast_target` rather than estimated, which changes the dimension of Θ_e.
 
-⚠️ **[D11](decisions.md) would change Θ_e further.** If the reposting margin enters, Θ_e gains
+⚠️ **[D11](decisions.md) changes Θ_e — now written into the draft, not yet coded
+(Sept 30, 2026).** The margin is in `Draft.tex` (recruiter block, `eq:v_lom`,
+`eq:agg_repost_costs`, `eq:rc`/`eq:gdp`, `def:equilibrium`) but not in
+`steady_state.jl`/`run_solution_core.jl`, and α is not yet in §5.2. Θ_e gains
 **exactly one** parameter, the reposting-cost scale **α** (formulation settled Sept 28: per-position
 reactivation cost α·χ, χ ~ F, reposting rate Λ_r = F(Q/α); no new distribution, no
 separate elasticity parameter — the responsiveness is F's already-identified shape). And δ_e may

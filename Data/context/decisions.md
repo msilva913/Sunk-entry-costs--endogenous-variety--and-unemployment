@@ -1,5 +1,5 @@
 # Decision Register
-**Last updated:** September 28, 2026 (D11 reposting formulation settled) · **Branch:** `costly_vacancy_reposting`
+**Last updated:** September 30, 2026 (D11 written into the draft; two-routes finding) · **Branch:** `costly_vacancy_reposting`
 
 Every open decision that must be settled before estimation, plus the ones already settled
 that agents keep re-litigating. One entry = one decision. When you settle one, move it to
@@ -458,7 +458,27 @@ test to determine if the full IRF path is usable.
 
 ---
 
-## 🔴 D11. Does the reposting margin enter this paper?
+## 🟡 D11. Does the reposting margin enter this paper?
+
+> **Status September 30, 2026 — formulation settled, and now written into the draft.** The
+> equations are in `Draft.tex` (recruiter block with `eq:Qrep` and `eq:surplus_wage`,
+> `eq:v_lom` with Λ_{r,t}, `eq:agg_repost_costs`, `eq:rc`/`eq:gdp`, `def:equilibrium`), and
+> Propositions 1 and 3 have been audited and hold. The formal go/no-go is therefore **de facto
+> made on branch `costly_vacancy_reposting`**. It is not yet in the code (R8) or in §5.2 (α has
+> no prior and no `tab:calib_targets` row).
+>
+> **Two routes to "no endogenous exit" are not interchangeable** — this matters for both the
+> propositions and the counterfactual design. `Λ_t = 1` obtains either from `p_0 = 0`, which
+> collapses F to a point mass and removes **both** margins, or from `χ_t^c ≥ χ_m`, which leaves
+> `Λ_r = F(Q/α) < 1`. Clone replacement (`prop:ags`) uses the first. The clean single-channel
+> switches are: `ζ→0` variety, `ω_δ→0` exit with reactivation retained, **`α→0`** reactivation
+> with exit retained. So **baseline-vs-AGS moves three channels at once** and cannot be used to
+> attribute contributions — see R9.
+>
+> **Open before R8:** the X_r timing convention (lagged flow vs pay-at-separation) and the
+> draft-vs-code δ_e dating. Both recorded in [`model_equations.md`](model_equations.md) f[16]
+> and f[22]. **Open regardless:** `app:proof_ds`'s invariance step, which the new surplus term
+> breaks (R3).
 
 **Opened September 23, 2026.** Full argument:
 [`../Notes/delta_calibration_and_the_reposting_margin.md`](../Notes/delta_calibration_and_the_reposting_margin.md).

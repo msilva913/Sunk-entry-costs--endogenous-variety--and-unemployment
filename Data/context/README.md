@@ -1,6 +1,6 @@
 # Context Folder — Index
 **Last reorganized:** September 5, 2026 (branch `Organize_Project_State_Estimation`)
-**Last consistency pass:** September 28, 2026 (branch `costly_vacancy_reposting`)
+**Last consistency pass:** September 30, 2026 (branch `costly_vacancy_reposting`)
 
 Nine files, each with one job, plus the dated session handouts. If you are about to write
 something here, check this table first — most duplication in the past came from appending
@@ -9,7 +9,7 @@ status notes to whichever file was open rather than the file that owns the topic
 | File | Owns | Does **not** own |
 |---|---|---|
 | [`principles.md`](principles.md) | Standing rules (1–21) **and the non-negotiable rules N1–N15** that constrain every choice | Anything provisional — that is a decision |
-| [`decisions.md`](decisions.md) | Decisions D1–D11 (D1 settled; D2, D3, D11 open; D10 partial) + settled S1–S9, each with reasons | Tasks. A decision is a choice; a task is work |
+| [`decisions.md`](decisions.md) | Decisions D1–D11 (D1 settled; D2, D3 open; D10, D11 partial) + settled S1–S9, each with reasons | Tasks. A decision is a choice; a task is work |
 | [`pending_tasks.md`](pending_tasks.md) | Actionable work, ordered; the critical path | Decisions, results, draft status |
 | [`estimation_design.md`](estimation_design.md) | How Blocks M and B combine; what is missing to run it; build order | Empirical results |
 | [`findings.md`](findings.md) | All empirical and model-mechanism results with numbers | Draft status, tasks |
@@ -21,7 +21,7 @@ status notes to whichever file was open rather than the file that owns the topic
 
 ## Reading order when picking the project back up
 
-1. **`session_handout_20260930.md`** — latest session handout (draft reposting revision; resume at Chunk C)
+1. **`session_handout_20260930b.md`** — latest session handout (reposting revision complete; resume at R3)
 2. `../CLAUDE.md` — one-paragraph framing and current priorities
 3. **`decisions.md`** — what is unsettled; this is where the branch's work is
 4. `pending_tasks.md` — the critical path

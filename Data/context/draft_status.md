@@ -1,7 +1,16 @@
 # Draft Status — `Draft/Draft.tex`
-**Last updated:** September 23, 2026 (§5.4/§6 and the LaTeX problems re-verified against the
-`.tex` and `Draft.log`; previous full section-by-section pass September 5, 2026, which
-superseded the "as of May 19" status that used to live in `findings.md`)
+**Last updated:** September 30, 2026 (reposting-margin revision landed; Props 1 and 3 audited;
+graphics path fixed. Previous update September 23, 2026; last full section-by-section pass
+September 5, 2026)
+
+**Reposting notation (settled Sept 28–30, 2026).** Reactivation rate `Λ_{r,t} = F(Q_t/α)`;
+option value `Q_t^{rep}` (`eq:Qrep`). The shortfall is written **inline** as `Q − Q^{rep}` and
+the mean-cost integral inline — the symbols **`Ψ`, `D`, `M` are retired** and must not be
+reintroduced. Full equation set: [`model_equations.md`](model_equations.md) Block 2.
+
+**Build state:** compiles with **0 errors, 0 missing graphics**. The 4 undefined references and
+1 multiply-defined label below are pre-existing and predate the reposting work. Compile from
+inside `Data/Draft/` — the graphicspath now leads with relative entries.
 
 Notation: χ_t^c (not x_t^c), Λ_t ≡ F(χ_t^c), ς for the survival quantile (renamed from ζ,
 which clashed with the variety taste parameter). Label prefixes `eq:`/`tab:`/`fig:`/`sec:`/
@@ -14,8 +23,8 @@ which clashed with the variety taste parameter). Label prefixes `eq:`/`tab:`/`fi
 | Section | Status | Outstanding |
 |---|---|---|
 | 1 Introduction (incl. §1.1 motivating reduced-form evidence) | ✅ complete | — |
-| 2 Environment | ✅ complete | — |
-| 3 Equilibrium (household, recruiters, wages, retailers, entry/exit, aggregation, definition) | ✅ complete | — |
+| 2 Environment | ✅ complete | Reposting added Sept 30: `eq:v_lom` carries Λ_{r,t}; timing prose and `fig:Timing` describe the shared Stage-2 exit/reactivation node |
+| 3 Equilibrium (household, recruiters, wages, retailers, entry/exit, aggregation, definition) | ✅ complete | Reposting added Sept 30: `eq:Qrep`, `eq:surplus_wage`, `eq:jcc` restructured to reference the surplus (single one-period E), `eq:agg_repost_costs` with derivation, `eq:rc`/`eq:gdp` carry X_t^r, `def:equilibrium` threaded (J_t, Λ_{r,t}, Q_t^{rep}, X_t^r). ⚠️ Λ_r still has **no labelled equation** — inline in the auxiliary list |
 | 3.x Limiting cases | ✅ complete | — |
 | 3.x Shock transmission and the δ–s asymmetry (`sec:mechanism`) | ✅ complete | δ_e/τ ≈ 0.21 claim at `Draft.tex:1481` → 0.087 in the [D1](decisions.md) cascade |
 | 3.x Steady state | ✅ complete | — |
@@ -61,6 +70,22 @@ empty, so the fix is cosmetic until §6 is written.
 
 All proofs complete except where noted. Numbering follows the draft.
 
+### Reposting audit — September 30, 2026
+
+| Proposition | Status under partial reposting |
+|---|---|
+| `prop:independence` (1) | ✅ **Holds, conditions unchanged.** `p_0 = 0` collapses F to a point mass, so Λ_r = 1, Q^rep = Q, X_r = 0: reposting vanishes *with* exit. No fourth condition needed — a payoff of drawing reactivation costs from the same F. Necessity unaffected: Λ_r and Q^rep depend only on Q_t, and X_r flows labor→formation like X_t. **`J_t` added to the stated labor block**, matched by `eq:surplus_eq` |
+| `prop:double_limit` (2) | ✅ Unaffected — same argument; it assumes `p_0 = 0` |
+| `prop:ags` (3) | ✅ Holds, and **gained the clone-replacement motivation**, which was never in any draft version (checked `git log -S`); only `Notes/AGS_Blanchard_Kahn.md` named the device. Proof now states `p_0 = 0` is *assumed*: no-exit follows from either `p_0 = 0` or `f_e ≥ χ_m` (since `χ_t^c = f_e`), and only the first kills reactivation. Under the second, `eq:v_ags`/`eq:rc_limit`/`eq:jcc_ags` would need Λ_r, −X_r, and the shortfall |
+| `prop:bgm_nest` | ⚠️ **Not yet audited.** Sets `p_0 = 0` so it likely survives, but it leans on position conservation, and `model_equations.md` f[23] notes conservation "now breaks by exactly the non-reposted mass." At `p_0 = 0` that leakage is zero. **Verify rather than assume** |
+| `prop:equilibria`, `prop:curves` | ⚠️ Not yet audited |
+| `prop:ds_asymmetry` (5) | 🔴 **Part 1 breaks** — see the inventory entry below and task R3 |
+
+**AGS now differs from the baseline on three channels, not two** (variety, endogenous exit,
+*and* reactivation, since clone replacement sets `p_0 = 0`). The draft states this at the AGS
+paragraph together with the one-at-a-time switches: `ζ→0` variety, `ω_δ→0` exit with
+reactivation retained, **`α→0`** reactivation with exit retained.
+
 **`prop:independence`, `prop:double_limit`, `prop:ags`** — limiting cases; proofs in the
 limiting-cases appendix.
 
@@ -86,6 +111,14 @@ parts, plus a Remark and `lem:vpre`, proved in `app:proof_ds`.
 
 - **Part 1** (s shock, exogenous exit, p_0 = 0): for any ρ_s ∈ [0,1), u↑ and v↑ together at
   h = 1 — positive u–v comovement.
+  🔴 **Broken by partial reposting, not merely made conditional (Sept 30, 2026).** The proof in
+  `app:proof_ds` argues that at ρ_s = 0 the JCC's right-hand side at t+1 "is invariant to `s_t`
+  at leading order." `eq:surplus_wage` now carries
+  `−s_t E_t m(1−δ)Λ(Q_{t+1}−Q_{t+1}^{rep})`, which depends on `s_t` directly, so that step
+  fails. A dangling `eq:jcc_wage` citation there was repointed so the draft compiles, but the
+  **argument is not fixed**. Locate it by searching `Draft.tex` for `invariant to $s_t$`.
+  Part 1's conclusion should become conditional on a threshold Λ_r*. This is task **R3**, and it
+  is more urgent than the September 30 session-A handout assumed.
 - **Part 2** (s shock, endogenous exit, p_0 > 0, DS-CES): if `eq:gN_cond` holds —
   f_e N̄ < z̄(1−ū)(ε−2)/(ε−1), which requires **ε > 2** and small entry costs — and the
   reposting inflow weakly dominates the endogenous-exit drain on pre-committed vacancies,

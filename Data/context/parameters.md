@@ -100,25 +100,54 @@ is marginal utility of consumption).
 
 ---
 
-## Prospective parameters — not in the model yet
+## Reposting margin — in the draft, not yet in the code
 
-Conditional on [D11](decisions.md). Full argument in
-[`../Notes/delta_calibration_and_the_reposting_margin.md`](../Notes/delta_calibration_and_the_reposting_margin.md).
+**Status September 30, 2026.** The formulation is settled ([D11](decisions.md)) and is written
+into `Draft.tex` (recruiter block, `eq:v_lom`, `eq:agg_repost_costs`, `eq:rc`/`eq:gdp`,
+`def:equilibrium`). It is **not yet in `steady_state.jl`/`run_solution_core.jl`** — that is task
+**R8**, which is blocked on two convention choices recorded in
+[`model_equations.md`](model_equations.md) f[16] and f[22]: the X_r timing (lagged flow vs
+pay-at-separation) and the draft-vs-code δ_e dating. α is also **not yet in §5.2** — no priors,
+no `tab:calib_targets` row.
 
-| Symbol | Economic meaning | How disciplined | Intuition |
+Full argument in
+[`../Notes/delta_calibration_and_the_reposting_margin.md`](../Notes/delta_calibration_and_the_reposting_margin.md);
+equations in [`model_equations.md`](model_equations.md) Block 2.
+
+**One new estimated parameter, α** (reposting-cost scale). The responsiveness of Λ_r to Q is
+*not* a separate parameter: it is the slope of F at Q/α, and F's shape (p_0, ψ, χ_m) is already
+identified by the exit margin. So the margin asks the data for one number plus a consistency
+check that F's shape fits both margins.
+
+| Symbol | Code | Economic meaning | How disciplined |
 |---|---|---|---|
-| λ̄ = G(Q̄) | Steady-state **reposting rate**: fraction of match separations after which the firm reposts the vacancy | LD→vacancy IRF (sign and magnitude); cor(u,v) in Block M | λ̄ = 1 is the current model. λ̄ < 1 makes s destroy positions as well as matches, which is the lever on the Beveridge curve. **The binding one** — raising δ̄_e does not fix cor(u,v), this does |
-| elasticity of λ_t to Q_t | Responsiveness of reposting to the value of a position | Shape of the LD→vacancy IRF across horizons | Makes reposting procyclical and position destruction countercyclical. **Cannot be calibrated at all** — the object exists only inside the model |
+| α | `alpha` (to add) | Reposting-cost scale. Reactivation costs α·χ with χ ~ F, so Λ_r = F(Q/α) and the margin bites only for α > Q̄/χ_m | **Estimated.** LD→vacancy IRF (sign, magnitude, and shape across horizons); cor(u,v) in Block M as a secondary source. See R2 for the identification check |
+| Λ̄_r = F(Q̄/α) | — | Steady-state reactivation rate; an *outcome* of α, not a free parameter | Reported, not set |
 
-Two modeling constraints worth recording, because both are easy to get wrong:
+**Why Λ_r < 1 is the lever.** Λ_r = 1 is the current model. Λ_r < 1 makes an s shock destroy
+positions as well as matches, which is what moves cor(u,v). Raising δ̄_e does *not* fix
+cor(u,v) — it improves it monotonically but by 0.108 across the whole defensible range against
+a gap near 1.8, and the relation is convex with the leverage concentrated above the range
+measurement allows. This does.
 
-- A **constant λ is not structural**. Reposting falls when position values fall, i.e. in
-  recessions, which is exactly when the Beveridge curve shifts. A fixed λ holds it constant
-  there and would be a reduced form dressed as a mechanism.
-- A **homogeneous reposting fee does not produce λ ∈ (0,1)**. All positions being identical,
-  the decision is all-or-nothing. An interior rate requires *dispersion* in the reposting
-  cost, exactly as the firm-level exit margin requires the distribution F to deliver an
-  interior χ^c.
+**Λ_r ∈ [1−p_0, 1], so p_0 caps the margin.** The atom at zero always reactivates, so at most
+fraction p_0 of separations can be destroyed. p_0 therefore does double duty: it shapes the exit
+margin *and* bounds the reposting margin. If cor(u,v) needs more than p_0 = 0.5 allows, the
+estimator pushes p_0 → 1, which removes the zero-cost atom and changes the exit margin
+materially.
+
+Three modeling constraints, all easy to get wrong:
+
+- **A constant reposting rate is not structural.** Reactivation falls when position values fall,
+  i.e. in recessions, which is exactly when the Beveridge curve shifts. Fixing the rate holds it
+  constant there and would be a reduced form dressed as a mechanism. Hence Λ_r = F(Q_t/α),
+  endogenous and procyclical.
+- **A homogeneous reposting fee does not produce Λ_r ∈ (0,1).** All positions being identical,
+  the decision is all-or-nothing. An interior rate requires *dispersion* in the reactivation
+  cost, exactly as the firm-level exit margin requires F to deliver an interior χ^c.
+- **Reactivation draws from the same F as continuation costs**, so a single α is the only new
+  parameter — and `p_0 = 0` shuts both margins at once, which is what leaves
+  `prop:independence` intact with three conditions rather than four.
 
 ## Parameter-to-moment intuition map
 

@@ -1,5 +1,5 @@
 # Pending Tasks
-**Last updated:** September 30, 2026 (R10 draft-revision chunks: A/B written, C next) · **Branch:** `costly_vacancy_reposting`
+**Last updated:** September 30, 2026, session B (R10 draft revision COMPLETE: chunks A/B/C in; Props 1 and 3 audited; R3 promoted) · **Branch:** `costly_vacancy_reposting`
 
 Actionable work only. **Decisions** (things to choose, not do) live in
 [`decisions.md`](decisions.md); **draft section status** lives in
@@ -158,7 +158,7 @@ Preserves single firm size. Inescapability verified (note §4.3a). See D11 Sept-
 |---|---|---|
 | R1 | **Decide D11**: does the reposting margin enter this paper? Formulation is settled; this is the go/no-go on the structural change (touches v LOM f[22], resource constraint f[16], JCC f[3], Prop. 5, Θ_e) | 🔴 **decision, gates the rest** |
 | R2 | **Verify α, σ_s, and δ_e are separately identified** on simulated data. All three move cor(u,v); α and δ_e do so through the *same* channel (share of separations that destroy a vacancy), so cor(u,v) alone cannot separate them, and α and F's scale f_m both move position destruction. The LD→v IRF is what should separate them (exit compares χ to χ^c, reposting to Q). If not, α fixed on a reported grid | 🔴 do before committing to R1 |
-| R3 | **Derive the threshold Λ_r\*** at which the s→v response flips sign, and redo Prop. 5 Part 1 as a conditional result. `lem:vpre` and the Part 2 Jacobian both touch the reposting channel | ❌ blocked on R1 |
+| R3 | 🔴 **Prop. 5 Part 1 is BROKEN by reposting, not merely conditional — found Sept 30.**  argues that at ρ_s = 0 the JCC right-hand side at t+1 "is invariant to  at leading order".  now carries −s_t E_t m(1−δ)Λ(Q_{t+1}−Q_{t+1}^{rep}), which depends on  directly, so the step fails. A dangling  citation was repointed so the draft compiles, but **the argument is not fixed**; locate it by searching  for . Derive the threshold Λ_r* where the s→v response flips sign and restate Part 1 conditionally.  and the Part 2 Jacobian touch the same channel | 🔴 **START HERE** — no longer blocked |
 | R4 | **Revisit [D4](decisions.md)/S6** if R1 is yes. They retire the LD→vacancy IRF, which is the natural identifying moment for α (level and persistence) | ❌ blocked on R1 |
 | R5 | **Add to §5.2**: the GS and Shao-Silos comparison, the bracketing argument for δ_e, and the CK-consistency argument for why three shocks are required rather than chosen | ⚠️ do regardless of R1 |
 | R6 | **Decide whether δ_e moves into Θ_e** with a prior on [3.2%, 10%]/yr. Only safe once the reposting margin exists, otherwise δ_e absorbs its blame | ❌ blocked on R1 |
