@@ -1,7 +1,7 @@
 # Key Empirical Findings
 **Last updated:** September 28, 2026. E8 (Bartik persistence test) ran September 22–23;
 literature review of δ calibration added the same day; reposting-margin mechanism and
-inescapability added September 28.
+inescapability added September 28; Prop. 5 Part 1 entry-condition check added October 1.
 Model-side results were re-run after the September 5–6 code fixes; see §D1/M5.
 
 ## Shock Persistence (part6, 2001Q1+ window)
@@ -520,4 +520,43 @@ level effect), the channel is expected to deliver: **amplification** via procycl
 and via the reposting option in the JCC; and **persistence** via stock depletion — retired
 positions rebuild at the full cost Q, slowing recovery, potentially relevant to the δ→u
 peak-horizon gap ([M8](pending_tasks.md)). Not yet quantified.
+
+## Prop. 5 Part 1 entry condition — numerical check — October 1, 2026
+
+**Program:** `Programs baseline/run_prop5_s_check.jl` → `Programs baseline/prop5_s_check.csv`.
+
+**Why.** `prop:ds_asymmetry` Part 1 was restated (Oct 1) as an exact accounting result plus a
+condition. Under p_0 = 0 an s_t shock raises u_{t+1} and pre-committed vacancies by the same
+d = (1−δ_t)(1−u_t), so vacancies rise at h=1 iff −∂e_{t+1}/∂s_t < d. The proof signs entry
+analytically only under ρ_s = 0 plus the `prop:independence` conditions (σ = 0, ζ = 0), and
+then only for free entry or θ̄ = 1. This checks the general case.
+
+**Design.** The p_0 = 0 benchmark: Comparison B's exogenous-exit setup (dest_end_frac = 0,
+Xc_Y = 0), with b_ratio = 0.9 and x_v = 0.5. σ = 1 and DS-CES (ε = 4.3), so the
+discount-factor and variety channels are on. The s process comes from part6b: ρ_s = 0.8741 per
+month, σ_s = 0.0854. Responses are measured at h=1, which is row 3 of `simulate_model` (row 2
+is the shock period).
+
+| dest_ann | ρ_s | ξ_inv | −Δe/Δv_pre |
+|---|---|---|---|
+| 0.0320 | 0 / 0.5 / 0.874 / 0.95 | 1 | 0.000 / 0.001 / 0.002 / 0.004 |
+| 0.0320 | 0.874 | 0.5 / 2 | 0.004 / 0.001 |
+| 0.0754 | 0 / 0.5 / 0.874 / 0.95 | 1 | 0.001 / 0.002 / 0.008 / 0.015 |
+| 0.0754 | 0.874 | 0.5 / 2 | 0.015 / 0.004 |
+
+**Result.** The condition holds at every grid point, with a wide margin: entry offsets at most
+**1.5%** of the reposting inflow. Entry *falls* in every case. That fits θ̄ ≈ 0.51 < 1, where
+equal increases in u and v_pre raise tightness. The draft cites the 1.5% bound in the
+discussion after `prop:ds_asymmetry`.
+
+**Consistency checks.**
+- Δu and Δv_pre match the analytical d to within 0.1–0.6%.
+- The identity Δv = Δv_pre + Δe holds to 1e-18.
+- The δ_e response is zero, as it should be at p_0 = 0.
+
+**Timing nuance (flag for R8).** The gap between Δu and d grows with ρ_s. In the code, s_t is
+part of the period-t state, so θ_t and e_t already respond to it. In the draft, s_t realizes at
+the end of t, after matching (`fig:Timing`). This belongs with the δ_e dating question: the
+code's f[2] uses the period-t cutoff for the t→t+1 transition, while the draft dates it at
+t+1. Negligible here, but settle both together.
 

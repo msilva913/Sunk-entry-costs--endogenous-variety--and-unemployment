@@ -226,10 +226,21 @@ strengthens both results; Convention A leaves them exactly as published.
 
 ---
 
-## 9. Status
+## 9. Status — Convention A adopted everywhere
 
-- ✅ `compute_unemployment`, `L_fun`, three inline copies, `SS_symbolics` — moved to Convention B
-- ✅ `e_fun` — restored to `δ_e(v + 1 − u)` (valid under **both** conventions; an intermediate
-  "exact LOM" rewrite was wrong and is reverted)
-- ❌ `f[22]`, `eq:v_lom`, `steady_state_checks.jl:95` — still Convention A; **decision pending**
-- Current state: `steady_state_checks.jl` passes every assert except line 95, and N = 1.0 exactly.
+- **Code, Sept 6, 2026 (commit `d902b68`).** Option A was taken: f[23] restored to Convention A;
+  `compute_unemployment`, `L_fun` and the inline copies reverted to u = τ/(τ + (1−δ_e)f);
+  f[22] and `steady_state_checks.jl:95` were already Convention A. `e_fun` = δ_e(v + 1 − u)
+  holds under both conventions.
+- **Draft, Oct 1, 2026.** `eq:u_lom` and its prose moved to Convention A (the sentence about τ
+  hitting workers "including those who matched in t−1" is gone), as were the restatements
+  `eq:u_ags`, `eq:u_ll`, the wage appendix's employment law, and the Prop. 5 proof. `eq:u_ss` was
+  already Convention A. `fig:Timing` notes that s hits only incumbent matches.
+- **Settled** as [S10](../context/decisions.md).
+
+**A separate timing issue, not about this convention.** The code dates *exit* differently from
+the draft: f[2] builds δ_e from the current cutoff Λ_t and applies it to the t→t+1 transition,
+while the draft (and the code's own value equations) use (1−δ_t)F(χ^c_{t+1}). The code also
+observes δ_t and s_t one stage early and treats post-exit stocks as states. These are fixed in
+task R8; the specification is in [`../context/model_equations.md`](../context/model_equations.md)
+"Code status".

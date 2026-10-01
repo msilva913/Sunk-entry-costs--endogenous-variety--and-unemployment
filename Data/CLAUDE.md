@@ -1,5 +1,5 @@
 # CLAUDE.md — Empirical LP Project (Firm Entry/Exit DSGE)
-**Last updated:** September 30, 2026 · **Author:** Mario Silva
+**Last updated:** October 1, 2026 · **Author:** Mario Silva
 **Current branch:** `costly_vacancy_reposting` (branched from `instruments_LP_coefficient`; the most up-to-date version of the project)
 **Project paused June 7, 2026 – September 5, 2026.** Status re-verified against the repo on
 resumption; see [`context/pending_tasks.md`](context/pending_tasks.md) §Blockers.
@@ -106,10 +106,15 @@ to do:
    Guren-McKay-Nakamura-Steinsson "simulate the regression inside the model" prescription,
    which is D3's most defensible option. Building E9 well upgrades D3.
 
+**Code timing (Oct 1, 2026).** The draft is the reference model ([S10](context/decisions.md)).
+The code dates exit one period early, observes δ_t and s_t one stage early, and uses post-exit
+stocks as states. Fix in task R8 per [`context/model_equations.md`](context/model_equations.md)
+"Code status", in the same regeneration pass as the D1 cascade and PATH B.
+
 **Also owed: the D1 cascade.** D1 is settled but unimplemented. Set `dest_ann = 0.0320`,
 re-run Comparisons A–D, regenerate the eight `mechanism_*.pdf`, re-run `mechanism_stats.jl`,
 and update §5.3, §5.2, `tab:calib_targets` row 1, the four `δ̄_e/τ̄ ≈ 0.21` claims in
-`Draft.tex` (lines 1481, 2787, 3646, 3921), and **P3b**.
+`Draft.tex` (L1716, L3085, L3945, L4223 as of Oct 1, 2026), and **P3b**.
 
 Then build, in order: Ω_β (`part5_wcrb.py`, a full matrix — not per-horizon SEs; **its
 dimension is set by D10/E9**, 42×42 only if the full IRF path survives) → Ω_m (block

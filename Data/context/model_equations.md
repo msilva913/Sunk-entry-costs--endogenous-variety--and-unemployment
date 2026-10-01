@@ -1,604 +1,384 @@
 # Model Equations — Baseline and Partial-Reposting Extension
-**Created:** September 28, 2026 · **Branch:** `costly_vacancy_reposting`
-**Source of truth for Block 1:** `Programs baseline/run_solution_core.jl` (33-equation system,
-audited May 20, 2026; SS-timing fixes September 5, 2026).
+**Created:** September 28, 2026 · **Timing audit:** October 1, 2026 · **Branch:** `costly_vacancy_reposting`
 
-This file lists every model equation with an economic interpretation. It has two blocks.
+This file lists every model equation with an economic interpretation, **dated explicitly** in
+the timing of the draft (`Draft/Draft.tex`, `fig:Timing`). The draft is the reference model.
+`Programs baseline/run_solution_core.jl` implements the same 33 equations but **deviates from
+the draft's timing in three places** (see "Code status" below). Each equation carries a
+**Code** line saying whether the current code matches. This file is the specification the code
+restructuring in task R8 should implement.
 
-- **Block 1** is the current model, with *costless full reposting* (Λ_r = 1). It transcribes
-  `run_solution_core.jl` equation for equation.
-- **Block 2** rewrites only the equations that change under *partial reposting*, the extension
-  argued for in [`../Notes/delta_calibration_and_the_reposting_margin.md`](../Notes/delta_calibration_and_the_reposting_margin.md).
-  Equations whose modified algebra requires a formal re-derivation are marked **⚠ to be
-  derived**; their economic content is stated but the exact terms are not asserted, per N1/N15.
+- **Block 1** is the model with costless full reposting (Λ_r = 1).
+- **Block 2** gives the equations that change under partial reposting, the extension argued for
+  in [`../Notes/delta_calibration_and_the_reposting_margin.md`](../Notes/delta_calibration_and_the_reposting_margin.md).
 
-Notation throughout: unprimed = period *t*; primed = period *t+1* (expected). Shocks
-z, δ, s are multiplicative deviations from SS = 1. Composite parameters: β = 1/(1+r),
-ξ = 1/ξ_inv (entry elasticity), μ = ε/(ε−1) (markup).
+**Notation.** Subscripts are dates. E_t conditions on information at the *decision stage* of
+period t (Stage 2 onward, below). Symbol map draft ↔ code:
+
+| Draft | Code | Note |
+|---|---|---|
+| δ_t | `δ*δbar` | code shocks are multiplicative, SS = 1 |
+| s_t | `s*sbar` | |
+| χ^c_t, χ_m | `x_c`, `f_m` | χ_m is the bound of F, **not** `x_m` (bound of G) |
+| Λ_t = F(χ^c_t) | `Λ` | survival probability |
+| v_{pre,t} | `v_pret` | |
+| m_{t+1} | `β*λp/λ` | |
+| ν^f_t | `ν_f` | |
+
+Composite parameters: β = 1/(1+r), ξ = 1/ξ_inv, μ = ε/(ε−1), ψ_c = ψ/(ψ+1).
 
 ---
 
-# BLOCK 1 — Baseline model (full costless reposting, Λ_r = 1)
+# BLOCK 1 — Baseline model (costless full reposting, Λ_r = 1)
 
-## Timing (monthly, Coles-Kelishomi stage structure)
+## Timing within period t (monthly; draft `fig:Timing`)
 
-⚠️ **Corrected Sept 30, 2026 against the draft's own timing figure (`fig:Timing`).** The
-earlier version of this list placed endogenous firm exit at Stage 5. The draft puts it at
-**Stage 2**, early in the period, and puts only the *exogenous* destruction shock δ_t and
-match separation s_t at Stage 5. Getting this wrong would put the exit node in the wrong
-place in the code (R8).
+1. **Stage 1 — aggregate state.** z_t realizes. δ_{t−1} and s_{t−1}, realized at the end of
+   t−1, are known.
+2. **Stage 2 — exit, reactivation, entry.** Each retailer draws χ ~ F and exits if χ > χ^c_t.
+   Survival into t is (1−δ_{t−1})·F(χ^c_t) = 1 − δ_{e,t}. Recruiters at surviving product lines
+   decide which positions vacated at the end of t−1 to reactivate (Block 2). Vacancy entry
+   e_t = G(Q_t); new product lines N^e_t form. **u_t, v_{pre,t}, N_t are post-exit stocks.**
+3. **Stage 3 — bargaining and production** with N_t product lines and L_t = 1 − u_t workers.
+4. **Stage 4 — matching** out of v_t = v_{pre,t} + e_t and u_t.
+5. **Stage 5 — end of t.** Match separation s_t and exogenous destruction δ_t realize. s_t
+   hits only matches that produced in t (Convention A): matches formed at Stage 4 are exposed
+   to δ_t and to the t+1 exit draw, but first face s at the end of t+1.
 
-1. **Stage 1** — aggregate state realized: new realizations of (z_t, δ_t, s_t).
-2. **Stage 2** — **endogenous exit and reactivation.** Each *retailer* draws χ ~ F and exits
-   if χ > x_c,t, giving δ_e,t = 1 − (1 − δ_{t−1})·F(x_c,t) — note the **lagged** δ. Entry:
-   e_t = G(Q_t), N_e,t forms. Simultaneously, **recruiters** whose product line survived decide
-   which positions vacated at the end of t−1 to reactivate, drawing χ ~ F *per position* and
-   reactivating iff α·χ ≤ Q_t, giving Λ_r,t = F(Q_t/α). u_t is post-exit, pre-match.
-3. **Stage 3** — bargaining and production: wages, output, profits.
-4. **Stage 4** — matching: m_t matches formed, using total v_t = v_pret + e_t.
-5. **Stage 5** — end of t: match separation s_t and exogenous product destruction δ_t;
-   u_{t+1}, v_{t+1}, N_{t+1} updated. The δ_t realized here enters δ_e,t+1 at the next
-   Stage 2.
+**Two dating rules follow.**
 
-**Why exit and reactivation share Stage 2.** Both compare a draw from F to a threshold, and
-both need the period-t state. Q_t is determined at this node (it is the same node that sets
-e_t = G(Q_t)), so reactivation can condition on *realized* Q_t rather than on E_{t−1}Q_t.
-This is what makes Λ_r,t a function of current conditions and therefore procyclical — the
-property the whole margin rests on. It also confirms the `Λ_r,t` dating in f[22] and its
-pairing with (1 − δ_e,t).
+- **1 − δ_{e,t+1} = (1 − δ_t)·F(χ^c_{t+1}).** The exogenous factor is dated t because δ_t
+  realizes at the end of t. The endogenous factor is dated t+1 because the continuation draw
+  is compared with χ^c_{t+1}, which depends on period-t+1 profits and firm value
+  (`eq:cutoff_eq`). Both act before production in t+1, so δ_e carries the date of the period
+  in which survivors produce. Survival from t to t+1 is the same object in every value function
+  and every law of motion.
+- **Stocks dated t+1 are not predetermined at t.** N_{t+1}, u_{t+1}, v_{pre,t+1} depend on
+  χ^c_{t+1}, which depends on N_{t+1} (the fixed point in the Prop. 5 Part 2 proof). The
+  predetermined objects are the **pre-exit** stocks: B_{t+1} ≡ N_t + N^e_t for product lines,
+  and (u_t, v_t) for the labor market, from which pre-exit employment (1−s_t)(1−u_t) + f_t u_t
+  and pre-exit vacancies (1−q_t)v_t + s_t(1−u_t) are built.
 
-**Two things simultaneity does NOT mean.**
+**Exit and reactivation share Stage 2, but not an agent or a draw.** Exit is the retailer's
+decision on its product line against χ^c_t. Reactivation is the recruiter's decision on a
+vacated position against Q_t. Recruiters hold vacancies, so reactivation is theirs. Retailer
+exit gates reactivation, because a position serving a withdrawn product line is destroyed
+regardless; that is the (1 − δ_{e,t}) factor in f[22]. Since Q_t is set at the same node
+(e_t = G(Q_t)), reactivation conditions on *realized* Q_t, which is what makes Λ_{r,t}
+procyclical. The reposting option accrues to the recruiter's J, not the retailer's ν^f, so the
+dependence stays triangular and f[1]/f[4]/f[18] are unchanged in Block 2.
 
-- **Not the same agent, and not the same draw.** Exit is the *retailer's* decision on its
-  product line; reactivation is the *recruiter's* decision on a vacated position, since
-  recruiters are the ones holding vacancies. Two distinct draws against two distinct
-  thresholds: the retailer compares its χ to x_c,t, the recruiter compares α·χ to Q_t.
-  Retailer exit still gates reactivation, because a position serving a withdrawn product line
-  is destroyed regardless — that is the (1 − δ_e,t) factor in f[22].
-- **Not simultaneous determination.** Within Stage 2 exit resolves first, and only recruiters
-  attached to surviving product lines face reactivation decisions. The reposting option
-  accrues to the recruiter's J, not the retailer's ν_f, so the dependence stays triangular and
-  f[1]/f[4]/f[18] remain unchanged (R7). The segmentation, not the timing, is what delivers
-  that.
+## Code status — the three timing deviations (October 1, 2026)
 
-⚠️ **Open: the per-position-draw justification in Block 2 needs restating.** It argues that a
-single draw per *firm* would make firms carry different position stocks forward and break the
-DS-CES symmetric aggregation. That argument attributes positions to retailers. Under the
-segmentation positions belong to *recruiters*, and retailers rent labor services competitively,
-so the distribution of vacated positions across recruiters does not reach retailers at all:
-only the aggregate vacancy stock enters matching, and the law of large numbers delivers Λ_r
-either way. **If so, the symmetry concern dissolves and per-position draws are simply the
-natural reading — each position is a separate asset with its own reactivation cost — rather
-than a requirement for aggregation.** Worth confirming before the argument is relied on in
-print; the draft's §Environment now states the aggregation point in the segmentation form.
+The code is GS-style end-of-period timing in its laws of motion but draft timing in its value
+equations. Fixing this is part of R8.
 
-## Shocks (ne = 3)
+1. **Exit dating.** Code f[2] builds `δ_e = 1 − (1−δ·δbar)·Λ` with the *current* cutoff Λ_t and
+   applies it to the t→t+1 transition in f[22]–f[24]. In draft terms that is (1−δ_t)·F(χ^c_t)
+   where the draft has (1−δ_t)·F(χ^c_{t+1}): the exogenous factor is dated right, the
+   endogenous factor one period early. The value equations f[3]–f[5] use
+   `SDF_surv = (1−δ·δbar)·Λp`, i.e. F(χ^c_{t+1}), as the draft does. So the code prices
+   survival at one date and depletes stocks at another. Code production also uses all N_t,
+   including firms whose period-t draw failed the cutoff.
+2. **When shocks are observed.** Code δ and s are period-t states, so θ_t, e_t, x_c,t respond
+   to the shocks that hit end-of-t flows. In the draft, δ_t and s_t realize at Stage 5, after
+   matching. (Effect on the Prop. 5 check: Δu deviates from the identity value d by ≤ 0.6%.)
+3. **Predetermined stocks.** Code states are the post-exit stocks [u, N, v_pret]. Under draft
+   timing they must be pre-exit stocks.
 
-| Shock | Meaning | Process | Innovation SD |
+**Restructuring spec (R8).** States x_t = [u_{t−1}, v_{t−1}, B_t, z_t, δ_{t−1}, s_{t−1}].
+Then at t: δ_{e,t} = 1 − (1−δ_{t−1})F(χ^c_t), N_t = (1−δ_{e,t})B_t,
+u_t = 1 − (1−δ_{e,t})[(1−s_{t−1})(1−u_{t−1}) + f_{t−1}u_{t−1}], and
+v_{pre,t} = (1−δ_{e,t})[(1−q_{t−1})v_{t−1} + Λ_{r,t}s_{t−1}(1−u_{t−1})], with f_{t−1}, q_{t−1}
+functions of θ_{t−1} = v_{t−1}/u_{t−1}. These become same-period controls, solved jointly with
+χ^c_t. X^r_t (Block 2) is then a function of states and period-t controls, with no extra lag.
+Every §5.3 number must be regenerated afterwards; bundle with the D1 cascade.
+
+## Shocks
+
+| Shock | Meaning | Process | Realizes |
 |---|---|---|---|
-| z | technology | AR(1) in logs, ρ_z | σ_z |
-| δ | permanent firm / product-line destruction | AR(1) in logs, ρ_δ | σ_δ |
-| s | idiosyncratic worker separation | AR(1) in logs, ρ_s | σ_s |
+| z | technology | log z_{t+1} = ρ_z log z_t + ε^z_{t+1} | Stage 1 of t+1 |
+| δ | exogenous product-line destruction | log δ_t = ρ_δ log δ_{t−1} + ε^δ_t | Stage 5 of t |
+| s | match separation | log s_t = ρ_s log s_{t−1} + ε^s_t | Stage 5 of t |
 
-Innovations are orthogonal by construction (Cholesky, z ordered first, `part6b`). The z→δ_e
-link runs through the equilibrium (x_c responds to z), not through shock covariance.
+Orthogonal innovations (Cholesky, z first; `part6b`). The z→δ_e link runs through χ^c, not
+through shock covariance. Monthly calibration from `part6b`: ρ_z = 0.902, σ_z = 0.0092,
+ρ_δ = 0.592, σ_δ = 0.0669, ρ_s = 0.8741, σ_s = 0.0854. **Code:** processes match; the
+observation date differs (deviation 2).
 
-## Variables
-
-**States** x = [u, N, v_pret, z, δ, s] (predetermined, known at the start of *t*):
-
-| Symbol | Meaning |
-|---|---|
-| u | unemployment entering *t* (pre-matching) |
-| N | mass of incumbent firms/varieties entering *t* |
-| v_pret | surviving vacancies from *t−1* (pre-entry); total v_t = v_pret + e_t |
-| z, δ, s | exogenous shock levels (SS = 1) |
-
-**Controls** y (27): θ, q, L, v, e, K, Q, ρ, N_e, ν_f, d_f, w_int, w, L_e, L_c, Y_c, C, λ,
-Y, x_c, δ_e, labor_prod, C_R, Y_R, Y_cR, w_R, ls.
-
-| Symbol | Meaning |
-|---|---|
-| θ, q | market tightness v/u; vacancy-filling rate A·θ^(−η_L) |
-| L, L_c, L_e | total employment; production workers; recruiters |
-| v, e | total vacancies; new entrant vacancies |
-| K, Q | net value of a vacancy; sunk cost of posting a vacancy |
-| ρ | DS-CES relative price N^(1/(ε−1)) |
-| N_e | new firms (entrants) |
-| ν_f, d_f | firm value; firm dividend |
-| w_int, w | marginal revenue product (recruiter compensation base); Nash wage |
-| Y_c, Y, C | retail output; GDP; consumption |
-| λ | marginal utility of consumption C^(−σ) |
-| x_c | continuation-cost cutoff (firms with cost > x_c exit) |
-| δ_e | endogenous destruction rate 1 − (1−δ·δbar)·F(x_c) |
-| labor_prod, C_R, Y_R, Y_cR, w_R | data-consistent (price-deflated) observables |
-| ls | labor share w·L/Y |
-
-**Continuation-cost distribution** (heterogeneous exit friction), the model's one genuine
-cost distribution besides the entry-cost convexity:
+## Continuation-cost distribution
 
 ```
-F(x) = (1 − p_0) + p_0·(x/f_m)^ψ        for x ∈ [0, f_m]
-F(x) = 1                                 for x > f_m
+F(χ) = (1 − p_0) + p_0·(χ/χ_m)^ψ   for χ ∈ [0, χ_m];   F(χ) = 1 for χ > χ_m
 ```
 
-Mass 1 − p_0 at zero cost (these firms never endogenously exit); a power-law tail with shape
-ψ up to f_m. Λ ≡ F(x_c) is the survival probability. ψ_c ≡ ψ/(ψ+1).
-
-Survival factor for *t*→*t+1*: `SDF_surv = (1 − δ·δbar)·Λ'`, using the *predetermined* current
-δ and the *next-period* survival Λ' = F(x_c').
+Mass 1 − p_0 at zero cost; a power-law tail with shape ψ up to χ_m. Λ_t ≡ F(χ^c_t).
 
 ## Equations f[1]–f[33]
 
-### Endogenous exit — f[1]–f[2]
+### Exit — f[1]–f[2]
 
-**f[1] Exit threshold** (`eq:cutoff_eq` / `eq:cutoff_free_entry`)
+**f[1] Exit threshold** (`eq:cutoff_eq`)
 ```
-x_c = Y_c·(μ−1)/(μ·N) + ν_f
+χ^c_t = Y^c_t·(μ−1)/(μ·N_t) + ν^f_t
 ```
-The cost cutoff below which a firm continues equals current per-firm gross profit R^f =
-Y_c·(μ−1)/(μN) plus the firm's continuation value ν_f. A firm draws a continuation cost each
-period and continues iff the draw is below this threshold. The cutoff rises with profitability
-and with the value of a product line, so in good times marginal firms that would otherwise
-exit stay.
+A product line continues iff its draw is below current gross profit per line plus its
+post-dividend value. The draw is paid at Stage 2 of t, so the comparison uses period-t profit.
+**Code:** matches in form (f[1]), but in the code N_t, Y^c_t do not respond to χ^c_t (deviation 1).
 
-**f[2] Endogenous destruction rate** (`eq:delta_e_lom`)
+**f[2] Total exit rate** (`eq:delta_e_lom`)
 ```
-δ_e = 1 − (1 − δ·δbar)·Λ,     Λ = (1 − p_0) + p_0·(x_c/f_m)^ψ
+δ_{e,t} = 1 − (1 − δ_{t−1})·Λ_t,     Λ_t = F(χ^c_t)
 ```
-The fraction of firms/jobs destroyed this period. A firm is destroyed either by the exogenous
-shock (rate δ·δbar) or by drawing a continuation cost above the cutoff (prob 1 − Λ). δ is
-predetermined; Λ responds to the cutoff, which is where technology and demand feed the exit
-margin.
+Exogenous destruction realized at the end of t−1, plus endogenous exit at Stage 2 of t.
+**Code:** `δ_e = 1 − (1 − δ·δbar)·Λ` pairs the code's period-t δ with Λ_t and uses it for the
+t→t+1 transition (deviation 1).
 
-### Euler / asset-pricing equations — f[3]–f[5]
+### Asset-pricing equations — f[3]–f[5]
 
-**f[3] Job creation condition** (`eq:jcc_eq`)
-```
-κ + K/q = β·(λ'/λ)·SDF_surv·[ (1−ϕ)(w_int'−K'−b) − ϕ·θ'(K'+q'κ) + (1−s'·sbar)(κ+K'/q') ]
-```
-The marginal cost of filling a job, κ + K/q (flow matching cost plus the vacancy value spread
-over the filling probability), equals its discounted expected return: the firm's share of match
-surplus, minus the worker's outside-option term, plus the re-hiring cost saved when the match
-survives separation (prob 1 − s'). Survival-weighted by SDF_surv and discounted by the
-stochastic discount factor β·λ'/λ. **This is the equation the partial-reposting extension
-changes most (Block 2).**
+Survival factor for t→t+1: **1 − δ_{e,t+1} = (1 − δ_t)·Λ_{t+1}**, inside E_t because both δ_t
+and χ^c_{t+1} are unknown at the decision stage of t.
 
-**f[4] Business-formation Euler** (`eq:firm_value_char`, BGM)
+**f[3] Job creation condition** (`eq:jcc`, `eq:jcc_eq`)
 ```
-ν_f = β·(λ'/λ)·SDF_surv·(ν_f' + d_f')
+κ + K_t/q_t = E_t[ m_{t+1}·(1−δ_t)Λ_{t+1}·(J_{t+1} − Q_{t+1}) ]
+J_t − Q_t  = (1−ϕ)(w^int_t − K_t − b) − ϕ·θ_t(K_t + q_t κ) + (1 − s_t)(κ + K_t/q_t)
 ```
-The value of a firm equals the discounted, survival-weighted sum of next period's dividend
-d_f' and continuation value ν_f'. With free entry (f[18]) this makes the firm mass N
-forward-looking: entry occurs until firm value equals the sunk entry cost.
+The average hiring cost equals the discounted, survival-weighted surplus of a match that
+produces from t+1. The surplus is the recruiter's share of current net revenue plus the
+re-hiring cost saved if the match survives separation. In Block 1 the surplus can be
+substituted into the first line without nesting. **Code:** matches; f[3] is the substituted
+form, with `SDF_surv = (1−δ·δbar)·Λp`.
 
-**f[5] Vacancy (capital) value** (`eq:Kdef`)
+**f[4] Business-formation Euler** (`eq:N_euler_eq`)
 ```
-K = Q − β·(λ'/λ)·SDF_surv·Q'
+ν^f_t = E_t[ m_{t+1}·(1−δ_t)Λ_{t+1}·(ν^f_{t+1} + d^f_{t+1}) ]
 ```
-The net value of a posted vacancy is its sunk posting cost Q minus the discounted,
-survival-weighted resale/continuation value of an unfilled vacancy next period. Q is what the
-firm sinks; K is what remains after accounting for survival.
+**Code:** matches.
 
-### Wage block — f[6]–f[8]
+**f[5] Flow value of a vacancy** (`eq:K`)
+```
+K_t = Q_t − E_t[ m_{t+1}·(1−δ_t)Λ_{t+1}·Q_{t+1} ]
+```
+**Code:** matches.
 
-**f[6] Marginal revenue product** (`eq:recruiter_compensation`)
-```
-w_int = ρ·z·zbar/μ
-```
-The interior value of a worker's output, DS-CES: relative price ρ times productivity z·zbar,
-divided by the markup μ.
+### Wages and vacancy creation — f[6]–f[8]
 
-**f[7] Nash bargaining wage**
-```
-w = ϕ·(w_int − K + θ(K + q·κ)) + (1−ϕ)·b
-```
-The wage splits match surplus: worker share ϕ of the joint value (output net of the firm's
-capital, plus the tightness-weighted hiring-cost term) plus (1−ϕ) of the outside option b.
+**f[6]** `w^int_t = ρ(N_t)·z_t/μ` (`eq:recruiter_compensation`). **Code:** matches.
 
-**f[8] Vacancy creation** (`eq:entry_eq`)
+**f[7] Nash wage** (`eq:wage_eq`; derivation in the wage appendix)
 ```
-Q = x_m·e^(ξ_inv)
+w_t = ϕ·(w^int_t − K_t + f(θ_t)(κ + K_t/q_t)) + (1−ϕ)·b
 ```
-The marginal cost of posting the e_t-th vacancy. Convex in the entry flow e (exponent ξ_inv),
-scaled by x_m. This convexity is the reduced form of a *distribution* of sunk vacancy-creation
-costs; only its shape parameter ξ_inv enters. This is the position-level *creation* cost, the
-sibling the reposting margin does **not** reuse (see Block 2 and note §7.3).
+f(θ)(κ + K/q) = θ(K + qκ). Under Convention A the household's continuation weight is
+(1−δ_{e,t+1})(1 − s_t − f_t), matching the recruiter's, so no (1−s_t) multiplies the f term.
+**Code:** matches.
+
+**f[8] Vacancy creation** (`eq:Q`) `Q_t = x_m·e_t^(1/ξ)`, equivalently e_t = G(Q_t).
+**Code:** matches. This is the position-level *creation* cost from G; reposting does not reuse
+it (Block 2).
 
 ### Labor market — f[9]–f[12]
 
-**f[9] Tightness** `θ = v/u` — vacancies per unemployed worker, using total v.
-
-**f[10] Vacancy-filling rate** `q = A·θ^(−η_L)` — Cobb-Douglas matching; a tighter market
-fills vacancies more slowly.
-
-**f[11] Employment** `L = 1 − u` — labor-market clearing.
-
-**f[12] Labor split** `L = L_c + L_e` — employment divides into production workers L_c and
-recruiters L_e.
+**f[9]** `θ_t = v_t/u_t` · **f[10]** `q_t = A·θ_t^(−η_L)`, `f_t = A·θ_t^(1−η_L)` ·
+**f[11]** `L_t = 1 − u_t` · **f[12]** `L_t = L^c_t + L^e_t`. All period-t, post-exit.
+**Code:** match in form.
 
 ### Goods market — f[13]–f[15]
 
-**f[13] Relative price** `ρ = N^(1/(ε−1))` — DS-CES: more varieties N raise the relative price
-of each, the variety channel that drives amplification.
+**f[13]** `ρ_t = N_t^(1/(ε−1))` · **f[14]** `λ_t = C_t^(−σ)` · **f[15]** `Y^c_t = ρ_t·z_t·L^c_t`.
+**Code:** match in form; N_t is the post-exit stock in the draft (deviation 1).
 
-**f[14] Household Euler** `λ = C^(−σ)` — marginal utility of consumption.
+### Resource constraint and identities — f[16]–f[21]
 
-**f[15] Retail production** `Y_c = ρ·z·zbar·L_c` — retail output from production labor at
-productivity z·zbar and relative price ρ.
-
-### Resource constraint, identities, laws of motion — f[16]–f[24]
-
-**f[16] Resource constraint** (`eq:rc`)
+**f[16] Resource constraint** (`eq:rc`, `eq:agg_fixed_costs`, `eq:X_total`)
 ```
-Y_c = C + X + X_c
-X   = e/(1+ξ_inv)·Q + κ·q·v          (sunk posting costs + matching costs)
-X_c = N·p_0·ψ_c·x_c                    (aggregate continuation costs)
+Y^c_t = C_t + X_t + X^c_t
+X_t   = e_t·Q_t·ξ/(ξ+1) + κ·q_t·v_t
+X^c_t = N_t·∫_0^{χ^c_t} χ dF = N_t·ψ_c·χ^c_t·p_0·(χ^c_t/χ_m)^ψ
 ```
-Retail output funds consumption, vacancy investment, and continuation costs. X splits into the
-integral of the marginal posting-cost schedule, ∫₀^e x_m·u^ξ_inv du = e·Q/(1+ξ_inv), and the
-fixed matching cost κ per match (q·v matches, Pissarides 2009). X_c is the total continuation
-cost paid by incumbents.
+Continuation costs are paid at Stage 2 of t by the N_t survivors. ξ/(ξ+1) = 1/(1+ξ_inv).
+**Code:** `X_c = N·p_0·ψ_c·x_c` drops the (χ^c/χ_m)^ψ factor. Relative error p_0/(Λ−1+p_0),
+0.27% at Λ ≈ 0.9986; the draft now uses the exact form. Upgrade in R8.
 
-**f[17] New entrants** `N_e = z·zbar·L_e/f_e` — entrant firms produced by recruiter labor L_e
-at sunk entry cost f_e in labor units.
+**f[17]** `N^e_t = z_t·L^e_t/f_e` · **f[18]** `ν^f_t = ρ_t·f_e/μ` (`eq:free_entry`) ·
+**f[19]** `Y_t = C_t + ν^f_t·N^e_t` (`eq:gdp`) · **f[20]** `N_t·d^f_t = Y^c_t(μ−1)/μ − X^c_t` ·
+**f[21]** `v_t = v_{pre,t} + e_t`. **Code:** match.
 
-**f[18] Free entry** (`eq:free_entry`) `ν_f = ρ·f_e/μ` — entry until firm value equals the sunk
-entry cost expressed in consumption units.
+### Laws of motion — f[22]–f[24] (Convention A)
 
-**f[19] GDP** (`eq:gdp`) `Y = C + ν_f·N_e` — output is consumption plus the value of newly
-created firms.
-
-**f[20] Income identity** `N·d_f = Y_c·(μ−1)/μ − X_c` — aggregate dividends equal retail
-profits net of continuation costs.
-
-**f[21] Total vacancies** (`eq:v_lom` split) `v = v_pret + e` — surviving pre-entry vacancies
-plus new entrant vacancies; both participate in matching this period.
-
-**f[22] Pre-entry vacancy law of motion** (`eq:v_lom`) — **modified in Block 2**
+**f[22] Pre-entry vacancies** (`eq:v_lom`)
 ```
-v_pret' = (1 − δ_e)·[ (1 − q)·v + s·sbar·(1 − u) ]
+v_{pre,t+1} = (1 − δ_{e,t+1})·[ (1 − q_t)·v_t + s_t·(1 − u_t) ]
 ```
-Vacancies carried into *t+1* are surviving firms' (factor 1 − δ_e) unmatched vacancies
-(1 − q)v plus **reposted separations** s·sbar·(1 − u). Under full reposting *every* separation
-returns as a vacancy. This is the term the Beveridge-curve problem lives in: the reposting
-inflow (1 − δ_e)·s·sbar·(1 − u) > 0 means an s shock raises v (Prop. 5 Part 1, Channel 1).
+Unmatched vacancies plus positions vacated by separations of matches that produced in t, both
+surviving into t+1. Under full reposting every such position returns as a vacancy. The
+reposting base is the same stock that separations are drawn from in f[23].
 
-**f[23] Unemployment law of motion** (`eq:u_lom`, Convention A pre-matching)
+**f[23] Unemployment** (`eq:u_lom`)
 ```
-τ_t = δ_e + s·sbar·(1 − δ_e)
-u'  = [1 − (1 − δ_e)·f(θ)]·u + τ_t·(1 − u),     f(θ) = A·θ^(1−η_L)
+u_{t+1} = [1 − (1 − δ_{e,t+1})·f_t]·u_t + τ_{t+1}·(1 − u_t),   τ_{t+1} = δ_{e,t+1} + s_t(1 − δ_{e,t+1})
 ```
-Unemployment next period is job-losers who did not find work plus newly separated workers.
-Matches formed at *t* reach *t+1* only if the firm survives, hence (1 − δ_e) on the job-finding
-outflow. τ_t applies to the inherited stock (1 − u) only, so a match cannot dissolve before it
-produces. This base is what f[22] reposts on, so v_pre' + L' = (1 − δ_e)(v + L): positions are
-conserved exactly.
+Equivalently L_{t+1} = (1 − δ_{e,t+1})[(1 − s_t)L_t + f_t u_t]. New matches face exit but not
+separation before they produce. With f[22], positions are conserved up to exit:
+v_{pre,t+1} + L_{t+1} = (1 − δ_{e,t+1})(v_t + L_t).
 
-**f[24] Firm law of motion** (`eq:N_lom_eq`) `N' = (1 − δ_e)·(N + N_e)` — incumbents plus
-entrants, both facing current-period destruction δ_e. This is the *variety* margin.
+**f[24] Product lines** (`eq:firm_law_motion`)
+```
+N_{t+1} = (1 − δ_{e,t+1})·(N_t + N^e_t)
+```
+Incumbents and entrants face exogenous destruction δ_t and the t+1 exit draw.
 
-### Labor share — f[25]
+**Code (f[22]–f[24]):** Convention A is implemented (since Sept 6, 2026), but with δ_e built
+from Λ_t rather than Λ_{t+1}, and with u, v_pret, N as predetermined states (deviations 1 and 3).
 
-**f[25]** `ls = w·L/Y`.
+### Labor share, observables, shocks — f[25]–f[33]
 
-### Data-consistent observables — f[26]–f[30]
-
-**f[26]** `labor_prod = Y/(ρ·L)` — real output per worker.
-**f[27]–f[30]** `C_R = C/ρ`, `Y_R = Y/ρ`, `Y_cR = Y_c/ρ`, `w_R = w/ρ` — price-deflated
-aggregates, so model series match empirically deflated data.
-
-### Exogenous shock processes — f[31]–f[33]
-
-**f[31]** `log z' = ρ_z·log z` — technology.
-**f[32]** `log δ' = ρ_δ·log δ` — structural exit (⊥ z).
-**f[33]** `log s' = ρ_s·log s` — worker separation.
+**f[25]** `ls_t = w_t L_t/Y_t` · **f[26]** `labor_prod_t = Y_t/(ρ_t L_t)` ·
+**f[27]–f[30]** `C/ρ`, `Y/ρ`, `Y^c/ρ`, `w/ρ` (price-deflated) · **f[31]–f[33]** shock
+processes (table above). **Code:** match in form.
 
 ---
 
 # BLOCK 2 — Partial-reposting extension
 
-**What changes and why.** Under full reposting every match separation returns as a vacancy, so
-the s shock mechanically raises v (Block 1, f[22]; Prop. 5 Part 1). To fit the Beveridge curve
-at reasonable δ, some separations must fail to repost (note §4.3a: this is inescapable). On
-separation, each vacated position independently draws a reposting cost from the **same**
-continuation-cost distribution F, scaled by α. This is a **one-time reactivation decision**:
-reactivate the slot for search (pay α·χ, obtain a durable vacancy) or retire it permanently
-(headcount cut; to have it back later, create a fresh position at full cost Q). Reactivate iff
-the value of the vacancy obtained covers the cost:
+## The margin
 
-```
-cost of reactivating a vacated position = α·χ,   χ ~ F,   α > 0
-reactivate  ⟺  Q ≥ α·χ  ⟺  χ ≤ Q/α
-```
+On separation, each vacated position independently draws a reactivation cost α·χ, with χ ~ F,
+the **same** distribution as the continuation cost. The decision is one-time: reactivate the
+slot (pay α·χ, obtain a vacancy worth Q) or retire it permanently (to have it back later, the
+recruiter must create a fresh position at cost drawn from G). Reactivate iff Q ≥ α·χ.
 
-**Threshold is Q** (the value of an unfilled vacancy). Confirmed by the R7 derivation (f[3]
-below) against the draft's recruiter block: on separation the recruiter obtains an unfilled
-vacancy worth Q_{t+1} (`eq:value_recruiter_matched`), which the Bellman already discounts, so
-reactivation compares α·χ to Q directly. *(An earlier draft of this file used Q − K; that was an
-over-refinement — the exact object is Q. K ≈ 0.6% of Q, so the numerical difference was
-negligible.)* Q is the only threshold that yields a non-degenerate cyclical Λ_r; a flow-value K
-threshold would pin Λ_r at its floor 1 − p_0. The alternative that would justify a K threshold —
-reposting as a *recurring per-period active-search maintenance* decision — was considered and
-rejected: it models temporary withdrawal rather than the permanent position destruction the
-missing middle requires, needs a new dormant-position state, and delivers less persistence. See
-note §7.3b for the two stories and the verdict.
-
-**Per-position draws, not one draw per firm.** The reposting cost is drawn independently for
-each of a firm's many positions, not once per firm. This is deliberate and preserves the
-model's single firm size. Broer's iid continuation cost keeps all firms identical at production
-because *exit is terminal* — survivors reset each period, leaving no trace. Reposting instead
-lands on a *continuing* state (the firm's position stock), so a single per-firm draw would make
-firms carry different stocks forward, and firm-size heterogeneity would accumulate and break the
-DS-CES symmetric aggregation (`ρ = N^(1/(ε−1))`). With per-position draws, the law of large
-numbers makes **every** surviving firm repost the identical fraction Λ_r = F(Q/α), so all firms
-shrink together and stay symmetric replicas of the aggregate — one firm size, exactly as Broer
-intended, now at the position level. (An earlier draft used one draw per firm with cost α·χ and
-a three-region "missing middle" sorted by χ; that version breaks firm symmetry and is
-superseded. The missing middle survives here, spread uniformly across firms.)
-
-**New parameter:** α (reposting-cost scale), estimated. **Distributions unchanged:** F keeps
-(p_0, ψ, f_m); reposting adds no new distribution. Rationale for drawing from F is in note
-§7.3a.
-
-**Notation.** The reposting rate is written **Λ_r**, capital, parallel to the survival
-probability Λ = F(x_c) — both are F(·) evaluated at a threshold. It is **not** λ: lowercase λ is
-already the marginal utility of consumption (f[14]), which appears in every Euler equation as
-the SDF ratio λ'/λ. Capital Λ and lowercase λ coexist in the current code; Λ_r extends that.
+- **Threshold is Q, not Q − K.** The recruiter obtains an unfilled vacancy worth Q, and the
+  Bellman already discounts it. A flow-value K threshold would pin Λ_r at its floor 1 − p_0;
+  the recurring-maintenance story that would justify it was rejected (note §7.3b).
+- **Per-position draws.** Under the recruiter/retailer segmentation, positions belong to
+  recruiters and retailers rent labor competitively, so only the aggregate vacancy stock
+  enters matching and the law of large numbers delivers Λ_r. Per-position draws are the
+  natural reading (each position is a separate asset). The earlier argument that per-firm
+  draws would break DS-CES symmetry attributed positions to retailers; it is not needed.
+- **One new parameter α**, no new distribution (note §7.3a: F prices *operating* capacity,
+  G prices *creating* it).
+- **Notation.** Λ_r parallels the survival probability Λ. Not λ, which is marginal utility.
+  Draft symbols: Q^rep for the option value; shortfall and mean-cost integral written inline.
+  Do not reintroduce Ψ, D, or M in the draft (clashes with ψ, D^int, 𝒟, m). This file uses
+  M_t ≡ ∫_0^{Q_t/α} χ dF as shorthand only.
 
 ## New equation
 
-**f[new] Reposting rate** — give Λ_r its own defining equation (a tracked control, like δ_e and
-x_c, so its impulse response can be reported; or substitute inline as Λ is)
+**f[new] Reposting rate** (draft: inline in `def:equilibrium`; give it a label)
 ```
-Λ_r = F(Q/α) = min[ (1 − p_0) + p_0·(Q/(α·f_m))^ψ , 1 ]
+Λ_{r,t} = F(Q_t/α) = min[ (1 − p_0) + p_0·(Q_t/(α·χ_m))^ψ , 1 ]
 ```
-The fraction of a surviving firm's vacated positions that are reactivated (threshold Q/α, derived
-in f[3]). Procyclical: when Q rises in booms, Q/α rises, Λ_r rises, so position destruction is
-countercyclical. Bounds: Λ_r ∈ [1 − p_0, 1]. The atom 1 − p_0 always reactivates (zero-cost
-positions), so the most that can ever be destroyed is fraction p_0 of separations — **p_0 caps
-the reposting margin's strength.** Λ_r *saturates* at 1 (all vacated positions repost) for
-α ≤ Q̄/f_m; the margin bites (Λ_r < 1) only for α > Q̄/f_m. Note this is quantity saturation, not
-the costless Block-1 benchmark: at Λ_r = 1 with α > 0 and p_0 > 0 all positions repost but
-still pay α·χ.
+Positions vacated at the end of t−1 are reactivated at Stage 2 of t against the realized Q_t.
+Procyclical, so position destruction is countercyclical. Λ_r ∈ [1 − p_0, 1]: the zero-cost
+atom always reactivates, so p_0 caps the margin. Saturates at 1 for α ≤ Q̄/χ_m. Track it as a
+control so its impulse response can be reported (R9).
 
-**Two routes to the costless benchmark, not one.** An earlier version of this line said the
-costless model is recovered "only as α → 0." That is incomplete. **p_0 → 0 also recovers it**,
-and by a different mechanism: F collapses to a point mass at zero, so every reactivation cost
-draw is α·χ = 0. Then Λ_r = 1, α·M = 0, Q^rep = Q, and X_r = 0. The α → 0 route shrinks the
-cost scale; the p_0 → 0 route removes the cost mass.
-
-The p_0 route is the one that matters for **Proposition 1** (`prop:independence`). Its third
-condition is p_0 = 0, which removes endogenous exit — and because reposting draws from the
-*same* F, it removes the reposting margin at the same time. So Proposition 1 holds with its
-three original conditions and needs no fourth. Had reactivation costs come from a separate
-distribution, p_0 = 0 would not have shut reposting down and the proposition would have
-required an extra condition. This is a second payoff of reusing F, beyond the
-one-fewer-parameter argument in note §7.4.
+**Two routes to the costless benchmark.** α → 0 shrinks the cost scale. p_0 → 0 collapses F to
+a point mass at zero, so every draw is free: Λ_r = 1, Q^rep = Q, X^r = 0. The p_0 route is
+why `prop:independence` needs no fourth condition. Note Λ_r = 1 with α > 0 and p_0 > 0 is
+*quantity* saturation, not the costless model: all positions repost but still pay α·χ.
 
 ## Modified equations
 
-**f[22] Pre-entry vacancy law of motion — MODIFIED**
+**f[22] Pre-entry vacancies — MODIFIED** (`eq:v_lom`)
 ```
-v_pret' = (1 − δ_e)·[ (1 − q)·v + Λ_r'·s·sbar·(1 − u) ],     Λ_r' = F(Q'/α)
+v_{pre,t+1} = (1 − δ_{e,t+1})·[ (1 − q_t)·v_t + Λ_{r,t+1}·s_t·(1 − u_t) ]
 ```
+Λ_{r,t+1} and (1 − δ_{e,t+1}) share a date: both are Stage-2 decisions of t+1, by different
+agents against different thresholds. Factoring (1 − δ_{e,t+1}) out front is legitimate because
+reactivation is a sub-event of survival. The non-reactivated fraction 1 − Λ_{r,t+1} is the
+missing middle: position destruction at surviving product lines, so position conservation now
+leaks by exactly (1 − δ_{e,t+1})(1 − Λ_{r,t+1})s_t(1 − u_t). Scope choice: only the separation
+inflow is attenuated, not the unmatched carry-forward (1 − q_t)v_t.
+**Code:** not implemented (R8).
 
-⚠️ **Λ_r is PRIMED here — corrected Sept 30, 2026.** An earlier version wrote `Λ_r` unprimed,
-which dates the reposting rate one period before the vacancy it values. The position separates
-at end of *t* (hence `s`, `(1−u)` unprimed), and the vacancy obtained by reactivating it is a
-*t+1* vacancy worth `Q'`. So the threshold is `Q'/α` and the rate is `Λ_r' = F(Q'/α)`. This
-matches the recruiter Bellman in f[3] below, where a period-*t* separation is evaluated with
-`Λ_r,t+1`, and the draft's `eq:Qrep`. In draft notation (with `v_t` on the left) the same rate
-is written `Λ_{r,t}` — the rate always carries the period of the vacancy it values, which is
-the LHS stock's period in both notations.
+**f[3] Recruiter block — MODIFIED** (R7; `eq:value_recruiter_matched`, `eq:Qrep`,
+`eq:value_recruiter_surplus`, `eq:jcc`, `eq:surplus_wage`)
 
-⚠️ **Open: the δ_e dating convention differs between draft and code.** The draft writes
-`v_t = (1−δ_{e,t})[…]`, dating survival at the LHS period; this code equation writes
-`(1 − δ_e)` unprimed with `v_pret'` on the left, dating it at the RHS period. Under the draft's
-convention `Λ_{r,t}` and `(1−δ_{e,t})` pair at the same date; under the code's they do not
-(`Λ_r'` vs `δ_e`). One of the two conventions is wrong, or they differ deliberately. Resolve
-before R8 — see [`../Notes/LOM_timing_consistency.md`](../Notes/LOM_timing_consistency.md),
-which settled the u-LOM convention and is the right place to record this.
-
-Otherwise identical to the baseline f[22] with the reposting rate inserted on the separation
-inflow.
-Under full reposting Λ_r = 1 and it collapses to Block 1. The non-reposted fraction (1 − Λ_r) of
-separations is the missing middle: those positions are destroyed. This is the single change that
-lets an s shock lower v, delivering the Beveridge curve. *Scope choice:* attenuation is applied
-to the separation inflow only, not to the unmatched-vacancy carry-forward (1 − q)v; a firm's
-already-posted unmatched vacancies are sunk this period. Revisit if the maintenance decision
-should also cover them.
-
-**Why the LOM needs only δ_e for destruction.** The "survive and repost" event is a sub-event
-of survival: a position is reposted only if its firm continues, and continuing has probability
-exactly 1 − δ_e. So the reposting flow always sits inside the survival flow, and one can pull
-(1 − δ_e) out front, leaving the reposting rate Λ_r inside the bracket. Writing the weight as
-(1 − δ·δbar)·F(Q/α) would spell out "survive exogenous exit **and** clear the reposting cutoff"
-as one joint probability; factoring uses (1 − δ_e) = (1 − δ·δbar)·Λ to separate the two. The
-factoring is legitimate precisely because reposting ⊂ survival — if an *exiting* firm could
-repost, the weight would not nest inside 1 − δ_e and the two destruction events would have to be
-written separately.
-
-**f[3] Job creation condition — MODIFIED (derived R7, Sept 29)**
-
-Derivation grounds in the draft's recruiter block (`eq:value_recruiter_unmatched`,
-`eq:value_recruiter_matched`, `eq:jcc`). The **only** value function that changes is the matched
-recruiter's, and only its *separation branch*. In the draft, on separation (prob s_t) the
-recruiter obtains an unfilled vacancy worth Q_{t+1} — reposted for free. Under partial reposting
-that becomes the **reactivation option value**
-
+Only the matched recruiter's separation branch changes:
 ```
-Q^rep_{t+1} = E_χ[ max(Q_{t+1} − α·χ, 0) ] = Q_{t+1}·Λ_r,t+1 − α·M_{t+1}
-Λ_r = F(Q/α),   M = ∫_0^{Q/α} χ dF(χ);   interior (Λ_r<1): α·M = ψ_c·Q·(Λ_r−1+p_0), ψ_c = ψ/(ψ+1)
+J_t = w^int_t − w_t + E_t[ m_{t+1}(1−δ_t)Λ_{t+1}·( s_t·Q^rep_{t+1} + (1 − s_t)·J_{t+1} ) ]
+Q^rep_t = E[max(Q_t − αχ, 0)] = Q_t·Λ_{r,t} − α·M_t
 ```
-
-**Notation (aligned with `Draft.tex` `eq:Qrep`).** The draft writes this option value as **Q^rep**,
-renamed from an earlier `Ψ` that clashed visually with the shape index `ψ`. In the *draft* the mean
-integral is written inline (not given a symbol — a capital `M` would collide with the matching
-function `m`/the SDF), and the shortfall is written inline as `Q − Q^rep`, *not* `D` (plain `D`
-collides with the intermediary dividend `D^{int}` and the duration multiplier `\mathcal{D}`). This
-doc uses `M ≡ ∫_0^{Q/α} χ dF` as shorthand only. The closed form
-`α·M = ψ_c·Q·(Λ_r−1+p_0)` holds only in the **interior** regime `Q/α ≤ χ_m` (`Λ_r < 1`); in the
-saturated regime it is `α·∫_0^{χ_m} χ dF`.
-
-### Deriving M, and what its factors mean
-
-Worth writing out once, because three different "per-position cost" objects live here and
-conflating them has already caused one error (see f[16]). With threshold `x = Q/α`, the atom
-at zero contributes nothing, so only the power-law part integrates:
-
+Recruiter surplus, with the expected discounted shortfall
+𝓡_t ≡ E_t[ m_{t+1}(1−δ_t)Λ_{t+1}·(Q_{t+1} − Q^rep_{t+1}) ]:
 ```
-dF = p_0*ψ*χ^(ψ-1)/χ_m^ψ dχ        on (0, χ_m]
-M  = ∫_0^x χ dF = (p_0*ψ/χ_m^ψ) * ∫_0^x χ^ψ dχ
-   = p_0 * ψ/(ψ+1) * x^(ψ+1)/χ_m^ψ
-   = ψ_c * x * p_0*(x/χ_m)^ψ
-   = ψ_c * x * (Λ_r - 1 + p_0)          since Λ_r = F(x) = (1-p_0) + p_0*(x/χ_m)^ψ
-α*M = ψ_c * Q * (Λ_r - 1 + p_0)     using x = Q/α
+J_t − Q_t = w^int_t − w_t − K_t + (1 − s_t)(κ + K_t/q_t) − s_t·𝓡_t
+κ + K_t/q_t = E_t[ m_{t+1}(1−δ_t)Λ_{t+1}·(J_{t+1} − Q_{t+1}) ]
 ```
+The shortfall Q − Q^rep = Q(1 − Λ_r) + α·M is the value lost relative to free reposting:
+forgone vacancies plus reactivation costs paid. **Keep J − Q as a tracked jump.** Substituting
+it into the job creation condition composes two one-period lookaheads into a t+2 term (a
+nested expectation); the model itself is first-order Markov. **Nesting:** α → 0 or p_0 → 0.
 
-**α cancels.** It scales the cost and the threshold in opposite directions, so α enters
-α*M only through Λ_r.
-
-**The two factors.**
-
-| Factor | Meaning |
-|---|---|
-| `ψ_c*Q = α*ψ_c*x` | mean cost among positions that pay a **positive** cost. Independent of p_0 |
-| `(Λ_r - 1 + p_0)` | probability a vacated position is a *paying* reposter: draws from the power law **and** clears the threshold |
-
-So `α*M` = (probability of paying) × (mean payment) = expected cost **per vacated position**.
-
-**Three distinct objects — do not substitute one for another:**
+**Deriving M.** With threshold x = Q/α, only the power-law part integrates:
+```
+M = ∫_0^x χ dF = (p_0ψ/χ_m^ψ)∫_0^x χ^ψ dχ = ψ_c·x·p_0·(x/χ_m)^ψ = ψ_c·x·(Λ_r − 1 + p_0)
+α·M = ψ_c·Q·(Λ_r − 1 + p_0)        (interior, Q/α ≤ χ_m; α cancels except inside Λ_r)
+```
 
 | Object | Value | Per what |
 |---|---|---|
-| `α*M` | `ψ_c*Q*(Λ_r-1+p_0)` | per **vacated** position — the one f[16] needs |
-| `α*M/Λ_r` | `ψ_c*Q*(Λ_r-1+p_0)/Λ_r` | per **reactivated** position (includes the free atom) |
-| `ψ_c*Q` | `ψ_c*Q` | per position that actually **pays** |
+| α·M | ψ_c·Q·(Λ_r − 1 + p_0) | per **vacated** position (what X^r needs) |
+| α·M/Λ_r | ψ_c·Q·(Λ_r − 1 + p_0)/Λ_r | per **reactivated** position |
+| ψ_c·Q | ψ_c·Q | per position that actually **pays** |
 
-**Limits.** As `Λ_r → 1 - p_0` the threshold goes to zero, no power-law draw clears, and
-`α*M → 0`: only free positions repost, so no costs are paid. At `Λ_r = 1`,
-`α*M = ψ_c*Q*p_0`. At the saturation boundary `Q = α*χ_m` the interior form and the
-saturated form `α*ψ_c*χ_m*p_0` agree, so α*M is continuous across regimes.
+α·M already contains Λ_r (partial expectation), so Λ_r must not be applied again in X^r. As
+Λ_r → 1 − p_0, α·M → 0. At Q = α·χ_m the interior and saturated forms (α·ψ_c·χ_m·p_0) agree.
 
-
-**Threshold is Q, not Q − K** (corrects an earlier draft of this file). The recruiter obtains an
-unfilled vacancy worth Q_{t+1}; the draft's Bellman already discounts it by m(1−δ)F, so the
-reactivation compares α·χ to Q directly. Reactivate iff **Q ≥ α·χ ⟺ χ ≤ Q/α**.
-
-**Matched recruiter value** (modified `eq:value_recruiter_matched`):
+**f[7] Nash wage — MODIFIED**
 ```
-J_t = w_int − w + β·(λ'/λ)·(1 − δ)·F(x_c')·[ s·Q'^rep + (1 − s)·J' ]
+w_t = ϕ·(w^int_t − K_t + f(θ_t)(κ + K_t/q_t) − s_t·𝓡_t) + (1−ϕ)·b
 ```
+The household surplus has no reposting term (a separated worker is unemployed either way), so
+the shortfall enters bargaining only through the recruiter's surplus, and the worker bears
+share ϕ of it. It works like a firing cost, except that separation is exogenous. Derived in
+the draft's wage appendix.
 
-**Recruiter surplus** (`eq:value_recruiter_surplus` gains one term):
+**Wage-substituted surplus** (`eq:surplus_wage`, `eq:surplus_eq`; the form to track in code)
 ```
-J_t − Q_t = w_int − w − K + (1 − s)(κ + K/q)  −  s·β(λ'/λ)(1−δ)F(x_c')·(Q' − Q'^rep)
+J_t − Q_t = (1−ϕ)(w^int_t − K_t − b) − ϕ·θ_t(K_t + q_t κ) + (1 − s_t)(κ + K_t/q_t) − (1−ϕ)·s_t·𝓡_t
 ```
-The shortfall `Q' − Q'^rep = Q'(1 − Λ_r') + α·M'` is the per-separated-position value lost relative
-to free full reposting: `α·M'` = reactivation costs paid by reposters, plus `Q'(1−Λ_r')` = vacancy
-value forgone by non-reposters.
+⚠️ The coefficient on 𝓡_t is **(1−ϕ)**, not 1. ⚠️ **Draft status:** the wage appendix carries
+(1−ϕ); the main-text `eq:wage_eq`, `eq:surplus_wage`, and `eq:surplus_eq` still need the fix.
 
-**Modified JCC.** Substituting the surplus into the unchanged average-hiring-cost relation
-`κ + K/q = E m(1−δ)F(J' − Q')`:
+**f[16] Resource constraint — MODIFIED** (`eq:agg_repost_costs`, `eq:rc`, `eq:gdp`)
 ```
-κ + K/q = β(λ'/λ)(1−δ)F(x_c')·[ w_int'−w'−K' + (1−s')(κ+K'/q') − s'·β(λ''/λ')(1−δ')F(x_c'')·(Q''−Q''^rep) ]
+Y^c_t = C_t + X_t + X^c_t + X^r_t
+X^r_t = (1 − δ_{e,t})·s_{t−1}(1 − u_{t−1})·α·M_t = (1 − δ_{e,t})·s_{t−1}(1 − u_{t−1})·ψ_c·Q_t·(Λ_{r,t} − 1 + p_0)
 ```
-The new term `− s'·(discounted (Q''−Q''^rep))` is the extra penalty: a job created now may separate
-at t+1 (prob s'), and that separation's shortfall `Q−Q^rep` is realized on the vacancy obtained at
-t+2, so it enters with a **nested** expectation. **Implementation note:** rather than substitute,
-keep the matched value J (or the surplus S = J − Q) as a tracked jump variable with its own
-Bellman (the modified `eq:value_recruiter_matched` above); this keeps the system first-order
-Markov and avoids the nested E. **Nesting:** the *costless* current model is recovered as **α → 0**
-(then Q^rep → Q and the shortfall → 0); note this differs from the f[22] LOM, whose *quantity* of
-reposted vacancies saturates at Λ_r = 1. At Λ_r = 1 with α > 0 all vacancies repost but costs are
-still paid (Q^rep < Q), so only α → 0 gives the fully costless benchmark.
+Costs are paid at Stage 2 of t, when reactivation happens against the realized Q_t, on the
+positions vacated at the end of t−1 at surviving product lines. The count is the reposting
+inflow of f[22] *without* Λ_r, because α·M already embeds it. **This timing is forced by the
+Stage-2 reactivation node.** Paying at separation against E_t Q_{t+1} would make reactivation
+condition on an expectation and lose the procyclicality the margin rests on. Under the R8
+state vector, s_{t−1}(1 − u_{t−1}) is a function of states, so no extra lag is needed.
+Use the exact integral: the X^c-style shortcut (p_0 for Λ_r − 1 + p_0) overstates X^r by 25%
+at Λ_r = 0.9 and 2.5× at 0.7, and is wrong at the floor, where exact X^r = 0.
 
-**f[5] Vacancy (capital) value — UNCHANGED in form.** The unfilled-vacancy Bellman and K =
-Q − β(λ'/λ)(1−δ)F(x_c')Q' do not involve the reposting decision (reposting acts on the *matched*
-value's separation branch). K inherits new equilibrium values through Q and the surplus, but its
-equation is untouched. Confirmed by the derivation.
+## Unchanged in form
 
-**f[16] Resource constraint — MODIFIED (add reactivation costs actually paid)**
-```
-Y_c = C + X + X_c + X_r
-X_r = (1 − δ_e)·s_{−1}·sbar·(1 − u_{−1}) · α·M,    α·M = ψ_c·Q·(Λ_r − 1 + p_0)
-```
+- **f[1], f[4], f[18], f[20] (retailer block).** The firm Bellman (`eq:firm_bellman`) has only
+  retail profit, the draw χ, and the continuation value, with no Q, K, J, or reposting object.
+  Recruiter profits (w^int − w)L are a separate flow to the household. Reposting is downstream
+  of exit, so these move only through general equilibrium.
+- **f[2] δ_e.** Reposting destroys positions at surviving product lines, not product lines.
+- **f[5] K.** The unfilled-vacancy Bellman does not involve reactivation.
+- **f[23] unemployment.** Workers separate at τ regardless of reactivation.
+- **f[24] product lines.** The variety margin is untouched: only δ moves N, which keeps the
+  core δ–s asymmetry.
+- **f[6], f[8]–f[15], f[17], f[19], f[21], f[25]–f[33].**
 
-⚠️ **Timing follows from the f[22] correction above — settled Sept 30, 2026.** The cost is paid
-when the position is reactivated, and reactivation happens at the period of the vacancy
-obtained. So a period-*t* resource constraint carries costs on positions vacated at end of
-*t−1*, valued at the *t* threshold `Q_t`: hence the **lagged** separation flow with the
-**current** `α·M`. This pairs term by term with `eq:v_lom`'s reposting inflow, which in draft
-notation is `(1−δ_{e,t})·Λ_{r,t}·s_{t−1}(1−u_{t−1})` — the same count, with `α·E[χ|repost]`
-per position instead of one vacancy per position. In draft notation:
-`X_{r,t} = (1−δ_{e,t})·s_{t−1}(1−u_{t−1})·α∫_0^{Q_t/α} χ dF`.
+## Open items
 
-**R8 implementation note.** The draft's LOM already carries lagged separation flows, so this is
-natural there. The code's f[22] uses *unprimed* `s·sbar·(1−u)` for `v_pret'`, so a t-dated X_r
-needs a lagged flow the code does not currently track. Two options: (a) add the lag, matching
-the draft; or (b) re-date to *pay at separation* — the cost is sunk at end of *t* against the
-anticipated `Q'`, giving `X_r = (1 − δ_e)·s·sbar·(1 − u)·α·M'` with no new state. Option (b) is
-cheaper and arguably the more natural reading of a sunk reactivation decision, but it is a
-different model, not a notational variant. **Pick one and record it here.**
-**α·M is expected reactivation cost per VACATED position, not per reposter.** `M` is a *partial*
-(unconditional) expectation, so `α·M = α·Λ_r·E[χ | χ ≤ Q/α]` — it already contains Λ_r. That is
-what makes it the right multiplicand for the count of vacated positions, and it is why **Λ_r
-must not appear again** in X_r. Full derivation and the three distinct per-position objects:
-§"Deriving M, and what its factors mean" under f[3] above. The conditional mean among reposters
-is `α·M/Λ_r`; the two coincide only at Λ_r = 1, which is why conflating them is easy.
-
-⚠️ **Do NOT apply the draft's X_c shortcut to X_r — corrected Sept 30, 2026.** The draft writes
-`X^c = N·p_0·ψ_c·χ^c` (`eq:agg_fixed_costs`), dropping the `(χ^c/χ_m)^ψ` factor the exact
-integral carries. Substituting `p_0` for `(Λ − 1 + p_0)` costs a relative error of
-`p_0/(Λ − 1 + p_0)`:
-
-- **For X_c it is negligible.** From f[2], Λ = (1−δ_e)/(1−δ·δbar) = 0.99729/0.998645 ≈ **0.9986**
-  at `dest_ann = 0.0320`, so with p_0 = 0.5 the error is **0.27 %**.
-- **For X_r it is not.** Λ_r < 1 by construction — that is the entire point of the margin. At
-  Λ_r = 0.9 the shortcut overstates X_r by 25 %; at Λ_r = 0.7, by **2.5×**.
-- **At the floor Λ_r = 1 − p_0 it is qualitatively wrong**: exact X_r = 0 (only free positions
-  repost) while the shortcut gives ψ_c·Q·p_0 > 0.
-
-The approximation is good for X_c *because* survival is near 1, and bad for X_r *because*
-reposting is not. Use the exact integral for X_r, as written above. There is no reason to
-approximate either: the exact forms are `α·M = ψ_c·Q·(Λ_r − 1 + p_0)` and
-`X_c = N·ψ_c·x_c·p_0·(x_c/f_m)^ψ`, no harder to write than the shortcuts. Upgrading X_c costs
-0.27 % and removes the inconsistency.
-
-**f[1] / f[4] / f[18] Exit threshold, firm value, free entry — UNCHANGED in form (confirmed Sept 29).**
-Checked against the draft's retailer block. The firm Bellman (`eq:firm_bellman`) contains only
-retail operating profit R^f = (μ−1)/μ·ρy (`eq:retail_profits`), the continuation-cost draw χ, and
-the discounted continuation value — no Q, K, J, or reposting object. Hence the cutoff
-x_c = R^f + ν_f (f[1]), the dividend d_f = Π^f/N with Π^f = Y_c/ε − X_c, and the
-business-formation Euler (f[4]) carry no reposting term. Recruiter profits Π^int = (w_int − w)L
-are a *separate* flow to the household (`Y = wL + Π^f + Π^int`), not part of ν_f or d_f. The
-recruiter/retailer segmentation makes the dependence triangular: the recruiter's Q, J, and the
-reposting option depend on retailer survival (1−δ)F(x_c), but the retailer's x_c, ν_f, d_f do
-**not** depend on reposting. Reposting is downstream of the exit decision. So the reposting
-option lives entirely in the recruiter's J → f[3]; f[1]/f[4]/f[18] move only through general
-equilibrium (aggregate Y_c, w_int, N → R^f), with no new term.
-
-## Equations that do NOT change, and why
-
-- **f[2] δ_e (destruction rate):** firm exit is unaffected. Reposting destroys *positions* at
-  *surviving* firms, not firms/varieties.
-- **f[23] Unemployment LOM:** workers separate into unemployment at τ_t regardless of whether
-  the firm reposts the vacated position. Worker flows are unchanged; only the vacancy return
-  changes (f[22]). Note the position-conservation identity v_pre' + L' = (1 − δ_e)(v + L) now
-  breaks by exactly the non-reposted mass — that leakage *is* the missing middle.
-- **f[24] Firm LOM (N):** the variety margin is untouched. This is the core asymmetry the paper
-  keeps: only δ moves N, so only δ produces a persistent outward Beveridge shift; a non-reposted
-  s separation destroys a position but leaves the product line and the entry margin intact.
-- **f[6]–f[21], f[25]–f[33]:** wage block, goods market, entry, observables, and shock processes
-  are unchanged in form (they inherit new equilibrium values through Q, K, and the LOMs).
-
-## Open derivation items (see note §9 and §10)
-
-1. Re-derive f[3] (JCC) and confirm f[5], f[1], f[4] with the reposting option; restate
-   `lem:vpre` and the Prop. 5 Part 2 Jacobian, which touch the reposting channel.
-2. ✅ **Resolved Sept 30, 2026.** X_r uses the **exact** integral, not the X_c shortcut — see
-   f[16]. Remaining sub-item: choose the X_r timing convention (lagged flow vs pay-at-separation)
-   and record it. The δ_e dating convention between draft and code also needs settling (f[22]).
-3. Derive the threshold Λ_r* where the s→v sign flips; Prop. 5 Part 1 becomes conditional on Λ_r.
-4. Verify on simulated data that α is separately identified from σ_s and from f_m (note §7.5).
+1. **R8:** implement the restructured state vector (Code status above) together with Block 2.
+   Upgrade X^c to the exact integral at the same time.
+2. **R2:** verify on simulated data that α is separately identified from σ_s and from χ_m.
+3. **R3 / Prop. 5 under partial reposting:** Parts 1–2 now assume costless reposting
+   (p_0 = 0 or α → 0). A result for α > 0 (e.g. a threshold Λ_r* at which the s→v sign
+   flips) is not derived.
+4. **Draft:** fix the (1−ϕ) coefficient in `eq:surplus_wage`/`eq:surplus_eq` and the
+   −s_t·𝓡_t term in `eq:wage_eq`; give Λ_r a labelled equation.

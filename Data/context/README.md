@@ -1,6 +1,6 @@
 # Context Folder — Index
 **Last reorganized:** September 5, 2026 (branch `Organize_Project_State_Estimation`)
-**Last consistency pass:** September 30, 2026 (branch `costly_vacancy_reposting`)
+**Last consistency pass:** October 1, 2026 (branch `costly_vacancy_reposting`; decisions, tasks, draft status cleaned; timing settled)
 
 Nine files, each with one job, plus the dated session handouts. If you are about to write
 something here, check this table first — most duplication in the past came from appending
@@ -9,22 +9,23 @@ status notes to whichever file was open rather than the file that owns the topic
 | File | Owns | Does **not** own |
 |---|---|---|
 | [`principles.md`](principles.md) | Standing rules (1–21) **and the non-negotiable rules N1–N15** that constrain every choice | Anything provisional — that is a decision |
-| [`decisions.md`](decisions.md) | Decisions D1–D11 (D1 settled; D2, D3 open; D10, D11 partial) + settled S1–S9, each with reasons | Tasks. A decision is a choice; a task is work |
+| [`decisions.md`](decisions.md) | Open decisions D2, D3, D4, D10, D11; settled D1, D5–D7, S1–S12 (S10 timing, S11 X^r timing, S12 Prop. 5 Part 1), each with reasons | Tasks. A decision is a choice; a task is work |
 | [`pending_tasks.md`](pending_tasks.md) | Actionable work, ordered; the critical path | Decisions, results, draft status |
 | [`estimation_design.md`](estimation_design.md) | How Blocks M and B combine; what is missing to run it; build order | Empirical results |
 | [`findings.md`](findings.md) | All empirical and model-mechanism results with numbers | Draft status, tasks |
 | [`draft_status.md`](draft_status.md) | Section-by-section draft state; proposition inventory and proof structures | Results, tasks |
 | [`data_and_files.md`](data_and_files.md) | Data sources, FRED IDs, file locations, empirical targets | How the code works |
 | [`parameters.md`](parameters.md) | All structural parameters: economic meaning, classification, identifying moments | Code implementation details |
-| [`model_equations.md`](model_equations.md) | All 33 model equations with economic interpretation (Block 1 = current full-reposting; Block 2 = partial-reposting modifications) | Calibration values, results |
+| [`model_equations.md`](model_equations.md) | All 33 model equations, dated in the draft's timing, with the code's deviations and the R8 restructuring spec (Block 1 = full reposting; Block 2 = partial reposting) | Calibration values, results |
 | [`pipeline.md`](pipeline.md) | Both pipelines: script inventory, run order, code conventions | What the results were |
 
 ## Reading order when picking the project back up
 
-1. **`session_handout_20260930b.md`** — latest session handout (reposting revision complete; resume at R3)
-2. `../CLAUDE.md` — one-paragraph framing and current priorities
-3. **`decisions.md`** — what is unsettled; this is where the branch's work is
-4. `pending_tasks.md` — the critical path
+1. `../CLAUDE.md` — one-paragraph framing and current priorities
+2. **`pending_tasks.md`** — the critical path (as of Oct 1: E9, then the single regeneration pass R8 + D1 + PATH B)
+3. **`decisions.md`** — what is unsettled, and the settled timing (S10–S12)
+4. `model_equations.md` — the model spec, if the task touches the code
+5. Dated `session_handout_*.md` files are history; the files above supersede them
 5. `estimation_design.md` — if the task touches estimation
 6. The rest as needed
 

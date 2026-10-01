@@ -638,15 +638,22 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	where $s_{t-1}$ is the match-separation shock that realized at 
 	end of $t-1$. The unemployment law of motion is
 	\begin{align}
-		u_{t}=(1-f(\theta_{t-1}))u_{t-1}+\tau_{t}
-		\bigl[(1-u_{t-1})+f(\theta_{t-1})u_{t-1}\bigr]\label{eq:u_lom}
+		u_{t}=\bigl[1-(1-\delta_{e,t})f(\theta_{t-1})\bigr]u_{t-1}
+		+\tau_{t}(1-u_{t-1})\label{eq:u_lom}
 	\end{align}
-	The first term is last period's unemployed who did not find a 
-	job; the second is the fraction $\tau_t$ of last period's 
-	employed (including those who matched in $t-1$) who separate 
-	before production in $t$. This has the same form as the textbook 
-	model, with the total separation rate $\tau_t$ replacing the 
-	constant separation rate of DMP.
+	The first term is last period's unemployed who did not enter
+	employment: those who did not find a job, plus those who matched
+	in $t-1$ with a product line that then exited. The second is the
+	fraction $\tau_t$ of the workers employed at the start of $t-1$
+	who separate before production in $t$. Matches formed in $t-1$
+	are exposed to product-line exit but not to match separation
+	before they first produce. This is the standard DMP timing, also
+	used by \citet{gabrovski_2025}, with the total separation rate
+	$\tau_t$ replacing the constant separation rate. The separation
+	base $1-u_{t-1}$ is the same stock that feeds the reposting
+	inflow in~\eqref{eq:v_lom}, so the two laws of motion are
+	consistent: every separated match at a surviving product line
+	returns a vacated position to its recruiter.
 	
 	Sunk vacancy creation costs render vacancies partially 
 	predetermined: current vacancies evolve as
@@ -656,9 +663,9 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	\end{align}
 	Current vacancies are the sum of three components: 
 	(i)~unmatched vacancies from last period that survived product destruction; 
-	(ii)~filled jobs that experienced a match separation at end of
-	$t-1$ but whose firm survived both margins and chose to reactivate
-	the vacancy; and (iii)~vacancies created by new
+	(ii)~filled jobs in place at the start of $t-1$ that experienced a
+	match separation at end of $t-1$, whose firm survived both margins,
+	and whose recruiter chose to reactivate the vacancy; and (iii)~vacancies created by new
 	entrants $e_t$, who enter at the start of $t$ before matching.
 	Note that $(1-\delta_{e,t})$ multiplies both (i) and (ii):
 	only firms surviving both exogenous destruction and the
@@ -692,17 +699,26 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	means of technology, exogenous product destruction, and 
 	idiosyncratic separation, respectively, and innovations 
 	$e_{zt}$, $e_{\delta t}$, $e_{st}$ are mutually uncorrelated. 
-	Shocks $s_t$ and $\delta_t$ realise at the end of period $t$, 
-	after production, bargaining, and matching, as illustrated in 
-	Figure~\ref{fig:Timing}. Agents making vacancy and entry decisions 
-	at the start of $t$ therefore act on $s_{t-1}$ and 
-	$\delta_{t-1}$ --- the shocks that realised at end of $t-1$ --- 
-	which determines the total exit rate 
-	$\delta_{e,t}=1-(1-\delta_{t-1})F(\chi_t^c)$ and aggregate 
+	Shocks $s_t$ and $\delta_t$ realize at the end of period $t$,
+	after production, bargaining, and matching, as illustrated in
+	Figure~\ref{fig:Timing}. Agents making vacancy and entry decisions
+	at the start of $t$ therefore act on $s_{t-1}$ and
+	$\delta_{t-1}$, the shocks that realized at end of $t-1$. These
+	determine the total exit rate
+	$\delta_{e,t}=1-(1-\delta_{t-1})F(\chi_t^c)$ and aggregate
 	separation rate $\tau_t=\delta_{e,t}+s_{t-1}(1-\delta_{e,t})$.
 	This lag, combined with sunk vacancy creation costs, is the
 	source of predetermination: vacancies and employment are
 	partially predetermined with respect to current shocks.
+
+	The two shocks reach different stocks. Match separation $s_t$
+	applies only to the $1-u_t$ matches in place at the start of $t$,
+	which produced in $t$. Matches formed in $t$ have not yet produced.
+	They are exposed to product destruction $\delta_t$ and to the
+	continuation-cost draw at the start of $t+1$, but they first face
+	match separation at the end of $t+1$. Product destruction, in
+	contrast, removes every position attached to the product line:
+	incumbent matches, new matches, and unfilled vacancies alike.
 
 	Reactivation is settled at this same node, but it is the
 	recruiter's decision, not the retailer's. Recruiters hold
@@ -769,17 +785,24 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 				{Match $m(u_t,v_t)$\\$\theta_t=v_t/u_t$};
 				
 				\node[ebox] (B5) at (18.5, 3.2)
-				{Match separation $s_t$\\Product destruction $\delta_t$\\
+				{Match separation $s_t$\\(incumbent matches)\\
+					Product destruction $\delta_t$\\
 					Update $u_{t+1},v_{t+1},N_{t+1}$};
 				
 				%% ── BELOW: key implied stocks ──
 				\node[gbox] (C1) at (5.5, -2.8)
 				{$\delta_{e,t}=1{-}(1{-}\delta_{t-1})F(\chi_t^c)$\\
 					$\tau_t=\delta_{e,t}+s_{t-1}(1{-}\delta_{e,t})$\\
-					$u_t$: post-exit, pre-match};
-				
+					$u_t$: post-exit, pre-match\\
+					$1{-}u_t$: employed, produce in $t$};
+
 				\node[gbox] (C2) at (13.5, -2.2)
 				{Post-match unemployed:\\$(1{-}f(\theta_t))u_t$};
+
+				\node[gbox, text width=4.0cm] (C3) at (18.5, -2.8)
+				{$s_t$ hits the $1{-}u_t$ only\\
+					New matches $f(\theta_t)u_t$:\\
+					exposed to $\delta_t$, not $s_t$};
 				
 				%% ── connectors ──
 				\foreach \d/\B in {d1/B1, d2/B2, d3/B3, d4/B4, d5/B5}
@@ -787,6 +810,7 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 				
 				\draw[lw,->] (d2) -- (C1);
 				\draw[lw,->] (d4) -- (C2);
+				\draw[lw,->] (d5) -- (C3);
 				
 				%% ── end-of-period shaded band ──
 				\fill[yellow!25, opacity=0.7] (16.5,-0.7) rectangle (20.5,0.7);
@@ -794,7 +818,10 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 				
 		\end{tikzpicture}}
 		\caption{Timing. Turquoise: agent decisions. Grey: implied states. 
-			Yellow band: shocks realizing end of $t$, governing $t{+}1$.}
+			Yellow band: shocks realizing end of $t$, governing $t{+}1$.
+			Match separation applies only to matches in place at the
+			start of $t$; matches formed in $t$ first face it at the end
+			of $t{+}1$.}
 		\label{fig:Timing}
 	\end{figure}
 	
@@ -1247,9 +1274,11 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	\subsection{Definition of equilibrium}\label{sec:def_eq}
 	
 	\begin{definition}\label{def:equilibrium}
-		Given $\rho(N)$, $\mu(N)$, $F$, initial exogenous 
-		states $\{z_0,\delta_0,s_0\}$, and initial endogenous 
-		states $\{v_{-1},u_{-1},u_0,N_0\}$, an equilibrium is 
+		Given $\rho(N)$, $\mu(N)$, $F$, initial exogenous
+		states $\{z_0,\delta_{-1},s_{-1}\}$, and initial endogenous
+		states $\{v_{-1},u_{-1},B_{-1}\}$, where
+		$B_{-1}\equiv N_{-1}+N^e_{-1}$ is the stock of product lines
+		entering period~0 before exit, an equilibrium is
 		a sequence $\{N_t, C_t, \chi_t^c, Y_t^c, \theta_t,
 		K_t, Q_t, J_t, e_t, v_t, u_t\}_{t=0}^\infty$ satisfying the
 		business formation block:
@@ -1473,9 +1502,8 @@ two.
 		\left[(1-q(\theta_{t-1}))v_{t-1}
 		+s_{t-1}(1-u_{t-1})\right]+e_t\\
 		\label{eq:u_ags}
-		u_t &= (1-f(\theta_{t-1}))u_{t-1}
-		+\tau_t\left[(1-u_{t-1})
-		+f(\theta_{t-1})u_{t-1}\right]
+		u_t &= \left[1-(1-\delta_{t-1})f(\theta_{t-1})\right]u_{t-1}
+		+\tau_t(1-u_{t-1})
 	\end{align}
 	together with $e_t=G(Q_t)$,
 	$m_t=\beta(C_t/C_{t-1})^{-\sigma}$,
@@ -1558,22 +1586,26 @@ further adds endogenous exit to the LR-BGM core.
 \subsection{Shock transmission and the \texorpdfstring{$\delta$--$s$}{delta-s} asymmetry}\label{sec:mechanism}
 
 The equilibrium laws of motion imply qualitatively distinct labor-market dynamics under product destruction versus match separation shocks.
-This section establishes the asymmetry analytically, motivating the paper's focus on $\delta$ shocks throughout the quantitative analysis.
+This section establishes the asymmetry analytically. Part~1 of the proposition below is a benchmark. With $p_0=0$ there is neither endogenous exit nor costly reactivation, so every match separation at a surviving product line returns its position as a vacancy, and an $s$ shock moves unemployment and vacancies in the same direction. Negative $u$--$v$ comovement must then come from one of two sources: $\delta$ shocks with a large enough role, since they destroy positions together with matches (Part~3), or partial reposting, which turns part of each separation into position destruction. The model contains both, and the quantitative analysis assesses their relative contributions.
 
 \begin{proposition}[$\delta$--$s$ asymmetry in unemployment-vacancy comovement]
 	\label{prop:ds_asymmetry}
 	\leavevmode
 	\begin{enumerate}
-		\item \emph{($s$ shock, exogenous exit.)}
-		Suppose $p_0=0$. Then for any $\rho_s\in[0,1)$, a positive
-		$s_t$ shock raises unemployment and vacancies simultaneously at
-		horizon $h=1$, generating positive $u$--$v$ comovement.
-		\item \emph{($s$ shock, endogenous exit.)}
+		\item \emph{($s$ shock, benchmark: exogenous exit and costless reposting.)}
+		Suppose $p_0=0$. A positive $s_t$ shock raises unemployment and
+		pre-committed vacancies by the same amount,
+		$d\equiv(1-\delta_t)(1-u_t)$. Total vacancies therefore rise at
+		horizon $h=1$, generating positive $u$--$v$ comovement, provided
+		entry does not contract by more than the reposting inflow:
+		$-\partial e_{t+1}/\partial s_t<d$.
+		\item \emph{($s$ shock, endogenous exit, costless reposting.)}
 		Under DS-CES with
 		\begin{equation}\label{eq:gN_cond}
 			f_e\bar{N} < \frac{\bar{z}(1-\bar{u})(\varepsilon-2)}{\varepsilon-1},
 		\end{equation}
-		the preceding result extends to the full model ($p_0>0$) if the
+		the preceding result extends to $p_0>0$ with costless
+		reposting ($\alpha\to0$) if the
 		reposting inflow $(1-\delta_t)\Lambda_{t+1}(1-u_t)$ weakly
 		dominates the endogenous exit drain
 		$(1-\delta_t)F'(\chi^c_{t+1})|\partial\chi^c_{t+1}/\partial s_t|
@@ -1594,6 +1626,54 @@ This section establishes the asymmetry analytically, motivating the paper's focu
 	\end{enumerate}
 \end{proposition}
 \noindent See \ref{app:proof_ds} for the proof.
+
+Part~1 rests on an accounting identity. On impact, every separation
+at a surviving product line adds one worker to unemployment and
+returns one position to the vacancy pool, so $u$ and pre-committed
+vacancies rise one for one. The identity holds for any $\rho_s$ and
+any entry technology. Whether total vacancies rise then depends only
+on entry, which can contract for two reasons. A persistent $s$ shock
+shortens expected match duration, which lowers the value of a match
+and hence vacancy creation. This is the standard DMP channel. Even a
+purely transitory shock leaves the economy with more unemployed
+workers and more pre-committed vacancies, and these state deviations,
+together with feedback through consumption and product variety, move
+the value of future matches. Even in the textbook model such forces
+leave the sign of the $u$--$v$ response to quantitative magnitudes:
+\citet{shimer_2005} obtains positive $u$--$v$ correlation under
+separation shocks as a quantitative result, not as a theorem.
+
+Two cases sign the entry response analytically. Both require
+$\rho_s=0$ and the conditions of
+Proposition~\ref{prop:independence}, under which the labor market
+block closes on its own. Under free entry, $Q$ is pinned, so
+tightness stays at $\bar\theta$ and vacancies rise by $\bar\theta d$.
+With $\xi<\infty$, the case $\bar\theta=1$ is also exact: equal
+increases in $u$ and pre-committed vacancies leave entry unchanged at
+the original tightness and propagate as equal deviations, so
+tightness never moves. Outside these cases the condition is
+quantitative, and at the calibrated $p_0=0$ benchmark it is far from
+binding. With $\sigma=1$ and variety effects active, entry offsets at
+most 1.5 percent of the reposting inflow for $\rho_s\in[0,0.95]$,
+including the estimated $\rho_s$, and across entry elasticities
+$1/\xi\in\{0.5,1,2\}$. Parts~1 and~3 thus mirror each other. On
+impact, $s$ adds positions to the vacancy pool and $\delta$ destroys
+them, and in each case the sign holds unless entry overturns it.
+
+Parts~1 and~2 hold with costless reposting. Under $p_0=0$ this is
+automatic: $F$ collapses to a point mass at zero, so every
+reactivation draw is free, $\Lambda_{r,t}=1$, and
+$Q_t^{rep}=Q_t$. With $p_0>0$ and $\alpha>0$, the reposting inflow
+in~\eqref{eq:v_lom} shrinks to
+$(1-\delta_{e,t})\Lambda_{r,t}s_{t-1}(1-u_{t-1})$, and the complement
+$1-\Lambda_{r,t}$ of separations destroys positions at surviving
+product lines. An $s$ shock then has a destructive component like the
+one that drives Part~3, so the sign of its $u$--$v$ comovement is no
+longer fixed. The proposition therefore does not rule out a role for
+$s$ shocks in the Beveridge curve. Under costless reposting, it
+confines that role to cases where the endogenous-exit drain of
+Part~2 dominates. Partial reposting is the direct route: it lets a
+separation destroy the position as well as the match.
 
 Define $g(N,u)\equiv d^f(N,u)+f_e\rho(N)/\mu$ as the continuation
 profit threshold: a firm survives whenever its fixed-cost draw satisfies
@@ -2853,12 +2933,15 @@ The second set consists of empirically identified impulse responses from the
 	\medskip\noindent\textbf{Choice of shocks and comparisons.}
 	We report impulse responses to the $z$ and $\delta$ shocks
 	throughout and abstract from the $s$ shock.
-	Proposition~\ref{prop:ds_asymmetry} establishes that a positive
-	$s$ shock generates weakly positive $u$--$v$ comovement ---
-	the opposite of the Beveridge curve --- so the $s$ shock does not
-	engage the vacancy-destruction and variety channels that are central
-	to the model's amplification.
-	The $s$ shock therefore provides a useful theoretical benchmark
+	Under costless reposting, Proposition~\ref{prop:ds_asymmetry}
+	establishes that a positive $s$ shock generates positive $u$--$v$
+	comovement, the opposite of the Beveridge curve, because every
+	separation returns its position as a vacancy. In that case the $s$
+	shock does not engage the vacancy-destruction and variety channels
+	that are central to the model's amplification. Partial reposting
+	changes this, since separations that are not reactivated destroy
+	positions. The comparisons in this section are computed under
+	costless reposting, where the $s$ shock is a theoretical benchmark
 	rather than a quantitative focus.
 	The $z$ and $\delta$ shocks, by contrast, interact with the
 	firm-stock state $N_t$ through the variety channel in
@@ -3667,75 +3750,76 @@ The second set consists of empirically identified impulse responses from the
 	which equals the consumption share divided by the markup plus the entry share.
 	
 	\subsection{Wage determination}
-	We characterize the wage $w_t$. To characterize these value functions, we revisit the value of the large household:
+	We derive the Nash wage~\eqref{eq:wage_eq}. Start from the value of the large household:
 	\begin{align}
-		W_t&=\max_{c_t,a_t} \frac{c_t^{1-\sigma}}{1-\sigma}+\beta \mathbb{E}_t W_{t+1} \quad \text{s.t.}\\
+		W_t&=\max_{c_t,a_{t+1}} \frac{c_t^{1-\sigma}}{1-\sigma}+\beta \mathbb{E}_t W_{t+1} \quad \text{s.t.}\\
 		&c_t+\nu_ta_{t+1}=w_tL_t+b(1-L_t)+(\nu_t+d_t)a_t+D_t^{int} -T_t
 	\end{align}
-	Note that, given the continuum of members in a household, the surplus of moving an unemployed household into employment is $\der{W_t}{L_t}$. Nash bargaining solves
+	which is~\eqref{eq:bc_HH} with $L_t=1-u_t$. Given the continuum of members in a household, the surplus of moving an unemployed member into employment is $\der{W_t}{L_t}$. Nash bargaining solves
 	\begin{align}\label{eq:Nash_product}
-		w_t=\arg \max [\der{W_t(w_t)}{L_t}]^{\phi}[J_t(w_t)-Q_t]^{1-\phi}
+		w_t=\arg \max \left[\der{W_t(w_t)}{L_t}\right]^{\phi}\left[J_t(w_t)-Q_t\right]^{1-\phi}
 	\end{align}
-	For convenience, we define the match surpluses $S_T^H = \der{W_t}{L_t}$. and $S_t^J=J_t-Q_t$.
-	
-	From the Bellman equation,
-	\begin{align} \label{eq:Nash_rule}
-		\der{W_t}{L_t}=c_t^{-\sigma}\der{c_t}{L_t}+\beta \mathbb{E}_t[\der{W_{t+1}}{L_{t+1}}\der{L_{t+1}}{L_t}]
+	For convenience, define the match surpluses $S_t^H\equiv\der{W_t}{L_t}$ and $S_t^J\equiv J_t-Q_t$.
+
+	By the envelope theorem,
+	\begin{align}\label{eq:HH_envelope}
+		S_t^H=c_t^{-\sigma}\der{c_t}{L_t}+\beta \mathbb{E}_t\left[S_{t+1}^H\der{L_{t+1}}{L_t}\right]
 	\end{align}
-	From the budget constraint, $\der{c_t}{L_t}=w_t-b$. Moreover, given the law of motion of employment $L_{t+1}=(1-\delta_t)[f(\theta_t)(1-L_t)+(1-s_t)]L_t$, we have
+	From the budget constraint, $\der{c_t}{L_t}=w_t-b$. Employment evolves as
+	\begin{align}\label{eq:L_lom}
+		L_{t+1}=(1-\delta_{e,t+1})\bigl[(1-s_t)L_t+f(\theta_t)(1-L_t)\bigr]
+	\end{align}
+	A match survives into $t+1$ only if its product line survives both exogenous destruction and the continuation-cost draw, with probability $1-\delta_{e,t+1}=(1-\delta_t)F(\chi_{t+1}^c)$ from~\eqref{eq:delta_e_lom}. Matches formed at $t$ face product-line exit but not match separation before they first produce. This is the timing of the recruiter values~\eqref{eq:value_recruiter_unmatched} and~\eqref{eq:value_recruiter_matched} and of the vacancy law of motion~\eqref{eq:v_lom}. Partial reposting does not enter~\eqref{eq:L_lom}: it governs whether a vacated position returns as a vacancy, not whether the worker separates. Hence
 	\begin{align}
-		\der{L_{t+1}}{L_t}=(1-\delta_t)(1-s_t-f(\theta_t))
+		\der{L_{t+1}}{L_t}=(1-\delta_t)F(\chi_{t+1}^c)\left(1-s_t-f(\theta_t)\right)
 	\end{align}
-	Putting it together, we have
-	\begin{align}
-		S_t^H=c_t^{-\sigma}(w_t-b)+\beta(1-\delta_t)(1-s_t-f(\theta_t))\mathbb{E}_tS_{t+1}^H
+	and, since $s_t$, $\delta_t$, and $\theta_t$ are known at $t$,
+	\begin{align}\label{eq:SH_bellman}
+		S_t^H=c_t^{-\sigma}(w_t-b)+\left(1-s_t-f(\theta_t)\right)\beta(1-\delta_t)\mathbb{E}_t\left[F(\chi_{t+1}^c)S_{t+1}^H\right]
 	\end{align}
-	The first-order condition of the Nash product \eqref{eq:Nash_product} is
+
+	The first-order condition of~\eqref{eq:Nash_product} is
 	\begin{align}
-		\phi \frac{\der{S_t^H}{w_t}}{S_t^H}+(1-\phi)\frac{\der{J_t}{w_t}}{J_t}=0
+		\phi \frac{\der{S_t^H}{w_t}}{S_t^H}+(1-\phi)\frac{\der{S_t^J}{w_t}}{S_t^J}=0
 	\end{align}
-	We evaluate
-	\begin{align}
-		\der{S_t^H}{w_t}=\der{[u'(c_t)(w_t-b)]}{w_t}+\beta(1-\delta_t)(1-s_t-f(\theta_t))\der{}{w_t}\mathbb{E}_tS_{t+1}^H
+	The next-period wage is re-bargained under next-period conditions, so the continuation term in~\eqref{eq:SH_bellman} does not move with $w_t$ and $\der{S_t^H}{w_t}=c_t^{-\sigma}$. From~\eqref{eq:value_recruiter_surplus}, the recruiter surplus is
+	\begin{align}\label{eq:SJ_app}
+		S_t^J=w_t^{int}-w_t-K_t +(1-s_t)\left(\kappa+\frac{K_t}{q(\theta_t)}\right)-s_t\mathcal{R}_t
 	\end{align}
-	The term $\der{}{w_t}\mathbb{E}_tS_{t+1}^H=0$ because the next-period wage is re-bargained based on next period conditions. Thus, $\der{S_t^H}{w_t}=c_t^{-\sigma}$.
-	Recall that the firm surplus is
+	where
 	\begin{align}
-		S_t^J=w_t^{int,j}-w_t-K_t +(1-s_t)\left(\kappa+\frac{K_t}{q(\theta_t)}\right)
+		\mathcal{R}_t\equiv\mathbb{E}_tm_{t+1}(1-\delta_t)F(\chi_{t+1}^c)\left(Q_{t+1}-Q_{t+1}^{rep}\right)
 	\end{align}
-	Note that $\der{S_t^J}{w_t}=-1$, so we obtain the sharing rule
-	\begin{align}
+	is the expected discounted reposting shortfall. It depends only on period-$t+1$ objects, so $\der{S_t^J}{w_t}=-1$, and the first-order condition gives the sharing rule
+	\begin{align}\label{eq:sharing_rule}
 		S_t^H=\frac{\phi}{1-\phi}c_t^{-\sigma}S_t^J
 	\end{align}
-	%The solution has the form $\der{W_t}{w_t}=(\phi/(1-\phi))J_t$.
-	%Recognizing that $\der{W_t}{w_t}c_t^{-\sigma}=\der{W_t}{L_t}$, we have
-	
-	From \eqref{eq:average_hiring_cost},
+
+	Forwarding~\eqref{eq:sharing_rule} one period and using $m_{t+1}=\beta(c_{t+1}/c_t)^{-\sigma}$,
 	\begin{align}
-		\mathbb{E}_t\beta(1-\delta_t)\pfrac{c_{t+1}}{c_t}^{-\sigma}S_{t+1}^J=\kappa+\frac{K_t}{q(\theta_t)}
+		\beta(1-\delta_t)\mathbb{E}_t\left[F(\chi_{t+1}^c)S_{t+1}^H\right]
+		=\frac{\phi}{1-\phi}c_t^{-\sigma}\,\mathbb{E}_tm_{t+1}(1-\delta_t)F(\chi_{t+1}^c)S_{t+1}^J
+		=\frac{\phi}{1-\phi}c_t^{-\sigma}\left(\kappa+\frac{K_t}{q(\theta_t)}\right)
 	\end{align}
-	Nash bargaining at period $t+1$ corresponds to \eqref{eq:Nash_rule} forwarded one period.
-	Hence,
+	where the second equality is the job creation condition~\eqref{eq:jcc}. Substituting into~\eqref{eq:SH_bellman},
 	\begin{align}
-		\beta (1-\delta_t) \mathbb{E}_tS_{t+1}^H=\frac{\phi}{1-\phi}c_t^{-\sigma}\left(\kappa+\frac{K_{t}}{q(\theta_{t})}\right)
+		S_t^H=c_t^{-\sigma}\left[w_t-b+\left(1-s_t-f(\theta_t)\right)\frac{\phi}{1-\phi}\left(\kappa+\frac{K_t}{q(\theta_t)}\right)\right]
 	\end{align}
-	We can rewrite the household surplus as
+	Equating~\eqref{eq:SJ_app} with $S_t^J$ from the sharing rule~\eqref{eq:sharing_rule} gives
 	\begin{align}
-		S_t^H=c_t^{-\sigma}(w_t-b)+(1-s-f(\theta_t))\frac{\phi}{1-\phi}c_t^{-\sigma}\left(\kappa+\frac{K_{t}}{q(\theta_{t})}\right)
+		w_t^{int}-w_t-K_t+(1-s_t)\left(\kappa+\frac{K_t}{q(\theta_t)}\right)-s_t\mathcal{R}_t=\frac{1-\phi}{\phi}\left(w_t-b\right)+\left(1-s_t-f(\theta_t)\right)\left(\kappa+\frac{K_t}{q(\theta_t)}\right)
 	\end{align}
-	Now, we wish to substitute out $S_t^H$. To do so, we combine the expressions for recruiter surplus and bargaining:
+	Solving for the wage,
 	\begin{align}
-		S_t^J&=w_t^{int}-w_t-K_t+(1-s_t)\left(\kappa+\frac{K_t}{q(\theta_t)}\right)\\
-		S_t^J&=\frac{1-\phi}{\phi}c_t^{\sigma}S_t^H
+		w_t=\phi\left(w_t^{int}-K_t+f(\theta_t)\left(\kappa+\frac{K_t}{q(\theta_t)}\right)-s_t\mathcal{R}_t\right)+(1-\phi)b
 	\end{align}
-	so that
+	The household surplus carries no reposting term: a separated worker becomes unemployed whether or not the recruiter reactivates the vacated position. The shortfall therefore enters bargaining only through the recruiter's surplus, and the worker bears share $\phi$ of it through a lower wage. The term acts like a firing cost, except that separation is exogenous. Costless reposting ($\alpha\to0$ or $p_0=0$) gives $\mathcal{R}_t=0$ and recovers the wage without reposting.
+
+	Substituting the wage back into~\eqref{eq:SJ_app} gives the wage-substituted surplus
 	\begin{align}
-		w_t^{int}-w_t-K_t+(1-s_t)\left(\kappa+\frac{K_t}{q(\theta_t)}\right)=\frac{1-\phi}{\phi}\left(w_t-b+(1-s-f(\theta_t))\frac{\phi}{1-\phi}\left(\kappa+\frac{K_t}{q(\theta_t)}\right)\right)
+		S_t^J=(1-\phi)\left(w_t^{int}-K_t-b\right)-\phi\theta_t\left(K_t+q(\theta_t)\kappa\right)+(1-s_t)\left(\kappa+\frac{K_t}{q(\theta_t)}\right)-(1-\phi)s_t\mathcal{R}_t
 	\end{align}
-	This expression can be rearranged explicitly for the wage:
-	\begin{align}
-		w_t=\phi\left(w_t^{int}-K_t+f(\theta_t)\left(\kappa+\frac{K_t}{q(\theta_t)}\right)\right)+(1-\phi)b
-	\end{align}
+	The recruiter bears only its bargaining share $1-\phi$ of the reposting shortfall.
 \subsection{Log-linearized propagation equations}
 \label{app:loglin}
 
@@ -3865,13 +3949,16 @@ aggregate separation variance; match-level separations account for the rest.
 From~\eqref{eq:u_lom}, log-linearizing around $(\bar{u},\bar\tau,\bar{f})$:
 \begin{align}\label{eq:u_ll}
     \tilde{u}_{t}
-    = (1-\bar{f}-\bar\tau)\,\tilde{u}_{t-1}
+    = \bigl(1-(1-\bar\delta_e)\bar{f}-\bar\tau\bigr)\,\tilde{u}_{t-1}
     + (1-\bar{u})\,\tilde\tau_t
-    - \bar{u}(1-\bar\tau)\,\tilde{f}_{t-1},
+    + \bar{u}\bar{f}\,\tilde\delta_{e,t}
+    - \bar{u}(1-\bar\delta_e)\,\tilde{f}_{t-1},
 \end{align}
 where $\tilde{x}_t = x_t-\bar{x}$ denotes the level deviation and
-$\tilde{f}_t = f(\theta_t)-\bar{f}$.  The autoregressive coefficient
-$(1-\bar{f}-\bar\tau)$ governs unemployment persistence: with monthly
+$\tilde{f}_t = f(\theta_t)-\bar{f}$.  The term in
+$\tilde\delta_{e,t}$ is the exit exposure of matches formed in
+$t-1$, which have not yet produced. The autoregressive coefficient
+$(1-(1-\bar\delta_e)\bar{f}-\bar\tau)$ governs unemployment persistence: with monthly
 $\bar{f}\approx0.40$ and $\bar\tau\approx0.031$, it equals approximately
 $0.57$, giving an unemployment half-life of around two months in the absence
 of sustained $\tau$ or $\theta$ shocks.  A $\delta$ shock is persistent
@@ -4576,106 +4663,113 @@ $\theta_t$, $u_t$ are determined). Hence,
 \end{proof}
 
 \begin{proof}[Proof of Proposition~\ref{prop:ds_asymmetry}]
-\emph{Part~1: exogenous exit ($p_0=0$).}
-Under $p_0=0$: $\Lambda_t=1$ and $\delta_{e,t}=\delta_{t-1}$.
+\emph{Part~1: exogenous exit and costless reposting ($p_0=0$).}
+Under $p_0=0$, $F$ is a point mass at zero. Hence $\Lambda_t=1$ and
+$\delta_{e,t+1}=\delta_t$, and every reactivation draw is free, so
+$\Lambda_{r,t}=1$ and $Q_t^{rep}=Q_t$: the reposting term in the
+surplus~\eqref{eq:surplus_wage} vanishes. Start from the steady state
+at $t$ and raise $s_t$, holding period-$t$ variables fixed, since $s_t$
+realizes at the end of $t$. All statements are to first order.
 
-\medskip\noindent\emph{Unemployment.}
-The shock $s_t$ realizes at the end of period $t$.  From
-\eqref{eq:tau_lom},
-\[
-	\tau_{t+1} = \delta_{e,t+1} + s_t(1-\delta_{e,t+1}),
-\]
-so $\partial\tau_{t+1}/\partial s_t = 1-\delta_{e,t+1} > 0$.
-From the unemployment law of motion~\eqref{eq:u_lom},
+\medskip\noindent\emph{Step 1: unemployment rises.}
+From~\eqref{eq:tau_lom}, $\tau_{t+1}=\delta_t+s_t(1-\delta_t)$, so
+$\partial\tau_{t+1}/\partial s_t=1-\delta_t$. From the unemployment law
+of motion~\eqref{eq:u_lom},
 \begin{align}\label{eq:u_lom_proof}
 	u_{t+1}
-	= (1-f(\theta_t))u_t
-	  + \tau_{t+1}\bigl[(1-u_t)+f(\theta_t)u_t\bigr],
+	= \bigl[1-(1-\delta_t)f(\theta_t)\bigr]u_t
+	  + \tau_{t+1}(1-u_t),
 \end{align}
-so $\partial u_{t+1}/\partial s_t
-= (1-\delta_{e,t+1})\bigl[(1-u_t)+f(\theta_t)u_t\bigr] > 0$,
-holding $\theta_t$ and other period-$t$ variables fixed.
-Unemployment strictly rises on impact.
+so
+\[
+	\frac{\partial u_{t+1}}{\partial s_t}
+	= (1-\delta_t)(1-u_t)\equiv d>0.
+\]
 
-\medskip\noindent\emph{Vacancies.}
-From the vacancy law of motion~\eqref{eq:v_lom},
+\medskip\noindent\emph{Step 2: pre-committed vacancies rise by the same amount.}
+From the vacancy law of motion~\eqref{eq:v_lom} with $\Lambda_{r,t+1}=1$,
 \begin{align}\label{eq:v_lom_proof}
 	v_{t+1}
-	= \underbrace{(1-\delta_{e,t+1})
+	= \underbrace{(1-\delta_t)
 		\bigl[(1-q(\theta_t))v_t
 		+s_t(1-u_t)\bigr]}_{v_{pre,t+1}}
 	+ e_{t+1}.
 \end{align}
-The shock $s_t$ affects $v_{t+1}$ through two non-negative channels.
-
-\emph{Channel 1 (reposting):}
-$s_t$ appears directly in $v_{pre,t+1}$ via the costless-reposting
-term $(1-\delta_{e,t+1})s_t(1-u_t)$.
-Since $s_t$ does not destroy current vacancies $v_t$ (which were
-posted before $s_t$ realized) and does not reduce $(1-\delta_{e,t+1})$
-(which depends on $\delta_t$, not $s_t$),
+The shock does not destroy the vacancies $v_t$, which were posted
+before it realized, and survival $1-\delta_t$ is exogenous. Hence
 \[
 	\frac{\partial\,v_{pre,t+1}}{\partial s_t}
-	= (1-\delta_{e,t+1})(1-u_t) > 0.
+	= (1-\delta_t)(1-u_t) = d.
 \]
+The two derivatives coincide. Each separation at a surviving product
+line adds one worker to unemployment and returns one position to the
+vacancy pool. Steps~1 and~2 use only the laws of motion and the timing
+of $s_t$, so they hold for any $\rho_s$ and any entry technology.
 
-\emph{Channel 2 (entry):}
-Entry $e_{t+1}=(Q_{t+1}/x_m)^\xi$ is chosen at the start of $t+1$;
-we show $\partial Q_{t+1}/\partial s_t\geq 0$.
-
-\emph{Sub-step (a): pre-entry tightness falls.}
-Comparing the two derivatives established above,
+\medskip\noindent\emph{Step 3: vacancies rise unless entry overturns the inflow.}
+By Step~2,
 \[
-	\frac{\partial u_{t+1}}{\partial s_t}
-	-\frac{\partial v_{pre,t+1}}{\partial s_t}
-	= (1-\delta_{e,t+1})f(\theta_t)u_t > 0,
+	\frac{\partial v_{t+1}}{\partial s_t}
+	= d+\frac{\partial e_{t+1}}{\partial s_t},
 \]
-so unemployment rises strictly more than the pre-committed vacancy
-stock. Hence pre-entry tightness $\theta^{pre}_{t+1}\equiv
-v_{pre,t+1}/u_{t+1}$ falls below its steady-state value $\bar\theta$,
-implying $q(\theta^{pre}_{t+1})>\bar{q}$.
-
-\emph{Sub-step (b): $K_{t+1}$ rises.}
-Under $p_0=0$, the product-line LOM gives $N_{t+1}=(1-\delta_t)N_t$
-(since $B_t=N_t$ from the business-formation block), so $N_{t+1}$ is
-predetermined with respect to $s_t$. Consequently
-$w^{int}_{t+1}=\rho(N_{t+1})z_{t+1}/\mu$ is also predetermined.
-At $\rho_s=0$, future shocks revert to their mean, so the
-right-hand side of the JCC~\eqref{eq:jcc} at $t+1$---which through
-the surplus~\eqref{eq:surplus_wage}
-involves expected future $w^{int}$ and $s$---is invariant to $s_t$
-at leading order, pinning $C_{t+1}\equiv\kappa+K_{t+1}/q(\theta_{t+1})$
-near its steady-state value $\bar{C}$.
-Therefore
+which is positive if and only if $-\partial e_{t+1}/\partial s_t<d$.
+Under this condition vacancies rise, and with Step~1 unemployment and
+vacancies comove positively at $h=1$. Equivalently, since
+$v_{t+1}=\theta_{t+1}u_{t+1}$,
 \[
-	K_{t+1}
-	= \bigl(C_{t+1}-\kappa\bigr)q(\theta_{t+1})
-	\approx (\bar{C}-\kappa)\,q(\theta_{t+1})
-	> (\bar{C}-\kappa)\,\bar{q}
-	= \bar{K},
+	\frac{\partial v_{t+1}}{\partial s_t}
+	= \bar\theta d+\bar{u}\,\frac{\partial\theta_{t+1}}{\partial s_t},
 \]
-where the strict inequality uses $q(\theta_{t+1})>\bar{q}$, which
-holds because for $\xi<\infty$ entry does not fully restore tightness
-to $\bar\theta$.%
-\footnote{Under free entry ($\xi\to\infty$), $Q_{t+1}=x_m$ is pinned,
-$K_{t+1}=\bar{K}$, and $\partial e_{t+1}/\partial s_t=0$:
-Channel~2 vanishes but Channel~1 remains strictly positive.}
-It follows that $Q_{t+1}=K_{t+1}+\beta(1-\delta_{t+2})\mathbb{E}_{t+1}[Q_{t+2}]
->\bar{Q}$, so $\partial e_{t+1}/\partial s_t>0$.
+so vacancies rise unless tightness falls proportionally more than
+unemployment rises. The entry response is an equilibrium object. It
+depends on $\rho_s$, on the state deviations the shock leaves behind,
+and on feedback through the discount factor and product variety.
 
-Combining both channels:
-$\partial v_{t+1}/\partial s_t > 0$ and
-$\partial u_{t+1}/\partial s_t > 0$,
-so unemployment and vacancies comove positively at $h=1$.
-The argument applies recursively: at every subsequent horizon
-$h\geq 2$, the $s$-shock does not enter the vacancy LOM with a
-negative sign, while it continues to raise $\tau$ and hence $u$.
-Positive $u$--$v$ comovement therefore holds for all $h\geq 1$.
+\medskip\noindent\emph{Step 4: two cases in which the condition holds exactly.}
+Let $\rho_s=0$ and impose the conditions of
+Proposition~\ref{prop:independence} ($\sigma=0$, $\zeta=0$, $p_0=0$),
+so that $m_{t+1}=\beta$, $w_t^{int}=z_t/\mu$, and the labor market
+block closes on its own, with states $(u_t,v_{pre,t})$. After the
+shock all exogenous variables are at their means in expectation.
+Under determinacy, a path that satisfies the block is the solution.
+
+\emph{(a) Free entry ($\xi\to\infty$).} Then $Q_{t+k}=x_m$ at every
+date, so $K_{t+k}=\bar{K}$ by~\eqref{eq:K}. The surplus at $t+k+1$
+depends only on $\theta_{t+k+1}$, $\bar{K}$, and parameters, so
+$\theta_{t+k}=\bar\theta$ for all $k\geq1$ satisfies the
+JCC~\eqref{eq:jcc}. Entry adjusts to hold tightness fixed, and
+\[
+	\frac{\partial v_{t+1}}{\partial s_t}=\bar\theta d>0,
+	\qquad
+	\frac{\partial e_{t+1}}{\partial s_t}=(\bar\theta-1)d>-d.
+\]
+
+\emph{(b) Convex entry costs ($\xi<\infty$) with $\bar\theta=1$.}
+Guess that $\theta_{t+k}=\bar\theta$ and every jump variable stays at
+its steady-state value for all $k\geq1$. At $t+1$, entry
+$e_{t+1}=\theta_{t+1}u_{t+1}-v_{pre,t+1}$ changes by
+$(\bar\theta-1)d=0$, so $Q_{t+1}$, $K_{t+1}$, and the JCC are
+unaffected, and $\partial v_{t+1}/\partial s_t=d$. The state
+deviations then propagate, at fixed tightness, as
+\[
+	\Delta u_{t+2}=\bigl[1-(1-\bar\delta)\bar{f}-\bar\tau\bigr]d
+	=(1-\bar\delta)(1-\bar{f}-\bar{s})\,d,
+	\qquad
+	\Delta v_{pre,t+2}=(1-\bar\delta)\bigl[(1-\bar{q})d-\bar{s}d\bigr]
+	=(1-\bar\delta)(1-\bar{q}-\bar{s})\,d,
+\]
+using $\bar\tau=\bar\delta+\bar{s}(1-\bar\delta)$. These are equal
+because $\bar\theta=1$ implies $\bar{f}=\bar{q}$. By induction the
+deviations in $u$ and $v_{pre}$ stay equal at every horizon, entry is
+unchanged at every horizon, and the guess is verified.
+
+Outside these cases the sign of the entry response, and hence of the
+condition in Part~1, is quantitative.
 
 \medskip
-\emph{Part~2: endogenous exit ($p_0>0$).}
-With $p_0>0$, $(1-\delta_{e,t+1})=(1-\delta_t)\Lambda_{t+1}$
-where $\Lambda_{t+1}=F(\chi^c_{t+1})$ is the endogenous survival
+\emph{Part~2: endogenous exit ($p_0>0$), costless reposting ($\alpha\to0$).}
+With $p_0>0$, the factor $1-\delta_t$ in Steps~1 and~2 becomes
+$(1-\delta_{e,t+1})=(1-\delta_t)\Lambda_{t+1}$, where $\Lambda_{t+1}=F(\chi^c_{t+1})$ is the endogenous survival
 probability.
 The reposting channel becomes
 \begin{align}\label{eq:dv_ds_full}
@@ -4760,7 +4854,7 @@ $|\partial\chi^c_{t+1}/\partial s_t|$.
 The drain is therefore minimized at $\rho_s=0$, so if the reposting
 channel dominates there, it dominates for all
 $\rho_s\in[0,\bar\rho_s)$ by continuity.
-The entry channel (Channel~2 from Part~1) is non-negative throughout.
+Given $\partial v_{pre,t+1}/\partial s_t\geq0$ and $\partial u_{t+1}/\partial s_t>0$, Step~3 of Part~1 applies with $\partial v_{pre,t+1}/\partial s_t$ in place of $d$: vacancies rise, and $u$ and $v$ comove positively, provided entry does not contract by more than $\partial v_{pre,t+1}/\partial s_t$.
 
 \medskip
 \emph{Part~3: $\delta$ shock.}
@@ -4772,7 +4866,10 @@ Then $\delta_{e,t+1}$ rises, so
 $\partial\tau_{t+1}/\partial\delta_t
 = \partial\delta_{e,t+1}/\partial\delta_t
   \cdot(1-\bar{s})>0$,
-and the same unemployment argument as Part~1 yields
+and, from~\eqref{eq:u_lom} dated $t+1$,
+$\partial u_{t+1}/\partial\delta_{e,t+1}
+=(1-\bar{s})(1-u_t)+f(\theta_t)u_t>0$: exit adds the separated
+incumbents and the new matches lost before producing. Hence
 $\partial u_{t+1}/\partial\delta_t>0$.
 
 \emph{Vacancies.}

@@ -36,7 +36,7 @@ They meet only at estimation, which does not exist yet — see
 |--------|----------|--------|
 | `construct_delta_instrument.py` | Library: QCEW shares, BED rates, δ Bartik aggregation | ✅ |
 | `construct_s_instrument.py` | Library: JOLTS rates, s Bartik aggregation | ✅ |
-| `part2b_residualize_shocks_v3.py` | **v3**: adds monetary-policy sensitivity φ_j × ΔMP_t | ⚠️ written, **never run** — see [D8](decisions.md) |
+| `part2b_residualize_shocks_v3.py` | **v3**: adds monetary-policy sensitivity φ_j × ΔMP_t | ⚠️ written, **never run** — task E6 in [`pending_tasks.md`](pending_tasks.md) |
 | `part2c_granger_lp.py` | Panel LP Granger causality, δ vs. LD | ✅ |
 | `part2d_var_calibration.py` | Bivariate panel VAR(1) on (ν^δ, ν^LD) | ✅ |
 | `part3_instrument.py` / `part3_instrument_s.py` | Raw (non-residualized) Bartik aggregation | ✅ appendix only |
@@ -158,13 +158,15 @@ StatsBase, SymPy, TexTables, TypedTables.
 | `mechanism_stats.jl` | **Reproducibility (`principles.md` N15).** Reads the four `irf_*.jls` and emits every scalar quoted in §5.3 and the Comparison D appendix: half-lives, peak ratios, entry costs, the exit-flow rate/stock decomposition, the w^int impact gap. 66 quantities. Run after the four mechanism runners | `mechanism_stats.txt` (readable), `mechanism_stats.tex` (`\newcommand` macros) |
 
 The `.tex` file is ASCII-clean and meant to be `\input` by the manuscript so the prose stops
-carrying hard-coded figures. Wiring that up is the remaining half of M9.
+carrying hard-coded figures. MS decided to keep literals in the prose; `mechanism_stats.txt`
+is the authority to diff against.
 
 ### Calibration diagnostics (not paper comparisons)
 
 | Runner | Purpose | Output |
 |---|---|---|
 | `run_solution_delta_target.jl` | **D1/M5 diagnostic** — dest_ann ∈ {0.0320 BED, 0.0754 code, 0.0963 BGM}; reports steady state, Block M moments at HP λ=1,600, and δ→u/δ→v IRF persistence in quarters. Decided that δ_e can be fixed. ✅ **run September 6, 2026** (after the `SS_numeric`/`hp_filter` fixes) and **re-run September 21, 2026** with the calibrated s process. Results in [`findings.md`](findings.md) §D1/M5 | `irf_delta_target.jls` |
+| `run_prop5_s_check.jl` | **Prop. 5 Part 1 entry condition** at the p_0 = 0 benchmark: s-shock responses at h=1 (Δu, Δv_pre, Δe, Δv) against the analytical inflow d, over dest_ann ∈ {0.0320, 0.0754}, ρ_s ∈ {0, 0.5, 0.874, 0.95}, ξ_inv ∈ {0.5, 1, 2}. Source of the 1.5% bound in the draft. ✅ run Oct 1, 2026; re-run after R8 | `prop5_s_check.csv` |
 
 | `run_xi_sweep.jl` | ξ_inv ∈ {0.5, 1, 2, 3, 5, 8} at the BED spec — does entry-cost convexity move the δ→u peak horizon? | ✅ run September 21, 2026. Peak never passes h=2 |
 | `run_xi_eps_sweep.jl` | Joint ξ_inv × ε sweep — same question plus the variety channel; also maps the Blanchard-Kahn ceiling | ✅ run September 21, 2026. ε < 3 violates BK |
@@ -196,7 +198,7 @@ risk_neutral,simplified}.jl` (single-parameter sensitivity runs).
 
 ### Diagnostics and output
 
-`steady_state_checks.jl` (calibration inspection; free-entry branch bug — [D9](decisions.md)),
+`steady_state_checks.jl` (calibration inspection; free-entry branch bug — task M2),
 `steady_state_checks_*.jl`, `accuracy_checks.jl`, `comparative_statics.jl`,
 `export_endog_exit_irfs.jl` (IRFs + SS → CSV), `generate_tables.jl`,
 `second_moments.jl` (⚠️ **stale and invalid**: λ=100,000, only 8 series, AND it predates the `hp_filter` fix of Sept 5, 2026 — every moment it ever produced is wrong; superseded by `simulated_moments` inside `run_solution_delta_target.jl`), `Hill estimator/` (tail-index estimation for the cost distribution).
@@ -230,7 +232,7 @@ risk_neutral,simplified}.jl` (single-parameter sensitivity runs).
   elasticity, making `Xc_Y` an outcome). ϕ is a residual from Nash in Stage 5.
 - `steady_state(para; init=0.51)` → 2×2 solver in (log θ, log χ^c).
 - `steady_state_free_entry(para)` → 1D solver for ξ_inv = 0; outer root-find over θ (JCC),
-  inner over δ_e. **Currently converges to the wrong (high-θ) branch** — [D9](decisions.md).
+  inner over δ_e. **Currently converges to the wrong (high-θ) branch** — task M2.
 - `calibrate_shares_free_entry(targets, κ_fixed, b_w_int_target)` → free-entry calibration:
   drops `x_v`, inherits κ, targets b/w_int, leaves ϕ residual.
 
