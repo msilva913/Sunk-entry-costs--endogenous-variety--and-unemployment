@@ -106,8 +106,10 @@ to do:
    Guren-McKay-Nakamura-Steinsson "simulate the regression inside the model" prescription,
    which is D3's most defensible option. Building E9 well upgrades D3.
 
+**Resume:** [`context/session_handout_20261001.md`](context/session_handout_20261001.md) (task R13 first).
+
 **Code timing (Oct 1, 2026).** The draft is the reference model ([S10](context/decisions.md)).
-The code dates exit one period early, observes δ_t and s_t one stage early, and uses post-exit
+The code dates exit one period early in its laws of motion and uses post-exit
 stocks as states. Fix in task R8 per [`context/model_equations.md`](context/model_equations.md)
 "Code status", in the same regeneration pass as the D1 cascade and PATH B.
 

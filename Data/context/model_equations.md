@@ -4,7 +4,7 @@
 This file lists every model equation with an economic interpretation, **dated explicitly** in
 the timing of the draft (`Draft/Draft.tex`, `fig:Timing`). The draft is the reference model.
 `Programs baseline/run_solution_core.jl` implements the same 33 equations but **deviates from
-the draft's timing in three places** (see "Code status" below). Each equation carries a
+the draft's timing in two places** (see "Code status" below). Each equation carries a
 **Code** line saying whether the current code matches. This file is the specification the code
 restructuring in task R8 should implement.
 
@@ -33,22 +33,24 @@ Composite parameters: β = 1/(1+r), ξ = 1/ξ_inv, μ = ε/(ε−1), ψ_c = ψ/(
 
 ## Timing within period t (monthly; draft `fig:Timing`)
 
-1. **Stage 1 — aggregate state.** z_t realizes. δ_{t−1} and s_{t−1}, realized at the end of
-   t−1, are known.
+1. **Stage 1 — aggregate state.** z_t, δ_t, s_t are realized and known; every date-t decision
+   conditions on them (the paper's convention throughout). δ_t and s_t are *rates* that take
+   effect at Stage 5.
 2. **Stage 2 — exit, reactivation, entry.** Each retailer draws χ ~ F and exits if χ > χ^c_t.
    Survival into t is (1−δ_{t−1})·F(χ^c_t) = 1 − δ_{e,t}. Recruiters at surviving product lines
    decide which positions vacated at the end of t−1 to reactivate (Block 2). Vacancy entry
    e_t = G(Q_t); new product lines N^e_t form. **u_t, v_{pre,t}, N_t are post-exit stocks.**
 3. **Stage 3 — bargaining and production** with N_t product lines and L_t = 1 − u_t workers.
 4. **Stage 4 — matching** out of v_t = v_{pre,t} + e_t and u_t.
-5. **Stage 5 — end of t.** Match separation s_t and exogenous destruction δ_t realize. s_t
-   hits only matches that produced in t (Convention A): matches formed at Stage 4 are exposed
-   to δ_t and to the t+1 exit draw, but first face s at the end of t+1.
+5. **Stage 5 — end of t.** Separation at rate s_t and exogenous destruction at rate δ_t take
+   effect; only *which* matches and product lines they hit is revealed here. s_t hits only
+   matches that produced in t (Convention A): matches formed at Stage 4 are exposed to δ_t and
+   to the t+1 exit draw, but first face s at the end of t+1.
 
 **Two dating rules follow.**
 
-- **1 − δ_{e,t+1} = (1 − δ_t)·F(χ^c_{t+1}).** The exogenous factor is dated t because δ_t
-  realizes at the end of t. The endogenous factor is dated t+1 because the continuation draw
+- **1 − δ_{e,t+1} = (1 − δ_t)·F(χ^c_{t+1}).** The exogenous factor is dated t because δ_t is
+  the period-t rate, known at t and applied at the end of t. The endogenous factor is dated t+1 because the continuation draw
   is compared with χ^c_{t+1}, which depends on period-t+1 profits and firm value
   (`eq:cutoff_eq`). Both act before production in t+1, so δ_e carries the date of the period
   in which survivors produce. Survival from t to t+1 is the same object in every value function
@@ -68,7 +70,7 @@ regardless; that is the (1 − δ_{e,t}) factor in f[22]. Since Q_t is set at th
 procyclical. The reposting option accrues to the recruiter's J, not the retailer's ν^f, so the
 dependence stays triangular and f[1]/f[4]/f[18] are unchanged in Block 2.
 
-## Code status — the three timing deviations (October 1, 2026)
+## Code status — the two timing deviations (October 1, 2026)
 
 The code is GS-style end-of-period timing in its laws of motion but draft timing in its value
 equations. Fixing this is part of R8.
@@ -80,18 +82,21 @@ equations. Fixing this is part of R8.
    `SDF_surv = (1−δ·δbar)·Λp`, i.e. F(χ^c_{t+1}), as the draft does. So the code prices
    survival at one date and depletes stocks at another. Code production also uses all N_t,
    including firms whose period-t draw failed the cutoff.
-2. **When shocks are observed.** Code δ and s are period-t states, so θ_t, e_t, x_c,t respond
-   to the shocks that hit end-of-t flows. In the draft, δ_t and s_t realize at Stage 5, after
-   matching. (Effect on the Prop. 5 check: Δu deviates from the identity value d by ≤ 0.6%.)
-3. **Predetermined stocks.** Code states are the post-exit stocks [u, N, v_pret]. Under draft
-   timing they must be pre-exit stocks.
+2. **Predetermined stocks.** Code states are the post-exit stocks [u, N, v_pret]. Under draft
+   timing they must be pre-exit stocks, because the t+1 stocks depend on χ^c_{t+1}.
 
-**Restructuring spec (R8).** States x_t = [u_{t−1}, v_{t−1}, B_t, z_t, δ_{t−1}, s_{t−1}].
-Then at t: δ_{e,t} = 1 − (1−δ_{t−1})F(χ^c_t), N_t = (1−δ_{e,t})B_t,
-u_t = 1 − (1−δ_{e,t})[(1−s_{t−1})(1−u_{t−1}) + f_{t−1}u_{t−1}], and
-v_{pre,t} = (1−δ_{e,t})[(1−q_{t−1})v_{t−1} + Λ_{r,t}s_{t−1}(1−u_{t−1})], with f_{t−1}, q_{t−1}
-functions of θ_{t−1} = v_{t−1}/u_{t−1}. These become same-period controls, solved jointly with
-χ^c_t. X^r_t (Block 2) is then a function of states and period-t controls, with no extra lag.
+**Not a deviation: shock observation.** Code δ and s are period-t states, so θ_t, e_t, x_c,t
+respond to them. That is the paper's convention (aggregate state known at the start of t;
+corrected Oct 1, after an earlier version of this file called it a deviation).
+
+**Restructuring spec (R8).** States are the stocks after the end-of-(t−1) incidence of δ_{t−1}
+and s_{t−1} but before the period-t exit draw:
+Ñ_t = (1−δ_{t−1})(N_{t−1} + N^e_{t−1}),
+Ẽ_t = (1−δ_{t−1})[(1−s_{t−1})(1−u_{t−1}) + f_{t−1}u_{t−1}],
+Ṽ^u_t = (1−δ_{t−1})(1−q_{t−1})v_{t−1},  Ṽ^s_t = (1−δ_{t−1})s_{t−1}(1−u_{t−1}),
+plus z_t, δ_t, s_t. Then at t: N_t = Λ_tÑ_t, u_t = 1 − Λ_tẼ_t,
+v_{pre,t} = Λ_t(Ṽ^u_t + Λ_{r,t}Ṽ^s_t), X^r_t = Λ_tṼ^s_t·α·M_t, all same-period controls solved
+jointly with χ^c_t. The lagged rates are absorbed into the states, so no lag needs tracking.
 Every §5.3 number must be regenerated afterwards; bundle with the D1 cascade.
 
 ## Shocks
@@ -99,8 +104,8 @@ Every §5.3 number must be regenerated afterwards; bundle with the D1 cascade.
 | Shock | Meaning | Process | Realizes |
 |---|---|---|---|
 | z | technology | log z_{t+1} = ρ_z log z_t + ε^z_{t+1} | Stage 1 of t+1 |
-| δ | exogenous product-line destruction | log δ_t = ρ_δ log δ_{t−1} + ε^δ_t | Stage 5 of t |
-| s | match separation | log s_t = ρ_s log s_{t−1} + ε^s_t | Stage 5 of t |
+| δ | exogenous product-line destruction | log δ_t = ρ_δ log δ_{t−1} + ε^δ_t | Stage 1 of t; applied at Stage 5 |
+| s | match separation | log s_t = ρ_s log s_{t−1} + ε^s_t | Stage 1 of t; applied at Stage 5 |
 
 Orthogonal innovations (Cholesky, z first; `part6b`). The z→δ_e link runs through χ^c, not
 through shock covariance. Monthly calibration from `part6b`: ρ_z = 0.902, σ_z = 0.0092,
@@ -267,7 +272,7 @@ recruiter must create a fresh position at cost drawn from G). Reactivate iff Q �
 
 ## New equation
 
-**f[new] Reposting rate** (draft: inline in `def:equilibrium`; give it a label)
+**f[new] Reposting rate** (draft: `eq:Lambda_r`, in the recruiter block; cited in `def:equilibrium`)
 ```
 Λ_{r,t} = F(Q_t/α) = min[ (1 − p_0) + p_0·(Q_t/(α·χ_m))^ψ , 1 ]
 ```
@@ -310,9 +315,15 @@ J_t − Q_t = w^int_t − w_t − K_t + (1 − s_t)(κ + K_t/q_t) − s_t·𝓡_
 κ + K_t/q_t = E_t[ m_{t+1}(1−δ_t)Λ_{t+1}·(J_{t+1} − Q_{t+1}) ]
 ```
 The shortfall Q − Q^rep = Q(1 − Λ_r) + α·M is the value lost relative to free reposting:
-forgone vacancies plus reactivation costs paid. **Keep J − Q as a tracked jump.** Substituting
-it into the job creation condition composes two one-period lookaheads into a t+2 term (a
-nested expectation); the model itself is first-order Markov. **Nesting:** α → 0 or p_0 → 0.
+forgone vacancies plus reactivation costs paid. **Nesting:** α → 0 or p_0 → 0.
+
+**Representation (revised Oct 1).** Substitute the wage-substituted surplus at t+1 into the job
+creation condition and **track 𝓡_t as a variable** with its own one-period equation. J_t and w_t
+then drop out of the system (they can be recovered from the surplus and wage equations). The
+nested expectation arises only if 𝓡_{t+1} is itself expanded, which composes two one-period
+lookaheads into a t+2 term. Tracking either J − Q or 𝓡 avoids it with one forward variable;
+tracking 𝓡 is preferred because the job creation condition then keeps its Block 1 form plus one
+term, which is also the smallest change to code f[3]. This is how `def:equilibrium` is written.
 
 **Deriving M.** With threshold x = Q/α, only the power-law part integrates:
 ```
@@ -338,12 +349,13 @@ the shortfall enters bargaining only through the recruiter's surplus, and the wo
 share ϕ of it. It works like a firing cost, except that separation is exogenous. Derived in
 the draft's wage appendix.
 
-**Wage-substituted surplus** (`eq:surplus_wage`, `eq:surplus_eq`; the form to track in code)
+**Wage-substituted surplus** (`eq:surplus_wage`; substituted at t+1 into the job creation condition)
 ```
 J_t − Q_t = (1−ϕ)(w^int_t − K_t − b) − ϕ·θ_t(K_t + q_t κ) + (1 − s_t)(κ + K_t/q_t) − (1−ϕ)·s_t·𝓡_t
 ```
-⚠️ The coefficient on 𝓡_t is **(1−ϕ)**, not 1. ⚠️ **Draft status:** the wage appendix carries
-(1−ϕ); the main-text `eq:wage_eq`, `eq:surplus_wage`, and `eq:surplus_eq` still need the fix.
+⚠️ The coefficient on 𝓡_t is **(1−ϕ)**, not 1. In the draft (Oct 1): 𝓡_t is `eq:repost_shortfall`,
+and `eq:wage_eq`, `eq:surplus_wage`, the substituted `eq:jcc_eq`, the wage appendix (`app:wage`), and the
+steady-state appendix (`eq:jcc_wage_ss`, wage, 𝓡, e, X^r) all carry it.
 
 **f[16] Resource constraint — MODIFIED** (`eq:agg_repost_costs`, `eq:rc`, `eq:gdp`)
 ```
@@ -380,5 +392,5 @@ at Λ_r = 0.9 and 2.5× at 0.7, and is wrong at the floor, where exact X^r = 0.
 3. **R3 / Prop. 5 under partial reposting:** Parts 1–2 now assume costless reposting
    (p_0 = 0 or α → 0). A result for α > 0 (e.g. a threshold Λ_r* at which the s→v sign
    flips) is not derived.
-4. **Draft:** fix the (1−ϕ) coefficient in `eq:surplus_wage`/`eq:surplus_eq` and the
-   −s_t·𝓡_t term in `eq:wage_eq`; give Λ_r a labelled equation.
+4. **Draft:** extend the log-linear appendix (`app:loglin`), which
+   is stated for costless reposting, if it is used for the partial-reposting model.

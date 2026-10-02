@@ -1,5 +1,5 @@
 # Draft Status — `Draft/Draft.tex`
-**Last updated:** October 1, 2026 (cleanup; timing, wage appendix, Prop. 5 restatement)
+**Last updated:** October 1, 2026, late (wage dependencies, `def:equilibrium`, timing prose; Prop. 5 flagged R13)
 
 **Build:** compiles with 0 errors and 0 missing graphics. The 4 undefined references and 1
 duplicate label (P2 in [`pending_tasks.md`](pending_tasks.md)) predate the reposting work.
@@ -12,7 +12,7 @@ mid-build; delete it and rebuild.
 the symbols Ψ, D, M are retired (clashes with ψ, D^int, 𝒟, m). 𝓡_t is the expected
 discounted shortfall in the wage appendix. Label prefixes `eq:`/`tab:`/`fig:`/`sec:`/`app:`.
 
-**Timing.** The draft is the reference model ([S10](decisions.md)); the code deviates in three
+**Timing.** The draft is the reference model ([S10](decisions.md)); the code deviates in two
 places until R8 ([`model_equations.md`](model_equations.md) "Code status"). Until R8 and the D1
 cascade, every §5.3 number comes from the code's timing.
 
@@ -23,8 +23,8 @@ cascade, every §5.3 number comes from the code's timing.
 | Section | Status | Outstanding |
 |---|---|---|
 | 1 Introduction (incl. §1.1 evidence) | ✅ | Prose says reposting makes vacancies "self-correct" (~L154, ~L308); qualify for partial reposting (R11) |
-| 2 Environment | ✅ | — Convention A `eq:u_lom` and `eq:v_lom` with Λ_{r,t}; timing text says which stocks each shock reaches; `fig:Timing` notes that s hits only incumbent matches |
-| 3 Equilibrium | ✅ | R11: (1−ϕ) on the shortfall in `eq:surplus_wage`/`eq:surplus_eq`; −s_t𝓡_t in `eq:wage_eq`; prose at the job creation condition and the wage-substituted surplus; Λ_r has no labelled equation |
+| 2 Environment | ✅ | Convention A `eq:u_lom`; `eq:v_lom` with Λ_{r,t}. Timing prose (Oct 1, late) states the paper's convention: the aggregate state incl. s_t, δ_t is known at the start of t; only incidence is revealed at the end of t. `fig:Timing` unchanged (MS: consistent with the convention); it notes that s hits only incumbent matches |
+| 3 Equilibrium | ✅ | Wage dependencies fixed Oct 1: 𝓡_t defined at `eq:repost_shortfall`; `eq:wage_eq` carries −s_t𝓡_t; `eq:surplus_wage` carries −(1−ϕ)s_t𝓡_t. `eq:Lambda_r` defines the reactivation rate. `def:equilibrium` audited for completeness Oct 1: 4 equations for (N, C, χ^c, Y^c), 6 for (θ, K, Q, e, v, u) with `eq:theta_eq` added. The job creation condition `eq:jcc_eq` substitutes the surplus at t+1, so J_t and w_t drop out (`eq:surplus_eq` removed); 𝓡_t is carried with its own equation, so there is no nested expectation. Auxiliary list cites `eq:Lambda_r`, the matching rates, and 𝓡_t. Prop. 1 proof updated to match |
 | 3.x Limiting cases | ✅ | — |
 | 3.x Shock transmission (`sec:mechanism`) | ✅ | δ̄_e/τ̄ ≈ 0.21 at L1716 → 0.087 in the D1 cascade |
 | 3.x Steady state | ✅ | — |
@@ -43,7 +43,7 @@ cascade, every §5.3 number comes from the code's timing.
 | A Relation to literature | ✅ |
 | B Data sources | ✅ |
 | C Instrument diagnostics | ✅ |
-| D Steady state | ✅ — P5: `X^c` lines at L3647/L3721 use the shortcut (L3647 also lacks p_0) |
+| D Steady state | ✅ — reposting added Oct 1 (shortfall in the job creation condition and wage, Λ_r, Q^rep, X^r, entry `eq:e_ss` with the non-reactivated term); P5: X^c still uses the p_0ψ_cχ^c shortcut |
 | E Derivations — profit share, resource constraint, labor share, **wage determination** (rederived Oct 1: Convention A employment law with δ_{e,t+1}, the reposting shortfall 𝓡_t, the wage-substituted surplus with (1−ϕ)), log-linear propagation (`eq:u_ll` rederived for Convention A) | ✅ |
 | F Additional comparisons (incl. Comparison D) | ✅ |
 | G Limiting-case proofs (`prop:independence`, `prop:double_limit`, `prop:ags`, `prop:bgm_nest`) | ✅ |
@@ -62,7 +62,7 @@ cascade, every §5.3 number comes from the code's timing.
 | `prop:ags` (3) | ✅ Holds; states the clone-replacement motivation and that p_0 = 0 is assumed (no-exit also follows from f_e ≥ χ_m, which would leave reactivation on). AGS differs from the baseline on three channels |
 | `prop:bgm_nest` | ⚠️ Not audited for reposting/timing (R12). At p_0 = 0 the conservation leak is zero |
 | `prop:equilibria`, `prop:curves` | ⚠️ Not audited (R12) |
-| `prop:ds_asymmetry` (5) | ✅ Restated Oct 1 for costless reposting; see below |
+| `prop:ds_asymmetry` (5) | ⚠️ Restated Oct 1 for costless reposting, but the proof still assumes s_t, δ_t realize at the end of t. Restate under start-of-period observation (R13) |
 
 ### Proposition 5 (`prop:ds_asymmetry`, proof in `app:proof_ds`)
 
@@ -72,7 +72,11 @@ reactivation, and s shocks produce positive u–v comovement. Negative comovemen
 proposition says Parts 1–2 assume costless reposting and that partial reposting gives s shocks a
 destructive component. The §5.3 "Choice of shocks" paragraph is qualified the same way.
 
-- **Part 1** (p_0 = 0): an s_t shock raises u_{t+1} and v_{pre,t+1} by the same
+- ⚠️ **R13 pending.** The Part 1 proof and `lem:vpre` hold period-t variables fixed on the
+  old reading that s_t, δ_t realize at the end of t. Under the paper's convention they are
+  known at t, so θ_t and e_t respond. Proposed restatement and exact accounting are in
+  `pending_tasks.md` R13.
+- **Part 1** (p_0 = 0), as currently written: an s_t shock raises u_{t+1} and v_{pre,t+1} by the same
   d = (1−δ_t)(1−u_t), so vacancies rise at h = 1 provided −∂e_{t+1}/∂s_t < d, for any ρ_s.
   Proof in four steps: (1) ∂u = d; (2) ∂v_pre = d, for any ρ_s and entry technology;
   (3) ∂v = d + ∂e = θ̄d + ū∂θ, so the condition is necessary and sufficient; (4) two exact cases

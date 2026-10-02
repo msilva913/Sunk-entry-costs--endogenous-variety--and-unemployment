@@ -1,5 +1,5 @@
 # Pending Tasks
-**Last updated:** October 1, 2026 (cleanup) · **Branch:** `costly_vacancy_reposting`
+**Last updated:** October 1, 2026, late (R13 added; timing convention confirmed) · **Branch:** `costly_vacancy_reposting`
 
 Actionable work only. Decisions live in [`decisions.md`](decisions.md), draft section status in
 [`draft_status.md`](draft_status.md), results in [`findings.md`](findings.md), the model
@@ -60,15 +60,16 @@ counterfactual.
 
 | # | Task | Status |
 |---|---|---|
+| R13 | 🔴 **Restate Prop. 5 for start-of-period shock observation — START HERE (draft).** The paper's convention (confirmed by MS Oct 1): the aggregate state, including s_t and δ_t, is realized at the start of t and every date-t decision conditions on it; only the incidence (which matches and lines) is revealed at the end of t. The §2 prose was corrected Oct 1; the proof was not. Two places still use the old reading: the Part 1 proof ("holding period-t variables fixed, since s_t realizes at the end of t", search `realizes at the end of`) and `lem:vpre` (bracket "predetermined with respect to δ_t (which realizes at end of t…)"). With s_t known at t, θ_t and e_t respond on impact. **Exact accounting (derived Oct 1, p_0 = 0):** with M_t = f_t u_t and u_t fixed, Δu_{t+1} = d − (1−δ_t)ΔM_t; Δv_{pre,t+1} = Δu_{t+1} + (1−δ_t)Δe_t; Δv_{t+1} = Δu_{t+1} + (1−δ_t)Δe_t + Δe_{t+1}; at h = 0, u_t is unchanged and Δv_t = Δe_t. **Proposed Part 1 (awaiting MS review):** u and v comove positively at h = 1 provided matching at t does not rise by more than d/(1−δ_t) and entry over t and t+1 does not contract by more than Δu_{t+1}. Then: (a) recheck the two exact cases in Step 4 (free entry; θ̄ = 1) under this timing; (b) give `lem:vpre` and Part 3 the period-t entry term; (c) check that Part 2's closing line and the discussion paragraphs after the proposition still read correctly; (d) re-run `run_prop5_s_check.jl` reporting Δu, ΔM_t, Δe_t, Δe_{t+1} and confirm the restated condition (the code already uses this timing, so the 1.5% bound should survive but is now measured against the new condition); (e) update decisions S12, draft_status, findings | ❌ **next draft task** |
 | R2 | **Verify α, σ_s, δ_e are separately identified** on simulated data. α and δ_e move cor(u,v) through the same channel; α and χ_m both move position destruction. The LD→v IRF should separate them (exit compares χ to χ^c, reactivation to Q). Otherwise fix α on a reported grid. Gates the D11 go/no-go | ❌ needs R8 |
 | R3 | **Prop. 5 for partial reposting.** Parts 1–2 now hold for costless reposting only (Oct 1 restatement). Open: a result for α > 0, e.g. a threshold Λ_r* at which the s→v sign flips, and whether Part 2's claim that the drain rises in ρ_s survives | ❌ |
 | R4 | **Revisit [D4](decisions.md)/S6**: LD→v as the identifying moment for α | after R2 |
 | R5 | **Add to §5.2:** the GS and Shao-Silos comparison, the δ_e bracketing argument, and why three shocks are required (CK consistency) | ⚠️ do regardless |
 | R6 | **Decide whether δ_e moves into Θ_e** with a prior on [3.2%, 10%]/yr. Only once the margin exists, or δ_e absorbs its blame | after R8 |
-| R8 | **Restructure the code to the draft's timing and add the reposting margin.** Spec: [`model_equations.md`](model_equations.md) "Code status" and Block 2. (i) States x_t = [u_{t−1}, v_{t−1}, B_t, z_t, δ_{t−1}, s_{t−1}]; N_t, u_t, v_{pre,t} become same-period controls solved with χ^c_t; survival (1−δ_t)F(χ^c_{t+1}) in both value equations and laws of motion. (ii) Add α, Λ_{r,t} as a tracked control, modified f[22], X^r in f[16], the recruiter surplus as a tracked jump (no nested E), and the modified wage (−ϕ·s_t·𝓡_t; surplus coefficient 1−ϕ). (iii) Exact X^c integral. (iv) Regression tests: α → 0 and p_0 = 0 reproduce Block 1; positions conserved up to exit and the non-reactivated mass | ❌ **next model task** |
+| R8 | **Restructure the code to the draft's timing and add the reposting margin.** Spec: [`model_equations.md`](model_equations.md) "Code status" and Block 2. (i) States are the pre-exit stocks after the end-of-(t−1) incidence (Ñ_t, Ẽ_t, Ṽ^u_t, Ṽ^s_t) plus z_t, δ_t, s_t (known at t); N_t, u_t, v_{pre,t} become same-period controls solved with χ^c_t; survival (1−δ_t)F(χ^c_{t+1}) in both value equations and laws of motion. (ii) Add α, Λ_{r,t} as a tracked control, modified f[22], X^r in f[16], 𝓡_t as a tracked variable with its own equation, and f[3] gaining −(1−ϕ)·s'·𝓡' (as in `eq:jcc_eq`; no J needed, no nested E); the wage equation f[7] gains −ϕ·s·𝓡. (iii) Exact X^c integral. (iv) Regression tests: α → 0 and p_0 = 0 reproduce Block 1; positions conserved up to exit and the non-reactivated mass | ❌ **next model task** |
 | R9 | **Simulate the dynamic payoffs:** amplification (procyclical Λ_r, reposting option in the job creation condition) and persistence (stock depletion; does reposting move the δ→u peak?). Use one-at-a-time switches, not baseline-vs-AGS: ζ→0 (variety), ω_δ→0 (exit, reactivation retained), α→0 (reactivation, exit retained). Implies a fourth mechanism comparison, an α→0 run | after R8 |
-| R11 | **Finish the draft's reposting edits:** (1−ϕ) coefficient on the shortfall in `eq:surplus_wage` and `eq:surplus_eq`; −s_t𝓡_t inside the φ(·) bracket of `eq:wage_eq` (appendix already done); prose at the JCC (says the surplus is "substituted"; the RHS description is the old substituted form) and at the wage-substituted surplus (says "into `eq:jcc`"); give Λ_r a labelled equation; intro prose that says reposting makes vacancies "self-correct" (~L154, ~L308) | ⚠️ MS writes |
-| R12 | **Audit the remaining propositions for reposting and timing:** `prop:bgm_nest` (leans on position conservation; leak is zero at p_0 = 0, but verify), `prop:equilibria`, `prop:curves` | ❌ |
+| R11 | **Finish the draft's reposting edits.** Wage, surplus, job creation prose, and steady-state appendix done Oct 1. `eq:Lambda_r` added and `def:equilibrium` completed Oct 1 (θ_t = v_t/u_t, matching rates, 𝓡_t; J_t eliminated by substituting the surplus at t+1). Remaining: intro prose that says reposting makes vacancies "self-correct" (~L154, ~L308); §5.2's Y^Gross/Y = 1 + X/Y + X^c/Y needs X^r/Y (with P4) | ⚠️ |
+| R12 | **Audit the remaining propositions for reposting and timing:** `prop:bgm_nest` (leans on position conservation; leak is zero at p_0 = 0, but verify. ⚠️ Its proof says the bracket in `eq:N_lom_eq` "equals N^e_{t−1}"; it equals N_{t−1} + N^e_{t−1}, and the N^e formula and the "G(Q_t) at Q_t = f_e/ν" phrase look garbled), `prop:equilibria`, `prop:curves` | ❌ |
 
 ## Empirical code tasks
 
@@ -116,6 +117,10 @@ counterfactual.
   diagnostic; E8 instrument-persistence test.
 - **Sept 28–30:** reposting formulation (D11), job creation condition with reposting (R7), draft
   chunks A–C (R10), Props 1 and 3 audited.
+- **Oct 1 (late):** wage dependencies carried through the main text and steady-state
+  appendix; `eq:repost_shortfall`, `eq:Lambda_r`, `eq:theta_eq` added; `def:equilibrium`
+  completed with J_t eliminated; §2 timing prose corrected to start-of-period shock
+  observation.
 - **Oct 1:** wage appendix rederived (Convention A employment law, reposting term);
   `eq:u_lom` and its restatements moved to Convention A; timing text and `fig:Timing`;
   `def:equilibrium` initial conditions; Prop. 5 Part 1 restated and reproved, with

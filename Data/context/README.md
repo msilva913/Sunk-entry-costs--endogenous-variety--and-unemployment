@@ -1,6 +1,6 @@
 # Context Folder — Index
 **Last reorganized:** September 5, 2026 (branch `Organize_Project_State_Estimation`)
-**Last consistency pass:** October 1, 2026 (branch `costly_vacancy_reposting`; decisions, tasks, draft status cleaned; timing settled)
+**Last consistency pass:** October 1, 2026, late (branch `costly_vacancy_reposting`; timing convention confirmed; R13 added)
 
 Nine files, each with one job, plus the dated session handouts. If you are about to write
 something here, check this table first — most duplication in the past came from appending
@@ -21,13 +21,13 @@ status notes to whichever file was open rather than the file that owns the topic
 
 ## Reading order when picking the project back up
 
-1. `../CLAUDE.md` — one-paragraph framing and current priorities
-2. **`pending_tasks.md`** — the critical path (as of Oct 1: E9, then the single regeneration pass R8 + D1 + PATH B)
-3. **`decisions.md`** — what is unsettled, and the settled timing (S10–S12)
-4. `model_equations.md` — the model spec, if the task touches the code
-5. Dated `session_handout_*.md` files are history; the files above supersede them
-5. `estimation_design.md` — if the task touches estimation
-6. The rest as needed
+1. **`session_handout_20261001.md`** — latest handout: uncommitted work, resume at R13 (Prop. 5 under the timing convention)
+2. `../CLAUDE.md` — one-paragraph framing and current priorities
+3. **`pending_tasks.md`** — the critical path (as of Oct 1: R13, E9, then the single regeneration pass R8 + D1 + PATH B)
+4. **`decisions.md`** — what is unsettled, and the settled timing (S10–S12)
+5. `model_equations.md` — the model spec, if the task touches the code
+6. `estimation_design.md` — if the task touches estimation
+7. The rest as needed. Older dated `session_handout_*.md` files are history
 
 ## Conventions
 

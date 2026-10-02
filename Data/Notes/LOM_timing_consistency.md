@@ -241,6 +241,6 @@ strengthens both results; Convention A leaves them exactly as published.
 **A separate timing issue, not about this convention.** The code dates *exit* differently from
 the draft: f[2] builds δ_e from the current cutoff Λ_t and applies it to the t→t+1 transition,
 while the draft (and the code's own value equations) use (1−δ_t)F(χ^c_{t+1}). The code also
-observes δ_t and s_t one stage early and treats post-exit stocks as states. These are fixed in
+treats post-exit stocks as states. These are fixed in
 task R8; the specification is in [`../context/model_equations.md`](../context/model_equations.md)
 "Code status".

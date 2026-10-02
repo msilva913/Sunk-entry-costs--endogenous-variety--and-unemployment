@@ -676,7 +676,7 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	A recruiter whose product line survives reactivates a position
 	vacated at the end of
 	$t-1$ whenever the recovered vacancy covers the cost, which happens with probability $\Lambda_{r,t}=F(Q_t/\alpha)$, derived in
-	Section~\ref{sec:recruiters}. Thus, $\Lambda_{r,t}$ carries
+	Section~\ref{sec:recruiters} (equation~\eqref{eq:Lambda_r}). Thus, $\Lambda_{r,t}$ carries
 	the same date as the survival term $(1-\delta_{e,t})$. The
 	complementary fraction $1-\Lambda_{r,t}$ of vacated positions is retired permanently. Finally, the
 	asymmetric implications of these laws of motion for the 
@@ -699,11 +699,13 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	means of technology, exogenous product destruction, and 
 	idiosyncratic separation, respectively, and innovations 
 	$e_{zt}$, $e_{\delta t}$, $e_{st}$ are mutually uncorrelated. 
-	Shocks $s_t$ and $\delta_t$ realize at the end of period $t$,
-	after production, bargaining, and matching, as illustrated in
-	Figure~\ref{fig:Timing}. Agents making vacancy and entry decisions
-	at the start of $t$ therefore act on $s_{t-1}$ and
-	$\delta_{t-1}$, the shocks that realized at end of $t-1$. These
+	As illustrated in Figure~\ref{fig:Timing}, the aggregate state,
+	including $s_t$ and $\delta_t$, is realized at the start of
+	period~$t$, so all date-$t$ decisions condition on it. The rates
+	$s_t$ and $\delta_t$ govern separation and destruction at the end
+	of $t$, after production, bargaining, and matching; only which
+	matches and product lines they hit is revealed then. The stocks
+	entering $t$ were therefore shaped by the rates of $t-1$, which
 	determine the total exit rate
 	$\delta_{e,t}=1-(1-\delta_{t-1})F(\chi_t^c)$ and aggregate
 	separation rate $\tau_t=\delta_{e,t}+s_{t-1}(1-\delta_{e,t})$.
@@ -989,7 +991,12 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	\end{align}
 	The recruiter receives $w_t^{int}$ from the retailer and 
 	pays the worker $w_t$. Conditional on product-line survival, 
-	the match continues with probability $1-s_t$. Otherwise the worker separates and the recruiter may reactivate the vacancy at cost $\alpha\chi$, with $\chi\sim F$ drawn from the same distribution as the continuation cost, scaled by $\alpha$. Reactivation is optimal when the recovered vacancy covers the cost, $Q_{t+1}\geq\alpha\chi$, which occurs with probability $\Lambda_{r,t+1}\equiv F(Q_{t+1}/\alpha)$. The expected value of a separated position is therefore the reactivation option value
+	the match continues with probability $1-s_t$. Otherwise the worker separates and the recruiter may reactivate the vacancy at cost $\alpha\chi$, with $\chi\sim F$ drawn from the same distribution as the continuation cost, scaled by $\alpha$. Reactivation is optimal when the recovered vacancy covers the cost, $Q_{t+1}\geq\alpha\chi$, which occurs with probability $\Lambda_{r,t+1}$, where the reactivation rate is
+	\begin{align}\label{eq:Lambda_r}
+		\Lambda_{r,t}\equiv F\!\left(\frac{Q_t}{\alpha}\right)
+		=\min\left\{(1-p_0)+p_0\left(\frac{Q_t}{\alpha\chi_m}\right)^{\psi},\,1\right\}
+	\end{align}
+	using the form of $F$ in~\eqref{eq:F_chi}. Like the survival probability~\eqref{eq:Lambda}, $\Lambda_{r,t}$ evaluates $F$ at a threshold. The zero-cost atom always reactivates, so $\Lambda_{r,t}\in[1-p_0,1]$, and every vacated position is reactivated once $Q_t\geq\alpha\chi_m$. Because $Q_t$ is procyclical, so is the reactivation rate. The expected value of a separated position is therefore the reactivation option value
 	\begin{align}\label{eq:Qrep}
 		Q_t^{rep}\equiv\mathbb{E}\bigl[\max\{Q_t-\alpha\chi,\,0\}\bigr]
 		= Q_t\Lambda_{r,t}-\alpha\int_{0}^{Q_t/\alpha}\chi\,dF(\chi),
@@ -1001,12 +1008,20 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	from~\eqref{eq:value_recruiter_matched} and using the definition 
 	of $K_t$ yields recruiter surplus:
 	\begin{align}\label{eq:value_recruiter_surplus}
-		J_t - Q_t &= w_t^{int}-w_t - K_t 
-		+ (1-s_t)\left(\kappa+\frac{K_t}{q(\theta_t)}\right)-s_t\mathbb{E}_tm_{t+1}(1-\delta_t)F(\chi_{t+1}^c)\left(Q_{t+1}-Q_{t+1}^{rep}\right)
+		J_t - Q_t &= w_t^{int}-w_t - K_t
+		+ (1-s_t)\left(\kappa+\frac{K_t}{q(\theta_t)}\right)-s_t\mathcal{R}_t
 	\end{align}
-	Substituting~\eqref{eq:value_recruiter_surplus} into the 
-	right-hand side of~\eqref{eq:average_hiring_cost} yields the 
-	job creation condition:
+	where
+	\begin{align}\label{eq:repost_shortfall}
+		\mathcal{R}_t\equiv\mathbb{E}_tm_{t+1}(1-\delta_t)F(\chi_{t+1}^c)\left(Q_{t+1}-Q_{t+1}^{rep}\right)
+	\end{align}
+	is the expected discounted reposting shortfall: the value a
+	separated position loses relative to costless reposting,
+	through vacancies that are not reactivated and through the
+	reactivation costs paid on those that are. It vanishes as
+	$\alpha\to0$. Imposing symmetry
+	in~\eqref{eq:average_hiring_cost} gives the job creation
+	condition:
 \begin{align}\label{eq:jcc}
 	\kappa+\frac{K_t}{q(\theta_t)} = 
 	\mathbb{E}_t m_{t+1}(1-\delta_t)F(\chi_{t+1}^c)
@@ -1016,11 +1031,18 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	matching cost $\kappa$ plus the flow cost $K_t/q(\theta_t)$, 
 	equal to the opportunity cost of holding the vacancy this 
 	period multiplied by its expected duration $1/q(\theta_t)$. 
-	The right-hand side is the present discounted value of the 
-	match: future net revenue minus the future flow entry cost, 
-	plus the continuation value if the worker is retained, 
-	discounted by the stochastic discount factor and the 
-	product-line survival probability.
+	The right-hand side is the expected surplus of a match that
+	begins producing next period, discounted by the stochastic
+	discount factor and the product-line survival probability.
+	By~\eqref{eq:value_recruiter_surplus}, that surplus is the
+	recruiter's net revenue less the flow value of the vacancy,
+	plus the hiring cost saved if the match survives separation,
+	less the reposting shortfall if it does not. Once the wage is
+	determined, the surplus can be substituted
+	into~\eqref{eq:jcc}. Because $\mathcal{R}_t$ is defined by its
+	own one-period equation~\eqref{eq:repost_shortfall}, the
+	substitution leaves every equation within one period
+	(Definition~\ref{def:equilibrium}).
 	
 	\subsection{Wage determination}
 	
@@ -1028,7 +1050,7 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	\begin{align}\label{eq:wage_eq}
 		w_t = \phi\left(w_t^{int} - K_t 
 		+ f(\theta_t)\left(\kappa
-		+\frac{K_t}{q(\theta_t)}\right)\right)
+		+\frac{K_t}{q(\theta_t)}\right)-s_t\mathcal{R}_t\right)
 		+(1-\phi)b
 	\end{align}
 	where $\phi$ is the worker's bargaining power.\footnote{The 
@@ -1045,20 +1067,27 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	K_t$; the second effect dominates when $\theta>1$. The fixed 
 	cost $\kappa$ raises wages by $\phi f(\theta_t)\kappa$ because 
 	a failed negotiation forces the firm to pay $\kappa$ again 
-	upon next filling the vacancy. Setting $w_t^{int}=z_t$ and 
-	$\kappa=0$ recovers the CK wage equation.
-	
-	Substituting~\eqref{eq:wage_eq} into~\eqref{eq:jcc} to 
-	eliminate $w_t$ yields the wage-substituted job creation 
-	condition:
+	upon next filling the vacancy. The reposting shortfall lowers
+	the wage by $\phi s_t\mathcal{R}_t$. A separation destroys part
+	of the position's value, which shrinks the match surplus, and
+	the worker bears share $\phi$ of that loss. The household's
+	surplus carries no such term, because a separated worker
+	becomes unemployed whether or not the position is reactivated
+	(\ref{app:wage}). Setting $w_t^{int}=z_t$,
+	$\kappa=0$, and $\alpha\to0$ recovers the CK wage equation.
+
+	Substituting~\eqref{eq:wage_eq}
+	into~\eqref{eq:value_recruiter_surplus} to eliminate $w_t$
+	yields the wage-substituted surplus:
 	\begin{align}\label{eq:surplus_wage}
 		J_t-Q_t &= (1-\phi)\left(w_t^{int}-K_t-b\right)
 		-\phi\theta_t\left(K_t+q(\theta_t)\kappa\right) \notag \\
 		&\quad +(1-s_t)\left(\kappa+\frac{K_t}{q(\theta_t)}\right)
-		-s_t\mathbb{E}_tm_{t+1}(1-\delta_t)F(\chi_{t+1}^c)
-		\left(Q_{t+1}-Q_{t+1}^{rep}\right)
+		-(1-\phi)s_t\mathcal{R}_t
 	\end{align}
-	
+	The recruiter bears share $1-\phi$ of the reposting shortfall;
+	the worker bears the rest through the wage.
+
 	\subsection{Retailers}\label{sec:retailers}
 	
 	A retailer selling variety $j$ rents labor from recruiters at 
@@ -1206,8 +1235,8 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	The second line splits $(Q_t/\alpha)^{\psi+1}
 	=(Q_t/\alpha)(Q_t/\alpha)^{\psi}$, so the cost scale $\alpha$
 	cancels against the threshold and survives only inside the
-	ratio $Q_t/(\alpha\chi_m)$. The third line evaluates
-	\eqref{eq:F_chi} at the reactivation threshold,
+	ratio $Q_t/(\alpha\chi_m)$. The third line uses the interior branch of
+	\eqref{eq:Lambda_r},
 	$\Lambda_{r,t}=(1-p_0)+p_0\left(Q_t/(\alpha\chi_m)
 	\right)^{\psi}$, to replace the power term by
 	$\Lambda_{r,t}-1+p_0$.
@@ -1280,12 +1309,12 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 		$B_{-1}\equiv N_{-1}+N^e_{-1}$ is the stock of product lines
 		entering period~0 before exit, an equilibrium is
 		a sequence $\{N_t, C_t, \chi_t^c, Y_t^c, \theta_t,
-		K_t, Q_t, J_t, e_t, v_t, u_t\}_{t=0}^\infty$ satisfying the
+		K_t, Q_t, e_t, v_t, u_t\}_{t=0}^\infty$ satisfying the
 		business formation block:
 		\begin{align}
 			\label{eq:N_lom_eq}
 			N_t &= (1-\delta_{t-1})\Lambda_t
-			\left(N_{t-1} + \frac{z_{t-1}(1-u_{t-1})}{f_e} 
+			\left(N_{t-1} + \frac{z_{t-1}(1-u_{t-1})}{f_e}
 			- \frac{Y_{t-1}^c}{f_e\rho(N_{t-1})}\right) \\
 			\label{eq:N_euler_eq}
 			f_e\rho(N_t) &= (1-\delta_t)\mathbb{E}_t 
@@ -1305,28 +1334,30 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 			\label{eq:jcc_eq}
 			\kappa+\frac{K_t}{q(\theta_t)} &=
 			\mathbb{E}_t m_{t+1}(1-\delta_t)\Lambda_{t+1}
-			\left(J_{t+1}-Q_{t+1}\right) \\
-			\label{eq:surplus_eq}
-			J_t-Q_t &= (1-\phi)\left(\frac{\rho(N_t)z_t}
-			{\mu(N_t)}-K_t-b\right)
-			-\phi\theta_t\left(K_t+q(\theta_t)\kappa\right)
+			\Biggl[(1-\phi)\left(\frac{\rho(N_{t+1})z_{t+1}}
+			{\mu(N_{t+1})}-K_{t+1}-b\right)
+			-\phi\theta_{t+1}\left(K_{t+1}+q(\theta_{t+1})\kappa\right)
 			\notag \\
-			&\quad +(1-s_t)\left(\kappa
-			+\frac{K_t}{q(\theta_t)}\right)
-			-s_t\mathbb{E}_t m_{t+1}(1-\delta_t)\Lambda_{t+1}
-			\left(Q_{t+1}-Q_{t+1}^{rep}\right) \\
+			&\qquad +(1-s_{t+1})\left(\kappa
+			+\frac{K_{t+1}}{q(\theta_{t+1})}\right)
+			-(1-\phi)s_{t+1}\mathcal{R}_{t+1}\Biggr] \\
 			\label{eq:Kdef}
 			K_t &= Q_t - (1-\delta_t)\mathbb{E}_t 
 			m_{t+1}\Lambda_{t+1}Q_{t+1} \\
 			\label{eq:entry_eq}
-			e_t &= \left(\frac{Q_t}{x_m}\right)^\xi
+			e_t &= \left(\frac{Q_t}{x_m}\right)^\xi \\
+			\label{eq:theta_eq}
+			\theta_t &= \frac{v_t}{u_t}
 		\end{align}
 		together with laws of motion
-		\eqref{eq:v_lom}--\eqref{eq:u_lom}, auxiliary
+		\eqref{eq:u_lom}--\eqref{eq:v_lom}, auxiliary
 		definitions $\delta_{e,t}$ \eqref{eq:delta_e_lom},
 		$\tau_t$ \eqref{eq:tau_lom}, $\Lambda_t$
-		\eqref{eq:Lambda}, $\Lambda_{r,t}=F(Q_t/\alpha)$,
+		\eqref{eq:Lambda}, $\Lambda_{r,t}$ \eqref{eq:Lambda_r},
+		matching rates $f(\theta_t)=A\theta_t^{1-\eta_L}$ and
+		$q(\theta_t)=A\theta_t^{-\eta_L}$,
 		$Q_t^{rep}$ \eqref{eq:Qrep},
+		$\mathcal{R}_t$ \eqref{eq:repost_shortfall},
 		$X_t$ \eqref{eq:X_total}, $X_t^c$
 		\eqref{eq:agg_fixed_costs}, $X_t^r$
 		\eqref{eq:agg_repost_costs}, $m_t$
@@ -1342,16 +1373,20 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	the exit threshold to current profitability plus the
 	option value of a new product line. The labor market
 	block jointly
-	determines $u_t, v_t, \theta_t$, $K_t$, $Q_t$, and $J_t$: the job
-	creation condition equates average hiring cost to the
-	present discounted value of a filled vacancy, and free
-	entry pins down the vacancy creation margin. The matched
-	value $J_t$ is carried as a separate jump variable rather
-	than substituted out of \eqref{eq:jcc_eq}. Under partial
-	reposting the surplus \eqref{eq:surplus_eq} is itself
-	forward-looking, because a separation at $t+1$ realizes its
-	reactivation shortfall $Q_{t+2}-Q_{t+2}^{rep}$ on the
-	vacancy obtained at $t+2$. Tracking $J_t$ allows the system to have a first-order representation. The two 
+	determines $u_t$, $v_t$, $\theta_t$, $K_t$, $Q_t$, and
+	$e_t$: the job creation condition equates average hiring
+	cost to the expected surplus of a filled vacancy, the entry
+	condition~\eqref{eq:entry_eq} pins down vacancy creation,
+	and the laws of motion carry $u_t$ and $v_t$ forward. The job
+	creation condition substitutes the wage-substituted
+	surplus~\eqref{eq:surplus_wage}, dated $t+1$, into~\eqref{eq:jcc},
+	so the matched value $J_t$ and the wage drop out. The
+	reposting shortfall enters through $\mathcal{R}_{t+1}$, which
+	looks one period further ahead, to the vacancy obtained at
+	$t+2$. Carrying $\mathcal{R}_t$ as a variable defined by its
+	own one-period equation~\eqref{eq:repost_shortfall} keeps every
+	equation within one period, so the system has a first-order
+	representation without a nested expectation. The two
 	blocks interact through $\rho(N_t)$ and $\mu(N_t)$ 
 	in the job creation condition and through $\delta_t$ 
 	in the survival-adjusted discount factor 
@@ -1580,7 +1615,7 @@ from the resource constraint, leaving
 $Y_t = C_t + \nu_t^f N_t^e$ in each case.  The sole
 departure of the baseline from LR-BGM is that $L_t$ and
 $X_t$ are endogenous, determined jointly by the DMP block
-\eqref{eq:v_lom}--\eqref{eq:u_lom}.  Restoring $p_0>0$
+\eqref{eq:u_lom}--\eqref{eq:v_lom}.  Restoring $p_0>0$
 further adds endogenous exit to the LR-BGM core.
 
 \subsection{Shock transmission and the \texorpdfstring{$\delta$--$s$}{delta-s} asymmetry}\label{sec:mechanism}
@@ -3630,15 +3665,18 @@ The second set consists of empirically identified impulse responses from the
 		\nu^f&=\rho(N)f_e/\mu(N)\\
 		w^{int}&=\rho(N)z/\mu(N)\\
 		\frac{d^f}{\nu^f}&=\frac{r+\delta_e}{1-\delta_e}\\
-		\kappa+\frac{K}{q(\theta)}&=\frac{1-\delta_e}{r+\tau}(w^{int}-w-K)\\
+		\kappa+\frac{K}{q(\theta)}&=\frac{1-\delta_e}{r+\tau}(w^{int}-w-K-s\mathcal{R})\\
 		%\frac{\gamma P}{q(\theta)}&=\frac{z/\mu-w}{\rho+s}\\
 		%\gamma N^{1/(1-\varepsilon)}\left[\frac{\rho+s}{q(\theta)}+\phi \theta\right]&=(1-\phi)\left(pz/\mu-b-K\right)\\
-		w &= \phi \left[ w^{int}-K+\theta(K+q(\theta)\kappa)\right]+(1-\phi)b\\
+		w &= \phi \left[ w^{int}-K+\theta(K+q(\theta)\kappa)-s\mathcal{R}\right]+(1-\phi)b\\
+		\mathcal{R}&=\frac{1-\delta_e}{1+r}\left(Q-Q^{rep}\right),\quad
+		Q^{rep}=Q\Lambda_r-\psi_cQ(\Lambda_r-1+p_0),\quad
+		\Lambda_r=F(Q/\alpha)\\
 		Q&=e^{1/\xi}x_m \\
 		1-\delta_e&=(1-\delta)F(\chi^c),\quad \tau=1-(1-\delta_e)(1-s)\\
 		K&=\frac{r+\delta_e}{1+r}Q\\
 		u&=\frac{\tau}{\tau+(1-\delta_e)f(\theta)}\label{eq:u_ss}\\
-		e&=\delta_e(v+1-u)\label{eq:e_ss}\\
+		e&=\delta_e(v+1-u)+(1-\delta_e)(1-\Lambda_r)s(1-u)\label{eq:e_ss}\\
 		N^e&=\delta_e N/(1-\delta_e)\\
 		L^c&=\frac{r+\delta_e}{r+\delta_e+\delta_e \pi_s \mu}L,\quad L^e=\frac{\delta_e \pi_s \mu}{r+\delta_e+\delta_e\pi_s L \mu}\label{eq:labor_ss}\\
 		\chi^c&=\frac{\rho f_e}{\mu}\left(\frac{r+\delta_e}{1-\delta_e}\frac{\mu-1}{\mu \pi_s}+1\right)\\
@@ -3646,19 +3684,20 @@ The second set consists of empirically identified impulse responses from the
 		Y^{Gross}&=Y^C+\nu^f N^e=w^{int}L+Nd^f\\
 		Y&=C+\nu^fN^e\\
 		X&=e\frac{\xi}{\xi+1}Q+\kappa qv\\
-		X^c&=N\psi_c \chi^c\\
-		Y^c&=\rho zL^c=C+X+X^c\\
+		X^c&=N\psi_c p_0\chi^c\\
+		X^r&=(1-\delta_e)s(1-u)\,\psi_cQ(\Lambda_r-1+p_0)\\
+		Y^c&=\rho zL^c=C+X+X^c+X^r\\
 	\end{align}
-	Most of these equations are self-evident from the equilibrium system. For instance, evaluating \eqref{eq:u_lom} yields \eqref{eq:u_ss}. To find $e$, start with the steady-state vacancy law of motion:
+	Most of these equations are self-evident from the equilibrium system. For instance, evaluating \eqref{eq:u_lom} yields \eqref{eq:u_ss}. The forms of $Q^{rep}$ and $X^r$ use the interior closed form of the reactivation-cost integral derived below~\eqref{eq:agg_repost_costs}. To find $e$, start with the steady-state vacancy law of motion:
 	\begin{align}
-		[1-(1-\delta_e)(1-q)]v=(1-\delta_e)s(1-u)+e
+		[1-(1-\delta_e)(1-q)]v=(1-\delta_e)\Lambda_r s(1-u)+e
 	\end{align}
 	Expanding the left-hand side as $\delta_e v+(1-\delta_e)qv$ and rewriting $(1-\delta_e)qv=\tau(1-u)$, we have
 	\begin{align}
-		\delta_e v+\tau(1-u)=(1-\delta_e)s(1-u)+e\\
-		\delta_e v + [\tau-(1-\delta_e)s](1-u)=e
+		\delta_e v+\tau(1-u)=(1-\delta_e)\Lambda_r s(1-u)+e\\
+		\delta_e v + [\tau-(1-\delta_e)\Lambda_r s](1-u)=e
 	\end{align}
-	so $e=\delta_e(v+1-u)$. Equation~\eqref{eq:e_ss} makes clear how the contribution of new entrants to the vacancy pool is governed by the total exit rate $\delta_e$.
+	and since $\tau-(1-\delta_e)\Lambda_r s=\delta_e+(1-\delta_e)(1-\Lambda_r)s$, we obtain~\eqref{eq:e_ss}. New entrants replace two kinds of lost positions: those destroyed with exiting product lines, $\delta_e(v+1-u)$, and those retired at surviving product lines because they were not reactivated. With costless reposting ($\Lambda_r=1$) only the first remains, $e=\delta_e(v+1-u)$, and the contribution of entrants to the vacancy pool is governed by the total exit rate $\delta_e$ alone.
 	
 	To find labor in entry $L^e$ in terms of aggregate labor, \eqref{eq:labor_ss}, we plug the resource constraint curve into the expression for $L$:
 	\begin{align}
@@ -3668,9 +3707,9 @@ The second set consists of empirically identified impulse responses from the
 	\end{align}
 	The steady-state job creation and wage equations can be arranged as
 	\begin{align}\label{eq:jcc_wage_ss}
-		\kappa+\frac{K}{q}=\frac{1-\delta_e}{r+\tau}\left[(1-\phi)(w^{int}-K-b)-\phi \theta q\!\left(\kappa+\frac{K}{q}\right)\right]
+		\kappa+\frac{K}{q}=\frac{1-\delta_e}{r+\tau}\left[(1-\phi)(w^{int}-K-b)-\phi \theta q\!\left(\kappa+\frac{K}{q}\right)-(1-\phi)s\mathcal{R}\right]
 	\end{align}
-	Equation \eqref{eq:jcc_wage_ss} equates the average recruiting cost to the present-discounted value of the match, adjusted for the wage bargain. The right-hand side incorporates a fraction $1-\phi$ of the flow surplus $(w^{int}-K-b)$ and an adjustment for the outside option of the worker. Whereas in the standard DMP model, the analogous expression would characterize tightness, here $K$ and $w^{int}$ are additional endogenous variables. Moreover, the average recruiting cost has the compound form $\kappa+K/q$, and discounting is adjusted by the overall firm survival rate $1-\delta_e$.
+	Equation \eqref{eq:jcc_wage_ss} equates the average recruiting cost to the present-discounted value of the match, adjusted for the wage bargain. The right-hand side incorporates a fraction $1-\phi$ of the flow surplus $(w^{int}-K-b)$, an adjustment for the outside option of the worker, and the recruiter's share $1-\phi$ of the expected reposting shortfall, which vanishes with costless reposting. Whereas in the standard DMP model, the analogous expression would characterize tightness, here $K$ and $w^{int}$ are additional endogenous variables. Moreover, the average recruiting cost has the compound form $\kappa+K/q$, and discounting is adjusted by the overall firm survival rate $1-\delta_e$.
 	
 	\section{Derivations}
 	\subsection{Relationship between profit share and Power law shape parameter $\psi$} 
@@ -3739,9 +3778,9 @@ The second set consists of empirically identified impulse responses from the
 	\end{align}
 	The labor share of GDP is
 	\begin{align}
-		\frac{wL}{Y} = (1+\frac{X+X^c}{Y})\frac{w}{w^{int}}\frac{r+\delta_e+\delta_e \mu \pi_s}{\mu(r+\delta_e+\delta_e\pi_s)}
+		\frac{wL}{Y} = (1+\frac{X+X^c+X^r}{Y})\frac{w}{w^{int}}\frac{r+\delta_e+\delta_e \mu \pi_s}{\mu(r+\delta_e+\delta_e\pi_s)}
 	\end{align}
-	The steady-state labor share is composed of three factors. The first factor just reflects the wedge between gross output and GDP, which depends on the recruiting cost and fixed cost shares. The second and third comprise a search wedge $w/w^{int}$ and a market power wedge $w^{int}L/Y^{Gross}$. Through the latter, the labor share depends positively on $\delta_e$ and $\rho$, and negatively on $\pi_s$. Intuitively, a higher product destruction rate requires more labor resources, and thus income accruing to labor. A higher price markup raises profits and thus lowers the labor share. Indeed, in standard DSGE models with monopolistic competition, the labor share just the inverse of the price markup. Here that arises as a limiting case in which search frictions vanish ($w\to w^{int}$) and $\delta \to 0$. The latter entails eliminating the entry sector, which affects the labor share since only retailers charge markups. Note that the search wedge, in turn, depends on $\phi$ and $b$. Moreover, variety effects affect the search wedge through $w^{int}$ but otherwise do not affect the steady-state shares.
+	The steady-state labor share is composed of three factors. The first factor just reflects the wedge between gross output and GDP, which depends on the recruiting, fixed, and reactivation cost shares. The second and third comprise a search wedge $w/w^{int}$ and a market power wedge $w^{int}L/Y^{Gross}$. Through the latter, the labor share depends positively on $\delta_e$ and $\rho$, and negatively on $\pi_s$. Intuitively, a higher product destruction rate requires more labor resources, and thus income accruing to labor. A higher price markup raises profits and thus lowers the labor share. Indeed, in standard DSGE models with monopolistic competition, the labor share just the inverse of the price markup. Here that arises as a limiting case in which search frictions vanish ($w\to w^{int}$) and $\delta \to 0$. The latter entails eliminating the entry sector, which affects the labor share since only retailers charge markups. Note that the search wedge, in turn, depends on $\phi$ and $b$. Moreover, variety effects affect the search wedge through $w^{int}$ but otherwise do not affect the steady-state shares.
 	
 	The special case studied by \citet{bilbiie_2012} arises if we shut down labor market frictions and fixed costs in production. In this limit $\delta_e=\delta$ (no endogenous exit), $w^{int}=w$, $X=X^c=0$, and $\pi_s=1/\varepsilon$, giving
 	\begin{align}
@@ -3749,7 +3788,7 @@ The second set consists of empirically identified impulse responses from the
 	\end{align}
 	which equals the consumption share divided by the markup plus the entry share.
 	
-	\subsection{Wage determination}
+	\subsection{Wage determination}\label{app:wage}
 	We derive the Nash wage~\eqref{eq:wage_eq}. Start from the value of the large household:
 	\begin{align}
 		W_t&=\max_{c_t,a_{t+1}} \frac{c_t^{1-\sigma}}{1-\sigma}+\beta \mathbb{E}_t W_{t+1} \quad \text{s.t.}\\
@@ -3786,11 +3825,7 @@ The second set consists of empirically identified impulse responses from the
 	\begin{align}\label{eq:SJ_app}
 		S_t^J=w_t^{int}-w_t-K_t +(1-s_t)\left(\kappa+\frac{K_t}{q(\theta_t)}\right)-s_t\mathcal{R}_t
 	\end{align}
-	where
-	\begin{align}
-		\mathcal{R}_t\equiv\mathbb{E}_tm_{t+1}(1-\delta_t)F(\chi_{t+1}^c)\left(Q_{t+1}-Q_{t+1}^{rep}\right)
-	\end{align}
-	is the expected discounted reposting shortfall. It depends only on period-$t+1$ objects, so $\der{S_t^J}{w_t}=-1$, and the first-order condition gives the sharing rule
+	where $\mathcal{R}_t$ is the expected discounted reposting shortfall~\eqref{eq:repost_shortfall}. It depends only on period-$t+1$ objects, so $\der{S_t^J}{w_t}=-1$, and the first-order condition gives the sharing rule
 	\begin{align}\label{eq:sharing_rule}
 		S_t^H=\frac{\phi}{1-\phi}c_t^{-\sigma}S_t^J
 	\end{align}
@@ -3831,7 +3866,11 @@ state ($\delta_e, s, \tau, u, v \ll 1$), we use the level deviation
 $\tilde{x}_t \equiv x_t - \bar{x}$ directly and note $\tilde{x}_t \approx
 \bar{x}\hat{x}_t$.   We present equations in the order in which they feed into one
 another: the exit margin first, then the variety stock, the labor market, and
-finally the vacancy-value chain.
+finally the vacancy-value chain. The equations describe the model with
+costless reposting ($\alpha\to0$), which is the model solved for the
+comparisons in Section~\ref{sec:mechanism_irfs}. Partial reposting adds
+$\bar\Lambda_r$ to the reposting inflow in the vacancy law of motion and the
+shortfall $\mathcal{R}_t$ to the recruiter surplus.
 
 \paragraph{1.\ Endogenous exit rate}
 The survival probability is $\Lambda_t \equiv F(\chi_t^c) = (1-p_0)+p_0(\chi_t^c/\chi_m)^\psi$,
@@ -4282,22 +4321,25 @@ margin as well as the exit margin. Every
 reactivation cost draw is $\alpha\chi=0$, so
 $\Lambda_{r,t}=F(Q_t/\alpha)=1$, the mean cost
 $\alpha\int_0^{Q_t/\alpha}\chi\,dF=0$, and hence
-$Q_t^{rep}=Q_t$ and $X_t^r=0$. The reposting term in
-the surplus \eqref{eq:surplus_eq} vanishes,
+$Q_t^{rep}=Q_t$ and $X_t^r=0$. The reposting shortfall
+$\mathcal{R}_t$ \eqref{eq:repost_shortfall} vanishes from the job
+creation condition \eqref{eq:jcc_eq},
 \eqref{eq:v_lom} reverts to full reposting, and
 $X_t^r$ drops out of the resource constraint
 \eqref{eq:rc}.
 
 Under all three conditions, inspect the labor market
-block \eqref{eq:jcc_eq}--\eqref{eq:entry_eq} and
-laws of motion \eqref{eq:v_lom}--\eqref{eq:u_lom}.
+block \eqref{eq:jcc_eq}--\eqref{eq:theta_eq} and
+laws of motion \eqref{eq:u_lom}--\eqref{eq:v_lom}.
 With $m_{t+1}=\beta$, $w_t^{int}=z_t/\mu$,
 $\delta_{e,t}=\delta_{t-1}$, and
 $\Lambda_{r,t}=1$, these equations form
 a closed system in
-$\{u_{t+1},v_t,e_t,Q_t,K_t,J_t,w_t\}_{t=0}^\infty$
+$\{u_t,v_t,\theta_t,e_t,Q_t,K_t\}_{t=0}^\infty$
 given exogenous states $\{z_t,\delta_t,s_t\}$ and
-initial conditions $\{v_{-1},u_0\}$. No variable
+initial conditions $\{v_{-1},u_{-1}\}$; $J_t$ and $w_t$
+then follow from \eqref{eq:surplus_wage} and
+\eqref{eq:wage_eq}. No variable
 from the business formation block
 $\{N_t,C_t,Y_t^c,\chi_t^c\}$ appears. The labor
 market block is therefore self-contained.
@@ -4340,7 +4382,7 @@ business formation block. Hence
 $\delta_{e,t}=1-(1-\delta_{t-1})\Lambda_t$ depends
 on business formation variables. Since $\delta_{e,t}$
 enters both laws of motion
-\eqref{eq:v_lom}--\eqref{eq:u_lom}, the labor
+\eqref{eq:u_lom}--\eqref{eq:v_lom}, the labor
 market block depends on the business formation
 block.
 
@@ -4388,7 +4430,7 @@ $w_t^{int}\to z_t$. Since $p_0=0$ gives $\Lambda_t=1$,
 the job creation condition \eqref{eq:jcc_eq}, flow 
 vacancy value \eqref{eq:Kdef}, free entry 
 \eqref{eq:entry_eq}, and laws of motion 
-\eqref{eq:v_lom}--\eqref{eq:u_lom} converge to 
+\eqref{eq:u_lom}--\eqref{eq:v_lom} converge to 
 \eqref{eq:jcc_ags}--\eqref{eq:u_ags}, which contain 
 no reference to $N_t$.
 

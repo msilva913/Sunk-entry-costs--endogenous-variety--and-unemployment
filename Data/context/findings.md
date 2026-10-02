@@ -554,9 +554,9 @@ discussion after `prop:ds_asymmetry`.
 - The identity Δv = Δv_pre + Δe holds to 1e-18.
 - The δ_e response is zero, as it should be at p_0 = 0.
 
-**Timing nuance (flag for R8).** The gap between Δu and d grows with ρ_s. In the code, s_t is
-part of the period-t state, so θ_t and e_t already respond to it. In the draft, s_t realizes at
-the end of t, after matching (`fig:Timing`). This belongs with the δ_e dating question: the
-code's f[2] uses the period-t cutoff for the t→t+1 transition, while the draft dates it at
-t+1. Negligible here, but settle both together.
+**Why Δu ≠ d exactly.** The gap grows with ρ_s because s_t is known at the start of t (the
+paper's convention), so θ_t and e_t respond to it and change period-t matching. Correction
+Oct 1: an earlier version of this note called this a code deviation. It is not; the Part 1
+proof's "hold period-t variables fixed" step is what needs generalizing (pending), via
+Δu_{t+1} = d − (1−δ_t)ΔM_t and Δv_{pre,t+1} = Δu_{t+1} + (1−δ_t)Δe_t.
 
