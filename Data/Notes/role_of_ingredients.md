@@ -30,6 +30,8 @@ to exist. The markup belongs in a different category from the rest of the table.
 
 ## 2. Why ξ matters: the δ and s margins are not symmetric
 
+> ⚠️ **This section's central claim is wrong (found October 5, 2026). Do not build on it.** It asserts that variety is what makes the δ-shock Beveridge sign survive free entry, citing Comparison D. `app:comparison_D` attributes that result to the **low calibrated δ̄_e/τ̄**, not to ρ(N) — and Comparison D holds variety *on* in both arms (it varies only ξ_inv), so it cannot isolate variety at all. `prop:ds_asymmetry` Part 3's sufficient condition is likewise δ̄_e/τ̄ small, with no variety parameter in it. The threshold derivation in [`predetermined_vacancies_and_the_CK_special_case.md`](predetermined_vacancies_and_the_CK_special_case.md) confirms this: T depends on δ̄_e/τ̄ alone, so an **augmented GS model inherits the result**. What is true is that variety *reinforces* the tightness decline through w^int = ρ(N)z/μ; its separate contribution to the sign has never been isolated, which needs Comparison C crossed with Comparison D (ρ ≡ 1 at ξ_inv → 0) and is not run. **Flag 3 and the ξ/variety substitutes conclusion in §5 both rest on this and are suspect.** Rewrite before R14 is designed.
+
 **CK have one separation margin with δ_e = τ**, so every separation destroys the position. In our
 taxonomy **CK's separation shock maps to our δ, not our s.** CK's result is that with a less than
 infinitely elastic creation process, such a shock makes vacancies fall as unemployment rises, so

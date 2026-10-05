@@ -161,6 +161,8 @@ The `.tex` file is ASCII-clean and meant to be `\input` by the manuscript so the
 carrying hard-coded figures. MS decided to keep literals in the prose; `mechanism_stats.txt`
 is the authority to diff against.
 
+| `predetermined_vacancy_share.jl` | **Added Oct 5, 2026.** Predetermined share of the vacancy stock (v̄^pre/v̄ = 1 − ē/v̄) and the threshold entry elasticity T = κ_v/(δ̄_e/τ̄) − 1 at four destruction calibrations including δ_e = τ (CK). **Self-contained** — no solve, no `steady_state.jl` include; mirrors its closed-form algebra and asserts all three closed forms against each other. Runs in seconds | `predetermined_vacancy_share.txt` |
+
 ### Calibration diagnostics (not paper comparisons)
 
 | Runner | Purpose | Output |

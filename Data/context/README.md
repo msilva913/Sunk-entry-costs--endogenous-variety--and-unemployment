@@ -1,6 +1,6 @@
 # Context Folder — Index
 **Last reorganized:** September 5, 2026 (branch `Organize_Project_State_Estimation`)
-**Last consistency pass:** October 1, 2026, late (branch `costly_vacancy_reposting`; timing convention confirmed; R13 added)
+**Last consistency pass:** October 5, 2026 (branch `costly_vacancy_reposting`; intro positioning, `app:loglin` ¶9 rewrite, predetermined-vacancy threshold; R12b/R12c added)
 
 Nine files, each with one job, plus the dated session handouts. If you are about to write
 something here, check this table first — most duplication in the past came from appending
@@ -44,6 +44,7 @@ status notes to whichever file was open rather than the file that owns the topic
 | Path | Contents |
 |---|---|
 | `../Notes/delta_calibration_and_the_reposting_margin.md` | **Sept 23, 2026.** Why δ̄_e = 3.2 % against BGM/GS/Shao-Silos at 10 %; why raising δ̄_e cannot fix the Beveridge curve; the reposting rate λ and whether to estimate it. Recommends keeping [D1](decisions.md) settled |
+| `../Notes/predetermined_vacancies_and_the_CK_special_case.md` | **Oct 5, 2026.** Why entry can outrun destruction at CK's calibration and not at ours. Derives the threshold entry elasticity T = κ_v/(δ̄_e/τ̄) − 1 from `eq:v_ll`; shows δ_e = τ is the boundary of the parameter space and **minimizes** T. Numbers from `../Programs baseline/predetermined_vacancy_share.jl`. Records two draft bugs (fixed) and the Prop. 5 proof bug (R12c) |
 | `../Notes/Baseline_Blanchard_Kahn.md` | BK conditions, full baseline (DS-CES, p_0 = 0). BK holds for ε > 1; endogenous exit strengthens it |
 | `../Notes/AGS_Blanchard_Kahn.md` | BK conditions for the AGS σ = 0 case |
 | `../Inspecting_mechanism_setup.md` | Design rationale for mechanism Comparisons A–D |

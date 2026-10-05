@@ -115,6 +115,10 @@ JOLTS LD mixes three events: (a) exogenous match dissolution → reposting [mode
 - Hamilton rel. std dev: C3=0.269, C4=0.239 (HP: C5=0.275, C6=0.223)
 - C3/C4 fall in extended samples: GFC intensive margin dominates denominator
 - Entry/exit margin accounts for ~10% of unemployment-driven flow variation → supports δ/τ ≈ 10% calibration
+- **Entry comovement (C7–C10, added Oct 5, 2026).** Hamilton, HP: cor(openings, deaths) **+0.558, +0.463**; cor(openings, closings) +0.608, +0.459; cor(openings, net job change) **+0.466, +0.314**; cor(deaths, net job change) **−0.081, −0.491**
+  - Entry is **procyclical** (C9 > 0 in all three samples, both filters). Permanent exit is countercyclical (C10 < 0 everywhere) but **weak under the preferred Hamilton filter** in the preferred sample (−0.081) and rests mainly on HP (−0.491). jf_orig: −0.198/−0.375; ext_2024: −0.356/−0.636
+  - C7 is **positive**, i.e. openings and deaths move together. This is a churn effect — two gross flows sharing a scale and reallocation component — so C7 cannot settle the cyclical question. C9 against C10 is the comparison that can
+  - Cited in §1.1 Fact 1 (entry paragraph) and its footnote
 
 ## SMM Moments Filter Decision (May 19, 2026)
 
@@ -539,8 +543,9 @@ Entry at t falls in every specification, so condition (i) holds automatically
 (cond_i < 0). Condition (ii) binds at most **2.6%** of d (dest_ann 0.0754, ρ_s 0.95), at most
 **0.7%** at dest_ann 0.0320. Cited in the discussion after `prop:ds_asymmetry`.
 
-**Part 3 (δ shock, p_0 = 0; exact).** Period-t entry *rises* after a δ shock (duration
-shortening raises K and Q). Share of the first-month destruction offset by entry (c3_v, needs
+**Part 3 (δ shock, p_0 = 0; exact).** Period-t entry *rises* after a δ shock (the shock
+slackens the market, so a new position fills faster and K and Q rise — **not** duration
+shortening; see the threshold section below and `app:loglin` ¶9a). Share of the first-month destruction offset by entry (c3_v, needs
 < 1): 0.81 at dest_ann 0.0320 with ρ_δ = 0.592, ξ_inv = 1; 1.38 at ξ_inv = 0.5; 1.95 at
 dest_ann 0.0754; 3.0–6.4 at ρ_δ = 0.9. The matching term in Δu is small (c3_u ≤ 0.04). But the
 cushion is short-lived: at dest_ann 0.0320 vacancies are negative from month 1 or 2 onward and
@@ -552,3 +557,52 @@ and +3.0 (0.0754): `eq:gN_cond` (g_N < 0) fails at the calibration. F′(χ^c) =
 det J of the 3×3 exit system = 0.9979 and 0.9950 (N loop −2e-3 to −4.5e-3; u loop −9e-5 to
 −4.5e-4), so the left-hand side of `eq:exit_cond` is 0.002–0.005. Indicative because the code
 applies δ_e,t (built from Λ_t) to the t→t+1 flows, unlike the draft; redo after R8.
+
+## Predetermined vacancy share and the entry threshold — October 5, 2026
+
+**Program.** `Programs baseline/predetermined_vacancy_share.jl` →
+`predetermined_vacancy_share.txt`. Self-contained; mirrors the closed-form steady-state
+algebra of `steady_state.jl` and asserts all three closed forms against each other.
+**Full argument:** [`../Notes/predetermined_vacancies_and_the_CK_special_case.md`](../Notes/predetermined_vacancies_and_the_CK_special_case.md).
+
+**The result.** On impact of a pure δ shock, `eq:v_ll` collapses to
+ṽ_t = ẽ_t − v̄^pre·δ̃_e,t with v̄^pre = v̄ − ē. The destruction term is proportional to the
+**predetermined** stock, not the whole vacancy stock: a shock can only remove vacancies
+already standing. So vacancies rise iff new postings exceed the destroyed inherited stock,
+and the threshold entry elasticity is
+
+    T = v̄^pre/ē = [v̄/(v̄+L̄)]/δ̄_e − 1 = κ_v/(δ̄_e/τ̄) − 1,   κ_v = 1.2034
+
+**inversely proportional to δ̄_e** and, given the f/q/sep targets, a function of δ̄_e/τ̄
+alone. The predetermined share and δ̄_e/τ̄ are the same object: v̄^pre/v̄ = 1 − (δ̄_e/τ̄)/κ_v.
+
+Targets fixed at f = 0.41, q = 0.80, sep = 0.031 monthly, so θ = 0.5125, u = 0.070295,
+L = 0.929705, v = 0.036026 and v̄/(v̄+L̄) = 0.037304 are **invariant to δ̄_e** (s absorbs the
+change — the design of Comparison A).
+
+| Calibration | δ̄_e monthly | δ̄_e/τ̄ | ē/v̄ | **v̄^pre/v̄** | **T** |
+|---|---|---|---|---|---|
+| **D1 settled** (BED Deaths, 3.20 %/yr) | 0.002707 | 0.0873 | 0.073 | **0.927** | **12.78** |
+| Code baseline (superseded, 7.54 %/yr) | 0.006512 | 0.2100 | 0.175 | 0.825 | 4.73 |
+| BGM / GS / Shao–Silos (10 %/yr) | 0.008742 | 0.2820 | 0.234 | 0.766 | 3.27 |
+| **Coles–Kelishomi** (δ_e = τ) | 0.031000 | 1.0000 | 0.831 | **0.169** | **0.203** |
+
+**CK's threshold is 62.9× lower.** At their calibration 83 % of the standing vacancy stock
+is new postings and only 17 % inherited, so a 0.2 % entry response turns the vacancy
+response positive. And δ_e = τ is the **boundary** of the parameter space (s ≥ 0 requires
+δ_e ≤ τ), and T falls in δ̄_e, so **CK sit at the point that minimizes the entry threshold
+over the entire admissible range.** Their appeal to finitely elastic vacancy creation
+repairs a consequence of having one separation margin.
+
+**Independent corroboration.** The Prop. 5 Part 3 check above reports entry offsetting
+**0.81** of first-month destruction at dest_ann 0.0320 and **1.95** at 0.0754. Against
+T = 12.78 and 4.73 those imply an entry elasticity near 10 in both cases — which clears
+4.73 and falls short of 12.78. Two independent derivations agree.
+
+**Scope.** This gives the bar, not whether the model clears it; that needs Q̂ from the JCC
+(`app:loglin` ¶9, ¶9a). It is also **GS's δ/s split plus our measurement**, not a
+consequence of the business formation block — an augmented GS model inherits it, so the
+intro must not claim it for the preference side.
+
+⚠ The code still runs `dest_ann = 0.0754`, where T = 4.73 against 12.78 at D1. **The D1
+cascade strengthens this argument**; §5.3 understates it today.

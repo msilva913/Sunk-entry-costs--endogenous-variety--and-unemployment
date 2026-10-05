@@ -394,3 +394,11 @@ at Λ_r = 0.9 and 2.5× at 0.7, and is wrong at the floor, where exact X^r = 0.
    flips) is not derived.
 4. **Draft:** extend the log-linear appendix (`app:loglin`), which
    is stated for costless reposting, if it is used for the partial-reposting model.
+5. **New draft equations, Oct 5, 2026** (`app:loglin` ¶9a–9c; see
+   [`draft_status.md`](draft_status.md) Appendix status): `eq:K_jcc_ll` (the vacancy
+   dividend from the JCC — survival, surplus, congestion relief), `eq:K_freeentry`,
+   `eq:theta_freeentry`, `eq:tau_loading`. These are log-linear objects only and have
+   no counterpart in f[1]–f[33]; they do not change the model. `eq:v_ll`'s
+   destruction impulse is a **level** deviation (coefficient v̄^pre), now written
+   with a tilde to match `eq:u_ll`; s in the same equation is a log deviation,
+   since its coefficient already carries s̄.

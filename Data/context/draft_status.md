@@ -22,10 +22,10 @@ cascade, every §5.3 number comes from the code's timing.
 
 | Section | Status | Outstanding |
 |---|---|---|
-| 1 Introduction (incl. §1.1 evidence) | ✅ | Prose says reposting makes vacancies "self-correct" (~L154, ~L308); qualify for partial reposting (R11) |
+| 1 Introduction (incl. §1.1 evidence) | ✅ | Prose says reposting makes vacancies "self-correct" (~L154, ~L308); qualify for partial reposting (R11). **Oct 5:** endogenous exit no longer claimed as a recession amplifier (contradicted by §5.3 — Flag 1), reworded to the δ_e decomposition plus the host distribution F for reactivation draws (`ee5a2a5`); new paragraph giving the measurement argument for why the business formation block is needed given GS (`bcee2cb`); Fact 1 gains the entry margin, the C7–C10 correlations and the one-for-one clause (`1e94613`). **Still owed:** a paragraph on the ξ/CK contrast built on the predetermined share (text drafted in session, not spliced), and the ξ sentence (gated on R14) |
 | 2 Environment | ✅ | Convention A `eq:u_lom`; `eq:v_lom` with Λ_{r,t}. Timing prose (Oct 1, late) states the paper's convention: the aggregate state incl. s_t, δ_t is known at the start of t; only incidence is revealed at the end of t. `fig:Timing` unchanged (MS: consistent with the convention); it notes that s hits only incumbent matches |
 | 3 Equilibrium | ✅ | Wage dependencies fixed Oct 1: 𝓡_t defined at `eq:repost_shortfall`; `eq:wage_eq` carries −s_t𝓡_t; `eq:surplus_wage` carries −(1−ϕ)s_t𝓡_t. Oct 5: prose notes s_t𝓡_t enters alongside K_t (an extra flow cost of a filled position); recruiter profits Π^int now net of X_t and X^r_t, which fixes the `eq:gdp` income identity (it was off by X even before reposting); `eq:phi_calib` gains −s𝓡. `eq:Lambda_r` defines the reactivation rate. `def:equilibrium` audited for completeness Oct 1: 4 equations for (N, C, χ^c, Y^c), 6 for (θ, K, Q, e, v, u) with `eq:theta_eq` added. The job creation condition `eq:jcc_eq` substitutes the surplus at t+1, so J_t and w_t drop out (`eq:surplus_eq` removed); 𝓡_t is carried with its own equation, so there is no nested expectation. Auxiliary list cites `eq:Lambda_r`, the matching rates, and 𝓡_t. Prop. 1 proof updated to match |
-| 3.x Limiting cases | ✅ | — |
+| 3.x Limiting cases | ✅ | **Oct 5:** post-Prop-3 passage rewritten (`2fe27da`). Four channels over AGS, not three — **profit dilution** added (Y^c/N in `eq:euler_bf`, distinct from variety, survives ρ ≡ 1). Second tier added: AGS does not price replacement, and AGS collapses measured and structural destruction (Λ = 1 ⇒ δ_e,t = δ_{t−1}). Ablation paragraph now names Comparison C only, glosses ω_δ at first use, and states that exit and reactivation must be switched separately rather than jointly through p_0. Prop. 2 discussion gains a knife-edge caveat. ⚠ **Commits §5.3 to three runs that do not exist**: novar-vs-AGS, α → 0, and a re-specified Comparison B (R8 clause v) |
 | 3.x Shock transmission (`sec:mechanism`) | ✅ | Prop. 5 and its discussion rewritten Oct 5; the δ̄_e/τ̄ ≈ 0.21 claim here was removed |
 | 3.x Steady state | ✅ | Oct 5: `eq:e_theta` gains the entry that replaces non-reactivated positions (implicit in θ when α > 0); `eq:curve_jcc` gains −s𝓡(θ); `eq:destruction_curve` corrected for the atom (was valid only for p_0 = 1) |
 | 4.1–4.2 Instruments, LP specification | ✅ | — |
@@ -37,6 +37,8 @@ cascade, every §5.3 number comes from the code's timing.
 | 6 Conclusion (L3314) | ❌ not started | Label is `ref:conclusion`; references use `sec:conclusion` |
 
 ## Appendix status
+
+**`app:loglin` — rewritten Oct 5, 2026 (`9582da1`, `10f3b60`).** ¶9 previously signed the entry response by reading one equation twice: `eq:K_decomp` and `eq:Q_ll_delta` are the same asset-pricing identity (φ_D = D·δ̄_e/(r+δ̄_e) identically), so it cannot sign K̂ and Q̂ independently. New ¶9a derives the dividend from the JCC (`eq:K_jcc_ll`): survival (−), surplus (−), and **congestion relief** (+), the last being the actual entry cushion. ¶9b records that at free entry Q is pinned so the identity *does* sign K (`eq:K_freeentry`, `eq:theta_freeentry`). ¶9c derives why δ̄_e/τ̄ decides the sign of v̂ (`eq:tau_loading`). ê^δ > 0 is now stated as a numerical result from Comparison D rather than derived. `eq:v_ll`'s destruction impulse corrected from a hat to a tilde (level deviation, matching its coefficient v̄^pre). **Owed (R12b):** a figure or `mechanism_stats.jl` number for ê^δ > 0, and the threshold T from the predetermined-vacancies note belongs in ¶7
 
 | Appendix | Status |
 |---|---|
@@ -65,6 +67,8 @@ cascade, every §5.3 number comes from the code's timing.
 | `prop:ds_asymmetry` (5) | ✅ Restated Oct 5 under the timing convention (R13); Part 2 numerics wait on R8 |
 
 ### Proposition 5 (`prop:ds_asymmetry`, proof in `app:proof_ds`) — restated Oct 5, 2026
+
+⚠ **Proof bug, logged as R12c (Oct 5).** The Part 3 proof argues that the entry response vanishes because "the duration-shortening contribution to K̂^δ carries coefficient δ̄_e/(r+δ̄_e)" — the same circular reading of `eq:K_decomp` that was removed from `app:loglin`. The conclusion looks right and is corroborated twice over (the destruction term is bounded away from zero; the threshold derivation in [`../Notes/predetermined_vacancies_and_the_CK_special_case.md`](../Notes/predetermined_vacancies_and_the_CK_special_case.md) reaches the same place from the vacancy law of motion), but the justification is unsound. Rewrite via `eq:K_jcc_ll`. Care: the proof differentiates w.r.t. the **level** of δ_t, where ∂θ/∂δ_t is bounded rather than vanishing, so the loading shortcut does not transfer
 
 **Framing.** Part 1 is a benchmark: with p_0 = 0 there is neither endogenous exit nor costly
 reactivation, and s shocks produce positive u–v comovement. Negative comovement must come from

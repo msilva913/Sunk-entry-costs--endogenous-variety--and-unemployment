@@ -86,7 +86,8 @@ NFCI interaction variant:
 | `separation_decomposition.png` | τ, δ, s in levels and cycles; shows τ = δ + (1−δ)s. cor(cycle_s, cycle_τ) = 0.997 |
 | `recession_scatter_primary.png` | Cross-recession fig (paper) |
 | `state_scatter_primary.png` | Cross-state fig (paper) — fig:state_scatter |
-| `jf_table2_ext_2019_latex.tex` | JF Table 2 extension (preferred sample) |
+| `jf_table2_ext_2019_latex.tex` | JF Table 2 extension (preferred sample). LaTeX tables unchanged by the Oct 5 edit |
+| `jf_table2_extension.txt` | Text report. **Oct 5, 2026:** gains C7–C10, the entry-comovement correlations (openings vs deaths, closings, net job change; and deaths vs net job change), under both filters. Correlations are **text-output only** — deliberately not added to the LaTeX tables, which are already ten columns wide |
 
 ## SMM Moment Construction
 

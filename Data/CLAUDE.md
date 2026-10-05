@@ -1,5 +1,5 @@
 # CLAUDE.md — Empirical LP Project (Firm Entry/Exit DSGE)
-**Last updated:** October 1, 2026 · **Author:** Mario Silva
+**Last updated:** October 5, 2026 · **Author:** Mario Silva
 **Current branch:** `costly_vacancy_reposting` (branched from `instruments_LP_coefficient`; the most up-to-date version of the project)
 **Project paused June 7, 2026 – September 5, 2026.** Status re-verified against the repo on
 resumption; see [`context/pending_tasks.md`](context/pending_tasks.md) §Blockers.
@@ -106,7 +106,38 @@ to do:
    Guren-McKay-Nakamura-Steinsson "simulate the regression inside the model" prescription,
    which is D3's most defensible option. Building E9 well upgrades D3.
 
-**Resume:** [`context/session_handout_20261001.md`](context/session_handout_20261001.md) (task R13 first).
+**Resume:** [`context/session_handout_20261001.md`](context/session_handout_20261001.md) (R13 is **done**; read its Oct 5 update).
+
+**October 5, 2026 session — theoretical positioning and a derivation bug.** No model
+runs; draft prose, one new program, one new note.
+
+- **Intro positioning.** Endogenous exit is no longer sold as a recession amplifier
+  (contradicted by §5.3, Flag 1). A new paragraph gives the measurement argument for
+  the business formation block: δ is identified from establishment deaths, so lines must
+  hold many positions, which needs profits, which under DS-CES *is* the taste for
+  variety (ζ = μ − 1). Fact 1 now discusses the entry margin it always claimed to.
+- **Post-Prop-3 passage** rewritten: four channels over AGS, not three (**profit
+  dilution** added), plus the point that AGS does not *price* replacement.
+- **`app:loglin` ¶9 was circular** — `eq:K_decomp` and `eq:Q_ll_delta` are one
+  asset-pricing identity, used twice to sign both K̂ and Q̂. The entry cushion is
+  **congestion relief**, not duration shortening. New ¶9a/9b/9c.
+- **New result.** The threshold entry elasticity for vacancies to rise after a δ shock
+  is T = κ_v/(δ̄_e/τ̄) − 1, so **CK's δ_e = τ minimizes it over the admissible range**
+  (T = 0.203 against 12.78 at D1). Their need for finitely elastic vacancy creation
+  repairs a consequence of having one separation margin. See
+  [`Notes/predetermined_vacancies_and_the_CK_special_case.md`](Notes/predetermined_vacancies_and_the_CK_special_case.md).
+  ⚠ This is **GS's δ/s split plus our measurement**, not the business formation block.
+- **New tasks.** R8 clause (v) (re-specify Comparison B), **R12b** (ê^δ > 0 needs a
+  program cite), **R12c** (the Prop. 5 Part 3 proof uses the same circular step — not
+  fixed, needs Part 3 worked through).
+- ⚠ **`Notes/role_of_ingredients.md` §2 is wrong** and flagged inline: variety is *not*
+  what makes the δ sign survive free entry. Flag 3 and the ξ/variety substitutes
+  conclusion rest on it. **Rewrite before designing R14.**
+- ⚠ **Build with `pdflatex` only.** Running `bibtex` destroys `Draft.bbl`, which is
+  tracked, because `references.bib` is not in `Data/Draft/`.
+- ⚠ §5.3 is now committed in prose to three runs that do not exist: novar-vs-AGS,
+  α → 0, and a re-specified Comparison B. Check whether any script implements
+  `prop:ags` as stated before R8 starts.
 
 **Code timing (Oct 1, 2026).** The draft is the reference model ([S10](context/decisions.md)).
 The code dates exit one period early in its laws of motion and uses post-exit
