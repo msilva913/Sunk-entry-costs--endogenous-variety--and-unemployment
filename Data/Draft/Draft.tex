@@ -1484,6 +1484,10 @@ market block separates but that business formation
 becomes irrelevant to aggregate allocations entirely 
 --- a consequence of profits and entry costs 
 vanishing jointly at the same rate.
+The limit is knife-edge in this respect: it requires
+profits and entry costs to vanish at a common rate, and
+away from it the business formation block is not
+exhausted by the variety effect.
 
  
 Proposition~\ref{prop:ags} below implements the
@@ -1551,24 +1555,68 @@ two.
 	is absent by construction.
 \end{proposition}
 
-We dub this the \emph{augmented Gabrovski-Silva}
-(AGS) model. Relative to AGS, the baseline model
-adds three channels affecting labor market dynamics:
-variety effects in the job creation condition
-through $\rho(N_t)/\mu(N_t)$, endogenous exit
-through variation in the survival cutoff $\chi_t^c$,
-and partial reactivation through $\Lambda_{r,t}$,
-which AGS loses because clone replacement sets
-$p_0=0$. The three are developed formally in
-Section~\ref{sec:mechanism} and evaluated
-quantitatively in Section~\ref{sec:quantitative}.
-Because a single comparison with AGS moves all
-three at once, the quantitative work isolates them
-one at a time instead: $\zeta\to0$ removes variety
-effects, $\omega_\delta\to0$ removes endogenous exit
-while leaving reactivation intact, and
-$\alpha\to0$ removes reactivation while leaving
-endogenous exit intact.
+We dub this the \emph{augmented Gabrovski-Silva} (AGS)
+model. The baseline differs from AGS in two respects, and
+only the first is a matter of transmission channels.
+
+First, four objects move in the baseline labor market block
+and are constant in AGS. Variety effects enter the job
+creation condition through $\rho(N_t)/\mu(N_t)$. Profit
+dilution enters the return to entry through $Y_t^c/N_t$ in
+\eqref{eq:euler_bf}: a larger mass of lines lowers profit
+per line, which regulates entry and feeds the survival
+cutoff $\chi_t^c$ through current profitability $R_t^f$.
+Endogenous exit operates through variation in that cutoff.
+Partial reactivation operates through $\Lambda_{r,t}$, which
+AGS loses because clone replacement sets $p_0=0$. Dilution
+is distinct from the variety effect. It works through the
+level of per-line profit rather than through the
+welfare-based relative price, so it survives when $\rho$ is
+held at unity. The four are developed formally in
+Section~\ref{sec:mechanism} and evaluated quantitatively in
+Section~\ref{sec:quantitative}.
+
+Second, and more basic, AGS does not price replacement.
+Clone replacement supplies a new line for every line
+destroyed, at no resource cost, within the period, and in
+every state of the world. The baseline makes each of these
+an equilibrium outcome of \eqref{eq:euler_bf}. Entry absorbs
+labor at rate $f_e$ and so enters the resource constraint
+through $\nu_t^f N_t^e$ in \eqref{eq:gdp}, the mass of lines
+is a slow-moving state, and the entry flow is procyclical.
+Table~\ref{tab:jf_t2_ext_2019} shows that establishment
+openings account for a share of gross job gains comparable
+to the closing share of gross job losses, and that the
+opening flow is at least as cyclical as either closing
+margin. Replacement is therefore weakest in the states in
+which destruction is strongest. AGS holds the replacement
+margin at its frictionless benchmark, so it cannot generate
+the joint behavior of the two margins that motivates the
+paper.
+
+AGS also collapses measured and structural destruction.
+Since $\Lambda_t=1$ implies $\delta_{e,t}=\delta_{t-1}$, the
+realized destruction rate is the shock. In the baseline the
+two differ by the endogenous exit margin, and it is the sum
+that the establishment death rate of
+Section~\ref{sec:empirical} measures.
+
+Because a single comparison with AGS moves all of this at
+once, the quantitative work of
+Section~\ref{sec:mechanism_irfs} isolates the channels one
+at a time. Comparison~C removes variety effects by forcing
+$\rho\equiv1$ while retaining $\mu>1$, so entry, dilution,
+exit, and the entry component of the resource constraint all
+remain active. The gap between that specification and AGS
+therefore measures what business formation contributes net
+of the variety effect. Comparison~B removes the endogenous
+exit margin by setting the endogenous share of destruction
+$\omega_\delta$ to zero while holding the steady-state
+destruction rate fixed. A further comparison sets
+$\alpha\to0$ to remove costly reactivation while leaving
+endogenous exit intact. The exit and reactivation margins
+must be switched separately rather than jointly through
+$p_0$, which removes both at once.
 
 \begin{remark}[Nested special cases of AGS]
 	\label{rem:nesting}
