@@ -1872,8 +1872,10 @@ requires the $u$ rise to exceed the $\theta$ fall.
 
 A sufficient condition for the destruction to dominate is that
 $\bar\delta_e/\bar\tau$ is small: when only a fraction of total
-separations flow through the destruction channel, the duration-shortening
-effect on $K$, and with it the entry cushion, is correspondingly weak.
+separations flow through the destruction channel, the entry cushion is
+correspondingly weak relative to the destruction it must offset: a low
+$\bar\delta_e$ leaves the standing vacancy stock overwhelmingly
+inherited, and only inherited vacancies are exposed to the shock.
 At the monthly frequency of the model the condition is demanding at
 $h=1$, because entry responds in the same month as the shock. At the
 $p_0=0$ benchmark with the measured $\bar\delta_e/\bar\tau\approx0.087$
@@ -4158,10 +4160,13 @@ components:
     \tilde{v}_t
     = (1-\bar\delta_e)\Bigl[(1-\bar{q})\,\tilde{v}_{t-1}
       + \bar{s}(1-\bar{u})\,\hat{s}_{t-1}\Bigr]
-    - \bar{v}^{\mathrm{pre}}\,\hat\delta_{e,t}
+    - \bar{v}^{\mathrm{pre}}\,\tilde\delta_{e,t}
     + \tilde{e}_t,
 \end{align}
 where $\bar{v}^{\mathrm{pre}} = \bar{v}-\bar{e}$ is the steady-state predetermined vacancy stock.
+As in~\eqref{eq:u_ll}, $\delta_e$ enters in level deviations and $s$ in log
+deviations, matching their coefficients: $\partial[(1-\delta_e)x]/\partial\delta_e
+=-x$, while the reposting term carries $\bar{s}$ already.
 The three terms capture: (i)~\emph{survival of existing vacancies}, which
 depends on $(1-\bar\delta_e)$ and amplifies the persistence asymmetry
 between high- and low-$\delta_e$ specifications; (ii)~\emph{destruction
@@ -4386,9 +4391,9 @@ model to \citet{coles_2018}.  As shown in
 Remark~\ref{rem:nesting}, setting $s_t=0$ and $\sigma=\kappa=0$ recovers
 the \citeauthor{coles_2018} model exactly.  In that limit, all vacancies
 arise from new postings, and $\xi$ governs the elasticity of entry to the
-vacancy value $Q$.  For destruction shocks, duration shortening raises $K$
-and $Q$, generating an entry surplus that partially cushions the direct
-vacancy destruction.  The parameter $\xi$ controls the strength of this
+vacancy value $Q$.  For destruction shocks the shock slackens the market,
+so a new position fills faster and $K$ and $Q$ rise, generating an entry
+surplus that partially cushions the direct vacancy destruction.  The parameter $\xi$ controls the strength of this
 cushion: higher $\xi$ (lower $\xi_{\mathrm{inv}}$) amplifies the entry
 response and weakens the net downward pressure on vacancies.
 Whether $u$ and $v$ comove positively or negatively after a destruction
@@ -4487,10 +4492,11 @@ The baseline calibration of the present model, disciplined by BED Deaths
 data, delivers $\bar\delta_e/\bar\tau\approx 0.21$: only one-fifth of
 total separation flows through firm destruction.  At this low $\bar\delta_e$,
 the proportional $u$ rise from a $\delta$ shock is small --- most
-separations are not of the $\delta$ type --- and the duration shortening
-effect on $K$ is correspondingly weak.  The $\theta$ decline therefore
-dominates, and vacancies fall following destruction shocks
-\emph{even at free entry}.  Figure~\ref{fig:mechD_delta} confirms this:
+separations are not of the $\delta$ type --- while the standing vacancy
+stock is overwhelmingly inherited rather than newly posted, and only
+inherited vacancies are exposed to the shock.  The destruction impulse is
+therefore large relative to any entry response that could offset it, and
+vacancies fall following destruction shocks \emph{even at free entry}.  Figure~\ref{fig:mechD_delta} confirms this:
 at $\xi_{\mathrm{inv}}=0.1$, vacancies rise for two months, turn negative
 in the third, and trough at $-0.012$~pp, while the baseline at
 $\xi_{\mathrm{inv}}=1.0$ shows a stronger decline still ($-0.018$~pp).
