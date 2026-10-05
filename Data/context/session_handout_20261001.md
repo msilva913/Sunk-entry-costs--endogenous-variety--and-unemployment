@@ -9,21 +9,26 @@ restate Prop 5 Part 1; clean context files")
 
 ## Update — October 5, 2026 (read first)
 
-Done since Oct 1: R13 (Prop. 5 restated, `2d173bb`); wage/𝓡 dependency audit and
-`../Notes/role_of_ingredients.md` (`15432e6`). Endogenous exit is nearly inert at the
-calibration; Broer et al.'s elasticity (1.0, job separations) is not our ψ. R14 (ingredient
-ablation) queued after R8. Next on the critical path: E9. Push local commits first (the
-assistant's shell has no GitHub credentials).
+Done since Oct 1: R13 (Prop. 5 restated, `b50adf8`); wage/𝓡 dependency audit and
+`../Notes/role_of_ingredients.md` (`15432e6`); R14 queued (`28345ff`). Endogenous exit is
+nearly inert at the calibration; Broer et al.'s elasticity (1.0, job separations) is not our ψ.
+R14 (ingredient ablation) queued after R8. **Next on the critical path: E9.**
 
-## 0. First thing to do
+**Verified October 5, 2026 (review session):** everything is committed and pushed, the draft
+builds with 0 errors and 0 missing graphics, and the new numbers trace to their programs —
+condition (ii) max 2.553 % overall and 0.733 % at `dest_ann = 0.0320` (rounding to the draft's
+2.6 % / 0.7 %), and the Part 3 entry offset c3_v = 0.814 (the draft's 81 %). The Nash wage
+result was rederived independently and is correct.
 
-**There is uncommitted work** (everything after `60e1242`). Before anything else, run
-`git status`. Expected modified files: `Data/CLAUDE.md`, `Data/Draft/Draft.tex`,
-`Data/Notes/LOM_timing_consistency.md`, and `Data/context/{decisions, draft_status, findings,
-model_equations, pending_tasks, README}.md`, plus this handout (new). The four LaTeX build
-artifacts (`Draft.aux/.log/.pdf/.synctex.gz`) are always modified and are never committed.
-If this session is on the same machine, commit the batch first (MS commits only on request;
-ask). If on another machine, the work must have been committed and pushed from the first.
+## 0. ✅ RESOLVED — the batch is committed and pushed
+
+**Nothing outstanding as of October 5, 2026.** Verified: working tree clean, 0 commits ahead of
+`origin/costly_vacancy_reposting`. The work described below landed in `60e1242`, `a80e9cb`,
+`1ddbdc3`, `b50adf8`, `15432e6`, `28345ff`.
+
+The original instruction is kept only for its standing advice: the four LaTeX build artifacts
+(`Draft.aux/.log/.pdf/.synctex.gz`) are always modified and are **never** committed, and MS
+commits only on request.
 
 ## 1. ✅ DONE Oct 5 — task R13 (kept for the record; see `draft_status.md`)
 
@@ -31,6 +36,11 @@ ask). If on another machine, the work must have been committed and pushed from t
 > approved by MS; the Part 2 numerics wait on R8. Resume at the critical path in §5 (E9 next).
 
 ### Original R13 notes
+
+> ⚠️ **Historical. Numbers here are superseded.** The "1.5% bound" below was replaced by the
+> computed **2.6 % / 0.7 %** (condition (ii)) now in the draft and `findings.md`, and the
+> proposed Part 1 wording was approved and rewritten. Read this section only for the derivation
+> of the exact accounting; take every figure from `findings.md` or S12 instead.
 
 **The convention (confirmed by MS, Oct 1).** The aggregate state, *including* s_t and δ_t, is
 realized at the **start** of period t, and every date-t decision conditions on it. Only the
@@ -106,8 +116,10 @@ that predate this work (task P2). Done this session:
 Still open in the draft (see `pending_tasks.md`): **R13** (above), **R11** (intro "self-correct"
 prose ~L154, ~L308; §5.2 Y^Gross/Y needs X^r/Y), **R12** (audit `prop:bgm_nest`, whose proof
 misstates the N_lom bracket as N^e_{t−1}; `prop:equilibria`; `prop:curves`), **P5** (X^c
-shortcut in the steady-state appendix), the D1 cascade numbers (δ̄_e/τ̄ ≈ 0.21 at L1716, L3085,
-L3945, L4223).
+shortcut in the steady-state appendix), and the D1 cascade numbers — **three** remaining
+δ̄_e/τ̄ ≈ 0.21 claims, in §5.3, `app:loglin` and `app:comparison_D`. Find them by searching
+`Draft.tex` for `0.21`; line numbers drift and the ones once listed here were already stale.
+The fourth, in `sec:mechanism`, was resolved Oct 5 in the Prop. 5 rewrite.
 
 ## 4. State of the code
 
@@ -120,8 +132,11 @@ z_t, δ_t, s_t. Do R8 in **one regeneration pass with the D1 cascade and the PAT
 (`dest_ann = 0.0320` converges only under PATH B). Until then every §5.3 number comes from the
 code's current timing.
 
-New program this session: `Programs baseline/run_prop5_s_check.jl` → `prop5_s_check.csv`
-(Prop. 5 Part 1 numerical check; see `findings.md`).
+New programs: `Programs baseline/run_prop5_s_check.jl` → `prop5_s_check.csv` (Prop. 5 Part 1
+check; condition (ii) bound) and `run_prop5_parts23_check.jl` → `prop5_parts23_check.csv`,
+`prop5_part3_quarterly.csv` (Parts 2–3; the c3_v entry offset and the quarterly signs). Results
+in `findings.md`. Both must be re-run after R8 — the Part 2 diagnostics are marked INDICATIVE
+because the code's current timing differs from the draft's.
 
 ## 5. Critical path (from `pending_tasks.md`)
 

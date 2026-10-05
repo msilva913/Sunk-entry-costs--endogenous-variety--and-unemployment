@@ -29,9 +29,14 @@ number; do them together so the mechanism runs are regenerated once.
   PATH B, so implement by switching the default path ([D2](decisions.md)).
 - Then: re-run Comparisons A–D, regenerate the eight `mechanism_*.pdf`, re-run
   `mechanism_stats.jl`, diff `mechanism_stats.txt`, update §5.3. Also §5.2's external block,
-  `tab:calib_targets` row 1, and the four δ̄_e/τ̄ ≈ 0.21 claims (now ≈ 0.087): `Draft.tex`
-  L3141 (§5.3), L4005 (`app:loglin`), L4283 (`app:comparison_D`) (the `sec:mechanism` one was removed Oct 5 in the Prop. 5 rewrite).
-  Re-run `run_prop5_s_check.jl` and update the 1.5% bound in the draft if it moves.
+  `tab:calib_targets` row 1, and the **three remaining** δ̄_e/τ̄ ≈ 0.21 claims (now ≈ 0.087).
+  Locate them by searching `Draft.tex` for `0.21` rather than by line number — as of Oct 5,
+  2026 they sit at L3156 (§5.3), L4020 (`app:loglin`) and L4298 (`app:comparison_D`), but these
+  drift with every edit — the figures previously recorded here were 15 lines stale. The fourth, in `sec:mechanism`, was resolved Oct 5 in the Prop. 5
+  rewrite: it now leads with the measured 0.087 and uses 0.21 only as an explicit comparison.
+  Re-run `run_prop5_s_check.jl` and `run_prop5_parts23_check.jl` after the regeneration; the
+  bounds currently in the draft and [`findings.md`](findings.md) are **2.6 % / 0.7 %** for
+  condition (ii) and **0.81** for the Part 3 entry offset (c3_v). Update if they move.
 
 **1. Settle [D2](decisions.md) and [D3](decisions.md).** D3 after E9. Write the canonical
 target set into `data_and_files.md`.
@@ -61,7 +66,7 @@ counterfactual.
 | # | Task | Status |
 |---|---|---|
 | R13 | ✅ **Prop. 5 restated for start-of-period shock observation — done Oct 5** (wording approved by MS). Part 1: accounting with period-t entry, conditions (i)–(ii). Part 2: `eq:gN_cond` replaced by `eq:exit_cond` (det J > 0 of the 3×3 exit–variety–unemployment system; `eq:gN_cond` failed at the calibration, g_N > 0), period-t exit term added to the drain, B_t no longer predetermined, monotonicity-in-ρ_s claim replaced by continuity, first order in F′. Part 3: period-t entry term; `lem:vpre` restated as a decomposition. Discussion: conditions (i)–(ii) very easily satisfied at p_0 = 0 (≤ 2.6%, 0.7% at D1); Part 3 h = 1 sign fragile at monthly frequency but vacancies fall from month 2 and in every quarterly average at D1. **Remaining:** redo the Part 2 numerics after R8 (`run_prop5_parts23_check.jl` is indicative for p_0 > 0 because of the code's exit dating) | ⏳ numerics after R8 |
-| R14 | **Ingredient ablation** (see [`../Notes/role_of_ingredients.md`](../Notes/role_of_ingredients.md)): after R8, one-at-a-time ζ→0, ω_δ→0, α→0, ξ→∞, κ=0, σ=0 on one calibration; report Block M moments and δ IRFs. Also: decide whether to add the exit-on-productivity VAR moment (â_21 ≈ −1.05) to Block M so `dest_elast_target` is disciplined; fix the elasticity print in `run_prop5_parts23_check.jl` (divide by σ_z, not 100σ_z) | after R8 |
+| R14 | **Ingredient ablation** (see [`../Notes/role_of_ingredients.md`](../Notes/role_of_ingredients.md)): after R8, one-at-a-time ζ→0, ω_δ→0, α→0, ξ→∞, κ=0, σ=0 on one calibration; report Block M moments and δ IRFs. **Two cells added Oct 5 (note §2):** (a) **ξ→∞ under an *s* shock**, not only δ — Comparison D tested δ only, and CK's result concerns a position-destroying shock with no variety channel, which is our s margin; (b) **ξ→∞ jointly with α > 0**, since under free entry Q is pinned and entry may replace retired positions, undoing the reposting margin. If (b) bites, the ingredients are not separable and that pair must be reported together rather than one-at-a-time. **The markup is excluded** from the list: μ = 1 removes the profits sustaining a finite N, so it eliminates the object under study rather than switching off a channel, and under DS-CES ζ = μ−1 so ε cannot move one without the other. Also: decide whether to add the exit-on-productivity VAR moment (â_21 ≈ −1.05) to Block M so `dest_elast_target` is disciplined; fix the elasticity print in `run_prop5_parts23_check.jl` (divide by σ_z, not 100σ_z) | after R8 |
 | R2 | **Verify α, σ_s, δ_e are separately identified** on simulated data. α and δ_e move cor(u,v) through the same channel; α and χ_m both move position destruction. The LD→v IRF should separate them (exit compares χ to χ^c, reactivation to Q). Otherwise fix α on a reported grid. Gates the D11 go/no-go | ❌ needs R8 |
 | R3 | **Prop. 5 for partial reposting.** Parts 1–2 now hold for costless reposting only (Oct 1 restatement). Open: a result for α > 0, e.g. a threshold Λ_r* at which the s→v sign flips, and whether Part 2's claim that the drain rises in ρ_s survives | ❌ |
 | R4 | **Revisit [D4](decisions.md)/S6**: LD→v as the identifying moment for α | after R2 |

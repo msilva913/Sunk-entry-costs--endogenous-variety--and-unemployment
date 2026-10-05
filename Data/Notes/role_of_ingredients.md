@@ -1,4 +1,6 @@
-# Role of each model ingredient — October 5, 2026
+# Role of each model ingredient
+**Written:** October 5, 2026 · **Revised:** October 5, 2026 after checking CK and GS directly
+(§2) and the markup–variety identity in `Draft.tex` L560.
 
 Audit of whether each ingredient is indispensable to the paper's objectives. Objectives:
 **O1** composition of job loss (δ vs s) drives persistence, because destruction removes vacancy
@@ -6,17 +8,60 @@ slots; **O2** clear departure from CK/GS (δ vs s, endogenous entry/exit, variet
 state); **O3** fit labor moments (cor(u,v) ≈ −0.80, σ(θ)/σ(LP) ≈ 11.7) via SMM + Bartik IRF
 matching.
 
+## 1. The ingredients
+
 | Ingredient | Role | What relaxing it does | Verdict |
 |---|---|---|---|
-| Markup (μ > 1) | Profits sustain finitely many product lines under sunk entry; motivates the recruiter/retailer split (avoids Stole–Zwiebel) | ε→∞ with f_e fixed sends N→0 (needs `prop:double_limit` scaling) | Indispensable for O2; **not** for the core δ–s mechanism (GS has it without market power) |
-| Love of variety (ζ > 0) | N→ρ→w^int→JCC feedback | Comparison C: w^int response to z ≈ ¼ smaller within a year; equal on impact | Needed for O2, **quantitatively moderate** (flag 3) |
-| Convex vacancy cost (ξ < ∞) | CK: predetermined vacancies, slots rebuilt at sunk cost | Comparison D: δ-shock negative comovement robust even under free entry; lower convexity raises z amplification; ξ sweep moves the δ→u peak only h=1→2 | **Flag 2**: not needed for the Beveridge signs |
+| Markup (μ > 1) | Profits sustain finitely many product lines under sunk entry; motivates the recruiter/retailer split (avoids Stole–Zwiebel) | μ = 1 leaves zero profits, so sunk entry sustains no finite N and a δ shock has no product line to destroy | **Prerequisite, not an ablatable ingredient.** See the identity warning below |
+| Love of variety (ζ > 0) | N→ρ→w^int→JCC feedback | Comparison C (forces ρ ≡ 1 via `calibrate_shares_no_variety`, so it does isolate ζ from μ): w^int response to z ≈ ¼ smaller within a year, equal on impact | **More than "moderate"** — it is what makes the δ-shock Beveridge sign survive free entry (§2). Flag 3 |
+| Finitely elastic vacancy creation (ξ < ∞) | CK: predetermined vacancies, slots rebuilt at sunk cost. GS: congestion in K delays entry, giving a **hump-shaped vacancy response** (they cite Fujita–Ramey 2007) | Comparison D (**δ shock only**): sign robust even under free entry; ξ sweep moves the δ→u peak only h = 1→2 | **Indispensable — for the s margin, the hump, and the tightness–unemployment relation; not for the δ sign.** Flag 2, §2 |
 | Product-line entry (f_e, Euler) | N dynamics: firm stock ≈ 80× more persistent than shocks | No entry / clone replacement (AGS) kills persistent variety loss | Indispensable |
 | Separate vacancy and firm entry | u, v, N independent states (vs Schaal one-for-one) | Merging ties N and v one-for-one | Indispensable for O2 |
 | Endogenous exit (p_0, ψ, ω_δ) | Intro sells it as recession amplification | Cutoff barely moves; Comparison B: endogenous-exit spec recovers *faster* | **Flag 1** (below) |
 | Partial reposting (α) | Beveridge curve: reposting inflow is an identity | Without it cor(u,v) = +0.995 vs −0.80; only alternative (shrink s) contradicts data and CK | Indispensable for O3; **flag 4**: not yet coded/verified |
 
-## Flag 1 — would estimating `dest_elast_target` make endogenous exit important?
+⚠️ **Markup and variety are one parameter in the baseline.** Under DS-CES,
+ζ(N) = μ(N) − 1 = 1/(ε−1) (`Draft.tex` L560): the taste for variety *is* the net markup. Moving
+ε cannot ablate one without the other, and ε → ∞ kills both. Only the general CES specification
+disentangles them (L564). Comparison C is valid because it forces ρ ≡ 1 by hand rather than
+moving ε. **There is no corresponding experiment for the markup**, and there cannot be a useful
+one: μ = 1 removes the profits that sustain a finite N, so the object a δ shock destroys ceases
+to exist. The markup belongs in a different category from the rest of the table.
+
+## 2. Why ξ matters: the δ and s margins are not symmetric
+
+**CK have one separation margin with δ_e = τ**, so every separation destroys the position. In our
+taxonomy **CK's separation shock maps to our δ, not our s.** CK's result is that with a less than
+infinitely elastic creation process, such a shock makes vacancies fall as unemployment rises, so
+no ad hoc zero-separation-shock restriction is needed for Beveridge correlations. They also show
+that free entry implies tightness is orthogonal to unemployment conditional on productivity,
+which the data reject.
+
+CK need ξ < ∞ because they have **no variety channel**: destroying positions does not lower the
+value of creating new ones, so under free entry, entry replaces them. We have one for δ, which is
+why Comparison D finds our δ sign robust under free entry and CK's is not.
+
+**But the s margin has no variety channel.** Non-reposted positions are retired without
+withdrawing a product line — only δ moves N (`model_equations.md` f[24]). So the s margin sits
+exactly where CK's shock sits.
+
+| Margin | What stops entry undoing the destruction |
+|---|---|
+| δ | **Variety** (N↓ → ρ↓ → Q↓). Works even under free entry — Comparison D |
+| s, non-reposted | **Only ξ < ∞.** No variety channel exists here |
+
+Two consequences. ξ and variety are **substitutes** on the δ margin, which is why Comparison D
+could retire ξ without changing the sign. And ξ and α are **complements** on the s margin: α
+creates the destruction, ξ stops entry from undoing it. Under free entry Q is pinned
+(Comparison D: ξ_inv → 0 gives Q ≈ x_m) and entry expands to replace whatever is retired, so
+ablating ξ while holding α would destroy the Beveridge gain α exists to deliver — and would
+read, wrongly, as "α does nothing."
+
+**Confidence.** The δ row is verified (Comparison D). The s row is inference from CK plus the
+structural asymmetry: nothing has varied ξ under an s shock, and α is not coded. One extra cell
+in R14 settles it.
+
+## 3. Flag 1 — would estimating `dest_elast_target` make endogenous exit important?
 
 **Probably not by itself.** Evidence from `Programs baseline/run_prop5_parts23_check.jl`
 (p_0 = 0.5 PATH B baseline; indicative until R8 fixes the code's exit dating):
@@ -49,20 +94,34 @@ or present endogenous exit as (i) the steady-state split of δ_e and (ii) the ho
 F for reactivation costs (one parameter, Prop 1 needs no extra condition), not as a recession
 amplifier. The intro's second contribution needs rewording in the latter case.
 
-## Other flags
+## 4. Other flags
 
-2. **Convex vacancy cost:** role is persistence and the entry cushion, not signs. Check how
-   much δ→v persistence it adds (Comparison D numbers).
-3. **Variety effects** are the main departure from GS but moderate; report their contribution
-   to Block M moments, not only to w^int. Also resolve the BK inconsistency (notes: ε > 1
+2. **Finitely elastic vacancy creation:** the Comparison D evidence is **δ-only** and does not
+   speak to CK's claim, which concerns a position-destroying shock without a variety channel —
+   our s margin. Test ξ under an s shock, and the α × ξ interaction, before calling it dispensable.
+   Separately, quantify how much δ→v persistence and hump shape it buys.
+3. **Variety effects** are the main departure from GS and are load-bearing: they substitute for
+   ξ on the δ margin (§2). Report their contribution to Block M moments and to the δ→v sign
+   under free entry, not only to w^int. Also resolve the BK inconsistency (notes: ε > 1
    suffices; ξ×ε sweep: failures for ε < 3). ε > 2 is no longer needed by Prop 5.
 4. **Partial reposting:** indispensable but unverified (R8, R9), identification vs δ_e (R2);
    turns the δ–s asymmetry into a quantitative result.
 5. **Active core may be narrow:** δ→u peak 0.012 pp vs 1.71 data (partly D3 scale), half the
    amplification target, no hump. Documented bite: slot destruction + N persistence, partial
-   reposting (pending), variety (moderate). Endogenous exit, convex vacancy cost, κ untested.
+   reposting (pending), variety (moderate on w^int, larger on the δ sign). Endogenous exit and
+   κ untested.
 
-## Recommendation
+## 5. Recommendation
 
-After R8: one-at-a-time ingredient ablation on one calibration — ζ→0, ω_δ→0, α→0, ξ→∞,
-κ = 0, σ = 0 — reporting Block M moments and δ IRFs. Task R14 in `../context/pending_tasks.md`.
+After R8: one-at-a-time ingredient ablation on one calibration — ζ→0, ω_δ→0, α→0, ξ→∞, κ = 0,
+σ = 0 — reporting Block M moments and δ IRFs. Task R14 in `../context/pending_tasks.md`.
+
+Two cells R14 must add, from §2:
+
+- **ξ→∞ under an s shock** (not only δ), which is the experiment CK's result actually concerns.
+- **ξ→∞ jointly with α > 0**, to test whether free entry undoes the reposting margin. If it
+  does, the ingredients are not separable and the one-at-a-time design needs this pair reported
+  together.
+
+The markup is not in the ablation list, by §1: it is a prerequisite, and μ = 1 removes the
+object under study rather than switching off a channel.

@@ -21,9 +21,9 @@ status notes to whichever file was open rather than the file that owns the topic
 
 ## Reading order when picking the project back up
 
-1. **`session_handout_20261001.md`** — latest handout: uncommitted work, resume at R13 (Prop. 5 under the timing convention)
+1. **`session_handout_20261001.md`** — latest handout. Read its Oct 5 update first; §0 (uncommitted work) and the "push local commits" note are **resolved** as of Oct 5, 2026, and R13 is **done**
 2. `../CLAUDE.md` — one-paragraph framing and current priorities
-3. **`pending_tasks.md`** — the critical path (as of Oct 1: R13, E9, then the single regeneration pass R8 + D1 + PATH B)
+3. **`pending_tasks.md`** — the critical path (as of Oct 5: **E9**, then the single regeneration pass **R8 + D1 + PATH B**; R13 complete)
 4. **`decisions.md`** — what is unsettled, and the settled timing (S10–S12)
 5. `model_equations.md` — the model spec, if the task touches the code
 6. `estimation_design.md` — if the task touches estimation
