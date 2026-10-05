@@ -7,6 +7,14 @@ restate Prop 5 Part 1; clean context files")
 
 ---
 
+## Update — October 5, 2026 (read first)
+
+Done since Oct 1: R13 (Prop. 5 restated, `2d173bb`); wage/𝓡 dependency audit and
+`../Notes/role_of_ingredients.md` (`15432e6`). Endogenous exit is nearly inert at the
+calibration; Broer et al.'s elasticity (1.0, job separations) is not our ψ. R14 (ingredient
+ablation) queued after R8. Next on the critical path: E9. Push local commits first (the
+assistant's shell has no GitHub credentials).
+
 ## 0. First thing to do
 
 **There is uncommitted work** (everything after `60e1242`). Before anything else, run
