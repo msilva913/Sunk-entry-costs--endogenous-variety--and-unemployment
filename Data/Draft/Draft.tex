@@ -1857,11 +1857,15 @@ shock raises $\delta_{e,t+1}$ and thereby destroys a fraction
 $\hat\delta_{e,t+1}$ of the stock of vacancies carried into $t+1$; see
 Lemma~\ref{lem:vpre} in \ref{app:proof_ds}. Whether \emph{total}
 vacancies fall depends on the entry response. Because $\delta_t$ is
-known at the start of $t$, entry responds within the period: duration
-shortening raises $K$~\eqref{eq:K_decomp} and hence the vacancy value
-$Q$~\eqref{eq:Q_ll_delta}, and vacancies created at $t$ and $t+1$
-partially backfill the destroyed ones. Under free entry ($\xi\to\infty$,
-$Q\approx x_m$ pinned), $K$ rises with $\delta_e$, the job-creation
+known at the start of $t$, entry responds within the period, and
+vacancies created at $t$ and $t+1$ partially backfill the destroyed
+ones. The size of that cushion is governed by the job-creation
+condition~\eqref{eq:K_jcc_ll}: destruction lowers the dividend on a
+vacancy through survival and through the surplus, and raises it only by
+slackening the market, since a fall in $\theta$ makes a new position
+fill faster. Under free entry ($\xi\to\infty$,
+$Q\approx x_m$ pinned), $K$ rises with $\delta_e$
+mechanically~\eqref{eq:K_freeentry}, the job-creation
 condition~\eqref{eq:jcc_eq} implies $\theta$ falls, and total vacancies
 $v=\theta u$ have an ambiguous sign: positive $u$--$v$ comovement
 requires the $u$ rise to exceed the $\theta$ fall.
@@ -4196,19 +4200,15 @@ Equation~\eqref{eq:Q_ll2} is derived holding $\delta_{e,t}$ fixed and so
 applies exactly to $z$~shocks where $\hat\delta_{e,t}=0$ on impact.
 For $\delta$~shocks, log-linearizing the full $K$ definition~\eqref{eq:Kdef},
 $K_t=Q_t-\beta(1-\delta_{e,t})Q_{t+1}$, with $\delta_{e,t}$ treated as a
-dynamic variable gives
+dynamic variable and imposing $\hat{Q}_{t+1}=\rho_\omega\hat{Q}_t$ gives
 \begin{align}\label{eq:K_decomp}
     \hat{K}_t
     \;=\;
-    \underbrace{\frac{\bar\delta_e}{r+\bar\delta_e}\,\hat\delta_{e,t}}_{\displaystyle(+)\;\text{duration shortening}}
+    \underbrace{\frac{\bar\delta_e}{r+\bar\delta_e}\,\hat\delta_{e,t}}_{\displaystyle(+)\;\text{duration}}
     \;+\;
-    \underbrace{\frac{1}{\mathcal{D}(\bar\delta_e,\rho_\omega)}\,\hat{Q}_t}_{\displaystyle\text{vacancy value}}.
+    \underbrace{\frac{1}{\mathcal{D}(\bar\delta_e,\rho_\omega)}\,\hat{Q}_t}_{\displaystyle\text{vacancy value}},
 \end{align}
-The \emph{duration-shortening} term is positive: a higher $\delta_{e,t}$
-shortens the expected life of a filled vacancy, concentrating the asset's
-value in the current-period dividend and raising $K$ for given $Q$.
-Solving~\eqref{eq:K_decomp} for $\hat{Q}_t$ yields the extended
-vacancy-value equation
+or, rearranged for the vacancy value,
 \begin{align}\label{eq:Q_ll_delta}
     \hat{Q}_t
     \;=\;
@@ -4218,12 +4218,49 @@ vacancy-value equation
     \hat\delta_{e,t},
 \end{align}
 which reduces to~\eqref{eq:Q_ll2} when $\hat\delta_{e,t}=0$.
-The two terms act in opposite directions on $Q$: duration shortening raises
-$K$ and hence $Q$, while the direct discount effect lowers the present value
-of future dividends.  At the baseline calibration the first channel
-dominates, so $\hat{K}^\delta>0$ and $\hat{Q}^\delta>0$.
-Combining~\eqref{eq:Q_ll_delta} with~\eqref{eq:e_ll}, the entry response
-to a destruction shock is
+Equations~\eqref{eq:K_decomp} and~\eqref{eq:Q_ll_delta} are the same relation:
+$\phi_D=\mathcal{D}\,\bar\delta_e/(r+\bar\delta_e)$ identically.  It is an
+asset-pricing identity in two unknowns, so it signs neither $\hat{K}_t$ nor
+$\hat{Q}_t$ on its own.  All it says is that $\hat{Q}_t>0$ requires
+$\hat{K}_t>[\bar\delta_e/(r+\bar\delta_e)]\hat\delta_{e,t}$, and reading the
+first display as raising $\hat{K}$ for given $\hat{Q}$ and then the second as
+raising $\hat{Q}$ for that $\hat{K}$ would use one equation twice.  The second
+relation is the job-creation condition.
+
+\paragraph{9a.\ The dividend from the job-creation condition}
+Let $C_t\equiv\kappa+K_t/q(\theta_t)$ be the expected cost of filling a
+position and $S_{t+1}$ the bracket on the right of~\eqref{eq:jcc_eq}, so that
+$C_t=\mathbb{E}_t m_{t+1}(1-\delta_{e,t})S_{t+1}$ and
+$\bar{C}=\beta(1-\bar\delta_e)\bar{S}$.  With
+$q(\theta)\propto\theta^{-\eta_L}$, so $\hat{q}_t=-\eta_L\hat\theta_t$,
+log-linearizing gives
+\begin{align}\label{eq:K_jcc_ll}
+    \hat{K}_t
+    \;=\;
+    \underbrace{-\eta_L\hat\theta_t}_{\displaystyle\text{congestion relief}}
+    \;-\;
+    \underbrace{\frac{1}{\chi_K}\frac{\bar\delta_e}{1-\bar\delta_e}\,
+    \hat\delta_{e,t}}_{\displaystyle\text{survival}}
+    \;+\;
+    \underbrace{\frac{1}{\chi_K}\left(\hat{S}_{t+1}+\hat{m}_{t+1}\right)}_{\displaystyle\text{surplus}},
+    \qquad
+    \chi_K\equiv\frac{\bar{K}/\bar{q}}{\kappa+\bar{K}/\bar{q}}.
+\end{align}
+A destruction shock moves all three terms.  The \emph{survival} term is
+negative and is the direct discounting effect: a position more likely to be
+withdrawn is worth less, which makes the vacancy asset cheaper, not dearer.
+The \emph{surplus} term is also negative, since
+$w^{int}_{t+1}=\rho(N_{t+1})z_{t+1}/\mu(N_{t+1})$ falls with variety and the
+continuation terms fall with it.  The one positive force is \emph{congestion
+relief}: destruction raises unemployment and removes vacancies, so
+$\hat\theta_t<0$, a newly posted position fills faster, and the dividend a
+recruiter can support rises.  This, and not duration, is what can make entry
+lean against the shock.  Congestion relief enters with the matching elasticity
+$\eta_L$ while the survival term carries $1/\chi_K$, so the cushion is weaker
+the smaller the posting cost is as a share of total hiring costs.
+
+Combining~\eqref{eq:K_jcc_ll} with~\eqref{eq:Q_ll_delta} and the entry
+schedule~\eqref{eq:e_ll} gives the entry response to a destruction shock,
 \begin{align}\label{eq:e_ll_delta}
     \hat{e}_t^\delta
     \;=\;
@@ -4231,24 +4268,68 @@ to a destruction shock is
     \;-\;
     \xi\,\phi_D\,\hat\delta_{e,t},
 \end{align}
-where the first term dominates, giving $\hat{e}^\delta>0$: entry expands
-under a positive destruction shock.  For a technology shock the second
-term is absent; a negative shock gives $\hat{K}^z<0$ via the JCC surplus
-channel, so $\hat{e}^z<0$: entry contracts.  The signs therefore differ
-across shocks --- $\hat{e}^\delta>0$, $\hat{e}^z<0$ --- and the role this
-plays in shaping amplification is discussed in
-\ref{app:additional_comparisons}.
+now with $\hat{K}^\delta$ supplied by~\eqref{eq:K_jcc_ll} rather than assumed.
+Two of its three components are negative, so $\hat{e}^\delta>0$ requires
+congestion relief to dominate.  The sign is quantitative and we read it from
+the solved model rather than from these coefficients; in the simulations of
+\ref{app:comparison_D} it does dominate at the baseline calibration, giving
+$\hat{e}^\delta>0$.  For a technology shock the survival term is absent, a
+negative shock gives $\hat{K}^z<0$ through the surplus channel, and
+$\hat{e}^z<0$: entry contracts.  The signs therefore differ across shocks ---
+$\hat{e}^\delta>0$, $\hat{e}^z<0$ --- and the role this plays in shaping
+amplification is discussed in \ref{app:additional_comparisons}.
+
+\paragraph{9b.\ Free entry, where the identity does sign $K$}
+The exception is the free-entry limit $\xi\to\infty$, where the entry
+technology pins $Q\approx x_m$ so that $\hat{Q}_t=0$.
+Then~\eqref{eq:K_decomp} alone gives
+\begin{align}\label{eq:K_freeentry}
+    \hat{K}_t=\frac{\bar\delta_e}{r+\bar\delta_e}\,\hat\delta_{e,t}>0 ,
+\end{align}
+and here duration shortening really does raise the dividend, because the
+slot's price is fixed exogenously while less of its value survives into the
+next period.  Substituting into~\eqref{eq:K_jcc_ll} and solving for tightness,
+\begin{align}\label{eq:theta_freeentry}
+    \eta_L\hat\theta_t
+    = -\left[\frac{\bar\delta_e}{r+\bar\delta_e}
+    +\frac{1}{\chi_K}\frac{\bar\delta_e}{1-\bar\delta_e}\right]\hat\delta_{e,t}
+    +\frac{1}{\chi_K}\left(\hat{S}_{t+1}+\hat{m}_{t+1}\right),
+\end{align}
+so $\hat\theta_t<0$ unambiguously for $\hat\delta_{e,t}>0$ whenever
+$\hat{S}_{t+1}\leq0$.  Tightness falls at free entry, and the variety channel
+reinforces the fall through $\hat{S}$.
+
+\paragraph{9c.\ Why $\bar\delta_e/\bar\tau$ decides the sign of $\hat{v}$}
+Total vacancies satisfy $\hat{v}_t=\hat\theta_t+\hat{u}_t$, so the sign turns
+on whether the unemployment rise outweighs the tightness decline, and the two
+loadings scale differently in $\bar\delta_e$.  Since
+$\tau_t=\delta_{e,t}+s_t(1-\delta_{e,t})$,
+\begin{align}\label{eq:tau_loading}
+    \hat\tau_t=(1-\bar{s})\frac{\bar\delta_e}{\bar\tau}\,\hat\delta_{e,t},
+\end{align}
+so the unemployment response is proportional to $\bar\delta_e/\bar\tau$ and
+vanishes linearly as the destruction share of separations falls.  The
+tightness response in~\eqref{eq:theta_freeentry} is dominated by
+$\bar\delta_e/(r+\bar\delta_e)$, which is concave in $\bar\delta_e$ and
+bounded above by one: it saturates once $\bar\delta_e$ is large relative to
+$r$.  Lowering $\bar\delta_e$ from $\bar\tau$ to its measured value therefore
+weakens the unemployment loading roughly in proportion while weakening the
+tightness loading far less, so the tightness decline comes to dominate.
+\citet{coles_2018} set $\delta_e=\bar\tau$, the opposite end of this
+comparison, where the unemployment loading is at its maximum.  That is why
+their result requires a finitely elastic creation technology to keep vacancies
+from rising, and why ours does not.
 
 \paragraph{Transmission chain summary}
 The equations above trace two distinct propagation chains from any aggregate
 shock.  For a \emph{destruction shock} ($\delta\uparrow$), the primary
 channel is direct vacancy and firm destruction, partially cushioned by an
-entry expansion driven by duration shortening:
+entry expansion driven by congestion relief:
 \begin{equation*}
     \hat\delta\uparrow
     \;\xrightarrow{\eqref{eq:delta_e_ll}}\; \hat\delta_e\uparrow
     \;\xrightarrow{\eqref{eq:u_ll},\eqref{eq:v_ll}}\; \tilde{u}\uparrow,\;\tilde{v}\downarrow\;\text{(direct)}
-    \;\xrightarrow{\eqref{eq:K_decomp}}\; \hat{K}\uparrow
+    \;\xrightarrow{\eqref{eq:K_jcc_ll}}\; \hat\theta\downarrow\;\Rightarrow\;\hat{K}\uparrow
     \;\xrightarrow{\eqref{eq:Q_ll_delta}}\; \hat{Q}\uparrow
     \;\xrightarrow{\eqref{eq:e_ll_delta}}\; \hat{e}\uparrow
     \;\xrightarrow{\eqref{eq:v_ll}}\; \tilde{v}\uparrow\text{ (partial offset)}.
@@ -4357,11 +4438,13 @@ amplifies unemployment substantially relative to the baseline.
 \end{figure}
 
 Under the \emph{destruction shock} (Figure~\ref{fig:mechD_delta}), the
-effect of $\xi$ is reversed.  A positive $\delta$ shock triggers duration
-shortening: the vacancy asset's expected life falls, concentrating value
-in the current-period dividend and raising $K$~\eqref{eq:K_decomp}.  Via
-the extended vacancy-value equation~\eqref{eq:Q_ll_delta}, $Q$ rises and
-entry \emph{expands}: $\hat{e}^\delta>0$.  This entry expansion --- the
+effect of $\xi$ is reversed.  A positive $\delta$ shock pulls the dividend
+on a vacancy in both directions~\eqref{eq:K_jcc_ll}.  Lower survival and a
+lower match surplus both reduce it.  Against these, destruction raises
+unemployment and removes vacancies, so tightness falls, a newly posted
+position fills faster, and the dividend a recruiter can support rises.  At
+the baseline calibration this congestion relief dominates, so $K$ and $Q$
+rise and entry \emph{expands}: $\hat{e}^\delta>0$.  This entry expansion --- the
 same $G(Q_t)$ channel as in \citet{coles_2018} --- partially backfills
 vacancies destroyed by the direct $\hat\delta_e\uparrow$ impulse, muting
 the decline in $\theta$ and the rise in $u$.  A larger $\xi$ increases cushioning, so the near-free-entry calibration generates \emph{less}
@@ -4372,11 +4455,11 @@ Comparison~D: $\xi$ is a single parameter playing opposite roles, and what
 flips its sign is the direction in which the shock moves the vacancy value.
 A technology decline lowers the surplus from a filled job, so $Q$ falls,
 entry falls with it, and a high $\xi$ makes matters worse --- entry
-\emph{amplifies}.  A destruction shock shortens the expected life of a
-product line; a vacancy attached to it becomes a shorter-duration claim,
-which front-loads its value into the current dividend and \emph{raises}
-$Q$.  Entry then leans against the shock, and a high $\xi$ makes matters
-better --- entry \emph{cushions}.  Firms respond to a wave of destruction
+\emph{amplifies}.  A destruction shock slackens the labor market:
+unemployment rises and the vacancy stock falls, so a newly posted position
+fills faster and the return to creating one \emph{rises}.  Entry then
+leans against the shock, and a high $\xi$ makes matters better --- entry
+\emph{cushions}.  Firms respond to a wave of destruction
 by building, precisely because destruction has made building more
 attractive at the margin.  This is the sense in which the entry margin is
 stabilizing for $\delta$ shocks and destabilizing for $z$ shocks, and it is
@@ -4418,7 +4501,14 @@ calibrated destruction rate endogenously preserves negative $u$-$v$
 comovement across the entire range of $\xi$ shown here, including free
 entry.  Convex entry costs ($\xi_{\mathrm{inv}}>0$) are not needed to
 prevent the CK Beveridge curve shift; the low empirical $\bar\delta_e$
-already rules it out.  The role of $\xi$ is then purely quantitative ---
+already rules it out.  Paragraph~9c of \ref{app:loglin} gives the reason in
+closed form: the unemployment loading is proportional to
+$\bar\delta_e/\bar\tau$ and so vanishes linearly as the destruction share
+falls, while the tightness loading is governed by
+$\bar\delta_e/(r+\bar\delta_e)$, which saturates once $\bar\delta_e$ is
+large relative to $r$.  Lowering $\bar\delta_e$ therefore weakens the
+unemployment response much faster than the tightness response.
+The role of $\xi$ is then purely quantitative ---
 governing the strength of the cushioning and hence the \emph{degree} of
 negative comovement --- rather than determining its sign.
 
