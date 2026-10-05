@@ -117,6 +117,7 @@ counterfactual.
   diagnostic; E8 instrument-persistence test.
 - **Sept 28–30:** reposting formulation (D11), job creation condition with reposting (R7), draft
   chunks A–C (R10), Props 1 and 3 audited.
+- **Oct 5:** wage/𝓡 dependency audit: `eq:gdp` income identity (Π^int net of X, X^r), `eq:curve_jcc`, `eq:e_theta`, `eq:phi_calib`, `eq:destruction_curve` (p_0 atom).
 - **Oct 5:** Prop. 5 restated under the timing convention (R13): statement, proof, `lem:vpre`,
   discussion; `run_prop5_s_check.jl` extended; new `run_prop5_parts23_check.jl`.
 - **Oct 1 (late):** wage dependencies carried through the main text and steady-state

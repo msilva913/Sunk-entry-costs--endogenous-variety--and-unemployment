@@ -1070,7 +1070,11 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	upon next filling the vacancy. The reposting shortfall lowers
 	the wage by $\phi s_t\mathcal{R}_t$. A separation destroys part
 	of the position's value, which shrinks the match surplus, and
-	the worker bears share $\phi$ of that loss. The household's
+	the worker bears share $\phi$ of that loss. The term enters
+	alongside the flow value of the vacancy, in
+	$w_t^{int}-K_t-s_t\mathcal{R}_t$, here and in the surplus below:
+	the expected reposting loss works as an extra flow cost of holding
+	a filled position. The household's
 	surplus carries no such term, because a separated worker
 	becomes unemployed whether or not the position is reactivated
 	(\ref{app:wage}). Setting $w_t^{int}=z_t$,
@@ -1251,8 +1255,10 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	only positions resumed are free ones.
 	 Aggregate retail profits 
 	gross of continuation costs are $\Pi_t^f = Y_t^c/
-	\varepsilon(N_t) - X_t^c$, and recruiter profits are 
-	$\Pi_t^{int} = (w_t^{int}-w_t)L_t$. The average per-firm 
+	\varepsilon(N_t) - X_t^c$, and recruiter profits, net of the
+	vacancy creation and matching costs $X_t$ and the reactivation
+	costs $X_t^r$ that recruiters pay, are
+	$\Pi_t^{int} = (w_t^{int}-w_t)L_t-X_t-X_t^r$. The average per-firm
 	dividend is $d_t^f = \Pi_t^f/N_t$.
 	
 	Total vacancy creation costs are the sum of sunk posting 
@@ -1834,8 +1840,8 @@ $N$ shifts the curve upward through $\rho(N)$. The
 \emph{product destruction curve} follows from 
 $\Lambda(\chi^c)(1-\delta) = (1-\delta_e)$:
 \begin{align}\label{eq:destruction_curve}
-	\chi^c = \left(\frac{1-\delta_e}{1-\delta}
-	\right)^{1/\psi}\chi_m
+	\chi^c = \chi_m\left(\frac{(1-\delta_e)/(1-\delta)-1+p_0}{p_0}
+	\right)^{1/\psi}
 \end{align}
 It is negatively sloped: a higher cutoff $\chi^c$ 
 raises the endogenous survival probability and 
@@ -1845,20 +1851,28 @@ For the labor market block, express $e$ and $K$ as
 functions of tightness $\theta$ using the steady-state 
 unemployment and vacancy laws of motion:
 \begin{align}\label{eq:e_theta}
-	e(\theta) = \delta_e\,
-	\frac{\tau\theta + (1-\delta_e)f(\theta)}
+	e(\theta) =
+	\frac{\delta_e\bigl(\tau\theta + (1-\delta_e)f(\theta)\bigr)
+	+(1-\delta_e)^2(1-\Lambda_r)s f(\theta)}
 	{\tau + (1-\delta_e)f(\theta)}, \qquad
 	K(\theta) = \frac{r+\delta_e}{1+r}\,
 	e(\theta)^{1/\xi}\,x_m
 \end{align}
-The \emph{job creation curve} is the steady-state JCC 
+The second term in $e(\theta)$ is entry that replaces positions
+retired at surviving product lines; it vanishes with costless
+reposting ($\Lambda_r=1$). With $\alpha>0$, $\Lambda_r=F(Q/\alpha)$
+depends on $Q=e^{1/\xi}x_m$, so $e(\theta)$ is defined implicitly.
+The \emph{job creation curve} is the steady-state JCC
 \eqref{eq:jcc_eq}:
 \begin{align}\label{eq:curve_jcc}
 	\left(\kappa+\frac{K(\theta)}{q(\theta)}\right)
 	\left(r+\tau+(1-\delta_e)\phi\theta q(\theta)\right)
 	= (1-\delta_e)(1-\phi)
-	\left(\frac{\rho(N)z}{\mu(N)}-K(\theta)-b\right)
+	\left(\frac{\rho(N)z}{\mu(N)}-K(\theta)-b-s\mathcal{R}(\theta)\right)
 \end{align}
+where $\mathcal{R}(\theta)=(1-\delta_e)\bigl(Q(\theta)-Q^{rep}(\theta)\bigr)/(1+r)$
+is the steady-state reposting shortfall~\eqref{eq:repost_shortfall},
+which depends on tightness through $Q$.
 Its right-hand side is increasing in $N$ through 
 $\rho(N)$: more product lines raise recruiter 
 compensation, stimulating vacancy creation --- the 
@@ -2856,7 +2870,7 @@ The second set consists of empirically identified impulse responses from the
 	\begin{align}
 		z      &= (\mu/\rho)\,w^{int}, \label{eq:z_calib}\\
 		f_e    &= \pi_s\, z\, L^c\,(1-\delta_e)\,\mu\,/\,(N\,(r+\delta_e)), \label{eq:fe_calib}\\
-		\phi   &= \frac{w-b}{w^{int}-K+\theta(K+q\kappa)-b}, \label{eq:phi_calib}\\
+		\phi   &= \frac{w-b}{w^{int}-K+\theta(K+q\kappa)-s\mathcal{R}-b}, \label{eq:phi_calib}\\
 		x_m    &= Q\,/\,e^{\xi^{-1}}. \label{eq:xm_calib}
 	\end{align}
 	The normalizations provide clean intuition: $w=1$ pins $z$ via
@@ -2864,7 +2878,8 @@ The second set consists of empirically identified impulse responses from the
 	proportional to productivity; $N=1$ pins $f_e$ via \eqref{eq:fe_calib}
 	because free entry ties the mass of product lines to the entry cost; and the
 	recruiting-cost share target $X/Y=1.5\%$, once $Q$ is found, pins bargaining
-	power $\phi$ via \eqref{eq:phi_calib}.
+	power $\phi$ via \eqref{eq:phi_calib}. There $\mathcal{R}$ is the
+	steady-state reposting shortfall, which is zero under costless reposting.
 	
 	\medskip\noindent\textbf{Discussion of $b$ and $\phi$.}
 	In our labor market framework, the labor share and the search wedge $w/w^{int}$

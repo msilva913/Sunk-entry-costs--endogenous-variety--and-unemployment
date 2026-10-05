@@ -221,6 +221,28 @@ for da in (0.0320, 0.0754)
         @printf("   period-t exit response Λ̂_t: s shock %+.3e   δ shock %+.3e   (log dev.)\n",
                 Λhat(irf_s, 2), Λhat(irf_d, 2))
         @printf("   x̂_c,t:  s shock %+.3e   δ shock %+.3e\n", irf_s.x_c[2], irf_d.x_c[2])
+        # Role of endogenous exit (role_of_ingredients.md): cutoff composition and
+        # the endogenous-exit response relative to the exogenous δ impulse.
+        irf_z = irf_of(model, sol, [0.0, 0.0, 0.0, σ_z, 0.0, 0.0])
+        profit = ss.Y_c * (μ - 1) / (μ * ss.N)
+        ς = (Λ - (1 - p_0)) / p_0
+        el = ψ * ς / (1 - ς)                      # elasticity of the endogenous exit rate to χ^c
+        x_end = 1 - Λ                             # endogenous exit rate
+        @printf("   cutoff χ^c = %.4f: per-line profit %.4f (%.1f%%), option value ν_f %.4f (%.1f%%)\n",
+                ss.x_c, profit, 100 * profit / ss.x_c, ss.ν_f, 100 * ss.ν_f / ss.x_c)
+        @printf("   endogenous exit rate %.5f/month vs τ %.4f; exit elasticity to χ^c = %.2f\n",
+                x_end, ss.δ_e + cal.s * (1 - ss.δ_e), el)
+        for (lab, ir, sz) in (("z", irf_z, σ_z), ("δ", irf_d, σ_δ), ("s", irf_s, σ_s))
+            pk = maximum(abs.(ir.x_c[2:end]))
+            Δx = el * x_end * pk                  # peak level change in the endogenous exit rate
+            @printf("   %s shock: peak |x̂_c| %.2e → peak Δ(endog. exit) %.2e/month; δ impulse δ̄·σ_δ = %.2e\n",
+                    lab, pk, Δx, cal.δ * σ_δ)
+        end
+        # Model counterpart of the part6b VAR coefficient â_21 (exit on lagged z, log
+        # cycles, quarterly; data −1.05, HC3 SE 0.83): peak response of log δ_e to a
+        # 1% fall in z. Rough: one-quarter VAR coefficient vs. a peak IRF ratio.
+        el_z = maximum(abs.(irf_z.δ_e[2:end])) / σ_z   # IRFs here are log deviations (not ×100)
+        @printf("   elasticity of δ_e to z (peak |δ̂_e| per 1%% z): %.3f   [data â_21 ≈ -1.05, SE 0.83]\n", el_z)
     catch err
         println("  FAIL baseline dest_ann=$da → ", sprint(showerror, err)[1:min(end, 200)])
     end
