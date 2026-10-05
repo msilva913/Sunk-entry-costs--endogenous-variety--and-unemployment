@@ -44,6 +44,32 @@ COLUMN DEFINITIONS
 
   Col 6  Same as Col 5 for losses and closings: sd(HP L_C) / sd(HP L)
 
+  Col 7  Correlation of the cyclical opening flow with the cyclical DEATHS
+         flow: corr(cycle G_O, cycle L_D).  Negative means the replacement
+         flow is weak exactly when permanent destruction is strong, which is
+         the comovement the delta mechanism needs and which a relative
+         standard deviation cannot show.
+
+  Col 8  Same against CLOSINGS: corr(cycle G_O, cycle L_C).
+
+  Col 9  Correlation of the cyclical opening flow with cyclical NET job
+         change: corr(cycle G_O, cycle (G - L)).  Positive means entry is
+         procyclical.  Net job change is the activity proxy available inside
+         this program; G_O against G would be close to tautological, since
+         G_O is a component of G.
+
+  Col 10 Correlation of the cyclical DEATHS flow with cyclical net job
+         change: corr(cycle L_D, cycle (G - L)).  Read with col 9, this is
+         what adjudicates whether replacement is weak when destruction is
+         strong: col 7 correlates two gross flows that share a common scale
+         and churn component, so a positive col 7 does not settle the
+         question.  Cols 9 and 10 face the same cycle proxy, so opposite
+         signs there are the statement the delta mechanism needs.
+
+  Cols 7-10 are computed under BOTH filters, Hamilton and HP, matching
+  cols 3-6.  They are reported in the text output only: the LaTeX table is
+  already ten columns wide, and the draft quotes these in prose.
+
 NOTE ON COLS 3-6
 ----------------
 All four columns report RELATIVE STANDARD DEVIATION of entry/exit flows vs
@@ -377,6 +403,41 @@ def compute_cols_56(sub: pd.DataFrame) -> tuple:
     return compute_cols_34(sub, hp_filter_cycle)
 
 
+def compute_corrs(sub: pd.DataFrame, filter_fn) -> tuple:
+    """
+    Cols 7-9: comovement of the entry flow with destruction and with the cycle.
+
+    The relative standard deviations in cols 3-6 are magnitudes. They cannot
+    say whether the replacement flow is weak when destruction is strong, which
+    is the statement the delta mechanism rests on. These three correlations do.
+
+      r_OD   corr(cycle G_O, cycle L_D)   entry vs permanent destruction
+      r_OC   corr(cycle G_O, cycle L_C)   entry vs closings
+      r_Onet corr(cycle G_O, cycle (G-L)) entry vs net job change (procyclicality)
+      r_Dnet corr(cycle L_D, cycle (G-L)) deaths vs net job change
+
+    r_OD correlates two gross flows that share a scale and churn component,
+    so it can be positive even when entry is procyclical and deaths are
+    countercyclical. r_Onet against r_Dnet is the cleaner comparison.
+
+    Filter applied to raw levels, as in cols 3-6.
+    """
+    def _corr(a_cycle, b_cycle):
+        mask = ~(np.isnan(a_cycle) | np.isnan(b_cycle))
+        a, b = a_cycle[mask], b_cycle[mask]
+        if len(a) < 5 or np.std(a, ddof=1) == 0 or np.std(b, ddof=1) == 0:
+            return np.nan
+        return float(np.corrcoef(a, b)[0, 1])
+
+    cGO  = filter_fn(sub["G_O"].values)
+    cLC  = filter_fn(sub["L_C"].values)
+    cLD  = filter_fn(sub["L_D"].values)
+    cNet = filter_fn((sub["G"] - sub["L"]).values)
+
+    return (_corr(cGO, cLD), _corr(cGO, cLC), _corr(cGO, cNet),
+            _corr(cLD, cNet))
+
+
 # ---------------------------------------------------------------------------
 # 5.  MAIN COMPUTATION LOOP
 # ---------------------------------------------------------------------------
@@ -409,6 +470,8 @@ def compute_table(panel: pd.DataFrame) -> pd.DataFrame:
             c1, c2, c2d    = compute_cols_12(sub)
             c3, c4, c4d    = compute_cols_34(sub, hamilton_filter_cycle)
             c5, c6, c6d    = compute_cols_56(sub)
+            c7, c8, c9, c10 = compute_corrs(sub, hamilton_filter_cycle)
+            h7, h8, h9, h10 = compute_corrs(sub, hp_filter_cycle)
 
             rows.append(dict(
                 sample=sname, pip=pip,
@@ -419,6 +482,8 @@ def compute_table(panel: pd.DataFrame) -> pd.DataFrame:
                 c1=c1, c2=c2, c2d=c2d,
                 c3=c3, c4=c4, c4d=c4d,
                 c5=c5, c6=c6, c6d=c6d,
+                c7=c7, c8=c8, c9=c9, c10=c10,
+                h7=h7, h8=h8, h9=h9, h10=h10,
             ))
 
     return pd.DataFrame(rows)
@@ -461,6 +526,16 @@ def write_text_table(res: pd.DataFrame, path: str):
         "    Same statistic as C3, HP filter. Directly comparable to JF original ~0.33.",
         "",
         "C6  Same as C5 for losses: sd(HP L_C) / sd(HP L).",
+        "",
+        "C7  corr(cycle G_O, cycle L_D): entry flow vs PERMANENT destruction.",
+        "    Negative: the replacement flow is weak when destruction is strong.",
+        "C8  corr(cycle G_O, cycle L_C): entry flow vs closings.",
+        "C9  corr(cycle G_O, cycle (G-L)): entry vs net job change.",
+        "    Positive: entry is procyclical.",
+        "C10 corr(cycle L_D, cycle (G-L)): deaths vs net job change.",
+        "    C9 vs C10 adjudicates replacement-vs-destruction timing; C7 does",
+        "    not, since two gross flows share a scale and churn component.",
+        "    C7-C9 reported under both filters (Ham and HP). Text output only.",
         "",
         "NOTE: JF cols 3-6 use 'detrended series' (HP-filtered) throughout.",
         "      All columns report RELATIVE STD DEV; filter applied to raw levels.",
@@ -508,6 +583,26 @@ def write_text_table(res: pd.DataFrame, path: str):
             )
         lines.append("  * noisy estimate (|ratio| > 5; typically a small-count industry series)")
 
+        chdr = (f"{'Industry':<44} {'Ham-OD':>8} {'Ham-OC':>8} {'Ham-Onet':>9}"
+                f" {'Ham-Dnet':>9} {'HP-OD':>8} {'HP-OC':>8} {'HP-Onet':>9}"
+                f" {'HP-Dnet':>9}")
+        lines += [
+            "",
+            "  ENTRY COMOVEMENT (C7-C9): corr of cyclical openings with deaths,",
+            "  closings, and net job change.",
+            "-" * 120, chdr, "-" * 120,
+        ]
+        for pip in ORDERED_PIPS:
+            r = sub[sub["pip"] == pip]
+            if len(r) == 0:
+                continue
+            r = r.iloc[0]
+            lines.append(
+                f"{r.label_plain:<44} {fmt_val(r.c7):>8} {fmt_val(r.c8):>8}"
+                f" {fmt_val(r.c9):>9} {fmt_val(r.c10):>9} {fmt_val(r.h7):>8}"
+                f" {fmt_val(r.h8):>8} {fmt_val(r.h9):>9} {fmt_val(r.h10):>9}"
+            )
+
     lines += [
         "",
         "=" * 120,
@@ -520,6 +615,13 @@ def write_text_table(res: pd.DataFrame, path: str):
             f"  {SAMPLE_LABELS[sname]}: C1={r.c1:.3f}, C2={r.c2:.3f}, "
             f"C3(Ham)={fmt_val(r.c3).strip()}, C4(Ham)={fmt_val(r.c4).strip()}, "
             f"C5(HP)={fmt_val(r.c5).strip()}, C6(HP)={fmt_val(r.c6).strip()}"
+        )
+        lines.append(
+            f"    entry comovement: C7(Ham)={fmt_val(r.c7).strip()}, "
+            f"C8(Ham)={fmt_val(r.c8).strip()}, C9(Ham)={fmt_val(r.c9).strip()}, "
+            f"C7(HP)={fmt_val(r.h7).strip()}, C8(HP)={fmt_val(r.h8).strip()}, "
+            f"C9(HP)={fmt_val(r.h9).strip()}, "
+            f"C10(Ham)={fmt_val(r.c10).strip()}, C10(HP)={fmt_val(r.h10).strip()}"
         )
     lines += [
         "",

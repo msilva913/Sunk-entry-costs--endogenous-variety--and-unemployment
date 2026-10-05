@@ -28,6 +28,16 @@ C5  Relative std dev (HP filter, lambda=1600, raw levels):
 
 C6  Same as C5 for losses: sd(HP L_C) / sd(HP L).
 
+C7  corr(cycle G_O, cycle L_D): entry flow vs PERMANENT destruction.
+    Negative: the replacement flow is weak when destruction is strong.
+C8  corr(cycle G_O, cycle L_C): entry flow vs closings.
+C9  corr(cycle G_O, cycle (G-L)): entry vs net job change.
+    Positive: entry is procyclical.
+C10 corr(cycle L_D, cycle (G-L)): deaths vs net job change.
+    C9 vs C10 adjudicates replacement-vs-destruction timing; C7 does
+    not, since two gross flows share a scale and churn component.
+    C7-C9 reported under both filters (Ham and HP). Text output only.
+
 NOTE: JF cols 3-6 use 'detrended series' (HP-filtered) throughout.
       All columns report RELATIVE STD DEV; filter applied to raw levels.
       C3-C4 (Hamilton) preferred for extended samples; C5-C6 (HP) for JF comparison.
@@ -64,6 +74,25 @@ Leisure & hospitality                         0.264  0.217  0.129   0.463   0.68
 Other services                                0.222  0.219  0.135   0.410   0.683   0.528   0.447   0.601   0.447   57
   * noisy estimate (|ratio| > 5; typically a small-count industry series)
 
+  ENTRY COMOVEMENT (C7-C9): corr of cyclical openings with deaths,
+  closings, and net job change.
+------------------------------------------------------------------------------------------------------------------------
+Industry                                       Ham-OD   Ham-OC  Ham-Onet  Ham-Dnet    HP-OD    HP-OC   HP-Onet   HP-Dnet
+------------------------------------------------------------------------------------------------------------------------
+Total private                                   0.694    0.722     0.342    -0.198    0.613    0.614     0.225    -0.375
+Natural resources & mining                      0.332    0.455     0.308     0.143    0.231    0.199     0.378     0.139
+Construction                                    0.030    0.165     0.566    -0.382   -0.021   -0.010     0.606    -0.462
+Manufacturing                                   0.483    0.660     0.526    -0.108    0.537    0.619     0.291    -0.267
+Wholesale trade                                 0.623    0.673     0.206    -0.349    0.327    0.386     0.152    -0.477
+Retail trade                                    0.639    0.637     0.440     0.052    0.615    0.530    -0.060    -0.326
+Transportation & utilities                      0.582    0.607     0.178    -0.158    0.526    0.532     0.080    -0.146
+Information                                     0.469    0.473     0.559    -0.150    0.404    0.344     0.189    -0.389
+Financial activities                            0.652    0.673     0.392     0.139    0.467    0.465     0.300    -0.122
+Prof. & business services                       0.624    0.662     0.206    -0.339    0.412    0.451     0.347    -0.314
+Education & health services                     0.690    0.677    -0.013    -0.402    0.630    0.535     0.256    -0.210
+Leisure & hospitality                           0.444    0.544     0.199    -0.217    0.413    0.391     0.060    -0.416
+Other services                                  0.555    0.603     0.106    -0.151    0.463    0.465     0.205    -0.326
+
 SAMPLE: Extended to the COVID cutoff, preferred   [realized window: 1992Q3-2019Q4]
 ------------------------------------------------------------------------------------------------------------------------
 Industry                                         gO     gC     gD   Ham-O   Ham-C   Ham-D    HP-O    HP-C    HP-D    N
@@ -82,6 +111,25 @@ Education & health services                   0.202  0.213  0.128   0.341   0.33
 Leisure & hospitality                         0.245  0.198  0.115   0.271   0.332   0.250   0.315   0.350   0.271  110
 Other services                                0.221  0.219  0.130   0.291   0.352   0.287   0.344   0.402   0.301  110
   * noisy estimate (|ratio| > 5; typically a small-count industry series)
+
+  ENTRY COMOVEMENT (C7-C9): corr of cyclical openings with deaths,
+  closings, and net job change.
+------------------------------------------------------------------------------------------------------------------------
+Industry                                       Ham-OD   Ham-OC  Ham-Onet  Ham-Dnet    HP-OD    HP-OC   HP-Onet   HP-Dnet
+------------------------------------------------------------------------------------------------------------------------
+Total private                                   0.558    0.608     0.466    -0.081    0.463    0.459     0.314    -0.491
+Natural resources & mining                      0.303    0.419     0.305    -0.089    0.154    0.137     0.361    -0.126
+Construction                                   -0.054   -0.057     0.708    -0.383   -0.263   -0.291     0.651    -0.715
+Manufacturing                                   0.492    0.643     0.410    -0.124    0.497    0.567     0.219    -0.335
+Wholesale trade                                 0.486    0.548     0.440    -0.078    0.203    0.226     0.287    -0.475
+Retail trade                                    0.395    0.453     0.469    -0.163    0.437    0.352     0.055    -0.428
+Transportation & utilities                      0.491    0.510     0.375    -0.191    0.404    0.408     0.388    -0.102
+Information                                     0.553    0.558     0.618    -0.007    0.397    0.334     0.164    -0.377
+Financial activities                            0.556    0.612     0.515    -0.020    0.425    0.416     0.295    -0.249
+Prof. & business services                       0.567    0.519     0.383    -0.124    0.378    0.398     0.394    -0.340
+Education & health services                     0.388    0.551     0.257    -0.306    0.352    0.380     0.344    -0.336
+Leisure & hospitality                           0.463    0.530     0.328    -0.138    0.391    0.353     0.162    -0.373
+Other services                                  0.553    0.542     0.331     0.011    0.374    0.356     0.320    -0.295
 
 SAMPLE: Extended to the end of the BED cache   [realized window: 1992Q3-2021Q4]
 ------------------------------------------------------------------------------------------------------------------------
@@ -102,12 +150,34 @@ Leisure & hospitality                         0.241  0.196  0.111   0.173   0.16
 Other services                                0.225  0.223  0.128   0.427   0.286   0.076   0.415   0.270   0.066  118
   * noisy estimate (|ratio| > 5; typically a small-count industry series)
 
+  ENTRY COMOVEMENT (C7-C9): corr of cyclical openings with deaths,
+  closings, and net job change.
+------------------------------------------------------------------------------------------------------------------------
+Industry                                       Ham-OD   Ham-OC  Ham-Onet  Ham-Dnet    HP-OD    HP-OC   HP-Onet   HP-Dnet
+------------------------------------------------------------------------------------------------------------------------
+Total private                                   0.328    0.251     0.383    -0.356    0.138   -0.064     0.437    -0.636
+Natural resources & mining                      0.291    0.401     0.284    -0.122    0.155    0.128     0.322    -0.183
+Construction                                   -0.052   -0.056     0.645    -0.353   -0.281   -0.334     0.604    -0.654
+Manufacturing                                   0.493    0.632     0.356    -0.155    0.473    0.514     0.220    -0.340
+Wholesale trade                                 0.429    0.508     0.319    -0.121    0.179    0.158     0.258    -0.424
+Retail trade                                    0.258    0.207     0.434    -0.235    0.296    0.074     0.283    -0.374
+Transportation & utilities                      0.234    0.245     0.384    -0.296    0.102   -0.038     0.688    -0.240
+Information                                     0.521    0.517     0.496    -0.038    0.373    0.253     0.240    -0.283
+Financial activities                            0.551    0.618     0.410    -0.022    0.430    0.386     0.285    -0.169
+Prof. & business services                       0.469    0.495     0.315    -0.183    0.342    0.340     0.334    -0.352
+Education & health services                     0.322    0.434     0.141    -0.414    0.188    0.067     0.327    -0.483
+Leisure & hospitality                          -0.142   -0.211     0.512    -0.719   -0.258   -0.368     0.586    -0.821
+Other services                                  0.019    0.078     0.329    -0.609   -0.132   -0.118     0.398    -0.768
+
 ========================================================================================================================
 KEY FINDINGS (total private)
 ------------------------------------------------------------
   Original JF period: C1=0.212, C2=0.206, C3(Ham)=0.391, C4(Ham)=0.335, C5(HP)=0.362, C6(HP)=0.333
+    entry comovement: C7(Ham)=0.694, C8(Ham)=0.722, C9(Ham)=0.342, C7(HP)=0.613, C8(HP)=0.614, C9(HP)=0.225, C10(Ham)=-0.198, C10(HP)=-0.375
   Extended to the COVID cutoff, preferred: C1=0.200, C2=0.195, C3(Ham)=0.269, C4(Ham)=0.239, C5(HP)=0.275, C6(HP)=0.223
+    entry comovement: C7(Ham)=0.558, C8(Ham)=0.608, C9(Ham)=0.466, C7(HP)=0.463, C8(HP)=0.459, C9(HP)=0.314, C10(Ham)=-0.081, C10(HP)=-0.491
   Extended to the end of the BED cache: C1=0.199, C2=0.193, C3(Ham)=0.227, C4(Ham)=0.152, C5(HP)=0.206, C6(HP)=0.132
+    entry comovement: C7(Ham)=0.328, C8(Ham)=0.251, C9(Ham)=0.383, C7(HP)=0.138, C8(HP)=-0.064, C9(HP)=0.437, C10(Ham)=-0.356, C10(HP)=-0.636
 
 Secular decline: entry/exit shares fall ~1 pp comparing JF period to 2019 extension.
 GFC effect: C4-HP (rel. std dev for closings) rises in ext samples,
