@@ -1,0 +1,46 @@
+========================================================================================================
+PREDETERMINED VACANCY SHARE AND THE ENTRY THRESHOLD FOR A DESTRUCTION SHOCK
+Targets held fixed: f = 0.41, q = 0.8, sep = 0.031 (monthly)
+========================================================================================================
+
+theta = 0.512500   u = 0.070295   L = 0.929705   v = 0.036026   (invariant to delta_e)
+vacancy share of all positions  v/(v+L) = 0.037304
+kappa_v = [v/(v+L)]/tau         = 1.203369
+
+Threshold entry elasticity for total vacancies to RISE on impact:
+    T = v_pre/e = v/e - 1 = [v/(v+L)]/delta_e - 1 = kappa_v/(delta_e/tau) - 1
+
+Calibration                                 delta_e   d_e/tau       e/v   v_pre/v         T
+--------------------------------------------------------------------------------------------------------
+D1 settled (BED Deaths, 3.20%/yr)          0.002707    0.0873    0.0726    0.9274    12.783
+Code baseline (superseded, 7.54%/yr)       0.006512    0.2100    0.1746    0.8254     4.729
+BGM / GS / Shao-Silos (10%/yr)             0.008742    0.2820    0.2343    0.7657     3.267
+Coles-Kelishomi (delta_e = tau)            0.031000    1.0000    0.8310    0.1690     0.203
+--------------------------------------------------------------------------------------------------------
+
+Columns: delta_e monthly destruction rate; d_e/tau its share of total separations;
+  e/v entrant share of the vacancy stock (= entrant_vac_share, steady_state.jl:428);
+  v_pre/v predetermined (inherited) share, exposed to the destruction shock;
+  T threshold entry elasticity: percent rise in e per 1 percent rise in delta_e
+    needed for total vacancies to rise rather than fall on impact.
+
+IDENTITIES (verified by assertion above):
+  e/v     = (delta_e/tau) / kappa_v
+  v_pre/v = 1 - (delta_e/tau)/kappa_v
+  T       = kappa_v/(delta_e/tau) - 1
+
+  D1 settled (BED Deaths, 3.20%/yr)        s = 0.028370   decisions.md D1; delta_e/tau = 0.087
+  Code baseline (superseded, 7.54%/yr)     s = 0.024649   steady_state.jl TARGETS as of Oct 2026; delta_e/tau = 0.21
+  BGM / GS / Shao-Silos (10%/yr)           s = 0.022455   literature comparison, see Notes/delta_calibration...
+  Coles-Kelishomi (delta_e = tau)          s = 0.000000   all separation is destruction; s = 0; MAXIMUM admissible delta_e
+
+READING
+------------------------------------------------------------
+The threshold is 62.9 times higher at the D1 calibration than at Coles-Kelishomi's
+(12.78 vs 0.203), because delta_e = tau makes the standing vacancy stock 83% new
+postings, leaving only 17% inherited for a destruction shock to remove. At the D1
+value 93% of the stock is inherited.
+
+delta_e = tau is the maximum admissible destruction rate (s >= 0), so CK sit at the
+point that MINIMIZES the entry threshold over the whole admissible range.
+========================================================================================================
