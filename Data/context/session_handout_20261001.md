@@ -17,7 +17,12 @@ artifacts (`Draft.aux/.log/.pdf/.synctex.gz`) are always modified and are never 
 If this session is on the same machine, commit the batch first (MS commits only on request;
 ask). If on another machine, the work must have been committed and pushed from the first.
 
-## 1. Resume here: task R13 (Prop. 5 under the paper's timing convention)
+## 1. ✅ DONE Oct 5 — task R13 (kept for the record; see `draft_status.md`)
+
+> **Update Oct 5, 2026.** R13 is done: Prop. 5 restated, proved, and discussed with wording
+> approved by MS; the Part 2 numerics wait on R8. Resume at the critical path in §5 (E9 next).
+
+### Original R13 notes
 
 **The convention (confirmed by MS, Oct 1).** The aggregate state, *including* s_t and δ_t, is
 realized at the **start** of period t, and every date-t decision conditions on it. Only the

@@ -1,5 +1,5 @@
 # Pending Tasks
-**Last updated:** October 1, 2026, late (R13 added; timing convention confirmed) · **Branch:** `costly_vacancy_reposting`
+**Last updated:** October 5, 2026 (R13 done; Part 2 numerics wait on R8) · **Branch:** `costly_vacancy_reposting`
 
 Actionable work only. Decisions live in [`decisions.md`](decisions.md), draft section status in
 [`draft_status.md`](draft_status.md), results in [`findings.md`](findings.md), the model
@@ -30,7 +30,7 @@ number; do them together so the mechanism runs are regenerated once.
 - Then: re-run Comparisons A–D, regenerate the eight `mechanism_*.pdf`, re-run
   `mechanism_stats.jl`, diff `mechanism_stats.txt`, update §5.3. Also §5.2's external block,
   `tab:calib_targets` row 1, and the four δ̄_e/τ̄ ≈ 0.21 claims (now ≈ 0.087): `Draft.tex`
-  L1716 (`sec:mechanism`), L3085 (§5.3), L3945 (`app:loglin`), L4223 (`app:comparison_D`).
+  L3141 (§5.3), L4005 (`app:loglin`), L4283 (`app:comparison_D`) (the `sec:mechanism` one was removed Oct 5 in the Prop. 5 rewrite).
   Re-run `run_prop5_s_check.jl` and update the 1.5% bound in the draft if it moves.
 
 **1. Settle [D2](decisions.md) and [D3](decisions.md).** D3 after E9. Write the canonical
@@ -60,7 +60,7 @@ counterfactual.
 
 | # | Task | Status |
 |---|---|---|
-| R13 | 🔴 **Restate Prop. 5 for start-of-period shock observation — START HERE (draft).** The paper's convention (confirmed by MS Oct 1): the aggregate state, including s_t and δ_t, is realized at the start of t and every date-t decision conditions on it; only the incidence (which matches and lines) is revealed at the end of t. The §2 prose was corrected Oct 1; the proof was not. Two places still use the old reading: the Part 1 proof ("holding period-t variables fixed, since s_t realizes at the end of t", search `realizes at the end of`) and `lem:vpre` (bracket "predetermined with respect to δ_t (which realizes at end of t…)"). With s_t known at t, θ_t and e_t respond on impact. **Exact accounting (derived Oct 1, p_0 = 0):** with M_t = f_t u_t and u_t fixed, Δu_{t+1} = d − (1−δ_t)ΔM_t; Δv_{pre,t+1} = Δu_{t+1} + (1−δ_t)Δe_t; Δv_{t+1} = Δu_{t+1} + (1−δ_t)Δe_t + Δe_{t+1}; at h = 0, u_t is unchanged and Δv_t = Δe_t. **Proposed Part 1 (awaiting MS review):** u and v comove positively at h = 1 provided matching at t does not rise by more than d/(1−δ_t) and entry over t and t+1 does not contract by more than Δu_{t+1}. Then: (a) recheck the two exact cases in Step 4 (free entry; θ̄ = 1) under this timing; (b) give `lem:vpre` and Part 3 the period-t entry term; (c) check that Part 2's closing line and the discussion paragraphs after the proposition still read correctly; (d) re-run `run_prop5_s_check.jl` reporting Δu, ΔM_t, Δe_t, Δe_{t+1} and confirm the restated condition (the code already uses this timing, so the 1.5% bound should survive but is now measured against the new condition); (e) update decisions S12, draft_status, findings | ❌ **next draft task** |
+| R13 | ✅ **Prop. 5 restated for start-of-period shock observation — done Oct 5** (wording approved by MS). Part 1: accounting with period-t entry, conditions (i)–(ii). Part 2: `eq:gN_cond` replaced by `eq:exit_cond` (det J > 0 of the 3×3 exit–variety–unemployment system; `eq:gN_cond` failed at the calibration, g_N > 0), period-t exit term added to the drain, B_t no longer predetermined, monotonicity-in-ρ_s claim replaced by continuity, first order in F′. Part 3: period-t entry term; `lem:vpre` restated as a decomposition. Discussion: conditions (i)–(ii) very easily satisfied at p_0 = 0 (≤ 2.6%, 0.7% at D1); Part 3 h = 1 sign fragile at monthly frequency but vacancies fall from month 2 and in every quarterly average at D1. **Remaining:** redo the Part 2 numerics after R8 (`run_prop5_parts23_check.jl` is indicative for p_0 > 0 because of the code's exit dating) | ⏳ numerics after R8 |
 | R2 | **Verify α, σ_s, δ_e are separately identified** on simulated data. α and δ_e move cor(u,v) through the same channel; α and χ_m both move position destruction. The LD→v IRF should separate them (exit compares χ to χ^c, reactivation to Q). Otherwise fix α on a reported grid. Gates the D11 go/no-go | ❌ needs R8 |
 | R3 | **Prop. 5 for partial reposting.** Parts 1–2 now hold for costless reposting only (Oct 1 restatement). Open: a result for α > 0, e.g. a threshold Λ_r* at which the s→v sign flips, and whether Part 2's claim that the drain rises in ρ_s survives | ❌ |
 | R4 | **Revisit [D4](decisions.md)/S6**: LD→v as the identifying moment for α | after R2 |
@@ -117,6 +117,8 @@ counterfactual.
   diagnostic; E8 instrument-persistence test.
 - **Sept 28–30:** reposting formulation (D11), job creation condition with reposting (R7), draft
   chunks A–C (R10), Props 1 and 3 audited.
+- **Oct 5:** Prop. 5 restated under the timing convention (R13): statement, proof, `lem:vpre`,
+  discussion; `run_prop5_s_check.jl` extended; new `run_prop5_parts23_check.jl`.
 - **Oct 1 (late):** wage dependencies carried through the main text and steady-state
   appendix; `eq:repost_shortfall`, `eq:Lambda_r`, `eq:theta_eq` added; `def:equilibrium`
   completed with J_t eliminated; §2 timing prose corrected to start-of-period shock

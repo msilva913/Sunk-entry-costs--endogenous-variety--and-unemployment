@@ -1,5 +1,5 @@
 # Draft Status — `Draft/Draft.tex`
-**Last updated:** October 1, 2026, late (wage dependencies, `def:equilibrium`, timing prose; Prop. 5 flagged R13)
+**Last updated:** October 5, 2026 (Prop. 5 restated; earlier Oct 1 work: wage dependencies, `def:equilibrium`, timing prose)
 
 **Build:** compiles with 0 errors and 0 missing graphics. The 4 undefined references and 1
 duplicate label (P2 in [`pending_tasks.md`](pending_tasks.md)) predate the reposting work.
@@ -26,7 +26,7 @@ cascade, every §5.3 number comes from the code's timing.
 | 2 Environment | ✅ | Convention A `eq:u_lom`; `eq:v_lom` with Λ_{r,t}. Timing prose (Oct 1, late) states the paper's convention: the aggregate state incl. s_t, δ_t is known at the start of t; only incidence is revealed at the end of t. `fig:Timing` unchanged (MS: consistent with the convention); it notes that s hits only incumbent matches |
 | 3 Equilibrium | ✅ | Wage dependencies fixed Oct 1: 𝓡_t defined at `eq:repost_shortfall`; `eq:wage_eq` carries −s_t𝓡_t; `eq:surplus_wage` carries −(1−ϕ)s_t𝓡_t. `eq:Lambda_r` defines the reactivation rate. `def:equilibrium` audited for completeness Oct 1: 4 equations for (N, C, χ^c, Y^c), 6 for (θ, K, Q, e, v, u) with `eq:theta_eq` added. The job creation condition `eq:jcc_eq` substitutes the surplus at t+1, so J_t and w_t drop out (`eq:surplus_eq` removed); 𝓡_t is carried with its own equation, so there is no nested expectation. Auxiliary list cites `eq:Lambda_r`, the matching rates, and 𝓡_t. Prop. 1 proof updated to match |
 | 3.x Limiting cases | ✅ | — |
-| 3.x Shock transmission (`sec:mechanism`) | ✅ | δ̄_e/τ̄ ≈ 0.21 at L1716 → 0.087 in the D1 cascade |
+| 3.x Shock transmission (`sec:mechanism`) | ✅ | Prop. 5 and its discussion rewritten Oct 5; the δ̄_e/τ̄ ≈ 0.21 claim here was removed |
 | 3.x Steady state | ✅ | — |
 | 4.1–4.2 Instruments, LP specification | ✅ | — |
 | 4.3 Results | ⚠️ | δ–LD paragraph; joint-LP sentence; malformed `\ref` at the end (P1) |
@@ -62,39 +62,34 @@ cascade, every §5.3 number comes from the code's timing.
 | `prop:ags` (3) | ✅ Holds; states the clone-replacement motivation and that p_0 = 0 is assumed (no-exit also follows from f_e ≥ χ_m, which would leave reactivation on). AGS differs from the baseline on three channels |
 | `prop:bgm_nest` | ⚠️ Not audited for reposting/timing (R12). At p_0 = 0 the conservation leak is zero |
 | `prop:equilibria`, `prop:curves` | ⚠️ Not audited (R12) |
-| `prop:ds_asymmetry` (5) | ⚠️ Restated Oct 1 for costless reposting, but the proof still assumes s_t, δ_t realize at the end of t. Restate under start-of-period observation (R13) |
+| `prop:ds_asymmetry` (5) | ✅ Restated Oct 5 under the timing convention (R13); Part 2 numerics wait on R8 |
 
-### Proposition 5 (`prop:ds_asymmetry`, proof in `app:proof_ds`)
+### Proposition 5 (`prop:ds_asymmetry`, proof in `app:proof_ds`) — restated Oct 5, 2026
 
 **Framing.** Part 1 is a benchmark: with p_0 = 0 there is neither endogenous exit nor costly
 reactivation, and s shocks produce positive u–v comovement. Negative comovement must come from
-δ shocks with a large enough role (Part 3) or from partial reposting. The paragraph after the
-proposition says Parts 1–2 assume costless reposting and that partial reposting gives s shocks a
-destructive component. The §5.3 "Choice of shocks" paragraph is qualified the same way.
+δ shocks with a large enough role (Part 3) or from partial reposting. All three parts use the
+paper's timing convention: the aggregate state is known at the start of t, so θ_t and e_t
+respond on impact.
 
-- ⚠️ **R13 pending.** The Part 1 proof and `lem:vpre` hold period-t variables fixed on the
-  old reading that s_t, δ_t realize at the end of t. Under the paper's convention they are
-  known at t, so θ_t and e_t respond. Proposed restatement and exact accounting are in
-  `pending_tasks.md` R13.
-- **Part 1** (p_0 = 0), as currently written: an s_t shock raises u_{t+1} and v_{pre,t+1} by the same
-  d = (1−δ_t)(1−u_t), so vacancies rise at h = 1 provided −∂e_{t+1}/∂s_t < d, for any ρ_s.
-  Proof in four steps: (1) ∂u = d; (2) ∂v_pre = d, for any ρ_s and entry technology;
-  (3) ∂v = d + ∂e = θ̄d + ū∂θ, so the condition is necessary and sufficient; (4) two exact cases
-  under ρ_s = 0 and the Prop. 1 conditions (free entry: θ pinned, ∂v = θ̄d; θ̄ = 1: equal
-  deviations propagate with tightness unchanged). The discussion cites Shimer (2005) for
-  separation shocks giving positive u–v correlation only quantitatively, and reports the
-  numerical check: entry offsets at most 1.5% of the inflow at the calibrated p_0 = 0 benchmark
-  (`run_prop5_s_check.jl`, [`findings.md`](findings.md)).
-- **Part 2** (p_0 > 0, α → 0, DS-CES, `eq:gN_cond`): the result extends if the reposting inflow
-  (1−δ_t)Λ_{t+1}(1−u_t) weakly dominates the exit drain. ∂χ^c_{t+1}/∂s_t < 0 via the 2×2
-  Jacobian of the joint (χ^c, N) system (`eq:gN_cond` ⟺ g_N < 0 ⟺ det J > 1). The proof
-  closes with Part 1's Step 3, with ∂v_pre in place of d. Open: R3.
-- **Part 3** (δ shock): u↑ and v↓ if entry does not fully offset pre-committed vacancy
-  destruction (`lem:vpre`); sufficient condition δ̄_e/τ̄ small, since the entry cushion carries
-  δ̄_e/(r+δ̄_e). The calibrated value 0.087 (D1) strengthens it; the draft still says 0.21 in
-  four places (D1 cascade). Under Convention A, ∂u/∂δ_e = (1−s̄)(1−u) + f·u.
-- **Remark** after the proposition: g(N,u) ≡ d^f(N,u) + f_eρ(N)/μ; `eq:gN_cond` is the
-  condition for profit dilution to dominate the option-value rise.
+- **Part 1** (p_0 = 0): u_t unchanged; v_t moves only through e_t. At h = 1,
+  Δu = d − (1−δ)(1−η_L)q·Δe_t and Δv_pre = d + (1−δ)[1−(1−η_L)q]·Δe_t, with
+  d = (1−δ_t)(1−u_t). Positive comovement under (i) and (ii) in the statement. Proof in four
+  steps; Step 4 gives two exact cases (free entry; θ̄ = 1), in both of which Δe_t = 0.
+  Discussion: (i) holds automatically and (ii) binds at most 2.6% at the p_0 = 0 benchmark
+  (0.7% at D1); Shimer (2005) for the quantitative nature of the s-shock comovement.
+- **Part 2** (p_0 > 0, α → 0): to first order in F′(χ^c), under `eq:exit_cond` — det J > 0
+  of the 3×3 system (χ^c, N, u) at t+1, which adds the exit → unemployment → profit loop the
+  old 2×2 system omitted — and inflow-dominates-drain, where the drain includes the period-t
+  exit term. `eq:gN_cond` (g_N < 0) was dropped: it fails at the calibration (g_N > 0); the
+  left-hand side of `eq:exit_cond` is 0.002–0.005 there. ρ_s extension by continuity.
+- **Part 3** (δ shock): negative comovement at h = 1 provided surviving period-t entry plus
+  t+1 entry do not offset the destruction (`lem:vpre`, now a decomposition). Sufficient
+  condition δ̄_e/τ̄ small. Discussion: at monthly frequency the first-month sign is fragile
+  (entry offsets 81% at D1, more than 100% at 0.21), but vacancies fall from month 2 and in
+  every quarterly average at D1.
+- **Remark** after the proposition: g(N,u); at standard calibrations g_N > 0 (option value
+  dominates); `eq:exit_cond` needs no sign for g_N.
 
 **Prop. 7** in old notes is not referenced in the draft; treat as withdrawn.
 

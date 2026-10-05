@@ -521,42 +521,34 @@ and via the reposting option in the JCC; and **persistence** via stock depletion
 positions rebuild at the full cost Q, slowing recovery, potentially relevant to the δ→u
 peak-horizon gap ([M8](pending_tasks.md)). Not yet quantified.
 
-## Prop. 5 Part 1 entry condition — numerical check — October 1, 2026
+## Prop. 5 numerical checks — October 1 and 5, 2026
 
-**Program:** `Programs baseline/run_prop5_s_check.jl` → `Programs baseline/prop5_s_check.csv`.
+**Programs.** `Programs baseline/run_prop5_s_check.jl` → `prop5_s_check.csv` (Part 1);
+`Programs baseline/run_prop5_parts23_check.jl` → `prop5_parts23_check.csv`,
+`prop5_part3_quarterly.csv` (Parts 2–3). Timing convention: the aggregate state is known at the
+start of t, so θ_t and e_t respond to the shock (the code implements this). Responses are
+read off `simulate_model`: row 2 is the shock period t, row 3 is h = 1.
 
-**Why.** `prop:ds_asymmetry` Part 1 was restated (Oct 1) as an exact accounting result plus a
-condition. Under p_0 = 0 an s_t shock raises u_{t+1} and pre-committed vacancies by the same
-d = (1−δ_t)(1−u_t), so vacancies rise at h=1 iff −∂e_{t+1}/∂s_t < d. The proof signs entry
-analytically only under ρ_s = 0 plus the `prop:independence` conditions (σ = 0, ζ = 0), and
-then only for free entry or θ̄ = 1. This checks the general case.
+**Benchmark.** p_0 = 0 (Comparison B's exogenous-exit setup: dest_end_frac = 0, Xc_Y = 0),
+b_ratio = 0.9, x_v = 0.5, σ = 1, DS-CES. Shock processes from part6b. Grid: dest_ann ∈
+{0.0320, 0.0754} × ρ ∈ {0, 0.5 (s only), data, high} at ξ_inv = 1, plus ξ_inv ∈ {0.5, 2}.
 
-**Design.** The p_0 = 0 benchmark: Comparison B's exogenous-exit setup (dest_end_frac = 0,
-Xc_Y = 0), with b_ratio = 0.9 and x_v = 0.5. σ = 1 and DS-CES (ε = 4.3), so the
-discount-factor and variety channels are on. The s process comes from part6b: ρ_s = 0.8741 per
-month, σ_s = 0.0854. Responses are measured at h=1, which is row 3 of `simulate_model` (row 2
-is the shock period).
+**Part 1 (s shock).** Exact accounting with period-t entry (residuals ≈ 1e-13 of d):
+Δu_{t+1} = d − (1−δ)ΔM_t, Δv_pre,t+1 = d + (1−δ)(Δe_t − ΔM_t), ΔM_t = (1−η_L)qΔe_t.
+Entry at t falls in every specification, so condition (i) holds automatically
+(cond_i < 0). Condition (ii) binds at most **2.6%** of d (dest_ann 0.0754, ρ_s 0.95), at most
+**0.7%** at dest_ann 0.0320. Cited in the discussion after `prop:ds_asymmetry`.
 
-| dest_ann | ρ_s | ξ_inv | −Δe/Δv_pre |
-|---|---|---|---|
-| 0.0320 | 0 / 0.5 / 0.874 / 0.95 | 1 | 0.000 / 0.001 / 0.002 / 0.004 |
-| 0.0320 | 0.874 | 0.5 / 2 | 0.004 / 0.001 |
-| 0.0754 | 0 / 0.5 / 0.874 / 0.95 | 1 | 0.001 / 0.002 / 0.008 / 0.015 |
-| 0.0754 | 0.874 | 0.5 / 2 | 0.015 / 0.004 |
+**Part 3 (δ shock, p_0 = 0; exact).** Period-t entry *rises* after a δ shock (duration
+shortening raises K and Q). Share of the first-month destruction offset by entry (c3_v, needs
+< 1): 0.81 at dest_ann 0.0320 with ρ_δ = 0.592, ξ_inv = 1; 1.38 at ξ_inv = 0.5; 1.95 at
+dest_ann 0.0754; 3.0–6.4 at ρ_δ = 0.9. The matching term in Δu is small (c3_u ≤ 0.04). But the
+cushion is short-lived: at dest_ann 0.0320 vacancies are negative from month 1 or 2 onward and
+**every quarterly average is negative** in all five specifications. The only quarterly failure
+is dest_ann 0.0754 with ρ_δ = 0.9 (first quarter). Cited in the discussion.
 
-**Result.** The condition holds at every grid point, with a wide margin: entry offsets at most
-**1.5%** of the reposting inflow. Entry *falls* in every case. That fits θ̄ ≈ 0.51 < 1, where
-equal increases in u and v_pre raise tightness. The draft cites the 1.5% bound in the
-discussion after `prop:ds_asymmetry`.
-
-**Consistency checks.**
-- Δu and Δv_pre match the analytical d to within 0.1–0.6%.
-- The identity Δv = Δv_pre + Δe holds to 1e-18.
-- The δ_e response is zero, as it should be at p_0 = 0.
-
-**Why Δu ≠ d exactly.** The gap grows with ρ_s because s_t is known at the start of t (the
-paper's convention), so θ_t and e_t respond to it and change period-t matching. Correction
-Oct 1: an earlier version of this note called this a code deviation. It is not; the Part 1
-proof's "hold period-t variables fixed" step is what needs generalizing (pending), via
-Δu_{t+1} = d − (1−δ_t)ΔM_t and Δv_{pre,t+1} = Δu_{t+1} + (1−δ_t)Δe_t.
-
+**Part 2 diagnostics (p_0 = 0.5 baseline, PATH B; INDICATIVE).** g_N = +6.5 (dest_ann 0.0320)
+and +3.0 (0.0754): `eq:gN_cond` (g_N < 0) fails at the calibration. F′(χ^c) = 3e-4 to 1.5e-3.
+det J of the 3×3 exit system = 0.9979 and 0.9950 (N loop −2e-3 to −4.5e-3; u loop −9e-5 to
+−4.5e-4), so the left-hand side of `eq:exit_cond` is 0.002–0.005. Indicative because the code
+applies δ_e,t (built from Λ_t) to the t→t+1 flows, unlike the draft; redo after R8.

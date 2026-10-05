@@ -2,33 +2,31 @@
 # =============================================================================
 # NUMERICAL CHECK of Proposition 5 Part 1 (prop:ds_asymmetry, app:proof_ds).
 #
-# Part 1 (p_0 = 0: exogenous exit, costless reposting) states that a positive
-# s_t shock raises u_{t+1} and pre-committed vacancies v_pre,t+1 by the same
-# amount d = (1-δ_t)(1-u_t), so total vacancies rise at h = 1 provided entry
-# does not contract by more than the inflow:  -∂e_{t+1}/∂s_t < d.
-# The proof signs the entry response analytically only under ρ_s = 0 plus the
-# prop:independence conditions (σ = 0, ζ = 0), and then only for free entry or
-# θ̄ = 1. This program checks the condition at the calibrated p_0 = 0 benchmark.
+# Timing convention: the aggregate state, including s_t, is known at the start
+# of t, so tightness and entry at t respond to the shock. With p_0 = 0, u_t and
+# v_pre,t are predetermined, d = (1-δ_t)(1-u_t), and M_t = f_t u_t:
+#   h = 0:  Δu_t = 0,  Δv_t = Δe_t
+#   h = 1:  Δu_{t+1}     = d − (1−δ_t)·ΔM_t,        ΔM_t = (1−η_L)·q_t·Δe_t
+#           Δv_pre,t+1   = d + (1−δ_t)·(Δe_t − ΔM_t)
+#           Δv_{t+1}     = Δv_pre,t+1 + Δe_{t+1}
+# Part 1: u and v comove positively at h = 1 provided
+#   (i)  (1−δ_t)·ΔM_t / d < 1                         (unemployment rises)
+#   (ii) [−(1−δ_t)(Δe_t − ΔM_t) − Δe_{t+1}] / d < 1   (vacancies rise)
+# Both ratios are reported; the draft cites their maxima.
 #
 # DESIGN
 #   Benchmark: p_0 = 0, dest_end_frac = 0, Xc_Y = 0 (the exogenous-exit arm of
-#   Comparison B), b_ratio = 0.9, x_v = 0.5. σ = 1, DS-CES: the GE channels
-#   (discount factor, variety) are ON, so this is the general case the proof
-#   leaves to quantitative magnitudes.
+#   Comparison B), b_ratio = 0.9, x_v = 0.5. σ = 1, DS-CES: the discount-factor
+#   and variety channels are ON, so this is the general case.
 #   Grid: dest_ann ∈ {0.0320 (D1, BED), 0.0754 (current code)}
 #         ρ_s     ∈ {0, 0.5, 0.8741 (part6b), 0.95}
 #         ξ_inv   ∈ {0.5, 1, 2} at the part6b ρ_s
 #   Shock: one s innovation of size σ_s = 0.0854 (part6b). First order, so the
-#   SIGN of each response does not depend on σ_s; ratios are scale-free.
+#   ratios are scale-free.
 #
-# TIMING (simulate_model): row 1 is the steady state, the s state is shocked in
-# row 2 (period t), and u_{t+1}, v_pre,t+1, e_{t+1}, v_{t+1} respond in row 3.
-#
-# REPORTED (levels, first order: Δx = x̄·x̂)
-#   d_theory   (1-δ_e)·(1-ū)·s̄·ŝ_t             analytical inflow (Steps 1-2)
-#   Δu, Δv_pre                                  should both equal d_theory
-#   Δe, Δv                                      Δv = Δv_pre + Δe
-#   ratio  -Δe/Δv_pre                           condition holds iff < 1
+# TIMING (simulate_model): row 1 is the steady state; the s state is shocked in
+# row 2 (period t), where θ_t and e_t respond; u_{t+1}, v_pre,t+1, e_{t+1},
+# v_{t+1} are in row 3.
 # Output: prop5_s_check.csv
 # =============================================================================
 
@@ -83,18 +81,28 @@ function s_check(model, targets_variant, ρ_s_val)
     irf = DataFrame(simulate_model((; model..., ne = 1), sol_mat, T_IR, eta_s_col, SS,
                                    flag_IR, flag_logdev), varnames)
 
-    t, h1 = 2, 3                       # shock period, response period
+    t, h1 = 2, 3
+    surv     = 1 - ss.δ_e
     v_pre_ss = ss.v - ss.e
-    d_theory = (1 - ss.δ_e) * (1 - ss.u) * sbar * irf.s[t]
+    d        = surv * (1 - ss.u) * sbar * irf.s[t]
+
+    Δe_t   = ss.e * irf.e[t]
+    Δθ_t   = ss.θ * irf.θ[t]
+    ΔM_t   = ss.u * (1 - η_L) * ss.q * Δθ_t        # u_t fixed: ΔM = ū·f'(θ̄)·Δθ, f' = (1−η_L)q
     Δu     = ss.u * irf.u[h1]
     Δv_pre = v_pre_ss * irf.v_pret[h1]
-    Δe     = ss.e * irf.e[h1]
+    Δe_t1  = ss.e * irf.e[h1]
     Δv     = ss.v * irf.v[h1]
+
     return (dest_ann = targets_variant.dest_ann, ρ_s = ρ_s_val, ξ_inv = ξ_inv,
-            θ_ss = ss.θ, u_ss = ss.u, δ_e_ss = ss.δ_e,
-            d_theory = d_theory, Δu = Δu, Δv_pre = Δv_pre, Δe = Δe, Δv = Δv,
-            Δv_check = Δv - (Δv_pre + Δe), δ_e_resp = irf.δ_e[h1],
-            ratio = -Δe / Δv_pre, holds = Δv > 0)
+            θ_ss = ss.θ, d = d, Δe_t = Δe_t, ΔM_t = ΔM_t, Δe_t1 = Δe_t1,
+            Δu = Δu, Δv_pre = Δv_pre, Δv = Δv,
+            resid_u    = Δu - (d - surv * ΔM_t),
+            resid_vpre = Δv_pre - (d + surv * (Δe_t - ΔM_t)),
+            resid_v    = Δv - (Δv_pre + Δe_t1),
+            cond_i  = surv * ΔM_t / d,
+            cond_ii = (-surv * (Δe_t - ΔM_t) - Δe_t1) / d,
+            holds = (Δu > 0) && (Δv > 0))
 end
 
 grid = Tuple{Float64,Float64,Float64}[]
@@ -129,16 +137,20 @@ open("prop5_s_check.csv", "w") do io
     end
 end
 
-println("\n" * "="^100)
-println("Prop. 5 Part 1 check (p_0 = 0 benchmark). Levels ×1e4. Condition: -Δe/Δv_pre < 1 ⇔ Δv > 0")
-println("="^100)
-@printf("%-9s %-7s %-6s %-6s %9s %9s %9s %9s %9s %8s %6s\n",
-        "dest_ann", "ρ_s", "ξ_inv", "θ̄", "d_theory", "Δu", "Δv_pre", "Δe", "Δv", "-Δe/Δvp", "holds")
+println("\n" * "="^104)
+println("Prop. 5 Part 1 (p_0 = 0). Levels ×1e4. Conditions hold iff cond_i < 1 and cond_ii < 1")
+println("="^104)
+@printf("%-9s %-7s %-6s %-6s %9s %9s %9s %9s %9s %9s %8s %8s %6s\n",
+        "dest_ann", "ρ_s", "ξ_inv", "θ̄", "d", "Δe_t", "ΔM_t", "Δe_t+1", "Δu", "Δv",
+        "cond_i", "cond_ii", "holds")
 for r in eachrow(res)
-    @printf("%-9.4f %-7.4f %-6.2f %-6.3f %9.4f %9.4f %9.4f %9.4f %9.4f %8.3f %6s\n",
-            r.dest_ann, r.ρ_s, r.ξ_inv, r.θ_ss, 1e4*r.d_theory, 1e4*r.Δu, 1e4*r.Δv_pre,
-            1e4*r.Δe, 1e4*r.Δv, r.ratio, string(r.holds))
+    @printf("%-9.4f %-7.4f %-6.2f %-6.3f %9.4f %9.4f %9.4f %9.4f %9.4f %9.4f %8.4f %8.4f %6s\n",
+            r.dest_ann, r.ρ_s, r.ξ_inv, r.θ_ss, 1e4*r.d, 1e4*r.Δe_t, 1e4*r.ΔM_t,
+            1e4*r.Δe_t1, 1e4*r.Δu, 1e4*r.Δv, r.cond_i, r.cond_ii, string(r.holds))
 end
-println("\nmax |Δv - (Δv_pre + Δe)| = ", maximum(abs.(res.Δv_check)),
-        "   max |δ_e response| = ", maximum(abs.(res.δ_e_resp)), "   (both should be ≈ 0)")
+@printf("\nmax cond_i = %.4f   max cond_ii = %.4f   (as shares of the reposting inflow d)\n",
+        maximum(res.cond_i), maximum(res.cond_ii))
+@printf("identity residuals (should be ≈ 0, relative to d): u %.1e   v_pre %.1e   v %.1e\n",
+        maximum(abs.(res.resid_u ./ res.d)), maximum(abs.(res.resid_vpre ./ res.d)),
+        maximum(abs.(res.resid_v ./ res.d)))
 println("Saved: prop5_s_check.csv")

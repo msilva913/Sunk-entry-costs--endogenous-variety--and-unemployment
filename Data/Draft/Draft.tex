@@ -609,7 +609,7 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	
 	\subsection{Laws of motion for firms, unemployment, and vacancies}
 	
-	At the start of period $t$, exogenous destruction $\delta_{t-1}$, realized at the end of $t-1$, and the endogenous continuation-cost draw together determine which product lines are active. Specifically, a product line survives into period $t$ if it was not destroyed exogenously at the end of $t-1$ (probability 
+	A product line survives into period $t$ if it was not destroyed exogenously at the end of $t-1$ (probability 
 	$1-\delta_{t-1}$) \emph{and} its owner draws a continuation cost below the equilibrium cutoff $\chi_t^c$ at the start of $t$ 
 	(probability $F(\chi_t^c)$). Both events occur before production and 
 	matching, so $u_t$ is unemployment \emph{after} firm exit but 
@@ -641,7 +641,7 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 		u_{t}=\bigl[1-(1-\delta_{e,t})f(\theta_{t-1})\bigr]u_{t-1}
 		+\tau_{t}(1-u_{t-1})\label{eq:u_lom}
 	\end{align}
-	The first term is last period's unemployed who did not enter
+	The first term is  the stock of last period's unemployed who did not enter
 	employment: those who did not find a job, plus those who matched
 	in $t-1$ with a product line that then exited. The second is the
 	fraction $\tau_t$ of the workers employed at the start of $t-1$
@@ -1415,17 +1415,13 @@ discount factor. When $\zeta=0$, the taste for variety
 vanishes and $\rho(N_t)=1$, removing $N_t$ from recruiter 
 compensation $w_t^{int}=\rho(N_t)z_t/\mu(N_t)$ and from 
 the job creation condition while leaving $\mu$ and hence 
-the business formation block otherwise intact. When
-$p_0=0$, endogenous exit is absent so $\Lambda_t=1$ and
-$\delta_{e,t}=\delta_{t-1}$ depends only on the exogenous
-shock. The same condition also removes partial reposting.
-Because reactivation costs are drawn from the same
-distribution $F$, setting $p_0=0$ makes $F$ a point mass at
-zero, so $\Lambda_{r,t}=1$, $Q_t^{rep}=Q_t$, and $X_t^r=0$:
+the business formation block otherwise intact. Setting
+$p_0=0$ makes $F$ a point mass at zero. This removes both endogenous exit ($\Lambda_t=1$ and
+$\delta_{e,t}=\delta_{t-1}$) and partial reposting ($\Lambda_{r,t}=1$, $Q_t^{rep}=Q_t$, and $X_t^r=0$). That is,
 every vacated position is resumed at no cost and the
-reposting margin disappears along with the exit margin. Had
+reposting margin disappears along with the exit margin.\footnote{Had
 reactivation costs been drawn from a separate distribution,
-a fourth condition would have been required. Under all three conditions, the labor market block 
+a fourth condition would have been required to shut down both margins.} Under all three conditions, the labor market block 
 closes on its own; the business formation block then 
 determines $C_t$ and $N_t$ taking $u_t$ and $X_t$ as 
 given from the labor market block.
@@ -1481,13 +1477,11 @@ however: it establishes not merely that the labor
 market block separates but that business formation 
 becomes irrelevant to aggregate allocations entirely 
 --- a consequence of profits and entry costs 
-vanishing jointly at the same rate. 
-Proposition~\ref{prop:ags} below implements the
-limiting economy directly via clone replacement,
-maintaining $N_t=1$ by construction rather than
-through the limit passage.
+vanishing jointly at the same rate.
 
-Clone replacement abstracts from the entry and exit
+ 
+Proposition~\ref{prop:ags} below implements the
+limiting economy directly via \textit{clone replacement}. This notion abstracts from the entry and exit
 decisions while preserving the destruction flow. Product
 lines are destroyed at the rate $\delta_t$ as in the
 baseline, and destruction continues to eliminate the filled
@@ -1495,7 +1489,7 @@ jobs and pre-committed vacancies attached to the line. Each
 destroyed line is immediately replaced by an identical one,
 so the mass of lines is held at $N_t=1$ at all dates. Two
 things follow. There is no business formation margin,
-because entry is not a decision. And there is no variety
+because entry is not a decision. Second, there is no variety
 effect, because $N_t$ never moves and $\rho=\mu=1$. What
 survives is the destruction channel itself: $\delta_t$ is
 now purely exogenous, since $\Lambda_t=1$ implies
@@ -1628,72 +1622,89 @@ This section establishes the asymmetry analytically. Part~1 of the proposition b
 	\leavevmode
 	\begin{enumerate}
 		\item \emph{($s$ shock, benchmark: exogenous exit and costless reposting.)}
-		Suppose $p_0=0$. A positive $s_t$ shock raises unemployment and
-		pre-committed vacancies by the same amount,
-		$d\equiv(1-\delta_t)(1-u_t)$. Total vacancies therefore rise at
-		horizon $h=1$, generating positive $u$--$v$ comovement, provided
-		entry does not contract by more than the reposting inflow:
-		$-\partial e_{t+1}/\partial s_t<d$.
+		Suppose $p_0=0$. A positive $s_t$ shock leaves $u_t$ unchanged and
+		moves $v_t$ only through entry $e_t$. At horizon $h=1$ it raises
+		unemployment and vacancies, generating positive $u$--$v$
+		comovement, provided entry does not move by enough to offset the
+		reposting inflow $d\equiv(1-\delta_t)(1-u_t)$:
+		\begin{enumerate}
+			\item[(i)] $(1-\delta_t)(1-\eta_L)q(\theta_t)\,
+			\partial e_t/\partial s_t<d$, and
+			\item[(ii)] $-(1-\delta_t)\bigl[1-(1-\eta_L)q(\theta_t)\bigr]
+			\partial e_t/\partial s_t-\partial e_{t+1}/\partial s_t<d$.
+		\end{enumerate}
 		\item \emph{($s$ shock, endogenous exit, costless reposting.)}
-		Under DS-CES with
-		\begin{equation}\label{eq:gN_cond}
-			f_e\bar{N} < \frac{\bar{z}(1-\bar{u})(\varepsilon-2)}{\varepsilon-1},
+		Suppose $p_0>0$ and $\alpha\to0$, and let the exit margin satisfy
+		\begin{equation}\label{eq:exit_cond}
+			(1-\bar\delta)F'(\bar\chi^c)\bar{B}\,g_N
+			+\lvert g_u\rvert F'(\bar\chi^c)\bar{E}^b<1,
 		\end{equation}
-		the preceding result extends to $p_0>0$ with costless
-		reposting ($\alpha\to0$) if the
-		reposting inflow $(1-\delta_t)\Lambda_{t+1}(1-u_t)$ weakly
-		dominates the endogenous exit drain
-		$(1-\delta_t)F'(\chi^c_{t+1})|\partial\chi^c_{t+1}/\partial s_t|
-		\cdot[(1-q(\theta_t))v_t+s_t(1-u_t)]$
-		on the pre-committed vacancy stock.
-		The drain is increasing in $\rho_s$, so the condition holds for
-		all $\rho_s\in[0,\bar\rho_s)$ for some $\bar\rho_s>0$.
+		where $g(N,u)$ is the continuation-profit threshold defined below,
+		$\bar{B}=\bar{N}+\bar{N}^e$ is the stock of product lines entering a
+		period before exit, and $\bar{E}^b=(1-\bar{u})/\bar\Lambda$ is
+		employment before exit. To first order in $F'(\chi^c)$, the result
+		of Part~1 extends, with $d$ replaced by
+		$(1-\delta_t)\Lambda_{t+1}(1-u_t)$, provided this reposting inflow
+		weakly dominates the endogenous exit drain
+		$(1-\delta_t)F'(\chi^c_{t+1})\lvert\partial\chi^c_{t+1}/\partial s_t\rvert
+		\cdot[(1-q(\theta_t))v_t+s_t(1-u_t)]$ (together with the
+		corresponding period-$t$ exit term). If dominance is strict at
+		$\rho_s=0$, it holds for all $\rho_s\in[0,\bar\rho_s)$ for some
+		$\bar\rho_s>0$.
 		\item \emph{($\delta$ shock.)} A positive $\delta_t$ shock raises
-		unemployment and reduces total vacancies at horizon $h=1$,
-		generating negative $u$--$v$ comovement, provided entry does not
-		fully offset pre-committed vacancy destruction:
-		$\partial e_{t+1}/\partial\delta_t
-		< |\partial v_{pre,t+1}/\partial\delta_t|$.
-		A sufficient condition is that $\bar\delta_e/\bar\tau$ is small:
-		when only a fraction of total separations flows through the
-		destruction channel, duration shortening generates a weak entry
-		cushion and the direct vacancy destruction dominates.
+		unemployment and reduces vacancies at horizon $h=1$, generating
+		negative $u$--$v$ comovement, provided entry over $t$ and $t+1$
+		does not fully offset the destruction of pre-committed vacancies:
+		\begin{equation*}
+			(1-\delta_t)\Lambda_{t+1}\bigl[1-(1-\eta_L)q(\theta_t)\bigr]
+			\frac{\partial e_t}{\partial\delta_t}
+			+\frac{\partial e_{t+1}}{\partial\delta_t}
+			<\Lambda_{t+1}\bigl[(1-q(\theta_t))v_t+s_t(1-u_t)\bigr].
+		\end{equation*}
+		A sufficient condition is that $\bar\delta_e/\bar\tau$ is small.
 	\end{enumerate}
 \end{proposition}
 \noindent See \ref{app:proof_ds} for the proof.
 
-Part~1 rests on an accounting identity. On impact, every separation
-at a surviving product line adds one worker to unemployment and
-returns one position to the vacancy pool, so $u$ and pre-committed
-vacancies rise one for one. The identity holds for any $\rho_s$ and
-any entry technology. Whether total vacancies rise then depends only
-on entry, which can contract for two reasons. A persistent $s$ shock
-shortens expected match duration, which lowers the value of a match
-and hence vacancy creation. This is the standard DMP channel. Even a
-purely transitory shock leaves the economy with more unemployed
-workers and more pre-committed vacancies, and these state deviations,
-together with feedback through consumption and product variety, move
-the value of future matches. Even in the textbook model such forces
-leave the sign of the $u$--$v$ response to quantitative magnitudes:
+Part~1 rests on accounting. The aggregate state, including $s_t$, is
+known at the start of $t$, so the shock can move tightness and entry
+within the period, but it destroys nothing until the end of $t$.
+Every separation at a surviving product line then adds one worker to
+unemployment and returns one position to the vacancy pool, so
+unemployment and pre-committed vacancies rise by the same inflow $d$,
+apart from the matches and vacancies that the entry response creates
+in period $t$. Conditions (i) and (ii) say that this entry response is
+not large enough to overturn the inflow. The accounting holds for any
+$\rho_s$ and any entry technology. Entry can respond for two reasons.
+A persistent $s$ shock shortens expected match duration, which lowers
+the value of a match and hence vacancy creation. This is the standard
+DMP channel. Even a purely transitory shock raises unemployment and
+pre-committed vacancies, and these state deviations, together with
+feedback through consumption and product variety, move the value of
+future matches. Even in the textbook model such forces leave the sign
+of the $u$--$v$ response to quantitative magnitudes:
 \citet{shimer_2005} obtains positive $u$--$v$ correlation under
 separation shocks as a quantitative result, not as a theorem.
 
-Two cases sign the entry response analytically. Both require
-$\rho_s=0$ and the conditions of
-Proposition~\ref{prop:independence}, under which the labor market
-block closes on its own. Under free entry, $Q$ is pinned, so
-tightness stays at $\bar\theta$ and vacancies rise by $\bar\theta d$.
+Conditions (i) and (ii) are very easily satisfied when $p_0=0$. Two
+cases sign them analytically. Both require $\rho_s=0$ and the
+conditions of Proposition~\ref{prop:independence}, under which the
+labor market block closes on its own, and in both tightness stays at
+$\bar\theta$ from period $t$ on, so entry does not respond at $t$.
+Under free entry, $Q$ is pinned and vacancies rise by $\bar\theta d$.
 With $\xi<\infty$, the case $\bar\theta=1$ is also exact: equal
-increases in $u$ and pre-committed vacancies leave entry unchanged at
-the original tightness and propagate as equal deviations, so
-tightness never moves. Outside these cases the condition is
-quantitative, and at the calibrated $p_0=0$ benchmark it is far from
-binding. With $\sigma=1$ and variety effects active, entry offsets at
-most 1.5 percent of the reposting inflow for $\rho_s\in[0,0.95]$,
-including the estimated $\rho_s$, and across entry elasticities
-$1/\xi\in\{0.5,1,2\}$. Parts~1 and~3 thus mirror each other. On
-impact, $s$ adds positions to the vacancy pool and $\delta$ destroys
-them, and in each case the sign holds unless entry overturns it.
+increases in $u$ and pre-committed vacancies leave entry unchanged and
+propagate as equal deviations. Outside these cases the conditions are
+quantitative, and at the calibrated $p_0=0$ benchmark they are far
+from binding. With $\sigma=1$ and variety effects active, entry at
+$t$ falls in every specification we consider, so (i) holds
+automatically, and in (ii) entry over $t$ and $t+1$ offsets at most
+2.6 percent of the reposting inflow (0.7 percent at the measured
+$\bar\delta_e$). This holds for $\rho_s\in[0,0.95]$, including the
+estimated $\rho_s$, and across entry elasticities $1/\xi\in\{0.5,1,2\}$.
+Part~1 is therefore a sharp benchmark: without endogenous exit or
+costly reposting, a separation shock moves unemployment and vacancies
+together.
 
 Parts~1 and~2 hold with costless reposting. Under $p_0=0$ this is
 automatic: $F$ collapses to a point mass at zero, so every
@@ -1712,7 +1723,7 @@ separation destroy the position as well as the match.
 
 Define $g(N,u)\equiv d^f(N,u)+f_e\rho(N)/\mu$ as the continuation
 profit threshold: a firm survives whenever its fixed-cost draw satisfies
-$\chi^c\leq g$.
+$\chi\leq g$.
 Under DS-CES, $g_N$ balances two opposing forces: flow profit
 $d^f\propto N^{(2-\varepsilon)/(\varepsilon-1)}$ combines a
 market-share dilution effect ($1/N$) and a love-of-variety demand
@@ -1720,38 +1731,48 @@ expansion ($\rho(N)\propto N^{1/(\varepsilon-1)}$), with net exponent
 $(2-\varepsilon)/(\varepsilon-1)$ negative for $\varepsilon>2$, so
 dilution dominates and $d^f$ falls in $N$; and an option value of
 entry $f_e\rho(N)/\mu\propto N^{1/(\varepsilon-1)}$, which always
-rises in $N$.
-Condition~\eqref{eq:gN_cond} ensures the profit decline dominates
-the option-value rise ($g_N<0$, $\det J>1$): $\varepsilon>2$ is
-necessary (it makes the right-hand side positive), while the bound
-on $f_e\bar{N}$ ensures the option-value channel does not overturn
-it. Both hold at standard calibrations.
+rises in $N$. At standard calibrations the option value dominates, so
+$g_N>0$. Condition~\eqref{eq:exit_cond} does not require a sign for
+$g_N$. It requires the exit margin to be inelastic enough that the
+joint determination of exit, product variety, and unemployment is
+well behaved: both feedback terms are proportional to $F'(\chi^c)$,
+the density of continuation costs at the cutoff, which is small. At
+the calibrated baseline the left-hand side of~\eqref{eq:exit_cond}
+is between 0.002 and 0.005.
 
 From the vacancy law of motion~\eqref{eq:v_lom}, a positive $\delta_t$
 shock raises $\delta_{e,t+1}$ and thereby destroys a fraction
-$\hat\delta_{e,t+1}$ of the pre-committed vacancy stock
-$\bar{v}^{pre}=\bar{v}-\bar{e}$; see Lemma~\ref{lem:vpre} in \ref{app:proof_ds}.
-Whether \emph{total} vacancies fall depends on the entry response.
-Duration shortening raises $K$~\eqref{eq:K_decomp} and hence the
-vacancy value $Q$~\eqref{eq:Q_ll_delta}, stimulating entry
-$e_{t+1}=G(Q_{t+1})$ that partially backfills destroyed vacancies.
-Under free entry ($\xi\to\infty$, $Q\approx x_m$ pinned), $K$ rises
-with $\delta_e$, the job-creation condition~\eqref{eq:jcc_eq} implies
-$\theta$ falls, and total vacancies $v=\theta u$ have an ambiguous sign:
-positive $u$--$v$ comovement requires the $u$ rise to exceed the
-$\theta$ fall.
+$\hat\delta_{e,t+1}$ of the stock of vacancies carried into $t+1$; see
+Lemma~\ref{lem:vpre} in \ref{app:proof_ds}. Whether \emph{total}
+vacancies fall depends on the entry response. Because $\delta_t$ is
+known at the start of $t$, entry responds within the period: duration
+shortening raises $K$~\eqref{eq:K_decomp} and hence the vacancy value
+$Q$~\eqref{eq:Q_ll_delta}, and vacancies created at $t$ and $t+1$
+partially backfill the destroyed ones. Under free entry ($\xi\to\infty$,
+$Q\approx x_m$ pinned), $K$ rises with $\delta_e$, the job-creation
+condition~\eqref{eq:jcc_eq} implies $\theta$ falls, and total vacancies
+$v=\theta u$ have an ambiguous sign: positive $u$--$v$ comovement
+requires the $u$ rise to exceed the $\theta$ fall.
 
-
-A sufficient condition for the $\theta$ fall to dominate is that
+A sufficient condition for the destruction to dominate is that
 $\bar\delta_e/\bar\tau$ is small: when only a fraction of total
-separations flow through the destruction channel, the proportional
-$u$ rise from a $\delta$ shock is small while the duration-shortening
-effect on $K$ is also correspondingly weak, so the $\theta$ decline
-dominates.
-At the empirically calibrated $\bar\delta_e/\bar\tau\approx 0.21$,
-negative $u$--$v$ comovement holds even under free entry, as confirmed
-\ref{app:comparison_D}; convex entry costs govern the
-\emph{degree} of cushioning, not the \emph{sign} of comovement.
+separations flow through the destruction channel, the duration-shortening
+effect on $K$, and with it the entry cushion, is correspondingly weak.
+At the monthly frequency of the model the condition is demanding at
+$h=1$, because entry responds in the same month as the shock. At the
+$p_0=0$ benchmark with the measured $\bar\delta_e/\bar\tau\approx0.087$
+and the estimated $\rho_\delta$, entry offsets 81 percent of the
+first-month destruction, and at the superseded value of 0.21 it more
+than offsets it. The cushion is short-lived, however. At the measured
+$\bar\delta_e$, vacancies fall from the second month on and in every
+quarterly average, for $\rho_\delta\in\{0,0.592,0.9\}$ and entry
+elasticities $1/\xi\in\{0.5,1,2\}$. Negative $u$--$v$ comovement at the
+quarterly frequency of Sections~\ref{sec:empirical}
+and~\ref{sec:quantitative} is therefore robust; only its first-month
+sign depends on $\bar\delta_e/\bar\tau$ being small. Parts~1 and~3 thus
+mirror each other: on impact, $s$ adds positions to the vacancy pool
+and $\delta$ destroys them, and in each case the sign holds unless entry
+overturns it.
 
 \subsection{Steady state}\label{sec:steady_state}
 
@@ -4669,16 +4690,30 @@ equilibrium distributions coincide.
 \label{app:proof_ds}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-We first establish the Lemma on pre-committed vacancy destruction,
-then prove each part of the Proposition.
+Throughout, the aggregate state, including $s_t$ and $\delta_t$, is known
+at the start of $t$, so period-$t$ jump variables respond to period-$t$
+shocks, while the rates $s_t$ and $\delta_t$ act on stocks only at the
+end of $t$. Statements are to first order around the steady state.
+Write $M_t\equiv f(\theta_t)u_t=q(\theta_t)v_t$ for matches at $t$, and
+let $E^b_t$ and $V^b_t$ denote employment and vacancies entering
+$t$ before the period-$t$ exit draw, so that $1-u_t=\Lambda_tE^b_t$
+and $v_{pre,t}=\Lambda_tV^b_t$. We first establish the Lemma on
+pre-committed vacancy destruction, then prove each part of the
+Proposition.
 
 \begin{lemma}[Pre-committed vacancy destruction]
 \label{lem:vpre}
-A positive $\delta_t$ shock unconditionally reduces the
-pre-committed vacancy stock at $t+1$: 
+To first order in $F'(\chi^c)$, a $\delta_t$ shock changes the
+pre-committed vacancy stock at $t+1$ by
 \[
-	\frac{\partial\,v_{pre,t+1}}{\partial\delta_t} < 0.
+	\frac{\partial\,v_{pre,t+1}}{\partial\delta_t}
+	= -\Lambda_{t+1}\bigl[(1-q(\theta_t))v_t+s_t(1-u_t)\bigr]
+	+(1-\delta_t)\Lambda_{t+1}\bigl[1-(1-\eta_L)q(\theta_t)\bigr]
+	\frac{\partial e_t}{\partial\delta_t}.
 \]
+The first term, the destruction of the stock carried into $t+1$, is
+negative for any parameter values. The second is the part of
+period-$t$ entry that is not matched at $t$.
 \end{lemma}
 
 \begin{proof}
@@ -4687,21 +4722,20 @@ before entry $e_{t+1}$ is chosen:
 \[
 	v_{pre,t+1}
 	\;\equiv\;
-	(1-\delta_{e,t+1})\bigl[(1-q(\theta_t))v_t
+	(1-\delta_t)\Lambda_{t+1}\bigl[(1-q(\theta_t))v_t
 	+s_t(1-u_t)\bigr],
 \]
-where $(1-\delta_{e,t+1})=(1-\delta_t)\Lambda_{t+1}$ from
-\eqref{eq:delta_e_lom}.
-The bracket $[(1-q(\theta_t))v_t + s_t(1-u_t)]>0$ collects
-unfilled vacancies from $t$ plus costless reposts from match
-separations at end of $t$; both are predetermined with respect
-to $\delta_t$ (which realizes at end of $t$, after $v_t$,
-$\theta_t$, $u_t$ are determined). Hence,
-\[
-	\frac{\partial\,v_{pre,t+1}}{\partial\delta_t}
-	= -\Lambda_{t+1}\bigl[(1-q(\theta_t))v_t+s_t(1-u_t)\bigr]
-	< 0.
-\]
+using $1-\delta_{e,t+1}=(1-\delta_t)\Lambda_{t+1}$
+from~\eqref{eq:delta_e_lom}. Differentiating the survival factor gives
+the first term; its derivative through $\Lambda_{t+1}$ is proportional to
+$F'(\chi^c_{t+1})$ and is dropped at first order. In the bracket, $u_t$
+and $v_{pre,t}$ are predetermined up to the period-$t$ exit response,
+which is also proportional to $F'(\chi^c_t)$. Hence $\Delta v_t=\Delta e_t$
+and, since $q(\theta_t)v_t=M_t$,
+$\Delta[(1-q(\theta_t))v_t]=\Delta e_t-\Delta M_t$. With $u_t$ fixed,
+$\Delta\theta_t=\Delta e_t/u_t$ and
+$\Delta M_t=u_tf'(\theta_t)\Delta\theta_t=(1-\eta_L)q(\theta_t)\Delta e_t$,
+which gives the second term.
 \end{proof}
 
 \begin{proof}[Proof of Proposition~\ref{prop:ds_asymmetry}]
@@ -4710,25 +4744,30 @@ Under $p_0=0$, $F$ is a point mass at zero. Hence $\Lambda_t=1$ and
 $\delta_{e,t+1}=\delta_t$, and every reactivation draw is free, so
 $\Lambda_{r,t}=1$ and $Q_t^{rep}=Q_t$: the reposting term in the
 surplus~\eqref{eq:surplus_wage} vanishes. Start from the steady state
-at $t$ and raise $s_t$, holding period-$t$ variables fixed, since $s_t$
-realizes at the end of $t$. All statements are to first order.
+and raise $s_t$. Because $s_t$ is known at the start of $t$, the
+period-$t$ jump variables, including $\theta_t$ and $e_t$, respond,
+while $u_t$ and $v_{pre,t}$ are predetermined. So $\Delta u_t=0$ and
+$\Delta v_t=\Delta e_t$ at $h=0$, and, as in the proof of the Lemma,
+$\Delta M_t=(1-\eta_L)q(\theta_t)\Delta e_t$.
 
-\medskip\noindent\emph{Step 1: unemployment rises.}
+\medskip\noindent\emph{Step 1: unemployment.}
 From~\eqref{eq:tau_lom}, $\tau_{t+1}=\delta_t+s_t(1-\delta_t)$, so
 $\partial\tau_{t+1}/\partial s_t=1-\delta_t$. From the unemployment law
 of motion~\eqref{eq:u_lom},
 \begin{align}\label{eq:u_lom_proof}
 	u_{t+1}
-	= \bigl[1-(1-\delta_t)f(\theta_t)\bigr]u_t
+	= u_t-(1-\delta_t)M_t
 	  + \tau_{t+1}(1-u_t),
 \end{align}
 so
 \[
 	\frac{\partial u_{t+1}}{\partial s_t}
-	= (1-\delta_t)(1-u_t)\equiv d>0.
+	= d-(1-\delta_t)(1-\eta_L)q(\theta_t)\frac{\partial e_t}{\partial s_t},
+	\qquad d\equiv(1-\delta_t)(1-u_t),
 \]
+which is positive if and only if condition (i) holds.
 
-\medskip\noindent\emph{Step 2: pre-committed vacancies rise by the same amount.}
+\medskip\noindent\emph{Step 2: pre-committed vacancies.}
 From the vacancy law of motion~\eqref{eq:v_lom} with $\Lambda_{r,t+1}=1$,
 \begin{align}\label{eq:v_lom_proof}
 	v_{t+1}
@@ -4737,49 +4776,50 @@ From the vacancy law of motion~\eqref{eq:v_lom} with $\Lambda_{r,t+1}=1$,
 		+s_t(1-u_t)\bigr]}_{v_{pre,t+1}}
 	+ e_{t+1}.
 \end{align}
-The shock does not destroy the vacancies $v_t$, which were posted
-before it realized, and survival $1-\delta_t$ is exogenous. Hence
+Survival $1-\delta_t$ does not depend on $s_t$, and, as in the Lemma,
+$\Delta[(1-q(\theta_t))v_t]=\bigl[1-(1-\eta_L)q(\theta_t)\bigr]\Delta e_t$.
+Hence
 \[
 	\frac{\partial\,v_{pre,t+1}}{\partial s_t}
-	= (1-\delta_t)(1-u_t) = d.
+	= d+(1-\delta_t)\bigl[1-(1-\eta_L)q(\theta_t)\bigr]
+	\frac{\partial e_t}{\partial s_t}.
 \]
-The two derivatives coincide. Each separation at a surviving product
-line adds one worker to unemployment and returns one position to the
-vacancy pool. Steps~1 and~2 use only the laws of motion and the timing
-of $s_t$, so they hold for any $\rho_s$ and any entry technology.
+The inflow $d$ is common to Steps~1 and~2: each separation at a
+surviving product line adds one worker to unemployment and returns one
+position to the vacancy pool. The remaining terms are the matches and
+vacancies created by the period-$t$ entry response. Steps~1 and~2 use
+only the laws of motion and the timing of $s_t$, so they hold for any
+$\rho_s$ and any entry technology.
 
-\medskip\noindent\emph{Step 3: vacancies rise unless entry overturns the inflow.}
-By Step~2,
+\medskip\noindent\emph{Step 3: vacancies.}
+By Step~2 and~\eqref{eq:v_lom_proof},
 \[
 	\frac{\partial v_{t+1}}{\partial s_t}
-	= d+\frac{\partial e_{t+1}}{\partial s_t},
+	= d+(1-\delta_t)\bigl[1-(1-\eta_L)q(\theta_t)\bigr]
+	\frac{\partial e_t}{\partial s_t}
+	+\frac{\partial e_{t+1}}{\partial s_t},
 \]
-which is positive if and only if $-\partial e_{t+1}/\partial s_t<d$.
-Under this condition vacancies rise, and with Step~1 unemployment and
-vacancies comove positively at $h=1$. Equivalently, since
-$v_{t+1}=\theta_{t+1}u_{t+1}$,
-\[
-	\frac{\partial v_{t+1}}{\partial s_t}
-	= \bar\theta d+\bar{u}\,\frac{\partial\theta_{t+1}}{\partial s_t},
-\]
-so vacancies rise unless tightness falls proportionally more than
-unemployment rises. The entry response is an equilibrium object. It
-depends on $\rho_s$, on the state deviations the shock leaves behind,
-and on feedback through the discount factor and product variety.
+which is positive if and only if condition (ii) holds. With Step~1,
+unemployment and vacancies comove positively at $h=1$ under (i) and
+(ii). The entry responses are equilibrium objects: they depend on
+$\rho_s$, on the state deviations the shock leaves behind, and on
+feedback through the discount factor and product variety.
 
-\medskip\noindent\emph{Step 4: two cases in which the condition holds exactly.}
+\medskip\noindent\emph{Step 4: two cases in which the conditions hold exactly.}
 Let $\rho_s=0$ and impose the conditions of
 Proposition~\ref{prop:independence} ($\sigma=0$, $\zeta=0$, $p_0=0$),
 so that $m_{t+1}=\beta$, $w_t^{int}=z_t/\mu$, and the labor market
-block closes on its own, with states $(u_t,v_{pre,t})$. After the
-shock all exogenous variables are at their means in expectation.
-Under determinacy, a path that satisfies the block is the solution.
+block closes on its own, with predetermined states $(u_t,v_{pre,t})$.
+The job creation condition~\eqref{eq:jcc_eq} at any date involves
+$s_{t+1}$ and later separation rates, which a period-$t$ shock leaves
+at their mean in expectation. Under determinacy, a path that satisfies
+the block is the solution.
 
 \emph{(a) Free entry ($\xi\to\infty$).} Then $Q_{t+k}=x_m$ at every
-date, so $K_{t+k}=\bar{K}$ by~\eqref{eq:K}. The surplus at $t+k+1$
-depends only on $\theta_{t+k+1}$, $\bar{K}$, and parameters, so
-$\theta_{t+k}=\bar\theta$ for all $k\geq1$ satisfies the
-JCC~\eqref{eq:jcc}. Entry adjusts to hold tightness fixed, and
+date, so $K_{t+k}=\bar{K}$ by~\eqref{eq:K}, and $\theta_{t+k}=\bar\theta$
+for all $k\geq0$ satisfies~\eqref{eq:jcc_eq}. Since $u_t$ and $v_{pre,t}$
+are predetermined, $\Delta e_t=0$, so (i) holds trivially. At $t+1$,
+entry adjusts to hold tightness fixed:
 \[
 	\frac{\partial v_{t+1}}{\partial s_t}=\bar\theta d>0,
 	\qquad
@@ -4788,11 +4828,13 @@ JCC~\eqref{eq:jcc}. Entry adjusts to hold tightness fixed, and
 
 \emph{(b) Convex entry costs ($\xi<\infty$) with $\bar\theta=1$.}
 Guess that $\theta_{t+k}=\bar\theta$ and every jump variable stays at
-its steady-state value for all $k\geq1$. At $t+1$, entry
-$e_{t+1}=\theta_{t+1}u_{t+1}-v_{pre,t+1}$ changes by
-$(\bar\theta-1)d=0$, so $Q_{t+1}$, $K_{t+1}$, and the JCC are
-unaffected, and $\partial v_{t+1}/\partial s_t=d$. The state
-deviations then propagate, at fixed tightness, as
+its steady-state value for all $k\geq0$. At $t$, entry
+$e_t=\theta_tu_t-v_{pre,t}$ is unchanged because $u_t$ and $v_{pre,t}$
+are, so $\Delta e_t=0$. At $t+1$, unemployment and pre-committed
+vacancies both rise by $d$, so entry
+$e_{t+1}=\theta_{t+1}u_{t+1}-v_{pre,t+1}$ changes by $(\bar\theta-1)d=0$
+and $\partial v_{t+1}/\partial s_t=d$. The state deviations then
+propagate, at fixed tightness, as
 \[
 	\Delta u_{t+2}=\bigl[1-(1-\bar\delta)\bar{f}-\bar\tau\bigr]d
 	=(1-\bar\delta)(1-\bar{f}-\bar{s})\,d,
@@ -4805,129 +4847,108 @@ because $\bar\theta=1$ implies $\bar{f}=\bar{q}$. By induction the
 deviations in $u$ and $v_{pre}$ stay equal at every horizon, entry is
 unchanged at every horizon, and the guess is verified.
 
-Outside these cases the sign of the entry response, and hence of the
-condition in Part~1, is quantitative.
+Outside these cases conditions (i) and (ii) are quantitative.
 
 \medskip
 \emph{Part~2: endogenous exit ($p_0>0$), costless reposting ($\alpha\to0$).}
-With $p_0>0$, the factor $1-\delta_t$ in Steps~1 and~2 becomes
-$(1-\delta_{e,t+1})=(1-\delta_t)\Lambda_{t+1}$, where $\Lambda_{t+1}=F(\chi^c_{t+1})$ is the endogenous survival
-probability.
-The reposting channel becomes
+With $p_0>0$, survival into $t+1$ is
+$1-\delta_{e,t+1}=(1-\delta_t)\Lambda_{t+1}$, and two exit responses
+appear. Next-period exit $\Lambda_{t+1}=F(\chi^c_{t+1})$ responds as in
+the old timing. Period-$t$ exit $\Lambda_t$ also responds, because $s_t$
+is known at the start of $t$: news of higher separations lowers the
+expected return on new product lines, which moves product-line entry
+$N^e_t$, the allocation of labor between production and entry, current
+retail profits, and hence $\chi^c_t$. Every effect of exit on $u$ and
+$v$ passes through $\Delta\Lambda_t=F'(\chi^c_t)\Delta\chi^c_t$ or
+$\Delta\Lambda_{t+1}=F'(\chi^c_{t+1})\Delta\chi^c_{t+1}$. To first order
+in $F'$, Steps~1--3 of Part~1 carry over with $d$ replaced by the
+reposting inflow $(1-\delta_t)\Lambda_{t+1}(1-u_t)$, plus exit terms
+linear in $\Delta\Lambda_t$ and $\Delta\Lambda_{t+1}$. On the
+pre-committed vacancy stock the next-period term is
 \begin{align}\label{eq:dv_ds_full}
-	\frac{\partial\,v_{pre,t+1}}{\partial s_t}
-	= (1-\delta_t)\Lambda_{t+1}(1-u_t)
-	  + (1-\delta_t)\frac{\partial\Lambda_{t+1}}{\partial s_t}
-	  \bigl[(1-q(\theta_t))v_t+s_t(1-u_t)\bigr].
+	(1-\delta_t)\frac{\partial\Lambda_{t+1}}{\partial s_t}
+	\bigl[(1-q(\theta_t))v_t+s_t(1-u_t)\bigr],
 \end{align}
-The sign of the second term is $\partial\Lambda_{t+1}/\partial s_t
-= F'(\chi^c_{t+1})\cdot\partial\chi^c_{t+1}/\partial s_t$ with
-$F'>0$; signing $\partial\chi^c_{t+1}/\partial s_t$ requires
-accounting for the joint determination of $(\chi^c_{t+1},N_{t+1})$.
+and the period-$t$ term has the same form, with $\partial\Lambda_t/\partial s_t$
+multiplying the stocks it removes at $t$. These terms form the drain.
 
 \medskip\noindent\emph{Joint system.}
-From~\eqref{eq:N_lom_eq}:
-\[
-	N_{t+1} = (1-\delta_t)\,F(\chi^c_{t+1})\,B_t,
-\]
-where $B_t \equiv N_t + z_t(1-u_t)/f_e - Y^c_t/(f_e\rho(N_t))$
-is predetermined (all period-$t$ quantities; entry decisions $e_t$
-committed before $s_t$ realized are included in $B_t$ and face the
-same exit draw $F(\chi^c_{t+1})$ at start of $t+1$).
-Together with~\eqref{eq:cutoff_eq} and
-$Y^c_{t+1}=\rho(N_{t+1})z_{t+1}(1-u_{t+1})$, the pair
-$(\chi^c_{t+1},N_{t+1})$ solves
+The cutoff, product variety, and unemployment at $t+1$ are determined
+jointly. With $B_t\equiv N_t+N^e_t$ the product lines entering $t+1$
+before exit, $E^b_{t+1}$ pre-exit employment, and
+$Y^c_{t+1}=\rho(N_{t+1})z_{t+1}(1-u_{t+1})$,
 \begin{align}
-	\chi^c &= g(N,\,u_{t+1}), \label{eq:eq1_proof}\\
-	N      &= (1-\delta_t)\,F(\chi^c)\,B_t,\label{eq:eq2_proof}
+	\chi^c &= g(N,\,u), \label{eq:eq1_proof}\\
+	N      &= (1-\delta_t)\,F(\chi^c)\,B_t,\label{eq:eq2_proof}\\
+	u      &= 1-F(\chi^c)\,E^b_{t+1},\label{eq:eq3_proof}
 \end{align}
-where $g(N,u)\equiv\rho(N)z(1-u)(\mu(N)-1)/(\mu(N)N)+f_e\rho(N)/\mu(N)$.
-
-\medskip\noindent\emph{Role of the Jacobian.}
-The Jacobian of~\eqref{eq:eq1_proof}--\eqref{eq:eq2_proof} is
+where $g(N,u)\equiv\rho(N)z(1-u)(\mu(N)-1)/(\mu(N)N)+f_e\rho(N)/\mu(N)$
+and $g_u=-\rho(N)z(\mu-1)/(\mu N)<0$. The third equation is the
+feedback from exit to unemployment: more exit raises post-exit
+unemployment, which lowers profits and raises exit further. Totally
+differentiating,
 \[
-	J = \begin{pmatrix}1 & -g_N \\
-	    -(1-\delta_t)F'(\chi^c)B_t & 1\end{pmatrix},
-	\quad
-	\det J = 1-(1-\delta_t)F'(\chi^c)B_t\,g_N.
-\]
-The only channel through which $s_t$ enters is $u_{t+1}$;
-$g_u\equiv\partial g/\partial u=-\rho(N)z(\mu-1)/(\mu N)<0$,
-so the exogenous shift to~\eqref{eq:eq1_proof} is
-$-g_u\,\partial u_{t+1}/\partial s_t>0$.
-By the implicit function theorem:
-\[
-	\frac{\partial\chi^c_{t+1}}{\partial s_t}
-	= \frac{g_u}{\det J}\cdot\frac{\partial u_{t+1}}{\partial s_t}.
-\]
-Under DS-CES, $g_N\propto z(1-u)(2-\varepsilon)/(\varepsilon-1)+f_eN$,
-so condition~\eqref{eq:gN_cond} is equivalent to $g_N<0$, giving
-$\det J=1-(1-\delta_t)F'(\chi^c)B_t\,g_N>1$.
-This signs $\partial\chi^c_{t+1}/\partial s_t$ negative: it rules out
-the case in which feedback from lower $N$ to higher per-firm
-profitability reverses the direct employment channel $g_u<0$.
-With $\det J>0$:
-\[
-	\frac{\partial\chi^c_{t+1}}{\partial s_t}<0,
+	\det J\,\Delta\chi^c_{t+1}
+	= g_N(1-\delta_t)\Lambda_{t+1}\Delta B_t
+	- g_u\Lambda_{t+1}\Delta E^b_{t+1},
 	\qquad
-	\frac{\partial\Lambda_{t+1}}{\partial s_t}
-	= F'(\chi^c_{t+1})\,\frac{\partial\chi^c_{t+1}}{\partial s_t}<0.
+	\det J = 1-(1-\delta_t)F'(\chi^c)B_t\,g_N+g_uF'(\chi^c)E^b_{t+1}.
 \]
-A positive $s$ shock raises endogenous exit, so the second term
-in~\eqref{eq:dv_ds_full} is negative: the endogenous exit channel
-opposes the reposting effect.
+Condition~\eqref{eq:exit_cond} is $\det J>0$ at the steady state, so the
+implicit function theorem gives a finite response
+$\partial\chi^c_{t+1}/\partial s_t$. Its sign need not be determined: the
+dominance condition in Part~2 bounds the drain by its absolute value. The
+shocks enter through $\Delta E^b_{t+1}$, which falls by the
+separations, and through $\Delta B_t$, which moves with product-line entry
+at $t$. Both are finite, so the drain is of order $F'(\chi^c)$.
 
-\medskip\noindent\emph{Sufficient condition.}
-The drain is bounded by
-$F'(\chi^c_{t+1})\cdot|\partial\chi^c_{t+1}/\partial s_t|
-\cdot[(1-q(\theta_t))v_t+s_t(1-u_t)]$, where
-$|\partial\chi^c_{t+1}/\partial s_t|=|g_u/\det J|
-\cdot\partial u_{t+1}/\partial s_t$.
-This drain is increasing in $\rho_s$: the option value component
-$f_e\rho(N_{t+1})/\mu(N_{t+1})$ in~\eqref{eq:cutoff_eq} is
-determined by the business formation Euler~\eqref{eq:N_euler_eq},
-which depends on expected future $Y^c$.
-At $\rho_s=0$, future employment reverts to $\bar s$ immediately,
-leaving the option value unaffected by $s_t$; only the current-period
-profit term $Y^c_{t+1}(\mu-1)/(\mu N_{t+1})$ falls.
-At $\rho_s>0$, expected future $Y^c$ also falls (persistent lower
-employment), reducing the option value and amplifying
-$|\partial\chi^c_{t+1}/\partial s_t|$.
-The drain is therefore minimized at $\rho_s=0$, so if the reposting
-channel dominates there, it dominates for all
-$\rho_s\in[0,\bar\rho_s)$ by continuity.
-Given $\partial v_{pre,t+1}/\partial s_t\geq0$ and $\partial u_{t+1}/\partial s_t>0$, Step~3 of Part~1 applies with $\partial v_{pre,t+1}/\partial s_t$ in place of $d$: vacancies rise, and $u$ and $v$ comove positively, provided entry does not contract by more than $\partial v_{pre,t+1}/\partial s_t$.
+\medskip\noindent\emph{Conclusion.}
+If the reposting inflow weakly dominates the drain, the pre-committed
+vacancy stock and unemployment respond as in Part~1 up to the entry
+terms, and Steps~1--3 deliver positive $u$--$v$ comovement at $h=1$
+under conditions (i) and (ii) with the inflow in place of $d$. The
+first-order coefficients are continuous in $\rho_s$, so if dominance is
+strict at $\rho_s=0$, it holds for all $\rho_s\in[0,\bar\rho_s)$ for
+some $\bar\rho_s>0$.
 
 \medskip
 \emph{Part~3: $\delta$ shock.}
+Consider a positive $\delta_t$ shock with $s_t$ at its steady-state
+value $\bar{s}$. As in Part~2, exit responses add terms proportional to
+$F'(\chi^c)$, which we drop at first order.
 
 \emph{Unemployment.}
-Consider a positive $\delta_t$ shock with $s_t$ fixed at its
-steady-state value $\bar{s}$ (a pure destruction shock).
-Then $\delta_{e,t+1}$ rises, so
-$\partial\tau_{t+1}/\partial\delta_t
-= \partial\delta_{e,t+1}/\partial\delta_t
-  \cdot(1-\bar{s})>0$,
-and, from~\eqref{eq:u_lom} dated $t+1$,
-$\partial u_{t+1}/\partial\delta_{e,t+1}
-=(1-\bar{s})(1-u_t)+f(\theta_t)u_t>0$: exit adds the separated
-incumbents and the new matches lost before producing. Hence
-$\partial u_{t+1}/\partial\delta_t>0$.
+From~\eqref{eq:u_lom} dated $t+1$, with
+$\tau_{t+1}=\delta_{e,t+1}+\bar{s}(1-\delta_{e,t+1})$,
+\[
+	\frac{\partial u_{t+1}}{\partial\delta_t}
+	=\Lambda_{t+1}\bigl[(1-\bar{s})(1-u_t)+M_t\bigr]
+	-(1-\delta_t)\Lambda_{t+1}(1-\eta_L)q(\theta_t)\frac{\partial e_t}{\partial\delta_t}.
+\]
+The first term counts the separated incumbents and the new matches lost
+before producing. The second is the extra matching from entry at $t$; it
+is small relative to the first unless entry at $t$ responds strongly, and
+unemployment then rises.
 
 \emph{Vacancies.}
-By Lemma~\ref{lem:vpre},
+By Lemma~\ref{lem:vpre} and~\eqref{eq:v_lom_proof},
 \[
-  \left|\frac{\partial v_{pre,t+1}}{\partial\delta_t}\right|
-  = \Lambda_{t+1}\bigl[(1-q(\theta_t))v_t + \bar{s}(1-u_t)\bigr]
-  \;\xrightarrow{\text{s.s.}}\;
-  (1-\bar{q})\bar{v} + \bar{s}(1-\bar{u}) > 0,
+	\frac{\partial v_{t+1}}{\partial\delta_t}
+	= -\Lambda_{t+1}\bigl[(1-q(\theta_t))v_t+\bar{s}(1-u_t)\bigr]
+	+(1-\delta_t)\Lambda_{t+1}\bigl[1-(1-\eta_L)q(\theta_t)\bigr]
+	\frac{\partial e_t}{\partial\delta_t}
+	+\frac{\partial e_{t+1}}{\partial\delta_t},
 \]
-a quantity bounded away from zero for any $\bar\delta_e/\bar\tau\in(0,1)$.
-The entry response partially cushions this: from the
+which is negative if and only if the condition in Part~3 holds. The
+destruction term converges to
+$(1-\bar{q})\bar{v}+\bar{s}(1-\bar{u})>0$ at the steady state, a quantity
+bounded away from zero for any $\bar\delta_e/\bar\tau\in(0,1)$. The entry
+response at both dates works through the vacancy value: from the
 $K$-decomposition~\eqref{eq:K_decomp}, the duration-shortening
 contribution to $\hat{K}^\delta$ carries coefficient
 $\bar\delta_e/(r+\bar\delta_e)$, so
 \[
+  \frac{\partial e_t}{\partial\delta_t},\;
   \frac{\partial e_{t+1}}{\partial\delta_t}
   \;\propto\;
   \frac{\bar\delta_e}{r+\bar\delta_e}
@@ -4935,10 +4956,11 @@ $\bar\delta_e/(r+\bar\delta_e)$, so
   \quad\text{as}\quad
   \bar\delta_e/\bar\tau\to 0.
 \]
-For $\bar\delta_e/\bar\tau$ sufficiently small, the entry cushion
-is therefore strictly less than the pre-committed vacancy destruction,
-so $\partial v_{t+1}/\partial\delta_t<0$, establishing
-negative $u$--$v$ comovement at $h=1$.
+For $\bar\delta_e/\bar\tau$ sufficiently small, the entry cushion is
+therefore strictly less than the pre-committed vacancy destruction, so
+$\partial v_{t+1}/\partial\delta_t<0$. The same argument makes the
+matching term in $\partial u_{t+1}/\partial\delta_t$ vanish, so
+unemployment rises, establishing negative $u$--$v$ comovement at $h=1$.
 \end{proof}
 
 
