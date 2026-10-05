@@ -244,8 +244,9 @@
 	Three empirical facts motivate treating firm destruction as a 
 	distinct and quantitatively important margin. \textit{First, establishment entry and exit constitute a large and cyclically sensitive component of gross job flows}. Table~\ref{tab:jf_t2_ext_2019} extends Table 2 in \citet{jaimovich_2008} through 2019Q4 using BLS Business Employment Dynamics (BED) data.\footnote{This table uses BED \emph{closings}, for comparability with \citet{jaimovich_2008}, whose Table 2 reports a mean closing share of 21.17 percent of quarterly gross job losses.  Their sample is 1992Q3--2005Q2 in the working paper version (SIEPR Discussion Paper 07-13).  Closings are the appropriate measure for their question, which concerns the number of firms actively competing in a period, and an establishment that is temporarily idle is not competing.  BED deaths were not published until May 2009, after their paper appeared, so the distinction was not available to them.  Our destruction measure is different.  The model's $\delta$ shock is the permanent elimination of a product line, so the analysis throughout the paper uses BED \emph{deaths}, constructed and defined in Section~\ref{sec:empirical_instr}.} The first three columns report the average fraction of quarterly gross job gains (losses) accounted for by opening (closing, dying) establishments. The next three report the ratio of the cyclical standard deviation of each flow to that of total flows, using the Hamilton (2018) regression filter ($h=8$, $p=4$) applied to raw levels. The final three repeat the calculation with the HP filter ($\lambda=1600$), which closely reproduces \citet{jaimovich_2008}'s benchmark of approximately $0.33$ over their original sample period. We stop the sample in 2019Q4. Extending it through the end of the BED data leaves the mean shares almost unchanged but collapses every cyclicality ratio, because the 2020 collapse inflates total job losses without a corresponding rise in permanent exit.
 	
-	The mean-share columns show that closing establishments account for $19.5$
-	percent of gross job losses on average across all private-sector supersectors,
+	The mean-share columns show that the entry and exit margins are of
+	comparable size. Opening establishments account for $20.0$ percent of gross
+	job gains and closing establishments for $19.5$ percent of gross job losses,
 	a share that is stable across industries ranging from construction ($20.6$
 	percent) to financial activities ($24.7$ percent). Dying establishments, the
 	permanent subset, account for $12.0$ percent. The difference between the two is
@@ -254,16 +255,37 @@
 	in its own right. About one job loss in eight occurs at an establishment that
 	never reopens.
 
-	The relative standard deviation columns show that both margins move with the
-	cycle, and that the permanent margin is the less volatile of the two. For total
-	private, the closing flow moves at $0.239$ times the cyclical variation of
-	total job losses under the Hamilton filter, against $0.187$ for deaths. The HP
-	filter gives $0.223$ and $0.180$. The ordering holds in every supersector. The
+	The relative standard deviation columns show that all three margins move
+	with the cycle. For total private, the opening flow is the most variable of
+	the three, at $0.269$ times the cyclical variation of total job gains under
+	the Hamilton filter and $0.275$ under the HP filter. The closing flow moves
+	at $0.239$ times the cyclical variation of total job losses, against $0.187$
+	for deaths; the HP filter gives $0.223$ and $0.180$. The ordering of
+	closings and deaths holds in every supersector. The
 	gap is widest in natural resources and mining ($0.205$ against $0.104$), where
 	project-based and seasonal establishments suspend operations without exiting
 	permanently. Elsewhere the two are close, so the cyclical sensitivity that
 	\citet{jaimovich_2008} document is not an artifact of temporary shutdowns.
 	Permanent exit is itself cyclical, which is what the $\delta$ shock requires.
+
+	Entry is not a side observation. The damage a destruction shock does is
+	undone only as new establishments replace the lines that closed, so the cost
+	and speed of replacement govern how long the damage lasts. The opening flow
+	is large, it is the most cyclically variable of the three extensive margins,
+	and it is procyclical: its correlation with cyclical net job change is
+	$0.47$ under the Hamilton filter and $0.31$ under the HP filter, while
+	permanent exit runs the other way at $-0.08$ and $-0.49$.\footnote{Openings
+	and deaths are themselves positively correlated ($0.56$ and $0.46$), as two
+	gross flows that share a common reallocation component. The cyclical
+	comparison is therefore each flow against net job change, not the two flows
+	against each other.} The two margins pull in opposite directions over the
+	cycle, so replacement is slowest when destruction is heaviest, though the
+	exit side of this comparison is weak under the Hamilton filter and rests
+	mainly on the HP estimate. A framework with an exogenous destruction rate
+	and no business formation margin holds the replacement flow fixed by
+	construction: where a business opportunity is a vacancy slot, replacing the
+	opportunity and posting the vacancy are the same act, so the entry margin
+	this table measures has no separate counterpart.
 
 	At $12.0$ percent of gross job losses, permanent exit is a minority of job
 	destruction but far from a rounding error. This is what makes the
@@ -1619,13 +1641,13 @@ every state of the world. The baseline makes each of these
 an equilibrium outcome of \eqref{eq:euler_bf}. Entry absorbs
 labor at rate $f_e$ and so enters the resource constraint
 through $\nu_t^f N_t^e$ in \eqref{eq:gdp}, the mass of lines
-is a slow-moving state, and the entry flow is procyclical.
-Table~\ref{tab:jf_t2_ext_2019} shows that establishment
-openings account for a share of gross job gains comparable
-to the closing share of gross job losses, and that the
-opening flow is at least as cyclical as either closing
-margin. Replacement is therefore weakest in the states in
-which destruction is strongest. AGS holds the replacement
+is a slow-moving state, and the rate of replacement is an
+equilibrium object rather than a constant. In the data
+openings are procyclical while permanent exit is
+countercyclical (Section~\ref{sec:introduction}), so
+replacement is slowest when destruction is heaviest; the
+exit side of that comparison is weak under our preferred
+filter. AGS holds the replacement
 margin at its frictionless benchmark, so it cannot generate
 the joint behavior of the two margins that motivates the
 paper.
