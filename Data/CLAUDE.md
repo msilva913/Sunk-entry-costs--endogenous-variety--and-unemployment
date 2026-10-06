@@ -127,6 +127,12 @@ runs; draft prose, one new program, one new note.
   repairs a consequence of having one separation margin. See
   [`Notes/predetermined_vacancies_and_the_CK_special_case.md`](Notes/predetermined_vacancies_and_the_CK_special_case.md).
   ⚠ This is **GS's δ/s split plus our measurement**, not the business formation block.
+  ⛔ **Superseded Oct 6, 2026.** T = 12.78/0.203 is the bar per unit *level* of δ_e,
+  not per 1 %. Per 1 % it is 0.035 against 0.0065, tiny in both cases. The note is
+  rewritten around two other channels: the stock elasticity ξ·ē/v̄ (finite ξ), and the
+  user cost of a durable vacancy (free entry, where the nested model's u–v slope is
+  −0.23 at D1 and +0.17 at δ_e = τ). CK's free-entry case is flow-cost DMP. Program:
+  `Programs baseline/beveridge_free_entry.jl`.
 - **New tasks.** R8 clause (v) (re-specify Comparison B), **R12b** (ê^δ > 0 needs a
   program cite), **R12c** (the Prop. 5 Part 3 proof uses the same circular step — not
   fixed, needs Part 3 worked through).

@@ -1773,7 +1773,8 @@ This section establishes the asymmetry analytically. Part~1 of the proposition b
 			+\frac{\partial e_{t+1}}{\partial\delta_t}
 			<\Lambda_{t+1}\bigl[(1-q(\theta_t))v_t+s_t(1-u_t)\bigr].
 		\end{equation*}
-		A sufficient condition is that $\bar\delta_e/\bar\tau$ is small.
+		A sufficient condition, at a finite entry elasticity $\xi$, is that
+		$\bar\delta_e/\bar\tau$ is small.
 	\end{enumerate}
 \end{proposition}
 \noindent See \ref{app:proof_ds} for the proof.
@@ -1870,7 +1871,8 @@ condition~\eqref{eq:jcc_eq} implies $\theta$ falls, and total vacancies
 $v=\theta u$ have an ambiguous sign: positive $u$--$v$ comovement
 requires the $u$ rise to exceed the $\theta$ fall.
 
-A sufficient condition for the destruction to dominate is that
+At a finite entry elasticity, a sufficient condition for the destruction
+to dominate is that
 $\bar\delta_e/\bar\tau$ is small: when only a fraction of total
 separations flow through the destruction channel, the entry cushion is
 correspondingly weak relative to the destruction it must offset: a low
@@ -1887,7 +1889,15 @@ quarterly average, for $\rho_\delta\in\{0,0.592,0.9\}$ and entry
 elasticities $1/\xi\in\{0.5,1,2\}$. Negative $u$--$v$ comovement at the
 quarterly frequency of Sections~\ref{sec:empirical}
 and~\ref{sec:quantitative} is therefore robust; only its first-month
-sign depends on $\bar\delta_e/\bar\tau$ being small. Parts~1 and~3 thus
+sign depends on $\bar\delta_e/\bar\tau$ being small.
+
+The restriction to a finite $\xi$ matters. As $\xi\to\infty$ the entry
+cushion is no longer held back by the convexity of the posting cost, and
+for an iid shock it overturns the destruction at every horizon after
+impact, whatever the value of $\bar\delta_e/\bar\tau$. Negative
+comovement then requires persistence in the destruction shock as well as
+a small $\bar\delta_e/\bar\tau$, and the free-entry case is treated
+separately below. Parts~1 and~3 thus
 mirror each other: on impact, $s$ adds positions to the vacancy pool
 and $\delta$ destroys them, and in each case the sign holds unless entry
 overturns it.

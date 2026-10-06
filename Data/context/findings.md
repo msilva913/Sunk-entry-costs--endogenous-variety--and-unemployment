@@ -560,6 +560,12 @@ applies δ_e,t (built from Λ_t) to the t→t+1 flows, unlike the draft; redo af
 
 ## Predetermined vacancy share and the entry threshold — October 5, 2026
 
+> ⛔ **Superseded October 6, 2026.** T below is the bar per unit LEVEL of δ_e, not per 1 %;
+> per 1 % it is X̄/(v̄+L̄) = 0.035 (D1) vs 0.0065 (δ_e = τ). "62.9×", "minimizes" and the
+> "entry elasticity near 10" corroboration do not stand (that is ê per unit level; ê/δ̂_e ≈ 0.03
+> at D1). The offset ratios 0.81 / 1.38 / 1.95 are unit-free and stand. See the rewritten
+> note and `Programs baseline/beveridge_free_entry.jl`.
+
 **Program.** `Programs baseline/predetermined_vacancy_share.jl` →
 `predetermined_vacancy_share.txt`. Self-contained; mirrors the closed-form steady-state
 algebra of `steady_state.jl` and asserts all three closed forms against each other.

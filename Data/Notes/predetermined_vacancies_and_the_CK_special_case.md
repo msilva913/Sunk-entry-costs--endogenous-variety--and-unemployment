@@ -1,202 +1,297 @@
-# Can entry outrun destruction? The predetermined vacancy share and Coles–Kelishomi as a special case
+# A downward-sloping Beveridge response to destruction at ξ → ∞
 
-**Written:** October 5, 2026
-**Numbers from:** `../Programs baseline/predetermined_vacancy_share.jl` →
-`predetermined_vacancy_share.txt` (self-contained; mirrors the closed-form steady-state
-algebra of `steady_state.jl`, with every identity checked by assertion)
-**Draft objects used:** `eq:v_lom`, `eq:v_ll`, `eq:e_ss`, `app:comparison_D`, `app:loglin` ¶7
+> **Start with [`beveridge_free_entry_GS_proposition.md`](beveridge_free_entry_GS_proposition.md).**
+> It states and proves the result in the minimal Gabrovski–Silva economy, with the
+> sufficient condition r + δ < τ (r the discount rate). This note covers the richer nested
+> economy, dynamics and robustness.
 
----
-
-## 1. The question
-
-A positive δ shock does two things to vacancies at once. It destroys the vacancies carried
-into the period, and it changes the incentive to post new ones. For the Beveridge curve what
-matters is not whether entry responds but whether it responds **enough** to cover the loss.
-
-Coles and Kelishomi need finitely elastic vacancy creation to stop vacancies rising with
-unemployment after a destruction shock. We claim not to. The question this note settles is
-*why*, since the obvious argument cuts both ways: a higher destruction rate raises the entry
-incentive but also destroys more vacancies, so it is not obvious which side wins.
-
-The answer is that the destruction term is proportional to the **predetermined** share of the
-vacancy stock, not to the whole stock, and that share collapses as δ_e rises. At CK's
-calibration there is almost no inherited stock left for a destruction shock to remove.
+**Written:** October 5, 2026. **Rewritten:** October 6, 2026. The rewrite supersedes the
+Oct 5 argument, whose threshold had a units error (Appendix B).
+**Numbers from:** `../Programs baseline/beveridge_free_entry.jl` →
+`beveridge_free_entry.txt`. The program is self-contained. It mirrors `calibrate_shares`
+PATH B with the mechanism-runner targets (b_ratio = 0.9, x_v = 0.5, dest_elast_target = 5).
+It asserts the steady-state JCC, checks the dynamic tightness coefficient at ρ = 1 against
+a direct steady-state derivative, and checks the closed-form sign condition against the
+simulated IRF.
+**Draft objects:** `eq:delta_e_lom`, `eq:u_lom`, `eq:v_lom`, `eq:Kdef`, `eq:jcc_eq`,
+`eq:entry_eq`, `app:loglin` ¶9b–9c, `app:comparison_D`.
 
 ---
 
-## 2. The accounting
+## 0. The question and the answer
 
-The vacancy law of motion (`eq:v_lom`) is
+**Question.** We know a negative u–v response to a δ shock is possible when vacancy
+creation is finitely elastic (CK). Is it possible at ξ → ∞?
 
-```
-v_t = (1 − δ_e,t)[(1 − q(θ_{t−1})) v_{t−1} + Λ_r,t s_{t−1}(1 − u_{t−1})] + e_t
-```
+**Answer: yes, in a nested version of our model. It requires three things.**
 
-Log-linearized (`eq:v_ll`, in **level** deviations x̃ = x − x̄):
+1. **Vacancies are durable assets.** The JCC then carries a user-cost term that a
+   flow-cost DMP model lacks.
+2. **Destruction is a small share of separations.** The path slope is negative iff
+   δ̄_e/τ̄ < 0.42 at the calibrated persistence. At D1, δ̄_e/τ̄ = 0.087. It is never negative
+   at δ_e = τ.
+3. **The shock is not too transitory.** At D1 the condition is ρ_δ > 0.37 monthly (0.05
+   quarterly), against a calibrated ρ_δ = 0.592.
 
-```
-ṽ_t = (1 − δ̄_e)[(1 − q̄) ṽ_{t−1} + s̄(1 − ū) s̃_{t−1}] − v̄^pre · δ̃_e,t + ẽ_t
-```
-
-with **v̄^pre ≡ v̄ − ē**, the steady-state predetermined stock.
-
-On impact of a pure δ shock, with ṽ_{t−1} = 0 and s̃ = 0, everything but two terms drops:
-
-```
-ṽ_t = ẽ_t − v̄^pre · δ̃_e,t
-```
-
-So **vacancies rise if and only if new postings exceed the destroyed predetermined stock**:
-
-```
-ẽ_t > v̄^pre · δ̃_e,t
-```
-
-This is the whole question, and it is exact. Note what the destruction term is proportional
-to: `v̄^pre`, not `v̄`. A destruction shock can only remove vacancies that were already
-standing at the start of the period. Vacancies posted within the period are not exposed.
+At D1, the free-entry path slope is −0.23. A flow-cost DMP model with the same steady state
+gives +0.46.
 
 ---
 
-## 3. The threshold, in three equivalent forms
+## 1. Timing
 
-Converting to log deviations (ê = ẽ/ē, δ̂_e = δ̃_e/δ̄_e) gives the threshold entry elasticity
+`eq:delta_e_lom` gives δ_e,t = 1 − (1 − δ_{t−1})Λ_t. An innovation to δ at date 0 raises
+δ_e,1.
 
-```
-ê_t / δ̂_e,t  >  T  ≡  v̄^pre / ē  =  v̄/ē − 1
-```
+- **Date 0.** Nothing is destroyed. The JCC and `eq:Kdef` price 1 − δ_e,1, so θ_0 moves.
+  u_0 and the inherited vacancy stock do not.
+- **Date 1.** Matches and positions are destroyed at δ_e,1.
 
-Using the steady-state entry relation ē = δ̄_e(v̄ + L̄) (`eq:e_ss`, `steady_state.jl:217`):
-
-```
-T = [v̄/(v̄ + L̄)] / δ̄_e − 1                                    (form 2)
-```
-
-and since the f, q and sep targets pin both v̄/(v̄+L̄) and τ̄, writing
-κ_v ≡ [v̄/(v̄+L̄)]/τ̄:
-
-```
-T = κ_v / (δ̄_e/τ̄) − 1 ,        κ_v = 1.2034                   (form 3)
-```
-
-**The threshold is inversely proportional to the destruction rate, and given the labor-market
-targets it is a function of δ̄_e/τ̄ alone.** The same algebra gives the two statistics
-directly:
-
-```
-ē/v̄      = (δ̄_e/τ̄) / κ_v          entrant share of the vacancy stock
-v̄^pre/v̄  = 1 − (δ̄_e/τ̄) / κ_v      predetermined share
-```
-
-So the predetermined share and δ̄_e/τ̄ are the same object up to the constant κ_v. There is
-only one free statistic here, not two.
-
-### Why the obvious scaling arguments fail
-
-Two tempting arguments both cancel and must be set aside.
-
-- *"A δ shock destroys δ̄_e × v̄ vacancies, so the hole scales with δ̄_e; but entry also scales
-  with δ̄_e, so they cancel."* The first clause is wrong. The hole is v̄^pre × δ̃_e, and
-  v̄^pre itself depends on δ̄_e. That dependence is the entire result.
-- *"Higher δ̄_e raises unemployment more, which slackens the market more, which draws in more
-  entry."* True, but it also raises the replacement flow and the destroyed flow. The
-  incentive channel does not break the tie; the composition channel does.
+**Units.** d_t ≡ δ̃_e,t+1 is the level deviation of the destruction rate known at t, with
+d_t = ρ^t d_0. A one-standard-deviation innovation is about 3.3 % of δ̄_e.
 
 ---
 
-## 4. The numbers
+## 2. Why the vacancy accounting identity cannot answer this
 
-Targets held fixed across all rows: f = 0.41, q = 0.80, sep = 0.031 (monthly). θ, u, L and v
-are **invariant** to δ̄_e by construction, because s adjusts to absorb the change — this is
-the design of Comparison A ("all other targets unchanged → same SS u, v, θ").
+`eq:v_lom` gives v_t = (1 − δ_e,t)X_t + e_t, with X_t the inherited stock plus reposts. At
+ξ → ∞, e_t is whatever closes the identity once θ_t and u_t are known. The identity holds
+by construction and signs nothing. The predetermined share therefore does not decide the
+sign at free entry.
+
+**The question reduces to: does θ̂ + û < 0?**
+
+---
+
+## 3. The free-entry equilibrium in five lines
 
 ```
-θ = 0.5125   u = 0.070295   L = 0.929705   v = 0.036026
-v̄/(v̄+L̄) = 0.037304        κ_v = 1.203369
+(i)   Q_t = x_m                                     free entry pins the vacancy value
+(ii)  K_t = x_m [1 − β(1 − δ_e,t+1)]                eq:Kdef  ⇒  K̂_t = d_t /(r + δ̄_e)
+(iii) κ + K_t/q(θ_t) = β(1 − δ_e,t+1) S_{t+1}        JCC sets θ_t given K_t
+(iv)  u_t from eq:u_lom
+(v)   v_t = θ_t u_t ,   e_t = v_t − (1 − δ_e,t) X_t
 ```
 
-| Calibration | δ̄_e (monthly) | δ̄_e/τ̄ | ē/v̄ | **v̄^pre/v̄** | **T** |
+Line (ii) is the crux. A vacancy is a durable asset with price x_m and rental
+(r+δ_e)x_m/(1+r). A rise d in the destruction rate raises the rental by d/(r+δ̄_e) in
+proportion. In a flow-cost DMP model, K is a constant and line (ii) is absent.
+
+**The nested economy.** It keeps the draft's timing, laws of motion and JCC. It shuts off
+risk aversion (m = β), the variety channel (w_int fixed), endogenous exit (Λ ≡ 1) and
+reposting costs (Λ_r = 1). Each δ̄_e is calibrated as in PATH B. The free-entry economy
+shares that steady state (x_m = Q̄).
+
+---
+
+## 4. Tightness
+
+Guess θ̂_t = a·d_t. Write B ≡ β(1 − δ̄_e), C ≡ κ + K/q, χ_K ≡ (K̄/q̄)/C̄ = x_v and
+S ≡ (1−ϕ)(w_int − K − b) + (1 − s − ϕf)C. Log-linearizing (iii) gives
+
+```
+a = − (F1 + F2 + F3) / Den
+
+F1  = 1/(1 − δ̄_e)                                     the new match may not survive
+F2  = χ_K/(r + δ̄_e) · [1 − Bρ(1 − s̄ − ϕf̄)]          the slot's rental rises, net of the
+                                                      higher hiring cost a match saves later
+F3  = Bρ(1 − ϕ)(K̄/C̄) / (r + δ̄_e)                     the matched recruiter bears the higher
+                                                      rental, eroding the match surplus
+Den = χ_K η + Bρ[ϕ f̄(1 − η) − (1 − s̄ − ϕf̄) χ_K η]
+```
+
+| Calibration | δ̄_e/τ̄ | F1 | F2 | F3 | **a** | a, flow-cost DMP |
+|---|---|---|---|---|---|---|
+| **D1** (3.20 %/yr) | 0.087 | 1.00 | 47.5 | 16.6 | **−287** | −4.4 |
+| Code (7.54 %/yr) | 0.210 | 1.01 | 30.2 | 8.0 | −162 | −4.2 |
+| BGM/GS (10 %/yr) | 0.282 | 1.01 | 24.8 | 6.1 | −130 | −4.1 |
+| **CK-like** (δ_e = τ) | 1.000 | 1.03 | 8.8 | 1.8 | **−46** | −4.1 |
+
+**Reading.**
+
+- F1 is the only force in flow-cost DMP. It is about 1, so tightness barely responds.
+- F2 + F3 are 64 at D1 and 11 at δ_e = τ. Both carry 1/(r+δ̄_e): **a long-lived asset's
+  rental is more sensitive to its depreciation rate.**
+- The user cost dominates F1 whenever χ_K ≫ r + δ̄_e. That is about 0.006 monthly at D1, so
+  even a small sunk share of recruiting costs is enough (§7).
+
+---
+
+## 5. The destruction-date sign condition
+
+Unemployment on date 1, from `eq:u_lom`:
+
+```
+ũ_1 = [ū f̄ + (1 − ū)(1 − s̄)] d_0  −  ū(1 − δ̄_e) f̄ (1 − η) θ̂_0
+```
+
+The first term is the separation effect. The second is the date-0 fall in job finding.
+With θ̂_1 = aρ d_0 and v̂_1 = θ̂_1 + û_1,
+
+```
+v̂_1 / d_0  =  a · [ρ − (1 − δ̄_e) f̄ (1 − η)]  +  c_u/ū ,      c_u ≡ ū f̄ + (1 − ū)(1 − s̄)
+```
+
+Line by line:
+
+1. **c_u/ū ≈ 13 is the separation push on u, and through v = θu on v.** Per unit of d it
+   is set by τ̄ and f̄. It hardly depends on the δ/s split.
+2. **a·ρ is tightness on date 1.** It is still depressed because the shock persists.
+3. **−a(1−δ̄_e)f̄(1−η) is the extra unemployment from date-0 job finding.** It raises u
+   and so offsets part of the tightness fall in v.
+4. If ρ > (1−δ̄_e)f̄(1−η) ≈ 0.16, **vacancies fall on date 1 iff |a| > a\* ≡
+   (c_u/ū)/[ρ − (1−δ̄_e)f̄(1−η)]**.
+
+| Calibration | \|a\| | a\* | \|a\|/a\* | v̂_1/d_0 | **path slope** |
 |---|---|---|---|---|---|
-| **D1 settled** (BED Deaths, 3.20 %/yr) | 0.002707 | 0.0873 | 0.073 | **0.927** | **12.78** |
-| Code baseline (superseded, 7.54 %/yr) | 0.006512 | 0.2100 | 0.175 | 0.825 | 4.73 |
-| BGM / GS / Shao–Silos (10 %/yr) | 0.008742 | 0.2820 | 0.234 | 0.766 | 3.27 |
-| **Coles–Kelishomi** (δ_e = τ) | 0.031000 | 1.0000 | 0.831 | **0.169** | **0.203** |
+| **D1** | 287 | 31 | 9.3 | −110 | **−0.23** |
+| Code | 162 | 31 | 5.2 | −56 | −0.12 |
+| BGM/GS | 130 | 31 | 4.2 | −42 | −0.08 |
+| **CK-like** | 46 | 32 | 1.45 | −6 | **+0.17** |
 
-**The threshold is 62.9 times higher at the D1 calibration than at CK's.** At CK's, 83 % of
-the standing vacancy stock is new postings and only 17 % is inherited, so a destruction shock
-has almost nothing to remove and a 0.2 % entry response suffices to turn the vacancy
-response positive. At D1's value 93 % of the stock is inherited and entry would have to rise
-by nearly 13 % per 1 % destruction shock.
+The path slope is Σṽũ/Σũ² over 48 months.
 
----
-
-## 5. Coles–Kelishomi as a special case
-
-CK set δ_e = τ: every separation destroys the position. Two things follow.
-
-**It is the maximum admissible value.** s ≥ 0 requires δ_e ≤ τ, so δ_e = τ is the boundary of
-the parameter space. By form 3, T is decreasing in δ̄_e/τ̄, so **CK sit exactly at the point
-that minimizes the entry threshold over the entire admissible range.** There is no
-calibration of this model in which entry has an easier time outrunning destruction.
-
-**It is why they need a friction.** With T = 0.203, almost any positive entry response makes
-vacancies rise with unemployment. Making vacancy creation finitely elastic is what holds the
-entry response below the threshold. So the assumption is not doing work about the labor
-market in general; it is repairing a consequence of having one separation margin.
-
-Conversely, our result does not come from the business formation block, from variety, or from
-anything on the preference side. It comes from measuring δ_e and finding it an order of
-magnitude below τ, which raises the threshold by roughly the same factor. **Gabrovski–Silva
-already have the δ/s split, so an augmented GS model gets this too** — the contribution here
-is the measurement, not the structure. (The structure earns its place on other grounds; see
-`role_of_ingredients.md` and the intro's necessity argument.)
+**On the destruction date, vacancies fall in every row, even at δ_e = τ.** The difference
+across rows is the margin. At D1 the condition holds nine times over; at δ_e = τ it barely
+holds.
 
 ---
 
-## 6. What this does and does not establish
+## 6. From the destruction date to the path
 
-**Establishes.** The bar entry must clear, exactly, as a function of one calibrated
-statistic. Why that bar moves by two orders of magnitude between CK's calibration and ours.
-Why CK's calibration is the most favorable possible case for positive comovement.
+After date 1, tightness decays at ρ_δ while unemployment decays at roughly
+1 − (1−δ̄_e)f̄ − τ̄ ≈ 0.56. If the shock is short-lived, u outlasts the tightness fall. v = θu
+then turns positive while u is still high, and the path slope can be positive even when
+v̂_1 < 0.
 
-**Does not establish.** Whether the model's entry response actually clears the bar. That
-needs ê itself, which comes from ê = ξQ̂ together with Q̂ from the asset-pricing relation and
-the JCC (`app:loglin` ¶9, ¶9a). An indicative check: at the baseline ξ_inv = 1.0, so ξ = 1
-and ê = Q̂. Clearing T = 12.78 would need Q̂ ≈ 12.8 % for a 1 % δ shock, which is far outside
-anything the IRFs show; at CK's T = 0.203 it needs only Q̂ ≈ 0.2 %. That is consistent with
-the Comparison D figures, where vacancies fall at every ξ we run. ⚠️ Indicative only — Q̂ is
-not computed in this note.
+- **D1:** vacancies are below steady state in months 0–2 and above from month 3. The path
+  slope is −0.23.
+- **CK-like:** the late positive phase dominates, giving +0.17.
 
-**Relation to the draft's existing argument.** `app:comparison_D` argues through v = θu and
-the free-entry limit, which is a different decomposition and reaches the same conclusion. It
-also contains a non sequitur: it says that at low δ̄_e "the proportional u rise is small ...
-*and the duration shortening effect on K is correspondingly weak*. The θ decline therefore
-dominates." A weaker effect on K means θ falls *less*, which makes vacancies *more* likely to
-rise. The conclusion is right but that sentence argues against it. The accounting in this
-note is cleaner because the destruction term appears explicitly instead of being hidden
-inside θ.
+**The path slope is negative iff ρ_δ exceeds:**
 
-**A notation bug to fix.** `eq:u_ll` writes the destruction impulse as δ̃_e,t (level
-deviation, coefficient ūf̄); `eq:v_ll` writes δ̂_e,t with coefficient v̄^pre. Since
-∂/∂δ_e of (1−δ_e)·stock is −stock, the coefficient v̄^pre is correct for a **level**
-deviation, so `eq:v_ll`'s hat should be a tilde. As printed, a reader who takes the hat as a
-log deviation overstates the destruction term by a factor 1/δ̄_e ≈ 370.
+| Calibration | ρ_δ threshold (monthly) | quarterly |
+|---|---|---|
+| **D1** | **0.369** | 0.050 |
+| Code | 0.444 | 0.088 |
+| BGM/GS | 0.491 | 0.118 |
+| CK-like | none in [0.05, 0.999] | — |
+
+The calibrated ρ_δ = 0.592 (0.207 quarterly) is already low because BED Deaths are noisy,
+and the D1 threshold sits well below it. So the result does not rest on the persistence
+estimate.
 
 ---
 
-## 7. For the draft
+## 7. How a lower δ_e (relative to τ) helps, and robustness
 
-1. **The intro paragraph on CK** should run on the predetermined share, not on duration or on
-   the relative size of the u and θ responses. The sentence to make is that a destruction
-   shock can only remove vacancies that were already standing, and that at δ_e = τ almost
-   none are.
-2. **`app:loglin` ¶7** is the natural home for the threshold. It already introduces
-   v̄^pre = v̄ − ē and says the destruction impulse "directly destroys the predetermined
-   stock" without drawing the consequence.
-3. **Fix the `app:comparison_D` non sequitur** and the `eq:v_ll` hat.
-4. **Numbers are program-sourced** (N15 satisfied) via `predetermined_vacancy_share.jl`. The
-   two worth quoting are v̄^pre/v̄ and T at D1 against CK.
-5. ⚠️ The code still runs `dest_ann = 0.0754`, so the middle row is what the current figures
-   embody. T = 4.73 there against 12.78 at D1: **the D1 cascade strengthens this argument**,
-   and §5.3 understates it today.
+**The mechanism in one sentence.** Holding τ̄ and f̄ fixed, the unemployment push per unit
+of destruction is fixed, while the tightness pull scales with 1/(r+δ̄_e). So the relevant
+statistic is **(r + δ̄_e)/τ̄**: 0.19 at D1, 0.32, 0.39, and 1.11 at δ_e = τ.
+
+- At ρ_δ = 0.592, the path slope is negative iff **δ̄_e < 0.0131 monthly (14.7 %/yr,
+  δ̄_e/τ̄ = 0.42)**.
+- **The gain saturates.** At D1, δ̄_e = 0.0027 is already below r ≈ 0.0033 monthly, so
+  lowering δ̄_e further adds little.
+- **δ_e = τ is the worst case.** It never gives a negative path slope at free entry, for
+  any ρ_δ we tried.
+
+**Robustness.** One input at a time, from the mechanism targets:
+
+| varied | value | \|a\| D1 | slope D1 | slope CK-like |
+|---|---|---|---|---|
+| x_v (sunk share) | 0.05 | 165 | −0.13 | +0.20 |
+| | 0.25 | 269 | −0.22 | +0.18 |
+| | 0.5 | 287 | −0.23 | +0.17 |
+| | 1.0 | 292 | −0.24 | +0.17 |
+| b_ratio | 0.71 | 231 | −0.20 | +0.20 |
+| | 0.95 | 346 | −0.26 | +0.14 |
+| ρ_δ | 0.3 | 284 | **+0.08** | +0.31 |
+| | 0.9 | 292 | −0.49 | +0.08 |
+| | 0.99 | 294 | −0.57 | +0.06 |
+
+- **x_v and b_ratio** move the size, not the sign. This holds down to a 5 % sunk share, as
+  §4 predicts.
+- **ρ_δ is the input that can flip the sign at D1**, and only below 0.37.
+
+---
+
+## 8. Contrast with flow-cost DMP and with CK
+
+**Flow-cost DMP** (same steady state, K fixed) gives a path slope of +0.46 to +0.47 at every
+δ̄_e. Tightness barely moves (a ≈ −4), so u and v rise together. This is the problem CK
+describe for free entry. Their comparison case ("H/M with JD") is this model, not their
+durable-vacancy model at ξ = ∞. In their words: "With free entry, large job separation
+shocks generate a counterfactual positive correlation" (Coles and Kelishomi 2018, p. 120,
+DOI 10.1257/mac.20150040).
+
+**CK's own structure** (c = 0, all creation costs sunk, every separation destroys the job)
+is our durable vacancy at δ_e = τ. As far as the converted text shows, they do not report
+it at ξ → ∞ under separation shocks. In our nested economy that case has a positive path
+slope at every persistence. The vacancy-value channel is weakest there because
+r + δ_e is largest. That is consistent with CK needing ξ < ∞, though their calibration
+(large surplus, Hosios) differs from ours.
+
+**So the departure from CK is this.** The structure is the same: durable vacancies with
+sunk creation costs. With δ_e measured from establishment deaths, free entry no longer
+breaks the Beveridge curve, because the user cost of a long-lived vacancy reacts strongly
+to destruction. This comes from GS's δ/s split plus measurement, not from the business
+formation block.
+
+---
+
+## 9. What is not established
+
+1. **The full model at ξ_inv → 0.** The nested economy drops variety, endogenous exit, the
+   SDF and reposting costs.
+   - Variety lowers the surplus after a δ shock (`app:loglin` ¶9b), which should push θ
+     down further.
+   - Endogenous exit scales the δ_e response, but scales u and θ alike.
+   - The SDF and reposting effects are unsigned.
+
+   `calibrate_shares_free_entry` and `steady_state_free_entry` exist. The dynamic run does
+   not.
+2. **Comparison D's ξ_inv = 0.1 run** shows vacancies rising for two months, at 7.54 %/yr
+   with code timing. Within the period, the vacancy stock's elasticity to Q there is
+   ξ·ē/v̄ = 1.75 (Appendix A), so ξ = 10 may not be close enough to free entry. The code also
+   dates exit one period early (R8). Run the free-entry case after R8.
+3. **e ≥ 0.** At date 0, free entry wants v_0 to fall with the inherited stock fixed, so
+   entry absorbs the whole cut. At D1, entry would turn negative beyond a shock of 9.3 % of
+   δ̄_e (58 % at δ_e = τ). A 1-SD shock (3.3 %) fits; a 3-SD shock does not. Past that point
+   Q < x_m and the economy behaves as if ξ were finite. The linearization ignores it.
+
+---
+
+## Appendix A. Finite ξ: the stock elasticity (secondary)
+
+At finite ξ, ẽ = ē·ξ·Q̂, so the vacancy stock's within-period elasticity to Q is ξ·ē/v̄,
+with ē/v̄ = (δ̄_e/τ̄)/κ_v and κ_v = 1.2034.
+
+| | ξ = 0.265 | ξ = 1 | ξ = 10 | ξ for unit elasticity |
+|---|---|---|---|---|
+| D1 | 0.019 | 0.073 | 0.726 | 13.8 |
+| Code | 0.046 | 0.175 | 1.746 | 5.7 |
+| CK-like | 0.220 | 0.831 | 8.310 | 1.2 |
+
+At D1 and ξ = 1, the stock is less elastic than CK's estimated ξ = 0.265 makes it at
+δ_e = τ. The reason is that reposting, not entry, supplies most vacancies. With costly
+reposting (this branch), Λ_r responds to Q and adds a second term. That term is not
+computed here.
+
+---
+
+## Appendix B. Revision log, and the units error
+
+- **The units error.** The Oct 5 note set ê/δ̂_e > v̄^pre/ē. The right-hand side is the bar
+  per unit *level* of δ_e. Per 1 % it is X̄/(v̄+L̄): 0.035 at D1 and 0.0065 at δ_e = τ.
+  "62.9 times higher", "13 % per 1 % shock" and "Q̂ ≈ 12.8 %" are withdrawn.
+- **Kept:** destruction hits only the inherited stock; ē/v̄ = (δ̄_e/τ̄)/κ_v.
+- **Draft items affected.**
+  - `app:loglin` ¶9c compares per-log loadings. The unemployment loading "vanishing in
+    δ̄_e/τ̄" is a units artifact. Rewrite around §5 and §7.
+  - In `app:comparison_D`, "ξ → ∞ ⇒ ê = ξQ̂ → 0" is wrong: ξQ̂ is ∞·0, and entry is the
+    residual. Its free-entry reasoning via the inherited share should be replaced by §4–§5.
+  - `eq:v_ll` omits −(1−δ̄_e)[v̄ q̃_{t−1} + s̄ ũ_{t−1}].
+- **Context files flagged as superseded:** `CLAUDE.md`, `findings.md`, `decisions.md` D1,
+  `README.md`.
+- `predetermined_vacancy_share.jl` output label corrected; numbers unchanged.

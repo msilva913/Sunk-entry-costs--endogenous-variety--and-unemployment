@@ -1,0 +1,102 @@
+====================================================================================================
+THE BEVERIDGE RESPONSE TO A DESTRUCTION SHOCK: ACCOUNTING, AND FREE ENTRY
+Targets: f=0.41 q=0.80 sep=0.031 X_Y=0.015 b_ratio=0.9 x_v=0.5 dest_elast_target=5 (PATH B)
+Shock: ρ_δ = 0.592 monthly; 1-SD innovation σ_δ = 0.0669 (log δ) ≈ 3.3% of δ̄_e in levels
+====================================================================================================
+
+PART 1. Vacancy accounting on the destruction date (lagged variables at steady state)
+  ṽ = ẽ − X̄·δ̃_e.   T_log: needed ê per 1% rise in δ_e.   T_lev: needed ê per unit level δ̃_e.
+  X̄/v: share of the stock exposed.   hole: vacancies destroyed by a 1% rise in δ_e, % of v̄.
+
+Calibration                        δ_e    δ_e/τ      e/v      X̄/v      T_log      T_lev       hole
+----------------------------------------------------------------------------------------------------
+D1 settled (3.20%/yr)         0.002707   0.0873   0.0726   0.9300     0.0347      12.82    0.0025%
+Code baseline (7.54%/yr)      0.006512   0.2100   0.1746   0.8309     0.0310       4.76    0.0054%
+BGM/GS (10%/yr)               0.008742   0.2820   0.2343   0.7724     0.0288       3.30    0.0068%
+CK-like (δ_e = τ)             0.031000   1.0000   0.8310   0.1744     0.0065       0.21    0.0054%
+----------------------------------------------------------------------------------------------------
+
+PART 1b. Effective within-period elasticity of the vacancy STOCK to Q: ∂v̂/∂Q̂ = ξ·e/v
+  (entry is the only within-period margin under costless reposting). CK estimate ξ = 0.265.
+
+Calibration                   ξ = 0.265      ξ = 1      ξ = 2     ξ = 10     ξ for unit
+----------------------------------------------------------------------------------------------------
+D1 settled (3.20%/yr)             0.019      0.073      0.145      0.726           13.8
+Code baseline (7.54%/yr)          0.046      0.175      0.349      1.746            5.7
+BGM/GS (10%/yr)                   0.062      0.234      0.469      2.343            4.3
+CK-like (δ_e = τ)                 0.220      0.831      1.662      8.310            1.2
+----------------------------------------------------------------------------------------------------
+
+PART 2. Free entry (Q = x_m) in the nested durable-vacancy economy
+  a = θ̂ per unit level of δ̃_e,t+1. Forces: F1 match survival, F2 user cost of the slot,
+  F3 user cost eroding the match surplus. 'DMP' = flow-cost vacancy (K fixed): F1 only.
+
+Calibration                        ϕ     χ_K     K/C       F1       F2       F3      Den         a     a_DMP (r+δ_e)/τ
+----------------------------------------------------------------------------------------------------
+D1 settled (3.20%/yr)         0.5795   0.500   0.401     1.00    47.52    16.60    0.227    -287.4     -4.43     0.193
+Code baseline (7.54%/yr)      0.6695   0.500   0.403     1.01    30.16     7.97    0.242    -161.8     -4.16     0.316
+BGM/GS (10%/yr)               0.6891   0.500   0.404     1.01    24.76     6.11    0.245    -130.0     -4.11     0.388
+CK-like (δ_e = τ)             0.7341   0.500   0.413     1.03     8.84     1.83    0.253     -46.3     -4.08     1.106
+----------------------------------------------------------------------------------------------------
+
+  Impulse responses at free entry, per 1% rise in δ_e,1 (d_0 = 0.01·δ̄_e). Levels, % of SS.
+  t=0: anticipation (no destruction yet). t=1: destruction date. slope = Σṽũ/Σũ² over 48 months.
+  e≥0 limit: largest shock, in % of δ̄_e, before entry would have to turn negative.
+  v̂>0 @: first month in which vacancies are above steady state.
+
+Calibration                  model        v̂_0       û_1       v̂_1    û_peak     slope  e≥0 limit   v̂>0 @
+----------------------------------------------------------------------------------------------------
+D1 settled (3.20%/yr)        dur     -0.7778%   0.1635%  -0.2970%   0.1881%   -0.2333       9.3%       3
+D1 settled (3.20%/yr)        DMP     -0.0120%   0.0379%   0.0308%   0.0436%    0.4629     605.8%       1
+Code baseline (7.54%/yr)     dur     -1.0537%   0.2595%  -0.3643%   0.2987%   -0.1239      16.6%       3
+Code baseline (7.54%/yr)     DMP     -0.0271%   0.0911%   0.0751%   0.1049%    0.4659     644.1%       1
+BGM/GS (10%/yr)              dur     -1.1365%   0.3030%  -0.3698%   0.3488%   -0.0753      20.6%       3
+BGM/GS (10%/yr)              DMP     -0.0360%   0.1225%   0.1012%   0.1410%    0.4665     651.5%       1
+CK-like (δ_e = τ)            dur     -1.4350%   0.6585%  -0.1911%   0.7579%    0.1709      57.9%       2
+CK-like (δ_e = τ)            DMP     -0.1266%   0.4439%   0.3689%   0.5109%    0.4678     656.6%       1
+----------------------------------------------------------------------------------------------------
+
+READING
+  dur = durable vacancy at free entry (this model, ξ → ∞). DMP = same SS, flow-cost vacancy.
+  slope < 0 is a downward-sloping Beveridge response.
+
+PART 3. Free entry: destruction-date sign condition  v̂_1/d_0 = a·[ρ − (1−δ_e)f(1−η)] + c_u/ū
+  Vacancies fall on date 1 iff |a| > a*. 'slope' is the 48-month path slope as above.
+
+Calibration                        |a|        a*    |a|/a*    v̂_1/d_0     slope
+----------------------------------------------------------------------------------------------------
+D1 settled (3.20%/yr)            287.4      31.0      9.28     -109.7   -0.2333
+Code baseline (7.54%/yr)         161.8      31.1      5.20      -55.9   -0.1239
+BGM/GS (10%/yr)                  130.0      31.2      4.17      -42.3   -0.0753
+CK-like (δ_e = τ)                 46.3      31.9      1.45       -6.2    0.1709
+----------------------------------------------------------------------------------------------------
+
+  Robustness at free entry: D1 and CK-like, varying one input at a time from the
+  mechanism targets (x_v = 0.5, b_ratio = 0.9, ρ_δ = 0.592). x_v = sunk (durable) share
+  of recruiting cost; x_v → 0 is a pure flow-cost vacancy.
+
+varied         value       |a| D1     a* D1  slope D1     |a| CK   slope CK
+----------------------------------------------------------------------------------------------------
+x_v            0.05           165     30.99   -0.1288      40.81     0.1981
+x_v            0.1          216.3     30.99   -0.1831      42.73     0.1883
+x_v            0.25         268.5     30.99   -0.2219      44.99     0.1772
+x_v            0.5          287.4     30.99   -0.2333      46.29     0.1709
+x_v            0.75         291.4     30.99   -0.2355      46.88     0.1681
+x_v            1              292     30.99   -0.2359      47.23     0.1665
+b_ratio        0.71         230.7     30.99   -0.1951      40.07     0.2019
+b_ratio        0.8          245.9     30.99   -0.2067      41.65     0.1937
+b_ratio        0.9          287.4     30.99   -0.2333      46.29     0.1709
+b_ratio        0.95         346.4     30.99   -0.2623      53.91     0.1368
+ρ_δ            0.3          284.4     97.51   0.08273      49.39     0.3069
+ρ_δ            0.592        287.4     30.99   -0.2333      46.29     0.1709
+ρ_δ            0.9          291.8     18.02   -0.4948      42.34    0.07873
+ρ_δ            0.99         293.5     16.06   -0.5725      41.02    0.05558
+----------------------------------------------------------------------------------------------------
+
+  Sign flips of the path slope at free entry:
+    D1 settled (3.20%/yr)        slope < 0 iff ρ_δ > 0.369 (monthly; 0.050 quarterly)
+    Code baseline (7.54%/yr)     slope < 0 iff ρ_δ > 0.444 (monthly; 0.088 quarterly)
+    BGM/GS (10%/yr)              slope < 0 iff ρ_δ > 0.491 (monthly; 0.118 quarterly)
+    at ρ_δ = 0.592: slope < 0 iff δ_e < 0.01312 monthly (14.7%/yr, δ_e/τ = 0.423)
+    CK-like: slope > 0 for every ρ_δ in [0.05, 0.999]
+====================================================================================================

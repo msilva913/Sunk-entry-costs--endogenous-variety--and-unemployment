@@ -161,6 +161,8 @@ The `.tex` file is ASCII-clean and meant to be `\input` by the manuscript so the
 carrying hard-coded figures. MS decided to keep literals in the prose; `mechanism_stats.txt`
 is the authority to diff against.
 
+| `beveridge_free_entry.jl` | **Added Oct 6, 2026.** Calibration, tightness coefficient, IRF and sign-flip helpers for the free-entry GS economy. Imported by `gs_free_entry_beveridge.jl` | `beveridge_free_entry.txt` |
+| `gs_free_entry_beveridge.jl` | **Added Oct 6, 2026.** The R15 proposition's numbers: log-linear weights, IRF tables at iid and estimated persistence, path slopes, sign-flip boundaries in rho and delta_e, and the `Kfixed` flow-cost comparator that isolates the user-cost channel. **Every closed form is asserted against a simulated IRF of the same linear system** | `gs_free_entry_beveridge.txt` |
 | `predetermined_vacancy_share.jl` | **Added Oct 5, 2026.** Predetermined share of the vacancy stock (v̄^pre/v̄ = 1 − ē/v̄) and the threshold entry elasticity T = κ_v/(δ̄_e/τ̄) − 1 at four destruction calibrations including δ_e = τ (CK). **Self-contained** — no solve, no `steady_state.jl` include; mirrors its closed-form algebra and asserts all three closed forms against each other. Runs in seconds | `predetermined_vacancy_share.txt` |
 
 ### Calibration diagnostics (not paper comparisons)

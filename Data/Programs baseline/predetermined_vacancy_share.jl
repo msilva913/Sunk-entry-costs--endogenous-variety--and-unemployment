@@ -12,6 +12,9 @@
 #     dv_t = de_t - v_pre * ddelta_e,t ,      v_pre = v - e
 #
 # so vacancies rise iff new postings exceed the destroyed predetermined stock.
+# ⚠ Oct 6, 2026: the next display is the bar per UNIT LEVEL of delta_e, not per 1%.
+# Per 1% (both log deviations) it is e-hat/delta-hat > delta_e*v_pre/e = v_pre/(v+L).
+# See beveridge_free_entry.jl and the rewritten note. Original text follows.
 # In log deviations (e-hat = de/e, delta-hat = ddelta_e/delta_e) that condition is
 #
 #     e-hat / delta-hat > v_pre / e  ==  v/e - 1 .
@@ -134,8 +137,8 @@ push!(lines, "")
 push!(lines, "Columns: delta_e monthly destruction rate; d_e/tau its share of total separations;")
 push!(lines, "  e/v entrant share of the vacancy stock (= entrant_vac_share, steady_state.jl:428);")
 push!(lines, "  v_pre/v predetermined (inherited) share, exposed to the destruction shock;")
-push!(lines, "  T threshold entry elasticity: percent rise in e per 1 percent rise in delta_e")
-push!(lines, "    needed for total vacancies to rise rather than fall on impact.")
+push!(lines, "  T threshold: rise in log e per UNIT rise in the monthly delta_e (level), i.e. e-hat/d.")
+push!(lines, "    Per 1 percent rise in delta_e the threshold is delta_e*T = v_pre/(v+L). See beveridge_free_entry.jl.")
 push!(lines, "")
 push!(lines, "IDENTITIES (verified by assertion above):")
 push!(lines, "  e/v     = (delta_e/tau) / kappa_v")

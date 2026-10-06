@@ -9,3 +9,10 @@ Data/Draft_21Feb2026.pdf
 # Data/Key papers/pdf_to_markdown.py; regenerates in seconds, so tracking it
 # would only add diff noise. The PDFs are the source of record.
 Data/Key papers/markdown/
+
+# LaTeX build artifacts for the standalone notes in Data/Notes/. The .tex and
+# .pdf are the record; these regenerate on any build.
+Data/Notes/*.aux
+Data/Notes/*.log
+Data/Notes/*.out
+Data/Notes/*.synctex.gz

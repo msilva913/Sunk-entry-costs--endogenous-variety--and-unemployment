@@ -21,8 +21,8 @@ Coles-Kelishomi (delta_e = tau)            0.031000    1.0000    0.8310    0.169
 Columns: delta_e monthly destruction rate; d_e/tau its share of total separations;
   e/v entrant share of the vacancy stock (= entrant_vac_share, steady_state.jl:428);
   v_pre/v predetermined (inherited) share, exposed to the destruction shock;
-  T threshold entry elasticity: percent rise in e per 1 percent rise in delta_e
-    needed for total vacancies to rise rather than fall on impact.
+  T threshold: rise in log e per UNIT rise in the monthly delta_e (level), i.e. e-hat/d.
+    Per 1 percent rise in delta_e the threshold is delta_e*T = v_pre/(v+L). See beveridge_free_entry.jl.
 
 IDENTITIES (verified by assertion above):
   e/v     = (delta_e/tau) / kappa_v

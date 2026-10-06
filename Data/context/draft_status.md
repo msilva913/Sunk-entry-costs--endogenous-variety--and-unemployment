@@ -66,7 +66,13 @@ cascade, every §5.3 number comes from the code's timing.
 | `prop:equilibria`, `prop:curves` | ⚠️ Not audited (R12) |
 | `prop:ds_asymmetry` (5) | ✅ Restated Oct 5 under the timing convention (R13); Part 2 numerics wait on R8 |
 
+### Candidate: Beveridge response at free entry (R15) — **not in the draft**
+
+Drafted in [`../Notes/beveridge_free_entry_GS.tex`](../Notes/beveridge_free_entry_GS.tex). Stated in the AGS economy of `prop:ags` with σ = κ = 0, which by `rem:nesting` is Gabrovski–Silva, at ξ → ∞. Delivers impact, an h = 1 condition, a path-slope formula and an iid corollary, all iff and all in closed form. **Blocked on a design decision, not on work:** see R15 in [`pending_tasks.md`](pending_tasks.md) for the choice between placing it after Prop. 5 and extending it with an s-shock part so it becomes a self-contained δ–s asymmetry theorem. Do not splice until that is settled, since option (b) changes what Prop. 5 is for.
+
 ### Proposition 5 (`prop:ds_asymmetry`, proof in `app:proof_ds`) — restated Oct 5, 2026
+
+**Part 3 qualified Oct 6, 2026.** The statement now reads "a sufficient condition, at a finite entry elasticity ξ, is that δ̄_e/τ̄ is small", and the discussion gains a paragraph explaining the restriction: as ξ → ∞ the entry cushion is no longer held back by the convexity of the posting cost and, for an iid shock, it overturns the destruction at every horizon after impact whatever δ̄_e/τ̄ (`cor:iid` of the R15 proposition). The draft's own numerics were never general in ξ — `run_prop5_parts23_check.jl` runs ξ_inv ∈ {0.5, 1, 2} only — but the text did not say so. The phrase "the free-entry case is treated separately below" is a placeholder; it becomes a cross-reference when R15 lands.
 
 ⚠ **Proof bug, logged as R12c (Oct 5).** The Part 3 proof argues that the entry response vanishes because "the duration-shortening contribution to K̂^δ carries coefficient δ̄_e/(r+δ̄_e)" — the same circular reading of `eq:K_decomp` that was removed from `app:loglin`. The conclusion looks right and is corroborated twice over (the destruction term is bounded away from zero; the threshold derivation in [`../Notes/predetermined_vacancies_and_the_CK_special_case.md`](../Notes/predetermined_vacancies_and_the_CK_special_case.md) reaches the same place from the vacancy law of motion), but the justification is unsound. Rewrite via `eq:K_jcc_ll`. Care: the proof differentiates w.r.t. the **level** of δ_t, where ∂θ/∂δ_t is bounded rather than vanishing, so the loading shortcut does not transfer
 
