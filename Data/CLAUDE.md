@@ -122,6 +122,10 @@ full-model runs; two self-contained programs, one LaTeX note, one draft edit (Oc
 - **Authoritative source:** [`Notes/beveridge_free_entry_GS.tex`](Notes/beveridge_free_entry_GS.tex)
   (`lem:theta`, `rem:recursive`, `prop:fe`, `cor:allh`; draft layout). The `.md` exposition
   was deleted Oct 7. Numbers: `Programs baseline/gs_free_entry_beveridge.jl`.
+- **s shock added (Oct 7).** Same economy, same thresholds with R_s = (1−δ̄)f̄·D/(ρτ̄): an s
+  shock is positively sloped at every persistence whenever (1−δ̄)f̄[η_L + ϕ(1−δ̄)f̄/τ̄] ≥ 1
+  (4.05 at D1). R_δ = 0.045 vs R_s = 9.56 at D1, ρ = 0.592. This makes R15's option (b), a
+  self-contained δ–s theorem, feasible; it is now `prop:fe` part 3 in the note.
 - **Draft edit (Oct 6, `ff17299`):** Prop. 5 Part 3's "δ̄_e/τ̄ small" qualified to finite ξ.
 - ⛔ **R15 is blocked on a design decision (MS):** (a) place it after Prop. 5, or (b) extend
   it with an s-shock part into a self-contained δ–s asymmetry theorem. See

@@ -195,6 +195,92 @@ for (n, d) in CALIBS[[1, 4]]
         P(@sprintf("    first month with v̂ > 0: %s", isnothing(tpos) ? "none ≤ 12" : string(tpos - 1)))
     end
 end
+
+# =============================================================================
+# s shock (Oct 7, 2026). s_t = s̄ exp(s̃_t), s̃ AR(1). Free entry: K = x_m(r+δ̄)/(1+r) does
+# not depend on s, so tightness moves only through the continuation term (1−s_{t+1})K/q
+# of eq:jcc_eq (a match formed at t first faces separation at the end of t+1).
+#   θ̂_t = b s̃_t,   b = −ρ(1−δ̄)s̄ / D,   D = η[1+r−ρ(1−τ̄)] + ρϕ(1−δ̄)f̄  (same D as a)
+#   û_t = λ û_{t−1} + ℓ_s s̃_{t−1} − ω θ̂_{t−1},   ℓ_s = (1−δ̄)f̄(1−δ̄/τ̄)
+#   R_s = ℓ_s/|b| = (1−δ̄)f̄ D/(ρ τ̄);  same h = 1 and path conditions as the δ shock.
+# Sufficient for positive comovement at every t ≥ 1 and every ρ:
+#   (1−δ̄)f̄ [η + ϕ(1−δ̄)f̄/τ̄] ≥ 1   (since R_s > that expression and both persistence terms < 1).
+# Log units throughout (the note's units). κ = 0 (x_v = 1).
+# =============================================================================
+const ρ_s_cal = 0.874      # context/parameters.md: monthly AR(1) on s, part6b
+
+"s-shock closed forms, per unit of the log shock s̃."
+function gs_s(c; ρ = ρ_s_cal)
+    η, δ, ϕ, f, τ, r, s, θ = c.η, c.δ_e, c.ϕ, c.f, c.τ, c.r, c.s, c.θ
+    fe = (1 - δ) * f
+    D  = η * (1 + r - ρ * (1 - τ)) + ρ * ϕ * fe
+    b  = -ρ * (1 - δ) * s / D
+    ℓs = fe * (1 - δ / τ)
+    ω  = (1 - η) * fe
+    λ  = 1 - fe - τ
+    Rs = b == 0 ? Inf : ℓs / (-b)
+    Λρ = ρ * (1 - λ^2) / (1 + ρ * λ)
+    slope = θ * (1 - Λρ / (ω + Rs))
+    bound = fe * (η + ϕ * fe / τ)
+    return (; b, D, ℓs, ω, λ, Rs, Λρ, slope, bound, v1 = ℓs - (-b) * (ρ - ω))
+end
+
+"Simulate the linear s-shock system (log units, ε_0 = 1) for H periods."
+function irf_s(c, g; ρ, H = 3000)
+    θh = [g.b * ρ^t for t in 0:H]
+    uh = zeros(H + 1)
+    for t in 1:H
+        uh[t+1] = g.λ * uh[t] + g.ℓs * ρ^(t - 1) - g.ω * θh[t]
+    end
+    return (; θh, uh, vh = θh .+ uh)
+end
+
+P("")
+P("── s shock at free entry (κ = 0, log units): θ̂ = b s̃; h=1 iff ρ > ω+R_s; path iff ρ(1−λ²)/(1+ρλ) > ω+R_s ──")
+P(@sprintf("%-26s %7s %9s %8s %8s %9s %9s %9s %8s", "Calibration", "ρ", "b", "ℓ_s", "R_s",
+           "ω+R_s", "Λ_ρ", "slope", "bound"))
+P("-"^100)
+for (n, d) in CALIBS[1:3]                     # δ_e = τ has s = 0: no s margin
+    c = calibrate(d; t = (TG..., x_v = 1.0))
+    # Check 1: b at ρ = 1 equals the steady-state derivative d ln θ / d ln s (K fixed)
+    A = c.f / c.θ^(1 - c.η); K = c.Q * (c.r + c.δ_e) / (1 + c.r)
+    function θss(sv)
+        τv = c.δ_e + sv * (1 - c.δ_e)
+        root(th -> (K / (A * th^(-c.η))) * (c.r + τv + (1 - c.δ_e) * c.ϕ * A * th^(1 - c.η)) -
+                   (1 - c.δ_e) * (1 - c.ϕ) * (c.w_int - K - c.b), 1e-3, 50.0)
+    end
+    h = 1e-6
+    fd = (log(θss(c.s * exp(h))) - log(θss(c.s * exp(-h)))) / (2h)
+    @assert isapprox(gs_s(c; ρ = 1.0).b, fd; rtol = 1e-5) "b(ρ=1) fails: $n"
+    # Check 2: ℓ_s equals the one-step nonlinear response of ln u to ln s at θ = θ̄
+    u1(sv) = (1 - (1 - c.δ_e) * c.f) * c.u + (c.δ_e + sv * (1 - c.δ_e)) * (1 - c.u)
+    @assert isapprox(gs_s(c).ℓs, (log(u1(c.s * exp(h))) - log(u1(c.s * exp(-h)))) / (2h); rtol = 1e-5)
+    # Check 3: slope formula against a simulated path; sign claims under the bound
+    for ρ in (0.3, ρ_δ, ρ_s_cal, 0.99)
+        g = gs_s(c; ρ = ρ); S = irf_s(c, g; ρ = ρ)
+        sim = sum(c.v .* S.vh .* c.u .* S.uh) / sum((c.u .* S.uh) .^ 2)
+        @assert isapprox(sim, g.slope; rtol = 1e-6) "s slope fails: $n, ρ = $ρ"
+        @assert isapprox(S.vh[2], g.v1; rtol = 1e-10)
+        g.bound >= 1 && @assert all(S.vh[2:end] .> 0) && g.slope > 0
+        P(@sprintf("%-26s %7.3f %9.4f %8.4f %8.3f %9.3f %9.3f %9.4f %8.3f", n, ρ, g.b, g.ℓs,
+                   g.Rs, g.ω + g.Rs, g.Λρ, g.slope, g.bound))
+    end
+    g0 = gs_s(c; ρ = 0.0); S0 = irf_s(c, g0; ρ = 0.0, H = 50)
+    @assert g0.b == 0 && all(isapprox.(S0.vh, S0.uh; atol = 1e-14))   # iid: θ never moves
+end
+P("-"^100)
+P("  bound = (1−δ̄)f̄[η + ϕ(1−δ̄)f̄/τ̄] ≥ 1 ⇒ v̂_t > 0 for all t ≥ 1 and slope > 0 for every ρ (asserted).")
+P(@sprintf("  For comparison, R_δ at ρ = %.3f (δ shock, κ = 0): D1 %.4f, δ_e = τ %.4f.", ρ_δ,
+           gs(calibrate(CALIBS[1][2]; t = (TG..., x_v = 1.0))).R,
+           gs(calibrate(CALIBS[4][2]; t = (TG..., x_v = 1.0))).R))
+P("")
+cD1 = calibrate(CALIBS[1][2]; t = (TG..., x_v = 1.0))
+gD1 = gs_s(cD1); SD1 = irf_s(cD1, gD1; ρ = ρ_s_cal, H = 12)
+P(@sprintf("  D1, s shock, ρ = %.3f, per 1%% rise in s (s̃_0 = 0.01), in %%:", ρ_s_cal))
+P(@sprintf("    %4s %9s %9s %9s", "t", "θ̂_t", "û_t", "v̂_t"))
+for t in 0:4
+    P(@sprintf("    %4d %9.4f %9.4f %9.4f", t, SD1.θh[t+1], SD1.uh[t+1], SD1.vh[t+1]))
+end
 P("="^100)
 
 text = join(lines, "\n")

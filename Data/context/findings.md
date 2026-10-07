@@ -675,6 +675,33 @@ our inference, not their argument.
 **6. Analytic tractability is inherited from DMP**, where the job creation condition also
 contains no stock. The substantive content is the user-cost term δ̄/(r+δ̄) in a.
 
+**7. The s shock in the same economy is positively sloped at every persistence (Oct 7).**
+K does not depend on s, so tightness moves only through the probability that a match
+continues: θ̂_t = b·s̃_t with b = −ρ(1−δ̄)s̄/D, the same denominator as a, and b = 0 for an
+iid shock. The unemployment loading is ℓ_s = (1−δ̄)f̄(1−δ̄/τ̄), the effective job-finding
+rate times the s share of separations. The same thresholds apply with
+R_s = ℓ_s/|b| = (1−δ̄)f̄·D/(ρτ̄). Since R_s > (1−δ̄)f̄[η_L + ϕ(1−δ̄)f̄/τ̄], vacancies are above
+steady state at every t ≥ 1 and the path slope is positive for every ρ whenever that bound is
+≥ 1 (`prop:fe` part 3). The bound needs ϕ bounded away from zero; at ϕ = 0 and ρ → 1 the s
+case is knife-edge.
+
+| s shock, D1, κ = 0 | ρ = 0.592 | ρ = 0.874 (calibrated ρ_s) |
+|---|---|---|
+| b | −0.039 | −0.072 |
+| ℓ_s | 0.374 | 0.374 |
+| R_s | 9.56 | 5.22 |
+| ρ(1−λ²)/(1+ρλ) | 0.306 | 0.404 |
+| path slope | +0.50 | +0.47 |
+| bound (1−δ̄)f̄[η_L + ϕ(1−δ̄)f̄/τ̄] | 4.05 | 4.05 |
+
+**The δ–s asymmetry in one number:** R_δ = 0.045 vs R_s = 9.56 at D1 and ρ = 0.592. Same
+template and thresholds; the δ shock moves tightness through the vacancy's flow value
+δ̄/(r+δ̄), and at D1 its unemployment loading is small. The s shock moves tightness only
+through match continuation, and its unemployment loading is large. Checks in
+`gs_free_entry_beveridge.jl`: b at ρ = 1 equals the steady-state finite difference
+(−0.09184 both), ℓ_s equals a one-step nonlinear response, the slope matches a simulated
+path. At 7.54 %/yr and 10 %/yr: R_s = 10.0 and 10.1 at ρ = 0.592, bounds 4.50 and 4.59.
+
 **Not established:** the full model at ξ_inv → 0 (variety should strengthen the result;
 endogenous exit, the SDF, costly reposting and the e ≥ 0 bound are unsigned). Draft vs code
 timing (R8) must be fixed first.
