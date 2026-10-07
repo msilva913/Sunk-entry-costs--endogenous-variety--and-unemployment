@@ -1,9 +1,11 @@
 # A downward-sloping Beveridge response to destruction at ξ → ∞
 
-> **Start with [`beveridge_free_entry_GS_proposition.md`](beveridge_free_entry_GS_proposition.md).**
-> It states and proves the result in the minimal Gabrovski–Silva economy, with the
-> sufficient condition r + δ < τ (r the discount rate). This note covers the richer nested
-> economy, dynamics and robustness.
+> **Start with [`beveridge_free_entry_GS.tex`](beveridge_free_entry_GS.tex)** (task R15).
+> It states and proves the result in the Gabrovski–Silva economy (AGS with σ = κ = 0) from
+> the log-linearized dynamic system: vacancies fall at h = 1 iff ρ > ω + R, and the path
+> slope is negative iff ρ(1−λ²)/(1+ρλ) > ω + R, where R is the unemployment loading relative
+> to the tightness loading. This note covers the richer nested economy, the finite-ξ
+> discussion and robustness. Its §4–§6 numbers use x_v = 0.5 and level shocks.
 
 **Written:** October 5, 2026. **Rewritten:** October 6, 2026. The rewrite supersedes the
 Oct 5 argument, whose threshold had a units error (Appendix B).

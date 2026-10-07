@@ -1,11 +1,12 @@
 # gs_free_entry_beveridge.jl
 # =============================================================================
-# δ shock at free entry (ξ → ∞) under the conditions of prop:independence
-# (σ = 0, ζ = 0, p_0 = 0): the labor-market block closes on its own and is the
-# Gabrovski-Silva economy with a time-varying δ_t. Draft timing (S10): δ_t is known
-# at the start of t and acts at the end of t, so u_t and v_pre,t are predetermined
-# and u_{t+1}, v_pre,t+1 carry the destruction. Companion to
-# Notes/beveridge_free_entry_GS_proposition.md.
+# δ shock at free entry (ξ → ∞) in the AGS economy of prop:ags with σ = κ = 0, which
+# rem:nesting identifies as Gabrovski-Silva with a time-varying δ_t: the labor-market
+# block closes on its own. Draft timing (S10): δ_t is known at the start of t and acts
+# at the end of t, so u_t and v_pre,t are predetermined and u_{t+1}, v_pre,t+1 carry
+# the destruction. Numbers for Notes/beveridge_free_entry_GS.tex (task R15).
+# NOTE: internal formulas below use LEVEL shocks d_t; the note uses the log shock
+# δ_t = δ̄ exp(δ̃_t), whose coefficient is δ̄ × the level one (a_note() checks this).
 #
 # Log-linear system (d_t ≡ δ_t − δ̄, d_t = ρ^t d_0; hats are log deviations).
 #   Free entry, eq:Kdef:   K_t = x_m[1 − β(1 − δ_t)]   ⇒   K̂_t = d_t/(r + δ̄)
@@ -48,7 +49,25 @@ function gs(c; ρ = ρ_δ, Kfixed = false)
     # Sufficient conditions in the form (r+δ)/τ < Γ, dropping the survival term in a
     Γ1 = χ * (Ψ + B * ρ * (1 - ϕ) * q) * (ρ - ω) / (f * Dρ)
     ΓP = χ * (Ψ + B * ρ * (1 - ϕ) * q) * (ρ * (1 - λ^2) - ω * (1 + ρ * λ)) / (f * Dρ * (1 + ρ * λ))
-    return (; a, Φ, λ, c_u, ω, κu, v1, slope, uc, Γ1, ΓP)
+    # Note's form: R = unemployment loading / tightness loading (unit-free; same in level or
+    # log shock units), Λρ = persistence discounted by unemployment's own persistence.
+    R  = (f / τ) / (-a)
+    Λρ = ρ * (1 - λ^2) / (1 + ρ * λ)
+    return (; a, Φ, λ, c_u, ω, κu, v1, slope, uc, Γ1, ΓP, R, Λρ)
+end
+
+"""
+Tightness coefficient per unit of the log shock δ̃ (δ_t = δ̄ exp(δ̃_t)), in the form of
+Notes/beveridge_free_entry_GS.tex eq:a: written with 1−τ̄ and the effective matching rates
+(1−δ̄)f̄, (1−δ̄)q̄. Valid for κ = 0 (x_v = 1), the case the note treats.
+"""
+function a_note(c; ρ = ρ_δ)
+    η, δ, ϕ, f, q, τ, r = c.η, c.δ_e, c.ϕ, c.f, c.q, c.τ, c.r
+    ω_ρ = 1 + r - ρ * (1 - τ)                       # r + τ̄ + (1−ρ)(1−τ̄)
+    num = (1 + r) * δ / (1 - δ) +
+          δ / (r + δ) * (ω_ρ + ρ * ϕ * (1 - δ) * f + ρ * (1 - ϕ) * (1 - δ) * q)
+    den = η * ω_ρ + ρ * ϕ * (1 - δ) * f
+    return (; a = -num / den, Φ = (1 - τ - ϕ * (1 - δ) * f / η) / (1 + r))
 end
 
 lines = String[]
@@ -72,6 +91,18 @@ for (tag, tg) in (("x_v = 0.5 (mechanism runners)", TG), ("x_v = 1 (κ = 0)", (T
         @assert isapprox(g.c_u / c.u, c.f / c.τ; rtol = 1e-10)       # c_u/ū = f/τ
         @assert isapprox(g.a, tightness(c).a; rtol = 1e-10)           # same coefficient
         @assert isapprox(g0.a, tightness(c; ρ = 0.0).a; rtol = 1e-10)
+        for ρ in (0.0, 0.3, ρ_δ, 0.9)                                 # proposition in terms of R
+            gρ = gs(c; ρ = ρ)
+            @assert isapprox(gρ.slope, c.θ * (1 - gρ.Λρ / (gρ.ω + gρ.R)); rtol = 1e-10)
+            @assert (gρ.v1 < 0) == (ρ > gρ.ω + gρ.R)
+            @assert (gρ.slope < 0) == (gρ.Λρ > gρ.ω + gρ.R)
+        end
+        if isapprox(c.χ_K, 1.0)                                       # the note's form (κ = 0)
+            for ρ in (0.0, 0.3, ρ_δ, 0.9)
+                @assert isapprox(a_note(c; ρ = ρ).a, c.δ_e * gs(c; ρ = ρ).a; rtol = 1e-10) "eq:a fails: $n"
+                @assert isapprox(a_note(c; ρ = ρ).Φ, gs(c; ρ = ρ).Φ; rtol = 1e-10)
+            end
+        end
         # IRF checks (beveridge_free_entry.jl's simulation uses the same timing)
         R  = irf(c, g.a; H = 3000)
         @assert isapprox(R.ṽ[1] / c.v, g.a; rtol = 1e-10)             # h = 0: v̂ = θ̂, û = 0
@@ -124,6 +155,17 @@ for (tag, tg) in (("x_v = 0.5 (mechanism runners)", TG), ("x_v = 1 (κ = 0)", (T
     P("-"^100)
 end
 P("")
+P("── Proposition in terms of R ≡ (f̄δ̄/τ̄)/|a|: h=1 iff ρ > ω+R; path iff ρ(1−λ²)/(1+ρλ) > ω+R ──")
+P(@sprintf("%-26s %-8s %8s %8s %8s %10s %9s", "Calibration", "x_v", "ω", "R", "ω+R",
+           "ρ(1−λ²)/(1+ρλ)", "slope"))
+P("-"^100)
+for (tag, tg) in (("0.5", TG), ("1", (TG..., x_v = 1.0))), (n, d) in CALIBS
+    c = calibrate(d; t = tg); g = gs(c)
+    P(@sprintf("%-26s %-8s %8.4f %8.4f %8.4f %10.4f %9.4f", n, tag, g.ω, g.R, g.ω + g.R, g.Λρ, g.slope))
+end
+P("-"^100)
+P(@sprintf("  at ρ = %.3f", ρ_δ))
+P("")
 P("── Exposition tables: κ = 0 (x_v = 1), per 1% rise in δ_t (d_0 = 0.01·δ̄), in % ──────────────────")
 for (n, d) in CALIBS[[1, 4]]
     c = calibrate(d; t = (TG..., x_v = 1.0))
@@ -134,6 +176,11 @@ for (n, d) in CALIBS[[1, 4]]
     P(@sprintf("    ē/v̄ = %.4f   X̄/v̄ = %.4f   (1−δ̄)(1−q̄) = %.4f   (1−δ̄)ηq̄ = %.4f   (1−δ̄)s̄/θ̄ = %.4f",
                c.e / c.v, ((1 - c.q) * c.v + c.s * (1 - c.u)) / c.v, (1 - c.δ_e) * (1 - c.q),
                (1 - c.δ_e) * c.η * c.q, (1 - c.δ_e) * c.s / c.θ))
+    # Log-shock form δ_t = δ̄ exp(δ̃_t): weights per unit of δ̃ are δ̄ × the level weights
+    P(@sprintf("    log shock δ̃:  δ̄/(r+δ̄) = %.4f   f̄δ̄/τ̄ = %.4f   (1−s̄)δ̄/τ̄ = %.4f   (1−δ̄)f̄ = %.4f",
+               c.δ_e / (c.r + c.δ_e), c.f * c.δ_e / c.τ, (1 - c.s) * c.δ_e / c.τ, (1 - c.δ_e) * c.f))
+    P(@sprintf("    log shock δ̃:  a·δ̄ = %.4f (iid), %.4f (ρ = %.3f);  r = %.6f",
+               c.δ_e * gs(c; ρ = 0.0).a, c.δ_e * gs(c).a, ρ_δ, c.r))
     for (lab, ρ) in (("iid", 0.0), (@sprintf("ρ = %.3f", ρ_δ), ρ_δ))
         a = gs(c; ρ = ρ).a
         R = irf(c, a; ρ = ρ, H = 12)

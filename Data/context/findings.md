@@ -1,5 +1,5 @@
 # Key Empirical Findings
-**Last updated:** September 28, 2026. E8 (Bartik persistence test) ran September 22–23;
+**Last updated:** October 7, 2026 (R15 free-entry Beveridge findings added). Earlier: September 28, 2026. E8 (Bartik persistence test) ran September 22–23;
 literature review of δ calibration added the same day; reposting-margin mechanism and
 inescapability added September 28; Prop. 5 Part 1 entry-condition check added October 1.
 Model-side results were re-run after the September 5–6 code fixes; see §D1/M5.
@@ -612,3 +612,69 @@ intro must not claim it for the preference side.
 
 ⚠ The code still runs `dest_ann = 0.0754`, where T = 4.73 against 12.78 at D1. **The D1
 cascade strengthens this argument**; §5.3 understates it today.
+
+## Free-entry Beveridge response to a δ shock (R15) — October 6–7, 2026
+
+**Programs.** `Programs baseline/gs_free_entry_beveridge.jl` → `gs_free_entry_beveridge.txt`
+(the proposition; every closed form asserted against a simulated IRF) and
+`Programs baseline/beveridge_free_entry.jl` → `beveridge_free_entry.txt` (the richer nested
+economy at x_v = 0.5, finite-ξ and robustness tables). Both self-contained Base Julia,
+mirroring `calibrate_shares` PATH B with the mechanism-runner targets. **Notes:**
+[`../Notes/beveridge_free_entry_GS.tex`](../Notes/beveridge_free_entry_GS.tex) (authoritative;
+proposition and proofs) and
+[`../Notes/predetermined_vacancies_and_the_CK_special_case.md`](../Notes/predetermined_vacancies_and_the_CK_special_case.md)
+(nested economy, finite ξ, CK reading).
+
+**1. A downward-sloping Beveridge response is possible at ξ → ∞, but needs persistence.**
+In the AGS economy of `prop:ags` with σ = κ = 0 (GS by `rem:nesting`), free entry pins
+Q = x_m but **not** K: K_t = x_m(r+δ_t)/(1+r), the user cost of a vacancy asset that δ_t
+depreciates. The job creation condition then contains no stock, so the system is block
+recursive and θ̂_t = a·δ̃_t in closed form (`lem:theta`). With
+R ≡ (f̄δ̄/τ̄)/|a|, vacancies fall at h = 1 iff ρ > ω + R, and the IRF path slope is negative
+iff ρ(1−λ²)/(1+ρλ) > ω + R (`prop:fe`). **An iid shock gives slope θ̄ > 0**: tightness is
+back at θ̄ one period after the shock, so v = θ̄u rises with u at every horizon after impact.
+
+| (κ = 0, ρ = 0.592) | D1 | δ_e = τ (CK) |
+|---|---|---|
+| δ̄/(r+δ̄), flow-value loading | 0.453 | 0.905 |
+| f̄δ̄/τ̄, unemployment loading | 0.036 | 0.423 |
+| a (log shock) | −0.790 | −1.464 |
+| ω | 0.164 | 0.164 |
+| R | 0.045 | 0.289 (= f̄/\|a\|) |
+| ρ(1−λ²)/(1+ρλ) | 0.306 | 0.306 |
+| path slope | **−0.24** | **+0.17** |
+| ρ needed for slope < 0 | 0.369 | none in (0,1) |
+| ρ needed at h = 1 | 0.211 | 0.447 |
+
+Moving from δ_e = τ to D1 cuts the unemployment loading by a factor of 12 and the flow-value
+loading only by 2, so R falls. The sign of the path slope flips at δ_e/τ = 0.423 (14.7 %/yr)
+at ρ = 0.592 (nested x_v = 0.5 economy). With K held fixed (flow-cost DMP, same steady
+state) the slope is ≈ +0.46–0.49 at every δ̄: the user-cost channel is what delivers the sign.
+
+**2. Prop. 5 Part 3's "δ̄_e/τ̄ small" fails at free entry.** In the iid case entry refills the
+destroyed stock at t+1 for every δ̄_e/τ̄. Part 3 was qualified to finite ξ in the draft on
+Oct 6 (`ff17299`). The proof is still R12c.
+
+**3. At finite ξ, measured δ makes vacancy creation effectively inelastic.** The within-period
+elasticity of the vacancy stock to Q is ξ·ē/v̄, and in steady state
+ē/v̄ = δ̄(v̄+1−ū)/v̄ = (δ̄/τ̄)[τ̄ + (1−δ̄)q̄], with the bracket fixed at 0.831 by the targets. At D1
+and ξ = 1 the stock elasticity is 0.073, below CK's estimated ξ = 0.265 at δ_e = τ (0.22).
+ξ must exceed ≈ 14 before the stock is unit elastic. So Comparison D's "near-free-entry"
+ξ_inv = 0.1 is not near free entry in stock terms at low δ̄. **Hypothesis, not verified:**
+the entry cushion is non-monotone in ξ (it rises with ξ at finite ξ, by congestion relief,
+and reverses at ξ = ∞, by the user cost). Test in R14's ξ → ∞ cell after R8.
+
+**4. Free entry is one-sided.** At D1 (nested economy), entry would have to turn negative for a
+shock above 9.3 % of δ̄_e (58 % at δ_e = τ); a 1-SD shock is 3.3 %. The linearization
+ignores the bound.
+
+**5. CK's free-entry comparator is flow-cost DMP**, not their durable-vacancy model at ξ = ∞
+(CK 2018, p. 120, DOI 10.1257/mac.20150040). "CK need inelastic creation because δ_e = τ" is
+our inference, not their argument.
+
+**6. Analytic tractability is inherited from DMP**, where the job creation condition also
+contains no stock. The substantive content is the user-cost term δ̄/(r+δ̄) in a.
+
+**Not established:** the full model at ξ_inv → 0 (variety should strengthen the result;
+endogenous exit, the SDF, costly reposting and the e ≥ 0 bound are unsigned). Draft vs code
+timing (R8) must be fixed first.

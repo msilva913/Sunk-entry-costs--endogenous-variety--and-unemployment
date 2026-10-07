@@ -1,5 +1,5 @@
 # CLAUDE.md — Empirical LP Project (Firm Entry/Exit DSGE)
-**Last updated:** October 5, 2026 · **Author:** Mario Silva
+**Last updated:** October 7, 2026 · **Author:** Mario Silva
 **Current branch:** `costly_vacancy_reposting` (branched from `instruments_LP_coefficient`; the most up-to-date version of the project)
 **Project paused June 7, 2026 – September 5, 2026.** Status re-verified against the repo on
 resumption; see [`context/pending_tasks.md`](context/pending_tasks.md) §Blockers.
@@ -107,6 +107,25 @@ to do:
    which is D3's most defensible option. Building E9 well upgrades D3.
 
 **Resume:** [`context/session_handout_20261001.md`](context/session_handout_20261001.md) (R13 is **done**; read its Oct 5 update).
+
+**October 6–7, 2026 sessions — the δ-shock Beveridge response at free entry (R15).** No
+full-model runs; two self-contained programs, one LaTeX note, one draft edit (Oct 6).
+
+- **Result.** In AGS with σ = κ = 0 (= GS by `rem:nesting`), at ξ → ∞, a downward-sloping
+  Beveridge response to a δ shock is possible but **needs persistence**. Free entry pins Q,
+  not K: K_t = x_m(r+δ_t)/(1+r) is the user cost of a vacancy that δ depreciates. The
+  system is block recursive, θ̂_t = a·δ̃_t in closed form, and with
+  R = (f̄δ̄/τ̄)/|a|: v falls at h = 1 iff ρ > ω + R; path slope < 0 iff
+  ρ(1−λ²)/(1+ρλ) > ω + R. **iid ⇒ slope θ̄ > 0.** At ρ = 0.592: slope −0.24 at D1, +0.17 at
+  δ_e = τ. Flow-cost DMP gives ≈ +0.47 at every δ̄. Details:
+  [`context/findings.md`](context/findings.md) (last section).
+- **Authoritative source:** [`Notes/beveridge_free_entry_GS.tex`](Notes/beveridge_free_entry_GS.tex)
+  (`lem:theta`, `rem:recursive`, `prop:fe`, `cor:allh`; draft layout). The `.md` exposition
+  was deleted Oct 7. Numbers: `Programs baseline/gs_free_entry_beveridge.jl`.
+- **Draft edit (Oct 6, `ff17299`):** Prop. 5 Part 3's "δ̄_e/τ̄ small" qualified to finite ξ.
+- ⛔ **R15 is blocked on a design decision (MS):** (a) place it after Prop. 5, or (b) extend
+  it with an s-shock part into a self-contained δ–s asymmetry theorem. See
+  [`context/pending_tasks.md`](context/pending_tasks.md) R15. Do not splice until decided.
 
 **October 5, 2026 session — theoretical positioning and a derivation bug.** No model
 runs; draft prose, one new program, one new note.

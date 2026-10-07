@@ -1,329 +1,418 @@
-\documentclass[11pt]{article}
-\usepackage[margin=1in]{geometry}
-\usepackage{amsmath,amssymb,amsthm}
+\documentclass[authoryear, review, 12pt]{elsarticle}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage[colorlinks]{hyperref}
 \usepackage{booktabs}
-\usepackage[hidelinks]{hyperref}
-
+\usepackage{geometry}
+\geometry{verbose,tmargin=2cm,bmargin=2cm,lmargin=2.25cm,rmargin=2.25cm}
+\allowdisplaybreaks
+\makeatletter
+\def\ps@pprintTitle{%
+	\let\@oddhead\@empty
+	\let\@evenhead\@empty
+	\def\@oddfoot{\reset@font\hfil\thepage\hfil}
+	\let\@evenfoot\@oddfoot
+}
+\makeatother
 \newtheorem{proposition}{Proposition}
 \newtheorem{lemma}{Lemma}
 \newtheorem{corollary}{Corollary}
-\theoremstyle{remark}
 \newtheorem{remark}{Remark}
 
-\allowdisplaybreaks
-
-\title{The Beveridge Response to a Destruction Shock\\ under Infinitely Elastic Vacancy Creation}
-\author{Notes for review (not for the draft)}
-\date{October 6, 2026}
-
 \begin{document}
-\maketitle
+
+\begin{frontmatter}
+\title{The Beveridge Response to a Destruction Shock under Infinitely Elastic Vacancy
+Creation}
+\author{Notes for review (not for the draft), October 7, 2026}
+\end{frontmatter}
 
 \noindent Numbers are produced by \texttt{Programs baseline/gs\_free\_entry\_beveridge.jl}
 (output \texttt{gs\_free\_entry\_beveridge.txt}, block ``Exposition tables''). The program
 checks every closed form below by assertion against a simulated impulse response of the
-same linear system.
+same linear system. Equation numbers ``GS ($n$)'' refer to Gabrovski and Silva (2025),
+\emph{Journal of Economic Dynamics and Control} 181, 105205.
 
 \section{Setting}
 
-We work with the model under the conditions of the draft's independence proposition
-(\texttt{prop:independence}): $\sigma=0$, $\zeta=0$ and $p_0=0$. The labor-market block
-then closes on its own. It is the Gabrovski--Silva economy with a time-varying destruction
-rate $\delta_t$. In this block:
-\begin{itemize}
-	\item the discount factor is $\beta$, and $r\equiv1/\beta-1$ is the discount rate;
-	\item recruiter compensation $y\equiv z/\mu$ is constant;
-	\item exit is exogenous, so a business survives from $t$ to $t+1$ with probability
-	$1-\delta_t$;
-	\item every vacated position is reposted at no cost.
-\end{itemize}
-For exposition we set the per-match cost $\kappa=0$, so all recruiting costs are sunk
-($x_v=1$). Remark~\ref{rem:kappa} discusses $\kappa>0$.
+We study the Gabrovski--Silva (GS) economy with one change: the destruction rate $\delta_t$
+is a time-varying shock. In the draft this is the AGS economy of \texttt{prop:ags} with
+$\sigma=\kappa=0$, which \texttt{rem:nesting} identifies as GS extended with aggregate
+shocks to $\delta_t$ and $s_t$. Its labor-market block closes on its own, as under the
+conditions of \texttt{prop:independence}. The discount rate is $r$,
+so the discount factor is $1/(1+r)$. Output per match, $y$ (recruiter compensation $z/\mu$
+in our model), is constant. Exit is exogenous, so a business survives from $t$ to $t+1$
+with probability $1-\delta_t$. Every vacated position is reposted at no cost, and there are
+no flow recruiting costs, so all recruiting costs are sunk.
+
+\paragraph{Shock process}
+\[
+	\delta_t=\bar\delta\exp(\tilde\delta_t),
+	\qquad
+	\tilde\delta_t=\rho\,\tilde\delta_{t-1}+\varepsilon_t,
+	\qquad\rho\in[0,1),
+\]
+with $\varepsilon_t$ mean zero, so $\tilde\delta_t$ is a mean-zero AR(1) and is the log
+deviation of $\delta_t$. The separation probability $s$ is constant, so the total separation
+rate
+\[
+	\tau_t\equiv1-(1-\delta_t)(1-s)
+\]
+moves with $\delta_t$. Its steady state is $\bar\tau=1-(1-\bar\delta)(1-s)$.
 
 \paragraph{Timing}
-We use the draft's convention. $\delta_t$ is known at the start of $t$ and destroys
-businesses at the end of $t$. Hence $u_t$ and the inherited vacancy stock are fixed at $t$.
-Tightness $\theta_t$ and entry $e_t$ respond at $t$. The destroyed jobs and positions
-appear in $u_{t+1}$ and $v_{t+1}$.
+We follow GS (their Fig.~2) and the draft (S10). $\delta_t$ is known at the start of $t$.
+Entry, production and matching take place within $t$. Separation and destruction take
+place at the end of $t$, at rates $s$ and $\delta_t$, and a match formed at $t$ is exposed
+to destruction at the end of $t$ but not to separation. So $u_t$ and the vacancies
+inherited from $t-1$ are fixed at $t$, while tightness $\theta_t$ and entry $e_t$ respond
+at $t$.
 
 \paragraph{Matching}
-$q(\theta)=A\theta^{-\eta_L}$ and $f(\theta)=\theta q(\theta)=A\theta^{1-\eta_L}$, with
-$\eta_L\in(0,1)$.
+$q(\theta)=A\theta^{-\eta_L}$ and $f(\theta)=\theta q(\theta)$, with $\eta_L\in(0,1)$. GS
+use the den Haan--Ramey--Watson function; we use Cobb--Douglas, as in our calibration.
 
 \section{The nonlinear system}
 
-\subsection{The vacancy value and its flow value under free entry}
+\subsection{Vacancy value and flow value}
 
-New vacancies require a sunk cost drawn from $[0,x_m]$. With infinitely elastic creation,
-the value of a vacancy is pinned whenever entry is positive:
+A business opportunity costs $x$, drawn from $G(x)=(x/x_m)^\xi$ on $[0,x_m]$, and is
+taken if and only if $x\le Q_t$. So $e_t=G(Q_t)$ and $Q_t=e_t^{1/\xi}x_m$. Under infinitely
+elastic creation ($\xi\to\infty$),
 \begin{equation}\label{eq:n_fe}
-	Q_t=x_m\quad\text{for all }t.
+	Q_t=x_m\qquad\text{for all }t .
 \end{equation}
-The flow value of holding a vacancy for one period (eq:Kdef in the draft) is
-$K_t=Q_t-\beta(1-\delta_t)Q_{t+1}$. The firm holds an asset worth $Q_t$, and it is worth
-$Q_{t+1}$ next period only if the business survives destruction at the end of $t$.
-Substituting \eqref{eq:n_fe},
-\begin{equation}\label{eq:n_K}
-	K_t=x_m\bigl[1-\beta(1-\delta_t)\bigr]=x_m(1-\beta+\beta\delta_t).
-\end{equation}
-\textbf{$Q$ is a constant. $K_t$ is a known function of the exogenous rate $\delta_t$,
-not an endogenous variable.} When $\delta$ is constant, as in Gabrovski--Silva, $K$ is
-constant too. When $\delta_t$ moves, $K_t$ moves with it, because a vacancy is an asset
-and $\delta_t$ is its depreciation rate. Holding $K$ fixed instead would give the
-flow-cost DMP model (Remark~\ref{rem:flow}). We substitute \eqref{eq:n_K} wherever $K$
-appears, so $K$ is not carried as a variable.
-
-\subsection{The remaining equations}
-
-\begin{align}
-	&\frac{x_m(1-\beta+\beta\delta_t)}{q(\theta_t)}
-	=\beta(1-\delta_t)\,\mathbb{E}_t\Bigl[(1-\phi)\bigl(y-b-x_m(1-\beta+\beta\delta_{t+1})\bigr)
-	\notag\\
-	&\hspace{9em}+(1-s)\frac{x_m(1-\beta+\beta\delta_{t+1})}{q(\theta_{t+1})}
-	-\phi\,\theta_{t+1}\,x_m(1-\beta+\beta\delta_{t+1})\Bigr], \label{eq:n_jcc}\\
-	&u_{t+1}=u_t-(1-\delta_t)f(\theta_t)\,u_t+\bigl[\delta_t+s(1-\delta_t)\bigr](1-u_t),
-	\label{eq:n_u}\\
-	&v_{t+1}=(1-\delta_t)\bigl[(1-q(\theta_t))\,v_t+s(1-u_t)\bigr]+e_{t+1}, \label{eq:n_v}\\
-	&\theta_t=v_t/u_t. \label{eq:n_theta}
+The flow value of a vacancy is defined as in GS (2), with the survival factor dated $t$:
+\begin{align}\label{eq:n_K}
+	K_t\equiv Q_t-\frac{1-\delta_t}{1+r}\,\mathbb{E}_tQ_{t+1}=x_m\,\frac{r+\delta_t}{1+r}.
 \end{align}
+Whereas $Q$ is constant, $K_t$ is a known function of the exogenous $\delta_t$. In GS
+$\delta$ is constant, so free entry fixes $K$ as well (GS (13)). Here $\delta_t$ is the
+depreciation rate of the vacancy asset, so its flow value moves with $\delta_t$. Holding
+$K$ fixed would give a flow-cost DMP model (Remark~\ref{rem:flow}). We substitute
+\eqref{eq:n_K} wherever $K$ appears.
 
-\paragraph{\eqref{eq:n_jcc} Job creation}
-\begin{itemize}
-	\item \emph{The left side is the expected cost of a hire.} The vacancy's flow value
-	$x_m(1-\beta+\beta\delta_t)$ is paid for an expected $1/q(\theta_t)$ periods.
-	\item \emph{The right side is the value of a match.} The match first produces at $t+1$,
-	and only if the business survives.
-	\item \emph{The bracket is the firm's surplus after substituting the Nash wage.} It has
-	three terms:
-	\begin{itemize}
-		\item The first is the firm's share of output, net of the worker's outside option and
-		of the vacancy's flow value, which a matched firm forgoes.
-		\item The second is the hiring cost saved next period because the match continues.
-		\item The third is the part of that saving the worker captures through the wage. The
-		worker's outside option includes finding another job, and $\phi f K/q=\phi\theta K$
-		because $f(\theta)/q(\theta)=\theta$.
-	\end{itemize}
-\end{itemize}
+\subsection{Wage and job creation}
 
-\paragraph{\eqref{eq:n_u} Unemployment}
-Next period's unemployed are:
-\begin{itemize}
-	\item today's unemployed, less those hired at a business that survives;
-	\item plus the employed who lose their job, to destruction ($\delta_t$) or to separation
-	at a surviving business ($s(1-\delta_t)$).
-\end{itemize}
+The Nash wage is GS (7):
+\begin{equation}\label{eq:n_w}
+	w_t=\phi\bigl[y-K_t+\theta_tK_t\bigr]+(1-\phi)b .
+\end{equation}
+The job creation condition is GS (10), with the survival factor dated $t$:
+\begin{equation}\label{eq:n_jcc_gs}
+	\frac{K_t}{q(\theta_t)}
+	=\frac{1-\delta_t}{1+r}\,\mathbb{E}_t\Bigl[y-w_{t+1}-K_{t+1}+(1-s)\frac{K_{t+1}}{q(\theta_{t+1})}\Bigr].
+\end{equation}
+The left side is the expected cost of a hire: the flow value of a vacancy times the
+expected time to fill. The right side is the expected profit from a match, which first
+produces at $t+1$, and only if the business survives destruction at the end of $t$. Profit
+has two parts: the flow profit net of the forgone vacancy value, $y-w_{t+1}-K_{t+1}$, and
+the hiring cost saved if the match continues, $(1-s)K_{t+1}/q(\theta_{t+1})$.
 
-\paragraph{\eqref{eq:n_v} Vacancies}
-Next period's vacancies are:
-\begin{itemize}
-	\item today's unfilled vacancies that survive destruction;
-	\item positions vacated by separations at surviving businesses and reposted at no cost;
-	\item new entry.
-\end{itemize}
+Using the Nash wage \eqref{eq:n_w} dated $t+1$,
+\[
+	y-w_{t+1}-K_{t+1}=(1-\phi)(y-b)-K_{t+1}\bigl[(1-\phi)+\phi\,\theta_{t+1}\bigr].
+\]
+So the term in brackets in \eqref{eq:n_jcc_gs} is
+\[
+	(1-\phi)(y-b)+K_{t+1}\Bigl[\frac{1-s}{q(\theta_{t+1})}-\phi\,\theta_{t+1}-(1-\phi)\Bigr].
+\]
+Multiply \eqref{eq:n_jcc_gs} by $1+r$ and substitute \eqref{eq:n_K} at $t$ and $t+1$. The
+job creation condition becomes an equation in $\theta$ and $\delta$ alone:
+\begin{equation}\label{eq:n_jcc}
+	\frac{x_m(r+\delta_t)}{q(\theta_t)}
+	=(1-\delta_t)\,\mathbb{E}_t\Bigl\{(1-\phi)(y-b)
+	+\frac{x_m(r+\delta_{t+1})}{1+r}\Bigl[\frac{1-s}{q(\theta_{t+1})}-\phi\,\theta_{t+1}-(1-\phi)\Bigr]\Bigr\}.
+\end{equation}
+The left-hand side represents the average hiring cost. The right-hand side represents the
+benefit of a filled job. Its first term, $(1-\phi)(y-b)$, is the firm's share of the match's
+flow surplus. In the second term, $x_m(r+\delta_{t+1})/(1+r)=K_{t+1}$ is next period's flow
+value of a vacancy. It is multiplied by $(1-s)/q(\theta_{t+1})$, the hiring cost saved if
+the match continues; by $-\phi\,\theta_{t+1}$, the worker's share of that saving,
+$\phi fK/q$; and by $-(1-\phi)$, the firm's share of the forgone flow value of the vacancy.
+
+\subsection{Laws of motion}
+
+Vacancies follow GS (8). Unemployment follows GS (9), with $\delta$ and $\tau$ dated $t-1$
+because the destruction they cause takes place at the end of $t-1$:
+\begin{align}
+	v_t&=(1-\delta_{t-1})\bigl[1-q(\theta_{t-1})\bigr]v_{t-1}+(1-\delta_{t-1})s(1-u_{t-1})+e_t,
+	\label{eq:n_v}\\
+	u_t&=\bigl[1-(1-\delta_{t-1})f(\theta_{t-1})\bigr]u_{t-1}+\tau_{t-1}(1-u_{t-1}),
+	\label{eq:n_u}\\
+	\theta_t&=v_t/u_t. \label{eq:n_theta}
+\end{align}
+The vacancy pool \eqref{eq:n_v} has three parts: unmatched vacancies from $t-1$ that avoided
+destruction, vacancies reposted after a separation at a surviving business, and new
+entrants $e_t$. The first two are fixed before $t$. Call their sum the predetermined stock:
+\[
+	v_{pre,t}\equiv(1-\delta_{t-1})\Bigl\{\bigl[1-q(\theta_{t-1})\bigr]v_{t-1}+s(1-u_{t-1})\Bigr\},
+	\qquad v_t=v_{pre,t}+e_t .
+\]
+Every variable on its right side is dated $t-1$, which is what makes it predetermined at
+$t$. Unemployment \eqref{eq:n_u} has two parts: last period's unemployed who were not
+hired, or were hired at a business that was then destroyed, and last period's employed who
+separated, at rate $\tau_{t-1}$.
 
 \paragraph{How free entry orders the system}
-Equation \eqref{eq:n_jcc} contains only $\theta$ and the exogenous $\delta$. Given the
-path of $\delta$, it determines the path of $\theta$ on its own. Then:
-\begin{itemize}
-	\item \eqref{eq:n_u} gives $u$;
-	\item \eqref{eq:n_theta} gives $v=\theta u$;
-	\item \eqref{eq:n_v} only determines entry $e_{t+1}$, as whatever delivers
-	$v_{t+1}=\theta_{t+1}u_{t+1}$ given the inherited stock.
-\end{itemize}
+Equation \eqref{eq:n_jcc} contains only $\theta$ and the exogenous $\delta$, so it
+determines the path of $\theta$ on its own. Equation \eqref{eq:n_u} then gives $u$,
+\eqref{eq:n_theta} gives $v=\theta u$, and \eqref{eq:n_v} determines entry,
+$e_t=v_t-v_{pre,t}$. With finitely elastic creation the causation reverses: entry is set by
+$Q$, \eqref{eq:n_v} determines $v$, and \eqref{eq:n_jcc_gs} determines $Q$.
 
 \section{Steady state}
 
-Write
-\[
-	\bar K\equiv x_m(1-\beta+\beta\bar\delta)=x_m\,\frac{r+\bar\delta}{1+r},
-	\qquad
-	\bar\tau\equiv\bar\delta+\bar s(1-\bar\delta).
-\]
-$\bar K$ is the steady-state flow value of a vacancy. It is a user cost: the asset price
-times the discount rate plus the destruction rate. The steady-state versions of
-\eqref{eq:n_jcc} and \eqref{eq:n_u} are
+Following GS's Definition 2, with $Q=x_m$, the steady state satisfies
 \begin{align}
-	\frac{\bar K}{\bar q}
-	&=\beta(1-\bar\delta)\Bigl[(1-\phi)(y-b-\bar K)+(1-\bar s)\frac{\bar K}{\bar q}
-	-\phi\bar\theta\bar K\Bigr], \label{eq:ss_jcc}\\
-	\bar u&=\frac{\bar\tau}{\bar\tau+(1-\bar\delta)\bar f},
-	\qquad\text{equivalently}\qquad
-	\frac{1-\bar u}{\bar u}=\frac{(1-\bar\delta)\bar f}{\bar\tau}. \label{eq:ss_u}
+	\frac{\bar K}{q(\bar\theta)}&=\frac{1-\bar\delta}{r+\bar\tau}\bigl(y-\bar w-\bar K\bigr),
+	\label{eq:ss_jcc}\\
+	\bar K&=x_m\,\frac{r+\bar\delta}{1+r},\label{eq:ss_K}\\
+	\bar w&=\phi\bigl[y-\bar K+\bar\theta\bar K\bigr]+(1-\phi)b,\label{eq:ss_w}\\
+	\bar u&=\frac{\bar\tau}{\bar\tau+(1-\bar\delta)f(\bar\theta)},\label{eq:ss_u}\\
+	\bar e&=\bar\delta\,(\bar v+1-\bar u),\label{eq:ss_e}\\
+	\bar\theta&=\bar v/\bar u .\notag
 \end{align}
+These are GS (12)--(16).
+
+Equation \eqref{eq:ss_jcc} is the steady state of \eqref{eq:n_jcc_gs},
+\[
+	\frac{\bar K}{\bar q}
+	=\frac{1-\bar\delta}{1+r}\Bigl[y-\bar w-\bar K+(1-s)\frac{\bar K}{\bar q}\Bigr],
+\]
+multiplied by $1+r$ and rearranged using $(1+r)-(1-\bar\delta)(1-s)=r+\bar\tau$. Equation
+\eqref{eq:ss_K} is a user cost: the asset price $x_m$ times the discount rate plus the
+destruction rate. The share of the user cost due to destruction is $\bar\delta/(r+\bar\delta)$.
+Equation \eqref{eq:ss_u} can be written $(1-\bar\delta)\bar f\bar u=\bar\tau(1-\bar u)$:
+hires equal separations. Since $\bar f\bar u=\bar q\bar v$, this is also
+$(1-\bar\delta)\bar q\bar v=\bar\tau(1-\bar u)$.
+
+For \eqref{eq:ss_e}, the steady state of \eqref{eq:n_v} gives
+\[
+	\bar e=\bar v-(1-\bar\delta)(1-\bar q)\bar v-(1-\bar\delta)s(1-\bar u)
+	=\bar\delta\bar v+(1-\bar\delta)\bar q\bar v-(1-\bar\delta)s(1-\bar u).
+\]
+Using hires equal separations, this is $\bar\delta\bar v+[\bar\tau-(1-\bar\delta)s](1-\bar u)$,
+and $\bar\tau-(1-\bar\delta)s=\bar\delta$. So entry replaces the positions destroyed, both
+vacant ($\bar v$) and filled ($1-\bar u$). Positions vacated by separations are reposted
+and need no replacement. The shares of entrants and of predetermined vacancies in the stock
+are therefore
+\[
+	\frac{\bar e}{\bar v}=\frac{\bar\delta(\bar v+1-\bar u)}{\bar v},
+	\qquad
+	\frac{\bar v_{pre}}{\bar v}=1-\frac{\bar\delta(\bar v+1-\bar u)}{\bar v}.
+\]
+Filled positions far outnumber vacancies, $(1-\bar u)/\bar v\approx26$ at our targets, so
+the entrant share is small when destruction is rare. Hires equal separations gives
+$(1-\bar u)/\bar v=(1-\bar\delta)\bar q/\bar\tau$: filled jobs per vacancy equal hires per
+vacancy times the expected duration of a job. An equivalent form of the entrant share is
+therefore
+\[
+	\frac{\bar e}{\bar v}=\frac{\bar\delta}{\bar\tau}\bigl[\bar\tau+(1-\bar\delta)\bar q\bigr].
+\]
+Our calibration fixes $\bar\tau$ and the gross vacancy-filling rate $(1-\bar\delta)\bar q$, so
+the bracket is the same, $0.831$, in every economy we compare. The entrant share is then
+proportional to the destruction share of separations, $\bar\delta/\bar\tau$.
 
 \section{Log-linear system}
 
-Hats denote log deviations: $\hat x_t\equiv\ln x_t-\ln\bar x$. For the destruction rate we
-use the level deviation $d_t\equiv\delta_t-\bar\delta$.
+Hats denote log deviations from the steady state, $\hat x_t\equiv\ln x_t-\ln\bar x$. The
+shock is already in logs: $\hat\delta_t=\tilde\delta_t$, so
+$\delta_t-\bar\delta\approx\bar\delta\,\tilde\delta_t$. The separation rate moves by
+$\tau_t-\bar\tau=(1-s)(\delta_t-\bar\delta)$, so
+\[
+	\hat\tau_t=(1-s)\,\frac{\bar\delta}{\bar\tau}\,\tilde\delta_t .
+\]
+A one-percent rise in $\delta$ raises $\tau$ by $(1-s)\bar\delta/\bar\tau$ percent, the
+destruction share of separations up to the factor $1-s$.
 
 \subsection{Job creation}
 
-Take logs of both sides of \eqref{eq:n_jcc}.
-
-\paragraph{Left side}
+Take logs of both sides of \eqref{eq:n_jcc}. On the left,
 \[
-	\ln\frac{x_m(1-\beta+\beta\delta_t)}{q(\theta_t)}
-	=\ln x_m+\ln(1-\beta+\beta\delta_t)-\ln A+\eta_L\ln\theta_t .
+	\ln\frac{x_m(r+\delta_t)}{q(\theta_t)}
+	=\ln x_m+\ln\bigl(r+\bar\delta e^{\tilde\delta_t}\bigr)-\ln A+\eta_L\ln\theta_t ,
 \]
-Its first-order deviation is
+whose first-order deviation is
 \[
-	\frac{\beta}{1-\beta+\beta\bar\delta}\,d_t+\eta_L\hat\theta_t
-	=\frac{d_t}{r+\bar\delta}+\eta_L\hat\theta_t,
-\]
-using $\beta/(1-\beta+\beta\bar\delta)=1/(r+\bar\delta)$.
-
-\paragraph{Right side}
-The log of $\beta(1-\delta_t)$ deviates by $-d_t/(1-\bar\delta)$. Write $\Sigma_{t+1}$ for
-the bracket in \eqref{eq:n_jcc}. Its steady-state value $\bar\Sigma$ satisfies
-$\bar K/\bar q=\beta(1-\bar\delta)\bar\Sigma$ by \eqref{eq:ss_jcc}. The deviation of
-$\Sigma_{t+1}$ is the sum of three terms:
-\begin{align*}
-	d\Bigl[(1-\phi)\bigl(y-b-x_m(1-\beta+\beta\delta_{t+1})\bigr)\Bigr]
-	&=-(1-\phi)\,\beta x_m\,d_{t+1}
-	=-(1-\phi)\,\bar K\,\frac{d_{t+1}}{r+\bar\delta},\\
-	d\Bigl[(1-s)\frac{x_m(1-\beta+\beta\delta_{t+1})}{q(\theta_{t+1})}\Bigr]
-	&=(1-\bar s)\frac{\bar K}{\bar q}\Bigl(\frac{d_{t+1}}{r+\bar\delta}+\eta_L\hat\theta_{t+1}\Bigr),\\
-	d\Bigl[-\phi\,\theta_{t+1}x_m(1-\beta+\beta\delta_{t+1})\Bigr]
-	&=-\phi\,\bar\theta\bar K\Bigl(\frac{d_{t+1}}{r+\bar\delta}+\hat\theta_{t+1}\Bigr).
-\end{align*}
-Divide the sum by $\bar\Sigma=\bar K/[\bar q\,\beta(1-\bar\delta)]$, and use
-$\bar\theta\bar q=\bar f$:
-\[
-	\hat\Sigma_{t+1}=\beta(1-\bar\delta)\Bigl[-(1-\phi)\bar q\,\frac{d_{t+1}}{r+\bar\delta}
-	+(1-\bar s)\Bigl(\frac{d_{t+1}}{r+\bar\delta}+\eta_L\hat\theta_{t+1}\Bigr)
-	-\phi\bar f\Bigl(\frac{d_{t+1}}{r+\bar\delta}+\hat\theta_{t+1}\Bigr)\Bigr].
+	\frac{\bar\delta}{r+\bar\delta}\,\tilde\delta_t+\eta_L\hat\theta_t .
 \]
 
-\paragraph{Equating the two sides}
-Set the left-side deviation equal to $-d_t/(1-\bar\delta)+\mathbb{E}_t\hat\Sigma_{t+1}$.
-Write $B\equiv\beta(1-\bar\delta)$, move the $d_t$ term to the right, and collect terms:
+On the right, the log of $1-\delta_t$ deviates by $-[\bar\delta/(1-\bar\delta)]\tilde\delta_t$.
+Write $\Sigma_{t+1}$ for the term in braces in \eqref{eq:n_jcc}. In the steady state of
+\eqref{eq:n_jcc}, $x_m(r+\bar\delta)/\bar q=(1-\bar\delta)\bar\Sigma$. Only the second term
+of $\Sigma_{t+1}$ varies, and its deviation is
+\[
+	d\Sigma_{t+1}=\frac{x_m}{1+r}\Bigl\{\bar\delta\,\tilde\delta_{t+1}
+	\Bigl[\frac{1-s}{\bar q}-\phi\bar\theta-(1-\phi)\Bigr]
+	+(r+\bar\delta)\Bigl[(1-s)\frac{\eta_L}{\bar q}-\phi\bar\theta\Bigr]\hat\theta_{t+1}\Bigr\},
+\]
+using $d(1/q)=(\eta_L/\bar q)\hat\theta$ and $d\theta=\bar\theta\hat\theta$. Divide by
+$\bar\Sigma=x_m(r+\bar\delta)/[(1-\bar\delta)\bar q]$, and use $\bar\theta\bar q=\bar f$:
+\[
+	\hat\Sigma_{t+1}=\frac{1-\bar\delta}{1+r}\Bigl\{\bigl[1-s-\phi\bar f-(1-\phi)\bar q\bigr]\frac{\bar\delta}{r+\bar\delta}\,\tilde\delta_{t+1}
+	+\bigl[(1-s)\eta_L-\phi\bar f\bigr]\hat\theta_{t+1}\Bigr\}.
+\]
+Distribute $1-\bar\delta$ inside the braces. Since $(1-\bar\delta)(1-s)=1-\bar\tau$,
+\[
+	\hat\Sigma_{t+1}=\frac{1}{1+r}\Bigl\{\bigl[1-\bar\tau-\phi(1-\bar\delta)\bar f-(1-\phi)(1-\bar\delta)\bar q\bigr]\frac{\bar\delta}{r+\bar\delta}\,\tilde\delta_{t+1}
+	+\bigl[(1-\bar\tau)\eta_L-\phi(1-\bar\delta)\bar f\bigr]\hat\theta_{t+1}\Bigr\}.
+\]
+The matching rates now appear as $(1-\bar\delta)\bar f$ and $(1-\bar\delta)\bar q$, the
+effective job-finding and vacancy-filling rates: the probabilities that a match forms and
+its business survives to production. These are the rates we calibrate, $0.41$ and $0.80$.
+Setting the left-side deviation equal to
+$-[\bar\delta/(1-\bar\delta)]\tilde\delta_t+\mathbb{E}_t\hat\Sigma_{t+1}$, moving the
+$\tilde\delta_t$ term to the right and collecting terms,
 \begin{equation}\label{eq:l_jcc}
 	\boxed{\;
 	\eta_L\hat\theta_t
-	=-\Bigl[\frac{1}{r+\bar\delta}+\frac{1}{1-\bar\delta}\Bigr]d_t
-	+B\,\mathbb{E}_t\Bigl\{\bigl[1-\bar s-\phi\bar f-(1-\phi)\bar q\bigr]\frac{d_{t+1}}{r+\bar\delta}
-	+\bigl[(1-\bar s)\eta_L-\phi\bar f\bigr]\hat\theta_{t+1}\Bigr\}\;}
+	=-\Bigl[\frac{\bar\delta}{r+\bar\delta}+\frac{\bar\delta}{1-\bar\delta}\Bigr]\tilde\delta_t
+	+\frac{1}{1+r}\,\mathbb{E}_t\Bigl\{\bigl[1-\bar\tau-\phi(1-\bar\delta)\bar f-(1-\phi)(1-\bar\delta)\bar q\bigr]\frac{\bar\delta}{r+\bar\delta}\,\tilde\delta_{t+1}
+	+\bigl[(1-\bar\tau)\eta_L-\phi(1-\bar\delta)\bar f\bigr]\hat\theta_{t+1}\Bigr\}\;}
 \end{equation}
-Only $\hat\theta$ and the shock appear.
+Only $\hat\theta$ and the shock appear. Next period's terms are discounted at $1/(1+r)$,
+and survival enters through the probability that the match continues, $1-\bar\tau$, and
+through the effective matching rates.
 
-\paragraph{Interpretation of each weight}
-\begin{itemize}
-	\item \emph{$\eta_L$ on $\hat\theta_t$.} A tighter market lengthens the time to fill, so
-	a hire costs more.
-	\item \emph{$1/(r+\bar\delta)$ on $d_t$: the rental effect.} A one-point rise in
-	destruction raises the vacancy's flow value $x_m(1-\beta+\beta\delta_t)$ by $\beta x_m$,
-	which is $1/(r+\bar\delta)$ in proportion. The longer-lived the vacancy, the larger the
-	proportional rise. This raises the cost of a hire.
-	\item \emph{$1/(1-\bar\delta)$ on $d_t$: the survival effect.} A hire pays off only if
-	the business survives. This lowers the value of a hire. It is about 1.
-	\item \emph{On $d_{t+1}$, which is nonzero only if the shock persists:}
-	\begin{itemize}
-		\item $1-\bar s-\phi\bar f$: a higher flow value next period raises the value of an
-		ongoing match, which saves next period's hiring cost, net of the worker's share;
-		\item $-(1-\phi)\bar q$: a matched firm forgoes that flow value, so the firm's surplus
-		falls.
-	\end{itemize}
-	\item \emph{On $\hat\theta_{t+1}$:}
-	\begin{itemize}
-		\item $(1-\bar s)\eta_L$: a tighter market next period raises the hiring cost an
-		ongoing match saves;
-		\item $-\phi\bar f$: it also raises the worker's outside option and hence the wage.
-	\end{itemize}
-\end{itemize}
+The weights in \eqref{eq:l_jcc} read as follows. The coefficient $\eta_L$ on $\hat\theta_t$
+says that a tighter market lengthens the time to fill, so a hire costs more. The weight
+$\bar\delta/(r+\bar\delta)$ on $\tilde\delta_t$ is the flow-value effect: a one-percent rise
+in $\delta$ raises the flow value $K_t=x_m(r+\delta_t)/(1+r)$ by $\bar\delta/(r+\bar\delta)$
+percent, the share of the user cost due to destruction, and so raises the cost of a hire.
+This share is close to one when $\bar\delta\gg r$ and close to $\bar\delta/r$ when
+$\bar\delta\ll r$. The weight $\bar\delta/(1-\bar\delta)$ is the survival effect: a hire pays
+off only if the business survives, so destruction lowers the value of a hire. It is about
+$\bar\delta$, which is small.
+
+The terms in $\tilde\delta_{t+1}$ are nonzero only if the shock persists. A higher flow
+value next period raises the hiring cost saved by a match that continues, with probability
+$1-\bar\tau$. Part of that saving goes to the worker through her outside option,
+$-\phi(1-\bar\delta)\bar f$. A higher flow value also lowers the firm's flow profit, since a
+matched firm forgoes it, $-(1-\phi)(1-\bar\delta)\bar q$. In the same way, a tighter market
+next period raises the hiring cost a continuing match saves, $(1-\bar\tau)\eta_L$, but it
+also raises the worker's outside option and hence the wage, $-\phi(1-\bar\delta)\bar f$.
 
 \subsection{Unemployment}
 
 Write the right side of \eqref{eq:n_u} as
-$U(u_t,\delta_t,\theta_t)=u_t-(1-\delta_t)A\theta_t^{1-\eta_L}u_t+[\delta_t+s(1-\delta_t)](1-u_t)$.
-Its partial derivatives at the steady state are
+$U(u_{t-1},\delta_{t-1},\tau_{t-1},\theta_{t-1})
+=[1-(1-\delta_{t-1})A\theta_{t-1}^{1-\eta_L}]u_{t-1}+\tau_{t-1}(1-u_{t-1})$. Its partial
+derivatives at the steady state are
 \begin{align*}
-	\frac{\partial U}{\partial u_t}&=1-(1-\bar\delta)\bar f-\bigl[\bar\delta+\bar s(1-\bar\delta)\bigr]
-	=1-(1-\bar\delta)\bar f-\bar\tau,\\
-	\frac{\partial U}{\partial\delta_t}&=\bar f\,\bar u+(1-\bar s)(1-\bar u),\\
-	\frac{\partial U}{\partial\theta_t}&=-(1-\bar\delta)\,\bar u\,(1-\eta_L)\frac{\bar f}{\bar\theta}.
+	\frac{\partial U}{\partial u_{t-1}}&=1-(1-\bar\delta)\bar f-\bar\tau,
+	&\frac{\partial U}{\partial\delta_{t-1}}&=\bar f\,\bar u,\\
+	\frac{\partial U}{\partial\tau_{t-1}}&=1-\bar u,
+	&\frac{\partial U}{\partial\theta_{t-1}}&=-(1-\bar\delta)\,\bar u\,(1-\eta_L)\frac{\bar f}{\bar\theta}.
 \end{align*}
-Hence
+Hence, with $\delta_{t-1}-\bar\delta=\bar\delta\tilde\delta_{t-1}$ and
+$\tau_{t-1}-\bar\tau=\bar\tau\hat\tau_{t-1}$,
 \[
-	u_{t+1}-\bar u
-	=\bigl[1-(1-\bar\delta)\bar f-\bar\tau\bigr](u_t-\bar u)
-	+\bigl[\bar f\bar u+(1-\bar s)(1-\bar u)\bigr]d_t
-	-(1-\bar\delta)\bar u(1-\eta_L)\bar f\,\hat\theta_t .
+	u_t-\bar u=\bigl[1-(1-\bar\delta)\bar f-\bar\tau\bigr](u_{t-1}-\bar u)
+	+\bar f\bar u\,\bar\delta\,\tilde\delta_{t-1}+(1-\bar u)\bar\tau\,\hat\tau_{t-1}
+	-(1-\bar\delta)\bar u(1-\eta_L)\bar f\,\hat\theta_{t-1}.
 \]
-Divide by $\bar u$. The coefficient on $d_t$ becomes, by \eqref{eq:ss_u},
-\[
-	\frac{\bar f\bar u+(1-\bar s)(1-\bar u)}{\bar u}
-	=\bar f+(1-\bar s)\frac{(1-\bar\delta)\bar f}{\bar\tau}
-	=\frac{\bar f}{\bar\tau}\bigl[\bar\tau+(1-\bar s)(1-\bar\delta)\bigr]
-	=\frac{\bar f}{\bar\tau},
-\]
-because $(1-\bar s)(1-\bar\delta)=1-\bar\tau$. Define
+Divide by $\bar u$, and use $(1-\bar u)\bar\tau/\bar u=(1-\bar\delta)\bar f$ from
+\eqref{eq:ss_u}. Define
 \[
 	\lambda\equiv1-(1-\bar\delta)\bar f-\bar\tau,
 	\qquad
 	\omega\equiv(1-\bar\delta)\bar f(1-\eta_L).
 \]
 Then
+\begin{equation}\label{eq:l_u_tau}
+	\hat u_t=\lambda\,\hat u_{t-1}+\bar f\bar\delta\,\tilde\delta_{t-1}
+	+(1-\bar\delta)\bar f\,\hat\tau_{t-1}-\omega\,\hat\theta_{t-1}.
+\end{equation}
+Substitute $\hat\tau_{t-1}=(1-s)(\bar\delta/\bar\tau)\tilde\delta_{t-1}$. The two
+coefficients on $\tilde\delta_{t-1}$ combine as
+\[
+	\bar f\bar\delta+(1-\bar\delta)(1-s)\bar f\,\frac{\bar\delta}{\bar\tau}
+	=\bar f\,\frac{\bar\delta}{\bar\tau}\bigl[\bar\tau+(1-\bar\tau)\bigr]
+	=\bar f\,\frac{\bar\delta}{\bar\tau},
+\]
+because $(1-\bar\delta)(1-s)=1-\bar\tau$. So
 \begin{equation}\label{eq:l_u}
-	\boxed{\;\hat u_{t+1}=\lambda\,\hat u_t+\frac{\bar f}{\bar\tau}\,d_t-\omega\,\hat\theta_t\;}
+	\boxed{\;\hat u_t=\lambda\,\hat u_{t-1}+\bar f\,\frac{\bar\delta}{\bar\tau}\,\tilde\delta_{t-1}
+	-\omega\,\hat\theta_{t-1}\;}
 \end{equation}
 
-\paragraph{Interpretation of each weight}
-\begin{itemize}
-	\item \emph{$\lambda$ is persistence.} An extra unemployed worker is still unemployed
-	next month unless hired, with probability $1-(1-\bar\delta)\bar f$. The $\bar\tau$ term
-	reflects that one fewer employed worker means one fewer separation.
-	\item \emph{$\bar f/\bar\tau$ is the destruction weight.} A one-point rise in $\delta_t$
-	adds two groups to unemployment: the employed who lose their job, $(1-\bar s)(1-\bar u)$,
-	and the new matches lost before producing, $\bar f\bar u$. Relative to the stock $\bar u$
-	this is $\bar f/\bar\tau$. It is large because unemployment is a small stock, of order
-	$\bar\tau$. It depends on $\bar f$ and $\bar\tau$, not on how $\bar\tau$ splits into
-	$\delta$ and $s$.
-	\item \emph{$\omega$ is the hiring channel.} Lower tightness at $t$ means fewer hires at
-	$t$, who are still unemployed at $t+1$.
-\end{itemize}
+The coefficient $\lambda$ is persistence. An extra unemployed worker is still unemployed
+next month unless hired at a surviving business, with probability $1-(1-\bar\delta)\bar f$,
+and the $\bar\tau$ term reflects that one fewer employed worker means one fewer separation.
+The destruction weight has two channels, visible in \eqref{eq:l_u_tau}. The first, $\bar
+f\bar\delta$, is lost matches: new matches at a destroyed business never produce. The
+second is separations. In steady state the inflow into unemployment equals the outflow,
+$(1-\bar\delta)\bar f\bar u$, so a one-percent rise in separations raises unemployment by
+$(1-\bar\delta)\bar f$ percent, and separations rise by $(1-s)\bar\delta/\bar\tau$ percent per
+percent of $\delta$. Together the two channels give $\bar f\bar\delta/\bar\tau$, and the
+second dominates. The unemployment loading is therefore proportional to the destruction
+share of separations, $\bar\delta/\bar\tau$. Finally, $\omega$ is the hiring channel: lower
+tightness at $t-1$ means fewer hires, and those workers are still unemployed at $t$.
 
 \subsection{Vacancies}
 
-Write the right side of \eqref{eq:n_v} as
-$V(v_t,u_t,\delta_t,\theta_t,e_{t+1})
-=(1-\delta_t)[(1-A\theta_t^{-\eta_L})v_t+s(1-u_t)]+e_{t+1}$. Its partial derivatives at the
-steady state are
-\begin{align*}
-	\frac{\partial V}{\partial\delta_t}&=-\bigl[(1-\bar q)\bar v+\bar s(1-\bar u)\bigr]\equiv-\bar X,
-	&\frac{\partial V}{\partial v_t}&=(1-\bar\delta)(1-\bar q),\\
-	\frac{\partial V}{\partial\theta_t}&=(1-\bar\delta)\,\eta_L\frac{\bar q}{\bar\theta}\,\bar v,
-	&\frac{\partial V}{\partial u_t}&=-(1-\bar\delta)\bar s,
-	\qquad\frac{\partial V}{\partial e_{t+1}}=1 .
-\end{align*}
-Hence
+Take the deviation of $v_t=v_{pre,t}+e_t$ and divide by $\bar v$:
 \[
-	v_{t+1}-\bar v=-\bar X d_t+(1-\bar\delta)(1-\bar q)(v_t-\bar v)
-	+(1-\bar\delta)\eta_L\bar q\,\bar v\,\hat\theta_t
-	-(1-\bar\delta)\bar s\,(u_t-\bar u)+(e_{t+1}-\bar e).
+	\hat v_t=\frac{\bar v_{pre}}{\bar v}\,\hat v_{pre,t}+\frac{\bar e}{\bar v}\,\hat e_t .
 \]
-Divide by $\bar v$, and use $\bar u/\bar v=1/\bar\theta$:
+Substituting the shares implied by \eqref{eq:ss_e},
 \begin{equation}\label{eq:l_v}
 	\boxed{\;
-	\hat v_{t+1}=-\frac{\bar X}{\bar v}\,d_t
-	+(1-\bar\delta)(1-\bar q)\,\hat v_t
-	+(1-\bar\delta)\eta_L\bar q\,\hat\theta_t
-	-(1-\bar\delta)\frac{\bar s}{\bar\theta}\,\hat u_t
-	+\frac{\bar e}{\bar v}\,\hat e_{t+1}\;}
+	\hat v_t=\Bigl[1-\frac{\bar\delta(\bar v+1-\bar u)}{\bar v}\Bigr]\hat v_{pre,t}
+	+\frac{\bar\delta(\bar v+1-\bar u)}{\bar v}\,\hat e_t\;}
 \end{equation}
 
-\paragraph{Interpretation of each weight}
-\begin{itemize}
-	\item \emph{$\bar X/\bar v$.} This is the share of next period's stock inherited from
-	this period. Destruction removes it one for one.
-	\item \emph{$(1-\bar\delta)(1-\bar q)$.} This is the share of vacancies that are neither
-	filled nor destroyed.
-	\item \emph{$(1-\bar\delta)\eta_L\bar q$.} A tighter market fills fewer vacancies, so
-	more carry over. After a destruction shock $\hat\theta<0$, so vacancies fill faster.
-	\item \emph{$(1-\bar\delta)\bar s/\bar\theta$.} Reposts come from the employed, who are
-	fewer when $u$ is higher.
-	\item \emph{$\bar e/\bar v$.} This is entry's share of the stock.
-\end{itemize}
-At free entry, \eqref{eq:l_v} determines $\hat e_{t+1}$, not $\hat v_{t+1}$.
+For the predetermined stock, the partial derivatives of
+$v_{pre,t}=(1-\delta_{t-1})\{[1-A\theta_{t-1}^{-\eta_L}]v_{t-1}+s(1-u_{t-1})\}$ at the
+steady state are
+\begin{align*}
+	\frac{\partial v_{pre,t}}{\partial\delta_{t-1}}&=-\bigl[(1-\bar q)\bar v+s(1-\bar u)\bigr]
+	=-\frac{\bar v_{pre}}{1-\bar\delta},
+	&\frac{\partial v_{pre,t}}{\partial v_{t-1}}&=(1-\bar\delta)(1-\bar q),\\
+	\frac{\partial v_{pre,t}}{\partial\theta_{t-1}}&=(1-\bar\delta)\,\eta_L\frac{\bar q}{\bar\theta}\,\bar v,
+	&\frac{\partial v_{pre,t}}{\partial u_{t-1}}&=-(1-\bar\delta)s .
+\end{align*}
+The first uses the steady state $\bar v_{pre}=(1-\bar\delta)[(1-\bar q)\bar v+s(1-\bar u)]$,
+and the third uses $\partial q/\partial\theta=-\eta_L\bar q/\bar\theta$. Hence, with
+$\delta_{t-1}-\bar\delta=\bar\delta\tilde\delta_{t-1}$,
+\[
+	v_{pre,t}-\bar v_{pre}
+	=-\frac{\bar v_{pre}\,\bar\delta}{1-\bar\delta}\,\tilde\delta_{t-1}
+	+(1-\bar\delta)\bigl[(1-\bar q)\bar v\,\hat v_{t-1}+\eta_L\bar q\bar v\,\hat\theta_{t-1}
+	-s\bar u\,\hat u_{t-1}\bigr].
+\]
+Dividing by $\bar v_{pre}=\bar v-\bar e$,
+\begin{equation}\label{eq:l_vpre}
+	\boxed{\;
+	\hat v_{pre,t}=-\frac{\bar\delta}{1-\bar\delta}\,\tilde\delta_{t-1}
+	+\frac{1-\bar\delta}{\bar v-\bar e}\Bigl[(1-\bar q)\bar v\,\hat v_{t-1}
+	+\eta_L\bar q\bar v\,\hat\theta_{t-1}-s\bar u\,\hat u_{t-1}\Bigr]\;}
+\end{equation}
+
+Entry replaces the positions destroyed, so its weight in \eqref{eq:l_v},
+$\bar\delta(\bar v+1-\bar u)/\bar v$, is proportional to $\bar\delta$: $0.073$ at D1 and
+$0.831$ at $\bar\delta=\bar\tau$. The predetermined stock is the rest, $0.927$ and $0.169$.
+In \eqref{eq:l_vpre}, a one-percent rise in $\delta_{t-1}$ destroys about $\bar\delta$
+percent of the predetermined stock, while entrants posted at $t$ are not exposed. The
+bracket collects the changes in the sources of the predetermined stock, in units of
+vacancies. More vacancies at $t-1$ leave more unfilled ones ($(1-\bar q)\bar v\,\hat v_{t-1}$).
+A tighter market fills fewer of them ($\eta_L\bar q\bar v\,\hat\theta_{t-1}$); after a
+destruction shock $\hat\theta<0$, so vacancies fill faster and fewer carry over. And reposts
+come from the employed, who are fewer when $u$ is higher ($-s\bar u\,\hat u_{t-1}$).
+
+\paragraph{At free entry}
+With $\hat v_{t-1}=\hat\theta_{t-1}+\hat u_{t-1}$, the bracket in \eqref{eq:l_vpre}
+becomes $(1-\bar q+\eta_L\bar q)\bar v\,\hat\theta_{t-1}+[(1-\bar q)\bar v-s\bar u]\hat u_{t-1}$.
+Equation \eqref{eq:l_v} then determines entry, not the vacancy stock:
+\[
+	\hat e_t=\frac{\bar v}{\bar\delta(\bar v+1-\bar u)}
+	\Bigl\{\hat v_t-\Bigl[1-\frac{\bar\delta(\bar v+1-\bar u)}{\bar v}\Bigr]\hat v_{pre,t}\Bigr\},
+	\qquad \hat v_t=\hat\theta_t+\hat u_t .
+\]
+When the entrant weight is small, as at D1, a given gap between the target stock and the
+predetermined stock requires a large percentage change in entry.
 
 \subsection{Tightness}
 
@@ -334,8 +423,9 @@ Taking logs of \eqref{eq:n_theta},
 
 \subsection{Weights at the calibration}
 
-Our calibration holds $\bar f$, $\bar q$ and $\bar\tau$ fixed and recalibrates $\bar s$ and
-$\phi$ at each $\bar\delta$.
+The numbers use our calibration, not GS's. It holds $\bar f$, $\bar q$ and $\bar\tau$ fixed
+and recalibrates $s$ and $\phi$ at each $\bar\delta$. The discount rate is $r=0.0033$
+monthly.
 
 \begin{table}[h]
 \centering
@@ -343,226 +433,230 @@ $\phi$ at each $\bar\delta$.
 \toprule
  & D1 ($\bar\delta=3.2\%$/yr) & CK-like ($\bar\delta=\bar\tau$) \\
 \midrule
-$1/(r+\bar\delta)$ & 167.2 & 29.2 \\
-$\bar f/\bar\tau$ & 13.26 & 13.65 \\
+$\bar\delta/(r+\bar\delta)$ (flow value) & 0.453 & 0.905 \\
+$\bar f\bar\delta/\bar\tau$ (unemployment) & 0.036 & 0.423 \\
+$(1-s)\bar\delta/\bar\tau$ (separations) & 0.085 & 1.000 \\
+$(1-\bar\delta)\bar f$ & 0.410 & 0.410 \\
 $\lambda$ & 0.559 & 0.559 \\
 $\omega$ & 0.164 & 0.164 \\
-$\bar X/\bar v$ & 0.930 & 0.174 \\
-$\bar e/\bar v$ & 0.073 & 0.831 \\
+$1-\bar\delta(\bar v+1-\bar u)/\bar v$ (predetermined) & 0.927 & 0.169 \\
+$\bar\delta(\bar v+1-\bar u)/\bar v$ (entrants) & 0.073 & 0.831 \\
 \bottomrule
 \end{tabular}
-\caption{Weights of the log-linear system.}
+\caption{Weights of the log-linear system, per unit of $\tilde\delta$.}
 \label{tab:weights}
 \end{table}
 
-The unemployment equation is essentially the same in both economies. Among the weights
-that matter for $u$ and $v$ at free entry, only $1/(r+\bar\delta)$ differs much.
-
-\section{Tightness}
-
-\begin{lemma}\label{lem:theta}
-Let $d_t=\rho^t d_0$ with $\rho\in[0,1)$, and suppose
-\[
-	\Phi\equiv B\Bigl[(1-\bar s)-\frac{\phi\bar f}{\eta_L}\Bigr]>-1 .
-\]
-Then \eqref{eq:l_jcc} has a unique bounded solution, $\hat\theta_t=a\,d_t$, with
-\begin{equation}\label{eq:a}
-	a=-\,\frac{\dfrac{1}{1-\bar\delta}
-	+\dfrac{1-B\rho\bigl[1-\bar s-\phi\bar f-(1-\phi)\bar q\bigr]}{r+\bar\delta}}
-	{\eta_L-B\rho\bigl[(1-\bar s)\eta_L-\phi\bar f\bigr]}<0 .
-\end{equation}
-\end{lemma}
-
-\begin{proof}
-\emph{Uniqueness.} Divide \eqref{eq:l_jcc} by $\eta_L$:
-\[
-	\hat\theta_t=\Phi\,\mathbb{E}_t\hat\theta_{t+1}
-	-\frac{1}{\eta_L}\Bigl[\frac{1}{r+\bar\delta}+\frac{1}{1-\bar\delta}\Bigr]d_t
-	+\frac{B\bigl[1-\bar s-\phi\bar f-(1-\phi)\bar q\bigr]}{\eta_L(r+\bar\delta)}\,
-	\mathbb{E}_td_{t+1}.
-\]
-Here $\Phi<B(1-\bar s)<1$, and $\Phi>-1$ by assumption. So the unique bounded solution is
-obtained by solving forward. With $\mathbb{E}_td_{t+k}=\rho^kd_t$, every term of the
-forward sum is proportional to $d_t$, so $\hat\theta_t=a\,d_t$ for some constant $a$.
-
-\emph{The coefficient.} Substitute $\hat\theta_t=a\rho^td_0$,
-$\mathbb{E}_t\hat\theta_{t+1}=a\rho^{t+1}d_0$, $d_t=\rho^td_0$ and
-$\mathbb{E}_td_{t+1}=\rho^{t+1}d_0$ into \eqref{eq:l_jcc}:
-\[
-	\eta_L a\rho^td_0
-	=-\Bigl[\frac{1}{r+\bar\delta}+\frac{1}{1-\bar\delta}\Bigr]\rho^td_0
-	+B\Bigl\{\bigl[1-\bar s-\phi\bar f-(1-\phi)\bar q\bigr]\frac{\rho^{t+1}d_0}{r+\bar\delta}
-	+\bigl[(1-\bar s)\eta_L-\phi\bar f\bigr]a\rho^{t+1}d_0\Bigr\}.
-\]
-Divide by $\rho^td_0$:
-\[
-	\eta_L a=-\frac{1}{r+\bar\delta}-\frac{1}{1-\bar\delta}
-	+\frac{B\rho\bigl[1-\bar s-\phi\bar f-(1-\phi)\bar q\bigr]}{r+\bar\delta}
-	+B\rho\bigl[(1-\bar s)\eta_L-\phi\bar f\bigr]a .
-\]
-Collect the terms in $a$ on the left:
-\[
-	a\Bigl\{\eta_L-B\rho\bigl[(1-\bar s)\eta_L-\phi\bar f\bigr]\Bigr\}
-	=-\frac{1}{1-\bar\delta}
-	-\frac{1-B\rho\bigl[1-\bar s-\phi\bar f-(1-\phi)\bar q\bigr]}{r+\bar\delta},
-\]
-which is \eqref{eq:a}.
-
-\emph{The sign.} $B\rho<1$ and $1-\bar s-\phi\bar f-(1-\phi)\bar q<1$, so the numerator of
-the second fraction is positive. The denominator satisfies
-$\eta_L-B\rho[(1-\bar s)\eta_L-\phi\bar f]\ge\eta_L[1-B\rho(1-\bar s)]>0$. Hence $a<0$.
-\end{proof}
-
-\begin{remark}[Why the endogenous states do not enter]\label{rem:recursive}
-The economy has endogenous states, $u_t$ and the predetermined vacancies $v_{pre,t}$. A
-general linear solution for tightness would take the form
-$\hat\theta_t=a\,d_t+b_u\hat u_t+b_v\hat v_{pre,t}$. The proof above nevertheless delivers
-$b_u=b_v=0$, for the following reasons.
-\begin{enumerate}
-	\item Equation \eqref{eq:l_jcc} contains neither $u$ nor $v_{pre}$. Free entry pins $Q$,
-	and $K_t=x_m(1-\beta+\beta\delta_t)$ depends only on the exogenous $\delta_t$.
-	\item Iterating \eqref{eq:l_jcc} forward $T$ periods gives
-	\[
-		\hat\theta_t=\sum_{k=0}^{T-1}\Phi^k\,\mathbb{E}_t\bigl(c_0d_{t+k}+c_1d_{t+k+1}\bigr)
-		+\Phi^T\,\mathbb{E}_t\hat\theta_{t+T},
-	\]
-	where $c_0$ and $c_1$ are the coefficients in the proof. For a bounded solution with
-	$\lvert\Phi\rvert<1$, the last term vanishes as $T\to\infty$. So $\hat\theta_t$ depends
-	only on current and expected future $d$, which gives $b_u=b_v=0$.
-	\item The states are then solved backward. Iterating \eqref{eq:l_u} gives $\hat u$
-	(Proposition~\ref{prop:fe}, Part 2), and \eqref{eq:l_theta} gives
-	$\hat v=\hat\theta+\hat u$.
-	\item The predetermined stock
-	$v_{pre,t+1}=(1-\delta_t)[(1-q(\theta_t))\theta_tu_t+s(1-u_t)]$ depends only on
-	$(u_t,\theta_t,\delta_t)$ and has no own lag. It feeds into nothing except entry,
-	$e_{t+1}=v_{t+1}-v_{pre,t+1}$.
-\end{enumerate}
-\emph{Root count.} The system has one unstable root, $1/\Phi$, for one jump variable, and
-one stable root, $\lambda$, for one dynamic state, $u$. So the Blanchard--Kahn condition
-holds.
-
-\emph{When the structure breaks.} With finite $\xi$, entry $e=G(Q)$ links $v_{pre}$ to $Q$,
-and $Q$ enters the job creation condition. Tightness then depends on the states, the guess
-must include state coefficients, and the closed form is lost. The same happens when the
-conditions of \texttt{prop:independence} fail, through $N$, $C$ or $\chi^c$.
-\end{remark}
-
-\paragraph{Reading \eqref{eq:a}}
-\begin{itemize}
-	\item $1/(1-\bar\delta)$ is the survival effect.
-	\item $1/(r+\bar\delta)$ is the rental effect.
-	\item Persistence adds two offsetting adjustments, both because the flow value stays
-	high next period:
-	\begin{itemize}
-		\item it raises the value of an ongoing match, through $1-\bar s-\phi\bar f$;
-		\item it erodes next period's surplus, through $-(1-\phi)\bar q$.
-	\end{itemize}
-	\item The denominator accounts for tightness being low next period as well.
-	\item At $\rho=0$,
-	$a=-\bigl[1/(r+\bar\delta)+1/(1-\bar\delta)\bigr]/\eta_L$.
-\end{itemize}
+Moving from $\bar\delta=\bar\tau$ to D1 cuts the unemployment loading by a factor of 12 but
+the flow-value loading only by a factor of 2. The first is proportional to $\bar\delta$. The
+second saturates, because $\bar\delta/(r+\bar\delta)$ falls in proportion to $\bar\delta$
+only once $\bar\delta$ is below $r$. The entrant share falls by the same factor of 11 as
+the destruction share of separations, since
+$\bar e/\bar v=(\bar\delta/\bar\tau)[\bar\tau+(1-\bar\delta)\bar q]$ with a bracket fixed by
+our targets. So the unemployment loading and the entrant share both scale with
+$\bar\delta/\bar\tau$, while the flow-value loading does not. The other weights are
+essentially the same in both economies.
 
 \section{Proposition}
 
-\begin{proposition}[Destruction shock under infinitely elastic vacancy creation]
+With $\lambda$ and $\omega$ as defined in Section~4, define
+\begin{equation}\label{eq:a}
+	a\equiv-\,\frac{(1+r)\dfrac{\bar\delta}{1-\bar\delta}
+	+\dfrac{\bar\delta}{r+\bar\delta}\Bigl[1+r-\rho(1-\bar\tau)+\rho\,\phi(1-\bar\delta)\bar f
+	+\rho\,(1-\phi)(1-\bar\delta)\bar q\Bigr]}
+	{\eta_L\bigl[1+r-\rho(1-\bar\tau)\bigr]+\rho\,\phi(1-\bar\delta)\bar f}
+\end{equation}
+
+\begin{lemma}[Tightness under infinitely elastic vacancy creation]\label{lem:theta}
+Assume the setting of Section~1 with $\xi\to\infty$, and suppose
+$\phi(1-\bar\delta)\bar f<\eta_L(2+r-\bar\tau)$, which holds whenever $\phi\le\eta_L$. Then the
+log-linear system \eqref{eq:l_jcc}--\eqref{eq:l_theta} has a unique bounded solution, in
+which tightness depends only on the destruction shock:
+\[
+	\hat\theta_t=a\,\tilde\delta_t,\qquad a<0 .
+\]
+The endogenous states $u_t$ and $v_{pre,t}$ do not enter the policy rule for tightness.
+\end{lemma}
+
+\begin{proof}
+A general linear policy rule would take the form
+$\hat\theta_t=a\,\tilde\delta_t+b_u\hat u_t+b_v\hat v_{pre,t}$. Equation \eqref{eq:l_jcc}
+contains neither $u$ nor $v_{pre}$, because free entry pins $Q$ and
+$K_t=x_m(r+\delta_t)/(1+r)$ depends only on the exogenous $\delta_t$. Dividing it by
+$\eta_L$,
+\[
+	\hat\theta_t=\Phi\,\mathbb{E}_t\hat\theta_{t+1}+c_0\tilde\delta_t+c_1\mathbb{E}_t\tilde\delta_{t+1},
+	\qquad
+	\Phi\equiv\frac{1}{1+r}\Bigl[1-\bar\tau-\frac{\phi(1-\bar\delta)\bar f}{\eta_L}\Bigr],
+\]
+\[
+	c_0\equiv-\frac{1}{\eta_L}\Bigl[\frac{\bar\delta}{r+\bar\delta}+\frac{\bar\delta}{1-\bar\delta}\Bigr],
+	\quad
+	c_1\equiv\frac{1-\bar\tau-\phi(1-\bar\delta)\bar f-(1-\phi)(1-\bar\delta)\bar q}{\eta_L(1+r)}\,
+	\frac{\bar\delta}{r+\bar\delta}.
+\]
+Iterating forward $T$ periods,
+\[
+	\hat\theta_t=\sum_{k=0}^{T-1}\Phi^k\,\mathbb{E}_t\bigl(c_0\tilde\delta_{t+k}+c_1\tilde\delta_{t+k+1}\bigr)
+	+\Phi^T\,\mathbb{E}_t\hat\theta_{t+T}.
+\]
+Here $\Phi<(1-\bar\tau)/(1+r)<1$. And $\Phi>-1$ if and only if
+$1-\bar\tau-\phi(1-\bar\delta)\bar f/\eta_L>-(1+r)$, that is,
+$\phi(1-\bar\delta)\bar f<\eta_L(2+r-\bar\tau)$, which is the assumption. It holds whenever
+$\phi\le\eta_L$, because $(1-\bar\delta)\bar f<1<2+r-\bar\tau$. For a bounded solution the last term
+vanishes as $T\to\infty$, so the unique bounded solution is the forward sum. It depends only
+on current and expected future $\tilde\delta$, so $b_u=b_v=0$. With
+$\mathbb{E}_t\tilde\delta_{t+k}=\rho^k\tilde\delta_t$, every term of the sum is proportional
+to $\tilde\delta_t$, so $\hat\theta_t=a\,\tilde\delta_t$ for a constant $a$.
+
+To find $a$, substitute $\hat\theta_t=a\tilde\delta_t$,
+$\mathbb{E}_t\hat\theta_{t+1}=a\rho\tilde\delta_t$ and
+$\mathbb{E}_t\tilde\delta_{t+1}=\rho\tilde\delta_t$ into \eqref{eq:l_jcc}, divide by
+$\tilde\delta_t$ and multiply by $1+r$:
+\begin{multline*}
+	(1+r)\,\eta_L a=-(1+r)\Bigl[\frac{\bar\delta}{r+\bar\delta}+\frac{\bar\delta}{1-\bar\delta}\Bigr]
+	+\rho\bigl[1-\bar\tau-\phi(1-\bar\delta)\bar f-(1-\phi)(1-\bar\delta)\bar q\bigr]\frac{\bar\delta}{r+\bar\delta}\\
+	+\rho\bigl[(1-\bar\tau)\eta_L-\phi(1-\bar\delta)\bar f\bigr]a .
+\end{multline*}
+Collecting the terms in $a$ on the left,
+\begin{multline*}
+	a\Bigl\{\eta_L\bigl[1+r-\rho(1-\bar\tau)\bigr]+\rho\,\phi(1-\bar\delta)\bar f\Bigr\}
+	=-(1+r)\frac{\bar\delta}{1-\bar\delta}\\
+	-\frac{\bar\delta}{r+\bar\delta}\Bigl[1+r-\rho(1-\bar\tau)+\rho\,\phi(1-\bar\delta)\bar f
+	+\rho\,(1-\phi)(1-\bar\delta)\bar q\Bigr],
+\end{multline*}
+which is \eqref{eq:a}. Since $\rho<1$, $1+r-\rho(1-\bar\tau)>0$. Every term of the
+numerator and denominator of \eqref{eq:a} is then positive, so $a<0$.
+\end{proof}
+
+\paragraph{Reading \eqref{eq:a}}
+The term common to numerator and denominator,
+\[
+	1+r-\rho(1-\bar\tau)=r+\bar\tau+(1-\rho)(1-\bar\tau),
+\]
+is the rate at which a match discounts the shock's effects on its future payoffs: the
+discount rate, plus the separation rate, plus the rate at which the shock dies out. In the
+denominator it multiplies $\eta_L$, the response of the expected cost of a hire to
+tightness. The second term, $\rho\phi(1-\bar\delta)\bar f$, is the wage feedback: lower
+tightness lowers the worker's effective job-finding rate and hence her outside option, which
+props up the firm's surplus. At $\rho=1$ the denominator is
+$\eta_L(r+\bar\tau)+\phi(1-\bar\delta)\bar f$, the same combination of
+$r+\bar\tau$ and $\phi(1-\bar\delta)\bar f$ that appears in the steady-state job creation
+condition once the wage is substituted.
+
+The numerator has a survival part, $(1+r)\bar\delta/(1-\bar\delta)$, which is small, and a
+flow-value part, $\bar\delta/(r+\bar\delta)$, times a bracket. The bracket starts from the
+same effective rate. This already nets out that a persistently high flow value raises the
+hiring cost a continuing match saves, through $\rho(1-\bar\tau)$. Two persistence terms then
+add to it: part of that saving goes to the worker, $\rho\phi(1-\bar\delta)\bar f$, and a
+matched firm forgoes the higher flow value, $\rho(1-\phi)(1-\bar\delta)\bar q$. At $\rho=0$
+the bracket and the denominator's effective rate are both $1+r$, and
+$a=-\bigl[\bar\delta/(r+\bar\delta)+\bar\delta/(1-\bar\delta)\bigr]/\eta_L$.
+
+\begin{remark}[Block recursivity]\label{rem:recursive}
+Given Lemma~\ref{lem:theta}, the states are solved backward. Equation \eqref{eq:l_u} gives
+$\hat u$, and \eqref{eq:l_theta} gives $\hat v=\hat\theta+\hat u$. The predetermined stock
+$v_{pre,t}=(1-\delta_{t-1})\{[1-q(\theta_{t-1})]\theta_{t-1}u_{t-1}+s(1-u_{t-1})\}$ depends
+only on $(u_{t-1},\theta_{t-1},\delta_{t-1})$ and has no own lag. It feeds into nothing
+except entry, $e_t=v_t-v_{pre,t}$. The system thus has one unstable root, $1/\Phi$, for one
+jump variable, and one stable root, $\lambda$, for one dynamic state, $u$, so the
+Blanchard--Kahn condition holds.
+
+The structure breaks with finite $\xi$. Entry $e=G(Q)$ then links $v_{pre}$ to $Q$, and $Q$
+enters the job creation condition. Tightness depends on the states, the policy rule must
+include state coefficients, and the closed form is lost. The same happens when the
+conditions of \texttt{prop:independence} fail, through $N$, $C$ or $\chi^c$.
+\end{remark}
+
+With $a$ from Lemma~\ref{lem:theta}, define the ratio of the unemployment loading to the
+tightness loading,
+\[
+	R\equiv\frac{\bar f\,\bar\delta/\bar\tau}{\lvert a\rvert}.
+\]
+In the CK case, $\bar\delta=\bar\tau$ and $R=\bar f/\lvert a\rvert$.
+
+\begin{proposition}[Destruction shocks under infinitely elastic vacancy creation]
 \label{prop:fe}
-Assume the setting of Section~1, with $\xi\to\infty$, the condition $\Phi>-1$ of
-Lemma~\ref{lem:theta}, and $\lambda\in[0,1)$. Let $\delta_t=\bar\delta+\rho^td_0$ with
-$d_0>0$ and $\rho\in[0,1)$, and let $a<0$ be given by \eqref{eq:a}. To first order:
+Under the assumptions of Lemma~\ref{lem:theta}, consider an innovation $\varepsilon_0>0$.
+Let $\lambda\equiv1-(1-\bar\delta)\bar f-\bar\tau\in[0,1)$ be the persistence of
+unemployment, one minus the effective job-finding rate and the separation rate, and let
+$\omega\equiv(1-\eta_L)(1-\bar\delta)\bar f$ be the effective job-finding rate times its
+elasticity to tightness. To first order,
+\[
+	\hat\theta_t=a\,\rho^t\varepsilon_0,
+	\qquad
+	\hat u_t=\lvert a\rvert(\omega+R)\,\varepsilon_0\sum_{j=0}^{t-1}\lambda^{t-1-j}\rho^j,
+	\qquad
+	\hat v_t=\hat\theta_t+\hat u_t ,
+\]
+so unemployment is unchanged on impact and rises thereafter, while vacancies fall on
+impact. Moreover:
 \begin{enumerate}
-	\item \emph{Impact.} $\hat u_0=0$ and $\hat v_0=\hat\theta_0=a\,d_0<0$.
-	\item \emph{Unemployment.} For $t\ge1$,
-	\[
-		\hat u_t=\Bigl(\frac{\bar f}{\bar\tau}+\omega\lvert a\rvert\Bigr)d_0\,g_t>0,
-		\qquad g_t\equiv\sum_{j=0}^{t-1}\lambda^{t-1-j}\rho^j .
-	\]
-	\item \emph{Vacancies at $h=1$.} $\hat v_1<0$ if and only if
+	\item Vacancies fall at $h=1$ if and only if
 	\begin{equation}\label{eq:H1}
-		\lvert a\rvert(\rho-\omega)>\frac{\bar f}{\bar\tau}.
+		\rho>\omega+R .
 	\end{equation}
-	\item \emph{Vacancies at later horizons.} If $\hat v_t\ge0$ for some $t\ge1$, then
-	$\hat v_{t'}>0$ for all $t'>t$. Moreover, $\hat v_t<0$ for every $t\ge0$ if and only if
-	\[
-		\rho>\lambda\quad\text{and}\quad\lvert a\rvert(\rho-\lambda-\omega)\ge\frac{\bar f}{\bar\tau}.
-	\]
-	\item \emph{The whole path.} The slope of a regression of $\tilde v_t\equiv v_t-\bar v$ on
-	$\tilde u_t\equiv u_t-\bar u$ along the impulse response ($t\ge0$) is
+	Once vacancies rise above steady state, they stay above it.
+	\item The slope of $v_t-\bar v$ on $u_t-\bar u$ along the impulse response is
 	\begin{equation}\label{eq:slope}
-		\frac{\sum_t\tilde v_t\tilde u_t}{\sum_t\tilde u_t^2}
-		=\bar\theta\left[1-\frac{\lvert a\rvert\,\rho(1-\lambda^2)}
-		{\bigl(\bar f/\bar\tau+\omega\lvert a\rvert\bigr)(1+\rho\lambda)}\right].
+		\bar\theta\left[1-\frac{\rho(1-\lambda^2)}{(1+\rho\lambda)(\omega+R)}\right],
 	\end{equation}
-	It is negative if and only if
+	which is negative if and only if
 	\begin{equation}\label{eq:HP}
-		\lvert a\rvert\bigl[\rho(1-\lambda^2)-\omega(1+\rho\lambda)\bigr]
-		>\frac{\bar f}{\bar\tau}(1+\rho\lambda).
+		\frac{\rho(1-\lambda^2)}{1+\rho\lambda}>\omega+R .
 	\end{equation}
 \end{enumerate}
+In particular, both conditions fail when $\rho=0$: an iid shock lowers vacancies only on
+impact, after which $v_t=\bar\theta u_t$ and the slope equals $\bar\theta>0$.
 \end{proposition}
 
-\begin{corollary}[iid shock]\label{cor:iid}
-If $\rho=0$, then $\hat\theta_t=0$ and $\hat v_t=\hat u_t>0$ for all $t\ge1$. Unemployment
-and vacancies move together along the ray $v=\bar\theta u$ at every horizon after impact,
-and the slope \eqref{eq:slope} equals $\bar\theta>0$.
-\end{corollary}
+Both conditions compare the persistence of the shock with the same threshold, $\omega+R$.
+At $h=1$, the tightness fall that survives one period, $\lvert a\rvert\rho$, must exceed the
+rise in unemployment. That rise has two parts: the hires lost at date 0, $\omega\lvert a\rvert$,
+and the destruction itself, $\bar f\bar\delta/\bar\tau=R\lvert a\rvert$. So $\rho>\omega$ is
+necessary, and $R$ is the extra persistence needed to outweigh destruction. Over the whole
+path, persistence is discounted by unemployment's own persistence, since
+$\rho(1-\lambda^2)/(1+\rho\lambda)<\rho$, so \eqref{eq:HP} is the stricter condition.
 
-\begin{proof}[Proof of Proposition~\ref{prop:fe}]
-\emph{Part 1.} $u_0$ is predetermined, so $\hat u_0=0$. By Lemma~\ref{lem:theta},
-$\hat\theta_0=ad_0$. By \eqref{eq:l_theta},
-$\hat v_0=\hat\theta_0+\hat u_0=ad_0$.
+\begin{proof}
+The innovation sets $\tilde\delta_t=\rho^t\varepsilon_0$, so by Lemma~\ref{lem:theta}
+$\hat\theta_t=a\rho^t\varepsilon_0$.
 
-\emph{Part 2.} By Lemma~\ref{lem:theta}, $\hat\theta_t=a\rho^td_0=-\lvert a\rvert\rho^td_0$.
-Substituting into \eqref{eq:l_u} with $d_t=\rho^td_0$,
+\emph{Step 1: unemployment.} $u_0$ is predetermined, so $\hat u_0=0$. Substituting
+$\hat\theta_{t-1}=-\lvert a\rvert\rho^{t-1}\varepsilon_0$ and
+$\tilde\delta_{t-1}=\rho^{t-1}\varepsilon_0$ into \eqref{eq:l_u}, and using
+$\bar f\bar\delta/\bar\tau=R\lvert a\rvert$,
 \[
-	\hat u_{t+1}=\lambda\hat u_t+\frac{\bar f}{\bar\tau}\rho^td_0+\omega\lvert a\rvert\rho^td_0
-	=\lambda\hat u_t+\Bigl(\frac{\bar f}{\bar\tau}+\omega\lvert a\rvert\Bigr)\rho^td_0 .
+	\hat u_t=\lambda\hat u_{t-1}+\bar f\frac{\bar\delta}{\bar\tau}\rho^{t-1}\varepsilon_0
+	+\omega\lvert a\rvert\rho^{t-1}\varepsilon_0
+	=\lambda\hat u_{t-1}+\lvert a\rvert(\omega+R)\,\rho^{t-1}\varepsilon_0 .
 \]
-With $\hat u_0=0$, iterating gives
-\begin{align*}
-	\hat u_1&=\Bigl(\tfrac{\bar f}{\bar\tau}+\omega\lvert a\rvert\Bigr)d_0,\\
-	\hat u_2&=\Bigl(\tfrac{\bar f}{\bar\tau}+\omega\lvert a\rvert\Bigr)(\lambda+\rho)d_0,
-\end{align*}
-and in general the expression stated, with $g_t=\sum_{j=0}^{t-1}\lambda^{t-1-j}\rho^j$.
-Since $\lambda,\rho\ge0$ and $g_1=1$, $g_t>0$ for $t\ge1$, and the coefficient in
-parentheses is positive.
+Iterating from $\hat u_0=0$ gives $\hat u_1=\lvert a\rvert(\omega+R)\varepsilon_0$,
+$\hat u_2=\lvert a\rvert(\omega+R)(\lambda+\rho)\varepsilon_0$, and in general
+$\hat u_t=\lvert a\rvert(\omega+R)\varepsilon_0\,g_t$ with
+$g_t\equiv\sum_{j=0}^{t-1}\lambda^{t-1-j}\rho^j$. Since $\lambda,\rho\ge0$ and $g_1=1$,
+$\hat u_t>0$ for $t\ge1$. By \eqref{eq:l_theta}, $\hat v_t=\hat\theta_t+\hat u_t$, and
+$\hat v_0=a\varepsilon_0<0$.
 
-\emph{Part 3.} By \eqref{eq:l_theta}, $\hat v_1=\hat\theta_1+\hat u_1$. With
-$\hat\theta_1=a\rho d_0=-\lvert a\rvert\rho d_0$ and $\hat u_1$ from Part 2,
+\emph{Step 2: part 1.} With $g_1=1$,
 \[
-	\hat v_1=-\lvert a\rvert\rho d_0+\Bigl(\frac{\bar f}{\bar\tau}+\omega\lvert a\rvert\Bigr)d_0
-	=\Bigl[\frac{\bar f}{\bar\tau}-\lvert a\rvert(\rho-\omega)\Bigr]d_0,
+	\hat v_1=-\lvert a\rvert\rho\varepsilon_0+\lvert a\rvert(\omega+R)\varepsilon_0
+	=\lvert a\rvert\bigl(\omega+R-\rho\bigr)\varepsilon_0,
 \]
-which is negative if and only if \eqref{eq:H1} holds.
-
-\emph{Part 4.} By \eqref{eq:l_theta} and Part 2, for $t\ge1$,
-\[
-	\hat v_t=-\lvert a\rvert\rho^td_0+\Bigl(\frac{\bar f}{\bar\tau}+\omega\lvert a\rvert\Bigr)g_t\,d_0 .
-\]
-For $\rho>0$, divide by $\rho^td_0>0$. Using $g_t/\rho^t=\rho^{-1}\sum_{i=0}^{t-1}(\lambda/\rho)^i$,
-\[
+which is negative if and only if \eqref{eq:H1} holds. For $t\ge1$ and $\rho>0$, divide
+$\hat v_t=\lvert a\rvert\bigl[-\rho^t+(\omega+R)g_t\bigr]\varepsilon_0$ by
+$\lvert a\rvert\rho^t\varepsilon_0>0$, and use $g_t/\rho^t=\rho^{-1}\sum_{i=0}^{t-1}(\lambda/\rho)^i$:
+\begin{equation}\label{eq:vt_neg}
 	\hat v_t<0
 	\iff
-	\lvert a\rvert>\Bigl(\frac{\bar f}{\bar\tau}+\omega\lvert a\rvert\Bigr)\frac{1}{\rho}
-	\sum_{i=0}^{t-1}\Bigl(\frac{\lambda}{\rho}\Bigr)^i .
-\]
+	\rho>(\omega+R)\sum_{i=0}^{t-1}\Bigl(\frac{\lambda}{\rho}\Bigr)^i .
+\end{equation}
 The right side is strictly increasing in $t$. So once the inequality fails, it fails at all
-later dates. This is the first claim.
-\begin{itemize}
-	\item If $\rho\le\lambda$, the sum diverges, so $\hat v_t$ eventually turns positive.
-	\item If $\rho>\lambda$, the right side converges from below to
-	$(\bar f/\bar\tau+\omega\lvert a\rvert)/(\rho-\lambda)$. Then $\hat v_t<0$ for every $t$
-	if and only if $\lvert a\rvert(\rho-\lambda)\ge\bar f/\bar\tau+\omega\lvert a\rvert$,
-	that is, $\lvert a\rvert(\rho-\lambda-\omega)\ge\bar f/\bar\tau$.
-\end{itemize}
-For $\rho=0$, $\hat v_t=\hat u_t>0$ for $t\ge1$.
+later dates. For $\rho=0$, $\hat v_t=\hat u_t>0$ for all $t\ge1$.
 
-\emph{Part 5.} Write $\kappa_u\equiv\bar f/\bar\tau+\omega\lvert a\rvert$. Since
-$\tilde u_t\approx\bar u\,\hat u_t$ and $\tilde v_t\approx\bar v\,\hat v_t$,
-\[
-	\tilde u_t=\bar u\,\kappa_u d_0\,g_t,\qquad
-	\tilde v_t=\bar v\bigl(a\rho^t+\kappa_u g_t\bigr)d_0,
-\]
-with $g_0=0$. For $\rho\ne\lambda$, $g_t=(\rho^t-\lambda^t)/(\rho-\lambda)$. The case
+\emph{Step 3: part 2.} In levels, $u_t-\bar u=\bar u\lvert a\rvert(\omega+R)\varepsilon_0\,g_t$
+and $v_t-\bar v=\bar v\lvert a\rvert\bigl[-\rho^t+(\omega+R)g_t\bigr]\varepsilon_0$, with
+$g_0=0$. For $\rho\ne\lambda$, $g_t=(\rho^t-\lambda^t)/(\rho-\lambda)$; the case
 $\rho=\lambda$ follows by continuity. Summing geometric series,
 \[
 	\sum_{t\ge0}\rho^tg_t=\frac{\rho}{(1-\rho^2)(1-\rho\lambda)},\qquad
@@ -570,51 +664,52 @@ $\rho=\lambda$ follows by continuity. Summing geometric series,
 \]
 The first uses $\frac{1}{1-\rho^2}-\frac{1}{1-\rho\lambda}
 =\frac{\rho(\rho-\lambda)}{(1-\rho^2)(1-\rho\lambda)}$. The second uses
+$(1-\rho\lambda)(1-\lambda^2)-2(1-\rho^2)(1-\lambda^2)+(1-\rho^2)(1-\rho\lambda)
+=(\rho-\lambda)^2(1+\rho\lambda)$. Therefore
 \[
-	(1-\rho\lambda)(1-\lambda^2)-2(1-\rho^2)(1-\lambda^2)+(1-\rho^2)(1-\rho\lambda)
-	=(\rho-\lambda)^2(1+\rho\lambda).
+	\frac{\sum_t(v_t-\bar v)(u_t-\bar u)}{\sum_t(u_t-\bar u)^2}
+	=\frac{\bar v}{\bar u}\Bigl[1-\frac{1}{\omega+R}\,\frac{\sum\rho^tg_t}{\sum g_t^2}\Bigr]
+	=\bar\theta\Bigl[1-\frac{\rho(1-\lambda^2)}{(1+\rho\lambda)(\omega+R)}\Bigr],
 \]
-Therefore
-\[
-	\frac{\sum_t\tilde v_t\tilde u_t}{\sum_t\tilde u_t^2}
-	=\frac{\bar v\,\bar u\,\kappa_u d_0^2\bigl(a\sum\rho^tg_t+\kappa_u\sum g_t^2\bigr)}
-	{\bar u^2\kappa_u^2d_0^2\sum g_t^2}
-	=\bar\theta\Bigl[1+\frac{a}{\kappa_u}\frac{\sum\rho^tg_t}{\sum g_t^2}\Bigr]
-	=\bar\theta\Bigl[1-\frac{\lvert a\rvert}{\kappa_u}\frac{\rho(1-\lambda^2)}{1+\rho\lambda}\Bigr],
-\]
-which is \eqref{eq:slope}. It is negative if and only if
-$\lvert a\rvert\rho(1-\lambda^2)>\kappa_u(1+\rho\lambda)$. Substituting
-$\kappa_u=\bar f/\bar\tau+\omega\lvert a\rvert$ and rearranging gives \eqref{eq:HP}.
+which is \eqref{eq:slope}. It is negative if and only if \eqref{eq:HP} holds.
 
-\emph{Corollary~\ref{cor:iid}.} With $\rho=0$, $\hat\theta_t=a\cdot0^t=0$ for $t\ge1$, so
-$\hat v_t=\hat u_t$ by \eqref{eq:l_theta}. In \eqref{eq:slope} the correction term has the
-factor $\rho=0$, so the slope is $\bar\theta$.
+\emph{Step 4: $\rho=0$.} The left sides of \eqref{eq:H1} and \eqref{eq:HP} are zero, while
+$\omega+R>0$, so both conditions fail. Since $\hat\theta_t=a\cdot0^t\varepsilon_0=0$ for
+$t\ge1$, $\hat v_t=\hat u_t$ and $v_t=\bar\theta u_t$ to first order. The slope
+\eqref{eq:slope} is then $\bar\theta$.
+\end{proof}
+
+\begin{corollary}[Vacancies below steady state at every horizon]\label{cor:allh}
+Under the assumptions of Proposition~\ref{prop:fe}, $\hat v_t<0$ for every $t\ge0$ if and
+only if $\rho-\lambda\ge\omega+R$. This requires $\rho>\lambda+\omega$, which is $0.72$ at
+our calibration.
+\end{corollary}
+
+\begin{proof}
+In \eqref{eq:vt_neg}, if $\rho\le\lambda$ the right side grows without bound, so vacancies
+eventually rise above steady state. If $\rho>\lambda$ it converges from below to
+$(\omega+R)\rho/(\rho-\lambda)$, so the inequality holds at every $t$ if and only if
+$\rho-\lambda\ge\omega+R$.
 \end{proof}
 
 \section{Interpretation}
 
 \paragraph{Why tightness falls}
 At $\rho=0$, \eqref{eq:l_jcc} reads
-$\eta_L\hat\theta_0=-[1/(r+\bar\delta)+1/(1-\bar\delta)]d_0$.
-\begin{itemize}
-	\item The vacancy's flow value, and hence the cost of a hire, rises by $1/(r+\bar\delta)$
-	in proportion. That is 167 at D1.
-	\item The value of a hire falls only through survival, by $1/(1-\bar\delta)\approx1$.
-	\item The expected time to fill, $1/q$, must therefore fall sharply. So tightness falls.
-\end{itemize}
+$\eta_L\hat\theta_0=-[\bar\delta/(r+\bar\delta)+\bar\delta/(1-\bar\delta)]\tilde\delta_0$. The
+flow value of a vacancy, and hence the cost of a hire, rises by $\bar\delta/(r+\bar\delta)$
+percent per percent of $\delta$, which is $0.45$ at D1. The value of a hire falls only
+through survival, by the small amount $\bar\delta/(1-\bar\delta)$. For the two to stay
+equal, the expected time to fill, $1/q$, must fall, so tightness falls.
 
 \paragraph{The iid case}
-Tightness and vacancies fall only on impact, while unemployment is predetermined. At $t=1$
+Tightness and vacancies fall only at date 0, while unemployment is predetermined. At date 1
 the flow value is back to $\bar K$ and $\theta_1=\bar\theta$. Unemployment rises, and
-$v_1=\bar\theta u_1$ rises with it. Entry refills the stock. In the $(u,v)$ plane the
+$v_1=\bar\theta u_1$ rises with it as entry refills the stock. In the $(u,v)$ plane the
 economy drops straight down, jumps up and to the right, and returns along the ray
-$v=\bar\theta u$.
-
-At D1, of $\hat u_1=0.16\%$ per 1\% shock:
-\begin{itemize}
-	\item $0.04$ comes from destruction, $(\bar f/\bar\tau)d_0$;
-	\item $0.12$ comes from the date-0 collapse in hiring, $\omega\lvert\hat\theta_0\rvert$.
-\end{itemize}
+$v=\bar\theta u$. At D1, of the $0.16\%$ rise in $\hat u_1$ per 1\% shock, $0.04$ comes from
+destruction, $(\bar f\bar\delta/\bar\tau)\tilde\delta_0$, and $0.12$ from the date-0 collapse
+in hiring, $\omega\lvert\hat\theta_0\rvert$.
 
 \paragraph{The persistent case}
 Tightness stays low while destruction stays high, so vacancies stay below steady state
@@ -622,25 +717,22 @@ while unemployment builds up. Once tightness has recovered enough, $v=\theta u$ 
 positive and stays positive.
 
 \paragraph{Where $\bar\delta$ relative to $\bar\tau$ enters}
-Conditions \eqref{eq:H1} and \eqref{eq:HP} compare two sensitivities to the same one-point
-rise in destruction:
-\begin{itemize}
-	\item tightness, $\lvert a\rvert$, which is roughly proportional to $1/(r+\bar\delta)$;
-	\item unemployment, $\bar f/\bar\tau$.
-\end{itemize}
-Every other weight is close across calibrations (Table~\ref{tab:weights}). So the
-comparison is between $r+\bar\delta$ and $\bar\tau$.
-\begin{itemize}
-	\item At D1, $(r+\bar\delta)/\bar\tau=0.19$.
-	\item With $\bar\delta=\bar\tau$ (CK, $s=0$), $(r+\bar\delta)/\bar\tau=1.11$. The vacancy
-	dies with the match, so its flow value cannot be the more sensitive of the two.
-\end{itemize}
+The destruction rate enters both conditions only through $R$, the ratio of the
+unemployment loading, $\bar f\bar\delta/\bar\tau$, to the tightness loading, $\lvert a\rvert$.
+The second is roughly proportional to $\bar\delta/(r+\bar\delta)$, so $R$ is roughly
+proportional to $(r+\bar\delta)/\bar\tau$. Lowering $\bar\delta$ relative to $\bar\tau$
+shrinks the unemployment loading in proportion, while the tightness loading shrinks much
+less (Table~\ref{tab:weights}), so $R$ falls. At D1, $(r+\bar\delta)/\bar\tau=0.19$ and
+$R=0.045$, so the threshold $\omega+R$ is barely above $\omega=0.164$. With
+$\bar\delta=\bar\tau$ (CK, $s=0$), $(r+\bar\delta)/\bar\tau=1.11$ and $R=\bar f/\lvert a\rvert
+=0.289$: the vacancy dies with the match, so its flow value cannot respond much more than
+unemployment does, and the threshold rises to $0.453$.
 
 \section{Numbers}
 
-The calibration uses $\kappa=0$ and $\rho=0.592$, and responses are per 1\% rise in
-$\delta_0$, in percent. At D1, $a=-292.0$ (iid: $-280.4$). At $\bar\delta=\bar\tau$,
-$a=-47.2$ (iid: $-50.3$).
+The calibration uses $\rho=0.592$, and responses are per 1\% shock ($\tilde\delta_0=0.01$),
+in percent. At D1, $a=-0.790$ (iid: $-0.759$). At $\bar\delta=\bar\tau$, $a=-1.464$ (iid:
+$-1.561$).
 
 \begin{table}[h]
 \centering
@@ -657,48 +749,44 @@ $t$ & $\hat\theta_t$ & $\hat u_t$ & $\hat v_t$ & $\hat\theta_t$ & $\hat u_t$ & $
 4 & $-0.10$ & 0.13 & $0.03$ & $-0.18$ & 0.51 & $0.33$ \\
 \bottomrule
 \end{tabular}
-\caption{Impulse responses to a persistent destruction shock ($\rho=0.592$, $\kappa=0$).}
+\caption{Impulse responses to a persistent destruction shock ($\rho=0.592$).}
 \label{tab:irf}
 \end{table}
 
 \begin{table}[h]
 \centering
-\begin{tabular}{lccccc}
+\begin{tabular}{lcccccc}
 \toprule
- & \eqref{eq:H1} & slope, iid & slope, $\rho=0.592$ & $\rho$ needed for slope $<0$ & $(r+\bar\delta)/\bar\tau$ \\
+ & $\omega$ & $R$ & $\omega+R$ & $\rho(1-\lambda^2)/(1+\rho\lambda)$ & slope & $\rho$ needed for slope $<0$ \\
 \midrule
-D1 & holds & 0.51 & $-0.24$ & $\rho>0.37$ & 0.19 \\
-CK-like & holds & 0.51 & $0.17$ & none & 1.11 \\
+D1 & 0.164 & 0.045 & 0.209 & 0.306 & $-0.24$ & $\rho>0.37$ \\
+CK-like & 0.164 & 0.289 & 0.453 & 0.306 & $0.17$ & none \\
 \bottomrule
 \end{tabular}
-\caption{Conditions of Proposition~\ref{prop:fe} and the path slope \eqref{eq:slope}.}
+\caption{Conditions of Proposition~\ref{prop:fe} at $\rho=0.592$. The slope after an iid
+shock is $\bar\theta=0.51$ in both economies.}
 \label{tab:slopes}
 \end{table}
 
-Condition \eqref{eq:H1} holds in both economies, so the sign at $h=1$ does not separate
-them. The path condition \eqref{eq:HP} does.
+Condition \eqref{eq:H1}, $\rho>\omega+R$, holds in both economies, so the sign at $h=1$
+does not separate them. The path condition \eqref{eq:HP} does: $0.306$ exceeds the
+threshold at D1 ($0.209$) but not at $\bar\delta=\bar\tau$ ($0.453$).
 
 \section{Remarks}
 
-\begin{remark}\label{rem:flow}
-\emph{Holding $K$ fixed.} If the vacancy cost were a constant flow, rather than the flow
-value of an asset that $\delta_t$ depreciates, the $1/(r+\bar\delta)$ terms would drop out
-of \eqref{eq:l_jcc} and \eqref{eq:a}. Only the survival effect would remain, and
-$\lvert a\rvert=1/\{(1-\bar\delta)(\eta_L-B\rho[(1-\bar s)\eta_L-\phi\bar f])\}$ is small.
-At our calibration the path slope is then positive in every economy (about $0.49$ at
-$\rho=0.592$). This is the flow-cost DMP case.
-\end{remark}
-
-\begin{remark}\label{rem:kappa}
-With a per-match cost $\kappa>0$, the flow-value terms in \eqref{eq:l_jcc} are scaled by
-$x_v=(\bar K/\bar q)/(\kappa+\bar K/\bar q)$. At $x_v=0.5$ the path slopes at $\rho=0.592$
-are $-0.23$ (D1) and $0.17$ ($\bar\delta=\bar\tau$).
+\begin{remark}[Holding $K$ fixed]\label{rem:flow}
+If the vacancy cost were a constant flow, rather than the flow value of an asset that
+$\delta_t$ depreciates, the $\bar\delta/(r+\bar\delta)$ terms would drop out of
+\eqref{eq:l_jcc} and \eqref{eq:a}. Only the survival effect would remain, and
+$\lvert a\rvert=(1+r)[\bar\delta/(1-\bar\delta)]/\{\eta_L[1+r-\rho(1-\bar\tau)]+\rho\phi(1-\bar\delta)\bar f\}$ is
+small. At our calibration the path slope is then positive in every economy (about $0.49$
+at $\rho=0.592$). This is the flow-cost DMP case.
 \end{remark}
 
 \begin{remark}
-A permanent shock ($\rho\to1$) recovers the steady-state comparison. It hides
-Corollary~\ref{cor:iid}: without persistence, the response is positively sloped after
-impact.
+A permanent shock ($\rho\to1$) recovers the steady-state comparison. It hides the last
+statement of Proposition~\ref{prop:fe}: without persistence, the response is positively
+sloped after impact.
 \end{remark}
 
 \begin{remark}
