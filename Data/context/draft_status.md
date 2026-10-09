@@ -1,5 +1,5 @@
 # Draft Status — `Draft/Draft.tex`
-**Last updated:** October 7, 2026 (R15 candidate restructured; Oct 6: Prop. 5 Part 3 qualified in ξ; Oct 5: Prop. 5 restated; Oct 1: wage dependencies, `def:equilibrium`, timing prose)
+**Last updated:** October 9, 2026 (`prop:equilibria` proof gap → R16; Prop. 5 vs `prop:fe` division of labor; D12). Oct 7: R15 candidate restructured; Oct 6: Prop. 5 Part 3 qualified in ξ; Oct 5: Prop. 5 restated; Oct 1: wage dependencies, `def:equilibrium`, timing prose)
 
 **Build:** compiles with 0 errors and 0 missing graphics. The 4 undefined references and 1
 duplicate label (P2 in [`pending_tasks.md`](pending_tasks.md)) predate the reposting work.
@@ -50,7 +50,7 @@ cascade, every §5.3 number comes from the code's timing.
 | F Additional comparisons (incl. Comparison D) | ✅ |
 | G Limiting-case proofs (`prop:independence`, `prop:double_limit`, `prop:ags`, `prop:bgm_nest`) | ✅ |
 | H Proof of `prop:ds_asymmetry` (`app:proof_ds`) | ✅ restated Oct 1 |
-| I Steady-state equilibria (`prop:equilibria`) | ✅ |
+| I Steady-state equilibria (`prop:equilibria`) | ❌ **Proof gap found Oct 9 (R16).** Step 4 does not deliver "generically exactly two" (zero is even; existence is not shown; a tangency is codimension one). Step 5 uses the degenerate ε → ∞ limit with f_e fixed |
 | `app:weighting_robustness`, `app:robustness` | ❌ referenced, do not exist |
 
 ---
@@ -63,12 +63,27 @@ cascade, every §5.3 number comes from the code's timing.
 | `prop:double_limit` (2) | ✅ Unaffected (assumes p_0 = 0) |
 | `prop:ags` (3) | ✅ Holds; states the clone-replacement motivation and that p_0 = 0 is assumed (no-exit also follows from f_e ≥ χ_m, which would leave reactivation on). AGS differs from the baseline on three channels |
 | `prop:bgm_nest` | ⚠️ Not audited for reposting/timing (R12). At p_0 = 0 the conservation leak is zero |
-| `prop:equilibria`, `prop:curves` | ⚠️ Not audited (R12) |
+| `prop:equilibria` | ❌ Proof does not establish the statement (R16; see appendix I above). Not audited for reposting (R12) |
+| `prop:curves` | ⚠️ Not audited (R12). Remark-level: the draft says it "follows directly from the expressions above" |
 | `prop:ds_asymmetry` (5) | ✅ Restated Oct 5 under the timing convention (R13); Part 2 numerics wait on R8 |
 
 ### Candidate: Beveridge response at free entry (R15) — **not in the draft**
 
 Drafted in [`../Notes/beveridge_free_entry_GS.tex`](../Notes/beveridge_free_entry_GS.tex), the authoritative source. Stated in the AGS economy of `prop:ags` with σ = κ = 0, which by `rem:nesting` is Gabrovski–Silva, at ξ → ∞, with log shocks δ_t = δ̄·exp(δ̃_t) and s_t = s̄·exp(s̃_t), one at a time. **Structure as of Oct 7 (s-shock part added):** `lem:theta` (θ̂_t = a·δ̃_t + b·s̃_t, common denominator D, b = −ρ(1−δ̄)s̄/D; determinacy iff ϕ(1−δ̄)f̄ < η_L(2+r−τ̄), automatic when ϕ ≤ η_L), `rem:recursive` (block recursivity, BK root count, why finite ξ breaks it), `prop:fe` for x ∈ {δ, s} with R_x ≡ ℓ_x/|c_x| (ℓ_δ = f̄δ̄/τ̄, ℓ_s = (1−δ̄)f̄(1−δ̄/τ̄)): part 1, h = 1 iff ρ > ω + R_x; part 2, path slope θ̄[1 − ρ(1−λ²)/((1+ρλ)(ω+R_x))], negative iff ρ(1−λ²)/(1+ρλ) > ω + R_x; part 3, if (1−δ̄)f̄[η_L + ϕ(1−δ̄)f̄/τ̄] ≥ 1 an s shock gives v̂_t > 0 for all t ≥ 1 and a positive slope at every ρ; iid ⇒ slope θ̄ for both. `cor:allh` (below steady state at all horizons iff ρ − λ ≥ ω + R_x). All iff and all in closed form. The δ–s asymmetry is R_δ = 0.045 vs R_s = 9.56 at D1, ρ = 0.592. **Blocked on a design decision, not on work:** see R15 in [`pending_tasks.md`](pending_tasks.md). Option (b), the self-contained δ–s theorem, is now written in the note; the choice between (a) and (b) is MS's. Do not splice until that is settled, since option (b) changes what Prop. 5 is for.
+
+**Division of labor with Prop. 5 (Oct 8, 2026).**
+- `prop:fe` is sharper where both apply. It gives iff conditions in parameters and covers the
+  whole path. It also shows Part 3's "δ̄_e/τ̄ small" fails at ξ → ∞ for an iid shock.
+- Prop. 5 alone covers finite ξ (the calibrated case, where v_pre is a state and a small
+  entrant weight ē/v̄ = δ̄(v̄+1−ū)/v̄ is what matters), endogenous exit (Part 2), and variety
+  (Part 1 needs only p_0 = 0).
+- The two bracket ξ.
+- **Recommendation: option (b).** `prop:fe` leads. Part 2 stays as a standalone exit result.
+  Parts 1 and 3 become a short general-ξ statement, with R12c fixed.
+
+**Theory-bar assessment (Oct 9, [D12](decisions.md)).** At a theory journal `prop:fe` would read
+as applied theory: log-linear, at the ξ → ∞ corner, with variety, exit and reposting off. A
+global version is R17.
 
 ### Proposition 5 (`prop:ds_asymmetry`, proof in `app:proof_ds`) — restated Oct 5, 2026
 

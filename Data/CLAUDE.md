@@ -1,5 +1,5 @@
 # CLAUDE.md — Empirical LP Project (Firm Entry/Exit DSGE)
-**Last updated:** October 7, 2026 · **Author:** Mario Silva
+**Last updated:** October 9, 2026 · **Author:** Mario Silva
 **Current branch:** `costly_vacancy_reposting` (branched from `instruments_LP_coefficient`; the most up-to-date version of the project)
 **Project paused June 7, 2026 – September 5, 2026.** Status re-verified against the repo on
 resumption; see [`context/pending_tasks.md`](context/pending_tasks.md) §Blockers.
@@ -48,7 +48,7 @@ file owns what.
 | File | Contents |
 |------|----------|
 | [`context/README.md`](context/README.md) | **Index and reading order.** Start here |
-| [`context/decisions.md`](context/decisions.md) | **Decision register**: D1–D11 (D1 settled, D2/D3/D11 open, D10 partial), S1–S9 settled, each with a recommendation and a reason |
+| [`context/decisions.md`](context/decisions.md) | **Decision register**: D1–D12 (D1 settled, D2/D3/D11/D12 open, D10 partial), S1–S12 settled, each with a recommendation and a reason |
 | [`context/pending_tasks.md`](context/pending_tasks.md) | Actionable work, ordered; the critical path to a complete draft |
 | [`context/estimation_design.md`](context/estimation_design.md) | How conditional (IRF) and unconditional moments combine, determinacy, what is missing, build order |
 | [`context/findings.md`](context/findings.md) | All empirical and model-mechanism results with numbers |
@@ -106,7 +106,25 @@ to do:
    Guren-McKay-Nakamura-Steinsson "simulate the regression inside the model" prescription,
    which is D3's most defensible option. Building E9 well upgrades D3.
 
-**Resume:** [`context/session_handout_20261001.md`](context/session_handout_20261001.md) (R13 is **done**; read its Oct 5 update).
+**Resume:** [`context/session_handout_20261009.md`](context/session_handout_20261009.md) (Oct 8–9 strategy sessions). Previous: `session_handout_20261001.md` (R13 done).
+
+**October 8–9, 2026 sessions — strategy only.** No runs, no draft edits. Full record in the
+handout.
+
+- **Prop. 5 vs `prop:fe`.** `prop:fe` is sharper where both apply. Prop. 5 alone covers finite
+  ξ (the calibrated case), endogenous exit (Part 2) and variety. The two bracket ξ.
+  Recommendation for R15: option (b), with Prop. 5 demoted to a general-ξ statement plus Part 2.
+- **Theory-first pivot to JET: no-go** ([D12](context/decisions.md), open, MS). The theory reads
+  as applied theory, and every dynamic theorem switches variety off. Recommended instead: a
+  theory-forward paper for RED / JME / AEJ: Macro. It keeps the SVAR-calibrated mechanism and
+  cuts Bartik to the robust short-horizon evidence (D10 option (a)). **The publication
+  objective above is unchanged.**
+- ⚠ **The `prop:equilibria` proof is wrong as written** (R16). "Even number of crossings" does
+  not give "generically exactly two", existence is not shown, and Step 5 uses the degenerate
+  ε → ∞ limit.
+- **Hypothesis R17.** At ξ → ∞ the exact nonlinear policy θ_t = Θ(δ_t, s_t) should exist
+  globally. That would make `prop:fe` a global result.
+- The SVAR is bivariate (z, δ). The s process comes from a univariate AR(1) (part6b).
 
 **October 6–7, 2026 sessions — the δ-shock Beveridge response at free entry (R15).** No
 full-model runs; two self-contained programs, one LaTeX note, one draft edit (Oct 6).

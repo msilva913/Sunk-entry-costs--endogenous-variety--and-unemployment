@@ -1,6 +1,6 @@
 # Context Folder — Index
 **Last reorganized:** September 5, 2026 (branch `Organize_Project_State_Estimation`)
-**Last consistency pass:** October 7, 2026 (branch `costly_vacancy_reposting`; R15 free-entry proposition restated in R form, `.tex` note authoritative, `.md` exposition deleted). Previous: October 5 (intro positioning, `app:loglin` ¶9 rewrite, predetermined-vacancy threshold; R12b/R12c added)
+**Last consistency pass:** October 9, 2026 (branch `costly_vacancy_reposting`; strategy sessions: Prop. 5 vs `prop:fe`, JET assessment → D12, new tasks R16/R17, handout `session_handout_20261009.md`). Previous: October 7 (R15 free-entry proposition restated in R form, `.tex` note authoritative, `.md` exposition deleted); October 5 (intro positioning, `app:loglin` ¶9 rewrite, predetermined-vacancy threshold; R12b/R12c added)
 
 Nine files, each with one job, plus the dated session handouts. If you are about to write
 something here, check this table first — most duplication in the past came from appending
@@ -9,7 +9,7 @@ status notes to whichever file was open rather than the file that owns the topic
 | File | Owns | Does **not** own |
 |---|---|---|
 | [`principles.md`](principles.md) | Standing rules (1–21) **and the non-negotiable rules N1–N15** that constrain every choice | Anything provisional — that is a decision |
-| [`decisions.md`](decisions.md) | Open decisions D2, D3, D4, D10, D11; settled D1, D5–D7, S1–S12 (S10 timing, S11 X^r timing, S12 Prop. 5 Part 1), each with reasons | Tasks. A decision is a choice; a task is work |
+| [`decisions.md`](decisions.md) | Open decisions D2, D3, D4, D10, D11, D12 (venue / theory-first pivot); settled D1, D5–D7, S1–S12 (S10 timing, S11 X^r timing, S12 Prop. 5 Part 1), each with reasons | Tasks. A decision is a choice; a task is work |
 | [`pending_tasks.md`](pending_tasks.md) | Actionable work, ordered; the critical path | Decisions, results, draft status |
 | [`estimation_design.md`](estimation_design.md) | How Blocks M and B combine; what is missing to run it; build order | Empirical results |
 | [`findings.md`](findings.md) | All empirical and model-mechanism results with numbers | Draft status, tasks |
@@ -21,10 +21,10 @@ status notes to whichever file was open rather than the file that owns the topic
 
 ## Reading order when picking the project back up
 
-1. **`session_handout_20261001.md`** — latest handout. Read its Oct 5 update first; §0 (uncommitted work) and the "push local commits" note are **resolved** as of Oct 5, 2026, and R13 is **done**
+1. **`session_handout_20261009.md`** — latest handout (Oct 8–9 strategy: Prop. 5 vs `prop:fe`, the JET no-go, D12, R16/R17). Before it: `session_handout_20261001.md` (R13 done)
 2. `../CLAUDE.md` — one-paragraph framing and current priorities
-3. **`pending_tasks.md`** — the critical path (as of Oct 5: **E9**, then the single regeneration pass **R8 + D1 + PATH B**; R13 complete)
-4. **`decisions.md`** — what is unsettled, and the settled timing (S10–S12)
+3. **`pending_tasks.md`** — the critical path (as of Oct 5: **E9**, then the single regeneration pass **R8 + D1 + PATH B**; if D12's recommendation is adopted, E9 drops out and R16/R15/R12c join the path)
+4. **`decisions.md`** — what is unsettled (D12 is the newest), and the settled timing (S10–S12)
 5. `model_equations.md` — the model spec, if the task touches the code
 6. `estimation_design.md` — if the task touches estimation
 7. The rest as needed. Older dated `session_handout_*.md` files are history

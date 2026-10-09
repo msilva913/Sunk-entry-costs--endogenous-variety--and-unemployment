@@ -1,5 +1,5 @@
 # Decision Register
-**Last updated:** October 5, 2026 (S12 rewritten after the Prop. 5 restatement) · **Branch:** `costly_vacancy_reposting`
+**Last updated:** October 9, 2026 (D12 venue/theory-first pivot added; D10 cross-linked). Earlier: October 5 (S12 rewritten after the Prop. 5 restatement) · **Branch:** `costly_vacancy_reposting`
 
 One entry = one decision: a *choice*, not a task. Tasks live in
 [`pending_tasks.md`](pending_tasks.md). When a decision is settled, move it to §Settled with
@@ -14,6 +14,48 @@ Status key: 🔴 blocks estimation · 🟠 blocks a paper section · 🟡 improv
 | D4 | Does the LD→v IRF enter Block B? | 🟠 open, reopened by D11 |
 | D10 | Empirical target for the δ→u IRF shape | 🟡 partial, waits on E9 |
 | D11 | Does the reposting margin enter this paper? | 🟡 adopted in the draft; formal go/no-go after R2 |
+| D12 | Venue and the theory-first pivot (JET?) | 🟠 open (MS), recommendation: no-go for JET; theory-forward paper for RED / JME / AEJ: Macro |
+
+---
+
+## 🟠 D12. Venue, and whether to pivot to theory-first for JET
+
+**Raised Oct 9, 2026 (MS).** The proposal: lead with theory (`prop:bgm_nest`, `prop:equilibria`,
+`prop:curves`, `prop:ds_asymmetry`, plus `prop:fe` from R15), keep the SVAR-calibrated
+"Inspecting the mechanism" section, calibrate or estimate the rest, and move the Bartik/LP work
+to a separate empirical paper. Full assessment:
+[`session_handout_20261009.md`](session_handout_20261009.md) §2.
+
+**Recommendation: no-go for JET; adopt the theory-forward structure for a field macro journal.**
+- **The theory reads as applied theory.**
+  - Four propositions are nesting or isomorphism results, and `prop:curves` is remark-level.
+  - The `prop:equilibria` proof is wrong as written (R16).
+  - Prop. 5 is conditional on endogenous objects and carries R12c.
+  - `prop:fe` is clean but log-linear, at the ξ → ∞ corner, with variety, exit and reposting off.
+- **Every dynamic theorem switches the business formation block off**, so the CK departure in
+  the theory rests on GS's δ/s split plus the BED measurement.
+- **Raising the odds would take months of high-risk theory.** That means finite-ξ results or
+  variety inside the dynamic theorem. R16 and R17 help but do not change the category.
+- **A JET version contradicts the stated objective** (JME / AEJ: Macro / JPE, `../CLAUDE.md`).
+  After a rejection, rebuilding the quantitative part would cost months.
+- **The empirical paper is not viable alone.** The QU placebo fails, LD is not separately
+  identified, and the δ→u peak is unstable (E8).
+
+**Recommended structure:**
+- lead with `prop:fe` (R15 option (b));
+- keep the SVAR-calibrated mechanism (the SVAR is bivariate z, δ; s from a univariate AR(1));
+- cut Bartik to the robust short-horizon facts (δ→u at h = 0–2, the δ→v trough at h = 4–6, the
+  severity placebo) as motivating evidence;
+- defer full-information estimation.
+
+Venue ranking: RED, JME, AEJ: Macro, then JEDC as the safe option. TE is not a fallback.
+
+**Consequences if adopted:**
+- D10 → option (a).
+- D3 and D4 become largely moot, because IRF matching leaves.
+- Ω_β and E9 drop off the critical path.
+- R8, D1, PATH B and D11 stay on it, because the quantitative Beveridge sign must be fixed for
+  any venue.
 
 ---
 
@@ -98,6 +140,10 @@ horizon reweighting; (d) defend the augmented shape (high burden).
 instrument must reproduce the data instrument's persistence (0.91 quarterly), not the shock's
 (ρ_δ = 0.592 monthly ≈ 0.21 quarterly). That needs industry-level δ processes with their own
 serial correlation and heterogeneous state exposure.
+
+**Oct 9, 2026 — linked to D12.** If D12's recommended structure is adopted (no IRF matching in
+this paper), take option (a). The robust short-horizon facts become motivating evidence, not
+estimation targets, and E9 is no longer needed.
 
 ## 🟡 D11. Does the reposting margin enter this paper?
 
