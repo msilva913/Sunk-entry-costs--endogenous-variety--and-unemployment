@@ -152,7 +152,7 @@
 	must be rebuilt from scratch at sunk cost.  Recovery requires not 
 	merely a rebound in profitability but a costly reconstruction of the 
 	vacancy stock, generating a persistent outward shift of the 
-	Beveridge curve. Provided the cost of reposting vacancies is low relative to initial creation, firms repost after separation, so the aggregate vacancy stock partially self-corrects even while unemployment remains elevated. This  produces a transitory displacement along the Beveridge curve rather than a persistent  outward shift.	
+	Beveridge curve. By contrast, after a separation at a surviving firm, the position is reposted provided reposting is cheap relative to initial creation, so the aggregate vacancy stock partially self-corrects even while unemployment remains elevated. This  produces a transitory displacement along the Beveridge curve rather than a persistent  outward shift.	
 	
 	
 	\citet{coles_2018} show that extending the DMP model with finitely 
@@ -170,24 +170,17 @@
 	substantially weakening the link between unemployment and 
 	contemporaneous productivity.
 	
-	This paper opens additional channels related to business formation 
-	and exit. First, we introduce love-of-variety preferences over 
-	differentiated product lines, so that the number of active product 
-	lines $N_t$ becomes a third independent state variable: greater 
-	product diversity raises the return to posting vacancies, while 
-	greater employment raises the resources available for product-line 
-	formation. The two-way feedback between employment and product variety
-	constitutes an aggregate demand externality in the sense of
-	\citet{schaal_2019}: each new product line raises the welfare-based
-	relative price $\rho(N_t)$, which enters recruiter compensation
-	$w^{int}_t = \rho(N_t)z_t/\mu$ directly and raises the return to
-	vacancy creation, while greater employment expands the resources
-	available for new product-line formation, closing the loop. 
-	
-	We segment the product and
-	labor markets so that producers can employ a mass of workers, and thereby do not mechanically link employment and product lines one-for-one. Instead, $u_t$, $v_{t-1}$, and $N_t$ are jointly determined
-	in equilibrium without an accounting
-	restriction.\footnote{In \citet{schaal_2019}, each matched
+	This paper opens additional channels related to business formation and exit. First, we
+	introduce love-of-variety preferences over differentiated product lines, so the mass of
+	active product lines $N_t$ becomes a third state variable. Employment and variety feed each
+	other, an aggregate demand externality in the sense of \citet{schaal_2019}. A new product
+	line raises the welfare-based relative price $\rho(N_t)$, and with it recruiter compensation
+	$w^{int}_t=\rho(N_t)z_t/\mu$ and the return to vacancy creation, while greater employment
+	expands the resources available for product-line formation.
+
+	We segment the product and labor markets so that a product line employs many workers.
+	Employment and the number of product lines therefore do not move one for one, and $u_t$,
+	$v_{t-1}$, and $N_t$ are jointly determined without an accounting restriction.\footnote{In \citet{schaal_2019}, each matched
 		worker--firm pair produces one variety of an intermediate good,
 		so employment and the range of goods fluctuate one-for-one. The
 		demand externality therefore operates simultaneously through both
@@ -195,25 +188,22 @@
 		workers per product line, so employment adds output within
 		existing varieties while the variety externality operates
 		separately through firm entry, governed by the business-formation
-		Euler equation. This separation is what allows $u_t$,
-		$v_{t-1}$, and $N_t$ to be independent state variables.} Second, we endogenize firm exit. The
-	realized destruction rate $\delta_t^e$ splits into an exogenous
-	component and a margin that responds to profitability through a
-	continuation-cost cutoff, so a recession that lowers profits or
-	raises separations induces additional exit. Two consequences matter
-	independently of how much this amplifies. The destruction rate
-	measured from establishment deaths is a composite of the shock and
-	the endogenous response, and it is that composite the empirical work
-	of Section~\ref{sec:empirical} recovers. And the cost distribution
-	generating the exit cutoff also supplies the draws that govern which
-	vacated positions are reposted, so costly reposting adds no separate
-	distributional assumption. The size of the amplification is a
-	quantitative question, taken up in
-	Section~\ref{sec:mechanism_irfs}. Together these 
-	extensions sharpen the asymmetry between $\delta$ and $s$ shocks: a firm-destruction shock simultaneously damages all three state variables --- raising $u_t$, depleting $v_{t-1}$, and eliminating product lines that would otherwise sustain vacancy creation 
-	incentives --- while a match-separation shock raises $u_t$ but does not directly affect $v_{t-1}$ or $N_t$. We argue quantitatively that this three-channel amplification helps account for the cross-recession gap in cumulative labor market damage, and we identify the key 
-	structural parameters using Bayesian simulated method of moments on unconditional moments, extended with Bayesian impulse response 
-	matching to an externally identified firm-destruction shock.
+		Euler equation.}
+
+	Second, we endogenize firm exit. The realized destruction rate $\delta_{e,t}$ combines an
+	exogenous component with a margin that responds to profitability through a
+	continuation-cost cutoff, so a recession that lowers profits or raises separations induces
+	additional exit. The establishment death rate measured in Section~\ref{sec:empirical} is
+	this composite. The same cost distribution supplies the draws that govern which vacated
+	positions are reposted, so costly reposting adds no separate distributional assumption.
+
+	These extensions sharpen the asymmetry between $\delta$ and $s$ shocks. A destruction
+	shock damages all three state variables at once: it raises $u_t$, depletes the vacancy
+	stock, and eliminates product lines that would otherwise sustain vacancy creation. A
+	separation shock raises $u_t$, but under costless reposting each separation returns its
+	position to the vacancy pool. Section~\ref{sec:mechanism} establishes the asymmetry
+	analytically, and Section~\ref{sec:quantitative} assesses how much of the cross-recession
+	gap in cumulative labor market damage it accounts for.
 
 	One might ask whether the composition of job loss could be
 	studied by building on \citet{gabrovski_2025}, which already
@@ -242,57 +232,50 @@
 	destroyed.
 	\subsection{Motivating reduced form evidence}
 	% Empirical motivation
-	Three empirical facts motivate treating firm destruction as a 
-	distinct and quantitatively important margin. \textit{First, establishment entry and exit constitute a large and cyclically sensitive component of gross job flows}. Table~\ref{tab:jf_t2_ext_2019} extends Table 2 in \citet{jaimovich_2008} through 2019Q4 using BLS Business Employment Dynamics (BED) data.\footnote{This table uses BED \emph{closings}, for comparability with \citet{jaimovich_2008}, whose Table 2 reports a mean closing share of 21.17 percent of quarterly gross job losses.  Their sample is 1992Q3--2005Q2 in the working paper version (SIEPR Discussion Paper 07-13).  Closings are the appropriate measure for their question, which concerns the number of firms actively competing in a period, and an establishment that is temporarily idle is not competing.  BED deaths were not published until May 2009, after their paper appeared, so the distinction was not available to them.  Our destruction measure is different.  The model's $\delta$ shock is the permanent elimination of a product line, so the analysis throughout the paper uses BED \emph{deaths}, constructed and defined in Section~\ref{sec:empirical_instr}.} The first three columns report the average fraction of quarterly gross job gains (losses) accounted for by opening (closing, dying) establishments. The next three report the ratio of the cyclical standard deviation of each flow to that of total flows, using the Hamilton (2018) regression filter ($h=8$, $p=4$) applied to raw levels. The final three repeat the calculation with the HP filter ($\lambda=1600$), which closely reproduces \citet{jaimovich_2008}'s benchmark of approximately $0.33$ over their original sample period. We stop the sample in 2019Q4. Extending it through the end of the BED data leaves the mean shares almost unchanged but collapses every cyclicality ratio, because the 2020 collapse inflates total job losses without a corresponding rise in permanent exit.
-	
-	The mean-share columns show that the entry and exit margins are of
-	comparable size. Opening establishments account for $20.0$ percent of gross
-	job gains and closing establishments for $19.5$ percent of gross job losses,
-	a share that is stable across industries ranging from construction ($20.6$
-	percent) to financial activities ($24.7$ percent). Dying establishments, the
-	permanent subset, account for $12.0$ percent. The difference between the two is
-	the temporary-shutdown component that the $\delta$ instrument must remove, and
-	it is close to two-fifths of the closings margin. Permanent exit remains large
-	in its own right. About one job loss in eight occurs at an establishment that
-	never reopens.
+	Three empirical facts motivate treating firm destruction as a distinct and quantitatively
+	important margin. \textit{First, establishment entry and exit constitute a large and
+	cyclically sensitive component of gross job flows}. Table~\ref{tab:jf_t2_ext_2019} extends
+	Table 2 of \citet{jaimovich_2008} through 2019Q4 using BLS Business Employment Dynamics
+	(BED) data.\footnote{The closings columns use BED \emph{closings}, for comparability with
+	\citet{jaimovich_2008}, whose question concerns the number of firms actively competing in a
+	period; BED deaths were not published until May 2009. The model's $\delta$ shock is the
+	permanent elimination of a product line, so the rest of the paper uses BED \emph{deaths},
+	defined in Section~\ref{sec:empirical_instr}.} We stop the sample in 2019Q4. Extending it
+	leaves the mean shares almost unchanged but collapses every cyclicality ratio, because 2020
+	inflates total job losses without a corresponding rise in permanent exit.
 
-	The relative standard deviation columns show that all three margins move
-	with the cycle. For total private, the opening flow is the most variable of
-	the three, at $0.269$ times the cyclical variation of total job gains under
-	the Hamilton filter and $0.275$ under the HP filter. The closing flow moves
-	at $0.239$ times the cyclical variation of total job losses, against $0.187$
-	for deaths; the HP filter gives $0.223$ and $0.180$. The ordering of
-	closings and deaths holds in every supersector. The
-	gap is widest in natural resources and mining ($0.205$ against $0.104$), where
-	project-based and seasonal establishments suspend operations without exiting
-	permanently. Elsewhere the two are close, so the cyclical sensitivity that
-	\citet{jaimovich_2008} document is not an artifact of temporary shutdowns.
-	Permanent exit is itself cyclical, which is what the $\delta$ shock requires.
+	The entry and exit margins are of comparable size. Opening establishments account for
+	$20.0$ percent of gross job gains and closing establishments for $19.5$ percent of gross
+	job losses, a share that is stable across industries, from construction ($20.6$ percent) to
+	financial activities ($24.7$ percent). Dying establishments, the permanent subset, account
+	for $12.0$ percent. The difference, close to two-fifths of the closings margin, is the
+	temporary-shutdown component that the $\delta$ instrument must remove. Permanent exit is a
+	minority of job destruction but far from a rounding error: about one job loss in eight
+	occurs at an establishment that never reopens. The two margins are separately measurable,
+	which is what makes the $\delta$-versus-$s$ decomposition empirically tractable.
 
-	Entry is not a side observation. The damage a destruction shock does is
-	undone only as new establishments replace the lines that closed, so the cost
-	and speed of replacement govern how long the damage lasts. The opening flow
-	is large, it is the most cyclically variable of the three extensive margins,
-	and it is procyclical: its correlation with cyclical net job change is
-	$0.47$ under the Hamilton filter and $0.31$ under the HP filter, while
-	permanent exit runs the other way at $-0.08$ and $-0.49$.\footnote{Openings
-	and deaths are themselves positively correlated ($0.56$ and $0.46$), as two
-	gross flows that share a common reallocation component. The cyclical
-	comparison is therefore each flow against net job change, not the two flows
-	against each other.} The two margins pull in opposite directions over the
-	cycle, so replacement is slowest when destruction is heaviest, though the
-	exit side of this comparison is weak under the Hamilton filter and rests
-	mainly on the HP estimate. A framework with an exogenous destruction rate
-	and no business formation margin holds the replacement flow fixed by
-	construction: where a business opportunity is a vacancy slot, replacing the
-	opportunity and posting the vacancy are the same act, so the entry margin
-	this table measures has no separate counterpart.
+	All three margins move with the cycle. For total private, the opening flow is the most
+	variable, at $0.269$ times the cyclical variation of total job gains under the Hamilton
+	filter and $0.275$ under the HP filter. The closing flow moves at $0.239$ times the
+	cyclical variation of total job losses, against $0.187$ for deaths ($0.223$ and $0.180$
+	under the HP filter). Closings are more cyclical than deaths in every supersector, but the
+	gap is wide only in natural resources and mining ($0.205$ against $0.104$), where
+	project-based and seasonal establishments suspend operations without exiting. The
+	cyclical sensitivity that \citet{jaimovich_2008} document is therefore not an artifact of
+	temporary shutdowns. Permanent exit is itself cyclical, which is what the $\delta$ shock
+	requires.
 
-	At $12.0$ percent of gross job losses, permanent exit is a minority of job
-	destruction but far from a rounding error. This is what makes the
-	$\delta$-versus-$s$ decomposition empirically tractable. The two margins are
-	separately measurable, and they are distinct enough that conflating them
-	materially distorts model predictions.
+	Entry matters too. The damage a destruction shock does is undone only as new
+	establishments replace the lines that closed, so the cost and speed of replacement govern
+	how long the damage lasts. Openings are procyclical: their correlation with cyclical net
+	job change is $0.47$ under the Hamilton filter and $0.31$ under the HP filter, while
+	permanent exit runs the other way, at $-0.08$ and $-0.49$.\footnote{Openings and deaths are
+	themselves positively correlated ($0.56$ and $0.46$), as two gross flows that share a
+	common reallocation component, so we compare each flow with net job change.} Replacement
+	is therefore slowest when destruction is heaviest, though the exit side of this comparison
+	rests mainly on the HP estimate. Where a business opportunity is a single vacancy slot,
+	replacing the opportunity and posting the vacancy are the same act, so the entry margin
+	in the table has no separate counterpart.
 	%%%%%%%%%%%%%%%%
 	\begin{table}[H]
 \centering
@@ -328,7 +311,7 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	
 	
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	\textit{Second, cumulative establishment exit predicts the severity and persistence of labor market disruption across recessions.} Figure~\ref{fig:recession_scatter_primary} plots the permanence-adjusted establishment exit rate against cumulative unemployment and vacancy gaps across the three post-1992 NBER recessions. The 2008--09 recession generated the largest exit rate (7.8\% of base employment) and the largest cumulative unemployment gap (76.6 pp-quarters), reflecting both a deep trough and a protracted recovery. The 2001 recession, despite a more moderate exit rate (5.6\%), produced the largest cumulative vacancy shortfall (25.7 pp-quarters) of the three episodes — exceeding even the GFC (18.8 pp-quarters) — driven by an unusually prolonged vacancy formation freeze following the collapse of investment demand after the dot-com bust, a pattern that likely reflects demand-side forces beyond establishment exit alone. The 2020 recession, with the smallest exit rate (2.9\%), generated rapid recovery in both labor market margins and negligible cumulative vacancy shortfall (1.7 pp-quarters), consistent with a supply disruption that left the matching technology largely intact. Across these three episodes, larger establishment exit is associated with greater and more persistent labor market damage, particularly in the unemployment dimension.
+	\textit{Second, cumulative establishment exit predicts the severity and persistence of labor market disruption across recessions.} Figure~\ref{fig:recession_scatter_primary} plots the permanence-adjusted establishment exit rate against cumulative unemployment and vacancy gaps across the three post-1992 NBER recessions. The 2008--09 recession generated the largest exit rate (7.8\% of base employment) and the largest cumulative unemployment gap (76.6 pp-quarters), reflecting both a deep trough and a protracted recovery. The 2020 recession, with the smallest exit rate (2.9\%), recovered rapidly on both margins, with a negligible cumulative vacancy shortfall (1.7 pp-quarters). The 2001 recession (exit rate 5.6\%) is the exception on vacancies: its shortfall (25.7 pp-quarters) exceeds the GFC's (18.8), likely reflecting the post-dot-com collapse in investment demand rather than exit. Across the three episodes, larger establishment exit goes with greater and more persistent labor market damage, particularly for unemployment.
 	\begin{figure}[H]
 		\centering
 		\includegraphics[width=0.9\textwidth]{recession_scatter_primary.png}
@@ -375,8 +358,8 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	we construct Bartik shift-share instruments 
 	that exploit within-state variation in exit exposure driven by 
 	national industry-level closing rates rather than local conditions, 
-	building separate instruments for $\delta$ from BED establishment 
-	closings and for $s$ from JOLTS layoff and discharge rates. We 
+	building separate instruments for $\delta$ from BED establishment
+	deaths and for $s$ from JOLTS layoff and discharge rates. We 
 	then estimate local projection impulse response functions to 
 	externally identify the dynamic transmission of each shock to 
 	state-level unemployment and vacancies, providing a 
@@ -425,20 +408,13 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	
 	We estimate panel local projections \citep{jorda_2005} with state and time fixed effects, 
 	standard errors clustered at the state level, and outcomes capped 
-	at 2019Q4 to exclude the Covid episode. The $\delta$ instrument 
-	generates a persistent decline in both unemployment and vacancies: 
-	the unemployment response peaks at $+1.57$ percentage points at 
-	$h=19$ quarters and remains significant throughout $h=0$--$20$; 
-	the vacancy response falls monotonically, reaching $-0.426$ log 
-	points at $h=14$ and remaining significant from $h=1$ onward. 
-	Both patterns are consistent with the model's prediction that firm 
+	at 2019Q4 to exclude the Covid episode. A one-standard-deviation rise in the $\delta$
+	instrument raises unemployment and lowers vacancies persistently. The unemployment rate
+	rises by $0.22$ percentage points on impact, significant from $h=0$, and keeps rising,
+	to about $1.71$ points after four to five years. The vacancy rate falls, significantly
+	from $h=2$, to $-0.58$ points at $h=18$. Both patterns are consistent with the model's prediction that firm
 	destruction generates a persistent outward shift of the Beveridge 
-	curve rather than a transitory displacement along it.
-	The estimated $\delta\to v$ and $\delta\to u$ coefficients 
-	approximate the aggregate transmission elasticities and provide 
-	external moment conditions for Bayesian impulse response matching, combined with unconditional moments in the Bayesian simulated 
-	method of moments estimation described in 
-	Section~\ref{sec:quantitative}.\footnote{The $\delta$ unemployment response concentrates almost entirely in states experiencing tight 
+	curve rather than a transitory displacement along it.\footnote{The $\delta$ unemployment response concentrates almost entirely in states experiencing tight 
 		financial conditions: at average financial conditions the point 
 		estimate is near zero and insignificant at all horizons beyond 
 		$h=0$. This state-dependence in the unemployment channel, absent 
@@ -447,23 +423,18 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 		the vacancy channel, which enters the structural estimation as a 
 		moment condition, does not exhibit the same state-dependence.}
 	
-	The model is estimated by Bayesian simulated method of moments, 
-	combining two sets of moment conditions. The first is closely related to \citet{coles_2018}: unconditional moments of 
-	unemployment, vacancies, labor productivity, and aggregate job 
-	finding and separation rates, augmented with the mean and 
-	relative volatility of the permanent establishment exit rate (BED Deaths), which disciplines the level and cyclical variation of the destruction process directly rather than inferring it residually from labor market outcomes. The second set consists of the empirically identified $\delta\to u$ and $\delta\to v$ impulse responses from the Bartik local projections, matched via Bayesian impulse response matching with inverse-variance weights. The two sets are complementary: unconditional moments pin down the destruction process and the steady-state labor market, while the 
-	conditional moments discipline the structural transmission 
-	parameters governing how costly and slow vacancy replacement is 
-	following a firm destruction shock.\footnote{The unconditional moments identify the level and 
-		volatility of the $\delta$ process, while the conditional moments 
-		identify the transmission parameters $\xi$ and $x_m$ governing 
-		the vacancy creation cost distribution. A model with the same 
-		$\delta$ process but different $\xi$ would match the former and 
-		fail the latter.} Quantitative results and the two-model 
-	counterfactual --- comparing the full model's implied recovery 
-	paths to those of a Coles-Kelishomi limiting case that abstracts 
-	from variety effects and endogenous exit --- are reported in 
-	Section~\ref{sec:quantitative}.	
+	We estimate the model by Bayesian simulated method of moments with two sets of moments.
+	The first follows \citet{coles_2018}: unconditional moments of unemployment, vacancies,
+	labor productivity, and the job-finding and separation rates, augmented with the mean and
+	relative volatility of the establishment death rate, which disciplines the destruction
+	process directly rather than inferring it from labor market outcomes. The second is the
+	$\delta\to u$ and $\delta\to v$ responses from the Bartik local projections, matched with
+	inverse-variance weights. The unconditional moments pin down the destruction process and
+	the steady state. The conditional moments discipline how costly and slow vacancy
+	replacement is after a destruction shock, which the vacancy creation cost parameters $\xi$
+	and $x_m$ govern. Section~\ref{sec:quantitative} reports the results, together with a comparison
+	with the clone-replacement benchmark of Section~\ref{sec:equilibrium}, which abstracts
+	from variety and endogenous exit.
 	
 	This paper contributes to four strands of literature. The first 
 	is search-and-matching models with finitely elastic vacancy 
@@ -484,82 +455,14 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	fourth is Bayesian structural estimation of search models, 
 	extending the simulated method of moments approach of 
 	\citet{coles_2018} to incorporate impulse response matching as 
-	an additional set of moment conditions \citep{christiano_2016}. 
-	The remainder of the paper is organized as follows. 
-	Section~\ref{sec:empirical} presents the motivating evidence 
-	and Bartik local projections. Section~\ref{sec:environment} 
-	develops the model environment. Section~\ref{sec:equilibrium} 
-	derives the equilibrium, establishes the $\delta$-vs-$s$ 
-	asymmetry formally, and characterizes steady-state properties. 
-	Section~\ref{sec:quantitative} presents calibration, estimation, 
-	and the two-model counterfactual. 
-	Section~\ref{sec:conclusion} concludes.
+	an additional set of moment conditions \citep{christiano_2016}.
+
+	Sections~\ref{sec:environment} and~\ref{sec:equilibrium} present the model, its
+	equilibrium, and the analytical results on the $\delta$--$s$ asymmetry.
+	Section~\ref{sec:empirical} presents the Bartik local projections,
+	Section~\ref{sec:quantitative} the quantitative analysis, and
+	Section~\ref{ref:conclusion} concludes.
 	
-	%Together, these four facts point to a common mechanism. Exit-intensive recessions produce larger, longer-lasting labor market disruptions — both in the time series (Facts 1--3) and in the cross-section of states (Fact 4) — and the extensive margin of job flows, while not the dominant source of short-run variance, is the margin most tightly linked to the persistence of Beveridge curve dislocations. The model formalizes this mechanism and the empirical analysis quantifies it via Bartik local projections.
-	
-	% Three mechanisms
-	%\section{Scrap}
-	%Integrating firm dynamics with labor market frictions exposes three mechanisms absent from the benchmark model. \emph{First, vacancy persistence is governed by product-line longevity.} Both creating a new product line and posting a vacancy involve sunk costs, making them partially predetermined. When a firm survives, its unfilled vacancies are reposted at no additional cost. When a firm exits, its vacancies vanish immediately. Consequently, the rate at which product lines are destroyed determines how persistent vacancies are relative to unemployment. \citet{gabrovski_2025} show that annual destruction rates in the range of 6--10\% generate dynamic correlations between labor market variables and productivity that closely match the data. \emph{Second, the type of separation shock matters qualitatively for Beveridge-curve consistency.} A product destruction shock eliminates both filled jobs and posted vacancies, so unemployment rises while vacancies fall---consistent with the Beveridge curve. A match separation shock, by contrast, eliminates only filled jobs; surviving firms immediately repost vacancies, which therefore rise alongside unemployment, violating the Beveridge curve. Given shocks of equal magnitude and persistence, match separation shocks produce weaker aggregate effects and fit the data worse. \emph{Third, entry and exit dynamics create a two-way feedback between employment and product variety.} Greater employment expands resources available for launching new product lines; richer product variety lowers the welfare-based cost of living, stimulating consumption demand and further promoting job creation. This variety channel depends critically on the extensive margin of labor supply and is absent from models with purely intensive-margin adjustment, such as the benchmark \citet{bilbiie_2012} (hereafter BGM) framework under standard Dixit--Stiglitz preferences.\footnote{Under logarithmic utility and DS-CES preferences, the intratemporal labor supply condition and the Euler equation for business formation are invariant to product variety, so models with and without variety effects are isomorphic and yield identical impulse responses.}
-	%
-	%% Model structure
-	%We model endogenous business formation as in BGM and endogenous exit as in \citet{broer_2025}. Firms pay a sunk entry cost in labor units and begin producing the following period. At the start of each period they draw a stochastic fixed continuation cost; those with draws above the equilibrium cutoff exit. Exogenous product destruction also occurs at rate $\delta_t$. To embed DMP-style labor market frictions within this monopolistically competitive environment without losing tractability, we introduce a separate class of recruiters who pay sunk vacancy creation costs, match with workers one-for-one, and rent labor services to retailers in a frictionless competitive market. Standard Nash bargaining between recruiter and worker then pins down wages in a bilateral monopoly problem, even though marginal revenue is diminishing.\footnote{The alternative---applying the \citet{stole_1996} intra-firm bargaining solution directly to retailers---generates strategic over-hiring that significantly complicates aggregation. Our segmentation avoids this while preserving the tractable DMP wage equation.} The segmentation allows retailers to choose employment flexibly while preserving the wage-determination structure of DMP. In the limit where frictions vanish, the model collapses to BGM.
-	%
-	%% Quantitative results
-	%We estimate the model via Bayesian simulated method of moments, targeting moments on the volatility, autocorrelation, and cross-correlation of unemployment, vacancies, market tightness, labor productivity, the separation rate, business formation, and establishment exit. Technology ($z$), product destruction ($\delta$), and idiosyncratic match separation ($s$) shocks each play a distinct role, and the model addresses three canonical failures of DMP: (1)~insufficient unemployment volatility, resolved by product destruction shocks together with variety amplification; (2)~insufficient autocorrelation of labor market variables, resolved by sunk entry costs that make vacancies predetermined and by path dependence running through the stock of product lines; and (3)~an excessively strong unemployment--productivity relationship, resolved by destruction shocks that move vacancies and unemployment in opposite directions without shifting measured TFP directly. Throughout, the model maintains a strong negative unemployment--vacancy co-movement.
-	%
-	%% Long-run payoffs from market power
-	%Embedding endogenous business formation in a monopolistically competitive framework also improves performance along long-run dimensions that benchmarks miss. Firms earn profits through both markups and match-specific rents; the model disciplines both via the labor share and the consumption share, and thereby implies realistic stock-market capitalization-to-GDP ratios---a marked improvement over DMP and many of its extensions. Under countercyclical markups, a positive technology shock spurs entry, reduces markups, and expands firm output, amplifying measured productivity through a mechanism related to \citet{jaimovich_2008}. Unlike their setting, however, sunk entry costs imply positive per-period profits rather than zero profits, and individual firm output eventually falls below steady state. Adverse technology shocks induce exit among high-cost firms, amplifying labor-market effects through the loss of product variety.
-	%
-	%% New parameters
-	%Relative to DMP, the model introduces three structural parameters: the elasticity $\xi$ of new vacancies with respect to the vacancy value, the exogenous product destruction rate $\delta$, and the elasticity of substitution among goods $\varepsilon$. Firm exit, however, arises from two distinct sources: exogenous product-line destruction at rate $\delta$, and endogenous exit by firms whose stochastic continuation cost draw exceeds the equilibrium cutoff $x^c$, occurring at rate $1-F(x^c)$. The total firm exit rate is therefore
-	%\begin{align}
-	%    \delta_e = 1 - (1-\delta)F(x^c), \label{eq:delta_e}
-	%\end{align}
-	%combining both margins. Workers also separate from jobs at rate $s$ even when the firm remains intact, yielding the aggregate separation rate
-	%\begin{align}
-	%    \tau = \delta_e + s(1-\delta_e). \label{eq:tau}
-	%\end{align}
-	%This three-way decomposition---exogenous destruction $\delta$, endogenous exit $1-F(x^c)$, and match separation $s$---is essential for the model's quantitative performance. The exogenous destruction rate $\delta$ governs vacancy persistence and the investment share; $\varepsilon$ shapes the investment share, the labor share, and shock transmission through variety effects; and the endogenous exit margin links aggregate firm turnover to profitability conditions, amplifying the labor-market effects of adverse technology shocks by pushing marginal firms out. Decomposing $\tau$ into its firm-exit and worker-separation components is further essential for matching both the level and cyclicality of unemployment flows, and for identifying the distinct contributions of each shock type.
-	%
-	%% Related literature: CKK
-	%Our work is most closely related to \citet{coles_2018}, who introduce sunk vacancy creation costs and show that a job destruction shock---one that simultaneously destroys filled jobs and vacancies---can replicate unemployment volatility and Beveridge-curve behavior. We improve on their framework in four respects. First, they model a single separation shock affecting both jobs and vacancies, whereas we decompose separations into a product destruction component $\delta$ and a match separation component $s$; the distinction matters both qualitatively (Beveridge-curve consistency of each shock type) and quantitatively (the mean value of $\delta$ relative to total separations governs shock transmission). Second, although they motivate vacancies as product lines, they do not model business formation, market power, or the variety externality. Third, their estimation of the vacancy elasticity overlooks its implications for the recruiting-cost share, which our calibration holds fixed as the elasticity varies. Finally, we incorporate information on business formation into the estimation moment set.
-	%
-	%A preliminary step toward our framework is \citet{gabrovski_2025}, who use a similar costly-vacancy process but distinguish between product destruction and match separation rates. Under a moderately low annual destruction rate (6--10\%), their model approximates the mild unemployment--productivity co-movement and labor market dynamic correlations. Our paper extends their analysis by adding endogenous entry and exit, market power, and variety effects---features needed to generate sufficient unemployment volatility and realistic long-run moments.
-	%
-	%% CFR
-	%In independent work, \citet{colciago_2021} (hereafter CFR) incorporate endogenous business formation with frictional entry into a labor market model, focusing on technology, markup, and bargaining shocks identified via sign-restricted VARs. Their framework maintains infinitely elastic vacancy creation, expresses entry costs in terms of output rather than labor, and embeds physical capital with adjustment costs, habit formation, a two-layer firm structure, and nominal rigidities.\footnote{In CFR's two-layer structure, the economy comprises a fixed measure of sectors within which endogenous firm entry and imperfect competition occur. Such nesting is essential for analyzing sectoral shocks, reallocation, oligopoly, or imperfect labor mobility---none of which are central to our analysis---so we adopt a simpler one-layer structure.} Our framework, while sufficiently rich to match key business-cycle regularities, is a leaner natural extension of canonical DMP that can be characterized in steady state by the intersection of a job creation curve and a resource constraint. The segmentation of search frictions is isomorphic to the retailer--wholesaler structure of \citet{christiano_2016}, but with recruiters replacing intermediate goods---a more natural interpretation that allows us to dispense with intermediate goods altogether.
-	%
-	%% Shao-Silos and Schaal
-	%\citet{shao_2013} also incorporate labor market frictions within a BGM framework but restrict retail firms to a single worker each and define entry costs in terms of capital rather than labor. This leads to strongly counterfactual implications: a near-zero unemployment--output correlation (versus $-0.85$ empirically) and a correlation of $-0.48$ between investment and vacancies (versus $0.84$ empirically). \citet{schaal_2019} introduce a demand-driven complementarity between employment and product variety: each matched worker--firm pair produces one variety of an intermediate good, so employment and the range of goods fluctuate together. Higher employment raises aggregate income, which in turn supports greater vacancy creation---a strategic complementarity in labor demand that generates amplification and persistence. Their mechanism is conceptually related to ours: more employment expands the range of intermediate varieties, raising final-good productivity and firm profits in a way that feeds back into vacancy creation---a variety effect located in the production technology rather than preferences. The key differences are that their framework abstracts from finitely elastic vacancy creation and does not feature endogenous entry or a separate destruction margin. We derive the variety--tightness complementarity in a significantly more flexible setting and show it interacts with finitely elastic vacancy creation in ways that are quantitatively important. \citet{cacciatore_2016} combine BGM-style endogenous entry with Mortensen--Pissarides search frictions and physical capital in an RBC framework, studying the macroeconomic effects of product and labor market deregulation; their quantitative focus on policy reform rather than business-cycle volatility, and their use of capital-denominated entry costs and endogenous job destruction via idiosyncratic productivity draws, distinguishes their approach from ours. \citet{schaal_2017} builds a directed-search model with heterogeneous establishments and time-varying idiosyncratic risk, generating endogenous entry and exit; while the mechanism---exit by unprofitable establishments after adverse shocks---is structurally analogous to our endogenous exit margin, his framework abstracts from product variety and aggregate demand linkages.
-	%
-	%Table~\ref{tab:ingredients_comparison} summarizes how our framework compares with these papers across four key model dimensions: finitely elastic vacancy creation, endogenous product variety, endogenous firm separation, and a separate exogenous destruction margin. Our paper is the only one to combine all four.
-	%
-	%\begin{table}[H]
-	%	\centering
-	%	\footnotesize
-	%	\setlength{\tabcolsep}{0.15cm}
-	%	\begin{tabular}{l|cccc}
-		%		\toprule
-		%		&\makecell{Finitely elastic\\ vacancies} & \makecell{Endogenous\\variety} & \makecell{Endogenous\\separation} & \makecell{Separate destruction\\margin}\\
-		%		\midrule
-		%		Bilbiie, Ghironi, and Melitz (2012)    & NA          & \checkmark  & NA          & NA         \\
-		%		Coles and Kelishomi (2018)              & \checkmark  & $\times$    & $\times$    & $\times$   \\
-		%		Broer, Druedahl, Harmenberg, {\"O}berg (2025) & \checkmark & $\times$  & \checkmark  & $\times$   \\
-		%		Gabrovski and Silva (2024)              & \checkmark  & $\times$    & $\times$    & \checkmark \\
-		%		Shao and Silos (2013)                   & \checkmark  & \checkmark  & $\times$    & $\times$   \\
-		%		Schaal and Taschereau-Dumouchel (2019)  & $\times$    & \checkmark  & $\times$    & $\times$   \\
-		%		Christiano, Eichenbaum, Trabandt (2016) & $\times$    & $\times$    & $\times$    & $\times$   \\
-		%		Colciago, Fasani, Rossi (2021)          & $\times$    & \checkmark  & $\times$    & $\times$   \\
-		%		Cacciatore and Fiori (2016)             & $\times$    & \checkmark  & \checkmark  & $\times$   \\
-		%		Schaal (2017)                           & $\times$    & $\times$    & \checkmark  & $\times$   \\
-		%		\textbf{This paper}                     & \checkmark  & \checkmark  & \checkmark  & \checkmark \\
-		%		\bottomrule
-		%	\end{tabular}
-	%	\caption{Comparison of model ingredients. \emph{Finitely elastic vacancies}: sunk vacancy creation costs generating a positive vacancy value. \emph{Endogenous variety}: equilibrium number of product lines responds to economic conditions. \emph{Endogenous separation}: firm exit driven by idiosyncratic profitability draws. \emph{Separate destruction margin}: exogenous product-line destruction distinguished from match separation.}
-	%	\label{tab:ingredients_comparison}
-	%\end{table}
-	
-	%The remainder of the paper proceeds as follows. Section~\ref{sec:environment} presents the model environment. Section~\ref{sec:recruiters} characterizes recruiter and retailer problems and derives the job creation and business formation conditions. Section~\ref{sec:quantitative} presents the quantitative analysis. Section~\ref{sec:conclusion} concludes.
 	
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	\section{Environment}\label{sec:environment}
@@ -709,10 +612,8 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	before they first produce. This is the standard DMP timing, also
 	used by \citet{gabrovski_2025}, with the total separation rate
 	$\tau_t$ replacing the constant separation rate. The separation
-	base $1-u_{t-1}$ is the same stock that feeds the reposting
-	inflow in~\eqref{eq:v_lom}, so the two laws of motion are
-	consistent: every separated match at a surviving product line
-	returns a vacated position to its recruiter.
+	base $1-u_{t-1}$ also feeds the reposting inflow in~\eqref{eq:v_lom}: each separated
+	match at a surviving product line returns a vacated position to its recruiter.
 	
 	Sunk vacancy creation costs render vacancies partially 
 	predetermined: current vacancies evolve as
@@ -729,18 +630,10 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	Note that $(1-\delta_{e,t})$ multiplies both (i) and (ii):
 	only firms surviving both exogenous destruction and the
 	continuation-cost draw contribute to either term, so a shock
-	to $\delta_t$ collapses the entire bracket.
-	
-	The decision to reactivate a vacancy occurs at the same time as that of exit, just after the aggregate state is known.
-	A recruiter whose product line survives reactivates a position
-	vacated at the end of
-	$t-1$ whenever the recovered vacancy covers the cost, which happens with probability $\Lambda_{r,t}=F(Q_t/\alpha)$, derived in
-	Section~\ref{sec:recruiters} (equation~\eqref{eq:Lambda_r}). Thus, $\Lambda_{r,t}$ carries
-	the same date as the survival term $(1-\delta_{e,t})$. The
-	complementary fraction $1-\Lambda_{r,t}$ of vacated positions is retired permanently. Finally, the
-	asymmetric implications of these laws of motion for the 
-	transmission of $\delta$ and $s$ shocks are derived formally 
-	in Section~\ref{sec:equilibrium}.
+	to $\delta_t$ collapses the entire bracket. A vacated position is reactivated with
+	probability $\Lambda_{r,t}=F(Q_t/\alpha)$, derived in~\eqref{eq:Lambda_r}, which carries the
+	same date as the survival term. The remaining fraction $1-\Lambda_{r,t}$ is retired
+	permanently.
 	
 	\subsection{Stochastic processes}
 	
@@ -764,47 +657,27 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	$s_t$ and $\delta_t$ govern separation and destruction at the end
 	of $t$, after production, bargaining, and matching; only which
 	matches and product lines they hit is revealed then. The stocks
-	entering $t$ were therefore shaped by the rates of $t-1$, which
-	determine the total exit rate
-	$\delta_{e,t}=1-(1-\delta_{t-1})F(\chi_t^c)$ and aggregate
-	separation rate $\tau_t=\delta_{e,t}+s_{t-1}(1-\delta_{e,t})$.
-	This lag, combined with sunk vacancy creation costs, is the
+	entering $t$ were therefore shaped by the rates of $t-1$, through
+	$\delta_{e,t}$ and $\tau_t$. This lag, combined with sunk vacancy creation costs, is the
 	source of predetermination: vacancies and employment are
-	partially predetermined with respect to current shocks.
-
-	The two shocks reach different stocks. Match separation $s_t$
-	applies only to the $1-u_t$ matches in place at the start of $t$,
-	which produced in $t$. Matches formed in $t$ have not yet produced.
-	They are exposed to product destruction $\delta_t$ and to the
-	continuation-cost draw at the start of $t+1$, but they first face
-	match separation at the end of $t+1$. Product destruction, in
-	contrast, removes every position attached to the product line:
-	incumbent matches, new matches, and unfilled vacancies alike.
-
-	Reactivation is settled at this same node, but it is the
-	recruiter's decision, not the retailer's. Recruiters hold
-	vacancies, so when a match dissolves it is the recruiter that owns
-	the vacated position and chooses whether to resume it. Retailer
-	exit still matters, because a position serving a withdrawn product
-	line is destroyed whatever the recruiter would have preferred; this
-	is the role of $(1-\delta_{e,t})$ in \eqref{eq:v_lom}. Conditional
+	partially predetermined with respect to current shocks. The two shocks also reach
+	different stocks. Match separation $s_t$ hits only the $1-u_t$ matches in place at the
+	start of $t$, while product destruction removes every position attached to the line,
+	including new matches and unfilled vacancies.
+	
+	% Recruiter activation discussion
+	At the start of $t$, alongside the exit decision, recruiters choose whether to reactivate
+	positions vacated when matches dissolved at the end of $t-1$. Conditional
 	on the product line surviving, the recruiter draws a cost from $F$
 	for each vacated position and resumes it whenever
-	$\alpha\chi\leq Q_t$. Exit and reactivation therefore share a stage
-	and a distribution, but they are taken by different agents against
-	different thresholds: the retailer compares its own draw to
-	$\chi_t^c$, while the recruiter compares $\alpha\chi$ to $Q_t$.
+	$\alpha\chi\leq Q_t$. 
 	Because the recruiter conditions on the realized $Q_t$ rather than
 	on its expectation, $\Lambda_{r,t}$ is procyclical and position
 	destruction is countercyclical.
 
-	The segmentation also keeps aggregation simple. Positions are held
-	by recruiters and labor services are rented competitively, so how
-	vacated positions happen to be distributed across recruiters has no
-	effect on retailers: only the aggregate vacancy stock enters
-	matching. The law of large numbers delivers the aggregate
-	reactivation rate $\Lambda_{r,t}$, and the symmetric aggregation
-	underlying $\rho(N_t)$ is untouched.
+	Because positions are held by recruiters and labor is rented competitively, how vacated
+	positions are spread across recruiters does not matter to retailers. Only the aggregate
+	vacancy stock enters matching, and the law of large numbers delivers $\Lambda_{r,t}$.
 \tikzset{>=latex}
 	\begin{figure}[H]
 		\centering
@@ -1096,12 +969,7 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	By~\eqref{eq:value_recruiter_surplus}, that surplus is the
 	recruiter's net revenue less the flow value of the vacancy,
 	plus the hiring cost saved if the match survives separation,
-	less the reposting shortfall if it does not. Once the wage is
-	determined, the surplus can be substituted
-	into~\eqref{eq:jcc}. Because $\mathcal{R}_t$ is defined by its
-	own one-period equation~\eqref{eq:repost_shortfall}, the
-	substitution leaves every equation within one period
-	(Definition~\ref{def:equilibrium}).
+	less the reposting shortfall if it does not.
 	
 	\subsection{Wage determination}
 	
@@ -1127,13 +995,9 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	cost $\kappa$ raises wages by $\phi f(\theta_t)\kappa$ because 
 	a failed negotiation forces the firm to pay $\kappa$ again 
 	upon next filling the vacancy. The reposting shortfall lowers
-	the wage by $\phi s_t\mathcal{R}_t$. A separation destroys part
-	of the position's value, which shrinks the match surplus, and
-	the worker bears share $\phi$ of that loss. The term enters
-	alongside the flow value of the vacancy, in
-	$w_t^{int}-K_t-s_t\mathcal{R}_t$, here and in the surplus below:
-	the expected reposting loss works as an extra flow cost of holding
-	a filled position. The household's
+	the wage by $\phi s_t\mathcal{R}_t$: the expected loss of position value on separation works
+	as an extra flow cost of holding a filled position, alongside $K_t$, and the worker bears
+	share $\phi$ of it. The household's
 	surplus carries no such term, because a separated worker
 	becomes unemployed whether or not the position is reactivated
 	(\ref{app:wage}). Setting $w_t^{int}=z_t$,
@@ -1232,8 +1096,9 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	For the power law component, the conditional mean of a 
 	positive draw satisfies $E(\chi\,|\,0<\chi\leq\chi_t^c)
 	=\psi_c\chi_t^c$ where $\psi_c\equiv\psi/(\psi+1)$, 
-	so the overall conditional mean (including the mass point 
-	at zero) is $E(\chi\,|\,\chi\leq\chi_t^c)=p_0\psi_c\chi_t^c$. 
+	and positive draws are a share $p_0(\chi_t^c/\chi_m)^\psi/\Lambda_t$ of the draws below
+	the cutoff, so the overall conditional mean (including the mass point at zero) is
+	$E(\chi\,|\,\chi\leq\chi_t^c)=p_0\psi_c\chi_t^c(\chi_t^c/\chi_m)^\psi/\Lambda_t$.
 	Hence:
 	\begin{align}\label{eq:firm_value_char}
 		\nu_t^f = (1-\delta_t)\mathbb{E}_t m_{t+1}
@@ -1280,39 +1145,16 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 		X_t^r \equiv (1-\delta_{e,t})\,s_{t-1}(1-u_{t-1})
 		\int_0^{Q_t/\alpha}\alpha\chi\,dF(\chi)
 	\end{align}
-	The per-position integral evaluates in closed form. Only
-	the power-law part of $F$ contributes, since the atom at zero
-	carries no cost, so
-	\begin{align}
-		\int_0^{Q_t/\alpha}\alpha\chi\,dF(\chi)
-		&= \frac{\alpha p_0\psi}{\chi_m^{\psi}}
-		\int_0^{Q_t/\alpha}\chi^{\psi}\,d\chi
-		= \frac{\alpha p_0\psi_c}{\chi_m^{\psi}}
-		\left(\frac{Q_t}{\alpha}\right)^{\psi+1} \notag \\
-		&= \psi_c\left(\alpha\cdot\frac{Q_t}{\alpha}\right)
-		p_0\left(\frac{Q_t}{\alpha\chi_m}\right)^{\psi}
-		= \psi_c Q_t\,p_0
-		\left(\frac{Q_t}{\alpha\chi_m}\right)^{\psi} \notag \\
-		&= \psi_c Q_t\left(\Lambda_{r,t}-1+p_0\right) \notag
-	\end{align}
-	The second line splits $(Q_t/\alpha)^{\psi+1}
-	=(Q_t/\alpha)(Q_t/\alpha)^{\psi}$, so the cost scale $\alpha$
-	cancels against the threshold and survives only inside the
-	ratio $Q_t/(\alpha\chi_m)$. The third line uses the interior branch of
-	\eqref{eq:Lambda_r},
-	$\Lambda_{r,t}=(1-p_0)+p_0\left(Q_t/(\alpha\chi_m)
-	\right)^{\psi}$, to replace the power term by
-	$\Lambda_{r,t}-1+p_0$.
+	Only the power-law part of $F$ contributes, since the atom at zero carries no cost, so the
+	per-position integral is
+	$\int_0^{Q_t/\alpha}\alpha\chi\,dF(\chi)=\psi_cQ_t\,p_0\bigl(Q_t/(\alpha\chi_m)\bigr)^{\psi}
+	=\psi_cQ_t(\Lambda_{r,t}-1+p_0)$, using the interior branch of~\eqref{eq:Lambda_r}. The
+	cost scale $\alpha$ survives only through $\Lambda_{r,t}$. The count in
+	\eqref{eq:agg_repost_costs} omits $\Lambda_{r,t}$ because the integral is a partial
+	expectation, which already embeds the reactivation probability. As $\Lambda_{r,t}\to1-p_0$,
+	only the zero-cost atom reactivates and $X_t^r\to0$.
 
-	The count $(1-\delta_{e,t})s_{t-1}(1-u_{t-1})$ is the same
-	count as the reposting inflow in \eqref{eq:v_lom} but
-	\emph{without} $\Lambda_{r,t}$: the integral is a partial
-	expectation and thus embeds the reactivation probability. The form also
-	makes the lower bound transparent. As
-	$\Lambda_{r,t}\to1-p_0$ only the zero-cost atom reactivates,
-	and $X_t^r\to0$: no reactivation costs are paid because the
-	only positions resumed are free ones.
-	 Aggregate retail profits 
+	Aggregate retail profits 
 	gross of continuation costs are $\Pi_t^f = Y_t^c/
 	\varepsilon(N_t) - X_t^c$, and recruiter profits, net of the
 	vacancy creation and matching costs $X_t$ and the reactivation
@@ -1430,32 +1272,13 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 		stochastic processes \eqref{eq:ar1_z}--\eqref{eq:ar1_s}.
 	\end{definition}
 	
-	The business formation block jointly 
-	determines $N_t$, $C_t$, $Y_t^c$, and $\chi_t^c$: 
-	the firm LOM propagates the product-line stock, the 
-	business formation Euler governs entry, the resource 
-	constraint clears goods markets, and the cutoff equates 
-	the exit threshold to current profitability plus the
-	option value of a new product line. The labor market
-	block jointly
-	determines $u_t$, $v_t$, $\theta_t$, $K_t$, $Q_t$, and
-	$e_t$: the job creation condition equates average hiring
-	cost to the expected surplus of a filled vacancy, the entry
-	condition~\eqref{eq:entry_eq} pins down vacancy creation,
-	and the laws of motion carry $u_t$ and $v_t$ forward. The job
-	creation condition substitutes the wage-substituted
-	surplus~\eqref{eq:surplus_wage}, dated $t+1$, into~\eqref{eq:jcc},
-	so the matched value $J_t$ and the wage drop out. The
-	reposting shortfall enters through $\mathcal{R}_{t+1}$, which
-	looks one period further ahead, to the vacancy obtained at
-	$t+2$. Carrying $\mathcal{R}_t$ as a variable defined by its
-	own one-period equation~\eqref{eq:repost_shortfall} keeps every
-	equation within one period, so the system has a first-order
-	representation without a nested expectation. The two
-	blocks interact through $\rho(N_t)$ and $\mu(N_t)$ 
-	in the job creation condition and through $\delta_t$ 
-	in the survival-adjusted discount factor 
-	$(1-\delta_t)\Lambda_{t+1}$, which appears in both.
+	The job creation condition substitutes the wage-substituted surplus~\eqref{eq:surplus_wage},
+dated $t+1$, into~\eqref{eq:jcc}, so the matched value $J_t$ and the wage drop out.
+Carrying the reposting shortfall $\mathcal{R}_t$ as a variable with its own one-period
+equation~\eqref{eq:repost_shortfall} keeps the system first order, without a nested
+expectation. The two blocks interact through $\rho(N_t)$ and $\mu(N_t)$ in the job creation
+condition and through $\delta_t$ in the survival-adjusted discount factor
+$(1-\delta_t)\Lambda_{t+1}$, which appears in both.
 
 \subsection{Limiting cases}
 
@@ -1648,12 +1471,8 @@ an equilibrium outcome of \eqref{eq:euler_bf}. Entry absorbs
 labor at rate $f_e$ and so enters the resource constraint
 through $\nu_t^f N_t^e$ in \eqref{eq:gdp}, the mass of lines
 is a slow-moving state, and the rate of replacement is an
-equilibrium object rather than a constant. In the data
-openings are procyclical while permanent exit is
-countercyclical (Section~\ref{sec:introduction}), so
-replacement is slowest when destruction is heaviest; the
-exit side of that comparison is weak under our preferred
-filter. AGS holds the replacement
+equilibrium object rather than a constant. In the data replacement is slowest when
+destruction is heaviest (Section~\ref{sec:introduction}). AGS holds the replacement
 margin at its frictionless benchmark, so it cannot generate
 the joint behavior of the two margins that motivates the
 paper.
@@ -1902,25 +1721,15 @@ Suppose $p_0=0$.
 \end{lemma}
 \noindent See \ref{app:proof_ds} for the proof.
 
-Part~1 rests on accounting. The aggregate state, including $s_t$, is
-known at the start of $t$, so the shock can move tightness and entry
-within the period, but it destroys nothing until the end of $t$.
-Every separation at a surviving product line then adds one worker to
-unemployment and returns one position to the vacancy pool, so
-unemployment and pre-committed vacancies rise by the same inflow $d$,
-apart from the matches and vacancies that the entry response creates
-in period $t$. Conditions (i) and (ii) say that this entry response is
-not large enough to overturn the inflow. The accounting holds for any
-$\rho_s$ and any entry technology. Entry can respond for two reasons.
-A persistent $s$ shock shortens expected match duration, which lowers
-the value of a match and hence vacancy creation. This is the standard
-DMP channel. Even a purely transitory shock raises unemployment and
-pre-committed vacancies, and these state deviations, together with
-feedback through consumption and product variety, move the value of
-future matches. Even in the textbook model such forces leave the sign
-of the $u$--$v$ response to quantitative magnitudes:
-\citet{shimer_2005} obtains positive $u$--$v$ correlation under
-separation shocks as a quantitative result, not as a theorem.
+Part~1 rests on accounting. Every separation at a surviving product line adds one worker to
+unemployment and returns one position to the vacancy pool, so unemployment and pre-committed
+vacancies rise by the same inflow $d$, apart from what the period-$t$ entry response creates.
+Conditions (i) and (ii) say that this response does not overturn the inflow, for any $\rho_s$
+and any entry technology. Entry responds because a persistent $s$ shock shortens expected
+match duration, the standard DMP channel, and because the state deviations the shock leaves,
+with feedback through consumption and variety, move the value of future matches. Even in the
+textbook model the sign is therefore quantitative: \citet{shimer_2005} obtains positive
+$u$--$v$ correlation under separation shocks as a quantitative result, not as a theorem.
 
 Conditions (i) and (ii) are very easily satisfied when $p_0=0$. Two
 cases sign them analytically. Both require $\rho_s=0$ and the
@@ -1968,20 +1777,18 @@ $\bar\delta_e/\bar\tau$.
 \end{remark}
 
 The two results bracket the entry elasticity. At a moderate finite $\xi$, a low
-$\bar\delta_e/\bar\tau$ delivers the negative first-month response because it leaves the
-standing vacancy stock overwhelmingly inherited, and only inherited vacancies are exposed
-to the shock. As $\xi\to\infty$ only persistence does, and the threshold is in closed form.
-At the monthly frequency of the model the first-month sign is fragile, because entry
-responds in the same month as the shock. At the $p_0=0$ benchmark with the measured
+$\bar\delta_e/\bar\tau$ delivers the negative first-month response, because it leaves the
+standing vacancy stock overwhelmingly inherited and only inherited vacancies are exposed to
+the shock. As $\xi\to\infty$, only persistence does. The first-month sign is fragile at the
+model's monthly frequency, because entry responds in the same month. At the $p_0=0$ benchmark with the measured
 $\bar\delta_e/\bar\tau\approx0.087$ and the estimated $\rho_\delta$, entry offsets 81 percent
 of the first-month destruction, and at the superseded value of 0.21 it more than offsets it.
 The cushion is short-lived, however. At the measured $\bar\delta_e$, vacancies fall from the
 second month on and in every quarterly average, for $\rho_\delta\in\{0,0.592,0.9\}$ and entry
 elasticities $1/\xi\in\{0.5,1,2\}$. Negative $u$--$v$ comovement at the quarterly frequency
-of Sections~\ref{sec:empirical} and~\ref{sec:quantitative} is therefore robust. Parts~1
-and~2 of Lemma~\ref{lem:accounting} mirror each other: on impact, $s$ adds positions to the
-vacancy pool and $\delta$ destroys them, and in each case the sign holds unless entry
-overturns it.
+of Sections~\ref{sec:empirical} and~\ref{sec:quantitative} is therefore robust. The two
+parts of Lemma~\ref{lem:accounting} mirror each other: on impact $s$ adds positions to the
+vacancy pool and $\delta$ destroys them, and the sign holds unless entry overturns it.
 
 \paragraph{Endogenous exit}
 With $p_0>0$, the cutoff, product variety and retail employment at $t+1$ are determined

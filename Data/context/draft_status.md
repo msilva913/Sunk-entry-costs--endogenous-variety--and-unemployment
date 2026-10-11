@@ -20,6 +20,21 @@ cascade, every §5.3 number comes from the code's timing.
 
 ## Section status
 
+**Oct 11 efficiency pass, Sections 1–3 (MS-directed).**
+- Intro: the variety/segmentation/exit paragraph split into three; estimation described once;
+  Fact 1 compressed; the 2001 aside shortened.
+- Intro accuracy fixes: the LP summary now matches §4 (unemployment rises, +1.71 pp; vacancy
+  rate −0.58 pp, not log points); the δ instrument is built from deaths, not closings;
+  roadmap order fixed; `ref:conclusion` used.
+- The commented scrap block before §2 was deleted.
+- §2: reactivation stated once (MS's paragraph, with the timing anchor fixed); timing restated
+  once; the dangling segmentation paragraph rewritten.
+- §3: the conditional mean E(χ | χ ≤ χ^c) corrected to p_0ψ_cχ^c(χ^c/χ_m)^ψ/Λ; the X^r
+  derivation compressed; the post-definition text de-duplicated; the wage paragraph tightened.
+- ⚠ Not yet checked: whether `eq:exit_threshold_curve` relies on the old shortcut (see P5).
+- MS kept the DMP paragraph (item 5).
+
+
 | Section | Status | Outstanding |
 |---|---|---|
 | 1 Introduction (incl. §1.1 evidence) | ✅ | Prose says reposting makes vacancies "self-correct" (~L154, ~L308); qualify for partial reposting (R11). **Oct 5:** endogenous exit no longer claimed as a recession amplifier (contradicted by §5.3 — Flag 1), reworded to the δ_e decomposition plus the host distribution F for reactivation draws (`ee5a2a5`); new paragraph giving the measurement argument for why the business formation block is needed given GS (`bcee2cb`); Fact 1 gains the entry margin, the C7–C10 correlations and the one-for-one clause (`1e94613`). **Still owed:** a paragraph on the ξ/CK contrast built on the predetermined share (text drafted in session, not spliced), and the ξ sentence (gated on R14) |
@@ -68,8 +83,8 @@ cascade, every §5.3 number comes from the code's timing.
 | `rem:nesting` | ✅ GS isomorphism (matching-function aside removed Oct 11, MS: belongs with probability bounds, not here); CK recovered exactly — CK set their flow vacancy cost c = 0 (p. 124), GS likewise (MS) |
 | `prop:bgm_nest` | ✅ Proof rewritten: F is a point mass at 0 under p_0 = 0 (was "F(0) = 0"); bracket = N + N^e by N^e = zl^e/f_e and L^c = Y^c/(ρz) (the "gross-output identity" Y^c = zLρ/μ was false off steady state); ν^f = ρf_e/μ as in `eq:free_entry` |
 | `prop:curves` → **Remark** | ✅ Demoted; ε enters all three non-destruction curves through μ (not π_s); destruction curve depends on p_0, ψ, χ_m, δ̄; the identification sentence was removed |
-| `prop:equilibria` (7) + `ass:matching` + `rem:smcd` | ✅ **R16 done Oct 11.** Stated under Assumption M (CRS, (M1) f, q ≤ 1, (M2) ε_f nonincreasing) and explicit condition (C), ln Φ convex in ln θ. Proof: ln N_JC − ln N_RC convex in ln θ ⇒ ≤ 2 zeros; positive at both ends ⇒ 0 or (generically) 2; double-limit uniqueness iff z > Φ(0). The old convexity-in-levels fix fails (Φ is never convex; N_JC not convex near 0). Under extrapolated Cobb–Douglas the low equilibrium needs q ≈ 14–21; under every bounded spec (clipped CD, HRW, 2P-SMCD) it is feasible with q ≈ 1, u ≈ 1/3. `rem:smcd` cites Silva (2026, SSRN 6956640) and DHRW (doi:10.1257/aer.90.3.482). Program: `equilibria_convexity_check.jl` (loads the SMCD repo's `MatchingSpec` library) |
-| `lem:theta`, `prop:fe` (5) | ✅ **Spliced Oct 11** (R15 (b)). Notation translated: a, b → c_δ, c_s; D → D_θ; R_x → Γ_x; Φ → Φ_θ; λ, ω → λ_u, ω_u; ρ → ρ_x; ε_0 → x̃_0. Assumptions added: (1−δ̄)f̄ + τ̄ ≤ 1, interior entry e_t > 0. `cor:allh` is a sentence in the text, proved in Step 2 |
+| `prop:equilibria` (7) + `ass:matching` + SMCD footnote | ✅ **R16 done Oct 11.** Stated under Assumption M (CRS, (M1) f, q ≤ 1, (M2) ε_f nonincreasing) and explicit condition (C), ln Φ convex in ln θ. Proof: ln N_JC − ln N_RC convex in ln θ ⇒ ≤ 2 zeros; positive at both ends ⇒ 0 or (generically) 2; double-limit uniqueness iff z > Φ(0). The old convexity-in-levels fix fails (Φ is never convex; N_JC not convex near 0). Under extrapolated Cobb–Douglas the low equilibrium needs q ≈ 14–21; under every bounded spec (clipped CD, HRW, 2P-SMCD) it is feasible with q ≈ 1, u ≈ 1/3. The SMCD discussion is a condensed footnote on the sentence introducing `ass:matching` (was `rem:smcd`, moved Oct 11, MS); it cites Silva (2026, SSRN 6956640) and DHRW (doi:10.1257/aer.90.3.482). Program: `equilibria_convexity_check.jl` (loads the SMCD repo's `MatchingSpec` library) |
+| `lem:theta`, `prop:fe` (5) | ✅ **Spliced Oct 11** (R15 (b)). **Discussion rewritten Oct 11 (MS):** the conditions are stated as |c_x|(ρ_x − ω_u) > ℓ_x (h = 1) and |c_x|[ρ_x(1−λ_u²)/(1+ρ_xλ_u) − ω_u] > ℓ_x (path), with no Γ_x in the main text (Γ survives only in the proof); the closed forms for c_δ, c_s, D_θ are in `app:proof_fe` (`eq:c_delta`); `tab:fe_irf` contrasts δ (ρ = 0.592) and s (ρ = 0.874) responses; the text leads with the two-channel contrast (tightness 0.79 vs 0.04, unemployment 0.036 vs 0.37 per percent of the shock). Notation translated: a, b → c_δ, c_s; D → D_θ; R_x → Γ_x; Φ → Φ_θ; λ, ω → λ_u, ω_u; ρ → ρ_x; ε_0 → x̃_0. Assumptions added: (1−δ̄)f̄ + τ̄ ≤ 1, interior entry e_t > 0. `cor:allh` is a sentence in the text, proved in Step 2 |
 | `lem:accounting` (Lemma 2) | ✅ Old Prop. 5 Parts 1 (s) and 3 (δ) at any entry technology, p_0 = 0; the δ part now also states the unemployment (matching) condition |
 | `rem:finite_xi` | ✅ Replaces the old Part 3 sufficient condition (R12c). Numbers from `gs_finite_xi_entry_offset.jl`: δ̄*(ξ) = 3.8%/2.7%/1.6% per year at ξ = 1/2/10 (ρ_δ = 0.592); offset 0.85 at D1, ξ = 1; non-monotone in ξ |
 | `prop:exit_s` (6) | ✅ Old Part 2. g(N, L^c) defined once (gross, from `eq:cutoff_eq`, Y^c = ρzL^c), entry labor l^e carried in the joint system; `eq:exit_cond` uses g_L > 0. ⏳ Numerics after R8 |
