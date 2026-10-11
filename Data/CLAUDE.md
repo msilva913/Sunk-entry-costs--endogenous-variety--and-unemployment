@@ -108,6 +108,26 @@ to do:
 
 **Resume:** [`context/session_handout_20261009.md`](context/session_handout_20261009.md) (Oct 8–9 strategy sessions). Previous: `session_handout_20261001.md` (R13 done).
 
+**October 11, 2026 session — R15 spliced, theory propositions audited and corrected.** Draft
+edits in §3 and Appendices G–J; four new programs. Full record:
+[`context/draft_status.md`](context/draft_status.md) "Propositions".
+
+- **R15 option (b) is in the draft.** `lem:theta` + `prop:fe` lead `sec:mechanism`. Old Prop. 5
+  is split into `lem:accounting` (h = 1 accounting, any ξ), `rem:finite_xi` and `prop:exit_s`.
+- **`prop:double_limit` (i) was wrong** and is corrected: N̄ = z̄L̄(1−δ̄)/(f̄_e(r+δ̄)), plus a
+  period-by-period N_{t+1} rule; the old ln N equation and its stability condition are gone.
+- **R16 done.** `prop:equilibria` holds under matching regularity conditions (`ass:matching`)
+  plus an explicit log-convexity condition (C). The low equilibrium is genuine under bounded
+  matching. `rem:smcd` cites MS's SMCD working paper (SSRN 6956640).
+- **R12c resolved by the fallback:** the finite-ξ sufficient condition is now a numerical remark
+  (non-monotone in ξ).
+- Fixes also in `prop:ags`, `rem:nesting`, `prop:bgm_nest`, `prop:curves` (now a remark),
+  `prop:independence`, and `app:loglin` (S10 dating; `eq:tau_ll` coefficient).
+- New programs: `gs_finite_xi_entry_offset.jl`, `double_limit_check.jl`,
+  `equilibria_convexity_check.jl` (loads the SMCD repo's `MatchingSpec` library).
+- ⚠ `Draft.bbl` gained `den_haan_2000` and `silva_2026` by hand. **Add both to
+  `references.bib`** before the next bibtex run.
+
 **October 8–9, 2026 sessions — strategy only.** No runs, no draft edits. Full record in the
 handout.
 

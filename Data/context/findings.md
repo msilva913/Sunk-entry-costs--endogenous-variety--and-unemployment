@@ -705,3 +705,26 @@ path. At 7.54 %/yr and 10 %/yr: R_s = 10.0 and 10.1 at ρ = 0.592, bounds 4.50 a
 **Not established:** the full model at ξ_inv → 0 (variety should strengthen the result;
 endogenous exit, the SDF, costly reposting and the e ≥ 0 bound are unsigned). Draft vs code
 timing (R8) must be fixed first.
+
+## Finite-ξ entry offset, double limit, steady-state multiplicity — October 11, 2026
+
+**Finite ξ (R12c), `gs_finite_xi_entry_offset.jl`.** GS economy of `prop:fe` (κ = 0), draft
+timing, stacked linear perfect-foresight solve; verified against a nonlinear Newton path,
+Blanchard–Kahn (2 stable roots) asserted, and convergence to `prop:fe` as ξ → ∞ (gap 7e-5 at
+ξ = 1e8). Offset = entry contribution to v_1 / destruction carried into t = 1.
+- D1, ρ_δ = 0.592: 0.37 (ξ = 0.265), 0.85 (ξ = 1), 1.18 (ξ = 2); iid: 0.16, 0.40, 0.59.
+- δ̄*(ξ) at ρ_δ = 0.592 (searched on [1%/yr, τ̄]): 8.2%, 5.6%, 3.8%, 2.7%, 1.8%, 1.6% per year
+  at ξ = 0.265, 0.5, 1, 2, 5, 10; "all" at ξ = 100 (entry collapses through the user cost).
+- Non-monotone in ξ; at δ̄ = τ̄ the offset is 7.7–32 for ξ ≤ 2. Below ~1%/yr the
+  recalibration degenerates (Q̄ = 454, ϕ = 0.10 at 0.25%/yr), so δ̄ → 0 is not a clean limit.
+
+**Double limit, `double_limit_check.jl`.** Exact steady state N = (μ−1)zL(1−δ)/(f_e(r+δμ))
+converges at rate 1/ε to zL(1−δ)/(f̄_e(r+δ)) (gap 5.5e-3 at ε = 100). The draft's old
+δN = zL lnN/f̄_e has no root when f̄_e normalizes N̄ = 1, and roots 1.0001 and 77,353 at
+f̄_e = 0.05 (true value 3,102).
+
+**Steady-state curves, `equilibria_convexity_check.jl`.** Two JC–RC crossings in every case.
+High crossing = calibrated θ̄ = 0.512. Low crossing: θ ≈ 0.002–0.004 with q ≈ 14–21 under
+extrapolated Cobb–Douglas; θ ≈ 0.056–0.068, q ≈ 1, u ≈ 0.32–0.36 under clipped CD, HRW and
+2P-SMCD. ln Φ convex and ln L concave in ln θ for every bounded spec at ξ ∈ {0.5, 1, 2}; Φ itself
+is never convex and N_JC is not convex near θ = 0.
