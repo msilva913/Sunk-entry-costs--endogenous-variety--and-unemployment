@@ -1721,10 +1721,8 @@ further adds endogenous exit to the LR-BGM core.
 
 The equilibrium laws of motion imply qualitatively distinct labor-market dynamics under
 product destruction and under match separation. This section establishes the asymmetry
-analytically, in three steps. The first is a closed-form theorem for the economy with
-infinitely elastic vacancy creation, where the labor market block is block recursive. It
-gives necessary and sufficient conditions for a downward-sloping Beveridge response to each
-shock. The second is an accounting result at horizon $h=1$ that holds for any entry
+analytically, in three steps. The first gives necessary and sufficient conditions for the Beveridge curve to slope in response to each shock in a special case of the AGS economy with
+infinitely elastic vacancy creation. In this case, the labor market is block recursive and we can obtain analytic policy functions for the log linearized system. The second is an accounting result at horizon $h=1$ that holds for any entry
 elasticity. The third extends the separation-shock result to endogenous exit. Negative
 $u$--$v$ comovement can come from $\delta$ shocks, which destroy positions together with
 matches, or from partial reposting, which turns part of each separation into position
@@ -1737,45 +1735,44 @@ Remark~\ref{rem:nesting} is \citet{gabrovski_2025} with aggregate shocks to $\de
 $s_t$. Its labor market block closes on its own. Vacancy creation is infinitely elastic,
 $Q_t=x_m$, and entry is interior, $e_t>0$. Write $\delta_t=\bar\delta e^{\tilde\delta_t}$
 and $s_t=\bar{s}e^{\tilde{s}_t}$, and consider one shock at a time, with persistence
-$\rho_x\in[0,1)$ for $x\in\{\delta,s\}$. Free entry pins the price of a vacancy, not its
-flow value. By \eqref{eq:K_ags},
+$\rho_x\in[0,1)$ for $x\in\{\delta,s\}$. Both margins are present, $0<\bar\delta<\bar\tau$.
+The results for the destruction shock also hold at $\bar\delta=\bar\tau$, where there is no
+separation margin.
+
+Free entry pins the price of a vacancy, not its flow value. By \eqref{eq:K_ags},
 \begin{equation}\label{eq:K_user_cost}
 	K_t=x_m\,\frac{r+\delta_t}{1+r},
 \end{equation}
 the user cost of an asset that destruction depreciates. In \citet{gabrovski_2025}
 $\delta$ is constant, so free entry fixes $K$ as well. Here $K_t$ moves with the
-exogenous $\delta_t$ and with nothing else. The job creation condition
-\eqref{eq:jcc_ags} then contains only tightness and the shocks. Define
-\[
-	D_\theta(\rho)\equiv\eta_L\bigl[1+r-\rho(1-\bar\tau)\bigr]+\rho\,\phi(1-\bar\delta)\bar{f},
-\]
-\begin{equation}\label{eq:c_delta}
-	c_\delta\equiv-\,\frac{(1+r)\dfrac{\bar\delta}{1-\bar\delta}
-	+\dfrac{\bar\delta}{r+\bar\delta}\Bigl[1+r-\rho_\delta(1-\bar\tau)+\rho_\delta\,\phi(1-\bar\delta)\bar{f}
-	+\rho_\delta(1-\phi)(1-\bar\delta)\bar{q}\Bigr]}{D_\theta(\rho_\delta)},
-	\qquad
-	c_s\equiv-\,\frac{\rho_s(1-\bar\delta)\bar{s}}{D_\theta(\rho_s)}.
-\end{equation}
+exogenous $\delta_t$ and with nothing else, so the job creation condition
+\eqref{eq:jcc_ags} contains only tightness and the shocks. This is what makes the free-entry
+economy tractable: tightness can be solved without reference to unemployment or the
+vacancy stock.
 
 \begin{lemma}[Tightness under free entry]\label{lem:theta}
 In the economy just described, suppose $\phi(1-\bar\delta)\bar{f}<\eta_L(2+r-\bar\tau)$, which
 holds whenever $\phi\leq\eta_L$. Then the log-linearized labor market block has a unique
 bounded solution, in which tightness depends only on the shocks,
-$\hat\theta_t=c_\delta\tilde\delta_t+c_s\tilde{s}_t$, with $c_\delta<0$ and $c_s\leq0$, and
-$c_s=0$ if and only if $\rho_s=0$. Unemployment and the predetermined vacancy stock do not
-enter the policy rule.
+$\hat\theta_t=c_\delta\tilde\delta_t+c_s\tilde{s}_t$. The coefficients, given in closed form
+in \eqref{eq:c_delta}, satisfy $c_\delta<0$ and $c_s\leq0$, with $c_s=0$ if and only if
+$\rho_s=0$.
 \end{lemma}
 
-Tightness falls after a destruction shock because the cost of a hire rises faster than its
-value. A one-percent rise in $\delta_t$ raises the flow value \eqref{eq:K_user_cost}, and
-with it the expected cost of a hire, by $\bar\delta/(r+\bar\delta)$ percent, the share of the
-user cost due to destruction. The value of a hire falls only through survival, by about
-$\bar\delta$ percent. For the two to stay equal, the expected time to fill must fall. A
-separation shock does not depreciate the vacancy, so it has no flow-value term. It moves
-tightness only by lowering the probability that next period's match continues, which is
-why $c_s$ vanishes when the shock is transitory.
+Both shocks lower tightness, for different reasons and by very different amounts. A rise in
+$\delta_t$ raises the cost of a hire directly. A vacancy is an asset that destruction
+depreciates, so its flow value \eqref{eq:K_user_cost} rises by $\bar\delta/(r+\bar\delta)$
+percent per percent of $\delta_t$, the share of the user cost due to destruction. That share
+is $0.45$ at the measured destruction rate. The value of a hire falls only through survival,
+by about $\bar\delta$ percent, which is small. For cost and value to stay equal, the expected
+time to fill a vacancy must fall, so tightness falls sharply. A rise in $s_t$ does not
+depreciate the vacancy at all. It lowers tightness only by shortening the expected life of
+next period's matches, and only if it persists. At the measured destruction rate and
+$\rho_x=0.592$, tightness falls by $0.79$ percent per percent of a destruction shock and by
+$0.04$ percent per percent of a separation shock. At the estimated $\rho_s=0.874$ the
+separation response is $0.07$.
 
-Given the lemma, the states are solved backward. Unemployment follows
+Given tightness, unemployment follows its law of motion \eqref{eq:u_ags}. In log deviations,
 \begin{equation}\label{eq:u_fe}
 	\hat{u}_t=\lambda_u\hat{u}_{t-1}+\ell_\delta\tilde\delta_{t-1}+\ell_s\tilde{s}_{t-1}-\omega_u\hat\theta_{t-1},
 	\qquad
@@ -1783,32 +1780,42 @@ Given the lemma, the states are solved backward. Unemployment follows
 	\ell_s\equiv(1-\bar\delta)\bar{f}\Bigl(1-\frac{\bar\delta}{\bar\tau}\Bigr),
 \end{equation}
 where $\lambda_u\equiv1-(1-\bar\delta)\bar{f}-\bar\tau$ is the persistence of unemployment
-and $\omega_u\equiv(1-\eta_L)(1-\bar\delta)\bar{f}$ is the effective job-finding rate times
-its elasticity to tightness. We assume $(1-\bar\delta)\bar{f}+\bar\tau\leq1$, so
-$\lambda_u\in[0,1)$. The unemployment loading of the destruction shock, $\ell_\delta$, is
-proportional to the destruction share of separations $\bar\delta/\bar\tau$. Vacancies are
-$\hat{v}_t=\hat\theta_t+\hat{u}_t$, and entry is the residual. For each shock, define the
-ratio of its unemployment loading to its tightness loading, $\Gamma_x\equiv\ell_x/|c_x|$
-when $c_x\neq0$.
+and $\omega_u\equiv(1-\eta_L)(1-\bar\delta)\bar{f}$ measures the hires lost when tightness
+falls. We assume $(1-\bar\delta)\bar{f}+\bar\tau\leq1$, so $\lambda_u\in[0,1)$. The direct
+effects $\ell_\delta$ and $\ell_s$ split the separation flow into unemployment between the
+two shocks. Destruction is a small share of separations, $\bar\delta/\bar\tau=0.087$, so
+$\ell_\delta=0.036$. Match separations are the rest, so $\ell_s=0.37$. Vacancies are then
+$\hat{v}_t=\hat\theta_t+\hat{u}_t$, and entry is the residual.
+
+The two shocks are therefore mirror images. Per percent of the shock, destruction moves
+tightness by $0.79$ and unemployment by $0.036$. Separation moves tightness by $0.04$ and
+unemployment by $0.37$. Since $v=\theta u$, vacancies fall only if tightness falls by more
+than unemployment rises, so the first shock is built to produce negative $u$--$v$
+comovement and the second to produce positive comovement. The proposition states this
+precisely. Timing adds one element. Unemployment is predetermined and rises with a lag, so
+what matters is how much of the tightness fall survives into the periods in which
+unemployment has risen. That is why persistence enters.
 
 \begin{proposition}[Destruction and separation shocks under free entry]\label{prop:fe}
 Under the assumptions of Lemma~\ref{lem:theta}, let shock $x\in\{\delta,s\}$ follow
 $\tilde{x}_t=\rho_x^t\tilde{x}_0$ with $\tilde{x}_0>0$, the other shock at its mean. To
 first order, $\hat\theta_t=c_x\rho_x^t\tilde{x}_0$ and
 $\hat{u}_t=(\ell_x+\omega_u|c_x|)\,\tilde{x}_0\sum_{j=0}^{t-1}\lambda_u^{t-1-j}\rho_x^j$, so
-unemployment is unchanged on impact and rises thereafter. When $c_x\neq0$:
+$\hat{u}_0=0$ and $\hat{u}_t>0$ for all $t\geq1$, and $\hat{v}_t=\hat\theta_t+\hat{u}_t$.
 \begin{enumerate}
-	\item Vacancies fall at $h=1$ if and only if $\rho_x>\omega_u+\Gamma_x$. Once vacancies
-	rise above steady state, they stay above it.
-	\item The slope of $v_t-\bar{v}$ on $u_t-\bar{u}$ along the impulse response is
+	\item $\hat{v}_1<0$ if and only if $|c_x|(\rho_x-\omega_u)>\ell_x$. If $\hat{v}_t\geq0$
+	for some $t\geq1$, then $\hat{v}_{t'}>0$ for all $t'>t$.
+	\item The slope of the impulse response in the $(u,v)$ plane,
+	$\sum_{t\geq0}(v_t-\bar{v})(u_t-\bar{u})/\sum_{t\geq0}(u_t-\bar{u})^2$, equals
 	\begin{equation}\label{eq:fe_slope}
-		\bar\theta\left[1-\frac{\rho_x(1-\lambda_u^2)}{(1+\rho_x\lambda_u)(\omega_u+\Gamma_x)}\right],
+		\bar\theta\left[1-\frac{\rho_x(1-\lambda_u^2)}{1+\rho_x\lambda_u}\,
+		\frac{|c_x|}{\ell_x+\omega_u|c_x|}\right],
 	\end{equation}
-	which is negative if and only if $\rho_x(1-\lambda_u^2)/(1+\rho_x\lambda_u)>\omega_u+\Gamma_x$.
-	\item For the separation shock, $\Gamma_s=(1-\bar\delta)\bar{f}\,D_\theta(\rho_s)/(\rho_s\bar\tau)$.
-	If $(1-\bar\delta)\bar{f}\bigl[\eta_L+\phi(1-\bar\delta)\bar{f}/\bar\tau\bigr]\geq1$, then
-	$\hat{v}_t>0$ for every $t\geq1$ and the slope \eqref{eq:fe_slope} is positive, for
-	every $\rho_s\in(0,1)$.
+	and is negative if and only if
+	$|c_x|\bigl[\rho_x(1-\lambda_u^2)/(1+\rho_x\lambda_u)-\omega_u\bigr]>\ell_x$.
+	\item If $(1-\bar\delta)\bar{f}\bigl[\eta_L+\phi(1-\bar\delta)\bar{f}/\bar\tau\bigr]\geq1$,
+	then after a separation shock $\hat{v}_t>0$ for every $t\geq1$ and the slope
+	\eqref{eq:fe_slope} is positive, for every $\rho_s\in(0,1)$.
 \end{enumerate}
 If $\rho_x=0$, both conditions fail for the destruction shock, and the separation shock
 leaves tightness unchanged at every date. In both cases $v_t=\bar\theta u_t$ after impact
@@ -1816,40 +1823,52 @@ and the slope equals $\bar\theta>0$.
 \end{proposition}
 \noindent See \ref{app:proof_fe} for the proofs.
 
-Both conditions compare the persistence of the shock with the same threshold,
-$\omega_u+\Gamma_x$. At $h=1$, the fall in tightness that survives one period,
-$|c_x|\rho_x$, must exceed the rise in unemployment. That rise has two parts: the hires lost
-at date 0, $\omega_u|c_x|$, and the direct effect of the shock, $\ell_x=\Gamma_x|c_x|$. Over
-the whole path, persistence is discounted by unemployment's own persistence, so the slope
-condition is the stricter one. A corollary of the same algebra is that vacancies stay below
-steady state at every horizon if and only if $\rho_x-\lambda_u\geq\omega_u+\Gamma_x$. The
-two shocks differ only through $\Gamma_x$.
+\begin{table}[h]
+\centering
+\caption{Impulse responses under free entry at the measured destruction rate, in percent per
+percent of the shock.}
+\label{tab:fe_irf}
+\begin{tabular}{rrrrcrrr}
+\toprule
+ & \multicolumn{3}{c}{Destruction, $\rho_\delta=0.592$} & & \multicolumn{3}{c}{Separation, $\rho_s=0.874$} \\
+\cmidrule(lr){2-4}\cmidrule(lr){6-8}
+$t$ & $\hat\theta_t$ & $\hat{u}_t$ & $\hat{v}_t$ & & $\hat\theta_t$ & $\hat{u}_t$ & $\hat{v}_t$ \\
+\midrule
+0 & $-0.79$ & 0.00 & $-0.79$ & & $-0.07$ & 0.00 & $-0.07$ \\
+1 & $-0.47$ & 0.17 & $-0.30$ & & $-0.06$ & 0.39 & 0.32 \\
+2 & $-0.28$ & 0.19 & $-0.09$ & & $-0.05$ & 0.55 & 0.50 \\
+3 & $-0.16$ & 0.16 & 0.00 & & $-0.05$ & 0.60 & 0.56 \\
+4 & $-0.10$ & 0.13 & 0.03 & & $-0.04$ & 0.60 & 0.55 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-At the measured $\bar\delta_e/\bar\tau=0.087$, $\Gamma_\delta=0.045$, so the threshold
-$\omega_u+\Gamma_\delta=0.209$ is barely above $\omega_u=0.164$. At $\rho_\delta=0.592$ the
-discounted persistence term is $0.306$, and the slope is $-0.24$. A destruction shock is
-negatively sloped whenever $\rho_\delta>0.37$ at the monthly frequency. At $\bar\delta=\bar\tau$,
-the parameterization of \citet{coles_2018}, $\Gamma_\delta=0.289$, the threshold rises to
-$0.453$, and the slope is $+0.17$ for every persistence. The difference comes from how the two
-loadings scale with $\bar\delta$. The unemployment loading $\bar{f}\bar\delta/\bar\tau$ falls
-from $0.42$ at $\bar\delta=\bar\tau$ to $0.036$ at the measured value, in proportion to the
-destruction share of separations. The user-cost share $\bar\delta/(r+\bar\delta)$ falls only
-from $0.90$ to $0.45$, because it saturates once $\bar\delta$ is large relative to $r$. So
-$\Gamma_\delta$ is roughly proportional to $(r+\bar\delta)/\bar\tau$. With a flow-cost
-vacancy, holding $K$ fixed, the flow-value term drops out of $c_\delta$ and the slope is
-$+0.49$ at $\rho_\delta=0.592$. The durable vacancy is essential.
+Table~\ref{tab:fe_irf} shows the contrast. After a destruction shock, tightness falls by
+much more than unemployment rises, and vacancies stay below steady state while unemployment
+builds up. They turn positive only once tightness has recovered, and then only slightly.
+After a separation shock tightness barely moves, so vacancies follow unemployment up almost
+one for one from the first month. The Beveridge slopes summarize the two paths: $-0.24$
+for the destruction shock and $+0.47$ for the separation shock.
 
-The separation shock behaves very differently. At the measured $\bar\delta_e$,
-$\Gamma_s=9.56$ at $\rho_s=0.592$ and $5.22$ at the estimated $\rho_s=0.874$, against
-$\Gamma_\delta=0.045$. The sufficient condition in Part~3 equals $4.05$. The slope is
-$+0.50$ and $+0.47$, and vacancies rise almost one for one with unemployment from the first
-month. Both discounted persistence terms are below one, so no persistence makes the
-separation shock negatively sloped, while the destruction shock is negatively sloped once
-it is moderately persistent. Persistence is necessary for the destruction shock as well:
-after an iid shock the slope is $\bar\theta=0.51$. The free-entry result of
-\citet{coles_2018}, a positive slope, is the case $\bar\delta=\bar\tau$. Their need for a
-finitely elastic creation technology repairs a consequence of having a single separation
-margin.
+The conditions show how robust each result is. For the destruction shock, vacancies fall
+at $h=1$ whenever $\rho_\delta>0.21$, and the slope over the whole path is negative whenever
+$\rho_\delta>0.37$, at the monthly frequency. Moderate persistence suffices. For the
+separation shock, the sufficient condition in Part~3 equals $4.05$ at the calibration, so no
+persistence delivers negative comovement. Persistence is necessary for the destruction shock, however. After an
+iid shock, tightness is back at its steady state in the month after the shock, and from
+then on vacancies move with unemployment, with slope $\bar\theta=0.51$.
+
+The measured destruction rate matters through the direct effect $\ell_\delta$. In the
+parameterization of \citet{coles_2018}, all separations destroy positions,
+$\bar\delta=\bar\tau$. The direct effect on unemployment then rises from $0.036$ to $0.42$,
+while the tightness response rises only from $0.79$ to $1.46$, because the user-cost share
+$\bar\delta/(r+\bar\delta)$ saturates once $\bar\delta$ is large relative to $r$. Vacancies
+still dip at $h=1$, but the slope over the path is $+0.17$, and no persistence makes it
+negative. This is the free-entry result of \citet{coles_2018}. Their need for a finitely
+elastic creation technology repairs a consequence of having a single separation margin. The
+durable vacancy is essential as well. With a flow-cost vacancy, holding $K$ fixed, the
+user-cost term disappears from tightness, and the slope after a destruction shock is $+0.49$
+at $\rho_\delta=0.592$.
 
 \paragraph{Any entry elasticity}
 With finitely elastic creation, entry $e=G(Q)$ links the predetermined vacancy stock to
@@ -2151,7 +2170,15 @@ distinction matters under general CES, where $\zeta$ and $\varepsilon$ are separ
 parameters.
 
 The number of steady states depends on the matching technology. We impose the
-following regularity conditions.
+following regularity conditions.\footnote{The soft-min Cobb--Douglas function of
+\citet{silva_2026}, $m(u,v)=s\,a\,uv/[(av)^p+u^p]^{1/p}$, satisfies them whenever $s\leq1$
+and $sa\leq1$, with elasticity $\varepsilon_f(\theta)=1/[(a\theta)^p+1]$ strictly
+decreasing, and it nests the \citet{den_haan_2000} function at $s=a=1$. The Cobb--Douglas
+function of our calibration violates (M1) for $\theta<A^{1/\eta_L}$ but respects it near the
+calibrated steady state, so the high equilibrium below is unaffected. Its low equilibrium
+would require a vacancy-filling probability between 14 and 21. Under every bounded
+specification we check, that equilibrium is feasible, with $q\approx1$ and unemployment
+near one third.}
 
 \begin{assumption}[Matching technology]\label{ass:matching}
 	The matching function $m(u,v)$ has constant returns to scale and is strictly
@@ -2203,22 +2230,6 @@ $\xi\in\{0.5,1,2\}$.
 	curve is vertical and the equilibrium is unique if and only if $z>\Phi(0)$.
 \end{proposition}
 
-\begin{remark}[Soft-min Cobb--Douglas matching]\label{rem:smcd}
-	The soft-min Cobb--Douglas (SMCD) matching function of \citet{silva_2026},
-	$m(u,v)=s\,a\,uv/[(av)^p+u^p]^{1/p}$, satisfies Assumption~\ref{ass:matching} whenever
-	$s\leq1$ and $sa\leq1$, for any $p>0$. Its job-finding rate is
-	$f(\theta)=sa\theta/[(a\theta)^p+1]^{1/p}\leq s$, its vacancy-filling rate is bounded
-	by $sa$, and its elasticity $\varepsilon_f(\theta)=1/[(a\theta)^p+1]$ is strictly
-	decreasing. It nests the \citet{den_haan_2000} function at $s=a=1$, and its
-	two-plateau generalization also satisfies the assumption. The Cobb--Douglas function
-	$f=A\theta^{1-\eta_L}$ used in our calibration satisfies (M2) with a constant
-	elasticity, but violates (M1) for $\theta<A^{1/\eta_L}$. It respects the bounds near
-	the calibrated steady state ($\bar{q}=0.80$), so the high equilibrium is the same
-	under every specification we consider. The low equilibrium is not. Under
-	Cobb--Douglas extrapolated to all $\theta>0$ it requires a vacancy-filling probability
-	between 14 and 21. Under every bounded-probability specification it is a feasible steady
-	state, with $q\approx1$ and an unemployment rate near one third.
-\end{remark}
 
 \begin{figure}[h!]
 	\centering
@@ -5029,6 +5040,23 @@ of the shocks. Under $p_0=0$, $\delta_{e,t+1}=\delta_t$ and
 $\tau_t=1-(1-\delta_{t-1})(1-s_{t-1})$, so $(1-\bar\delta)(1-\bar{s})=1-\bar\tau$ and
 $(1-\bar\delta)\bar{s}=\bar\tau-\bar\delta$.
 
+\paragraph{Tightness coefficients}
+Define
+\[
+	D_\theta(\rho)\equiv\eta_L\bigl[1+r-\rho(1-\bar\tau)\bigr]+\rho\,\phi(1-\bar\delta)\bar{f},
+\]
+\begin{equation}\label{eq:c_delta}
+	c_\delta\equiv-\,\frac{(1+r)\dfrac{\bar\delta}{1-\bar\delta}
+	+\dfrac{\bar\delta}{r+\bar\delta}\Bigl[1+r-\rho_\delta(1-\bar\tau)+\rho_\delta\,\phi(1-\bar\delta)\bar{f}
+	+\rho_\delta(1-\phi)(1-\bar\delta)\bar{q}\Bigr]}{D_\theta(\rho_\delta)},
+	\qquad
+	c_s\equiv-\,\frac{\rho_s(1-\bar\delta)\bar{s}}{D_\theta(\rho_s)}.
+\end{equation}
+The numerator of $c_\delta$ has a survival part, $(1+r)\bar\delta/(1-\bar\delta)$, and a
+user-cost part proportional to $\bar\delta/(r+\bar\delta)$. The numerator of $c_s$ has
+neither. It contains only the effect of persistent separations on the continuation of
+next period's match.
+
 \paragraph{The job creation condition}
 With $m_{t+1}=1/(1+r)$, multiply \eqref{eq:jcc_ags} by $1+r$ and substitute
 \eqref{eq:K_user_cost} at $t$ and $t+1$:
@@ -5092,6 +5120,13 @@ and one stable root, $\lambda_u$, for one state, and the Blanchard--Kahn conditi
 \end{proof}
 
 \begin{proof}[Proof of Proposition~\ref{prop:fe}]
+Since $0<\bar\delta<\bar\tau$, $\ell_\delta>0$ and $\ell_s>0$. If $c_x=0$, which happens only
+for the separation shock with $\rho_s=0$, then $\hat\theta_t=0$ at every date,
+$\hat{v}_t=\hat{u}_t>0$ for $t\geq1$, the condition of part 1 reads $0>\ell_s$ and fails,
+and the slope is $\bar\theta$, as stated. Otherwise write $\Gamma_x\equiv\ell_x/|c_x|>0$.
+The condition of part 1 is then $\rho_x>\omega_u+\Gamma_x$, that of part 2 is
+$\rho_x(1-\lambda_u^2)/(1+\rho_x\lambda_u)>\omega_u+\Gamma_x$, and \eqref{eq:fe_slope} is
+$\bar\theta[1-\rho_x(1-\lambda_u^2)/((1+\rho_x\lambda_u)(\omega_u+\Gamma_x))]$.
 The innovation sets $\tilde{x}_t=\rho_x^t\tilde{x}_0$, so by Lemma~\ref{lem:theta}
 $\hat\theta_t=c_x\rho_x^t\tilde{x}_0$.
 

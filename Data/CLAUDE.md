@@ -118,7 +118,7 @@ edits in §3 and Appendices G–J; four new programs. Full record:
   period-by-period N_{t+1} rule; the old ln N equation and its stability condition are gone.
 - **R16 done.** `prop:equilibria` holds under matching regularity conditions (`ass:matching`)
   plus an explicit log-convexity condition (C). The low equilibrium is genuine under bounded
-  matching. `rem:smcd` cites MS's SMCD working paper (SSRN 6956640).
+  matching. A footnote on `ass:matching` cites MS's SMCD working paper (SSRN 6956640).
 - **R12c resolved by the fallback:** the finite-ξ sufficient condition is now a numerical remark
   (non-monotone in ξ).
 - Fixes also in `prop:ags`, `rem:nesting`, `prop:bgm_nest`, `prop:curves` (now a remark),
