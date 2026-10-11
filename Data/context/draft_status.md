@@ -31,7 +31,7 @@ cascade, every §5.3 number comes from the code's timing.
   once; the dangling segmentation paragraph rewritten.
 - §3: the conditional mean E(χ | χ ≤ χ^c) corrected to p_0ψ_cχ^c(χ^c/χ_m)^ψ/Λ; the X^r
   derivation compressed; the post-definition text de-duplicated; the wage paragraph tightened.
-- ⚠ Not yet checked: whether `eq:exit_threshold_curve` relies on the old shortcut (see P5).
+- `eq:exit_threshold_curve` did rely on a shortcut (ψ_c with no p_0, the p_0 = 1 model); fixed Oct 11 with the X^c correction (P5 in `pending_tasks.md`).
 - MS kept the DMP paragraph (item 5).
 
 

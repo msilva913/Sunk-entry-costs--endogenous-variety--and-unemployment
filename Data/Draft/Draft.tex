@@ -1130,15 +1130,16 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	and retail employment $L_t^c \equiv N_t l_t^c$. Aggregate 
 	continuation costs paid by surviving firms are
 	\begin{align}\label{eq:agg_fixed_costs}
-		X_t^c \equiv N_t\int_0^{\chi_t^c}\chi\,dF(\chi)
-		= N_t\,\psi_c\,\chi_t^c\,p_0
+		X_t^c \equiv (1-\delta_{t-1})(N_{t-1}+N_{t-1}^e)\int_0^{\chi_t^c}\chi\,dF(\chi)
+		= N_t\,E(\chi\,|\,\chi\leq\chi_t^c)
+		= N_t\,\psi_c\,\chi_t^c\,\frac{p_0}{\Lambda_t}
 		\left(\frac{\chi_t^c}{\chi_m}\right)^{\psi}
 	\end{align}
-	where $\psi_c\equiv\psi/(\psi+1)$. The integral is the partial
-	expectation, not the conditional mean: firms drawing
-	$\chi>\chi_t^c$ exit and pay nothing, so the survival probability
-	is already embedded in $\int_0^{\chi_t^c}\chi\,dF$.  Equivalently
-	$X_t^c = N_t\Lambda_t\,E(\chi\,|\,\chi\leq\chi_t^c)$.
+	where $\psi_c\equiv\psi/(\psi+1)$. Every line that survives exogenous destruction draws a
+	cost, and those drawing $\chi>\chi_t^c$ exit and pay nothing, so the pre-exit mass
+	multiplies the partial expectation. Since $N_t=\Lambda_t(1-\delta_{t-1})(N_{t-1}+N_{t-1}^e)$,
+	this is the surviving mass times the conditional mean. The factor
+	$p_0(\chi_t^c/\chi_m)^\psi/\Lambda_t$ is the share of survivors that drew a positive cost.
 	
 	Aggregate reactivation costs are paid by surviving firms that resume a position vacated at the end of $t-1$:
 	\begin{align}\label{eq:agg_repost_costs}
@@ -1727,9 +1728,7 @@ vacancies rise by the same inflow $d$, apart from what the period-$t$ entry resp
 Conditions (i) and (ii) say that this response does not overturn the inflow, for any $\rho_s$
 and any entry technology. Entry responds because a persistent $s$ shock shortens expected
 match duration, the standard DMP channel, and because the state deviations the shock leaves,
-with feedback through consumption and variety, move the value of future matches. Even in the
-textbook model the sign is therefore quantitative: \citet{shimer_2005} obtains positive
-$u$--$v$ correlation under separation shocks as a quantitative result, not as a theorem.
+with feedback through consumption and variety, move the value of future matches.
 
 Conditions (i) and (ii) are very easily satisfied when $p_0=0$. Two
 cases sign them analytically. Both require $\rho_s=0$ and the
@@ -1897,14 +1896,16 @@ The \emph{exit threshold curve} gives the locus
 $(\chi^c, \delta_e)$ consistent with the cutoff 
 condition \eqref{eq:cutoff_eq} at steady state:
 \begin{align}\label{eq:exit_threshold_curve}
-	\chi^c = \frac{\rho(N) f_e}{\mu(N)}
-	\left(\frac{r+\delta_e}{1-\delta_e}
-	\cdot\frac{r+\delta_e+\psi_c(1-\delta_e)}
-	{(1-\psi_c)(r+\delta_e)}+1\right)
+	\chi^c = \frac{\rho(N) f_e}{\mu(N)}\,
+	\frac{1+r}{(1-\delta_e)\bigl(1-\psi_c\,\omega(\delta_e)\bigr)},
+	\qquad
+	\omega(\delta_e)\equiv1-\frac{(1-p_0)(1-\bar\delta)}{1-\delta_e},
 \end{align}
-A higher destruction rate requires higher per-period 
-profits to compensate, raising $\chi^c$; higher variety 
-$N$ shifts the curve upward through $\rho(N)$. The 
+where $\omega$ is the share of surviving lines that drew a positive continuation cost,
+$p_0(\chi^c/\chi_m)^\psi/\Lambda$ in \eqref{eq:agg_fixed_costs}, written with
+$\Lambda=(1-\delta_e)/(1-\bar\delta)$. A higher destruction rate requires higher per-period
+profits to compensate, raising $\chi^c$: the denominator falls in $\delta_e$, at rate
+$1-\psi_c$. Higher variety $N$ shifts the curve upward through $\rho(N)$. The 
 \emph{product destruction curve} follows from 
 $\Lambda(\chi^c)(1-\delta) = (1-\delta_e)$:
 \begin{align}\label{eq:destruction_curve}
@@ -3812,13 +3813,13 @@ The second set consists of empirically identified impulse responses from the
 		u&=\frac{\tau}{\tau+(1-\delta_e)f(\theta)}\label{eq:u_ss}\\
 		e&=\delta_e(v+1-u)+(1-\delta_e)(1-\Lambda_r)s(1-u)\label{eq:e_ss}\\
 		N^e&=\delta_e N/(1-\delta_e)\\
-		L^c&=\frac{r+\delta_e}{r+\delta_e+\delta_e \pi_s \mu}L,\quad L^e=\frac{\delta_e \pi_s \mu}{r+\delta_e+\delta_e\pi_s L \mu}\label{eq:labor_ss}\\
+		L^c&=\frac{r+\delta_e}{r+\delta_e+\delta_e \pi_s \mu}L,\quad L^e=\frac{\delta_e \pi_s \mu}{r+\delta_e+\delta_e\pi_s \mu}L\label{eq:labor_ss}\\
 		\chi^c&=\frac{\rho f_e}{\mu}\left(\frac{r+\delta_e}{1-\delta_e}\frac{\mu-1}{\mu \pi_s}+1\right)\\
-		\pi_s&=\frac{\mu-1}{\mu}\frac{(1-\psi_c)(r+\delta_e)}{r+\delta_e+\psi_c(1-\delta_e)}\\
+		\pi_s&=\frac{\mu-1}{\mu}\frac{(1-\psi_c\omega)(r+\delta_e)}{r+\delta_e+\psi_c\omega(1-\delta_e)},\quad \omega=1-\frac{(1-p_0)(1-\delta)}{1-\delta_e}\\
 		Y^{Gross}&=Y^C+\nu^f N^e=w^{int}L+Nd^f\\
 		Y&=C+\nu^fN^e\\
 		X&=e\frac{\xi}{\xi+1}Q+\kappa qv\\
-		X^c&=N\psi_c p_0\chi^c\\
+		X^c&=N\psi_c\omega\chi^c\\
 		X^r&=(1-\delta_e)s(1-u)\,\psi_cQ(\Lambda_r-1+p_0)\\
 		Y^c&=\rho zL^c=C+X+X^c+X^r\\
 	\end{align}
@@ -3833,7 +3834,7 @@ The second set consists of empirically identified impulse responses from the
 	\end{align}
 	and since $\tau-(1-\delta_e)\Lambda_r s=\delta_e+(1-\delta_e)(1-\Lambda_r)s$, we obtain~\eqref{eq:e_ss}. New entrants replace two kinds of lost positions: those destroyed with exiting product lines, $\delta_e(v+1-u)$, and those retired at surviving product lines because they were not reactivated. With costless reposting ($\Lambda_r=1$) only the first remains, $e=\delta_e(v+1-u)$, and the contribution of entrants to the vacancy pool is governed by the total exit rate $\delta_e$ alone.
 	
-	To find labor in entry $L^e$ in terms of aggregate labor, \eqref{eq:labor_ss}, we plug the resource constraint curve into the expression for $L$:
+	At $p_0=0$, where $X^c=0$, labor in entry follows directly from the resource constraint curve:
 	\begin{align}
 		L^e&=\frac{\delta_e}{1-\delta_e}Nf_e/z\\
 		&=\frac{\delta_e}{1-\delta_e}\left[\frac{(\mu-1)zL(1-\delta_e)}{f_e(\delta_e \mu+r)}\right]f_e/z\\
@@ -3846,61 +3847,57 @@ The second set consists of empirically identified impulse responses from the
 	Equation \eqref{eq:jcc_wage_ss} equates the average recruiting cost to the present-discounted value of the match, adjusted for the wage bargain. The right-hand side incorporates a fraction $1-\phi$ of the flow surplus $(w^{int}-K-b)$, an adjustment for the outside option of the worker, and the recruiter's share $1-\phi$ of the expected reposting shortfall, which vanishes with costless reposting. Whereas in the standard DMP model, the analogous expression would characterize tightness, here $K$ and $w^{int}$ are additional endogenous variables. Moreover, the average recruiting cost has the compound form $\kappa+K/q$, and discounting is adjusted by the overall firm survival rate $1-\delta_e$.
 	
 	\section{Derivations}
-	\subsection{Relationship between profit share and Power law shape parameter $\psi$} 
-	Here, we can establish the relationship between $\pi_s$ and $\psi_c=\psi/(1+\psi)$. and the probability of a positive fixed cost $p_0$. Recall that the cutoff satisfies $\chi^c=Y^c[(\mu-1)/(\mu N)]+\rho f_e/\mu$. So, aggregate fixed costs are $X^c=\psi_c p_0(Y^c(\mu-1)/\mu+N\rho f_e/\mu)$.
-	Divide by $Y^c$ and use $Y^c=\rho z L^c$ to show that
-	\begin{align}
-		\frac{X^c}{Y^c}=\frac{\psi_c p_0}{\mu}\left(\mu-1+\frac{f_eN}{zL^c}\right)
-	\end{align}
-	Now, plug in \eqref{eq:labor_C_N} to show
-	\begin{align}
-		\frac{X^c}{Y^c}=\frac{\psi_c p_0}{\mu}\left(\mu-1+\frac{1-\delta_e}{r+\delta_e}\mu \pi_s\right)
-	\end{align}
-	Hence, 
-	\begin{align}
-		\pi_s=\frac{\mu-1}{\mu}(1-\psi_c p_0)-\frac{\psi_c p_0(1-\delta_e)\pi_s}{r+\delta_e}
-	\end{align}
-	We solve for $\pi_s$ as
-	\begin{align}\label{eq:profit_share}
-		\pi_s=\frac{\mu-1}{\mu}\frac{(1-\psi_cp_0)(r+\delta_e)}{r+\delta_e+\psi_cp_0(1-\delta_e)}
-	\end{align}
-	It is easy to verify that, holding $\delta_e$ fixed, $\pi_s$ is increasing with $\psi_c$. In particular, for $\psi_c=0, \pi_s=(\mu-1)/\mu=1/\varepsilon$, as \citet{bilbiie_2012}. 
-	We can rewrite the cutoff $\chi^c$ in terms of both the profit share and $\psi_c p_0$:
-	\begin{align}
-		\chi^c&=\frac{\rho}{\mu}\left(\frac{zL^c(\mu-1)}{N}+f_e\right)\\
-		&=\frac{\rho f_e}{\mu}\left(\frac{r+\delta_e}{1-\delta_e}\frac{\mu-1}{\mu \pi_s}+1\right)\\
-		&=\frac{\rho f_e}{\mu}\left(\frac{r+\delta_e}{1-\delta_e}\frac{r+\delta_e+\psi_cp_0(1-\delta_e)}{(1-\psi_cp_0)(r+\delta_e)}+1\right)
-	\end{align}
-	
-	\subsection{Resource constraint curve}
-	Expressing the $N$--$L$ relationship in terms of the distributional parameter $\psi_c$, rearrange~\eqref{eq:labor_N} as 
-	\begin{align}
-		N=\frac{ zL(1-\delta_e)}{f_e\left(\frac{r+\delta_e}{\mu \pi_s}+\delta_e\right)}
-	\end{align}
-	Substitute the value $\pi_s$ from \eqref{eq:profit_share} to obtain
-	\begin{align}
-		N=\frac{zL(\mu-1)(1-\psi_c p_0)}{f_e[r+\delta_e+\psi_c(1-\delta_e)+\delta_e (\mu-1)(1-\psi_c)]}
-	\end{align}
-	
-	Hence, labor in entry is
-	\begin{align}
-		L^e&=\frac{\delta_e}{1-\delta_e}\frac{Nf_e}{z}\\
-		&=\frac{\delta_e(\mu-1-\psi_c p_0)L}{\delta_e \mu+r+\psi_c p_0(1-\mu \delta_e)}
-	\end{align}
-	Thus, labor in the consumption sector is
-	\begin{align}
-		L^c=\frac{r+\delta_e+\psi_c p_0(1-(\mu-1)\delta_e)}{\delta_e\mu+r+\psi_c p_0(1-\mu \delta_e)}L
-	\end{align}
-	We can substitute to solve for $X^c$ as
-	\begin{align}
-		X^c&=\frac{\rho z L}{\mu}\psi_c p_0\left(\mu-1+\frac{(\mu-1-\psi_c p_0)(1-\delta_e \mu)}{\delta_e \mu+r+\psi_c p_0(1-\mu \delta_e)}\right)\\
-	\end{align}
-	Hence, the ratio $X^c/Y^c$ satisfies
-	\begin{align}
-		\frac{X^c}{Y^c}=\frac{L}{L^c}\frac{\psi_c p_0}{\mu}\left(\mu-1+\frac{(\mu-1-\psi_cp_0)(1-\delta_e \mu)}{\delta_e \mu+r+\psi_c p_0(1-\mu \delta_e)}\right)
-	\end{align}
-	%\eqref{eq:curve_res_cons}.
-	\subsection{Labor share of GDP}
+	\subsection{Relationship between profit share and power law shape parameter $\psi$}
+Write $\omega\equiv1-(1-p_0)(1-\delta)/(1-\delta_e)$ for the steady-state share of
+surviving lines that drew a positive continuation cost, $p_0(\chi^c/\chi_m)^\psi/\Lambda$
+with $\Lambda=(1-\delta_e)/(1-\delta)$, so that $X^c=N\psi_c\omega\chi^c$ by
+\eqref{eq:agg_fixed_costs}. The cutoff satisfies $\chi^c=Y^c(\mu-1)/(\mu N)+\rho f_e/\mu$,
+so $X^c=\psi_c\omega\bigl(Y^c(\mu-1)/\mu+N\rho f_e/\mu\bigr)$. Dividing by $Y^c=\rho zL^c$,
+\begin{align*}
+	\frac{X^c}{Y^c}=\frac{\psi_c\omega}{\mu}\left(\mu-1+\frac{f_eN}{zL^c}\right).
+\end{align*}
+The steady-state business formation Euler equation gives $d^f/\nu^f=(r+\delta_e)/(1-\delta_e)$,
+and with $Nd^f=\pi_sY^c$ this is $f_eN/(zL^c)=\mu\pi_s(1-\delta_e)/(r+\delta_e)$. Since
+$\pi_s=(\mu-1)/\mu-X^c/Y^c$,
+\begin{align*}
+	\pi_s=\frac{\mu-1}{\mu}(1-\psi_c\omega)-\frac{\psi_c\omega(1-\delta_e)\pi_s}{r+\delta_e},
+\end{align*}
+and solving for $\pi_s$,
+\begin{align}\label{eq:profit_share_ss}
+	\pi_s=\frac{\mu-1}{\mu}\frac{(1-\psi_c\omega)(r+\delta_e)}{r+\delta_e+\psi_c\omega(1-\delta_e)}.
+\end{align}
+Holding $\delta_e$ fixed, $\pi_s$ falls with $\psi_c\omega$. For $\psi_c\omega=0$,
+$\pi_s=(\mu-1)/\mu=1/\varepsilon$, as in \citet{bilbiie_2012}. The cutoff in terms of the
+profit share is
+\begin{align*}
+	\chi^c&=\frac{\rho}{\mu}\left(\frac{zL^c(\mu-1)}{N}+f_e\right)
+	=\frac{\rho f_e}{\mu}\left(\frac{r+\delta_e}{1-\delta_e}\frac{\mu-1}{\mu \pi_s}+1\right)
+	=\frac{\rho f_e}{\mu}\,\frac{1+r}{(1-\delta_e)(1-\psi_c\omega)},
+\end{align*}
+which is \eqref{eq:exit_threshold_curve}.
+
+\subsection{Resource constraint curve}
+Write $c\equiv\psi_c\omega$. Rearranging~\eqref{eq:labor_N} as
+$N=zL(1-\delta_e)/\bigl[f_e\bigl((r+\delta_e)/(\mu\pi_s)+\delta_e\bigr)\bigr]$ and substituting
+\eqref{eq:profit_share_ss},
+\begin{align*}
+	N=\frac{(\mu-1)(1-c)\,zL(1-\delta_e)}{f_e\bigl[\delta_e\mu+r+c(1-\mu\delta_e)\bigr]},
+\end{align*}
+which reduces to \eqref{eq:curve_res_cons} at $c=0$. Labor in entry and in the consumption
+sector are then
+\begin{align*}
+	L^e=\frac{\delta_e}{1-\delta_e}\frac{Nf_e}{z}
+	=\frac{\delta_e(\mu-1)(1-c)}{\delta_e\mu+r+c(1-\mu\delta_e)}\,L,
+	\qquad
+	L^c=\frac{r+\delta_e+c(1-\delta_e)}{\delta_e\mu+r+c(1-\mu\delta_e)}\,L,
+\end{align*}
+consistent with \eqref{eq:labor_ss}, and the continuation-cost share of gross consumption
+output is
+\begin{align*}
+	\frac{X^c}{Y^c}=\frac{c\,(\mu-1)(1+r)}{\mu\bigl[r+\delta_e+c(1-\delta_e)\bigr]}.
+\end{align*}
+%\eqref{eq:curve_res_cons}.
+\subsection{Labor share of GDP}
 	The aggregate resource constraint can be rearranged to pin down the income of recruiters:
 	\begin{align}
 		w^{int}L=\frac{Y^c}{\mu}+\nu^f N^e
