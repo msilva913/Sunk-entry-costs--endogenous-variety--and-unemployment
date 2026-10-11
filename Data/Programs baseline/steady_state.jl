@@ -165,6 +165,16 @@ Endogenous destruction rate given cost cutoff: δ_e = 1 - (1-δ)*F(x_c).
 δ_e_fun(x_c, para) = 1 - (1 - para.δ) * F(x_c, para)
 
 """
+    payer_share(δ_e, δ, p_0)
+Share ω of surviving lines that drew a positive continuation cost, p_0(x_c/f_m)^ψ/Λ with
+Λ = F(x_c) = (1-δ_e)/(1-δ) at the steady state: ω = 1 - (1-p_0)(1-δ)/(1-δ_e).
+The mean cost per survivor is E(χ | χ ≤ x_c) = ψ_c ω x_c, so X_c = N ψ_c ω x_c
+(draft eq:agg_fixed_costs). Before Oct 11, 2026 the code weighted ψ_c x_c by p_0, the prior
+mixture weight, instead of ω, the weight conditional on survival.
+"""
+payer_share(δ_e, δ, p_0) = 1 - (1 - p_0) * (1 - δ) / (1 - δ_e)
+
+"""
     x_c_dest_fun(δ_e, para)
 Cost cutoff consistent with destruction rate δ_e (inverse of δ_e_fun).
 """
@@ -241,9 +251,9 @@ end
 Steady-state retail profit share π_s consistent with cost distribution.
 """
 function profit_share(δ_e, para)
-    @unpack r, ψ, p_0 = para
+    @unpack r, ψ, p_0, δ = para
     μ = compute_markup(para.ε)
-    cons = (ψ / (1 + ψ)) * p_0
+    cons = (ψ / (1 + ψ)) * payer_share(δ_e, δ, p_0)
     return (μ - 1) / μ * (1 - cons) * (r + δ_e) / (r + δ_e + cons * (1 - δ_e))
 end
 
@@ -337,13 +347,13 @@ function steady_state(para; init=0.51)
     @unpack f_e, δ, s, z, b, ϕ, r, σ, ε, A, η_L, κ, ξ_inv, x_m, f_m, ψ, p_0 = para
 
     μ    = compute_markup(ε)
-    cons = (ψ / (1 + ψ)) * p_0
 
     function loss(y)
         θ   = exp(y[1])
         x_c = exp(y[2])
 
         δ_e  = δ_e_fun(x_c, para)
+        cons = (ψ / (1 + ψ)) * payer_share(δ_e, δ, p_0)
         τ    = compute_separation_rate(δ_e, s)
         # Profit share π_s 
         π_s  = (μ - 1) / μ * (1 - cons) * (r + δ_e) / (r + δ_e + cons * (1 - δ_e))
@@ -370,7 +380,7 @@ function steady_state(para; init=0.51)
         r1 = rhs_jcc - lhs_jcc
         r2 = log(x_c_new / x_c)
 
-        vars = (; δ_e, f, q, θ, u, ρ, w_int, K, N, L_c, Y_c, x_c, x_c_new, π_s)
+        vars = (; δ_e, f, q, θ, u, ρ, w_int, K, N, L_c, Y_c, x_c, x_c_new, π_s, cons)
         return [r1, r2], vars
     end
 
@@ -388,7 +398,7 @@ function steady_state(para; init=0.51)
     println("Steady-state solver: converged=$(sol.converged) in $(sol.iterations) iterations")
 
     var = loss(sol.minimizer)[2]
-    @unpack δ_e, f, q, θ, u, ρ, w_int, K, N, L_c, Y_c, x_c, π_s = var
+    @unpack δ_e, f, q, θ, u, ρ, w_int, K, N, L_c, Y_c, x_c, π_s, cons = var
     L  = 1 - u
     L_e = L - L_c
     N_e = δ_e * N / (1 - δ_e)
@@ -464,10 +474,10 @@ Returns the same NamedTuple shape as steady_state.
 function steady_state_free_entry(para)
     @unpack f_e, δ, s, z, b, ϕ, r, ε, A, η_L, κ, x_m, ψ, p_0 = para
     μ    = compute_markup(ε)
-    cons = (ψ / (1 + ψ)) * p_0
 
     # All intermediates at (θ, δ_e): single compact pass
     function vars_at(θ, δ_e)
+        cons  = (ψ / (1 + ψ)) * payer_share(δ_e, δ, p_0)
         τ     = compute_separation_rate(δ_e, s)
         π_s   = (μ-1)/μ * (1-cons) * (r+δ_e) / (r+δ_e + cons*(1-δ_e))
         K     = x_m * (r+δ_e) / (1+r)
@@ -478,7 +488,7 @@ function steady_state_free_entry(para)
         L_c   = (r+δ_e) * L / (r+δ_e + δ_e*π_s*μ)
         x_c   = ρ * z * L_c / (ε*N) + ρ*f_e/μ
         w_int = ρ * z / μ
-        return (; τ, π_s, K, f, q, L, L_c, N, ρ, x_c, w_int)
+        return (; τ, π_s, K, f, q, L, L_c, N, ρ, x_c, w_int, cons)
     end
 
     # Inner: δ_e self-consistency given θ
@@ -498,7 +508,7 @@ function steady_state_free_entry(para)
     θ   = exp(find_zero(jcc_res, (log(0.1), log(0.6))))
     δ_e = solve_δ_e_fe(θ)
     v   = vars_at(θ, δ_e)
-    @unpack τ, π_s, K, f, q, L, L_c, N, ρ, x_c, w_int = v
+    @unpack τ, π_s, K, f, q, L, L_c, N, ρ, x_c, w_int, cons = v
 
     u    = 1 - L
     w    = ϕ * (w_int - K + θ*(K + q*κ)) + (1-ϕ)*b
@@ -581,7 +591,7 @@ Parameter taxonomy (must match draft Section 5.2):
   OPTIONAL TARGET (mechanism comparisons only):
     dest_elast_target: Elasticity of δ_e w.r.t. x_c = ψ×ζ/(1−ζ) at SS. When supplied,
       REPLACES the Xc_Y target in Stages 2-3. ψ is computed analytically as
-      ψ = dest_elast_target×(1−ζ)/ζ, then cons and π_s follow. Xc_Y becomes an
+      ψ = dest_elast_target×(1−ζ)/ζ, then cons = ψ_c ω and π_s follow. Xc_Y becomes an
       outcome (reported, not targeted). Feasibility: given ε=4.3, dest_elast_target ≲ 10
       keeps the implied fixed cost share Xc_Yc below ~18% (plausible range from lit).
       At current calibration, ζ ≈ 0.993, so ψ ≈ dest_elast_target × 0.007.
@@ -590,7 +600,7 @@ Parameter taxonomy (must match draft Section 5.2):
 
   NOTE on p_0 and ω_δ identification:
     - p_0 (mass on continuous part of F) is not pinned by any long-run aggregate moment.
-      Within Stage 3, only cons = (ψ/(1+ψ))*p_0 is identified given π_s. Estimating p_0
+      Within Stage 3, only cons = (ψ/(1+ψ))*ω is identified given π_s (ω = payer_share). Estimating p_0
       from business-cycle moments via SMM allows ψ (the shape of the continuous part) to
       adjust independently, giving the distribution two free parameters.
     - ω_δ = (δ_e - δ)/δ_e is the endogenous share of total destruction. BED Deaths pins
@@ -642,7 +652,7 @@ Two mutually exclusive paths through Stages 2-3, selected by which target is sup
 
   PATH A (legacy, default) — targets Xc_Y:
     Stage 2: root-find Xc_Yc s.t. Xc_Y = Xc_Yc × Yc_YG × YG_Y → pins π_s = 1/ε − Xc_Yc
-    Stage 3: root-find cons s.t. π_s(cons) = π_s → pins ψ = (cons/p_0)/(1 − cons/p_0)
+    Stage 3: root-find cons s.t. π_s(cons) = π_s → pins ψ = (cons/ω)/(1 − cons/ω)
     dest_elast = ψ×ζ/(1−ζ) is an OUTCOME (reported in Stage 5).
 
   PATH B (mechanism comparisons) — targets dest_elast_target:
@@ -650,7 +660,7 @@ Two mutually exclusive paths through Stages 2-3, selected by which target is sup
     Stages 2-3 (analytic, no root-find):
       ζ   = (surv_prob − (1−p_0))/p_0            [determined in Stage 1]
       ψ   = dest_elast_target × (1−ζ)/ζ           [direct inversion of dest_elast formula]
-      cons = ψ/(1+ψ) × p_0
+      cons = ψ/(1+ψ) × ω,  ω = payer_share(δ_e, δ, p_0)
       π_s = (μ−1)/μ × (1−cons) × (r+δ_e)/(r+δ_e + cons×(1−δ_e))
     Xc_Y = Xc_Yc × Yc_YG / YG_Y is an OUTCOME (reported after Stage 4).
     Feasibility: with ε=4.3, dest_elast_target ≲ 10 keeps Xc_Yc ≲ 18% (plausible);
@@ -706,6 +716,7 @@ function calibrate_shares(targets)
     # ζ_ss = (x_c/f_m)^ψ at SS — determined entirely by surv_prob and p_0.
     # Available to both calibration paths; placeholder 0.0 when p_0 = 0.
     ζ_ss = (p_0 > 0.0) ? (surv_prob - (1 - p_0)) / p_0 : 0.0
+    ω_ss = payer_share(δ_e, δ, p_0)   # = p_0 ζ_ss / surv_prob, share of survivors paying
 
     # ------------------------------------------------------------------
     # Stages 2-3: Determine π_s, cons, ψ
@@ -726,7 +737,7 @@ function calibrate_shares(targets)
             "ζ_ss = $(round(ζ_ss,digits=6)) not in (0,1). " *
             "Check surv_prob = $(round(surv_prob,digits=6)) and p_0 = $p_0.")
         ψ    = dest_elast_target * (1 - ζ_ss) / ζ_ss
-        cons = ψ / (1 + ψ) * p_0
+        cons = ψ / (1 + ψ) * ω_ss
         π_s  = (μ - 1) / μ * (1 - cons) * (r + δ_e) / (r + δ_e + cons * (1 - δ_e))
 
         # Feasibility checks
@@ -773,7 +784,7 @@ function calibrate_shares(targets)
                    (r + δ_e + cons_trial * (1 - δ_e)) - π_s
         end
         cons = find_zero(loss_psi, 0.1)
-        ψ_c  = cons / p_0
+        ψ_c  = cons / ω_ss
         ψ    = ψ_c / (1 - ψ_c)
     end
 
@@ -877,13 +888,14 @@ function calibrate_shares_free_entry(targets, κ_fixed::Float64, b_w_int_target:
     b   = b_ratio * w
     ρ   = N^(1 / (ε - 1))
     ζ_ss = (p_0 > 0.0) ? (surv_prob - (1 - p_0)) / p_0 : 0.0
+    ω_ss = payer_share(δ_e, δ, p_0)   # = p_0 ζ_ss / surv_prob, share of survivors paying
 
     if p_0 == 0.0
         cons = 0.0;  ψ = 1.5;  π_s = 1 / ε
     elseif use_dest_elast
         0 < ζ_ss < 1 || error("ζ_ss = $(round(ζ_ss,digits=6)) not in (0,1).")
         ψ    = dest_elast_target * (1 - ζ_ss) / ζ_ss
-        cons = ψ / (1 + ψ) * p_0
+        cons = ψ / (1 + ψ) * ω_ss
         π_s  = (μ - 1) / μ * (1 - cons) * (r + δ_e) / (r + δ_e + cons * (1 - δ_e))
         π_s ≤ 0.0 && error("dest_elast_target infeasible: π_s = $(round(π_s,digits=4)) ≤ 0.")
         1/ε - π_s > 0.20 && @warn("Xc_Yc = $(round((1/ε-π_s)*100,digits=1))% > 20%.")
@@ -898,7 +910,7 @@ function calibrate_shares_free_entry(targets, κ_fixed::Float64, b_w_int_target:
             π_s = 1/ε - Xc_Yc
         end
         cons = find_zero(c -> (μ-1)/μ*(1-c)*(r+δ_e)/(r+δ_e+c*(1-δ_e)) - π_s, 0.1)
-        ψ_c  = cons / p_0;  ψ = ψ_c / (1 - ψ_c)
+        ψ_c  = cons / ω_ss;  ψ = ψ_c / (1 - ψ_c)
     end
 
     L_c = (r + δ_e) * L / (r + δ_e + δ_e * π_s * μ)

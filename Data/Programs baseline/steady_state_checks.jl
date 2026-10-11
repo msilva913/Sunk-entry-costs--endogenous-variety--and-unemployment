@@ -156,7 +156,7 @@ Xc_Yc_recovered = steady.X_c / steady.Y_c
 println("✓ Stage 2: dest_elast target matched, π_s consistency verified")
 
 println("\n=== STAGE 3: Distribution Parameters ===")
-cons_recovered = ψ_c * cal.p_0
+cons_recovered = ψ_c * payer_share(δ_e, cal.δ, cal.p_0)
 μ_check = cal.ε / (cal.ε - 1)
 π_s_equilibrium = (μ_check - 1) / μ_check * (1 - cons_recovered) * (cal.r + δ_e) / (cal.r + δ_e + cons_recovered * (1 - δ_e))
 @assert abs(π_s_equilibrium - π_s) < 1e-12 "Stage 3: π_s from equilibrium ($(π_s_equilibrium)) does not match π_s ($(π_s))"
@@ -194,13 +194,13 @@ println("\n── Diagnostic: SS residuals at baseline (θ, x_c) under free-entr
 let
     @unpack f_e, δ, s, z, b, ϕ, r, σ, ε, A, η_L, κ, ξ_inv, x_m, f_m, ψ, p_0 = cal_fe
     μ    = ε / (ε - 1)
-    cons = (ψ / (1 + ψ)) * p_0
 
     θ_test   = steady.θ
     x_c_test = steady.x_c
 
     δ_e_t = δ_e_fun(x_c_test, cal_fe)
     τ_t   = compute_separation_rate(δ_e_t, s)
+    cons  = (ψ / (1 + ψ)) * payer_share(δ_e_t, δ, p_0)
     π_s_t = (μ-1)/μ * (1-cons) * (r+δ_e_t) / (r+δ_e_t + cons*(1-δ_e_t))
     f_t   = jf(θ_test, A, η_L)
     q_t   = vf(θ_test, A, η_L)
@@ -237,10 +237,10 @@ println("\n── JCC scan across theta (cal_fe parameters) ──")
 let
     @unpack f_e, δ, s, z, b, ϕ, r, ε, A, η_L, κ, x_m, ψ, p_0 = cal_fe
     μ    = ε / (ε - 1)
-    cons = (ψ / (1 + ψ)) * p_0
 
     function vars_at_scan(θ_v, δ_e_v)
         τ     = compute_separation_rate(δ_e_v, s)
+        cons  = (ψ / (1 + ψ)) * payer_share(δ_e_v, δ, p_0)
         π_s   = (μ-1)/μ * (1-cons) * (r+δ_e_v) / (r+δ_e_v + cons*(1-δ_e_v))
         K     = x_m * (r+δ_e_v) / (1+r)
         fv, qv = jf(θ_v, A, η_L), vf(θ_v, A, η_L)

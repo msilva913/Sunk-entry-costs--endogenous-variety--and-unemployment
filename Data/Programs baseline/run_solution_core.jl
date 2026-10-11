@@ -298,10 +298,13 @@ function gen_model_equations()
     # ── [16] Resource constraint (eq:rc): Y_c = C + X + X_c ──────────────────
     # X   = e/(1+ξ_inv)*Q + κ*q*v  (sunk entry costs + matching costs [Pissarides 2009])
     #   κ is paid per match (not per vacancy): total matching cost = κ * q(θ)*v
-    # X_c = N*p_0*ψ_c*x_c          (aggregate continuation costs)
+    # X_c = N*E(χ|χ≤x_c) = N*ψ_c*x_c*p_0*(x_c/f_m)^ψ/Λ   (draft eq:agg_fixed_costs)
+    #   The pre-exit mass N/Λ draws costs; survivors pay the conditional mean. Before
+    #   Oct 11, 2026 this read N*p_0*ψ_c*x_c, weighting by the prior mixture weight p_0
+    #   instead of the share of survivors that drew a positive cost.
     # ψ_c = ψ/(ψ+1)
     ψ_c = ψ / (ψ + 1)
-    X_c = N * p_0 * ψ_c * x_c
+    X_c = N * ψ_c * x_c * p_0 * (x_c / f_m)^ψ / Λ
     # Total vacancy creation cost (draft eq. 29, p. 20):
     #   e/(1+ξ_inv)*Q  sunk posting costs — integral of the marginal schedule
     #                  Q = x_m*e^ξ_inv, i.e. ∫₀^e x_m u^ξ_inv du = e*Q/(1+ξ_inv)
@@ -574,7 +577,8 @@ function SS_symbolics(parameters::Vector{Sym{PyObject}}, targets)
 
     # Continuation cost aggregate at SS (consistent with f[16])
     ψ_c_s    = ψ / (ψ + 1)
-    X_c_s    = N_s * p_0 * ψ_c_s * x_c_s
+    ω_s      = 1 - (1 - p_0) * (1 - δ_s_ss) / (1 - δ_e_s)   # payer_share, steady_state.jl
+    X_c_s    = N_s * ψ_c_s * ω_s * x_c_s
 
     # x_m: pinned by entry condition f[6]: Q = x_m * e^(ξ_inv) at SS
     x_m_s    = Q_s / e_s^(ξ_inv)

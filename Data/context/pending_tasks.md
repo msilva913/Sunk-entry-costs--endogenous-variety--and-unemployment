@@ -115,7 +115,7 @@ counterfactual.
 | P3 | Cite the Blanchard-Kahn notes (`Notes/Baseline_Blanchard_Kahn.md`): BK under ε > 1, strengthened by endogenous exit | ❌ |
 | P3b | GS's 6–10%/yr range vs δ_e = 3.2%: both sentences (L443, L468) are commented out. Check that no active claim remains; if the comparison is restored, explain why the added channels permit a lower δ_e | ⚠️ check |
 | P4 | §5.2 rewrite to the D2 path, with α in the estimated block, `tab:calib_targets`, and priors; fix the superseded 7.54% δ_e row | after D2 |
-| P5 | Steady-state appendix: `X^c = Nψ_cχ^c` (L3647) is missing p_0 and the (χ^c/χ_m)^ψ factor; L3721 uses the shortcut. Align with the exact `eq:agg_fixed_costs` | ⚠️ |
+| P5 | ✅ **Done Oct 11, 2026.** X^c = N·E(χ|χ≤χ^c) = Nψ_cχ^c·p_0(χ^c/χ_m)^ψ/Λ = Nψ_cωχ^c, ω = 1−(1−p_0)(1−δ)/(1−δ_e). Draft: `eq:agg_fixed_costs`, `eq:exit_threshold_curve`, retailers text, steady-state appendix and both derivation subsections (which also had wrong N, L^e, L^c and a wrong sign claim); `eq:profit_share_ss` split from the duplicate label; `eq:labor_C_N` reference removed. Code: `payer_share` in `steady_state.jl`, used in `profit_share`, `steady_state`, `steady_state_free_entry`, both calibrations (PATH B cons = ψ_cω; PATH A ψ_c = cons/ω); `run_solution_core.jl` f[16] and SS; `run_solution_no_variety.jl`; `steady_state_checks.jl`; `beveridge_free_entry.jl`. Verified: X_c/N equals ψ_cωx_c and the Bellman cutoff holds to 1e-15; the 33-equation SS residual is 5e-14 (PATH B, D1) and 4e-15 (PATH A). PATH A steady state unchanged (ψ absorbs); PATH B D1 x_c +0.07%. Every §5.3 number shifts slightly, already covered by the R8 + D1 regeneration. See memory note on the error's origin | ✅ |
 
 ## Model tasks
 

@@ -90,6 +90,7 @@ function calibrate_shares_no_variety(targets)
     ρ = 1.0
 
     ζ_ss = (p_0 > 0.0) ? (surv_prob - (1 - p_0)) / p_0 : 0.0
+    ω_ss = payer_share(δ_e, δ, p_0)
 
     # Stages 2-3 (identical to baseline — π_s, cons, ψ)
     if p_0 == 0.0
@@ -99,7 +100,7 @@ function calibrate_shares_no_variety(targets)
     elseif use_dest_elast
         0 < ζ_ss < 1 || error("ζ_ss = $(round(ζ_ss,digits=6)) not in (0,1).")
         ψ    = dest_elast_target * (1 - ζ_ss) / ζ_ss
-        cons = ψ / (1 + ψ) * p_0
+        cons = ψ / (1 + ψ) * ω_ss
         π_s  = (μ - 1) / μ * (1 - cons) * (r + δ_e) / (r + δ_e + cons * (1 - δ_e))
         Xc_Yc_implied = 1 / ε - π_s
         π_s ≤ 0.0 && error("dest_elast_target infeasible: π_s = $(round(π_s,digits=4)) ≤ 0.")
@@ -123,7 +124,7 @@ function calibrate_shares_no_variety(targets)
                    (r + δ_e + cons_trial * (1 - δ_e)) - π_s
         end
         cons = find_zero(loss_psi, 0.1)
-        ψ_c  = cons / p_0
+        ψ_c  = cons / ω_ss
         ψ    = ψ_c / (1 - ψ_c)
     end
 
