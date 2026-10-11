@@ -1471,7 +1471,8 @@ are in \ref{app:limiting_cases}.
 	substitution $\varepsilon$. The labor market
 	block $\{u_{t+1}, v_t, e_t, Q_t, K_t, J_t, w_t\}_{t=0}^{\infty}$
 	can be solved independently of the business formation
-	block if and only if $\sigma=0$, $\zeta=0$, and $p_0=0$.
+	block for all values of the remaining parameters if and only if $\sigma=0$, $\zeta=0$,
+	and $p_0=0$.
 \end{proposition}
 
 When $\sigma=0$, risk neutrality fixes $m_{t+1}=\beta$, 
@@ -1514,24 +1515,33 @@ with $\varepsilon\to\infty$ achieves exactly this.
 	\label{prop:double_limit}
 	Consider DS-CES preferences. Set $p_0=0$, and let 
 	$\varepsilon\to\infty$ jointly with $f_e=\bar{f}_e/
-	\varepsilon$ for fixed $\bar{f}_e>0$. Then: \emph{(i)} the product-line mass has a unique 
-	positive steady-state value $\bar{N}>0$ satisfying 
-	$\bar{\delta}\bar{N} = \bar{z}\bar{L}\ln\bar{N}/
-	\bar{f}_e$; local stability of the $N_t$ dynamics 
-	around $\bar{N}$ holds provided 
-	$\bar{N}>e^{1-\bar{\delta}}$, a condition satisfied 
-	for sufficiently small $\bar{f}_e$ given other 
-	parameters. \emph{(ii)} firm 
+	\varepsilon$ for fixed $\bar{f}_e>0$. Then: \emph{(i)} the product-line mass has the unique
+	steady-state value
+	$\bar{N}=\bar{z}\bar{L}(1-\bar\delta)/[\bar{f}_e(r+\bar\delta)]>0$, and along any
+	equilibrium path with entry interior ($N^e_t>0$) it is set period by period,
+	\begin{equation}\label{eq:N_rule_limit}
+		N_{t+1}=\frac{(1-\delta_t)\,\mathbb{E}_t[m_{t+1}z_{t+1}]\,(1-u_{t+1})}
+		{\bar{f}_e\bigl[1-(1-\delta_t)\,\mathbb{E}_t m_{t+1}\bigr]};
+	\end{equation}
+	\emph{(ii)} firm
 	value $\nu_t^f$, investment $\nu_t^f N_t^e$, and 
 	labor devoted to entry $l_t^e$ all vanish at rate 
 	$1/\varepsilon$; \emph{(iii)} recruiter compensation 
 	$w_t^{int}\to z_t$; and \emph{(iv)} aggregate 
 	allocations $\{\theta_t, u_t, v_t, C_t, Y_t^c\}$ 
-	are independent of $\bar{N}$, so the normalization 
-	$\bar{N}=1$ is without loss of generality for 
-	aggregate allocations. In the limit, the business 
+	are independent of $\bar{f}_e$ and hence of $\bar{N}$, so the normalization
+	$\bar{N}=1$, which corresponds to $\bar{f}_e=\bar{z}\bar{L}(1-\bar\delta)/(r+\bar\delta)$, is without loss of generality for
+	aggregate allocations. In the limit, the business
 	formation block is irrelevant to real allocations.
 \end{proposition}
+
+Every input to \eqref{eq:N_rule_limit} is a labor market object or a shock, so causation
+runs one way: the labor market sets the mass of product lines, and the mass of product
+lines feeds nothing back. Product variety still moves in the limit. A destruction shock
+raises the user cost $r+\delta_t$ of a product line and lowers the target $N_{t+1}$. It
+simply has no effect on allocations. This is the sense in which the clone-replacement
+economy of Proposition~\ref{prop:ags}, which fixes $N_t=1$, implements the limit: it is the
+limit for allocations, not for $N_t$.
 
 As $\varepsilon\to\infty$ under DS-CES, 
 $\zeta=1/(\varepsilon-1)\to 0$, satisfying one of 
@@ -1611,7 +1621,8 @@ two.
 	and stochastic processes
 	\eqref{eq:ar1_z}--\eqref{eq:ar1_s}, with
 	$\delta_{e,t}=\delta_{t-1}$ since endogenous exit
-	is absent by construction.
+	is absent by construction, and hence
+	$\tau_t=\delta_{t-1}+s_{t-1}(1-\delta_{t-1})$.
 \end{proposition}
 
 We dub this the \emph{augmented Gabrovski-Silva} (AGS)
@@ -1683,10 +1694,12 @@ $p_0$, which removes both at once.
 	limiting cases. Setting $\sigma=\kappa=0$ renders
 	the AGS system isomorphic to \citet{gabrovski_2025},
 	extended here with aggregate AR(1) shocks to
-	$\delta_t$ and $s_t$.
+	$\delta_t$ and $s_t$, for a given matching function. Their quantitative analysis uses the
+	\citet{den_haan_2000} function, and ours uses Cobb--Douglas.
 	Additionally setting $s_t=0$ recovers
-	\citet{coles_2018} exactly, with $w_t^{int}=z_t$
-	and consumption determined residually from
+	\citet{coles_2018} exactly, with $w_t^{int}=z_t$. Both papers allow a flow cost of
+	posting an unfilled vacancy and set it to zero in their quantitative work, as AGS does.
+	Consumption is determined residually from
 	$z_t(1-u_t)=C_t+\frac{\xi}{\xi+1}Q_t^{\xi+1}$.
 \end{remark}
 
@@ -4733,8 +4746,9 @@ $\{u_t,X_t\}$ as given. This confirms the
 recursive structure.
 
 \paragraph{Necessity}
-We show that relaxing any single condition 
-breaks separability.
+We show that relaxing any single condition
+breaks separability: a business formation variable then enters the labor market block, and
+for generic values of the remaining parameters it does not cancel.
 
 \emph{$\sigma>0$}: With $\sigma>0$, 
 $m_{t+1}=\beta(C_{t+1}/C_t)^{-\sigma}$ depends on 
@@ -4826,84 +4840,65 @@ z_t(1-u_t)/N_t$, and $Y_t^c = \rho(N_t)N_t y_t
 The resource constraint becomes 
 $C_t = z_t(1-u_t)-X_t$, independent of $N_t$.
 
-Since all equations determining 
-$\{\theta_t,u_t,v_t,C_t,Y_t^c\}$ are independent 
-of $N_t$ in the limit, the normalization $\bar{N}=1$ 
-is a units convention for the measure of product 
-lines --- analogous to normalizing household measure 
-to unity --- and involves no loss of generality for 
-aggregate allocations. No restriction on $\bar{f}_e$ 
-is required to implement it. $\square$
+Since all equations determining
+$\{\theta_t,u_t,v_t,C_t,Y_t^c\}$ are independent
+of $N_t$ and of $\bar{f}_e$ in the limit, $\bar{f}_e$ can be chosen freely
+without changing aggregate allocations. By claim (i), $\bar{N}$ is pinned by
+$\bar{f}_e$, and $\bar{N}=1$ corresponds to
+$\bar{f}_e=\bar{z}\bar{L}(1-\bar\delta)/(r+\bar\delta)$. The normalization $\bar{N}=1$
+is therefore without loss of generality for aggregate allocations. $\square$
 
-\paragraph{Claim (i): steady-state value of $N_t$}
+\paragraph{Claim (i): the mass of product lines}
 
-Since aggregate allocations are independent of 
-$N_t$ by claim (iv), the dynamic path of $N_t$ 
-does not affect the proposition's main result. We 
-nonetheless characterize the steady state and 
-local dynamics of $N_t$ to confirm it remains 
-well-defined in the limiting economy.
+Aggregate allocations do not depend on $N_t$ by claim (iv), so the path of $N_t$ does not
+affect the main result. We characterize it to confirm that $N_t$ stays bounded away from
+zero and infinity, which claims (ii) and (iii) use.
 
-Substituting $f_e=\bar{f}_e/\varepsilon$ and 
-$\rho(N_t)=N_t^{1/(\varepsilon-1)}$ into the firm 
-LOM \eqref{eq:N_lom_eq} with $p_0=0$ and taking 
-$\varepsilon\to\infty$, using the approximation 
-$N^{-1/(\varepsilon-1)} = e^{-\ln N/(\varepsilon-1)} 
-\approx 1-\ln N/(\varepsilon-1)$:
-\begin{align}\label{eq:N_lom_limit}
-	N_t \to (1-\delta_{t-1})
-	\left(N_{t-1} + \frac{z_{t-1}(1-u_{t-1})
-		\ln N_{t-1}}{\bar{f}_e}\right)
-\end{align}
-This is a nonlinear predetermined variable equation 
-driven by the exogenous processes 
-$\{z_t,\delta_t,u_t\}$, with no forward-looking 
-terms. Its unique positive steady state 
-$\bar{N}$ satisfies:
-\begin{align}\label{eq:N_ss_limit}
-	\bar{\delta}\bar{N} = 
-	\frac{\bar{z}\bar{L}\ln\bar{N}}{\bar{f}_e}
-\end{align}
-where $\bar{L}=1-\bar{u}$. The right-hand side 
-is zero at $\bar{N}=1$, strictly positive and 
-increasing for $\bar{N}>1$, while the left-hand 
-side is linear with positive slope $\bar{\delta}$. 
-A unique solution $\bar{N}>1$ exists for any 
-$\bar{\delta},\bar{f}_e,\bar{z},\bar{L}>0$ by 
-the intermediate value theorem and strict 
-monotonicity.
+Under DS-CES $\mu$ is constant, and with $p_0=0$, $\Lambda_t=1$ and $X_t^c=0$. Gross
+consumption output is $Y_t^c=\rho(N_t)N_ty_t=\rho(N_t)z_tL_t^c$. Dividing the business
+formation Euler equation \eqref{eq:N_euler_eq} by $f_e\rho(N_t)$ gives
+\[
+	1=(1-\delta_t)\,\mathbb{E}_t\,m_{t+1}\,\frac{\rho(N_{t+1})}{\rho(N_t)}
+	\left[1+\frac{\mu-1}{f_e}\,\frac{z_{t+1}L^c_{t+1}}{N_{t+1}}\right].
+\]
+Along a path on which $N_t$ stays in a compact subset of $(0,\infty)$, three limits hold
+as $\varepsilon\to\infty$. First, $(\mu-1)/f_e=\varepsilon/[(\varepsilon-1)\bar{f}_e]\to1/\bar{f}_e$.
+Second, $\rho(N_{t+1})/\rho(N_t)=(N_{t+1}/N_t)^{1/(\varepsilon-1)}\to1$. Third,
+$L^c_{t+1}=1-u_{t+1}-l^e_{t+1}\to1-u_{t+1}$, since bounded $N_t$ and $N_{t+1}$ give
+bounded entry $N^e_t$ and hence $l^e_t=f_eN^e_t/z_t=O(1/\varepsilon)$.
+Hence
+\[
+	1=(1-\delta_t)\,\mathbb{E}_t\,m_{t+1}\left[1+\frac{z_{t+1}(1-u_{t+1})}{\bar{f}_eN_{t+1}}\right].
+\]
+Both $N_{t+1}=(1-\delta_t)(N_t+N^e_t)$ and $u_{t+1}$ are determined at $t$, the latter
+by \eqref{eq:u_lom}. They can therefore be taken outside the expectation, which gives
+\eqref{eq:N_rule_limit}. Entry absorbs the gap between the target and the surviving stock,
+$N^e_t=N_{t+1}/(1-\delta_t)-N_t$, and the limit applies while this is positive. Under
+$\sigma>0$ the discount factor depends on $C_{t+1}$, which is independent of $N$ by claim
+(iv), so the rule contains only labor market objects and shocks. Since $z_t$, $1-u_t$ and
+$\mathbb{E}_tm_{t+1}$ are bounded and $(1-\delta_t)\mathbb{E}_tm_{t+1}<1$, $N_{t+1}$ stays
+in a compact subset of $(0,\infty)$. This confirms the premise of the argument and the
+condition $N_t=O(e^{o(\varepsilon)})$ of claim (iii).
 
-Linearizing \eqref{eq:N_lom_limit} around 
-$\bar{N}$ gives autoregressive coefficient:
-\begin{align}
-	\rho_N \equiv (1-\bar{\delta})
-	\left(1+\frac{\bar{z}\bar{L}}
-	{\bar{f}_e\bar{N}}\right)
-	= (1-\bar{\delta})
-	\left(1+\frac{\bar{\delta}}{\ln\bar{N}}\right)
-\end{align}
-where the second equality uses 
-\eqref{eq:N_ss_limit}. Local stability requires 
-$\rho_N < 1$, which holds if and only if 
-$\bar{N} > e^{1-\bar{\delta}}$. For 
-$\bar{\delta}\approx 0.05$, this requires 
-$\bar{N}>e^{0.95}\approx 2.59$ --- satisfied for 
-sufficiently small $\bar{f}_e$ given other 
-parameters. When the stability condition holds, 
-$N_t$ follows a well-defined stationary process 
-driven by $\{z_t,\delta_t,u_t\}$, confirming the 
-path satisfies $N_t=O(e^{o(\varepsilon)})$ as 
-required by claim (iii). $\square$
+At the steady state $m=\beta=1/(1+r)$, and \eqref{eq:N_rule_limit} gives
+\[
+	\bar{N}=\frac{\beta(1-\bar\delta)\bar{z}\bar{L}}{\bar{f}_e[1-\beta(1-\bar\delta)]}
+	=\frac{\bar{z}\bar{L}(1-\bar\delta)}{\bar{f}_e(r+\bar\delta)},
+\]
+with $\bar{L}=1-\bar{u}$. This is the limit of the exact steady state at finite $\varepsilon$,
+$N=(\mu-1)zL(1-\delta)/[f_e(r+\delta\mu)]$, which is the resource constraint curve
+\eqref{eq:curve_res_cons}. Because the rule pins $N_{t+1}$ period by period, there is no
+autonomous recursion for $N_t$ and no stability condition is needed. $\square$
 
 \paragraph{Claim (ii): rates of convergence}
 
-\emph{Firm value}: $\nu_t^f=\rho(N_t)f_e/\mu(N_t) 
-\approx 1\cdot(\bar{f}_e/\varepsilon)\cdot 1 = 
+\emph{Firm value}: $\nu_t^f=\rho(N_t)f_e/\mu(N_t)
+\approx 1\cdot(\bar{f}_e/\varepsilon)\cdot 1 =
 O(1/\varepsilon)$.
 
-\emph{Investment}: At steady state, 
-$N_t^e=\bar{\delta}\bar{N}/(1-\bar{\delta})=O(1)$, 
-so $\nu_t^f N_t^e = O(1/\varepsilon)\cdot O(1) 
+\emph{Investment}: By claim (i), $N_t^e=N_{t+1}/(1-\delta_t)-N_t=O(1)$ along the path,
+with steady-state value $\bar{\delta}\bar{N}/(1-\bar{\delta})$. Hence
+$\nu_t^f N_t^e = O(1/\varepsilon)\cdot O(1)
 = O(1/\varepsilon)$.
 
 \emph{Labor to entry}: $l_t^e=f_eN_t^e/z_t = 
@@ -4983,22 +4978,22 @@ The resulting system
 \eqref{eq:jcc_ags}--\eqref{eq:u_ags} together
 with $e_t=G(Q_t)$, $m_t=\beta(C_t/C_{t-1})^{-\sigma}$,
 \eqref{eq:rc_limit}, and stochastic processes
-\eqref{eq:ar1_z}--\eqref{eq:ar1_s} is well-posed.
-At $\sigma=0$ the stochastic discount factor is
-$m_t=\beta$, the system reduces to a scalar
-expectational equation for $Q_t$ with characteristic
-root $\beta(1-\bar\delta_e)<1$, and the unique
-bounded solution follows directly by ruling out
-explosive paths.
-For $\sigma>0$, local uniqueness is maintained as
-a standard regularity condition and verified
-numerically as part of the baseline model solution.
+\eqref{eq:ar1_z}--\eqref{eq:ar1_s} closes the economy. Local determinacy is a separate
+question. With a finite entry elasticity the system has two predetermined states, $u_t$ and
+the predetermined vacancy stock, and two forward-looking variables, $Q_t$ and $K_t$. We do
+not establish the Blanchard--Kahn condition analytically. At $\sigma=\kappa=0$ it is verified
+numerically at every calibration and entry elasticity we consider: exactly two roots are
+stable. Under free entry ($\xi\to\infty$) with $\sigma=\kappa=0$, the system is block
+recursive and the condition holds analytically: Lemma~\ref{lem:theta} gives one unstable
+root for tightness and one stable root for unemployment. For $\sigma>0$, local uniqueness
+is maintained as a regularity condition and verified numerically as part of the baseline
+model solution.
 
 \subsection*{Proof of Proposition~\ref{prop:bgm_nest}}
 
-Set $p_0=0$. Then $F(0)=0$, so no firm pays a
-continuation cost: $X_t^c=0$, $\Lambda_t=1$, and
-$\delta_{e,t}=\delta_{t-1}$ for all $t$.
+Set $p_0=0$. Then $F$ is a point mass at zero, $F(\chi)=1-p_0=1$ for every $\chi\geq0$,
+so no firm pays a continuation cost: $X_t^c=0$, $\Lambda_t=1$, and
+$\delta_{e,t}=\delta_{t-1}$ for all $t$. Every reactivation is free as well, so $X_t^r=0$.
 
 \emph{Firm LOM~\eqref{eq:N_lom_eq}.} With $\Lambda_t=1$
 and $\delta_{e,t}=\delta_{t-1}$, the baseline LOM becomes
@@ -5008,13 +5003,11 @@ and $\delta_{e,t}=\delta_{t-1}$, the baseline LOM becomes
   - \frac{Y_{t-1}^c}{f_e\rho(N_{t-1})}\right),
 \end{equation*}
 where $\{1-u_{t-1}\}$ is treated as an exogenous
-sequence by assumption.  Using the gross-output identity
-$Y_{t-1}^c = z_{t-1}(1-u_{t-1})\rho(N_{t-1})/\mu(N_{t-1})$
-(from retail-firm optimality), the parenthesized term
-equals $N_{t-1}^e = z_{t-1}(1-u_{t-1})/f_e \cdot
-(1-1/\mu(N_{t-1}))$, which is the BGM entry flow
-$N_t^e = G(Q_t)$ evaluated at $Q_t = f_e/\nu_t^f$.
-Hence \eqref{eq:N_lom_eq} is the BGM firm LOM.
+sequence by assumption. Gross consumption output is $Y_t^c=\rho(N_t)N_ty_t=\rho(N_t)z_tL^c_t$,
+so $Y^c_{t-1}/[f_e\rho(N_{t-1})]=z_{t-1}L^c_{t-1}/f_e$. Labor not used in retail production
+is used in entry, $l^e_{t-1}=(1-u_{t-1})-L^c_{t-1}$, and $N^e_{t-1}=z_{t-1}l^e_{t-1}/f_e$. The
+parenthesized term is therefore $N_{t-1}+N^e_{t-1}$, and \eqref{eq:N_lom_eq} is the BGM firm
+LOM $N_t=(1-\delta_{t-1})(N_{t-1}+N^e_{t-1})$.
 
 \emph{Business formation Euler~\eqref{eq:N_euler_eq}.}
 With $\Lambda_{t+1}=1$ and $X_{t+1}^c=0$, the baseline
@@ -5025,12 +5018,14 @@ Euler simplifies to
   \left\{f_e\rho(N_{t+1})
   + \frac{Y_{t+1}^c}{N_{t+1}}(\mu(N_{t+1})-1)\right\}.
 \end{equation*}
-Dividing by $\rho(N_t)$ and using
-$\nu_t^f = f_e\rho(N_t)$ (free entry), this is the BGM
-asset-pricing equation for firm equity.
+Divide by $\mu(N_t)$ and use free entry \eqref{eq:free_entry},
+$\nu_t^f=\rho(N_t)f_e/\mu(N_t)$. This gives
+$\nu^f_t=(1-\delta_t)\mathbb{E}_tm_{t+1}(\nu^f_{t+1}+d_{t+1})$, where
+$d_{t+1}=[(\mu(N_{t+1})-1)/\mu(N_{t+1})]\,Y^c_{t+1}/N_{t+1}$ is profit per product line,
+\eqref{eq:retail_profits}. This is the BGM asset-pricing equation for firm equity.
 
 \emph{Resource constraint~\eqref{eq:gdp}.} With
-$X_t^c=0$, gross output satisfies $Y_t^c = C_t + X_t$.
+$X_t^c=X_t^r=0$, \eqref{eq:rc} gives $Y_t^c = C_t + X_t$.
 Netting out $X_t$ on both sides gives the GDP identity
 $Y_t = C_t + \nu_t^f N_t^e$, which is the BGM resource constraint.
 The household budget constraint
