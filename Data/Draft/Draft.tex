@@ -1459,11 +1459,11 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 
 \subsection{Limiting cases}
 
-The next several propositions characterize the 
-relationship between the business formation block 
-and labor market block, and establish the connection 
-to benchmark frameworks in the literature. Proofs 
-are in \ref{app:limiting_cases}.
+Like \citet{coles_2018}, we study a destruction shock that removes jobs and vacancies together, and, like \citet{gabrovski_2025}, we consider separations that pertain to matches as well as business opportunities. However, those articles abstract from product variety and entry/exit decisions. This subsection connects the two settings. It
+first states when the labor market block can be solved on its own. It then constructs the
+benchmark economy against which the baseline is compared, and shows that this benchmark is
+a limit of the baseline. That limit is where the analytical results of
+Section~\ref{sec:mechanism} are proved. Proofs are in \ref{app:limiting_cases}.
 
 \begin{proposition}[Independence of labor market block]
 	\label{prop:independence}
@@ -1491,100 +1491,21 @@ a fourth condition would have been required to shut down both margins.} Under al
 closes on its own; the business formation block then 
 determines $C_t$ and $N_t$ taking $u_t$ and $X_t$ as 
 given from the labor market block.
+\paragraph{Clone replacement}
+The benchmark must keep the destruction flow, the channel that \citet{coles_2018} and
+\citet{gabrovski_2025} study, while abstracting from the decisions to enter and to exit.
+We operationalize this with \emph{clone replacement}. Product lines
+are destroyed at the rate $\delta_t$, as in the baseline, and destruction still eliminates
+every position attached to the line. Each destroyed line is immediately replaced by an
+identical one, at no resource cost, so the mass of lines stays at $N_t=1$ at all dates. Two
+things follow. There is no business formation margin, because entry is not a decision.
+And there is no variety effect, because $N_t$ never moves and $\rho=\mu=1$. What survives
+is the destruction channel itself. Since $\Lambda_t=1$ implies $\delta_{e,t}=\delta_{t-1}$,
+$\delta_t$ is purely exogenous, and it still operates as a shock to jobs and vacancies.
 
-The model nests GS and CK as the taste for variety 
-vanishes, which under DS-CES corresponds to 
-$\varepsilon\to\infty$. This limit works in the absence of business formation but is not workable here: with $f_e$ fixed, vanishing profits 
-($\mu\to 1$) make entry unprofitable and $N\to 0$ from 
-the resource constraint, so that $Y_t^c=\rho(N_t)N_t y_t
-\to 0$ with positive employment, rendering aggregate 
-production degenerate. One might restore a non-degenerate 
-limit by setting $\delta\to 0$, but this would eliminate 
-the destruction margin that is central to the vacancy 
-law of motion in GS and CK --- precisely the channel we 
-wish to preserve. We instead seek a joint limit in which 
-entry costs shrink proportionally with profits, keeping 
-the product-line stock well-defined and positive while 
-making business formation irrelevant to aggregate labor 
-market allocations. Proposition~\ref{prop:double_limit} 
-shows that scaling $f_e=\bar{f}_e/\varepsilon$ jointly 
-with $\varepsilon\to\infty$ achieves exactly this.
-
-\begin{proposition}[Double limit]
-	\label{prop:double_limit}
-	Consider DS-CES preferences. Set $p_0=0$, and let 
-	$\varepsilon\to\infty$ jointly with $f_e=\bar{f}_e/
-	\varepsilon$ for fixed $\bar{f}_e>0$. Then: \emph{(i)} the product-line mass has the unique
-	steady-state value
-	$\bar{N}=\bar{z}\bar{L}(1-\bar\delta)/[\bar{f}_e(r+\bar\delta)]>0$, and along any
-	equilibrium path with entry interior ($N^e_t>0$) it is set period by period,
-	\begin{equation}\label{eq:N_rule_limit}
-		N_{t+1}=\frac{(1-\delta_t)\,\mathbb{E}_t[m_{t+1}z_{t+1}]\,(1-u_{t+1})}
-		{\bar{f}_e\bigl[1-(1-\delta_t)\,\mathbb{E}_t m_{t+1}\bigr]};
-	\end{equation}
-	\emph{(ii)} firm
-	value $\nu_t^f$, investment $\nu_t^f N_t^e$, and 
-	labor devoted to entry $l_t^e$ all vanish at rate 
-	$1/\varepsilon$; \emph{(iii)} recruiter compensation 
-	$w_t^{int}\to z_t$; and \emph{(iv)} aggregate 
-	allocations $\{\theta_t, u_t, v_t, C_t, Y_t^c\}$ 
-	are independent of $\bar{f}_e$ and hence of $\bar{N}$, so the normalization
-	$\bar{N}=1$, which corresponds to $\bar{f}_e=\bar{z}\bar{L}(1-\bar\delta)/(r+\bar\delta)$, is without loss of generality for
-	aggregate allocations. In the limit, the business
-	formation block is irrelevant to real allocations.
-\end{proposition}
-
-Every input to \eqref{eq:N_rule_limit} is a labor market object or a shock, so causation
-runs one way: the labor market sets the mass of product lines, and the mass of product
-lines feeds nothing back. Product variety still moves in the limit. A destruction shock
-raises the user cost $r+\delta_t$ of a product line and lowers the target $N_{t+1}$. It
-simply has no effect on allocations. This is the sense in which the clone-replacement
-economy of Proposition~\ref{prop:ags}, which fixes $N_t=1$, implements the limit: it is the
-limit for allocations, not for $N_t$.
-
-As $\varepsilon\to\infty$ under DS-CES, 
-$\zeta=1/(\varepsilon-1)\to 0$, satisfying one of 
-the separability conditions of 
-Proposition~\ref{prop:independence}. 
-Proposition~\ref{prop:double_limit} is stronger, 
-however: it establishes not merely that the labor 
-market block separates but that business formation 
-becomes irrelevant to aggregate allocations entirely 
---- a consequence of profits and entry costs 
-vanishing jointly at the same rate.
-The limit is knife-edge in this respect: it requires
-profits and entry costs to vanish at a common rate, and
-away from it the business formation block is not
-exhausted by the variety effect.
-
- 
-Proposition~\ref{prop:ags} below implements the
-limiting economy directly via \textit{clone replacement}. This notion abstracts from the entry and exit
-decisions while preserving the destruction flow. Product
-lines are destroyed at the rate $\delta_t$ as in the
-baseline, and destruction continues to eliminate the filled
-jobs and pre-committed vacancies attached to the line. Each
-destroyed line is immediately replaced by an identical one,
-so the mass of lines is held at $N_t=1$ at all dates. Two
-things follow. There is no business formation margin,
-because entry is not a decision. Second, there is no variety
-effect, because $N_t$ never moves and $\rho=\mu=1$. What
-survives is the destruction channel itself: $\delta_t$ is
-now purely exogenous, since $\Lambda_t=1$ implies
-$\delta_{e,t}=\delta_{t-1}$, and it continues to operate as
-a shock to jobs and vacancies. That is the mechanism
-\citet{coles_2018} and \citet{gabrovski_2025} study, which
-makes this the natural point of contact with the existing
-literature and the natural benchmark against which to
-measure what the baseline's two additional channels
-contribute.
-
-In this counterfactual scenario, replacement is costless, so
-$\nu_t^f N_t^e$ drops out of the resource constraint. As the construction also
-sets $p_0=0$, it removes the reactivation margin along with
-endogenous exit. The comparison with
-the baseline therefore holds three channels at once, not
-two.
+Because replacement is costless, $\nu_t^fN_t^e$ drops out of the resource constraint. The
+construction also sets $p_0=0$, so it removes the reactivation margin along with
+endogenous exit.
 
 \begin{proposition}[Clone-replacement equilibrium]
 	\label{prop:ags}
@@ -1623,12 +1544,86 @@ two.
 	is absent by construction, and hence
 	$\tau_t=\delta_{t-1}+s_{t-1}(1-\delta_{t-1})$.
 \end{proposition}
+We dub this the \emph{augmented Gabrovski-Silva} (AGS) model. Remark~\ref{rem:nesting}
+makes the connection to the two papers precise.
 
-We dub this the \emph{augmented Gabrovski-Silva} (AGS)
-model. The baseline differs from AGS in two respects, and
-only the first is a matter of transmission channels.
+\begin{remark}[Nested special cases of AGS]
+	\label{rem:nesting}
+	The AGS model nests two benchmark frameworks as
+	limiting cases. Setting $\sigma=\kappa=0$ renders
+	the AGS system isomorphic to \citet{gabrovski_2025},
+	extended here with aggregate AR(1) shocks to
+	$\delta_t$ and $s_t$.
+	Additionally setting $s_t=0$ recovers
+	\citet{coles_2018} exactly, with $w_t^{int}=z_t$. Both papers allow a flow cost of
+	posting an unfilled vacancy and set it to zero in their quantitative work, as AGS does.
+	Consumption is determined residually from
+	$z_t(1-u_t)=C_t+\frac{\xi}{\xi+1}Q_t^{\xi+1}$.
+\end{remark}
+\paragraph{AGS as a limit of the baseline}
+Clone replacement is a heuristic. It supplies new product lines by fiat, so on its own it
+does not say whether AGS is a special case of our economy or a different model. The
+question matters because the free-entry results of Section~\ref{sec:mechanism} are proved
+in AGS. The natural route is the limit in which variety stops mattering. Under DS-CES the
+taste for variety vanishes as $\varepsilon\to\infty$, which delivers the condition
+$\zeta=0$ of Proposition~\ref{prop:independence}. That single limit fails here, and the
+reason is economic: business formation requires profits. Free entry equates the value of
+a line to $\rho(N_t)f_e/\mu(N_t)$, and under DS-CES the markup that generates profit per
+line is the taste for variety, $\mu-1=\zeta=1/(\varepsilon-1)$
+(Section~\ref{sec:introduction}). With $f_e$ fixed, profits vanish as
+$\varepsilon\to\infty$ while entry costs do not, so entry stops and $N\to0$. Gross output
+$Y_t^c=\rho(N_t)N_ty_t$ then goes to zero with positive employment, and the limit is
+degenerate.\footnote{Letting $\delta\to0$ as well would restore a positive mass of lines,
+but it removes the destruction margin that the benchmark is meant to preserve.} Entry
+costs must vanish with profits. Proposition~\ref{prop:double_limit} shows that scaling
+$f_e=\bar{f}_e/\varepsilon$ as $\varepsilon\to\infty$ keeps the mass of lines finite and
+positive while making business formation irrelevant for allocations.
 
-First, four objects move in the baseline labor market block
+\begin{proposition}[Double limit]
+	\label{prop:double_limit}
+	Consider DS-CES preferences. Set $p_0=0$, and let 
+	$\varepsilon\to\infty$ jointly with $f_e=\bar{f}_e/
+	\varepsilon$ for fixed $\bar{f}_e>0$. Then: \emph{(i)} the product-line mass has the unique
+	steady-state value
+	$\bar{N}=\bar{z}\bar{L}(1-\bar\delta)/[\bar{f}_e(r+\bar\delta)]>0$, and along any
+	equilibrium path with entry interior ($N^e_t>0$) it is set period by period,
+	\begin{equation}\label{eq:N_rule_limit}
+		N_{t+1}=\frac{(1-\delta_t)\,\mathbb{E}_t[m_{t+1}z_{t+1}]\,(1-u_{t+1})}
+		{\bar{f}_e\bigl[1-(1-\delta_t)\,\mathbb{E}_t m_{t+1}\bigr]};
+	\end{equation}
+	\emph{(ii)} firm
+	value $\nu_t^f$, investment $\nu_t^f N_t^e$, and 
+	labor devoted to entry $l_t^e$ all vanish at rate 
+	$1/\varepsilon$; \emph{(iii)} recruiter compensation 
+	$w_t^{int}\to z_t$; and \emph{(iv)} aggregate 
+	allocations $\{\theta_t, u_t, v_t, C_t, Y_t^c\}$ 
+	are independent of $\bar{f}_e$ and hence of $\bar{N}$, so the normalization
+	$\bar{N}=1$, which corresponds to $\bar{f}_e=\bar{z}\bar{L}(1-\bar\delta)/(r+\bar\delta)$, is without loss of generality for
+	aggregate allocations. In the limit, the business
+	formation block is irrelevant to real allocations.
+\end{proposition}
+
+Every input to \eqref{eq:N_rule_limit} is a labor market object or a shock, so causation
+runs one way: the labor market sets the mass of product lines, and the mass of product
+lines feeds nothing back. Product variety still moves in the limit. A destruction shock
+raises the user cost $r+\delta_t$ of a product line and lowers the target $N_{t+1}$. It
+simply has no effect on allocations. This is the sense in which the clone-replacement
+economy of Proposition~\ref{prop:ags}, which fixes $N_t=1$, implements the limit: it is the
+limit for allocations, not for $N_t$.
+
+The limit is stronger than the separability of Proposition~\ref{prop:independence}. The
+labor market block does not merely close on its own: business formation leaves no trace
+on allocations. Two consequences follow. First, the free-entry results of
+Section~\ref{sec:mechanism}, Lemma~\ref{lem:theta} and Proposition~\ref{prop:fe}, are
+statements about the baseline economy in this limit, with $\sigma=\kappa=0$, not about a
+different model. The proposition concerns the equilibrium conditions. It does not show
+that impulse responses converge, so those results describe the limit economy, not the rate
+at which the baseline approaches it. Second, the limit identifies what the comparison with
+AGS measures. Away from it, entry costs do not vanish with profits, and business formation
+works through the channels below.
+
+The baseline differs from AGS in two respects, and only the first is a matter of
+transmission channels. First, four objects move in the baseline labor market block
 and are constant in AGS. Variety effects enter the job
 creation condition through $\rho(N_t)/\mu(N_t)$. Profit
 dilution enters the return to entry through $Y_t^c/N_t$ in
@@ -1686,21 +1681,6 @@ $\alpha\to0$ to remove costly reactivation while leaving
 endogenous exit intact. The exit and reactivation margins
 must be switched separately rather than jointly through
 $p_0$, which removes both at once.
-
-\begin{remark}[Nested special cases of AGS]
-	\label{rem:nesting}
-	The AGS model nests two benchmark frameworks as
-	limiting cases. Setting $\sigma=\kappa=0$ renders
-	the AGS system isomorphic to \citet{gabrovski_2025},
-	extended here with aggregate AR(1) shocks to
-	$\delta_t$ and $s_t$, for a given matching function. Their quantitative analysis uses the
-	\citet{den_haan_2000} function, and ours uses Cobb--Douglas.
-	Additionally setting $s_t=0$ recovers
-	\citet{coles_2018} exactly, with $w_t^{int}=z_t$. Both papers allow a flow cost of
-	posting an unfilled vacancy and set it to zero in their quantitative work, as AGS does.
-	Consumption is determined residually from
-	$z_t(1-u_t)=C_t+\frac{\xi}{\xi+1}Q_t^{\xi+1}$.
-\end{remark}
 
 Strictly speaking, the baseline model does not nest
 \citet{bilbiie_2012} since there is no intensive labor
@@ -4791,6 +4771,90 @@ labor market block into the business formation block,
 in the same direction as $X_t$, which leaves the
 recursive structure intact.
 
+\subsection*{Proof of Proposition~\ref{prop:ags}}
+
+Under clone replacement, $N_t=1$ and $\mu=1$ are 
+maintained by construction at all times. We verify 
+that the business formation block drops out and 
+the remaining system reduces to 
+\eqref{eq:jcc_ags}--\eqref{eq:u_ags}.
+
+\emph{Business formation block.} Substituting 
+$N_t=1$ and $\mu=1$ into the baseline equilibrium 
+definition:
+
+The firm LOM \eqref{eq:N_lom_eq}: with $N_t=1$ 
+maintained by construction, this equation is 
+satisfied trivially by the clone replacement 
+assumption and imposes no restriction on other 
+variables.
+
+The business formation Euler \eqref{eq:N_euler_eq}: 
+with $\rho(1)=1$, $\mu(1)=1$, $f_e\rho(N_t)=f_e$, 
+and $(\mu(N_{t+1})-1)=0$, the right-hand side 
+reduces to $(1-\delta_t)\mathbb{E}_t m_{t+1}\Lambda_{t+1}
+\{f_e\}=f_e\cdot(1-\delta_t)\mathbb{E}_t m_{t+1}$. 
+This is a condition on $f_e$ alone and is satisfied 
+by appropriate choice of $f_e$ given $\beta$ and 
+$\bar{\delta}$; it imposes no restriction on labor 
+market variables.
+
+The cutoff condition \eqref{eq:cutoff_eq}: with 
+$\mu=1$, $(\mu-1)/\mu=0$, so 
+$\chi_t^c = f_e\rho(N_t)/\mu(N_t) = f_e$. Since 
+clone replacement maintains $N_t=1$ regardless of 
+profitability, the exit decision is moot; 
+$\chi_t^c=f_e$ is a constant that imposes no 
+restriction on aggregate allocations.
+
+The resource constraint \eqref{eq:rc}: clone
+replacement is taken to operate through $p_0=0$, so
+$X_t^c=0$. This is worth stating explicitly, because
+endogenous exit is absent whenever $\Lambda_t=1$ and
+there are two ways to obtain that. Either $p_0=0$, or
+the cutoff weakly exceeds the support of $F$, which
+under clone replacement means $f_e\geq\chi_m$ since
+$\chi_t^c=f_e$. The two routes are not equivalent
+once reactivation is present. Setting $p_0=0$ removes
+both margins, since the exit and reactivation
+thresholds are evaluated on the same distribution,
+whereas $f_e\geq\chi_m$ leaves
+$\Lambda_{r,t}=F(Q_t/\alpha)<1$ whenever
+$Q_t<\alpha\chi_m$. Under the second route
+\eqref{eq:v_ags} would carry $\Lambda_{r,t}$,
+\eqref{eq:rc_limit} would carry $-X_t^r$, and
+\eqref{eq:jcc_ags} would carry the reactivation
+shortfall. The proposition as stated assumes the
+first. With 
+$\rho(1)=1$ and $\mu(1)=1$, $Y_t^c=z_t(1-u_t)$ 
+and $l_t^e=0$, giving $C_t=z_t(1-u_t)-X_t$, 
+which is \eqref{eq:rc_limit}.
+
+\emph{Labor market block.} Substituting $\rho(N_t)=1$, 
+$\mu(N_t)=1$, $\Lambda_t=1$, and 
+$\delta_{e,t}=\delta_{t-1}$ into 
+\eqref{eq:jcc_eq}--\eqref{eq:u_lom} yields 
+\eqref{eq:jcc_ags}--\eqref{eq:u_ags} directly. 
+The stochastic discount factor 
+$m_t=\beta(C_t/C_{t-1})^{-\sigma}$ is unchanged. 
+The stochastic processes \eqref{eq:ar1_z}--\eqref{eq:ar1_s} 
+are unchanged.
+
+The resulting system
+\eqref{eq:jcc_ags}--\eqref{eq:u_ags} together
+with $e_t=G(Q_t)$, $m_t=\beta(C_t/C_{t-1})^{-\sigma}$,
+\eqref{eq:rc_limit}, and stochastic processes
+\eqref{eq:ar1_z}--\eqref{eq:ar1_s} closes the economy. Local determinacy is a separate
+question. With a finite entry elasticity the system has two predetermined states, $u_t$ and
+the predetermined vacancy stock, and two forward-looking variables, $Q_t$ and $K_t$. We do
+not establish the Blanchard--Kahn condition analytically. At $\sigma=\kappa=0$ it is verified
+numerically at every calibration and entry elasticity we consider: exactly two roots are
+stable. Under free entry ($\xi\to\infty$) with $\sigma=\kappa=0$, the system is block
+recursive and the condition holds analytically: Lemma~\ref{lem:theta} gives one unstable
+root for tightness and one stable root for unemployment. For $\sigma>0$, local uniqueness
+is maintained as a regularity condition and verified numerically as part of the baseline
+model solution.
+
 \subsection*{Proof of Proposition~\ref{prop:double_limit}}
 
 Consider the DS-CES equilibrium with $p_0=0$ and 
@@ -4903,90 +4967,6 @@ $\nu_t^f N_t^e = O(1/\varepsilon)\cdot O(1)
 \emph{Labor to entry}: $l_t^e=f_eN_t^e/z_t = 
 (\bar{f}_e/\varepsilon)\cdot O(1)/z_t = 
 O(1/\varepsilon)$. $\square$
-
-\subsection*{Proof of Proposition~\ref{prop:ags}}
-
-Under clone replacement, $N_t=1$ and $\mu=1$ are 
-maintained by construction at all times. We verify 
-that the business formation block drops out and 
-the remaining system reduces to 
-\eqref{eq:jcc_ags}--\eqref{eq:u_ags}.
-
-\emph{Business formation block.} Substituting 
-$N_t=1$ and $\mu=1$ into the baseline equilibrium 
-definition:
-
-The firm LOM \eqref{eq:N_lom_eq}: with $N_t=1$ 
-maintained by construction, this equation is 
-satisfied trivially by the clone replacement 
-assumption and imposes no restriction on other 
-variables.
-
-The business formation Euler \eqref{eq:N_euler_eq}: 
-with $\rho(1)=1$, $\mu(1)=1$, $f_e\rho(N_t)=f_e$, 
-and $(\mu(N_{t+1})-1)=0$, the right-hand side 
-reduces to $(1-\delta_t)\mathbb{E}_t m_{t+1}\Lambda_{t+1}
-\{f_e\}=f_e\cdot(1-\delta_t)\mathbb{E}_t m_{t+1}$. 
-This is a condition on $f_e$ alone and is satisfied 
-by appropriate choice of $f_e$ given $\beta$ and 
-$\bar{\delta}$; it imposes no restriction on labor 
-market variables.
-
-The cutoff condition \eqref{eq:cutoff_eq}: with 
-$\mu=1$, $(\mu-1)/\mu=0$, so 
-$\chi_t^c = f_e\rho(N_t)/\mu(N_t) = f_e$. Since 
-clone replacement maintains $N_t=1$ regardless of 
-profitability, the exit decision is moot; 
-$\chi_t^c=f_e$ is a constant that imposes no 
-restriction on aggregate allocations.
-
-The resource constraint \eqref{eq:rc}: clone
-replacement is taken to operate through $p_0=0$, so
-$X_t^c=0$. This is worth stating explicitly, because
-endogenous exit is absent whenever $\Lambda_t=1$ and
-there are two ways to obtain that. Either $p_0=0$, or
-the cutoff weakly exceeds the support of $F$, which
-under clone replacement means $f_e\geq\chi_m$ since
-$\chi_t^c=f_e$. The two routes are not equivalent
-once reactivation is present. Setting $p_0=0$ removes
-both margins, since the exit and reactivation
-thresholds are evaluated on the same distribution,
-whereas $f_e\geq\chi_m$ leaves
-$\Lambda_{r,t}=F(Q_t/\alpha)<1$ whenever
-$Q_t<\alpha\chi_m$. Under the second route
-\eqref{eq:v_ags} would carry $\Lambda_{r,t}$,
-\eqref{eq:rc_limit} would carry $-X_t^r$, and
-\eqref{eq:jcc_ags} would carry the reactivation
-shortfall. The proposition as stated assumes the
-first. With 
-$\rho(1)=1$ and $\mu(1)=1$, $Y_t^c=z_t(1-u_t)$ 
-and $l_t^e=0$, giving $C_t=z_t(1-u_t)-X_t$, 
-which is \eqref{eq:rc_limit}.
-
-\emph{Labor market block.} Substituting $\rho(N_t)=1$, 
-$\mu(N_t)=1$, $\Lambda_t=1$, and 
-$\delta_{e,t}=\delta_{t-1}$ into 
-\eqref{eq:jcc_eq}--\eqref{eq:u_lom} yields 
-\eqref{eq:jcc_ags}--\eqref{eq:u_ags} directly. 
-The stochastic discount factor 
-$m_t=\beta(C_t/C_{t-1})^{-\sigma}$ is unchanged. 
-The stochastic processes \eqref{eq:ar1_z}--\eqref{eq:ar1_s} 
-are unchanged.
-
-The resulting system
-\eqref{eq:jcc_ags}--\eqref{eq:u_ags} together
-with $e_t=G(Q_t)$, $m_t=\beta(C_t/C_{t-1})^{-\sigma}$,
-\eqref{eq:rc_limit}, and stochastic processes
-\eqref{eq:ar1_z}--\eqref{eq:ar1_s} closes the economy. Local determinacy is a separate
-question. With a finite entry elasticity the system has two predetermined states, $u_t$ and
-the predetermined vacancy stock, and two forward-looking variables, $Q_t$ and $K_t$. We do
-not establish the Blanchard--Kahn condition analytically. At $\sigma=\kappa=0$ it is verified
-numerically at every calibration and entry elasticity we consider: exactly two roots are
-stable. Under free entry ($\xi\to\infty$) with $\sigma=\kappa=0$, the system is block
-recursive and the condition holds analytically: Lemma~\ref{lem:theta} gives one unstable
-root for tightness and one stable root for unemployment. For $\sigma>0$, local uniqueness
-is maintained as a regularity condition and verified numerically as part of the baseline
-model solution.
 
 \subsection*{Proof of Proposition~\ref{prop:bgm_nest}}
 
