@@ -64,6 +64,12 @@
   destruction shocks matter in the theory of unemployment,'' \emph{American
   Economic Journal: Macroeconomics}, 10(3), 118--136.
 
+\harvarditem[den Haan, Ramey, and Watson]{den Haan, Ramey, and
+  Watson}{2000}{den_haan_2000}
+\textsc{den Haan, W.~J., G.~Ramey, {\small and} J.~Watson}  (2000): ``Job
+  Destruction and Propagation of Shocks,'' \emph{American Economic Review},
+  90(3), 482--498, doi:10.1257/aer.90.3.482.
+
 \harvarditem[Dridi, Guay, and Renault]{Dridi, Guay, and
   Renault}{2007}{dridi_2007}
 \textsc{Dridi, R., A.~Guay,  {\small and} E.~Renault}  (2007): ``Indirect
@@ -152,5 +158,9 @@
 \harvarditem[Shimer]{Shimer}{2005}{shimer_2005}
 \textsc{Shimer, R.}  (2005): ``The Cyclical Behavior of Equilibrium
   Unemployment and Vacancies,'' \emph{American Economic Review}, 95(1), 25--49.
+
+\harvarditem[Silva]{Silva}{2026}{silva_2026}
+\textsc{Silva, M.~R.}  (2026): ``Matching with Bounded Probabilities:
+  Flexibility, Efficiency, and Crisis Dynamics,'' Working paper, SSRN 6956640.
 
 \end{thebibliography}

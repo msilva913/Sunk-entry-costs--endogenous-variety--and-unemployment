@@ -63,6 +63,7 @@
 \newtheorem{example}{Example}
 \newtheorem{remark}{Remark}
 \newtheorem{definition}{Definition}
+\newtheorem{assumption}{Assumption}
 \usepackage{cite}
 \usepackage{float}
 \newcommand{\bi}{\begin{itemize}}
@@ -2138,55 +2139,94 @@ relationship \eqref{eq:labor_N}:
 	N = \frac{(\mu(N)-1)zL(\theta)(1-\delta_e)}
 	{f_e(\delta_e\mu(N)+r)}
 \end{align}
-Employment $L(\theta)$ is increasing and concave in 
-$\theta$, so \eqref{eq:curve_res_cons} is increasing, 
-concave, and bounded above by 
-$\bar{N}=(\mu-1)z(1-\delta_e)/(f_e(\delta_e\mu+r))$, 
+Employment $L(\theta)$ is increasing in $\theta$, so \eqref{eq:curve_res_cons} is
+increasing and bounded above by
+$\bar{N}=(\mu-1)z(1-\delta_e)/(f_e(\delta_e\mu+r))$,
 the product variety consistent with full employment.
 
-\begin{proposition}[Variety effects and elasticity 
-	of substitution]\label{prop:curves}
-	The exit threshold curve \eqref{eq:exit_threshold_curve}, 
-	job creation curve \eqref{eq:curve_jcc}, and resource 
-	constraint curve \eqref{eq:curve_res_cons} each depend 
-	on the elasticity of substitution $\varepsilon(N)$. Only 
-	the exit threshold and job creation curves depend on 
-	the benefit of variety $\zeta(N)$. The product 
-	destruction curve \eqref{eq:destruction_curve} is 
-	independent of both.
-	
-\end{proposition}
+\begin{remark}[Variety effects and elasticity of substitution]\label{prop:curves}
+	At $p_0=0$, the elasticity of substitution enters the exit threshold curve
+	\eqref{eq:exit_threshold_curve}, the job creation curve \eqref{eq:curve_jcc}, and the
+	resource constraint curve \eqref{eq:curve_res_cons} through the markup $\mu(N)$. The
+	benefit of variety $\zeta(N)$ enters only the first two, through $\rho(N)$, which is
+	absent from \eqref{eq:curve_res_cons}. The product destruction curve
+	\eqref{eq:destruction_curve} depends on neither. Its parameters are $p_0$, $\psi$,
+	$\chi_m$, and $\bar\delta$.
+\end{remark}
 
-The result follows directly from the expressions above: 
-$\varepsilon(N)$ enters $\mu(N)$ and $\pi_s$ in all 
-three non-destruction curves, while $\zeta(N)$ enters 
-only through $\rho(N)$, which is absent from the 
-resource constraint curve \eqref{eq:curve_res_cons}. 
-The product destruction curve depends only on $\psi$, 
-$\chi_m$, and $\bar{\delta}$. The implication is that 
-empirical variation in exit rates across recessions 
-identifies the destruction curve independently of 
-preference parameters.
+Under DS-CES, $\zeta=1/(\varepsilon-1)$, so the two cannot be moved separately. The
+distinction matters under general CES, where $\zeta$ and $\varepsilon$ are separate
+parameters.
+
+The number of steady states depends on the matching technology. We impose the
+following regularity conditions.
+
+\begin{assumption}[Matching technology]\label{ass:matching}
+	The matching function $m(u,v)$ has constant returns to scale and is strictly
+	increasing in both arguments. Let $f(\theta)\equiv m(1,\theta)$ and
+	$q(\theta)\equiv f(\theta)/\theta$, with $f$ continuously differentiable.
+	\begin{enumerate}
+		\item[(M1)] \emph{Bounded probabilities:} $f(\theta)\leq1$ and $q(\theta)\leq1$ for all $\theta>0$.
+		\item[(M2)] \emph{Nonincreasing elasticity:} $\varepsilon_f(\theta)\equiv\theta f'(\theta)/f(\theta)$ is nonincreasing in $\theta$.
+	\end{enumerate}
+\end{assumption}
+
+Since $m$ rises in $u$, $\varepsilon_f<1$, so $q$ is strictly decreasing. By (M1),
+$q(0^+)\in(0,1]$ and $q(\theta)\leq1/\theta\to0$. Under (M2), $\ln L$ is concave in
+$\ln\theta$, because the elasticity of $L$ is $\varepsilon_f(\theta)$ times the
+unemployment rate $\tau/(\tau+(1-\delta_e)f(\theta))$, and both fall in $\theta$. Write
+the job creation curve as $(z/\mu)N^{1/(\varepsilon-1)}=\Phi(\theta)$, with $\Phi$ given in
+\eqref{eq:jcc_rearranged} of \ref{app:equilibria_proof}. The last condition concerns
+$\Phi$:
+\begin{enumerate}
+	\item[(C)] $\ln\Phi$ is convex in $\ln\theta$.
+\end{enumerate}
+Assumption~\ref{ass:matching} delivers most of (C). Under constant returns and (M2),
+$1/q$ is log-convex in $\ln\theta$, and sums and products of log-convex functions are
+log-convex. Two pieces of $\Phi$ fall outside it. The term in $\phi f(\theta)$ through the
+worker's outside option is log-concave under (M2). The posting cost $K(\theta)$ depends on
+the steady-state entry schedule $e(\theta)$ in \eqref{eq:e_theta}, which is an equilibrium
+object. We therefore state (C) separately. It holds at our calibration for every
+bounded-probability specification we have checked, at each value of the entry elasticity
+$\xi\in\{0.5,1,2\}$.
 
 \begin{proposition}[Steady-state equilibria under DS-CES]
 	\label{prop:equilibria}
 	Restrict to DS-CES preferences ($\rho(N)=N^{1/(\varepsilon-1)}$,
 	$\mu=\varepsilon/(\varepsilon-1)$ constant) and let $p_0\to 0$ so
-	that $\delta_e$ is a parameter.  If $b>0$ or $\kappa>0$, the job
-	creation curve \eqref{eq:curve_jcc} satisfies
+	that $\delta_e$ is a parameter. Suppose Assumption~\ref{ass:matching} and condition (C)
+	hold, and $b>0$ or $\kappa>0$. Then the job creation curve \eqref{eq:curve_jcc} satisfies
 	\begin{align}\label{eq:N_JC_intercept}
 		N_{JC}^0 \equiv \lim_{\theta\to 0}N_{JC}(\theta)
 		= \left(\frac{\mu}{z}
 		\left(\frac{\kappa(r+\tau)}{(1-\delta_e)(1-\phi)}
-		+b\right)\right)^{\varepsilon-1} > 0,
+		+b\right)\right)^{\varepsilon-1} > 0
 	\end{align}
-	while the resource constraint curve \eqref{eq:curve_res_cons}
-	satisfies $N_{RC}(0)=0$ and $N_{RC}(\theta)\to\bar{N}<\infty$.
-	As $\theta\to\infty$, $N_{JC}(\theta)\to\infty$.  The two curves
-	therefore cross an even number of times; generically exactly two
-	equilibria exist in $(\theta,N)$ space, one with strictly higher
-	tightness and product variety than the other.  
+	and $N_{JC}(\theta)\to\infty$ as $\theta\to\infty$, while the resource constraint
+	curve \eqref{eq:curve_res_cons} satisfies $N_{RC}(0)=0$ and
+	$N_{RC}(\theta)\to\bar{N}<\infty$. The two curves cross either never or, generically,
+	exactly twice. Two equilibria exist if and only if $N_{JC}(\theta)<N_{RC}(\theta)$ for
+	some $\theta$, and one has strictly higher tightness and product variety than the
+	other. In the double limit of Proposition~\ref{prop:double_limit}, the job creation
+	curve is vertical and the equilibrium is unique if and only if $z>\Phi(0)$.
 \end{proposition}
+
+\begin{remark}[Soft-min Cobb--Douglas matching]\label{rem:smcd}
+	The soft-min Cobb--Douglas (SMCD) matching function of \citet{silva_2026},
+	$m(u,v)=s\,a\,uv/[(av)^p+u^p]^{1/p}$, satisfies Assumption~\ref{ass:matching} whenever
+	$s\leq1$ and $sa\leq1$, for any $p>0$. Its job-finding rate is
+	$f(\theta)=sa\theta/[(a\theta)^p+1]^{1/p}\leq s$, its vacancy-filling rate is bounded
+	by $sa$, and its elasticity $\varepsilon_f(\theta)=1/[(a\theta)^p+1]$ is strictly
+	decreasing. It nests the \citet{den_haan_2000} function at $s=a=1$, and its
+	two-plateau generalization also satisfies the assumption. The Cobb--Douglas function
+	$f=A\theta^{1-\eta_L}$ used in our calibration satisfies (M2) with a constant
+	elasticity, but violates (M1) for $\theta<A^{1/\eta_L}$. It respects the bounds near
+	the calibrated steady state ($\bar{q}=0.80$), so the high equilibrium is the same
+	under every specification we consider. The low equilibrium is not. Under
+	Cobb--Douglas extrapolated to all $\theta>0$ it requires a vacancy-filling probability
+	between 14 and 21. Under every bounded-probability specification it is a feasible steady
+	state, with $q\approx1$ and an unemployment rate near one third.
+\end{remark}
 
 \begin{figure}[h!]
 	\centering
@@ -2224,15 +2264,14 @@ preference parameters.
 		\node[below right, font=\small] at (3.47,4.19) {$E_2$};
 		
 	\end{tikzpicture}
-	\caption{Steady-state equilibria in $(\theta,N)$ space. The 
-		job creation curve (JC) is convex and intersects the vertical 
-		axis at $N_{JC}^0>0$ whenever $b>0$ or $\kappa>0$; see 
-		\eqref{eq:N_JC_intercept}. The resource constraint curve (RC) 
-		is concave, starts at the origin, and is bounded above by 
+	\caption{Steady-state equilibria in $(\theta,N)$ space. The
+		job creation curve (JC) is increasing and intersects the vertical
+		axis at $N_{JC}^0>0$ whenever $b>0$ or $\kappa>0$; see
+		\eqref{eq:N_JC_intercept}. The resource constraint curve (RC)
+		is increasing, starts at the origin, and is bounded above by
 		$\bar{N}=(\mu-1)\bar{z}(1-\bar{\delta}_e)/
-		(f_e(\bar{\delta}_e\mu+r))$. Two equilibria exist generically; 
-		$E_1$ is the low and $E_2$ the high tightness--variety 
-		equilibrium.}
+		(f_e(\bar{\delta}_e\mu+r))$. $E_1$ is the low and $E_2$ the high
+		tightness--variety equilibrium. Schematic.}
 	\label{fig:steady_state_curves}
 \end{figure}
 
@@ -5404,100 +5443,78 @@ some $\bar\rho_s>0$.
 	\section{Steady-state equilibria: proof of Proposition~\ref{prop:equilibria}}
 	\label{app:equilibria_proof}
 
-Throughout, restrict to DS-CES preferences: $\rho(N)=N^{1/(\varepsilon-1)}$
-and $\mu=\varepsilon/(\varepsilon-1)$ constant.  Set $p_0=0$ so that
-$\delta_e\in(0,1)$ is a parameter.  Write $h(\theta)\equiv f(\theta)/q(\theta)=\theta$
-for the tightness ratio, and recall $L(\theta)=(1-\delta_e)f(\theta)/[\tau+(1-\delta_e)f(\theta)]$,
-which is strictly increasing, concave, and satisfies $L(0)=0$ and
-$L(\infty)=1-u_{\min}<1$.
+Throughout, restrict to DS-CES preferences, $\rho(N)=N^{1/(\varepsilon-1)}$ and
+$\mu=\varepsilon/(\varepsilon-1)$ constant, and set $p_0=0$ so that $\delta_e\in(0,1)$ is
+a parameter. Assumption~\ref{ass:matching} and condition (C) hold. Employment is
+$L(\theta)=(1-\delta_e)f(\theta)/[\tau+(1-\delta_e)f(\theta)]$, and steady-state entry is
+$e(\theta)$ in \eqref{eq:e_theta} with $\Lambda_r=1$. Write $x\equiv\ln\theta$.
 
-\medskip\noindent\textbf{Step 1: $N_{JC}(\theta)$ is well-defined and strictly increasing.}
-
-Under DS-CES the JCC \eqref{eq:curve_jcc} can be written as
+\medskip\noindent\textbf{Step 1: $N_{JC}(\theta)$ is well defined and strictly increasing.}
+Under DS-CES the job creation curve \eqref{eq:curve_jcc} can be written as
 \begin{align}\label{eq:jcc_rearranged}
   \frac{z}{\mu}\,N^{1/(\varepsilon-1)}
   = K(\theta) + b
   + \frac{1}{(1-\delta_e)(1-\phi)}
     \left(\kappa+\frac{K(\theta)}{q(\theta)}\right)
-    \bigl(r+\tau+(1-\delta_e)\phi\,\theta q(\theta)\bigr)
-  \equiv \Phi(\theta).
+    \bigl(r+\tau+(1-\delta_e)\phi f(\theta)\bigr)
+  \equiv \Phi(\theta),
 \end{align}
-The right-hand side $\Phi(\theta)$ depends only on $\theta$: $K(\theta)$,
-$q(\theta)$, and $\theta q(\theta)$ are all functions of tightness alone.
-Since $1/(\varepsilon-1)>0$, inverting gives a unique
-\begin{align}
-  N_{JC}(\theta)=\left(\frac{\mu\,\Phi(\theta)}{z}\right)^{\varepsilon-1}.
-\end{align}
-$\Phi(\theta)$ is strictly increasing in $\theta$ (each term is non-decreasing
-and $K(\theta)$ is strictly increasing because $e(\theta)$ is), so
-$N_{JC}(\theta)$ is strictly increasing.
+which depends on $\theta$ alone. Since $1/(\varepsilon-1)>0$, it inverts to
+$N_{JC}(\theta)=(\mu\Phi(\theta)/z)^{\varepsilon-1}$. Entry can be written
+$e(\theta)=\delta_e\{1+\tau(\theta-1)/[\tau+(1-\delta_e)f(\theta)]\}$, whose derivative has
+the sign of $\tau+(1-\delta_e)[f(\theta)(1-\varepsilon_f(\theta))+f'(\theta)]>0$, because
+$\varepsilon_f<1$. So $e$, and with it $K(\theta)=(r+\delta_e)e(\theta)^{1/\xi}x_m/(1+r)$,
+is strictly increasing. $K/q$ rises because $q$ falls, and $f$ rises. Hence $\Phi$, and
+with it $N_{JC}$, is strictly increasing.
 
 \medskip\noindent\textbf{Step 2: $N_{RC}(\theta)$ is strictly increasing and bounded.}
-
 Under DS-CES \eqref{eq:curve_res_cons} gives
-\begin{align}
-  N_{RC}(\theta)
-  =\frac{(\mu-1)z(1-\delta_e)}{f_e(\delta_e\mu+r)}\,L(\theta)
-  \equiv \bar{N}\,\frac{L(\theta)}{L(\infty)},
-\end{align}
-where $\bar{N}=(\mu-1)z(1-\delta_e)L(\infty)/[f_e(\delta_e\mu+r)]<\infty$.
-Since $L(\theta)$ is strictly increasing, $N_{RC}(\theta)$ is strictly
-increasing, concave, with $N_{RC}(0)=0$ and $N_{RC}(\theta)\uparrow\bar{N}$.
+$N_{RC}(\theta)=(\mu-1)z(1-\delta_e)L(\theta)/[f_e(\delta_e\mu+r)]$. Since $L$ is
+strictly increasing with $L(0^+)=0$ and $L<1$, $N_{RC}$ is strictly increasing, with
+$N_{RC}(0^+)=0$ and $N_{RC}<\bar{N}$.
 
 \medskip\noindent\textbf{Step 3: Boundary behavior.}
+\emph{As $\theta\to0$.} By (M1), $q$ is decreasing and bounded, so $q(0^+)\in(0,1]$. Since
+$f(0^+)=0$, $e(\theta)\to0$ and $K(\theta)\to0$, so $K/q\to0$. Hence
+$\Phi(0^+)=b+\kappa(r+\tau)/[(1-\delta_e)(1-\phi)]$, which gives $N_{JC}^0$ in
+\eqref{eq:N_JC_intercept}. If $b>0$ or $\kappa>0$, then $N_{JC}^0>0=N_{RC}(0^+)$.
 
-\emph{At $\theta=0$.}
-As $\theta\to 0$: $e(\theta)\to 0$, $K(\theta)\to 0$, and
-$q(\theta)\to q_0>0$ (the vacancy-filling rate at zero tightness).  Hence
-\begin{align}
-  \Phi(0) = b + \frac{\kappa(r+\tau)}{(1-\delta_e)(1-\phi)},
-\end{align}
-so that
-\begin{align}
-  N_{JC}^0\equiv N_{JC}(0)
-  =\left(\frac{\mu}{z}
-    \left(b+\frac{\kappa(r+\tau)}{(1-\delta_e)(1-\phi)}\right)
-  \right)^{\varepsilon-1}.
-\end{align}
-If $b>0$ or $\kappa>0$ then $N_{JC}^0>0=N_{RC}(0)$, so the JCC lies
-\emph{strictly above} the RC curve at the origin.
+\emph{As $\theta\to\infty$.} By (M1), $q(\theta)\leq1/\theta$. For $\theta\geq\theta_0>0$,
+$K(\theta)\geq K(\theta_0)>0$, so $K/q\geq K(\theta_0)\,\theta\to\infty$. Hence
+$\Phi\to\infty$ and $N_{JC}\to\infty$, while $N_{RC}<\bar{N}$. This uses only $q\to0$, so it
+holds even where entry would reach its upper bound $e=1$ and $Q$ would be capped at $x_m$.
 
-\emph{As $\theta\to\infty$.}
-$\Phi(\theta)\to\infty$ (since $K(\theta)\to\infty$), so
-$N_{JC}(\theta)\to\infty$, while $N_{RC}(\theta)\to\bar{N}<\infty$.
-The JCC therefore lies \emph{strictly above} the RC curve for all
-sufficiently large $\theta$.
+\medskip\noindent\textbf{Step 4: At most two crossings.}
+Steady states solve $N_{JC}(\theta)=N_{RC}(\theta)$. Both sides are positive for $\theta>0$,
+so these are the zeros of
+\[
+  D(x)\equiv\ln N_{JC}(e^x)-\ln N_{RC}(e^x)
+  =(\varepsilon-1)\ln\Phi(e^x)-\ln L(e^x)+\text{const}.
+\]
+By (C), $\ln\Phi$ is convex in $x$. The elasticity of $L$ with respect to $\theta$ is
+$\varepsilon_f(\theta)\,\tau/[\tau+(1-\delta_e)f(\theta)]$. By (M2) its first factor is
+nonincreasing, and its second falls because $f$ rises. So $\ln L$ is concave in $x$, and
+$D$ is convex. By Step 3, $D(x)\to+\infty$ as $x\to-\infty$, since $\ln N_{JC}$ stays
+finite while $\ln N_{RC}\to-\infty$, and as $x\to+\infty$. A convex function that tends
+to $+\infty$ at both ends has no zero if its minimum is positive, one zero (a tangency) if
+its minimum is zero, and exactly two zeros if its minimum is negative, apart from the
+nongeneric case in which it vanishes on an interval. A tangency imposes one equation on the
+parameters, so it is a codimension-one event. Hence, generically, there are either no
+steady states or exactly two, $\theta_L<\theta_H$. There are two if and only if
+$N_{JC}(\theta)<N_{RC}(\theta)$ for some $\theta$. Since $N=N_{RC}(\theta)$ at a steady state
+and $N_{RC}$ is strictly increasing, $N_L<N_H$.
 
-\medskip\noindent\textbf{Step 4: Even number of crossings; generically exactly two.}
-
-Define $\Delta(\theta)\equiv N_{JC}(\theta)-N_{RC}(\theta)$.  Steps 1--3
-establish $\Delta(0)=N_{JC}^0>0$ and $\Delta(\theta)\to+\infty$.  If
-$\Delta(\theta)>0$ for all $\theta$, the system has no equilibrium.  For
-a non-degenerate parameterization in which at least one equilibrium exists,
-there must be some $\theta^*>0$ with $\Delta(\theta^*)=0$.  Since
-$\Delta(0)>0$ and $\Delta(\infty)>0$, the intermediate value theorem
-requires $\Delta$ to cross zero an \emph{even} number of times, yielding
-an even number of equilibria.
-
-A crossing is non-degenerate (transversal) when $\Delta'(\theta^*)\neq 0$.
-A tangency $\Delta(\theta^*)=\Delta'(\theta^*)=0$ is a codimension-two
-condition in the parameter space (it simultaneously imposes two equations
-on the model's parameters) and therefore fails for a generic open dense
-set of parameterizations.  Excluding tangencies, the even-crossing
-structure collapses to generically \emph{exactly two} equilibria, one
-with lower $(\theta_L,N_L)$ and one with higher $(\theta_H,N_H)$.
-
-\medskip\noindent\textbf{Step 5: Uniqueness as $\varepsilon\to\infty$.}
-
-As $\varepsilon\to\infty$, $\mu\to 1$ and $\rho(N)=N^{1/(\varepsilon-1)}\to 1$
-for any fixed $N$.  The JCC \eqref{eq:jcc_rearranged} becomes independent of $N$:
-\begin{align}
-  \frac{z}{\mu} = \Phi(\theta),
-\end{align}
-which determines a unique $\theta^*$ independently of $N$.  The JCC is then
-a vertical line in $(\theta,N)$ space; it crosses the strictly increasing
-$N_{RC}(\theta)$ exactly once.  Hence a unique equilibrium obtains.
-
+\medskip\noindent\textbf{Step 5: Uniqueness in the double limit.}
+Let $\varepsilon\to\infty$ with $f_e=\bar{f}_e/\varepsilon$, as in
+Proposition~\ref{prop:double_limit}. Then $(\mu-1)/f_e\to1/\bar{f}_e$, so
+$N_{RC}(\theta)\to z(1-\delta_e)L(\theta)/[\bar{f}_e(r+\delta_e)]$, which is finite and
+positive for $\theta>0$. On any compact subset of $N\in(0,\infty)$,
+$(z/\mu)N^{1/(\varepsilon-1)}\to z$, so the job creation curve becomes $\Phi(\theta)=z$.
+It is vertical in $(\theta,N)$ space, and $\Phi$ does not involve $\mu$. Since $\Phi$ is
+continuous and strictly increasing from $\Phi(0^+)$ to $\infty$, a solution $\theta^*$
+exists, and is unique, if and only if $z>\Phi(0^+)$. The equilibrium is
+$(\theta^*,N_{RC}(\theta^*))$. With $f_e$ fixed instead, $\mu-1\to0$ drives $N_{RC}$ to
+zero, which is the degenerate limit ruled out before Proposition~\ref{prop:double_limit}.
 
 	\subsection{Details of comparative statics}
 	\textcolor{red}{Comment out this section temporarily}
