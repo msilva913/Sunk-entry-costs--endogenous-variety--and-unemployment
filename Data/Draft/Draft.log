@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.7.14)  11 OCT 2026 18:25
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.7.14)  11 OCT 2026 20:28
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1094,154 +1094,161 @@ nd equi-lib-rium la-bor mar-ket vari-ables $\OMS/cmsy/m/n/12 f\OML/cmm/m/it/12
 u[]; v[]; e[]; Q[]; K[]\OMS/cmsy/m/n/12 g[]$
  []
 
-[25] [26] [27] [28] [29] [30] [31] [32] [33] [34] [35] [36] [37]
-Overfull \hbox (6.69814pt too wide) in paragraph at lines 2022--2026
+[25] [26] [27] [28] [29] [30] [31] [32] [33] [34] [35] [36] [37] [38]
+Overfull \hbox (6.69814pt too wide) in paragraph at lines 2039--2043
 [][]\T1/cmr/bx/n/12 Proposition 7 \T1/cmr/m/n/12 (Steady-s-tate equi-lib-ria un
 -der DS-CES)\T1/cmr/bx/n/12 . []\T1/cmr/m/it/12 Re-strict to DS-CES pref-er-enc
 es ($\OML/cmm/m/it/12 ^^Z\OT1/cmr/m/n/12 (\OML/cmm/m/it/12 N\OT1/cmr/m/n/12 ) =
 
  []
 
-[38] [39] [40] [41] [42]
-<bed_closings_vs_deaths.png, id=861, 665.3658pt x 462.0462pt>
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+[39] [40] [41] [42]
+<bed_closings_vs_deaths.png, id=859, 665.3658pt x 462.0462pt>
 File: bed_closings_vs_deaths.png Graphic file (type png)
 <use bed_closings_vs_deaths.png>
-Package pdftex.def Info: bed_closings_vs_deaths.png  used on input line 2297.
+Package pdftex.def Info: bed_closings_vs_deaths.png  used on input line 2314.
 (pdftex.def)             Requested size: 486.25761pt x 337.67868pt.
- [43 <./bed_closings_vs_deaths.png>]
-Overfull \hbox (30.11984pt too wide) in paragraph at lines 2370--2381
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[43] [44 <./bed_closings_vs_deaths.png>]
+Overfull \hbox (30.11984pt too wide) in paragraph at lines 2387--2398
 \T1/cmr/m/n/12 where $\OT1/cmr/m/n/12 ^^A  [] \OML/cmm/m/it/12 p[]$ \T1/cmr/m/n
 /12 is ag-gre-gate non-farm busi-ness pro-duc-tiv-ity growth (FRED: OPH-NFB) an
 d $\OT1/cmr/m/n/12 ^^A  [] \OML/cmm/m/it/12 VA[]$
  []
 
-[44]
 
 LaTeX Warning: Reference `app:robustness' on page 45 undefined on input line 24
-09.
+26.
 
-<instrument_delta_distribution.png, id=883, 1005.0348pt x 368.0952pt>
+[45]
+<instrument_delta_distribution.png, id=886, 1005.0348pt x 368.0952pt>
 File: instrument_delta_distribution.png Graphic file (type png)
 <use instrument_delta_distribution.png>
 Package pdftex.def Info: instrument_delta_distribution.png  used on input line 
-2419.
+2436.
 (pdftex.def)             Requested size: 486.25761pt x 178.08784pt.
-[45] [46 <./instrument_delta_distribution.png>] [47]
-<../Bartek analysis/data/results//lp_irf_delta_uv_baseline.png, id=908, 932.283
+ [46 <./instrument_delta_distribution.png>] [47] [48]
+<../Bartek analysis/data/results//lp_irf_delta_uv_baseline.png, id=912, 932.283
 pt x 389.7762pt>
 File: ../Bartek analysis/data/results//lp_irf_delta_uv_baseline.png Graphic fil
 e (type png)
 <use ../Bartek analysis/data/results//lp_irf_delta_uv_baseline.png>
 Package pdftex.def Info: ../Bartek analysis/data/results//lp_irf_delta_uv_basel
-ine.png  used on input line 2558.
+ine.png  used on input line 2575.
 (pdftex.def)             Requested size: 447.35611pt x 187.03691pt.
- [48] [49 <../Bartek analysis/data/results//lp_irf_delta_uv_baseline.png>] [50]
- [51] [52] [53]
+ [49 <../Bartek analysis/data/results//lp_irf_delta_uv_baseline.png>] [50] [51]
+ [52] [53]
 
 LaTeX Warning: Reference `app:weighting_robustness' on page 54 undefined on inp
-ut line 2800.
+ut line 2817.
 
 [54] [55] [56] [57] [58] [59] [60]
-<../Programs baseline//mechanism_A_z_shock.pdf, id=1050, 600.87082pt x 642.2263
+<../Programs baseline//mechanism_A_z_shock.pdf, id=1049, 600.87082pt x 642.2263
 8pt>
 File: ../Programs baseline//mechanism_A_z_shock.pdf Graphic file (type pdf)
 <use ../Programs baseline//mechanism_A_z_shock.pdf>
 Package pdftex.def Info: ../Programs baseline//mechanism_A_z_shock.pdf  used on
- input line 3153.
+ input line 3170.
 (pdftex.def)             Requested size: 398.7348pt x 426.19322pt.
  [61] [62 <../Programs baseline//mechanism_A_z_shock.pdf>]
-<../Programs baseline//mechanism_A_delta_shock.pdf, id=1137, 598.244pt x 642.22
+<../Programs baseline//mechanism_A_delta_shock.pdf, id=1136, 598.244pt x 642.22
 833pt>
 File: ../Programs baseline//mechanism_A_delta_shock.pdf Graphic file (type pdf)
 
 <use ../Programs baseline//mechanism_A_delta_shock.pdf>
 Package pdftex.def Info: ../Programs baseline//mechanism_A_delta_shock.pdf  use
-d on input line 3270.
+d on input line 3287.
 (pdftex.def)             Requested size: 398.7348pt x 428.06624pt.
  [63] [64]
-<../Programs baseline//mechanism_B_z_shock.pdf, id=1154, 598.244pt x 642.23134p
+<../Programs baseline//mechanism_B_z_shock.pdf, id=1153, 598.244pt x 642.23134p
 t>
 File: ../Programs baseline//mechanism_B_z_shock.pdf Graphic file (type pdf)
 <use ../Programs baseline//mechanism_B_z_shock.pdf>
 Package pdftex.def Info: ../Programs baseline//mechanism_B_z_shock.pdf  used on
- input line 3290.
+ input line 3307.
 (pdftex.def)             Requested size: 398.7348pt x 428.06824pt.
  [65 <../Programs baseline//mechanism_A_delta_shock.pdf>] [66 <../Programs base
 line//mechanism_B_z_shock.pdf>]
-<../Programs baseline//mechanism_B_delta_shock.pdf, id=1248, 602.4939pt x 642.2
+<../Programs baseline//mechanism_B_delta_shock.pdf, id=1247, 602.4939pt x 642.2
 2939pt>
 File: ../Programs baseline//mechanism_B_delta_shock.pdf Graphic file (type pdf)
 
 <use ../Programs baseline//mechanism_B_delta_shock.pdf>
 Package pdftex.def Info: ../Programs baseline//mechanism_B_delta_shock.pdf  use
-d on input line 3343.
+d on input line 3360.
 (pdftex.def)             Requested size: 398.7348pt x 425.04866pt.
  [67] [68 <../Programs baseline//mechanism_B_delta_shock.pdf>]
-<../Programs baseline//mechanism_C_z_shock.pdf, id=1302, 598.244pt x 642.23538p
+<../Programs baseline//mechanism_C_z_shock.pdf, id=1301, 598.244pt x 642.23538p
 t>
 File: ../Programs baseline//mechanism_C_z_shock.pdf Graphic file (type pdf)
 <use ../Programs baseline//mechanism_C_z_shock.pdf>
 Package pdftex.def Info: ../Programs baseline//mechanism_C_z_shock.pdf  used on
- input line 3409.
+ input line 3426.
 (pdftex.def)             Requested size: 398.7348pt x 428.07094pt.
  [69] [70 <../Programs baseline//mechanism_C_z_shock.pdf>]
-<../Programs baseline//mechanism_C_delta_shock.pdf, id=1373, 602.4939pt x 642.2
+<../Programs baseline//mechanism_C_delta_shock.pdf, id=1372, 602.4939pt x 642.2
 2939pt>
 File: ../Programs baseline//mechanism_C_delta_shock.pdf Graphic file (type pdf)
 
 <use ../Programs baseline//mechanism_C_delta_shock.pdf>
 Package pdftex.def Info: ../Programs baseline//mechanism_C_delta_shock.pdf  use
-d on input line 3451.
+d on input line 3468.
 (pdftex.def)             Requested size: 398.7348pt x 425.04866pt.
  [71] [72 <../Programs baseline//mechanism_C_delta_shock.pdf>]
 [73]
-Overfull \hbox (30.8985pt too wide) in paragraph at lines 3494--3533
+Overfull \hbox (30.8985pt too wide) in paragraph at lines 3511--3550
  [][] 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 3546--3546
+Underfull \hbox (badness 10000) in paragraph at lines 3563--3563
 []|\T1/cmr/m/n/10 BED es-tab-lish-ment
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 3547--3547
+Underfull \hbox (badness 10000) in paragraph at lines 3564--3564
 []|\T1/cmr/m/n/10 QCEW em-ploy-ment
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 3548--3548
+Underfull \hbox (badness 10000) in paragraph at lines 3565--3565
 []|\T1/cmr/m/n/10 Layoffs & dis-charges
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 3551--3551
+Underfull \hbox (badness 10000) in paragraph at lines 3568--3568
 []|\T1/cmr/m/n/10 Labor pro-duc-tiv-ity
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 3560--3560
+Underfull \hbox (badness 10000) in paragraph at lines 3577--3577
 []|\T1/cmr/m/n/10 Business for-ma-tions
  []
 
 [74] [75]
-<bed_deaths_by_supersector.png, id=1455, 931.8012pt x 369.5406pt>
+<bed_deaths_by_supersector.png, id=1454, 931.8012pt x 369.5406pt>
 File: bed_deaths_by_supersector.png Graphic file (type png)
 <use bed_deaths_by_supersector.png>
-Package pdftex.def Info: bed_deaths_by_supersector.png  used on input line 3595
+Package pdftex.def Info: bed_deaths_by_supersector.png  used on input line 3612
 .
 (pdftex.def)             Requested size: 486.25761pt x 192.8445pt.
  [76] [77 <./bed_deaths_by_supersector.png>]
-<../Bartek analysis/data/results//lp_joint_delta_ld_vacancy.png, id=1469, 1003.
+<../Bartek analysis/data/results//lp_joint_delta_ld_vacancy.png, id=1468, 1003.
 1076pt x 427.3566pt>
 File: ../Bartek analysis/data/results//lp_joint_delta_ld_vacancy.png Graphic fi
 le (type png)
 <use ../Bartek analysis/data/results//lp_joint_delta_ld_vacancy.png>
 Package pdftex.def Info: ../Bartek analysis/data/results//lp_joint_delta_ld_vac
-ancy.png  used on input line 3654.
+ancy.png  used on input line 3671.
 (pdftex.def)             Requested size: 486.25761pt x 207.16336pt.
  [78 <../Bartek analysis/data/results//lp_joint_delta_ld_vacancy.png>] [79]
-Overfull \hbox (3.7806pt too wide) in paragraph at lines 3741--3748
+Overfull \hbox (3.7806pt too wide) in paragraph at lines 3758--3765
 []\T1/cmr/m/n/12 Table [][]C.8[][] re-ports dy-namic cross-correlations $[]\OT1
 /cmr/m/n/12 (\OML/cmm/m/it/12 ^^N[]; x[]\OT1/cmr/m/n/12 )$ \T1/cmr/m/n/12 for $
 \OML/cmm/m/it/12 x \OMS/cmsy/m/n/12 2 f\OML/cmm/m/it/12 u; v\OMS/cmsy/m/n/12 g$
@@ -1252,60 +1259,60 @@ Overfull \hbox (3.7806pt too wide) in paragraph at lines 3741--3748
 [80] [81] [82]
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 3850.
+(hyperref)                removing `math shift' on input line 3867.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\psi' on input line 3850.
+(hyperref)                removing `\psi' on input line 3867.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 3850.
+(hyperref)                removing `math shift' on input line 3867.
 
 [83] [84] [85] [86] [87] [88] [89] [90] [91]
-Overfull \hbox (87.62468pt too wide) detected at line 4291
+Overfull \hbox (87.62468pt too wide) detected at line 4308
 [] \OMS/cmsy/m/n/12 " []  [] " []  [] "\OML/cmm/m/it/12 ;  [] \OMS/cmsy/m/n/12 
 #  []  []  [] # )  [] " []  [] " []  [] " []  [] " []\OML/cmm/m/it/12 :
  []
 
 
-Overfull \hbox (27.4925pt too wide) detected at line 4310
+Overfull \hbox (27.4925pt too wide) detected at line 4327
 [] \OMS/cmsy/m/n/12 # []  [] # []  [] #\OML/cmm/m/it/12 ;  [] \OMS/cmsy/m/n/12 
 # []  [] # []  [] # []  [] # []  [] # []  [] # []\OML/cmm/m/it/12 :
  []
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 4324.
+(hyperref)                removing `math shift' on input line 4341.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\xi' on input line 4324.
+(hyperref)                removing `\xi' on input line 4341.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 4324.
+(hyperref)                removing `math shift' on input line 4341.
 
 [92]
-<../Programs baseline//mechanism_D_z_shock.pdf, id=1781, 600.87082pt x 642.2353
+<../Programs baseline//mechanism_D_z_shock.pdf, id=1780, 600.87082pt x 642.2353
 8pt>
 File: ../Programs baseline//mechanism_D_z_shock.pdf Graphic file (type pdf)
 <use ../Programs baseline//mechanism_D_z_shock.pdf>
 Package pdftex.def Info: ../Programs baseline//mechanism_D_z_shock.pdf  used on
- input line 4360.
+ input line 4377.
 (pdftex.def)             Requested size: 398.7348pt x 426.19919pt.
  [93] [94 <../Programs baseline//mechanism_D_z_shock.pdf>]
-<../Programs baseline//mechanism_D_delta_shock.pdf, id=1836, 602.4939pt x 642.2
+<../Programs baseline//mechanism_D_delta_shock.pdf, id=1835, 602.4939pt x 642.2
 2939pt>
 File: ../Programs baseline//mechanism_D_delta_shock.pdf Graphic file (type pdf)
 
 <use ../Programs baseline//mechanism_D_delta_shock.pdf>
 Package pdftex.def Info: ../Programs baseline//mechanism_D_delta_shock.pdf  use
-d on input line 4388.
+d on input line 4405.
 (pdftex.def)             Requested size: 398.7348pt x 425.04866pt.
  [95 <../Programs baseline//mechanism_D_delta_shock.pdf>] [96] [97] [98] [99] [
 100] [101]
-Overfull \hbox (8.25352pt too wide) in paragraph at lines 4814--4820
+Overfull \hbox (8.25352pt too wide) in paragraph at lines 4831--4837
 \T1/cmr/m/n/12 Divide by $\OML/cmm/m/it/12 ^^V\OT1/cmr/m/n/12 (\OML/cmm/m/it/12
  N[]\OT1/cmr/m/n/12 )$ \T1/cmr/m/n/12 and use free en-try [][], $\OML/cmm/m/it/
 12 ^^W[] \OT1/cmr/m/n/12 = \OML/cmm/m/it/12 ^^Z\OT1/cmr/m/n/12 (\OML/cmm/m/it/1
@@ -1317,13 +1324,13 @@ cmr/m/n/12 +
  []
 
 [102]
-Overfull \hbox (59.8897pt too wide) detected at line 4858
+Overfull \hbox (59.8897pt too wide) detected at line 4875
 []\OML/cmm/m/it/12 c[] \OMS/cmsy/m/n/12 ^^Q ^^@ []\OML/cmm/m/it/12 ;  c[] \OMS/
 cmsy/m/n/12 ^^Q ^^@ []\OML/cmm/m/it/12 :
  []
 
 
-Overfull \hbox (13.27713pt too wide) detected at line 4882
+Overfull \hbox (13.27713pt too wide) detected at line 4899
 [] \OT1/cmr/m/n/12 = [][][]1 \OMS/cmsy/m/n/12 ^^@ [] ^^@ \OML/cmm/m/it/12 ^^^\O
 T1/cmr/m/n/12 (1 \OMS/cmsy/m/n/12 ^^@ []\OT1/cmr/m/n/12 )[] \OMS/cmsy/m/n/12 ^^
 @ \OT1/cmr/m/n/12 (1 \OMS/cmsy/m/n/12 ^^@ \OML/cmm/m/it/12 ^^^\OT1/cmr/m/n/12 )
@@ -1335,7 +1342,7 @@ sy/m/n/12 ^^@ \OT1/cmr/m/n/12 (1 \OMS/cmsy/m/n/12 ^^@ []\OT1/cmr/m/n/12 )[] [][
  []
 
 [103] [104] [105] [106]
-Overfull \hbox (33.04152pt too wide) detected at line 5152
+Overfull \hbox (33.04152pt too wide) detected at line 5169
 \OT1/cmr/m/n/12 ^^A\OML/cmm/m/it/12 u[] \OT1/cmr/m/n/12 = []1 \OMS/cmsy/m/n/12 
 ^^@ \OT1/cmr/m/n/12 (1 \OMS/cmsy/m/n/12 ^^@ []\OT1/cmr/m/n/12 )[] \OMS/cmsy/m/n
 /12 ^^@ [][]\OML/cmm/m/it/12 d \OT1/cmr/m/n/12 = (1 \OMS/cmsy/m/n/12 ^^@ []\OT1
@@ -1348,7 +1355,7 @@ r/m/n/12 ) \OML/cmm/m/it/12 d;
  []
 
 [107] [108]
-Overfull \hbox (65.50385pt too wide) detected at line 5235
+Overfull \hbox (65.50385pt too wide) detected at line 5252
 [] \OML/cmm/m/it/12 J \OT1/cmr/m/n/12 ^^A\OML/cmm/m/it/12 ^^_[] \OT1/cmr/m/n/12
  = \OML/cmm/m/it/12 g[]\OT1/cmr/m/n/12 (1 \OMS/cmsy/m/n/12 ^^@ \OML/cmm/m/it/12
  ^^N[]\OT1/cmr/m/n/12 )^^C[]^^A\OML/cmm/m/it/12 B[] \OT1/cmr/m/n/12 + \OML/cmm/
@@ -1374,8 +1381,8 @@ Package rerunfilecheck Info: File `Draft.out' has not changed.
  ) 
 Here is how much of TeX's memory you used:
  28015 strings out of 467871
- 532931 string characters out of 5418376
- 950629 words of memory out of 5000000
+ 532908 string characters out of 5418376
+ 950586 words of memory out of 5000000
  56005 multiletter control sequences out of 15000+600000
  654746 words of font info for 109 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
@@ -1422,9 +1429,9 @@ msilv/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy6.pfb><C
 amsfonts/cm/cmti12.pfb><C:/Users/msilv/AppData/Local/Programs/MiKTeX/fonts/type
 1/public/amsfonts/symbols/msam10.pfb><C:/Users/msilv/AppData/Local/Programs/MiK
 TeX/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on Draft.pdf (113 pages, 2511250 bytes).
+Output written on Draft.pdf (113 pages, 2510617 bytes).
 PDF statistics:
- 2930 PDF objects out of 2984 (max. 8388607)
+ 2929 PDF objects out of 2984 (max. 8388607)
  402 named destinations out of 1000 (max. 500000)
  496 words of extra memory for PDF output out of 10000 (max. 10000000)
 

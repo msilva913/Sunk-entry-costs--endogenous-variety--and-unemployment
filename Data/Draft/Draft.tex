@@ -1983,37 +1983,54 @@ following regularity conditions.\footnote{The soft-min Cobb--Douglas function of
 and $sa\leq1$, with elasticity $\varepsilon_f(\theta)=1/[(a\theta)^p+1]$ strictly
 decreasing, and it nests the \citet{den_haan_2000} function at $s=a=1$. The Cobb--Douglas
 function of our calibration violates (M1) for $\theta<A^{1/\eta_L}$ but respects it near the
-calibrated steady state, so the high equilibrium below is unaffected. Its low equilibrium
-would require a vacancy-filling probability between 14 and 21. Under every bounded
+calibrated steady state, so the high equilibrium below is unaffected. Under every bounded
 specification we check, that equilibrium is feasible, with $q\approx1$ and unemployment
 near one third.}
 
 \begin{assumption}[Matching technology]\label{ass:matching}
-	The matching function $m(u,v)$ has constant returns to scale and is strictly
-	increasing in both arguments. Let $f(\theta)\equiv m(1,\theta)$ and
-	$q(\theta)\equiv f(\theta)/\theta$, with $f$ continuously differentiable.
+	The matching function has constant returns to scale, so the job-finding rate
+	$f(\theta)\equiv m(1,\theta)$ and the vacancy-filling rate $q(\theta)\equiv f(\theta)/\theta$
+	depend on tightness alone, and $f$ is continuously differentiable.
 	\begin{enumerate}
-		\item[(M1)] \emph{Bounded probabilities:} $f(\theta)\leq1$ and $q(\theta)\leq1$ for all $\theta>0$.
-		\item[(M2)] \emph{Nonincreasing elasticity:} $\varepsilon_f(\theta)\equiv\theta f'(\theta)/f(\theta)$ is nonincreasing in $\theta$.
+		\item[(M1)] \emph{Bounded probabilities:} $f(\theta)\leq\min\{1,\theta\}$ for all $\theta>0$.
+		\item[(M2)] \emph{Diminishing elasticity:} $\varepsilon_f(\theta)\equiv\theta f'(\theta)/f(\theta)$
+		lies in $(0,1)$ and is nonincreasing in $\theta$.
 	\end{enumerate}
 \end{assumption}
 
-Since $m$ rises in $u$, $\varepsilon_f<1$, so $q$ is strictly decreasing. By (M1),
-$q(0^+)\in(0,1]$ and $q(\theta)\leq1/\theta\to0$. Under (M2), $\ln L$ is concave in
-$\ln\theta$, because the elasticity of $L$ is $\varepsilon_f(\theta)$ times the
-unemployment rate $\tau/(\tau+(1-\delta_e)f(\theta))$, and both fall in $\theta$. Write
-the job creation curve as $(z/\mu)N^{1/(\varepsilon-1)}=\Phi(\theta)$, with $\Phi$ given in
-\eqref{eq:jcc_rearranged} of \ref{app:equilibria_proof}. The last condition concerns
-$\Phi$:
+(M1) says that $f$ and $q$ are probabilities. By (M2), $f$ rises and $q$ falls with tightness,
+so $q(0^+)\in(0,1]$ and $q(\theta)\leq1/\theta\to0$. (M2) also makes $\ln L$ concave in
+$\ln\theta$, because the elasticity of $L$ is $\varepsilon_f(\theta)$ times the unemployment
+rate $\tau/(\tau+(1-\delta_e)f(\theta))$, and both fall in $\theta$.
+
+Under DS-CES, and with $p_0\to0$ so that $\mathcal{R}=0$, the job creation curve
+\eqref{eq:curve_jcc} can be solved for the recruiter compensation it requires:
+\begin{equation}\label{eq:Phi}
+	\frac{z}{\mu}\,N^{1/(\varepsilon-1)}=\Phi(\theta)\equiv b+K(\theta)
+	+\frac{\bigl(\kappa+K(\theta)/q(\theta)\bigr)\bigl(r+\tau+(1-\delta_e)\phi f(\theta)\bigr)}{(1-\delta_e)(1-\phi)}.
+\end{equation}
+$\Phi(\theta)$ is the break-even recruiter compensation at tightness $\theta$: the
+compensation at which posting a vacancy just pays. It adds the worker's outside option $b$,
+the flow value of a vacancy $K(\theta)$, and the expected hiring cost $\kappa+K/q$,
+annuitized at the rate $r+\tau$ at which matches end and grossed up for the worker's
+bargaining share. The term $(1-\delta_e)\phi f(\theta)$ is the part of the saved hiring cost
+that the worker captures through the outside option, which improves as the market tightens. The last
+condition concerns $\Phi$:
 \begin{enumerate}
 	\item[(C)] $\ln\Phi$ is convex in $\ln\theta$.
 \end{enumerate}
-Assumption~\ref{ass:matching} delivers most of (C). Under constant returns and (M2),
-$1/q$ is log-convex in $\ln\theta$, and sums and products of log-convex functions are
-log-convex. Two pieces of $\Phi$ fall outside it. The term in $\phi f(\theta)$ through the
-worker's outside option is log-concave under (M2). The posting cost $K(\theta)$ depends on
-the steady-state entry schedule $e(\theta)$ in \eqref{eq:e_theta}, which is an equilibrium
-object. We therefore state (C) separately. It holds at our calibration for every
+Condition (C) says that the elasticity of break-even compensation with respect to
+tightness, $\theta\Phi'(\theta)/\Phi(\theta)$, does not fall as the market tightens. Each
+further percent of tightness requires a weakly larger percentage rise in compensation.
+Since $\ln N_{JC}=(\varepsilon-1)\ln\Phi+\text{const}$, (C) makes the job creation curve
+convex in log--log space, while (M2) makes the resource constraint curve concave, so the
+two cross at most twice.
+
+Assumption~\ref{ass:matching} delivers most of (C). Under (M2), $1/q$ is log-convex in
+$\ln\theta$, and sums and products of log-convex functions are log-convex. Two pieces of
+$\Phi$ fall outside it. The term in $\phi f(\theta)$ is log-concave under (M2), and $K(\theta)$
+depends on the steady-state entry schedule $e(\theta)$ in \eqref{eq:e_theta}, which is an
+equilibrium object. We therefore state (C) separately. It holds at our calibration for every
 bounded-probability specification we have checked, at each value of the entry elasticity
 $\xi\in\{0.5,1,2\}$.
 
@@ -5263,16 +5280,8 @@ $L(\theta)=(1-\delta_e)f(\theta)/[\tau+(1-\delta_e)f(\theta)]$, and steady-state
 $e(\theta)$ in \eqref{eq:e_theta} with $\Lambda_r=1$. Write $x\equiv\ln\theta$.
 
 \medskip\noindent\textbf{Step 1: $N_{JC}(\theta)$ is well defined and strictly increasing.}
-Under DS-CES the job creation curve \eqref{eq:curve_jcc} can be written as
-\begin{align}\label{eq:jcc_rearranged}
-  \frac{z}{\mu}\,N^{1/(\varepsilon-1)}
-  = K(\theta) + b
-  + \frac{1}{(1-\delta_e)(1-\phi)}
-    \left(\kappa+\frac{K(\theta)}{q(\theta)}\right)
-    \bigl(r+\tau+(1-\delta_e)\phi f(\theta)\bigr)
-  \equiv \Phi(\theta),
-\end{align}
-which depends on $\theta$ alone. Since $1/(\varepsilon-1)>0$, it inverts to
+Under DS-CES the job creation curve is $(z/\mu)N^{1/(\varepsilon-1)}=\Phi(\theta)$, with
+$\Phi$ defined in \eqref{eq:Phi}, which depends on $\theta$ alone. Since $1/(\varepsilon-1)>0$, it inverts to
 $N_{JC}(\theta)=(\mu\Phi(\theta)/z)^{\varepsilon-1}$. Entry can be written
 $e(\theta)=\delta_e\{1+\tau(\theta-1)/[\tau+(1-\delta_e)f(\theta)]\}$, whose derivative has
 the sign of $\tau+(1-\delta_e)[f(\theta)(1-\varepsilon_f(\theta))+f'(\theta)]>0$, because
@@ -5287,7 +5296,8 @@ strictly increasing with $L(0^+)=0$ and $L<1$, $N_{RC}$ is strictly increasing, 
 $N_{RC}(0^+)=0$ and $N_{RC}<\bar{N}$.
 
 \medskip\noindent\textbf{Step 3: Boundary behavior.}
-\emph{As $\theta\to0$.} By (M1), $q$ is decreasing and bounded, so $q(0^+)\in(0,1]$. Since
+\emph{As $\theta\to0$.} By (M2), $q$ is decreasing, and by (M1) it is bounded by one, so
+$q(0^+)\in(0,1]$. Since
 $f(0^+)=0$, $e(\theta)\to0$ and $K(\theta)\to0$, so $K/q\to0$. Hence
 $\Phi(0^+)=b+\kappa(r+\tau)/[(1-\delta_e)(1-\phi)]$, which gives $N_{JC}^0$ in
 \eqref{eq:N_JC_intercept}. If $b>0$ or $\kappa>0$, then $N_{JC}^0>0=N_{RC}(0^+)$.
