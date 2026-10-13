@@ -56,6 +56,7 @@ file owns what.
 | [`context/data_and_files.md`](context/data_and_files.md) | Data sources, FRED series IDs, file index, empirical targets, LP spec |
 | [`context/parameters.md`](context/parameters.md) | All structural parameters: Θ_ext / Θ_d / Θ_e, economic meaning, identifying moments |
 | [`context/model_equations.md`](context/model_equations.md) | All 33 model equations with interpretation (Block 1 = current; Block 2 = reposting-margin modifications, [D11](context/decisions.md)) |
+| [`context/nesting_map.md`](context/nesting_map.md) | How the baseline nests or approximates DMP, CK, GS and BGM: restrictions, equivalence type, labels, proofs, caveats. **Read before editing the limiting cases or citing a nesting result** |
 | [`context/pipeline.md`](context/pipeline.md) | Both pipelines (Python empirical + Julia model): scripts, run order, code conventions |
 | [`context/principles.md`](context/principles.md) | 21 standing rules every agent must follow |
 

@@ -78,6 +78,10 @@ cascade, every §5.3 number comes from the code's timing.
 
 ## Propositions (audited Oct 11, 2026)
 
+The relationships among the nesting results (what restricts to what, and which kind of
+equivalence holds) are mapped in [`nesting_map.md`](nesting_map.md). This section owns their
+proof status.
+
 **Limiting cases restructured Oct 11 (MS):** the subsection now opens with the question (link to CK/GS), then `prop:independence` (1), clone replacement as the thought experiment (how to keep the destruction flow while abstracting from entry and exit) with `prop:ags` (2) and `rem:nesting`, then the double limit (3) as the justification that clone replacement, prima facie a heuristic, is a limit of the baseline. The failed single limit ε → ∞ is motivated by "business formation requires profits" (μ − 1 = ζ under DS-CES, back-reference to the intro's measurement argument); the δ → 0 detour is a footnote; the knife-edge caveat is replaced by the payoff (`lem:theta`/`prop:fe` are statements about this limit; convergence is of equilibrium conditions, not IRFs). Appendix G proofs reordered to match.
 
 | Result | Status |

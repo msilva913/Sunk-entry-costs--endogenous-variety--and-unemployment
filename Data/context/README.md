@@ -5,7 +5,7 @@ spliced (`prop:fe` leads `sec:mechanism`), every theory proposition audited and 
 repaired, X^c made exact in draft and code, `ass:matching` tightened. Handout
 `session_handout_20261012.md`. Handouts before Oct 9 moved to `archive/`.
 
-Ten files, each with one job, plus the dated session handouts. If you are about to write
+Eleven files, each with one job, plus the dated session handouts. If you are about to write
 something here, check this table first — most duplication in the past came from appending
 status notes to whichever file was open rather than the file that owns the topic.
 
@@ -20,6 +20,7 @@ status notes to whichever file was open rather than the file that owns the topic
 | [`data_and_files.md`](data_and_files.md) | Data sources, FRED IDs, file locations, empirical targets | How the code works |
 | [`parameters.md`](parameters.md) | All structural parameters: economic meaning, classification, identifying moments | Code implementation details |
 | [`model_equations.md`](model_equations.md) | All 33 model equations, dated in the draft's timing, with the code's deviations and the R8 restructuring spec (Block 1 = full reposting; Block 2 = partial reposting) | Calibration values, results |
+| [`nesting_map.md`](nesting_map.md) | How the baseline relates to DMP, CK, GS and BGM: restrictions, type of equivalence (exact, limit, allocations only), what survives and is lost, draft label, proof location, program check; cross-cutting caveats (e_t ≥ 0, σ = 0, CK parameterization vs CK model) | Proof status and audit history (`draft_status.md`), numbers (`findings.md`) |
 | [`pipeline.md`](pipeline.md) | Both pipelines: script inventory, run order, code conventions | What the results were |
 
 ## Reading order when picking the project back up
