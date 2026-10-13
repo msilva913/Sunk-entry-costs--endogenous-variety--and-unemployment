@@ -142,7 +142,7 @@ NFCI interaction variant:
 > ✅ **δ̄ is settled — [D1](decisions.md), September 6, 2026.** BED establishment deaths,
 > employment-weighted, 1993–2019: `dest_ann = 0.0320` (3.21%/yr), **δ_e/τ = 0.087**.
 >
-> ⏳ **But not yet implemented.** `steady_state.jl:613` still sets `dest_ann = 0.0754` — the
+> ⏳ **But not yet implemented.** `steady_state.jl:623` still sets `dest_ann = 0.0754` — the
 > Jaimovich-Floetotto 21% × τ figure (δ_e/τ = 0.210), which mixes a gross-job-loss share with
 > a separation rate — behind a comment saying so. Every mechanism figure and every §5.3
 > number is still at 0.210. The switch is the "Step 0 cascade" in

@@ -1,5 +1,5 @@
 # Estimation Design — Conditional + Unconditional Moments
-**Last updated:** September 23, 2026 · **Status:** design settled in the draft; **no code written**
+**Last updated:** September 23, 2026 (Oct 12: determinacy item 1 updated) · **Status:** design settled in the draft; **no code written**
 
 The design lives in the draft's §5.2 prose (`sec:calib`). This file states it compactly,
 records what is missing to run it, and points at the decisions that must be settled first.
@@ -83,7 +83,7 @@ LD→v IRF**, which identifies α (level and persistence) — this reverses [D4]
 
 **External:** r = 4%/yr, η_L = 0.6, ε = 4.3 (μ ≈ 1.30), τ = 3.1%/month, and δ_e, settled by
 [D1](decisions.md) at `dest_ann = 0.0320` (δ_e/τ = 0.087) — fixed, not estimated. ⏳ The value
-is not yet in the code; `steady_state.jl:613` still holds 0.0754. ⚠️ Treat δ_e as a directly
+is not yet in the code; `steady_state.jl:623` still holds 0.0754. ⚠️ Treat δ_e as a directly
 observed **lower bound** rather than a point estimate: the literature brackets it at
 [3.2 %, 10 %]/yr. It stays external only while the reposting margin is missing, because
 otherwise it absorbs that misspecification. See the D1 reframe and [D11](decisions.md).
@@ -100,9 +100,9 @@ baseline (DS-CES, p_0 = 0): two jump variables (Ψ̃_t, Ĉ_t), leading-order upp
 backward map, and BK satisfied under **ε > 1**. `Notes/AGS_Blanchard_Kahn.md` does the σ = 0
 case. Two consequences for the sampler:
 
-1. At the externally fixed ε = 4.3, determinacy holds comfortably — BK needs ε > 1 and
-   Prop. 5 Part 2's condition `eq:gN_cond` needs ε > 2. **ε > 2 is *not* required for BK**;
-   that is a Proposition 5 requirement only.
+1. At the externally fixed ε = 4.3, determinacy holds comfortably — BK needs only ε > 1. No
+   proposition requires ε > 2 any more (`eq:gN_cond` was dropped Oct 5; `prop:exit_s` needs no
+   sign on g_N). See [S9](decisions.md).
 2. §12 of the note shows **endogenous exit only makes BK easier to satisfy** (Λ̄ < 1 shrinks
    both persistence coefficients, raising 1/a and 1/b). So draws with larger ω_δ or p_0 do
    not threaten determinacy.

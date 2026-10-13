@@ -1,60 +1,55 @@
 # Pending Tasks
-**Last updated:** October 11, 2026 (R15 spliced as option (b); R16, R12, R12c done; theory-proposition audit). Earlier: October 9 (R16, R17 added; D12 raised) · **Branch:** `costly_vacancy_reposting`
+**Last updated:** October 12, 2026 (cleanup after the Oct 11–12 theory sessions: R15, R16, R12, R12c, P5 done and compressed into §Completed). · **Branch:** `costly_vacancy_reposting`
 
 Actionable work only. Decisions live in [`decisions.md`](decisions.md), draft section status in
 [`draft_status.md`](draft_status.md), results in [`findings.md`](findings.md), the model
 specification in [`model_equations.md`](model_equations.md).
 
-The draft is theory-complete and empirics-complete. Section 5 (estimation) is the remaining
-critical path, and the code must be brought in line with the draft (R8) before any number is
-regenerated.
+The theory sections (§§1–3, Appendices G–J) were audited and corrected Oct 11–12. What remains:
+bring the code in line with the draft (R8), regenerate every §5 number once, and write §5.4 and §6.
 
 ---
 
 ## Critical path
 
-> **Oct 9, 2026 — conditional on [D12](decisions.md) (open, MS).** If D12's recommended
-> theory-forward structure is adopted, IRF matching leaves this paper. Then:
-> - **0a (E9)** and **items 2 and 5** drop off the path;
-> - **D3** becomes moot, and **D10** takes option (a);
-> - item 6 becomes calibration plus moment matching, with full-information estimation deferred;
-> - **R16**, the **R15** splice and **R12c** join the path ahead of item 7;
-> - **0b (R8 + D1 + PATH B)** and **D11** stay, since the quantitative Beveridge sign must be
->   fixed for any venue.
->
+> **Conditional on [D12](decisions.md) (open, MS).** If the recommended theory-forward
+> structure is adopted, IRF matching leaves this paper: **0a (E9)** and **items 2 and 5** drop
+> off, **D3** becomes moot, **D10** takes option (a), and item 6 becomes calibration plus
+> moment matching. **0b** and **D11** stay for any venue, since the quantitative Beveridge sign
+> must be fixed. The theory items that D12 put on the path (R15, R16, R12c) are done.
 > Until MS decides, the path below stands.
 
 **0a. E9 — model-side LP test.** ⛔ Gates the Block B design ([D10](decisions.md)) and may
 settle [D3](decisions.md). Run the baseline LP specification on a model-simulated 50-state
-panel. If the model LP also builds monotonically, the full IRF path is a usable target;
-if it peaks at h = 1–2, target short horizons. ⚠️ The simulated instrument must reproduce the
-data instrument's persistence (0.91 quarterly), not the shock's (≈ 0.21 quarterly): use
-industry-level δ processes with their own serial correlation and heterogeneous state
-exposure. Templates: `simulate_model` (`solution_functions.jl`), `simulated_moments` in
+panel. If the model LP also builds monotonically, the full IRF path is a usable target; if it
+peaks at h = 1–2, target short horizons. ⚠️ The simulated instrument must reproduce the data
+instrument's persistence (0.91 quarterly), not the shock's (≈ 0.21 quarterly): use
+industry-level δ processes with their own serial correlation and heterogeneous state exposure.
+Templates: `simulate_model` (`solution_functions.jl`), `simulated_moments` in
 `run_solution_delta_target.jl`.
 
-**0b. One regeneration pass: R8 + D1 + PATH B.** ⛔ Three changes each invalidate every §5.3
-number; do them together so the mechanism runs are regenerated once.
+**0b. One regeneration pass: R8 + D1 + PATH B.** ⛔ Each invalidates every §5.3 number; do them
+together so the mechanism runs are regenerated once.
 - **R8** (code restructuring and reposting margin), below.
-- **D1:** `dest_ann = 0.0320` (still 0.0754 at `steady_state.jl:613`). Converges only under
+- **D1:** `dest_ann = 0.0320` (still 0.0754 at `steady_state.jl:623`). Converges only under
   PATH B, so implement by switching the default path ([D2](decisions.md)).
 - Then: re-run Comparisons A–D, regenerate the eight `mechanism_*.pdf`, re-run
   `mechanism_stats.jl`, diff `mechanism_stats.txt`, update §5.3. Also §5.2's external block,
   `tab:calib_targets` row 1, and the **three remaining** δ̄_e/τ̄ ≈ 0.21 claims (now ≈ 0.087).
-  Locate them by searching `Draft.tex` for `0.21` rather than by line number — as of Oct 5,
-  2026 they sit at L3156 (§5.3), L4020 (`app:loglin`) and L4298 (`app:comparison_D`), but these
-  drift with every edit — the figures previously recorded here were 15 lines stale. The fourth, in `sec:mechanism`, was resolved Oct 5 in the Prop. 5
-  rewrite: it now leads with the measured 0.087 and uses 0.21 only as an explicit comparison.
-  Re-run `run_prop5_s_check.jl` and `run_prop5_parts23_check.jl` after the regeneration; the
-  bounds currently in the draft and [`findings.md`](findings.md) are **2.6 % / 0.7 %** for
-  condition (ii) and **0.81** for the Part 3 entry offset (c3_v). Update if they move.
+  Find them by searching `Draft.tex` for `0.21` (use `grep -a`: the file has NUL bytes). As of
+  Oct 12 they sit at L3272 (§5.3), L4132 (`app:loglin`) and L4459 (`app:comparison_D`). The
+  hits at L1674 and L1784 (`sec:mechanism`) are correct as written.
+- Re-run `run_prop5_s_check.jl` and `run_prop5_parts23_check.jl`. The bounds in the draft
+  (`lem:accounting` discussion) are **2.6 % / 0.7 %** for condition (ii) and **0.81** for the
+  δ-part entry offset. Update if they move. Also redo the `prop:exit_s` numerics (the current
+  program is indicative for p_0 > 0 because of the code's exit dating).
 
 **1. Settle [D2](decisions.md) and [D3](decisions.md).** D3 after E9. Write the canonical
 target set into `data_and_files.md`.
 
 **2. `part5_wcrb.py` — wild cluster bootstrap → full Ω_β.** `part5_lp.py` saves only scalar
-per-horizon SEs; `eq:ql_irf` needs the full covariance across horizons and outcomes
-(dimension set by D10/E9). Persist the matrix (`omega_beta.npy`).
+per-horizon SEs; `eq:ql_irf` needs the full covariance across horizons and outcomes (dimension
+set by D10/E9). Persist the matrix (`omega_beta.npy`).
 
 **3. `moments_bootstrap.py` — block bootstrap → Ω_m** (block length 8 quarters).
 
@@ -67,31 +62,27 @@ per-horizon SEs; `eq:ql_irf` needs the full covariance across horizons and outco
 `estimate = []`, `priors = (;)`. Evaluate the log-posterior once at the calibrated point and
 confirm both quadratic forms are O(K) before sampling.
 
-**7. Write §5.4 `sec:posterior`, `app:weighting_robustness`, §6 Conclusion**, plus the AGS
-counterfactual.
+**7. Write §5.4 `sec:posterior`, `app:weighting_robustness`, `app:robustness`, §6
+Conclusion** (`ref:conclusion` exists as an empty stub), plus the AGS counterfactual.
 
 ---
 
-## Reposting margin and timing
+## Reposting margin and theory
 
 | # | Task | Status |
 |---|---|---|
-| R13 | ✅ **Prop. 5 restated for start-of-period shock observation — done Oct 5** (wording approved by MS). Part 1: accounting with period-t entry, conditions (i)–(ii). Part 2: `eq:gN_cond` replaced by `eq:exit_cond` (det J > 0 of the 3×3 exit–variety–unemployment system; `eq:gN_cond` failed at the calibration, g_N > 0), period-t exit term added to the drain, B_t no longer predetermined, monotonicity-in-ρ_s claim replaced by continuity, first order in F′. Part 3: period-t entry term; `lem:vpre` restated as a decomposition. Discussion: conditions (i)–(ii) very easily satisfied at p_0 = 0 (≤ 2.6%, 0.7% at D1); Part 3 h = 1 sign fragile at monthly frequency but vacancies fall from month 2 and in every quarterly average at D1. **Remaining:** redo the Part 2 numerics after R8 (`run_prop5_parts23_check.jl` is indicative for p_0 > 0 because of the code's exit dating) | ⏳ numerics after R8 |
-| R15 | ✅ **Done Oct 11, option (b) (MS).** `lem:theta` + `prop:fe` lead `sec:mechanism` (proofs `app:proof_fe`); old Prop. 5 split into `lem:accounting` (Parts 1, 3 at any ξ), `rem:finite_xi`, `prop:exit_s` (Part 2). All numbers from `gs_free_entry_beveridge.txt` (κ = 0) and `gs_finite_xi_entry_offset.txt`. The note `../Notes/beveridge_free_entry_GS.tex` is now superseded by the draft. See [`draft_status.md`](draft_status.md) Propositions | ✅ |
-| R16 | ✅ **Done Oct 11.** `prop:equilibria` restated under `ass:matching` (CRS, f, q ≤ 1, ε_f nonincreasing) and condition (C), ln Φ convex in ln θ; proof by log-convexity (≤ 2 zeros), double-limit uniqueness iff z > Φ(0). `rem:smcd` cites the SMCD working paper. The plan's convexity-in-levels fix failed (`equilibria_convexity_check.jl`); the low equilibrium is genuine under bounded matching (q ≈ 1, u ≈ 1/3), an artifact (q ≈ 14–21) only under extrapolated Cobb–Douglas. **Owed (MS):** add `silva_2026` and `den_haan_2000` to `references.bib` (entries were added by hand to `Draft.bbl`) | ✅ |
-| R17 | **Test a nonlinear `prop:fe` (hypothesis).** At ξ → ∞, Q = x_m is pinned and the job creation condition has no endogenous states. With Markov (δ, s), the exact policy should then be θ_t = Θ(δ_t, s_t) globally, not just to first order. Steps: existence and uniqueness of Θ (a contraction on the functional equation); monotonicity of Θ in δ and s; signs of u and v at h = 1 and along the path. Check numerically against the log-linear a, b in `../Programs baseline/gs_free_entry_beveridge.jl` before writing any proof. Would turn the headline theorem into a global result. **Constraint to handle (Oct 11):** free entry holds with equality only while e_t > 0. At D1 ê_0 ≈ −10.9 per 1% destruction shock (κ = 0), so entry hits zero for shocks above roughly 9% of δ̄ (9.3% at x_v = 0.5, `beveridge_free_entry.txt`), about 1.4 σ_δ; a global Θ must allow Q_t < x_m there. 4–8 weeks, medium risk | ❌ after R15 decision |
-| R14 | **Ingredient ablation** (see [`../Notes/role_of_ingredients.md`](../Notes/role_of_ingredients.md)): after R8, one-at-a-time ζ→0, ω_δ→0, α→0, ξ→∞, κ=0, σ=0 on one calibration; report Block M moments and δ IRFs. **Two cells added Oct 5 (note §2):** (a) **ξ→∞ under an *s* shock**, not only δ — Comparison D tested δ only, and CK's result concerns a position-destroying shock with no variety channel, which is our s margin; (b) **ξ→∞ jointly with α > 0**, since under free entry Q is pinned and entry may replace retired positions, undoing the reposting margin. If (b) bites, the ingredients are not separable and that pair must be reported together rather than one-at-a-time. **The markup is excluded** from the list: μ = 1 removes the profits sustaining a finite N, so it eliminates the object under study rather than switching off a channel, and under DS-CES ζ = μ−1 so ε cannot move one without the other. Also: decide whether to add the exit-on-productivity VAR moment (â_21 ≈ −1.05) to Block M so `dest_elast_target` is disciplined; fix the elasticity print in `run_prop5_parts23_check.jl` (divide by σ_z, not 100σ_z) | after R8 |
-| R2 | **Verify α, σ_s, δ_e are separately identified** on simulated data. α and δ_e move cor(u,v) through the same channel; α and χ_m both move position destruction. The LD→v IRF should separate them (exit compares χ to χ^c, reactivation to Q). Otherwise fix α on a reported grid. Gates the D11 go/no-go | ❌ needs R8 |
-| R3 | **Prop. 5 for partial reposting.** Parts 1–2 now hold for costless reposting only (Oct 1 restatement). Open: a result for α > 0, e.g. a threshold Λ_r* at which the s→v sign flips, and whether Part 2's claim that the drain rises in ρ_s survives | ❌ |
+| R8 | **Restructure the code to the draft's timing and add the reposting margin.** Spec: [`model_equations.md`](model_equations.md) "Code status" and Block 2. (i) States are the pre-exit stocks after the end-of-(t−1) incidence (Ñ_t, Ẽ_t, Ṽ^u_t, Ṽ^s_t) plus z_t, δ_t, s_t (known at t); N_t, u_t, v_{pre,t} become same-period controls solved with χ^c_t; survival (1−δ_t)F(χ^c_{t+1}) in both value equations and laws of motion. (ii) Add α, Λ_{r,t} as a tracked control, modified f[22], X^r in f[16], 𝓡_t as a tracked variable with its own equation, and f[3] gaining −(1−ϕ)·s'·𝓡' (as in `eq:jcc_eq`); the wage equation f[7] gains −ϕ·s·𝓡. (iii) ~~Exact X^c~~ done Oct 11 (P5). (iv) Regression tests: α → 0 and p_0 = 0 reproduce Block 1; positions conserved up to exit and the non-reactivated mass. (v) **Re-specify Comparison B** (`run_solution_endog_exit.jl`): once α exists, p_0 = 0 removes exit **and** reactivation. The exit-only switch is p_0 > 0 with ω_δ = 0; B as currently coded becomes the both-margins-off run. The post-Prop-3 passage already names B as the exit-only comparison. ⚠ §5.3 prose is committed to three runs that do not exist yet (novar-vs-AGS, α → 0, re-specified B); check whether any script implements `prop:ags` as stated | ❌ **next model task** |
+| R2 | **Verify α, σ_s, δ_e are separately identified** on simulated data. α and δ_e move cor(u,v) through the same channel; α and χ_m both move position destruction. The LD→v IRF should separate them. Otherwise fix α on a reported grid. Gates the D11 go/no-go | ❌ needs R8 |
+| R3 | **Theory for partial reposting.** `lem:accounting` and `prop:exit_s` assume costless reposting. Open: a result for α > 0, e.g. a threshold Λ_r* at which the s→v sign flips. Note (Oct 11): under costless reposting the theory implies s shocks give positive comovement at every persistence, so D11/R8 is *necessary* to fix the +0.995 cor(u,v) | ❌ |
 | R4 | **Revisit [D4](decisions.md)/S6**: LD→v as the identifying moment for α | after R2 |
 | R5 | **Add to §5.2:** the GS and Shao-Silos comparison, the δ_e bracketing argument, and why three shocks are required (CK consistency) | ⚠️ do regardless |
-| R6 | **Decide whether δ_e moves into Θ_e** with a prior on [3.2%, 10%]/yr. Only once the margin exists, or δ_e absorbs its blame | after R8 |
-| R8 | **Restructure the code to the draft's timing and add the reposting margin.** Spec: [`model_equations.md`](model_equations.md) "Code status" and Block 2. (i) States are the pre-exit stocks after the end-of-(t−1) incidence (Ñ_t, Ẽ_t, Ṽ^u_t, Ṽ^s_t) plus z_t, δ_t, s_t (known at t); N_t, u_t, v_{pre,t} become same-period controls solved with χ^c_t; survival (1−δ_t)F(χ^c_{t+1}) in both value equations and laws of motion. (ii) Add α, Λ_{r,t} as a tracked control, modified f[22], X^r in f[16], 𝓡_t as a tracked variable with its own equation, and f[3] gaining −(1−ϕ)·s'·𝓡' (as in `eq:jcc_eq`; no J needed, no nested E); the wage equation f[7] gains −ϕ·s·𝓡. (iii) Exact X^c integral. (iv) Regression tests: α → 0 and p_0 = 0 reproduce Block 1; positions conserved up to exit and the non-reactivated mass. (v) **Re-specify Comparison B** (`run_solution_endog_exit.jl`, described in `Draft.tex` as p_0 = 0 and ω_δ = 0): under Block 1 the two restrictions are one experiment because there is no reactivation margin to lose, but once α exists p_0 = 0 removes exit **and** reactivation (settled Oct 1, see R9). The exit-only switch is p_0 > 0 with ω_δ = 0; B as currently coded becomes the both-margins-off run. Flagged Oct 5 while revising the post-Proposition-3 passage, which now names B as the exit-only comparison | ❌ **next model task** |
-| R9 | **Simulate the dynamic payoffs:** amplification (procyclical Λ_r, reposting option in the job creation condition) and persistence (stock depletion; does reposting move the δ→u peak?). Use one-at-a-time switches, not baseline-vs-AGS: ζ→0 (variety), ω_δ→0 (exit, reactivation retained), α→0 (reactivation, exit retained). Implies a fourth mechanism comparison, an α→0 run | after R8 |
-| R11 | **Finish the draft's reposting edits.** Wage, surplus, job creation prose, and steady-state appendix done Oct 1. `eq:Lambda_r` added and `def:equilibrium` completed Oct 1 (θ_t = v_t/u_t, matching rates, 𝓡_t; J_t eliminated by substituting the surplus at t+1). Remaining: intro prose that says reposting makes vacancies "self-correct" (~L154, ~L308); §5.2's Y^Gross/Y = 1 + X/Y + X^c/Y needs X^r/Y (with P4) | ⚠️ |
-| R12c | ✅ **Resolved Oct 11 by the fallback.** The level argument "∂e/∂δ ∝ δ̄_e/(r+δ̄_e) → 0" was wrong (at ξ = ∞, ∂θ/∂δ in levels does not vanish). `gs_finite_xi_entry_offset.jl` shows the finite-ξ h = 1 condition holds iff δ̄ < δ̄*(ξ, ρ_δ), non-monotone in ξ, and no clean δ̄ → 0 limit under recalibration (Q̄ explodes below ~1%/yr). Stated as `rem:finite_xi` backed by those numbers; the R12c paragraph was removed from the proof | ✅ |
-| R12b | **Circular derivation in `app:loglin` par.9 -- FIXED Oct 5, but the numerical claim still needs a cite.** `eq:K_decomp` and `eq:Q_ll_delta` were the same asset-pricing identity (phi_D = D * deltabar_e/(r+deltabar_e) identically), yet the draft signed K-hat from delta-hat_e holding Q-hat fixed and then signed Q-hat from that K-hat -- one equation used twice. The entry cushion is **congestion relief** (theta down => q up => higher dividend), not duration shortening; duration signs K only at free entry, where Q is pinned by the entry technology. New par.9a/9b/9c add `eq:K_jcc_ll`, `eq:K_freeentry`, `eq:theta_freeentry`, `eq:tau_loading`. **Still owed:** e-hat^delta > 0 is now stated as a numerical result from Comparison D rather than derived, so point it at a specific figure or a `mechanism_stats.jl` number. Also compute the deltabar_e/taubar vs deltabar_e/(r+deltabar_e) loading comparison in a program so the magnitudes can enter the text under N15 | after R8 |
-| R12 | ✅ **Audit done Oct 11** for `prop:independence`, `prop:double_limit` (claim (i) corrected), `prop:ags` (BK paragraph), `rem:nesting`, `prop:bgm_nest` (proof rewritten), `prop:curves` (demoted to a remark), `prop:equilibria` (R16), `prop:fe`. Details in [`draft_status.md`](draft_status.md) Propositions | ✅ |
+| R6 | **Decide whether δ_e moves into Θ_e** with a prior on [3.2%, 10%]/yr. Only once the margin exists | after R8 |
+| R9 | **Simulate the dynamic payoffs:** amplification (procyclical Λ_r, reposting option in the job creation condition) and persistence (stock depletion; does reposting move the δ→u peak?). One-at-a-time switches: ζ→0 (variety), ω_δ→0 (exit, reactivation retained), α→0 (reactivation, exit retained). Implies a fourth mechanism comparison, an α→0 run | after R8 |
+| R11 | **Last reposting edit:** §5.2's Y^Gross/Y = 1 + X/Y + X^c/Y (`eq:calib_stage2` text, ~L2955) needs X^r/Y (with P4). The intro "self-correct" prose was fixed Oct 11–12; the L350 footnote ("partially self-corrects") is accurate | ⚠️ |
+| R12b | **`app:loglin` ¶9 numerical claim needs a cite.** ê^δ > 0 is stated as a numerical result from Comparison D; point it at a figure or a `mechanism_stats.jl` number. Also compute the δ̄_e/τ̄ vs δ̄_e/(r+δ̄_e) loading comparison in a program (N15) | after R8 |
+| R14 | **Ingredient ablation** (see [`../Notes/role_of_ingredients.md`](../Notes/role_of_ingredients.md)). ⚠ **Rewrite that note's §2 first:** variety is *not* what makes the δ sign survive free entry (`prop:fe` shows the user-cost channel does). After R8: one-at-a-time ζ→0, ω_δ→0, α→0, ξ→∞, κ=0, σ=0 on one calibration; report Block M moments and δ IRFs. Cells: ξ→∞ under an *s* shock; ξ→∞ jointly with α > 0 (under free entry entry may replace retired positions). The markup is excluded (μ = 1 removes the profits that sustain N). Also: decide on the exit-on-productivity VAR moment (â_21 ≈ −1.05) for Block M; fix the elasticity print in `run_prop5_parts23_check.jl` (divide by σ_z, not 100σ_z) | after R8 |
+| R17 | **Test a nonlinear `prop:fe` (hypothesis).** At ξ → ∞, Q = x_m is pinned and the job creation condition has no endogenous states, so with Markov (δ, s) the exact policy should be θ_t = Θ(δ_t, s_t) globally. Steps: existence and uniqueness of Θ (contraction); monotonicity in δ and s; signs of u, v at h = 1 and along the path. Check numerically against `gs_free_entry_beveridge.jl` first. **Constraint:** free entry binds only while e_t > 0. At D1 ê_0 ≈ −10.9 per 1% destruction shock (κ = 0), so entry hits zero for shocks above ≈ 9% of δ̄ (9.3% at x_v = 0.5, `beveridge_free_entry.txt`), about 1.4 σ_δ; a global Θ must allow Q_t < x_m there. 4–8 weeks, medium risk | ❌ optional |
+| R18 | **Remark on selection and stability of the low steady state** of `prop:equilibria` (genuine under bounded matching: q ≈ 1, u ≈ 1/3). Which one the calibration selects and why; local stability of each | ❌ |
 
 ## Empirical code tasks
 
@@ -111,42 +102,45 @@ counterfactual.
 | # | Task | Status |
 |---|---|---|
 | P1 | §4.3: δ–LD correlation paragraph, in-text joint-LP sentence, fix the malformed `\ref` at the section end | ⚠️ |
-| P2 | Broken references: undefined `sec:conclusion` (label is `ref:conclusion` at L3314), `app:robustness`, `app:weighting_robustness`, `eq:labor_C_N`; duplicate `eq:profit_share` | ⚠️ |
+| P2 | Two undefined references remain in `Draft.log`: `app:robustness`, `app:weighting_robustness` (both appendices unwritten; critical path item 7). No duplicate labels | ⚠️ |
 | P3 | Cite the Blanchard-Kahn notes (`Notes/Baseline_Blanchard_Kahn.md`): BK under ε > 1, strengthened by endogenous exit | ❌ |
-| P3b | GS's 6–10%/yr range vs δ_e = 3.2%: both sentences (L443, L468) are commented out. Check that no active claim remains; if the comparison is restored, explain why the added channels permit a lower δ_e | ⚠️ check |
+| P3b | GS's 6–10%/yr range vs δ_e = 3.2%: both sentences are commented out. Check that no active claim remains; if restored, explain why the added channels permit a lower δ_e | ⚠️ check |
 | P4 | §5.2 rewrite to the D2 path, with α in the estimated block, `tab:calib_targets`, and priors; fix the superseded 7.54% δ_e row | after D2 |
-| P5 | ✅ **Done Oct 11, 2026.** X^c = N·E(χ|χ≤χ^c) = Nψ_cχ^c·p_0(χ^c/χ_m)^ψ/Λ = Nψ_cωχ^c, ω = 1−(1−p_0)(1−δ)/(1−δ_e). Draft: `eq:agg_fixed_costs`, `eq:exit_threshold_curve`, retailers text, steady-state appendix and both derivation subsections (which also had wrong N, L^e, L^c and a wrong sign claim); `eq:profit_share_ss` split from the duplicate label; `eq:labor_C_N` reference removed. Code: `payer_share` in `steady_state.jl`, used in `profit_share`, `steady_state`, `steady_state_free_entry`, both calibrations (PATH B cons = ψ_cω; PATH A ψ_c = cons/ω); `run_solution_core.jl` f[16] and SS; `run_solution_no_variety.jl`; `steady_state_checks.jl`; `beveridge_free_entry.jl`. Verified: X_c/N equals ψ_cωx_c and the Bellman cutoff holds to 1e-15; the 33-equation SS residual is 5e-14 (PATH B, D1) and 4e-15 (PATH A). PATH A steady state unchanged (ψ absorbs); PATH B D1 x_c +0.07%. Every §5.3 number shifts slightly, already covered by the R8 + D1 regeneration. See memory note on the error's origin | ✅ |
+| P6 | **`references.bib` (MS):** add `silva_2026` (SSRN 6956640) and `den_haan_2000` (doi 10.1257/aer.90.3.482). Both were added by hand to `Draft.bbl`; the next bibtex run drops them otherwise | ⚠️ owed |
+| P7 | If D10(a) is adopted, switch the intro LP sentence (+0.22 pp on impact, ≈ 1.71 pp after four to five years) to the robust h = 0–2 and h = 4–6 features | after D10 |
 
 ## Model tasks
 
 | # | Task | Status |
 |---|---|---|
-| M2 | Free-entry steady state in `steady_state_checks.jl` lands on the θ = 1.80 branch; bracketed solve over `(log(0.1), log(0.6))`. Expositional only | low priority |
+| M2 | Free-entry steady state in `steady_state_checks.jl` fails to bracket (also fails at `HEAD` before the P5 fix); bracketed solve over `(log(0.1), log(0.6))`. Expositional only | low priority |
 | M4 | `eval_SS` toolkit bug (`for ip in npar` iterates once), so callers need not pass a precomputed SS. Matters for the sampler | ❌ |
 | M7 | 🔴 **Observable mapping for labor productivity.** Model `labor_prod = Y/(ρL)` has SD 0.0387 vs 0.0128 in data and correlates 0.9975 with N^e. Every RSD in Block M has it in the denominator. Candidates: Y_c/L_c or a different deflation; then an observable-mapping table in §5.2 | ❌ blocks Block M |
 | M8 | Hump-shape gap: the model peaks at h = 1–2. Resolved through E9/D10, not a new mechanism; R9 checks whether reposting persistence matters | waits on E9 |
-| M10 | ⚠️ Latent: `SS_symbolics` uses the gross Lerner share (μ−1) for f_e, i.e. the p_0 = 0 model. Inert because every runner passes `SS_precomputed`. Fix before reviving the symbolic SS path; never use it as a linearization point | dormant |
+| M10 | ⚠️ Latent: `SS_symbolics` uses the gross Lerner share (μ−1) for f_e, i.e. the p_0 = 0 model. Inert because every runner passes `SS_precomputed`. Fix before reviving the symbolic SS path | dormant |
 
 ---
 
-## Completed (details in git history and [`findings.md`](findings.md))
+## Completed (details in git history, [`findings.md`](findings.md), [`draft_status.md`](draft_status.md))
 
-- **Sept 5–6:** non-steady-state linearization fixed (free-entry mismatch in `SS_numeric`;
-  `solution_interface` now errors if the SS residual exceeds tolerance); f[16] posting-cost
-  bug; `hp_filter` replaced by a true HP filter (model second moments before Sept 5 are
-  invalid); Convention A restored in the code; `mechanism_stats.jl` (N15 for §5.3).
+- **Sept 5–6:** non-steady-state linearization fixed; f[16] posting-cost bug; true HP filter
+  (model second moments before Sept 5 are invalid); Convention A restored; `mechanism_stats.jl`.
 - **Sept 21–23:** s process calibrated from part6b (ρ_s = 0.874, σ_s = 0.0854); D1/M5
   diagnostic; E8 instrument-persistence test.
-- **Sept 28–30:** reposting formulation (D11), job creation condition with reposting (R7), draft
-  chunks A–C (R10), Props 1 and 3 audited.
-- **Oct 5:** wage/𝓡 dependency audit: `eq:gdp` income identity (Π^int net of X, X^r), `eq:curve_jcc`, `eq:e_theta`, `eq:phi_calib`, `eq:destruction_curve` (p_0 atom).
-- **Oct 5:** Prop. 5 restated under the timing convention (R13): statement, proof, `lem:vpre`,
-  discussion; `run_prop5_s_check.jl` extended; new `run_prop5_parts23_check.jl`.
-- **Oct 1 (late):** wage dependencies carried through the main text and steady-state
-  appendix; `eq:repost_shortfall`, `eq:Lambda_r`, `eq:theta_eq` added; `def:equilibrium`
-  completed with J_t eliminated; §2 timing prose corrected to start-of-period shock
-  observation.
-- **Oct 1:** wage appendix rederived (Convention A employment law, reposting term);
-  `eq:u_lom` and its restatements moved to Convention A; timing text and `fig:Timing`;
-  `def:equilibrium` initial conditions; Prop. 5 Part 1 restated and reproved, with
-  `run_prop5_s_check.jl`; `model_equations.md` re-dated to the draft's timing.
+- **Sept 28–Oct 1:** reposting formulation (D11), job creation with reposting (R7), draft
+  chunks A–C (R10), wage appendix and `def:equilibrium` completed, `model_equations.md` re-dated.
+- **Oct 5:** Prop. 5 restated under the timing convention (R13); `app:loglin` ¶9 circularity
+  fixed; wage/𝓡 dependency audit.
+- **Oct 6–7:** free-entry δ–s result (`Notes/beveridge_free_entry_GS.tex`, now superseded by the draft).
+- **Oct 11 (R15, R16, R12, R12c):** `lem:theta` + `prop:fe` lead `sec:mechanism`; old Prop. 5
+  split into `lem:accounting`, `rem:finite_xi`, `prop:exit_s`. `prop:equilibria` restated under
+  `ass:matching` + (C). Every proposition in §3 and Appendices G–J audited and corrected
+  (`prop:double_limit` (i) was wrong). Programs: `gs_finite_xi_entry_offset.jl`,
+  `double_limit_check.jl`, `equilibria_convexity_check.jl`.
+- **Oct 11 (P5):** X^c = N·E(χ | χ ≤ χ^c) = Nψ_cωχ^c, ω = 1−(1−p_0)(1−δ)/(1−δ_e), in the draft
+  (`eq:agg_fixed_costs`, `eq:exit_threshold_curve`, steady-state appendix) and the code
+  (`payer_share` in `steady_state.jl`; `run_solution_core.jl` f[16] and SS; three mirrors).
+  SS residual 5e-14 (PATH B, D1); PATH A unchanged; PATH B x_c +0.07%.
+- **Oct 11–12 (prose):** limiting cases led by clone replacement; free-entry discussion recast
+  around the δ–s contrast with `tab:fe_irf`; Sections 1–3 efficiency and accuracy pass;
+  `ass:matching` tightened with Φ defined in the main text (`eq:Phi`).

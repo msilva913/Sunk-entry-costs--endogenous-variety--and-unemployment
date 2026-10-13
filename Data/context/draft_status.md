@@ -1,10 +1,12 @@
 # Draft Status — `Draft/Draft.tex`
-**Last updated:** October 11, 2026 (R15 option (b) spliced: `prop:fe` leads `sec:mechanism`; Prop. 5 split into `lem:accounting` + `rem:finite_xi` + `prop:exit_s`; R16 repaired under matching regularity conditions; `prop:double_limit` (i) corrected; audit of all theory propositions). Oct 9: `prop:equilibria` gap → R16; D12
+**Last updated:** October 12, 2026 (context cleanup; Oct 11–12: R15 option (b) spliced, theory propositions audited and corrected, X^c made exact, `ass:matching` tightened with `eq:Phi` in the main text)
 
-**Build:** compiles with 0 errors and 0 missing graphics. The 4 undefined references and 1
-duplicate label (P2 in [`pending_tasks.md`](pending_tasks.md)) predate the reposting work.
-Compile from inside `Data/Draft/` (the graphicspath leads with relative entries), two passes,
-with `-synctex=1`. If an editor auto-compiles on save, the `.aux` can be truncated
+**Build:** compiles with 0 errors and 0 missing graphics. Two undefined references remain,
+`app:robustness` and `app:weighting_robustness` (unwritten appendices; P2); no duplicate labels.
+Compile from inside `Data/Draft/` (the graphicspath leads with relative entries), **three
+`pdflatex` passes** (mathtools `showonlyrefs` needs them), with `-synctex=1`. **Never run
+`bibtex`** (it destroys the tracked `Draft.bbl`). Close TeXstudio first: an open file causes
+EPERM on save. If an editor auto-compiles on save, the `.aux` can be truncated
 mid-build; delete it and rebuild.
 
 **Notation.** χ^c_t (not x^c_t); Λ_t ≡ F(χ^c_t); ς for the survival quantile. Reposting:
@@ -33,14 +35,17 @@ cascade, every §5.3 number comes from the code's timing.
   derivation compressed; the post-definition text de-duplicated; the wage paragraph tightened.
 - `eq:exit_threshold_curve` did rely on a shortcut (ψ_c with no p_0, the p_0 = 1 model); fixed Oct 11 with the X^c correction (P5 in `pending_tasks.md`).
 - MS kept the DMP paragraph (item 5).
+- **Oct 12:** `ass:matching` tightened to (M1) f ≤ min{1, θ} and (M2) ε_f ∈ (0,1) nonincreasing;
+  Φ (break-even recruiter compensation) defined in the main text as `eq:Phi`, with an
+  interpretation of (C) (the elasticity of Φ in θ does not fall). Appendix J cites `eq:Phi`.
 
 
 | Section | Status | Outstanding |
 |---|---|---|
-| 1 Introduction (incl. §1.1 evidence) | ✅ | Prose says reposting makes vacancies "self-correct" (~L154, ~L308); qualify for partial reposting (R11). **Oct 5:** endogenous exit no longer claimed as a recession amplifier (contradicted by §5.3 — Flag 1), reworded to the δ_e decomposition plus the host distribution F for reactivation draws (`ee5a2a5`); new paragraph giving the measurement argument for why the business formation block is needed given GS (`bcee2cb`); Fact 1 gains the entry margin, the C7–C10 correlations and the one-for-one clause (`1e94613`). **Still owed:** a paragraph on the ξ/CK contrast built on the predetermined share (text drafted in session, not spliced), and the ξ sentence (gated on R14) |
+| 1 Introduction (incl. §1.1 evidence) | ✅ | "Self-correct" prose fixed Oct 11–12 (R11). LP summary matches §4. **Oct 5:** endogenous exit no longer claimed as a recession amplifier (contradicted by §5.3 — Flag 1), reworded to the δ_e decomposition plus the host distribution F for reactivation draws (`ee5a2a5`); new paragraph giving the measurement argument for why the business formation block is needed given GS (`bcee2cb`); Fact 1 gains the entry margin, the C7–C10 correlations and the one-for-one clause (`1e94613`). **Still owed:** the ξ sentence (gated on R14). The planned ξ/CK paragraph on the predetermined share is superseded by `prop:fe`'s user-cost contrast; if D10(a), the LP sentence switches to the h = 0–2 / h = 4–6 features (P7) |
 | 2 Environment | ✅ | Convention A `eq:u_lom`; `eq:v_lom` with Λ_{r,t}. Timing prose (Oct 1, late) states the paper's convention: the aggregate state incl. s_t, δ_t is known at the start of t; only incidence is revealed at the end of t. `fig:Timing` unchanged (MS: consistent with the convention); it notes that s hits only incumbent matches |
 | 3 Equilibrium | ✅ | Wage dependencies fixed Oct 1: 𝓡_t defined at `eq:repost_shortfall`; `eq:wage_eq` carries −s_t𝓡_t; `eq:surplus_wage` carries −(1−ϕ)s_t𝓡_t. Oct 5: prose notes s_t𝓡_t enters alongside K_t (an extra flow cost of a filled position); recruiter profits Π^int now net of X_t and X^r_t, which fixes the `eq:gdp` income identity (it was off by X even before reposting); `eq:phi_calib` gains −s𝓡. `eq:Lambda_r` defines the reactivation rate. `def:equilibrium` audited for completeness Oct 1: 4 equations for (N, C, χ^c, Y^c), 6 for (θ, K, Q, e, v, u) with `eq:theta_eq` added. The job creation condition `eq:jcc_eq` substitutes the surplus at t+1, so J_t and w_t drop out (`eq:surplus_eq` removed); 𝓡_t is carried with its own equation, so there is no nested expectation. Auxiliary list cites `eq:Lambda_r`, the matching rates, and 𝓡_t. Prop. 1 proof updated to match |
-| 3.x Limiting cases | ✅ | **Oct 5:** post-Prop-3 passage rewritten (`2fe27da`). Four channels over AGS, not three — **profit dilution** added (Y^c/N in `eq:euler_bf`, distinct from variety, survives ρ ≡ 1). Second tier added: AGS does not price replacement, and AGS collapses measured and structural destruction (Λ = 1 ⇒ δ_e,t = δ_{t−1}). Ablation paragraph now names Comparison C only, glosses ω_δ at first use, and states that exit and reactivation must be switched separately rather than jointly through p_0. Prop. 2 discussion gains a knife-edge caveat. ⚠ **Commits §5.3 to three runs that do not exist**: novar-vs-AGS, α → 0, and a re-specified Comparison B (R8 clause v) |
+| 3.x Limiting cases | ✅ | **Oct 5:** post-Prop-3 passage rewritten (`2fe27da`). Four channels over AGS, not three — **profit dilution** added (Y^c/N in `eq:euler_bf`, distinct from variety, survives ρ ≡ 1). Second tier added: AGS does not price replacement, and AGS collapses measured and structural destruction (Λ = 1 ⇒ δ_e,t = δ_{t−1}). Ablation paragraph now names Comparison C only, glosses ω_δ at first use, and states that exit and reactivation must be switched separately rather than jointly through p_0. **Oct 11:** restructured (see Propositions). ⚠ **Commits §5.3 to three runs that do not exist**: novar-vs-AGS, α → 0, and a re-specified Comparison B (R8 clause v) |
 | 3.x Shock transmission (`sec:mechanism`) | ✅ | **Rebuilt Oct 11** around `lem:theta` + `prop:fe` (free entry, δ–s theorem), `lem:accounting` (h = 1 accounting, any ξ, old Prop. 5 Parts 1 and 3), `rem:finite_xi` (numerical finite-ξ threshold, replaces the unproved "δ̄_e/τ̄ small" sufficient condition), `prop:exit_s` (old Part 2). Numbers: `gs_free_entry_beveridge.txt` (κ = 0), `gs_finite_xi_entry_offset.txt`; the 2.6%/0.7%/81% figures still from `run_prop5_*` (regenerate after R8) |
 | 3.x Steady state | ✅ | Oct 5: `eq:e_theta` gains the entry that replaces non-reactivated positions (implicit in θ when α > 0); `eq:curve_jcc` gains −s𝓡(θ); `eq:destruction_curve` corrected for the atom (was valid only for p_0 = 1) |
 | 4.1–4.2 Instruments, LP specification | ✅ | — |
@@ -49,7 +54,7 @@ cascade, every §5.3 number comes from the code's timing.
 | 5.2 Calibration and estimation | ⚠️ contested | Documents PATH A, figures use PATH B ([D2](decisions.md)); β̂ ↔ β(θ) unstated ([D3](decisions.md)); α absent; `app:weighting_robustness` unwritten |
 | 5.3 Inspecting the mechanism | ✅ | ⏳ Regeneration owed (R8 + D1 + PATH B). Numbers are checked against `mechanism_stats.txt`, which is the authority. The "Choice of shocks" paragraph now says the comparisons assume costless reposting |
 | 5.4 Posterior estimates (`sec:posterior`, L3310) | ❌ empty stub | Blocked on the estimation build |
-| 6 Conclusion (L3314) | ❌ not started | Label is `ref:conclusion`; references use `sec:conclusion` |
+| 6 Conclusion | ❌ not started | Label `ref:conclusion`; all references now use it |
 
 ## Appendix status
 
@@ -60,7 +65,7 @@ cascade, every §5.3 number comes from the code's timing.
 | A Relation to literature | ✅ |
 | B Data sources | ✅ |
 | C Instrument diagnostics | ✅ |
-| D Steady state | ✅ — reposting added Oct 1 (shortfall in the job creation condition and wage, Λ_r, Q^rep, X^r, entry `eq:e_ss` with the non-reactivated term); P5: X^c still uses the p_0ψ_cχ^c shortcut |
+| D Steady state | ✅ — reposting added Oct 1 (shortfall in the job creation condition and wage, Λ_r, Q^rep, X^r, entry `eq:e_ss` with the non-reactivated term); **X^c made exact Oct 11 (P5)**: X^c = Nψ_cωχ^c, ω = 1−(1−p_0)(1−δ)/(1−δ_e); N, L^e, L^c and a sign claim in the derivation subsections also corrected; `eq:profit_share_ss` split from the duplicate label |
 | E Derivations — profit share, resource constraint, labor share, **wage determination** (rederived Oct 1: Convention A employment law with δ_{e,t+1}, the reposting shortfall 𝓡_t, the wage-substituted surplus with (1−ϕ)), log-linear propagation (`eq:u_ll` rederived for Convention A) | ✅ |
 | F Additional comparisons (incl. Comparison D) | ✅ |
 | G Limiting-case proofs (`prop:independence`, `prop:double_limit`, `prop:ags`, `prop:bgm_nest`) | ✅ **corrected Oct 11** (see Propositions) |
@@ -83,17 +88,17 @@ cascade, every §5.3 number comes from the code's timing.
 | `rem:nesting` | ✅ GS isomorphism (matching-function aside removed Oct 11, MS: belongs with probability bounds, not here); CK recovered exactly — CK set their flow vacancy cost c = 0 (p. 124), GS likewise (MS) |
 | `prop:bgm_nest` | ✅ Proof rewritten: F is a point mass at 0 under p_0 = 0 (was "F(0) = 0"); bracket = N + N^e by N^e = zl^e/f_e and L^c = Y^c/(ρz) (the "gross-output identity" Y^c = zLρ/μ was false off steady state); ν^f = ρf_e/μ as in `eq:free_entry` |
 | `prop:curves` → **Remark** | ✅ Demoted; ε enters all three non-destruction curves through μ (not π_s); destruction curve depends on p_0, ψ, χ_m, δ̄; the identification sentence was removed |
-| `prop:equilibria` (7) + `ass:matching` + SMCD footnote | ✅ **R16 done Oct 11.** Stated under Assumption M (CRS, (M1) f, q ≤ 1, (M2) ε_f nonincreasing) and explicit condition (C), ln Φ convex in ln θ. Proof: ln N_JC − ln N_RC convex in ln θ ⇒ ≤ 2 zeros; positive at both ends ⇒ 0 or (generically) 2; double-limit uniqueness iff z > Φ(0). The old convexity-in-levels fix fails (Φ is never convex; N_JC not convex near 0). Under extrapolated Cobb–Douglas the low equilibrium needs q ≈ 14–21; under every bounded spec (clipped CD, HRW, 2P-SMCD) it is feasible with q ≈ 1, u ≈ 1/3. The SMCD discussion is a condensed footnote on the sentence introducing `ass:matching` (was `rem:smcd`, moved Oct 11, MS); it cites Silva (2026, SSRN 6956640) and DHRW (doi:10.1257/aer.90.3.482). Program: `equilibria_convexity_check.jl` (loads the SMCD repo's `MatchingSpec` library) |
+| `prop:equilibria` (7) + `ass:matching` + SMCD footnote | ✅ **R16 done Oct 11.** Stated under `ass:matching` (CRS; (M1) f ≤ min{1, θ}; (M2) ε_f ∈ (0,1) nonincreasing) and explicit condition (C), ln Φ convex in ln θ, with Φ defined in the main text (`eq:Phi`, Oct 12). Proof: ln N_JC − ln N_RC convex in ln θ ⇒ ≤ 2 zeros; positive at both ends ⇒ 0 or (generically) 2; double-limit uniqueness iff z > Φ(0). The old convexity-in-levels fix fails (Φ is never convex; N_JC not convex near 0). Under extrapolated Cobb–Douglas the low equilibrium needs q ≈ 14–21; under every bounded spec (clipped CD, HRW, 2P-SMCD) it is feasible with q ≈ 1, u ≈ 1/3. The SMCD discussion is a condensed footnote on the sentence introducing `ass:matching` (was `rem:smcd`, moved Oct 11, MS); it cites Silva (2026, SSRN 6956640) and DHRW (doi:10.1257/aer.90.3.482). Program: `equilibria_convexity_check.jl` (loads the SMCD repo's `MatchingSpec` library) |
 | `lem:theta`, `prop:fe` (5) | ✅ **Spliced Oct 11** (R15 (b)). **Discussion rewritten Oct 11 (MS):** the conditions are stated as |c_x|(ρ_x − ω_u) > ℓ_x (h = 1) and |c_x|[ρ_x(1−λ_u²)/(1+ρ_xλ_u) − ω_u] > ℓ_x (path), with no Γ_x in the main text (Γ survives only in the proof); the closed forms for c_δ, c_s, D_θ are in `app:proof_fe` (`eq:c_delta`); `tab:fe_irf` contrasts δ (ρ = 0.592) and s (ρ = 0.874) responses; the text leads with the two-channel contrast (tightness 0.79 vs 0.04, unemployment 0.036 vs 0.37 per percent of the shock). Notation translated: a, b → c_δ, c_s; D → D_θ; R_x → Γ_x; Φ → Φ_θ; λ, ω → λ_u, ω_u; ρ → ρ_x; ε_0 → x̃_0. Assumptions added: (1−δ̄)f̄ + τ̄ ≤ 1, interior entry e_t > 0. `cor:allh` is a sentence in the text, proved in Step 2 |
 | `lem:accounting` (Lemma 2) | ✅ Old Prop. 5 Parts 1 (s) and 3 (δ) at any entry technology, p_0 = 0; the δ part now also states the unemployment (matching) condition |
 | `rem:finite_xi` | ✅ Replaces the old Part 3 sufficient condition (R12c). Numbers from `gs_finite_xi_entry_offset.jl`: δ̄*(ξ) = 3.8%/2.7%/1.6% per year at ξ = 1/2/10 (ρ_δ = 0.592); offset 0.85 at D1, ξ = 1; non-monotone in ξ |
 | `prop:exit_s` (6) | ✅ Old Part 2. g(N, L^c) defined once (gross, from `eq:cutoff_eq`, Y^c = ρzL^c), entry labor l^e carried in the joint system; `eq:exit_cond` uses g_L > 0. ⏳ Numerics after R8 |
 | `lem:vpre` (Lemma 3) | ✅ Unchanged |
 
-**Remaining known issues (not propositions).** `app:loglin` ¶5 still quotes δ̄_e/τ̄ ≈ 0.21 (D1 cascade); ¶5's "variance share" reading is loose. ¶9/9a survival re-dated to δ_{e,t+1} (S10); `eq:tau_ll` coefficient corrected to (1−s̄)δ̄_e/τ̄ with s_{t−1}; ¶9b/9c shortened to a pointer to `prop:fe`.
+**Remaining known issues (not propositions).** A remark on selection and stability of the low steady state is owed (R18). `app:loglin` ¶5 still quotes δ̄_e/τ̄ ≈ 0.21 (D1 cascade); ¶5's "variance share" reading is loose. ¶9/9a survival re-dated to δ_{e,t+1} (S10); `eq:tau_ll` coefficient corrected to (1−s̄)δ̄_e/τ̄ with s_{t−1}; ¶9b/9c shortened to a pointer to `prop:fe`.
 
 ## Companion theory notes (uncited)
 
 `Notes/Baseline_Blanchard_Kahn.md` and `Notes/AGS_Blanchard_Kahn.md`: BK holds under ε > 1 and
-endogenous exit makes it easier to satisfy, so ε > 2 is a Prop. 5 requirement, not a
-determinacy one (P3).
+endogenous exit makes it easier to satisfy. No proposition needs ε > 2 any more (S9). Cite them
+in the draft (P3). `Notes/beveridge_free_entry_GS.tex` is superseded by the draft (`prop:fe`).

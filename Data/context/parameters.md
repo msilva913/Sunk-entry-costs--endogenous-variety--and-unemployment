@@ -69,7 +69,7 @@ i.e., what would change in the model if this parameter moved.
 
 | Symbol | Code name | Default | Economic meaning | Key moments | Intuition |
 |--------|-----------|---------|-----------------|-------------|-----------|
-| ω_δ | `dest_end_frac` | 0.5 | Endogenous share of total destruction: ω_δ = (δ_e − δ)/δ_e | **cor(u, v)** (Beveridge curve), cor(δ_e, u), cor(δ_e, z) | **The Beveridge curve lever.** Higher ω_δ → more of what the data calls "separation" actually destroys product lines in the model → more negative u-v comovement from the δ mechanism. This is the key parameter for reconciling the s-shock problem (Prop 5 Part 1) |
+| ω_δ | `dest_end_frac` | 0.5 | Endogenous share of total destruction: ω_δ = (δ_e − δ)/δ_e | **cor(u, v)** (Beveridge curve), cor(δ_e, u), cor(δ_e, z) | **The Beveridge curve lever.** Higher ω_δ → more of what the data calls "separation" actually destroys product lines in the model → more negative u-v comovement from the δ mechanism. This is the key parameter for reconciling the s-shock problem (`lem:accounting` Part 1) |
 | p_0 | `p_0` | 0.5 | Mass on continuous (Pareto) part of continuation cost distribution F | Interacts with ω_δ: shapes the nonlinearity of δ_e response | p_0 = 0: all firms face zero continuation cost → no endogenous exit margin. p_0 = 1: all firms draw from Pareto → maximum exit-margin responsiveness. Together with ψ, controls the curvature of the exit response. **Also caps the reposting margin: max position destruction from non-reposting = p_0** (see α below) |
 
 ### Reposting margin (proposed — [D11](decisions.md), not yet in code)
@@ -94,7 +94,7 @@ is marginal utility of consumption).
 | ρ_δ | `rho_delta` | 0.592 | Monthly persistence of destruction shock | Shape of δ→u IRF, ρ₁(δ_e) | From VAR(1), Cholesky z-first. Low persistence (quarterly ρ = 0.207) reflects noisy BED Deaths |
 | σ_δ | `sigma_delta` | 0.0669 | Monthly innovation SD of destruction shock (orthogonal to z) | σ(δ_e), cor(δ_e, u), δ→u IRF scale | The only Cholesky-dependent number: stripped of contemporaneous z covariation |
 | ρ_s | `rho_s` | 0.874 | Monthly persistence of match separation shock | ρ₁(u), ρ₁(v), ρ₁(τ) | From AR(1) on s = (τ−δ_e)/(1−δ_e), part6b. The dominant separation shock |
-| σ_s | `sigma_s` | 0.0854 | Monthly innovation SD of match separation shock | **σ(u), σ(v), cor(u, v)**, σ(θ)/σ(LP) | 8.5× larger than the 0.010 placeholder. The s shock drives most of the business cycle volatility and the (wrong-sign) Beveridge correlation. See Prop 5 Part 1 |
+| σ_s | `sigma_s` | 0.0854 | Monthly innovation SD of match separation shock | **σ(u), σ(v), cor(u, v)**, σ(θ)/σ(LP) | 8.5× larger than the 0.010 placeholder. The s shock drives most of the business cycle volatility and the (wrong-sign) Beveridge correlation. See `lem:accounting` Part 1 |
 
 ---
 

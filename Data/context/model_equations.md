@@ -1,5 +1,5 @@
 # Model Equations — Baseline and Partial-Reposting Extension
-**Created:** September 28, 2026 · **Timing audit:** October 1, 2026 · **Branch:** `costly_vacancy_reposting`
+**Created:** September 28, 2026 · **Timing audit:** October 1, 2026 · **X^c made exact:** October 11, 2026 · **Branch:** `costly_vacancy_reposting`
 
 This file lists every model equation with an economic interpretation, **dated explicitly** in
 the timing of the draft (`Draft/Draft.tex`, `fig:Timing`). The draft is the reference model.
@@ -56,7 +56,7 @@ Composite parameters: β = 1/(1+r), ξ = 1/ξ_inv, μ = ε/(ε−1), ψ_c = ψ/(
   in which survivors produce. Survival from t to t+1 is the same object in every value function
   and every law of motion.
 - **Stocks dated t+1 are not predetermined at t.** N_{t+1}, u_{t+1}, v_{pre,t+1} depend on
-  χ^c_{t+1}, which depends on N_{t+1} (the fixed point in the Prop. 5 Part 2 proof). The
+  χ^c_{t+1}, which depends on N_{t+1} (the fixed point in the `prop:exit_s` proof). The
   predetermined objects are the **pre-exit** stocks: B_{t+1} ≡ N_t + N^e_t for product lines,
   and (u_t, v_t) for the labor market, from which pre-exit employment (1−s_t)(1−u_t) + f_t u_t
   and pre-exit vacancies (1−q_t)v_t + s_t(1−u_t) are built.
@@ -201,11 +201,15 @@ it (Block 2).
 ```
 Y^c_t = C_t + X_t + X^c_t
 X_t   = e_t·Q_t·ξ/(ξ+1) + κ·q_t·v_t
-X^c_t = N_t·∫_0^{χ^c_t} χ dF = N_t·ψ_c·χ^c_t·p_0·(χ^c_t/χ_m)^ψ
+X^c_t = (1−δ_{t−1})(N_{t−1}+N^e_{t−1})·∫_0^{χ^c_t} χ dF = N_t·E(χ | χ ≤ χ^c_t)
+      = N_t·ψ_c·χ^c_t·p_0·(χ^c_t/χ_m)^ψ/Λ_t      (steady state: N·ψ_c·ω·χ^c)
 ```
-Continuation costs are paid at Stage 2 of t by the N_t survivors. ξ/(ξ+1) = 1/(1+ξ_inv).
-**Code:** `X_c = N·p_0·ψ_c·x_c` drops the (χ^c/χ_m)^ψ factor. Relative error p_0/(Λ−1+p_0),
-0.27% at Λ ≈ 0.9986; the draft now uses the exact form. Upgrade in R8.
+Continuation costs are paid at Stage 2 of t by the N_t survivors. **Rule:** partial expectation
+× pre-draw count, or conditional mean × post-draw count, never partial expectation × N_t.
+In steady state p_0(χ^c/χ_m)^ψ/Λ = ω ≡ 1−(1−p_0)(1−δ)/(1−δ_e) (the payer share).
+ξ/(ξ+1) = 1/(1+ξ_inv). **Code: matches since Oct 11** (`run_solution_core.jl` f[16];
+`payer_share` in `steady_state.jl`). Before Oct 11 the code used prior mixture weights
+(`N·p_0·ψ_c·x_c`) and the draft paired the partial expectation with post-exit N.
 
 **f[17]** `N^e_t = z_t·L^e_t/f_e` · **f[18]** `ν^f_t = ρ_t·f_e/μ` (`eq:free_entry`) ·
 **f[19]** `Y_t = C_t + ν^f_t·N^e_t` (`eq:gdp`) · **f[20]** `N_t·d^f_t = Y^c_t(μ−1)/μ − X^c_t` ·
@@ -368,7 +372,7 @@ inflow of f[22] *without* Λ_r, because α·M already embeds it. **This timing i
 Stage-2 reactivation node.** Paying at separation against E_t Q_{t+1} would make reactivation
 condition on an expectation and lose the procyclicality the margin rests on. Under the R8
 state vector, s_{t−1}(1 − u_{t−1}) is a function of states, so no extra lag is needed.
-Use the exact integral: the X^c-style shortcut (p_0 for Λ_r − 1 + p_0) overstates X^r by 25%
+Use the exact integral: a shortcut that uses p_0 for Λ_r − 1 + p_0 overstates X^r by 25%
 at Λ_r = 0.9 and 2.5× at 0.7, and is wrong at the floor, where exact X^r = 0.
 
 ## Unchanged in form
@@ -387,9 +391,9 @@ at Λ_r = 0.9 and 2.5× at 0.7, and is wrong at the floor, where exact X^r = 0.
 ## Open items
 
 1. **R8:** implement the restructured state vector (Code status above) together with Block 2.
-   Upgrade X^c to the exact integral at the same time.
+   (X^c is already exact, Oct 11.)
 2. **R2:** verify on simulated data that α is separately identified from σ_s and from χ_m.
-3. **R3 / Prop. 5 under partial reposting:** Parts 1–2 now assume costless reposting
+3. **R3 / `lem:accounting` and `prop:exit_s` under partial reposting:** both assume costless reposting
    (p_0 = 0 or α → 0). A result for α > 0 (e.g. a threshold Λ_r* at which the s→v sign
    flips) is not derived.
 4. **Draft:** extend the log-linear appendix (`app:loglin`), which

@@ -1,5 +1,5 @@
 # Decision Register
-**Last updated:** October 9, 2026 (D12 venue/theory-first pivot added; D10 cross-linked). Earlier: October 5 (S12 rewritten after the Prop. 5 restatement) · **Branch:** `costly_vacancy_reposting`
+**Last updated:** October 12, 2026 (D12 updated for the Oct 11 theory rebuild; S12 rewritten for the new `sec:mechanism` structure; D1 entry compressed). Earlier: October 9 (D12 added) · **Branch:** `costly_vacancy_reposting`
 
 One entry = one decision: a *choice*, not a task. Tasks live in
 [`pending_tasks.md`](pending_tasks.md). When a decision is settled, move it to §Settled with
@@ -21,28 +21,33 @@ Status key: 🔴 blocks estimation · 🟠 blocks a paper section · 🟡 improv
 ## 🟠 D12. Venue, and whether to pivot to theory-first for JET
 
 **Raised Oct 9, 2026 (MS).** The proposal: lead with theory (`prop:bgm_nest`, `prop:equilibria`,
-`prop:curves`, `prop:ds_asymmetry`, plus `prop:fe` from R15), keep the SVAR-calibrated
-"Inspecting the mechanism" section, calibrate or estimate the rest, and move the Bartik/LP work
-to a separate empirical paper. Full assessment:
-[`session_handout_20261009.md`](session_handout_20261009.md) §2.
+`prop:fe`, `prop:exit_s`), keep the SVAR-calibrated "Inspecting the mechanism" section,
+calibrate or estimate the rest, and move the Bartik/LP work to a separate empirical paper.
+Full assessment: [`session_handout_20261009.md`](session_handout_20261009.md) §2.
 
 **Recommendation: no-go for JET; adopt the theory-forward structure for a field macro journal.**
 - **The theory reads as applied theory.**
-  - Four propositions are nesting or isomorphism results, and `prop:curves` is remark-level.
-  - The `prop:equilibria` proof is wrong as written (R16).
-  - Prop. 5 is conditional on endogenous objects and carries R12c.
+  - Four propositions are nesting or isomorphism results; `prop:curves` is now a remark.
   - `prop:fe` is clean but log-linear, at the ξ → ∞ corner, with variety, exit and reposting off.
+  - The finite-ξ result is a numerical remark (`rem:finite_xi`), not a theorem.
+- **Oct 12 update (after the Oct 11 rebuild).** The repairs strengthen the field-journal case
+  without changing the category. `prop:equilibria` now holds under stated matching regularity
+  (`ass:matching` + (C)), with the SMCD class as a nesting example; `prop:double_limit` is
+  corrected and motivates clone replacement; `sec:mechanism` leads with `lem:theta` +
+  `prop:fe`, followed by `lem:accounting`, `rem:finite_xi`, `prop:exit_s`. A new implication:
+  under costless reposting, s shocks give positive comovement at every persistence, so the
+  reposting margin (D11) is necessary, not optional, for the Beveridge sign.
 - **Every dynamic theorem switches the business formation block off**, so the CK departure in
   the theory rests on GS's δ/s split plus the BED measurement.
 - **Raising the odds would take months of high-risk theory.** That means finite-ξ results or
-  variety inside the dynamic theorem. R16 and R17 help but do not change the category.
+  variety inside the dynamic theorem. R17 would help but does not change the category.
 - **A JET version contradicts the stated objective** (JME / AEJ: Macro / JPE, `../CLAUDE.md`).
   After a rejection, rebuilding the quantitative part would cost months.
 - **The empirical paper is not viable alone.** The QU placebo fails, LD is not separately
   identified, and the δ→u peak is unstable (E8).
 
 **Recommended structure:**
-- lead with `prop:fe` (R15 option (b));
+- lead with `prop:fe` (R15 option (b); **in the draft since Oct 11**);
 - keep the SVAR-calibrated mechanism (the SVAR is bivariate z, δ; s from a univariate AR(1));
 - cut Bartik to the robust short-horizon facts (δ→u at h = 0–2, the δ→v trough at h = 4–6, the
   severity placebo) as motivating evidence;
@@ -149,7 +154,7 @@ estimation targets, and E9 is no longer needed.
 
 **Status (Oct 1).** Written into the draft on this branch (recruiter block, `eq:v_lom`,
 `eq:agg_repost_costs`, `eq:rc`/`eq:gdp`, `def:equilibrium`, wage appendix). Props 1 and 3
-audited and hold; Prop 5 restated for the costless-reposting benchmark. Not yet in the code
+audited and hold; `lem:accounting` and `prop:exit_s` cover the costless-reposting benchmark. Not yet in the code
 (R8) or in §5.2 (α has no prior). The formal go/no-go waits on the identification check R2.
 Equations: [`model_equations.md`](model_equations.md) Block 2. Argument:
 [`../Notes/delta_calibration_and_the_reposting_margin.md`](../Notes/delta_calibration_and_the_reposting_margin.md).
@@ -160,8 +165,9 @@ Equations: [`model_equations.md`](model_equations.md) Block 2. Argument:
   δ_e's leverage lies where measurement rules it out.
 - Silencing the s shock gives −0.911, so the Beveridge mechanics are sound. The s shock under
   costless reposting is the problem.
-- **Inescapable:** ∂v_pre/∂s = (1−δ_e)(1−u) > 0 is an accounting identity (note §4.3a; Prop. 5
-  Part 1). s cannot be silenced: CK's contribution is that separation shocks drive Beveridge
+- **Inescapable:** ∂v_pre/∂s = (1−δ_e)(1−u) > 0 is an accounting identity (note §4.3a;
+  `lem:accounting` Part 1). At free entry `prop:fe` part 3 makes it a theorem: the s response is
+  positively sloped at every persistence (D1: (1−δ̄)f̄[η_L+ϕ(1−δ̄)f̄/τ̄] = 4.05 ≥ 1). s cannot be silenced: CK's contribution is that separation shocks drive Beveridge
   dynamics, and the s process is data-calibrated (σ_s = 0.0854). Three shocks are required.
 - The missing middle: permanent position cuts at surviving firms. GS and Shao-Silos fold it
   into δ (overstating variety destruction); costless reposting folds it into s.
@@ -192,7 +198,7 @@ that destroy a vacancy), so cor(u,v) cannot separate them; the LD→v IRF should
 
 | # | Decision | Settled | Why |
 |---|---|---|---|
-| D1 | **δ̄_e = BED establishment deaths, employment-weighted, 1993–2019: `dest_ann = 0.0320`, δ_e/τ = 0.087**, fixed (not estimated) for now | Sept 6, 2026 | The old 0.0754 mixed denominators (JF's 21% is a share of gross job losses, applied to τ). Employment weighting, because δ_e/τ is a share of worker flows and the δ instrument is employment-weighted BED Deaths. Establishments, not firms, for consistency with the instrument. The literature brackets δ in [3.2%, 10%]/yr (note), so describe 3.2% as a lower bound and footnote that symmetry forces one δ_e to serve both product-line and employment margins. Fixed because, without the reposting margin, an estimated δ_e would absorb the s-process misspecification; move it into Θ_e only after D11 (R6). **Not yet implemented** (D1 cascade). ⛔ **Superseded Oct 6, 2026:** the T values below are per unit level of δ_e, not per 1 %, and the argument is withdrawn. A lower δ_e still helps, through the stock elasticity ξ·ē/v̄ and the free-entry user-cost channel; see the rewritten note. **Oct 5, 2026 — the cascade strengthens a draft argument.** The entry threshold for vacancies to rise after a δ shock is T = κ_v/(δ̄_e/τ̄) − 1, so it rises as δ̄_e falls: T = 4.73 at the superseded 0.0754 against **12.78** at 0.0320 (CK's δ_e = τ gives 0.203). The predetermined vacancy share goes from 0.825 to **0.927**. So implementing D1 makes the CK departure *more* decisive, not less; §5.3 currently understates it. See [`../Notes/predetermined_vacancies_and_the_CK_special_case.md`](../Notes/predetermined_vacancies_and_the_CK_special_case.md) |
+| D1 | **δ̄_e = BED establishment deaths, employment-weighted, 1993–2019: `dest_ann = 0.0320`, δ_e/τ = 0.087**, fixed (not estimated) for now | Sept 6, 2026 | The old 0.0754 mixed denominators (JF's 21% is a share of gross job losses, applied to τ). Employment weighting, because δ_e/τ is a share of worker flows and the δ instrument is employment-weighted BED Deaths. Establishments, not firms, for consistency with the instrument. The literature brackets δ in [3.2%, 10%]/yr (note), so describe 3.2% as a lower bound and footnote that symmetry forces one δ_e to serve both product-line and employment margins. Fixed because, without the reposting margin, an estimated δ_e would absorb the s-process misspecification; move it into Θ_e only after D11 (R6). **Not yet implemented** (D1 cascade, critical path 0b). A lower δ_e helps the δ-shock Beveridge sign through the stock elasticity ξ·ē/v̄ (finite ξ, `rem:finite_xi`) and the user cost of a durable vacancy (free entry, `prop:fe`: slope −0.24 at D1 vs +0.17 at δ_e = τ, ρ_δ = 0.592). (The Oct 5 threshold-T argument was withdrawn Oct 6; see [`../Notes/predetermined_vacancies_and_the_CK_special_case.md`](../Notes/predetermined_vacancies_and_the_CK_special_case.md).) |
 | D5 | Comparison B's χ^c channel strength is folded into D2 | Sept 5, 2026 | Estimating `dest_elast_target` makes the channel size a reported result; drop the separate ψ ≈ 1 recalibration |
 | D6 | Separate LP primary, joint LP as robustness for δ | June 2026 | δ→v trough stable across both (−0.582 vs −0.535); joint zero β^LD reflects collinearity |
 | D7 | Industry credit control (Route B) dropped, noted as a limitation | Recommended Sept 2026; not formally confirmed by MS | Data access is binding; the severity placebo carries the external-validity argument |
@@ -204,7 +210,7 @@ that destroy a vacancy), so cor(u,v) cannot separate them; the LD→v IRF should
 | S6 | τ calibrated externally at 3.1%/month, not identified from the LD IRF | — | ⚠️ Under review via D4 |
 | S7 | Two-block posterior with degrees-of-freedom normalization | June 2026 | Each quadratic form ≈ χ²(K); stops the 42-dim IRF block swamping Block M. `eq:posterior` |
 | S8 | Filter asymmetry resolved on the model side | June 2026 | m(θ) simulated then filtered; β(θ) read unfiltered off the state space (Canova-Ferroni 2011) |
-| S9 | ε = 4.3 fixed externally | — | BK needs only ε > 1; Prop. 5 Part 2 needs ε > 2. [`estimation_design.md`](estimation_design.md) §Determinacy |
-| S10 | **Timing: the draft is the reference model.** Convention A (matches formed at t face exit but not separation before producing); exit at Stage 2 against the current cutoff, so survival t→t+1 is (1−δ_t)F(χ^c_{t+1}) in every value function and law of motion; the aggregate state (incl. δ_t, s_t) is known at the start of t, and only the incidence of δ_t, s_t is revealed at the end of t | Oct 1, 2026 | Convention A is standard DMP, matches Gabrovski-Silva, and conserves positions; the code adopted it Sept 6. The draft's Stage-2 timing is what the propositions use (Prop. 5 Part 2's joint (χ^c, N) system). The code's two deviations (exit dating, post-exit states) are fixed in R8; spec in [`model_equations.md`](model_equations.md) "Code status" |
+| S9 | ε = 4.3 fixed externally | — | BK needs only ε > 1. No proposition needs ε > 2 any more: `eq:gN_cond` was dropped Oct 5, and `prop:exit_s`'s `eq:exit_cond` needs no sign on g_N. [`estimation_design.md`](estimation_design.md) §Determinacy |
+| S10 | **Timing: the draft is the reference model.** Convention A (matches formed at t face exit but not separation before producing); exit at Stage 2 against the current cutoff, so survival t→t+1 is (1−δ_t)F(χ^c_{t+1}) in every value function and law of motion; the aggregate state (incl. δ_t, s_t) is known at the start of t, and only the incidence of δ_t, s_t is revealed at the end of t | Oct 1, 2026 | Convention A is standard DMP, matches Gabrovski-Silva, and conserves positions; the code adopted it Sept 6. The draft's Stage-2 timing is what the propositions use (`prop:exit_s`'s joint (χ^c, N) system). The code's two deviations (exit dating, post-exit states) are fixed in R8; spec in [`model_equations.md`](model_equations.md) "Code status" |
 | S11 | **Reactivation costs X^r are paid at Stage 2 of t on positions vacated at the end of t−1, valued at the realized Q_t** | Oct 1, 2026 | Forced by S10: reactivation happens at the Stage-2 node. Paying at separation against E_t Q_{t+1} would make Λ_r condition on an expectation and lose its procyclicality |
-| S12 | **Prop. 5 (restated Oct 5, wording approved by MS).** Part 1 (p_0 = 0): u and v_pre rise by the reposting inflow d up to the period-t entry response; positive comovement at h = 1 under conditions (i)–(ii). Part 2 (p_0 > 0, α → 0): to first order in F′, under `eq:exit_cond` (det J > 0) and inflow-dominates-drain. Part 3: h = 1, with the period-t entry term | Oct 5, 2026 | Under the timing convention (S10) θ_t and e_t respond to period-t shocks. At p_0 = 0, (i) holds automatically and (ii) binds at most 2.6% (0.7% at D1) (`run_prop5_s_check.jl`). Part 3 keeps h = 1 although the first-month sign is fragile at monthly frequency (entry offsets 81% at D1); vacancies fall from month 2 and in every quarterly average at D1 (`run_prop5_parts23_check.jl`). `eq:gN_cond` was dropped because it fails at the calibration |
+| S12 | **Structure of `sec:mechanism` (R15 option (b), MS, Oct 11).** (1) `lem:theta` + `prop:fe`: free entry (ξ = ∞), closed-form δ–s contrast, rigorous statement; informal discussion with `tab:fe_irf`. (2) `lem:accounting`: old Prop. 5 Parts 1 (s) and 3 (δ), h = 1 accounting at any entry technology, p_0 = 0. (3) `rem:finite_xi`: the finite-ξ entry cushion, numerical. (4) `prop:exit_s`: old Part 2 (p_0 > 0, α → 0), to first order in F′, under `eq:exit_cond` and inflow-dominates-drain | Oct 5 (statements), Oct 11 (structure) | `prop:fe` is sharper where both apply and carries the δ–s asymmetry as a theorem; the accounting lemma covers finite ξ; exit is a separate mechanism. Under S10 θ_t and e_t respond to period-t shocks. At p_0 = 0 condition (ii) binds at most 2.6% (0.7% at D1) (`run_prop5_s_check.jl`); the δ part's first-month sign is fragile at monthly frequency (entry offsets 81% at D1) but vacancies fall from month 2 (`run_prop5_parts23_check.jl`). The old Part 3 sufficient condition (R12c) was wrong and became `rem:finite_xi` |

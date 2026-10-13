@@ -1,7 +1,7 @@
 # Key Empirical Findings
-**Last updated:** October 7, 2026 (R15 free-entry Beveridge findings added). Earlier: September 28, 2026. E8 (Bartik persistence test) ran September 22–23;
+**Last updated:** October 12, 2026 (labels updated to the Oct 11 `sec:mechanism` structure; withdrawn Oct 5 threshold section compressed). Oct 11: finite-ξ, double-limit and multiplicity results. Oct 7: R15 free-entry findings.
 literature review of δ calibration added the same day; reposting-margin mechanism and
-inescapability added September 28; Prop. 5 Part 1 entry-condition check added October 1.
+inescapability added September 28; `lem:accounting` (old Prop. 5 Part 1) entry-condition check added October 1.
 Model-side results were re-run after the September 5–6 code fixes; see §D1/M5.
 
 ## Shock Persistence (part6, 2001Q1+ window)
@@ -330,7 +330,7 @@ from part6b: ρ_s = 0.874, σ_s = 0.0854 (AR(1) on s = (τ−δ_e)/(1−δ_e), H
 close to the data target at BED (15.8% model vs 14.2% data).
 
 **What got worse.** cor(u,v) moved from +0.76 to **+0.995** at BED — near-perfect positive
-comovement, opposite the data's −0.80. This is Prop 5 Part 1: the calibrated s shock
+comovement, opposite the data's −0.80. This is `lem:accounting` Part 1 (a theorem at free entry, `prop:fe` part 3): the calibrated s shock
 dominates the simulation and pushes u and v in the same direction (separations → u↑, but
 surviving firms repost → v↑). The δ mechanism generates the right sign but is quantitatively
 overwhelmed.
@@ -505,7 +505,7 @@ in a region the measurement rules out. Silencing the s shock fixes it completely
 slightly past the data). So the culprit is the **s shock under costless reposting**.
 
 **Inescapability (verified, note §4.3a).** Under costless reposting the reposting inflow
-∂v_pre/∂s = (1−δ_e)(1−u) > 0 is an accounting identity — Prop. 5 Part 1, Channel 1, general in
+∂v_pre/∂s = (1−δ_e)(1−u) > 0 is an accounting identity — `lem:accounting` Part 1, Channel 1, general in
 ρ_s and surviving free entry. With s data-calibrated (σ_s = 0.0854, cor(cycle_s,cycle_τ) = 0.997)
 and δ_e small, *no* parameter fits the Beveridge curve while separations costlessly repost. Some
 separations must fail to repost. Every other lever is closed (δ_e too small; b/w scales all
@@ -525,7 +525,7 @@ and via the reposting option in the JCC; and **persistence** via stock depletion
 positions rebuild at the full cost Q, slowing recovery, potentially relevant to the δ→u
 peak-horizon gap ([M8](pending_tasks.md)). Not yet quantified.
 
-## Prop. 5 numerical checks — October 1 and 5, 2026
+## Numerical checks for `lem:accounting` and `prop:exit_s` (old Prop. 5) — October 1 and 5, 2026
 
 **Programs.** `Programs baseline/run_prop5_s_check.jl` → `prop5_s_check.csv` (Part 1);
 `Programs baseline/run_prop5_parts23_check.jl` → `prop5_parts23_check.csv`,
@@ -541,9 +541,9 @@ b_ratio = 0.9, x_v = 0.5, σ = 1, DS-CES. Shock processes from part6b. Grid: des
 Δu_{t+1} = d − (1−δ)ΔM_t, Δv_pre,t+1 = d + (1−δ)(Δe_t − ΔM_t), ΔM_t = (1−η_L)qΔe_t.
 Entry at t falls in every specification, so condition (i) holds automatically
 (cond_i < 0). Condition (ii) binds at most **2.6%** of d (dest_ann 0.0754, ρ_s 0.95), at most
-**0.7%** at dest_ann 0.0320. Cited in the discussion after `prop:ds_asymmetry`.
+**0.7%** at dest_ann 0.0320. Cited in the discussion after `lem:accounting`.
 
-**Part 3 (δ shock, p_0 = 0; exact).** Period-t entry *rises* after a δ shock (the shock
+**δ part of `lem:accounting` (old Part 3; δ shock, p_0 = 0; exact).** Period-t entry *rises* after a δ shock (the shock
 slackens the market, so a new position fills faster and K and Q rise — **not** duration
 shortening; see the threshold section below and `app:loglin` ¶9a). Share of the first-month destruction offset by entry (c3_v, needs
 < 1): 0.81 at dest_ann 0.0320 with ρ_δ = 0.592, ξ_inv = 1; 1.38 at ξ_inv = 0.5; 1.95 at
@@ -552,66 +552,33 @@ cushion is short-lived: at dest_ann 0.0320 vacancies are negative from month 1 o
 **every quarterly average is negative** in all five specifications. The only quarterly failure
 is dest_ann 0.0754 with ρ_δ = 0.9 (first quarter). Cited in the discussion.
 
-**Part 2 diagnostics (p_0 = 0.5 baseline, PATH B; INDICATIVE).** g_N = +6.5 (dest_ann 0.0320)
-and +3.0 (0.0754): `eq:gN_cond` (g_N < 0) fails at the calibration. F′(χ^c) = 3e-4 to 1.5e-3.
+**`prop:exit_s` diagnostics (old Part 2; p_0 = 0.5 baseline, PATH B; INDICATIVE).** g_N = +6.5 (dest_ann 0.0320)
+and +3.0 (0.0754): `eq:gN_cond` (g_N < 0, dropped from the draft Oct 5) fails at the calibration. F′(χ^c) = 3e-4 to 1.5e-3.
 det J of the 3×3 exit system = 0.9979 and 0.9950 (N loop −2e-3 to −4.5e-3; u loop −9e-5 to
 −4.5e-4), so the left-hand side of `eq:exit_cond` is 0.002–0.005. Indicative because the code
 applies δ_e,t (built from Λ_t) to the t→t+1 flows, unlike the draft; redo after R8.
 
-## Predetermined vacancy share and the entry threshold — October 5, 2026
+## Predetermined vacancy share — October 5, 2026 (threshold T withdrawn Oct 6)
 
-> ⛔ **Superseded October 6, 2026.** T below is the bar per unit LEVEL of δ_e, not per 1 %;
-> per 1 % it is X̄/(v̄+L̄) = 0.035 (D1) vs 0.0065 (δ_e = τ). "62.9×", "minimizes" and the
-> "entry elasticity near 10" corroboration do not stand (that is ê per unit level; ê/δ̂_e ≈ 0.03
-> at D1). The offset ratios 0.81 / 1.38 / 1.95 are unit-free and stand. See the rewritten
-> note and `Programs baseline/beveridge_free_entry.jl`.
+`Programs baseline/predetermined_vacancy_share.jl` → `predetermined_vacancy_share.txt`; argument in
+[`../Notes/predetermined_vacancies_and_the_CK_special_case.md`](../Notes/predetermined_vacancies_and_the_CK_special_case.md).
+On impact of a pure δ shock `eq:v_ll` gives ṽ_t = ẽ_t − v̄^pre·δ̃_e,t: destruction falls only on
+the predetermined stock v̄^pre = v̄ − ē, with v̄^pre/v̄ = 1 − (δ̄_e/τ̄)/κ_v, κ_v = 1.2034 (targets
+f = 0.41, q = 0.80, sep = 0.031 fix θ, u, v independently of δ̄_e).
 
-**Program.** `Programs baseline/predetermined_vacancy_share.jl` →
-`predetermined_vacancy_share.txt`. Self-contained; mirrors the closed-form steady-state
-algebra of `steady_state.jl` and asserts all three closed forms against each other.
-**Full argument:** [`../Notes/predetermined_vacancies_and_the_CK_special_case.md`](../Notes/predetermined_vacancies_and_the_CK_special_case.md).
+| Calibration | δ̄_e/τ̄ | ē/v̄ | v̄^pre/v̄ |
+|---|---|---|---|
+| D1 (BED Deaths, 3.20 %/yr) | 0.0873 | 0.073 | 0.927 |
+| Code baseline (superseded, 7.54 %/yr) | 0.2100 | 0.175 | 0.825 |
+| BGM / GS / Shao–Silos (10 %/yr) | 0.2820 | 0.234 | 0.766 |
+| Coles–Kelishomi (δ_e = τ) | 1.0000 | 0.831 | 0.169 |
 
-**The result.** On impact of a pure δ shock, `eq:v_ll` collapses to
-ṽ_t = ẽ_t − v̄^pre·δ̃_e,t with v̄^pre = v̄ − ē. The destruction term is proportional to the
-**predetermined** stock, not the whole vacancy stock: a shock can only remove vacancies
-already standing. So vacancies rise iff new postings exceed the destroyed inherited stock,
-and the threshold entry elasticity is
-
-    T = v̄^pre/ē = [v̄/(v̄+L̄)]/δ̄_e − 1 = κ_v/(δ̄_e/τ̄) − 1,   κ_v = 1.2034
-
-**inversely proportional to δ̄_e** and, given the f/q/sep targets, a function of δ̄_e/τ̄
-alone. The predetermined share and δ̄_e/τ̄ are the same object: v̄^pre/v̄ = 1 − (δ̄_e/τ̄)/κ_v.
-
-Targets fixed at f = 0.41, q = 0.80, sep = 0.031 monthly, so θ = 0.5125, u = 0.070295,
-L = 0.929705, v = 0.036026 and v̄/(v̄+L̄) = 0.037304 are **invariant to δ̄_e** (s absorbs the
-change — the design of Comparison A).
-
-| Calibration | δ̄_e monthly | δ̄_e/τ̄ | ē/v̄ | **v̄^pre/v̄** | **T** |
-|---|---|---|---|---|---|
-| **D1 settled** (BED Deaths, 3.20 %/yr) | 0.002707 | 0.0873 | 0.073 | **0.927** | **12.78** |
-| Code baseline (superseded, 7.54 %/yr) | 0.006512 | 0.2100 | 0.175 | 0.825 | 4.73 |
-| BGM / GS / Shao–Silos (10 %/yr) | 0.008742 | 0.2820 | 0.234 | 0.766 | 3.27 |
-| **Coles–Kelishomi** (δ_e = τ) | 0.031000 | 1.0000 | 0.831 | **0.169** | **0.203** |
-
-**CK's threshold is 62.9× lower.** At their calibration 83 % of the standing vacancy stock
-is new postings and only 17 % inherited, so a 0.2 % entry response turns the vacancy
-response positive. And δ_e = τ is the **boundary** of the parameter space (s ≥ 0 requires
-δ_e ≤ τ), and T falls in δ̄_e, so **CK sit at the point that minimizes the entry threshold
-over the entire admissible range.** Their appeal to finitely elastic vacancy creation
-repairs a consequence of having one separation margin.
-
-**Independent corroboration.** The Prop. 5 Part 3 check above reports entry offsetting
-**0.81** of first-month destruction at dest_ann 0.0320 and **1.95** at 0.0754. Against
-T = 12.78 and 4.73 those imply an entry elasticity near 10 in both cases — which clears
-4.73 and falls short of 12.78. Two independent derivations agree.
-
-**Scope.** This gives the bar, not whether the model clears it; that needs Q̂ from the JCC
-(`app:loglin` ¶9, ¶9a). It is also **GS's δ/s split plus our measurement**, not a
-consequence of the business formation block — an augmented GS model inherits it, so the
-intro must not claim it for the preference side.
-
-⚠ The code still runs `dest_ann = 0.0754`, where T = 4.73 against 12.78 at D1. **The D1
-cascade strengthens this argument**; §5.3 understates it today.
+⛔ The threshold T = κ_v/(δ̄_e/τ̄) − 1 (12.78 at D1, 0.203 at CK) is per unit *level* of δ_e,
+not per 1 %; per 1 % the bar is X̄/(v̄+L̄) = 0.035 vs 0.0065, tiny in both. The "CK minimize the
+threshold" and "entry elasticity near 10" claims are withdrawn. The offset ratios 0.81 / 1.38 /
+1.95 (unit-free) stand. The live channels are the stock elasticity ξ·ē/v̄ (`rem:finite_xi`) and
+the user cost at free entry (`prop:fe`). This is GS's δ/s split plus our measurement, not a
+consequence of the business formation block.
 
 ## Free-entry Beveridge response to a δ shock (R15) — October 6–7, 2026
 
@@ -651,18 +618,18 @@ loading only by 2, so R falls. The sign of the path slope flips at δ_e/τ = 0.4
 at ρ = 0.592 (nested x_v = 0.5 economy). With K held fixed (flow-cost DMP, same steady
 state) the slope is ≈ +0.46–0.49 at every δ̄: the user-cost channel is what delivers the sign.
 
-**2. Prop. 5 Part 3's "δ̄_e/τ̄ small" fails at free entry.** In the iid case entry refills the
-destroyed stock at t+1 for every δ̄_e/τ̄. Part 3 was qualified to finite ξ in the draft on
-Oct 6 (`ff17299`). The proof is still R12c.
+**2. Old Prop. 5 Part 3's "δ̄_e/τ̄ small" fails at free entry.** In the iid case entry refills the
+destroyed stock at t+1 for every δ̄_e/τ̄. Resolved Oct 11: the condition became the numerical
+`rem:finite_xi` (R12c; next section).
 
 **3. At finite ξ, measured δ makes vacancy creation effectively inelastic.** The within-period
 elasticity of the vacancy stock to Q is ξ·ē/v̄, and in steady state
 ē/v̄ = δ̄(v̄+1−ū)/v̄ = (δ̄/τ̄)[τ̄ + (1−δ̄)q̄], with the bracket fixed at 0.831 by the targets. At D1
 and ξ = 1 the stock elasticity is 0.073, below CK's estimated ξ = 0.265 at δ_e = τ (0.22).
 ξ must exceed ≈ 14 before the stock is unit elastic. So Comparison D's "near-free-entry"
-ξ_inv = 0.1 is not near free entry in stock terms at low δ̄. **Hypothesis, not verified:**
+ξ_inv = 0.1 is not near free entry in stock terms at low δ̄. **Confirmed Oct 11 (`gs_finite_xi_entry_offset.jl`, next section):**
 the entry cushion is non-monotone in ξ (it rises with ξ at finite ξ, by congestion relief,
-and reverses at ξ = ∞, by the user cost). Test in R14's ξ → ∞ cell after R8.
+and reverses at ξ = ∞, by the user cost) in the GS economy. Full-model test in R14's ξ → ∞ cell after R8.
 
 **4. Free entry is one-sided.** At D1 (nested economy), entry would have to turn negative for a
 shock above 9.3 % of δ̄_e (58 % at δ_e = τ); a 1-SD shock is 3.3 %. The linearization
