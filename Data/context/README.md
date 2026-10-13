@@ -1,11 +1,11 @@
 # Context Folder — Index
 **Last reorganized:** September 5, 2026 (branch `Organize_Project_State_Estimation`)
-**Last consistency pass:** October 12, 2026 (branch `costly_vacancy_reposting`). Oct 11–12: R15
+**Last consistency pass:** October 13, 2026 (branch `costly_vacancy_reposting`; Oct 13 review → P8 theory-section cleanup, "vacancy free entry" terminology). Oct 11–12: R15
 spliced (`prop:fe` leads `sec:mechanism`), every theory proposition audited and corrected, R16
 repaired, X^c made exact in draft and code, `ass:matching` tightened. Handout
 `session_handout_20261012.md`. Handouts before Oct 9 moved to `archive/`.
 
-Nine files, each with one job, plus the dated session handouts. If you are about to write
+Ten files, each with one job, plus the dated session handouts. If you are about to write
 something here, check this table first — most duplication in the past came from appending
 status notes to whichever file was open rather than the file that owns the topic.
 

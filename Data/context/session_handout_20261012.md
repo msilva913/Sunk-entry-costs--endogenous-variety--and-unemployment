@@ -1,5 +1,5 @@
 # Session Handout — October 11–12, 2026
-**Branch:** `costly_vacancy_reposting` · **Last pushed commit:** `523cedd` (plus MS's rebuild `8882a42`)
+**Branch:** `costly_vacancy_reposting` · **Last pushed commit:** `e81caf3` (handout and context; before it `523cedd` and MS's rebuild `8882a42`)
 **Previous handout:** [`session_handout_20261009.md`](session_handout_20261009.md) (strategy, D12)
 
 These two sessions rebuilt the theory in §3 and Appendices G–J, made the continuation-cost
@@ -83,7 +83,7 @@ the SMCD repo as a sibling checkout). Inventory: [`pipeline.md`](pipeline.md).
 `8a42ca6` R16 · `0642487` R12 audit · `1628f30` context · `e1a2ab0` rebuild · `2c5b78e` limiting
 cases · `f5cce4d` free-entry discussion · `1e63cd7` Sections 1–3 pass · `3c58bb7` X^c draft ·
 `50ce448` X^c code · `523cedd` `eq:Phi` / Assumption 1. All pushed to origin. This handout and
-the context cleanup are **not yet committed**.
+the context cleanup were committed as `e81caf3` (Oct 12).
 
 ---
 

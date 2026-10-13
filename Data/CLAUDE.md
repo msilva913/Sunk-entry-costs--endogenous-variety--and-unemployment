@@ -89,6 +89,15 @@ and the δ→v trough at h=4–6. See [D10](context/decisions.md)
 (Oct 11–12: theory rebuild and X^c fix). Previous: `context/session_handout_20261009.md`
 (strategy, D12). Older handouts are in `context/archive/`.
 
+**Oct 13, 2026 — review and cleanup (P8, done).** Theory-section presentation fixes. New
+`ass:vacancy_fe`; `prop:bgm_nest` is now `rem:bgm_nest`; new `rem:dmp`. Under vacancy free
+entry with e_t > 0, the model is isomorphic to DMP in which every position bears the flow user
+cost K_t, so v_pre matters only if e_t ≥ 0 binds. Propositions renumbered (fe = 4, exit_s = 5,
+equilibria = 6). ⚠ **Terminology rule (MS):** never write bare "free entry" for
+vacancies. Say "vacancy free entry" or "infinitely elastic vacancy creation"; bare "free entry"
+means product lines (`eq:free_entry`). The main remaining theory gap is **R3** (no result for
+partial reposting). Details: `context/draft_status.md` "Propositions".
+
 The theory sections are audited and corrected (Oct 11–12). **Section 5 is the remaining
 critical path**, and the code must first be brought in line with the draft. Decisions that gate
 the rest (all MS's; [`context/decisions.md`](context/decisions.md)):
