@@ -122,6 +122,20 @@ Each step ends with a passing test before the next starts.
      equal the snapshot to ~1e-10.
    - **Test 2:** at p_0 > 0, SS residual < 1e-12, BK root count correct, and the position
      identity v_{pre,t+1} + L_{t+1} = (1−δ_{e,t+1})(v_t + L_t).
+
+   ✅ **Done Oct 14** on branch `r8_timing_reposting` (`R8_test_timing.jl` → `.txt`, `.jls`).
+   - **States** are now [Ñ, Ẽ, Ṽ^u, Ṽ^s, z, δ, δl, s]. N, u and v_pre are controls
+     (f[22]–f[24]); the laws of motion are f[25]–f[29]; 38 equations in all.
+   - **Test 1 passed:** at p_0 = 0 the restructured code reproduces the pre-R8 IRFs to 1.8e-12,
+     with δ_e re-dated (new δ_e[t+1] = old δ_e[t]).
+   - **Test 2 passed:** SS residual 8e-14, no unstable roots. The position-identity gap in
+     levels is purely second order: it shrinks by 1e-6 when the shock shrinks by 1e-3, for all
+     three shocks.
+   - **The base IRFs move only at the third decimal** (e.g. δ→v at month 12: −0.2420 →
+     −0.2425). This is consistent with endogenous exit being nearly inert at the calibration (H4).
+   - ⚠ **Runners that build single-shock `eta` columns by position** (e.g.
+     `[0,0,0,σ_z,0,0]`) now break, because nx = 8. Fix in step 6 by building columns by state
+     name, as `R8_test_timing.jl` does.
 3. **Steady state with reposting** (C).
    - **Test 3:** `steady_state_checks.jl` extended to the new JCC, wage, e and X^r, at 1e-12.
      Round-trip calibrate → solve recovers the targets, including Λ̄_r.

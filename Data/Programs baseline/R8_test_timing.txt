@@ -1,0 +1,26 @@
+R8 step 2 tests — timing restructure, costless reposting. IRFs in 100 × log deviations, T = 60
+
+Test 1 (p_0 = 0): max |new − old| over t, by shock
+  irf_z  common vars 1.84e-12   u,N,v_pret 1.23e-12   δ_e (new[t+1] vs old[t]) 0.00e+00
+  irf_δ  common vars 1.03e-13   u,N,v_pret 5.91e-14   δ_e (new[t+1] vs old[t]) 8.88e-16
+  irf_s  common vars 1.13e-12   u,N,v_pret 7.55e-13   δ_e (new[t+1] vs old[t]) 3.86e-18
+  Test 1 PASSED (worst 1.84e-12, tolerance 1e-8)
+
+Test 2 (p_0 = 0.5): solved; eigenvalues of hx with |λ| ≥ 1: 0 (want 0)
+  position identity, irf_z  gap in levels: 1 SD 4.38e-08, 1e-3 SD 4.39e-14 (ratio 1.0e-06; second order ⇒ ~1e-6)
+  position identity, irf_δ  gap in levels: 1 SD 1.48e-06, 1e-3 SD 1.47e-12 (ratio 9.9e-07; second order ⇒ ~1e-6)
+  position identity, irf_s  gap in levels: 1 SD 7.97e-05, 1e-3 SD 7.80e-11 (ratio 9.8e-07; second order ⇒ ~1e-6)
+
+  How much the base IRFs moved vs the pre-R8 code (expected: exit now dated t+1):
+    irf_z  u    old[3,13] =  -0.00581  -0.10014   new[3,13] =  -0.00685  -0.10354
+    irf_z  v    old[3,13] =   0.05611   0.18427   new[3,13] =   0.05614   0.18910
+    irf_z  N    old[3,13] =   0.03641   0.22657   new[3,13] =   0.03648   0.22701
+    irf_z  θ    old[3,13] =   0.06193   0.28440   new[3,13] =   0.06299   0.29264
+    irf_δ  u    old[3,13] =   0.11911   0.15164   new[3,13] =   0.11936   0.15197
+    irf_δ  v    old[3,13] =  -0.00056  -0.24195   new[3,13] =  -0.00056  -0.24248
+    irf_δ  N    old[3,13] =  -0.00940  -0.02313   new[3,13] =  -0.00941  -0.02318
+    irf_δ  θ    old[3,13] =  -0.11967  -0.39360   new[3,13] =  -0.11992  -0.39445
+    irf_s  u    old[3,13] =   3.19797   1.57968   new[3,13] =   3.19795   1.58097
+    irf_s  v    old[3,13] =   6.21285   2.93962   new[3,13] =   6.21286   2.93785
+    irf_s  N    old[3,13] =   0.00176  -0.08471   new[3,13] =   0.00176  -0.08487
+    irf_s  θ    old[3,13] =   3.01487   1.35994   new[3,13] =   3.01491   1.35688

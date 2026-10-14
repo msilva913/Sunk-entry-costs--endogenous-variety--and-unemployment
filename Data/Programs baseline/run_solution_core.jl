@@ -11,22 +11,18 @@
 # The z→δ_e pathway is captured by equilibrium equations (x_c responds to z),
 # not by shock covariance.
 #
-# Timing (monthly, following CK stage structure):
-#   Stage 1: New realizations of (z_t, δ_t, s_t)
-#   Stage 2: Bargaining and production — wages, output, profits
-#   Stage 3: Vacancy investment — new entrants e_t drawn
-#   Stage 4: Matching — m_t matches formed
-#   Stage 5: Job separation at rate δ_e_t (endogenous) + s_t (idiosyncratic)
+# Timing (monthly; draft fig:Timing, S10 — the draft is the reference model):
+#   Stage 1: z_t, δ_t, s_t realized and known
+#   Stage 2: exit draw against x_c,t (survival Λ_t), entry e_t = G(Q_t), N^e_t
+#   Stage 3: bargaining and production with N_t lines and 1-u_t workers
+#   Stage 4: matching out of v_t = v_pret,t + e_t and u_t
+#   Stage 5: separation s_t and destruction δ_t take effect
 #
-# State variables x = [u, N, v_pret, z, δ, s]:
-#   u      : unemployment entering period t (pre-matching)
-#   N      : mass of incumbent firms entering period t
-#   v_pret : surviving vacancies from t-1 (pre-entry); total v_t = v_pret + e_t
-#            entrants e_t post vacancies and participate in matching within period t
-#            (draft eq:v_lom); v_pret makes vacancies partially predetermined.
-#   z, δ, s: exogenous shocks (log-deviations from SS = 1)
+# State variables x = [Nt, Et, Vu, Vs, z, δ, δl, s] (R8, Oct 2026): pre-exit stocks
+#   after the end-of-(t-1) incidence, the shocks, and δl = δ_{t-1}. The post-exit
+#   stocks u, N, v_pret are controls (see the declaration and f[22]–f[24]).
 #
-# Control variables y (31 total) — see declaration below.
+# Control variables y (30 total) — see declaration below.
 #
 # Key endogenous exit objects added vs. CK baseline:
 #   x_c  : continuation cost cutoff (firms with cost > x_c exit)
@@ -140,19 +136,26 @@ priors   = (;)
 # =============================================================================
 # Variables
 # =============================================================================
-# State variables (predetermined, known at start of period t)
-@syms u N v_pret z δ s
-@syms up Np v_pretp zp δp sp
+# State variables (predetermined, known at the start of period t).
+# R8 (Oct 2026): the states are the PRE-EXIT stocks after the end-of-(t-1) incidence of
+# δ_{t-1} and s_{t-1}, as in the draft (S10; context/model_equations.md "Code status"):
+#   Nt = (1-δ_{t-1})(N_{t-1}+N^e_{t-1})                       product lines before the exit draw
+#   Et = (1-δ_{t-1})[(1-s_{t-1})(1-u_{t-1}) + f_{t-1}u_{t-1}]  employment before the exit draw
+#   Vu = (1-δ_{t-1})(1-q_{t-1})v_{t-1}                        unmatched vacancies carried over
+#   Vs = (1-δ_{t-1})s_{t-1}(1-u_{t-1})                        positions vacated by separations
+# plus the shocks z_t, δ_t, s_t (known at t) and δl_t ≡ δ_{t-1}, which δ_e,t needs.
+# The post-exit stocks N_t, u_t, v_pret,t are same-period controls, solved with x_c,t.
+@syms Nt Et Vu Vs z δ δl s
+@syms Ntp Etp Vup Vsp zp δp δlp sp
 
 # Control variables (jump variables, determined within period t)
-# Added vs. previous version: x_c (exit threshold), δ_e (endogenous exit rate)
-@syms θ q L v e K Q ρ N_e ν_f d_f w_int w L_e L_c Y_c C λ Y x_c δ_e labor_prod C_R Y_R Y_cR w_R ls
-@syms θp qp Lp vp ep Kp Qp ρp N_ep ν_fp d_fp w_intp wp L_ep L_cp Y_cp Cp λp Yp x_cp δ_ep labor_prod_p C_Rp Y_Rp Y_cRp w_Rp lsp
+@syms θ q L v e K Q ρ N_e ν_f d_f w_int w L_e L_c Y_c C λ Y x_c δ_e labor_prod C_R Y_R Y_cR w_R ls u N v_pret
+@syms θp qp Lp vp ep Kp Qp ρp N_ep ν_fp d_fp w_intp wp L_ep L_cp Y_cp Cp λp Yp x_cp δ_ep labor_prod_p C_Rp Y_Rp Y_cRp w_Rp lsp up Np v_pretp
 
-x  = [u; N; v_pret; z; δ; s]
-y  = [θ; q; L; v; e; K; Q; ρ; N_e; ν_f; d_f; w_int; w; L_e; L_c; Y_c; C; λ; Y; x_c; δ_e; labor_prod; C_R; Y_R; Y_cR; w_R; ls]
-xp = [up; Np; v_pretp; zp; δp; sp]
-yp = [θp; qp; Lp; vp; ep; Kp; Qp; ρp; N_ep; ν_fp; d_fp; w_intp; wp; L_ep; L_cp; Y_cp; Cp; λp; Yp; x_cp; δ_ep; labor_prod_p; C_Rp; Y_Rp; Y_cRp; w_Rp; lsp]
+x  = [Nt; Et; Vu; Vs; z; δ; δl; s]
+y  = [θ; q; L; v; e; K; Q; ρ; N_e; ν_f; d_f; w_int; w; L_e; L_c; Y_c; C; λ; Y; x_c; δ_e; labor_prod; C_R; Y_R; Y_cR; w_R; ls; u; N; v_pret]
+xp = [Ntp; Etp; Vup; Vsp; zp; δp; δlp; sp]
+yp = [θp; qp; Lp; vp; ep; Kp; Qp; ρp; N_ep; ν_fp; d_fp; w_intp; wp; L_ep; L_cp; Y_cp; Cp; λp; Yp; x_cp; δ_ep; labor_prod_p; C_Rp; Y_Rp; Y_cRp; w_Rp; lsp; up; Np; v_pretp]
 
 variables = [x; y; xp; yp]
 varnames  = vcat(Symbol.(x), Symbol.(y))
@@ -163,21 +166,23 @@ nvar = nx + ny
 ne   = 3    # three structural shocks: z, δ, s
 
 # =============================================================================
-# Shock matrix eta (nx × ne = 6 × 3)
+# Shock matrix eta (nx × ne = 8 × 3)
 # =============================================================================
 # Column j of eta gives the impact of shock j on each state variable.
-# Sign convention: a positive z shock raises log(z), so column 1 entry 4 = +σ_z.
-# A positive δ shock raises log(δ), so column 2 entry 5 = +σ_δ.
+# Sign convention: a positive z shock raises log(z); a positive δ shock raises log(δ).
 # Shocks are orthogonal (Cholesky z-first in part6b); no off-diagonal terms.
+# Runners should build single-shock columns by state NAME (findfirst(==(:δ), Symbol.(x))),
+# not by hard-coded position, since the state vector changed in R8.
 #
-# States: row 1=u, row 2=N, row 3=v_pret, row 4=z, row 5=δ, row 6=s
 #         z shock   δ shock   s shock
-eta = [0    0    0;    # u      (not directly hit)
-       0    0    0;    # N      (not directly hit)
-       0    0    0;    # v_pret (not directly hit)
-       σ_z  0    0;    # z      (+σ_z on z shock)
-       0    σ_δ  0;    # δ      (+σ_δ on δ shock)
-       0    0    σ_s]  # s      (+σ_s on s shock)
+eta = [0    0    0;    # Nt  (not directly hit)
+       0    0    0;    # Et
+       0    0    0;    # Vu
+       0    0    0;    # Vs
+       σ_z  0    0;    # z
+       0    σ_δ  0;    # δ
+       0    0    0;    # δl  (lag of δ; moves one period later through its law of motion)
+       0    0    σ_s]  # s
 
 @syms epsilon   # placeholder required by toolkit; ne=3 shocks handled via eta
 ex = [epsilon]
@@ -192,15 +197,17 @@ ex = [epsilon]
 #     where F(x_c) = (1-p_0) + p_0*(x_c/f_m)^ψ   [continuation cost CDF]
 #   x_c = continuation cost threshold (firms draw cost each period; exit if > x_c)
 #
-# Equation count: 6 state + 27 control = 33 total, matching nvar.
+# Equation count: 8 state + 30 control = 38 total, matching nvar.
 # f[1]–f[2]:   endogenous exit (x_c threshold, δ_e rate)
 # f[3]–f[5]:   Euler equations (JCC, business formation, K value)
 # f[6]–f[8]:   wage block (MRP, Nash wage, vacancy creation)
 # f[9]–f[15]:  labor/goods market static conditions
-# f[16]–f[24]: resource constraint, identities, LOMs
-# f[25]:       labor share
-# f[26]–f[30]: data-consistent observables
-# f[31]–f[33]: exogenous AR(1) shock processes
+# f[16]–f[21]: resource constraint and identities
+# f[22]–f[24]: post-exit stocks N, u, v_pret (same-period controls)
+# f[25]–f[29]: laws of motion of the pre-exit states and δl
+# f[30]:       labor share
+# f[31]–f[35]: data-consistent observables
+# f[36]–f[38]: exogenous AR(1) shock processes
 #
 # Key timing notes:
 #   - δ_e,t applies to incumbents at END of period (Stage 5): destroys filled
@@ -232,9 +239,11 @@ function gen_model_equations()
     # = per-firm gross profit R^f + firm value ν_f  (eq:cutoff_free_entry)
     f[1] = x_c - (Y_c * (μ - 1) / (μ * N) + ν_f)
 
-    # ── [2] Endogenous destruction rate (eq:delta_e_lom) ──────────────────────
-    # δ_e_t = 1 - (1-δ_t)*Λ_t  where δ_t is predetermined state
-    f[2] = δ_e - (1 - (1 - δ * δbar) * Λ)
+    # ── [2] Total exit rate (eq:delta_e_lom) ──────────────────────────────────
+    # δ_e,t = 1 - (1-δ_{t-1})*Λ_t: destruction at the end of t-1 plus the period-t exit
+    # draw. R8: dated as in the draft, with the lagged shock δl_t = δ_{t-1}. δ_e is now
+    # an observable only; survival in the laws of motion is built from Λ_t directly.
+    f[2] = δ_e - (1 - (1 - δl * δbar) * Λ)
 
     # ── [3] Job creation condition (eq:jcc_eq) ────────────────────────────────
     # κ + K/q = E_t[m_{t+1}*(1-δ_t)*Λ_{t+1}*{(1-ϕ)*(w_int'-K'-b)
@@ -338,61 +347,55 @@ function gen_model_equations()
     # [21] Total vacancies (eq:v_lom split): v = v_pret + e
     f[21] = v - (v_pret + e)
 
-    # ── [22] Pre-entry vacancies tomorrow (predetermined part of v_lom) ────────
-    # v_pret_{t+1} = (1-δ_e_t)*[(1-q_t)*v_t + s_t*sbar*(1-u_t)]
-    # (draft eq:v_lom): surviving unmatched vacancies + reposted separations.
-    # Uses total v_t (including e_t): entrants participate in matching this period.
-    f[22] = v_pretp - (1 - δ_e)*((1 - q)*v + s*sbar*(1 - u))
+    # ── Post-exit stocks: same-period controls (R8, draft timing S10) ──────────
+    # The period-t exit draw against x_c,t (survival Λ_t) turns the pre-exit states into
+    # the stocks that produce and match in t. Because Λ_t depends on x_c,t, and x_c,t on
+    # N_t through f[1], these are solved jointly with the cutoff — the fixed point in the
+    # prop:exit_s proof — rather than being predetermined.
+    # [22] Product lines that produce in t (eq:firm_law_motion)
+    f[22] = N - Λ * Nt
+    # [23] Unemployment before matching (eq:u_lom): u_t = 1 - Λ_t·Ẽ_t
+    f[23] = u - (1 - Λ * Et)
+    # [24] Pre-entry vacancies (eq:v_lom), costless reposting (Λ_r ≡ 1 until step 4):
+    #      v_pre,t = Λ_t·(Ṽ^u_t + Ṽ^s_t)
+    f[24] = v_pret - Λ * (Vu + Vs)
 
-    # ── [23] Unemployment LOM (eq:u_lom) ──────────────────────────────────────
-    # u_{t+1} = [1 - (1-δ_{e,t})f(θ_t)]*u_t + τ_t*(1 - u_t)
-    # where f(θ_t) = A*θ_t^(1-η_L) is the job-finding rate using total v_t
-    # (entrants e_t participate in matching within period t), and
-    # τ_t = δ_e + s*sbar*(1-δ_e)  [total separation rate, eq:tau_lom]
-    #
-    # CONVENTION A (pre-matching), restored September 5, 2026.
-    # Matches formed at t reach t+1 only if the firm survives — hence the
-    # (1-δ_e) on the outflow from unemployment — while τ_t applies to the
-    # INHERITED stock (1-u_t) only. A match therefore cannot dissolve before it
-    # has produced. This is the base the vacancy LOM f[22] reposts on, so the
-    # pair conserves job positions exactly: v_pre' + L' = (1-δ_e)(v + L).
-    #
-    # This equation had been written with a post-matching base,
-    #     up - ((1 - f_t)*u + τ_t*((1 - u) + f_t*u)),
-    # which applies τ to (1-u)+f·u while f[22] reposts only on (1-u). That
-    # mixture leaks positions at rate (1-δ_e)·s·q·v: workers matched at t who
-    # separate at t leave employment without their job returning as a vacancy.
-    # It is also inconsistent with the steady-state formulas eq:u_ss and
-    # eq:e_ss, and with Gabrovski-Silva, which this model is meant to nest.
-    # See Notes/LOM_timing_consistency.md.
-    τ_t = δ_e + s*sbar*(1 - δ_e)
-    f_t  = A * θ^(1 - η_L)         # job-finding rate: f(θ_t), θ_t uses total v_t
-    f[23] = up - ((1 - (1 - δ_e)*f_t)*u + τ_t*(1 - u))
+    # ── Laws of motion for the pre-exit states (Convention A) ──────────────────
+    # δ_t is known at t and destroys at the end of t; s_t separates matches that
+    # produced in t. Matches formed at t face δ_t and the t+1 exit draw but not s_t,
+    # so a match cannot dissolve before it has produced. Positions are conserved up
+    # to exit: (v_pre + L)_{t+1} = Λ_{t+1}(1-δ_t)(v_t + L_t).
+    f_t = A * θ^(1 - η_L)          # job-finding rate f(θ_t), θ_t uses total v_t
+    # [25] Ñ_{t+1} = (1-δ_t)(N_t + N^e_t)
+    f[25] = Ntp - (1 - δ * δbar) * (N + N_e)
+    # [26] Ẽ_{t+1} = (1-δ_t)[(1-s_t)(1-u_t) + f_t u_t]
+    f[26] = Etp - (1 - δ * δbar) * ((1 - s * sbar) * (1 - u) + f_t * u)
+    # [27] Ṽ^u_{t+1} = (1-δ_t)(1-q_t)v_t
+    f[27] = Vup - (1 - δ * δbar) * (1 - q) * v
+    # [28] Ṽ^s_{t+1} = (1-δ_t)s_t(1-u_t)
+    f[28] = Vsp - (1 - δ * δbar) * s * sbar * (1 - u)
+    # [29] δl_{t+1} = δ_t (lagged shock, for δ_e)
+    f[29] = log(δlp) - log(δ)
 
-    # ── [24] Firm LOM (eq:N_lom_eq simplified) ────────────────────────────────
-    # N_{t+1} = (1-δ_{e,t})*(N_t + N_e_t)
-    # Both incumbents and entrants face current-period destruction δ_e. ✓
-    f[24] = Np - (1 - δ_e)*(N + N_e)
-
-    # [25] Labor share
-    f[25] = ls - w*L/Y
+    # [30] Labor share
+    f[30] = ls - w*L/Y
 
     # ── Data-consistent observables ────────────────────────────────────────────
-    # [26] Labor productivity (real output per worker)
-    f[26] = labor_prod - Y/(ρ*L)
+    # [31] Labor productivity (real output per worker)
+    f[31] = labor_prod - Y/(ρ*L)
 
-    # [27]–[30] Real (price-deflated) aggregates
-    f[27] = C_R    - C/ρ
-    f[28] = Y_R    - Y/ρ
-    f[29] = Y_cR   - Y_c/ρ
-    f[30] = w_R    - w/ρ
+    # [32]–[35] Real (price-deflated) aggregates
+    f[32] = C_R    - C/ρ
+    f[33] = Y_R    - Y/ρ
+    f[34] = Y_cR   - Y_c/ρ
+    f[35] = w_R    - w/ρ
 
     # ── Exogenous AR(1) shock processes (eq:ar1_z – eq:ar1_s) ─────────────────
     # Log-linear around SS = 1 for each shock (log-deviation = 0 at SS).
     # Shock innovations are orthogonal by Cholesky construction (part6b).
-    f[31] = log(zp) - ρ_z * log(z)   # technology
-    f[32] = log(δp) - ρ_δ * log(δ)   # structural exit (⊥ z)
-    f[33] = log(sp) - ρ_s * log(s)   # worker separation
+    f[36] = log(zp) - ρ_z * log(z)   # technology
+    f[37] = log(δp) - ρ_δ * log(δ)   # structural exit (⊥ z)
+    f[38] = log(sp) - ρ_s * log(s)   # worker separation
 
     return f
 end
@@ -477,21 +480,34 @@ function SS_numeric(PAR::Vector{Float64}, targets)
     Y_R_s        = Y / ρ            # f[28]
     Y_cR_s       = Y_c / ρ          # f[29]
     w_R_s        = w / ρ            # f[30]
-    ls_s         = labor_share      # f[25] = w*L/Y
+    ls_s         = labor_share      # f[30] = w*L/Y
+
+    # ── Pre-exit states (R8) ──────────────────────────────────────────────────
+    # Survival Λ = F(x_c) = (1-δ_e)/(1-δ) in steady state, so Ñ = N/Λ, Ẽ = (1-u)/Λ,
+    # and the vacancy carry-overs are scaled by (1-δ) only (exit applies at the next draw).
+    Λ_s  = (1 - δ_e) / (1 - cal.δ)
+    Nt_s = N / Λ_s
+    Et_s = (1 - u) / Λ_s
+    Vu_s = (1 - cal.δ) * (1 - q) * v
+    Vs_s = (1 - cal.δ) * cal.s * (1 - u)
+    # f[24] check: Λ(Ṽ^u + Ṽ^s) = (1-δ_e)[(1-q)v + s(1-u)] = v_pret under costless reposting
+    isapprox(Λ_s * (Vu_s + Vs_s), v_pret; rtol = 1e-10) ||
+        error("SS_numeric: pre-exit vacancy states inconsistent with v_pret")
 
     # ── Assemble SS vector ────────────────────────────────────────────────────
     # Order MUST match varnames = vcat(Symbol.(x), Symbol.(y)):
-    #   x = [u, N, v_pret, z, δ, s]
+    #   x = [Nt, Et, Vu, Vs, z, δ, δl, s]
     #   y = [θ, q, L, v, e, K, Q, ρ, N_e, ν_f, d_f, w_int, w, L_e, L_c, Y_c,
-    #        C, λ, Y, x_c, δ_e, labor_prod, C_R, Y_R, Y_cR, w_R, ls]
+    #        C, λ, Y, x_c, δ_e, labor_prod, C_R, Y_R, Y_cR, w_R, ls, u, N, v_pret]
     SS_block = [log(val) for val in [
-        u, N, v_pret, z_s, δ_s, s_s,
+        Nt_s, Et_s, Vu_s, Vs_s, z_s, δ_s, 1.0, s_s,
         θ, q, L, v, e, K, Q,
         ρ, N_e, ν_f, d_f,
         w_int, w, L_e, L_c, Y_c,
         C, λ_s, Y,
         x_c, δ_e,
-        labor_prod_s, C_R_s, Y_R_s, Y_cR_s, w_R_s, ls_s
+        labor_prod_s, C_R_s, Y_R_s, Y_cR_s, w_R_s, ls_s,
+        u, N, v_pret
     ]]
 
     SS = vcat(SS_block, SS_block)   # current and future (same at SS)
@@ -603,16 +619,24 @@ function SS_symbolics(parameters::Vector{Sym{PyObject}}, targets)
     w_R_s        = w_s / ρ_val
     ls_s         = w_s * L_s / Y_s
 
+    # Pre-exit states (R8): Λ = (1-δ_e)/(1-δ) at SS
+    Λ_ss  = (1 - δ_e_s) / (1 - δ_s_ss)
+    Nt_ss = N_s / Λ_ss
+    Et_ss = L_s / Λ_ss
+    Vu_ss = (1 - δ_s_ss) * (1 - q_corr) * v_s
+    Vs_ss = (1 - δ_s_ss) * s_ss * L_s
+
     # ── Assemble SS vector ─────────────────────────────────────────────────────
-    # Order must match [x; y]: [u,N,v_pret,z,δ,s, θ,q,L,v,e,K,Q,ρ,N_e,ν_f,d_f,w_int,w,L_e,L_c,Y_c,C,λ,Y,x_c,δ_e,labor_prod,C_R,Y_R,Y_cR,w_R,ls]
+    # Order must match [x; y]: [Nt,Et,Vu,Vs,z,δ,δl,s, θ,q,L,v,e,K,Q,ρ,N_e,ν_f,d_f,w_int,w,L_e,L_c,Y_c,C,λ,Y,x_c,δ_e,labor_prod,C_R,Y_R,Y_cR,w_R,ls,u,N,v_pret]
     SS_block = [log(x) for x in [
-        u_s, N_s, v_prets, z_s, δ_s, s_s,          # states
+        Nt_ss, Et_ss, Vu_ss, Vs_ss, z_s, δ_s, 1.0, s_s,   # states
         θ_s, q_corr, L_s, v_s, e_s, K_s, Q_s,      # controls 1–7
         ρ_val, N_e_s, ν_f_s, d_f_s,                 # controls 8–11
         w_int_s, w_s, L_e_s, L_c_s, Y_c_s,          # controls 12–16
         C_s, λ_s, Y_s,                               # controls 17–19
-        x_c_s, δ_e_sym,                              # controls 20–21 (new)
-        labor_prod_s, C_R_s, Y_R_s, Y_cR_s, w_R_s, ls_s  # controls 22–27
+        x_c_s, δ_e_sym,                              # controls 20–21
+        labor_prod_s, C_R_s, Y_R_s, Y_cR_s, w_R_s, ls_s,  # controls 22–27
+        u_s, N_s, v_prets                            # controls 28–30 (post-exit stocks)
     ]]
 
     SS = vcat(SS_block, SS_block)   # current and future (same at SS)
