@@ -25,8 +25,9 @@ status notes to whichever file was open rather than the file that owns the topic
 
 ## Reading order when picking the project back up
 
-1. **`session_handout_20261012.md`** — latest handout (Oct 11–12: theory rebuild, X^c fix, what is
-   open). Before it: `session_handout_20261009.md` (strategy: `prop:fe` vs Prop. 5, JET no-go, D12)
+1. **`session_handout_20261014.md`** — latest handout (Oct 14: Q0 done, D13, Q1 steps 1–4 on
+   branch `r8_timing_reposting`; resume with steps 5–7). Before it: `session_handout_20261012.md`
+   (theory rebuild, X^c fix) and `session_handout_20261009.md` (strategy, D12)
 2. `../CLAUDE.md` — one-paragraph framing, quick facts, current priorities
 3. **`pending_tasks.md`** — the critical path: **E9**, then the single regeneration pass
    **R8 + D1 + PATH B** (if D12's recommendation is adopted, E9 drops out)

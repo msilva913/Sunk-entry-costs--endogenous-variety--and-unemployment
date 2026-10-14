@@ -94,9 +94,11 @@ and the δ→v trough at h=4–6. See [D10](context/decisions.md)
 > Q2 VAR → Q3 targets → Q4 identification → Q5 hypotheses and mechanism comparisons (the D12
 > gate) → Q6 estimation.
 
-**Resume:** [`context/session_handout_20261012.md`](context/session_handout_20261012.md)
-(Oct 11–12: theory rebuild and X^c fix). Previous: `context/session_handout_20261009.md`
-(strategy, D12). Older handouts are in `context/archive/`.
+**Resume:** [`context/session_handout_20261014.md`](context/session_handout_20261014.md)
+(Oct 14: Q0 done; Q1 steps 1–4 on branch **`r8_timing_reposting`**, resume with steps 5–7;
+Julia project environment in `Programs baseline/`, run with `--project=.`). Previous:
+`context/session_handout_20261012.md` (theory rebuild, X^c fix) and `20261009` (strategy, D12).
+Older handouts are in `context/archive/`.
 
 **Oct 13, 2026 — review and cleanup (P8, done).** Theory-section presentation fixes. New
 `ass:vacancy_fe`; `prop:bgm_nest` is now `rem:bgm_nest`; new `rem:dmp`. Under vacancy free
