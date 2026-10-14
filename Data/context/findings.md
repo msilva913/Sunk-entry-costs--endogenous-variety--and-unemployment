@@ -521,6 +521,9 @@ parameter α, no new distribution, single firm size preserved. See [D11](decisio
 
 **Dynamic payoffs (to be sized by simulation, R9).** Beyond the Beveridge sign (a recalibrated
 level effect), the channel is expected to deliver: **amplification** via procyclical reposting
+(⚠ Oct 14: Λ_r = F(Q/α) shares Q's cyclicality, which is shock-specific. Q falls after z and s
+shocks but rises after δ shocks at finite ξ (ê^δ > 0, Comparison D). So reposting may amplify
+z and s shocks and damp δ shocks; R9 must report the result by shock)
 and via the reposting option in the JCC; and **persistence** via stock depletion — retired
 positions rebuild at the full cost Q, slowing recovery, potentially relevant to the δ→u
 peak-horizon gap ([M8](pending_tasks.md)). Not yet quantified.

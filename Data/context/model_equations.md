@@ -66,8 +66,11 @@ decision on its product line against χ^c_t. Reactivation is the recruiter's dec
 vacated position against Q_t. Recruiters hold vacancies, so reactivation is theirs. Retailer
 exit gates reactivation, because a position serving a withdrawn product line is destroyed
 regardless; that is the (1 − δ_{e,t}) factor in f[22]. Since Q_t is set at the same node
-(e_t = G(Q_t)), reactivation conditions on *realized* Q_t, which is what makes Λ_{r,t}
-procyclical. The reposting option accrues to the recruiter's J, not the retailer's ν^f, so the
+(e_t = G(Q_t)), reactivation conditions on *realized* Q_t, so Λ_{r,t} responds within the
+period and shares Q_t's cyclicality. ⚠ **Oct 14: that cyclicality is shock-specific, not
+procyclical in general.** Q_t falls after technology and separation shocks that raise
+unemployment, but rises after a destruction shock at finite ξ (congestion relief;
+ê^δ > 0 in Comparison D, numerical, R12b). Q_t is constant under vacancy free entry. The reposting option accrues to the recruiter's J, not the retailer's ν^f, so the
 dependence stays triangular and f[1]/f[4]/f[18] are unchanged in Block 2.
 
 ## Code status — the two timing deviations (October 1, 2026)
@@ -281,7 +284,9 @@ recruiter must create a fresh position at cost drawn from G). Reactivate iff Q �
 Λ_{r,t} = F(Q_t/α) = min[ (1 − p_0) + p_0·(Q_t/(α·χ_m))^ψ , 1 ]
 ```
 Positions vacated at the end of t−1 are reactivated at Stage 2 of t against the realized Q_t.
-Procyclical, so position destruction is countercyclical. Λ_r ∈ [1 − p_0, 1]: the zero-cost
+Λ_r shares Q_t's cyclicality, which is shock-specific (⚠ Oct 14: the earlier "procyclical, so
+position destruction is countercyclical" holds for z and s shocks but not for δ shocks at
+finite ξ; see the note above). Λ_r ∈ [1 − p_0, 1]: the zero-cost
 atom always reactivates, so p_0 caps the margin. Saturates at 1 for α ≤ Q̄/χ_m. Track it as a
 control so its impulse response can be reported (R9).
 
@@ -370,7 +375,8 @@ Costs are paid at Stage 2 of t, when reactivation happens against the realized Q
 positions vacated at the end of t−1 at surviving product lines. The count is the reposting
 inflow of f[22] *without* Λ_r, because α·M already embeds it. **This timing is forced by the
 Stage-2 reactivation node.** Paying at separation against E_t Q_{t+1} would make reactivation
-condition on an expectation and lose the procyclicality the margin rests on. Under the R8
+condition on an expectation and lose the within-period response to Q_t that the margin rests
+on (its sign is shock-specific; Oct 14). Under the R8
 state vector, s_{t−1}(1 − u_{t−1}) is a function of states, so no extra lag is needed.
 Use the exact integral: a shortcut that uses p_0 for Λ_r − 1 + p_0 overstates X^r by 25%
 at Λ_r = 0.9 and 2.5× at 0.7, and is wrong at the floor, where exact X^r = 0.

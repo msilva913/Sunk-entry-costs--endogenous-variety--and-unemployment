@@ -470,8 +470,7 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	
 	Time is discrete and infinite. The economy is populated by 
 	households, intermediaries (recruiters), and retailers. Households 
-	and recruiters each have unit mass; the mass of retailers is 
-	endogenous, each supplying one product line. A household consists 
+	and recruiters each have unit mass. There is an endogenous mass of retailers, each supplying one product line. A household consists 
 	of a large family of workers who are either employed or unemployed, 
 	as in \citet{merz_1995}. Employed members supply one unit of labor 
 	inelastically. The household consumes and purchases equity. A unit 
@@ -519,59 +518,15 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	measures both the taste for diversity and the elasticity of 
 	substitution, so both the markup and the variety benefit are 
 	independent of the number of producers: 
-	$\zeta(N)=\mu(N)-1=1/(\varepsilon-1)$. The second specification 
-	is generalized CES following \citet{benassy_1996}, with consumption 
-	basket $N^{\zeta-1/(\varepsilon-1)}\left(\int 
-	c_j^{(\varepsilon-1)/\varepsilon}dj\right)^{\varepsilon/(\varepsilon-1)}$; 
-	this disentangles the taste for variety $\zeta$ from the elasticity 
-	of substitution $\varepsilon$. The third specification uses the 
-	translog expenditure function of \citet{feenstra_2003}, under which 
-	$\varepsilon(N)=1+\eta N$, so goods become more substitutable as 
-	variety increases. Table~\ref{tab:preference_specifications} summarizes 
-	key statistics for all three specifications.
-	
-	\begin{table}[H]
-		\centering
-		\begin{tabular}{l|ccc}
-			\toprule
-			& DS-CES & General CES & Translog \\
-			\midrule
-			Consumption index 
-			& $\left(\int c_j^{(\varepsilon-1)/\varepsilon}dj
-			\right)^{\varepsilon/(\varepsilon-1)}$ 
-			& $N^{\zeta-1/(\varepsilon-1)}\left(\int 
-			c_j^{(\varepsilon-1)/\varepsilon}dj
-			\right)^{\varepsilon/(\varepsilon-1)}$ 
-			& $-$ \\
-			Price index 
-			& $\left(\int p_j^{1-\varepsilon}dj
-			\right)^{1/(1-\varepsilon)}$ 
-			& $N^{-\zeta+1/(\varepsilon-1)}\left(\int 
-			p_j^{1-\varepsilon}dj\right)^{1/(1-\varepsilon)}$ 
-			& $-$ \\
-			Markup $\mu(N)$ 
-			& $\frac{\varepsilon}{\varepsilon-1}$ 
-			& $\frac{\varepsilon}{\varepsilon-1}$ 
-			& $1+\frac{1}{\eta N}$ \\
-			Relative price $\rho(N)$ 
-			& $N^{\frac{1}{\varepsilon-1}}$ 
-			& $N^{\zeta}$ 
-			& $\exp\left\{-\frac{1}{2}
-			\frac{\tilde{N}-N}{\eta \tilde{N}N}\right\}$ \\
-			Benefit of variety $\zeta(N)$ 
-			& $\mu-1$ 
-			& $\zeta$ 
-			& $\frac{1}{2\eta N}=\frac{\mu(N)-1}{2}$ \\
-			\bottomrule
-		\end{tabular}
-		\caption{Preference specifications: indices, markup, relative 
-			price, and benefit of variety}
-		\label{tab:preference_specifications}
-	\end{table}
+	$\zeta(N)=\mu(N)-1=1/(\varepsilon-1)$. Generalized CES, following
+	\citet{benassy_1996}, disentangles the taste for variety $\zeta$ from the elasticity of
+	substitution $\varepsilon$. \ref{app:preferences} gives the indices, markup, relative
+	price, and benefit of variety under both, and under the translog preferences of
+	\citet{feenstra_2003}.
 	
 	\subsection{Laws of motion for firms, unemployment, and vacancies}
 	
-	A product line survives into period $t$ if it was not destroyed exogenously at the end of $t-1$ (probability 
+	A product line survives into  the production phase of period $t$ if it was not destroyed exogenously at the end of $t-1$ (probability 
 	$1-\delta_{t-1}$) \emph{and} its owner draws a continuation cost below the equilibrium cutoff $\chi_t^c$ at the start of $t$ 
 	(probability $F(\chi_t^c)$). Both events occur before production and 
 	matching, so $u_t$ is unemployment \emph{after} firm exit but 
@@ -631,8 +586,7 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	only firms surviving both exogenous destruction and the
 	continuation-cost draw contribute to either term, so a shock
 	to $\delta_t$ collapses the entire bracket. A vacated position is reactivated with
-	probability $\Lambda_{r,t}=F(Q_t/\alpha)$, derived in~\eqref{eq:Lambda_r}, which carries the
-	same date as the survival term. The remaining fraction $1-\Lambda_{r,t}$ is retired
+	probability $\Lambda_{r,t}=F(Q_t/\alpha)$, derived in~\eqref{eq:Lambda_r}. The remaining fraction $1-\Lambda_{r,t}$ is retired
 	permanently.
 	
 	\subsection{Stochastic processes}
@@ -652,10 +606,10 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	idiosyncratic separation, respectively, and innovations 
 	$e_{zt}$, $e_{\delta t}$, $e_{st}$ are mutually uncorrelated. 
 	As illustrated in Figure~\ref{fig:Timing}, the aggregate state,
-	including $s_t$ and $\delta_t$, is realized at the start of
-	period~$t$, so all date-$t$ decisions condition on it. The rates
+	including $s_t$ and $\delta_t$, is observed at the start of
+	period~$t$, before any date-$t$ decision is made. The rates
 	$s_t$ and $\delta_t$ govern separation and destruction at the end
-	of $t$, after production, bargaining, and matching; only which
+	of $t$, after production, bargaining, and matching. Only which
 	matches and product lines they hit is revealed then. The stocks
 	entering $t$ were therefore shaped by the rates of $t-1$, through
 	$\delta_{e,t}$ and $\tau_t$. This lag, combined with sunk vacancy creation costs, is the
@@ -671,9 +625,8 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	on the product line surviving, the recruiter draws a cost from $F$
 	for each vacated position and resumes it whenever
 	$\alpha\chi\leq Q_t$. 
-	Because the recruiter conditions on the realized $Q_t$ rather than
-	on its expectation, $\Lambda_{r,t}$ is procyclical and position
-	destruction is countercyclical.
+	The reactivation probability therefore rises with the value of a vacancy $Q_t$ and shares
+	its cyclical behavior, which depends on the shock.
 
 	Because positions are held by recruiters and labor is rented competitively, how vacated
 	positions are spread across recruiters does not matter to retailers. Only the aggregate
@@ -929,7 +882,7 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 		\Lambda_{r,t}\equiv F\!\left(\frac{Q_t}{\alpha}\right)
 		=\min\left\{(1-p_0)+p_0\left(\frac{Q_t}{\alpha\chi_m}\right)^{\psi},\,1\right\}
 	\end{align}
-	using the form of $F$ in~\eqref{eq:F_chi}. Like the survival probability~\eqref{eq:Lambda}, $\Lambda_{r,t}$ evaluates $F$ at a threshold. The zero-cost atom always reactivates, so $\Lambda_{r,t}\in[1-p_0,1]$, and every vacated position is reactivated once $Q_t\geq\alpha\chi_m$. Because $Q_t$ is procyclical, so is the reactivation rate. The expected value of a separated position is therefore the reactivation option value
+	using the form of $F$ in~\eqref{eq:F_chi}. Like the survival probability~\eqref{eq:Lambda}, $\Lambda_{r,t}$ evaluates $F$ at a threshold. The zero-cost atom always reactivates, so $\Lambda_{r,t}\in[1-p_0,1]$, and every vacated position is reactivated once $Q_t\geq\alpha\chi_m$. The reactivation rate rises with $Q_t$ and so shares its cyclical behavior. The expected value of a separated position is therefore the reactivation option value
 	\begin{align}\label{eq:Qrep}
 		Q_t^{rep}\equiv\mathbb{E}\bigl[\max\{Q_t-\alpha\chi,\,0\}\bigr]
 		= Q_t\Lambda_{r,t}-\alpha\int_{0}^{Q_t/\alpha}\chi\,dF(\chi),
@@ -3878,6 +3831,56 @@ The second set consists of empirically identified impulse responses from the
 	Equation \eqref{eq:jcc_wage_ss} equates the average recruiting cost to the present-discounted value of the match, adjusted for the wage bargain. The right-hand side incorporates a fraction $1-\phi$ of the flow surplus $(w^{int}-K-b)$, an adjustment for the outside option of the worker, and the recruiter's share $1-\phi$ of the expected reposting shortfall, which vanishes with costless reposting. Whereas in the standard DMP model, the analogous expression would characterize tightness, here $K$ and $w^{int}$ are additional endogenous variables. Moreover, the average recruiting cost has the compound form $\kappa+K/q$, and discounting is adjusted by the overall firm survival rate $1-\delta_e$.
 	
 	\section{Derivations}
+	\subsection{Preference specifications}\label{app:preferences}
+	Table~\ref{tab:preference_specifications} reports the two statistics that characterize
+	symmetric homothetic preferences in the model, $\mu(N)$ and $\rho(N)$, with the implied
+	benefit of variety $\zeta(N)$, under three specifications. DS-CES is the quantitative
+	baseline. Generalized CES \citep{benassy_1996} has consumption basket
+	$N^{\zeta-1/(\varepsilon-1)}\bigl(\int c_j^{(\varepsilon-1)/\varepsilon}dj\bigr)^{\varepsilon/(\varepsilon-1)}$,
+	so $\zeta$ and $\varepsilon$ are separate parameters. Under the translog expenditure function
+	of \citet{feenstra_2003}, the price elasticity of demand is $\varepsilon(N)=1+\eta N$, so
+	goods become more substitutable as variety increases, and $\tilde{N}$ is the mass of all
+	potential goods.
+
+	\begin{table}[H]
+		\centering
+		\begin{tabular}{l|ccc}
+			\toprule
+			& DS-CES & General CES & Translog \\
+			\midrule
+			Consumption index
+			& $\left(\int c_j^{(\varepsilon-1)/\varepsilon}dj
+			\right)^{\varepsilon/(\varepsilon-1)}$
+			& $N^{\zeta-1/(\varepsilon-1)}\left(\int
+			c_j^{(\varepsilon-1)/\varepsilon}dj
+			\right)^{\varepsilon/(\varepsilon-1)}$
+			& $-$ \\
+			Price index
+			& $\left(\int p_j^{1-\varepsilon}dj
+			\right)^{1/(1-\varepsilon)}$
+			& $N^{-\zeta+1/(\varepsilon-1)}\left(\int
+			p_j^{1-\varepsilon}dj\right)^{1/(1-\varepsilon)}$
+			& $-$ \\
+			Markup $\mu(N)$
+			& $\frac{\varepsilon}{\varepsilon-1}$
+			& $\frac{\varepsilon}{\varepsilon-1}$
+			& $1+\frac{1}{\eta N}$ \\
+			Relative price $\rho(N)$
+			& $N^{\frac{1}{\varepsilon-1}}$
+			& $N^{\zeta}$
+			& $\exp\left\{-\frac{1}{2}
+			\frac{\tilde{N}-N}{\eta \tilde{N}N}\right\}$ \\
+			Benefit of variety $\zeta(N)$
+			& $\mu-1$
+			& $\zeta$
+			& $\frac{1}{2\eta N}=\frac{\mu(N)-1}{2}$ \\
+			\bottomrule
+		\end{tabular}
+		\caption{Preference specifications: indices, markup, relative
+			price, and benefit of variety.}
+		\label{tab:preference_specifications}
+	\end{table}
+
 	\subsection{Relationship between profit share and power law shape parameter $\psi$}
 Write $\omega\equiv1-(1-p_0)(1-\delta)/(1-\delta_e)$ for the steady-state share of
 surviving lines that drew a positive continuation cost, $p_0(\chi^c/\chi_m)^\psi/\Lambda$

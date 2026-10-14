@@ -176,7 +176,9 @@ Equations: [`model_equations.md`](model_equations.md) Block 2. Argument:
 - Each vacated position draws a reactivation cost α·χ, χ ~ F (the continuation-cost
   distribution), reactivated iff Q ≥ α·χ: Λ_r = F(Q/α) ∈ [1−p_0, 1]. One new parameter α.
 - A cost, not a constant: a fixed reposting rate is not invariant to the shocks studied, and a
-  homogeneous fee gives Λ_r ∈ {0,1}. Dispersion delivers an interior, procyclical rate.
+  homogeneous fee gives Λ_r ∈ {0,1}. Dispersion delivers an interior rate that moves with Q
+  (⚠ Oct 14: not procyclical in general. Q falls after z and s shocks, rises after δ shocks at
+  finite ξ, and is fixed under vacancy free entry; see `model_equations.md` Block 2).
 - Threshold is the stock value Q (one-time keep-or-retire), not the flow value K.
 - Per-position draws; the recruiter/retailer segmentation keeps the retailer block unchanged.
 - **Estimate α, do not calibrate it.** No clean data object exists, and Λ_r adjudicates a
