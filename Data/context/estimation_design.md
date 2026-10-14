@@ -1,6 +1,15 @@
 # Estimation Design — Conditional + Unconditional Moments
 **Last updated:** September 23, 2026 (Oct 12: determinacy item 1 updated) · **Status:** design settled in the draft; **no code written**
 
+> ⚠️ **Superseded in part, Oct 14, 2026 ([D13](decisions.md)).**
+> - Block B (Bartik LP paths) leaves the objective; the Bartik features become validation.
+> - New **Block B′**: aggregate SVAR responses of u and v to δ and s shocks (h = 0–12),
+>   matched by indirect inference. The same VAR runs on data and simulations, so D3 is moot.
+> - Shock processes come from a trivariate (z, δ, s) VAR.
+> - Build order is now Q1–Q6 in [`pending_tasks.md`](pending_tasks.md).
+> - Block M, the degrees-of-freedom normalization and the filtering rules below still apply;
+>   rewrite this file when Q3 is built.
+
 The design lives in the draft's §5.2 prose (`sec:calib`). This file states it compactly,
 records what is missing to run it, and points at the decisions that must be settled first.
 Open decisions live in [`decisions.md`](decisions.md), not here.

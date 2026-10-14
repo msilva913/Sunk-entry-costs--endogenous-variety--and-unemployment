@@ -86,6 +86,14 @@ and the δ→v trough at h=4–6. See [D10](context/decisions.md)
 
 ## Priority tasks right now
 
+> **Oct 14, 2026 — the critical path is now Q0–Q6** ([`context/pending_tasks.md`](context/pending_tasks.md),
+> [D13](context/decisions.md)). Bartik IRFs leave the objective and become validation.
+> Block B′ = aggregate SVAR responses by indirect inference. Shock processes come from a
+> trivariate (z, δ, s) VAR. **E9, D3 and Ω_β are superseded**, so the D10/D3/E9 list below is
+> history. The order is: Q0 notation and presentation (in parallel) → Q1 = R8 + D1 + PATH B →
+> Q2 VAR → Q3 targets → Q4 identification → Q5 hypotheses and mechanism comparisons (the D12
+> gate) → Q6 estimation.
+
 **Resume:** [`context/session_handout_20261012.md`](context/session_handout_20261012.md)
 (Oct 11–12: theory rebuild and X^c fix). Previous: `context/session_handout_20261009.md`
 (strategy, D12). Older handouts are in `context/archive/`.

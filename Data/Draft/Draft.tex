@@ -372,7 +372,7 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 			and cumulative recession labor market damage. Each point is one of the 50
 			U.S.\ states; bubble size is proportional to average labor force.
 			The horizontal axis is the full-sample time average of the state-level
-			Bartik-weighted establishment exit rate ($\bar{g}^\delta_s$,
+			Bartik-weighted establishment exit rate ($\bar{g}^\delta_i$,
 			1992Q3--2021Q4), constructed from BLS Business Employment Dynamics (BED)
 			data using 2006 base-year employment shares.
 			The left panel shows the cumulative unemployment gap (CUG): the
@@ -602,17 +602,18 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	Technology, product destruction, and idiosyncratic separation each 
 	follow an AR(1) process in logs:
 	\begin{align}
-		\log z_t &= \rho_z \log z_{t-1} + (1-\rho_z)\log\bar{z} + 
-		e_{zt} \label{eq:ar1_z}\\
-		\log \delta_t &= \rho_\delta \log \delta_{t-1} + 
-		(1-\rho_\delta)\log\bar{\delta} + e_{\delta t} \label{eq:ar1_delta}\\
-		\log s_t &= \rho_s \log s_{t-1} + 
-		(1-\rho_s)\log\bar{s} + e_{st} \label{eq:ar1_s}
+		\log z_t &= \rho_z \log z_{t-1} + (1-\rho_z)\log\bar{z} +
+		\sigma_z\epsilon_{zt} \label{eq:ar1_z}\\
+		\log \delta_t &= \rho_\delta \log \delta_{t-1} +
+		(1-\rho_\delta)\log\bar{\delta} + \sigma_\delta\epsilon_{\delta t} \label{eq:ar1_delta}\\
+		\log s_t &= \rho_s \log s_{t-1} +
+		(1-\rho_s)\log\bar{s} + \sigma_s\epsilon_{st} \label{eq:ar1_s}
 	\end{align}
-	where $\bar{z}$, $\bar{\delta}$, and $\bar{s}$ are the long-run 
-	means of technology, exogenous product destruction, and 
-	idiosyncratic separation, respectively, and innovations 
-	$e_{zt}$, $e_{\delta t}$, $e_{st}$ are mutually uncorrelated. 
+	where $\bar{z}$, $\bar{\delta}$, and $\bar{s}$ are the long-run
+	means of technology, exogenous product destruction, and
+	idiosyncratic separation, respectively, and the innovations
+	$\epsilon_{zt}$, $\epsilon_{\delta t}$, $\epsilon_{st}$ are mutually uncorrelated with unit
+	variance, so $\sigma_x$ is the standard deviation of the innovation to $\log x_t$.
 	As illustrated in Figure~\ref{fig:Timing}, the aggregate state,
 	including $s_t$ and $\delta_t$, is observed at the start of
 	period~$t$, before any date-$t$ decision is made. The rates
@@ -1016,7 +1017,7 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	right-hand side is recruiter compensation, which exceeds the 
 	worker's wage due to matching frictions. Equivalently, 
 	$MR_t = MC_t = w_t^{int}/z_t$. The standard markup condition 
-	$\rho_t = \mu(N_t)MC_t$ gives recruiter compensation:
+	$\rho(N_t) = \mu(N_t)MC_t$ gives recruiter compensation:
 	\begin{align}\label{eq:recruiter_compensation}
 		w_t^{int} = \frac{\rho(N_t)}{\mu(N_t)}z_t
 	\end{align}
@@ -1865,11 +1866,11 @@ $(\chi^c, \delta_e)$ consistent with the cutoff
 condition \eqref{eq:cutoff_eq} at steady state:
 \begin{align}\label{eq:exit_threshold_curve}
 	\chi^c = \frac{\rho(N) f_e}{\mu(N)}\,
-	\frac{1+r}{(1-\delta_e)\bigl(1-\psi_c\,\omega(\delta_e)\bigr)},
+	\frac{1+r}{(1-\delta_e)\bigl(1-\psi_c\,\varpi(\delta_e)\bigr)},
 	\qquad
-	\omega(\delta_e)\equiv1-\frac{(1-p_0)(1-\bar\delta)}{1-\delta_e},
+	\varpi(\delta_e)\equiv1-\frac{(1-p_0)(1-\bar\delta)}{1-\delta_e},
 \end{align}
-where $\omega$ is the share of surviving lines that drew a positive continuation cost,
+where $\varpi$ is the share of surviving lines that drew a positive continuation cost,
 $p_0(\chi^c/\chi_m)^\psi/\Lambda$ in \eqref{eq:agg_fixed_costs}, written with
 $\Lambda=(1-\delta_e)/(1-\bar\delta)$. A higher destruction rate requires higher per-period
 profits to compensate, raising $\chi^c$: the denominator falls in $\delta_e$, at rate
@@ -1947,9 +1948,9 @@ parameters.
 
 The number of steady states depends on the matching technology. We impose the
 following regularity conditions.\footnote{The soft-min Cobb--Douglas function of
-\citet{silva_2026}, $m(u,v)=s\,a\,uv/[(av)^p+u^p]^{1/p}$, satisfies them whenever $s\leq1$
-and $sa\leq1$, with elasticity $\varepsilon_f(\theta)=1/[(a\theta)^p+1]$ strictly
-decreasing, and it nests the \citet{den_haan_2000} function at $s=a=1$. The Cobb--Douglas
+\citet{silva_2026}, $m(u,v)=A\,a\,uv/[(av)^p+u^p]^{1/p}$, satisfies them whenever $A\leq1$
+and $Aa\leq1$, with elasticity $\varepsilon_f(\theta)=1/[(a\theta)^p+1]$ strictly
+decreasing, and it nests the \citet{den_haan_2000} function at $A=a=1$. The Cobb--Douglas
 function of our calibration violates (M1) for $\theta<A^{1/\eta_L}$ but respects it near the
 calibrated steady state, so the high equilibrium below is unaffected. Under every bounded
 specification we check, the low equilibrium is also feasible, with $q\approx1$ and
@@ -2167,7 +2168,7 @@ Figure~\ref{fig:steady_state_curves_z}.
 	conditions.
 
 	We address this using a Bartik shift-share design
-	\citep{bartik_1991,goldsmith_2020}.  The instrument for state $s$ at
+	\citep{bartik_1991,goldsmith_2020}.  The instrument for state $i$ at
 	quarter $t$ is a weighted average of \emph{national} industry-level
 	establishment exit rates, where the weights are the state's
 	pre-determined industry employment shares.  To see why this breaks the
@@ -2304,27 +2305,27 @@ Figure~\ref{fig:steady_state_curves_z}.
 	of irreversible product-line destruction.
 
 	\paragraph{Leave-one-out construction and base-year shares}
-	The leave-one-out (LOO) national permanent exit rate for state $s$,
+	The leave-one-out (LOO) national permanent exit rate for state $i$,
 	supersector $j$, quarter $t$ is
 	\begin{equation}\label{eq:loo_rate}
-		g^{\delta}_{-s,j,t}
+		g^{\delta}_{-i,j,t}
 		\;=\;
 		\frac{\text{deaths}_{j,t}}
-		     {E^{\text{nat}}_{-s,j,t_0}},
+		     {E^{\text{nat}}_{-i,j,t_0}},
 	\end{equation}
-	where $E^{\text{nat}}_{-s,j,t_0}=E^{\text{nat}}_{j,t_0}-E_{s,j,t_0}$
-	is base-year national employment in supersector $j$ minus state $s$'s
+	where $E^{\text{nat}}_{-i,j,t_0}=E^{\text{nat}}_{j,t_0}-E_{i,j,t_0}$
+	is base-year national employment in supersector $j$ minus state $i$'s
 	own base-year employment.  The LOO correction in the denominator
-	ensures that state $s$'s own exit activity cannot mechanically inflate
-	its instrument value.  Numerator LOO --- subtracting state $s$'s own
+	ensures that state $i$'s own exit activity cannot mechanically inflate
+	its instrument value.  Numerator LOO --- subtracting state $i$'s own
 	deaths from the national count --- is not implemented because
-	BED state-level deaths by supersector are not publicly available.  Employment shares $\omega_{s,j}$ are drawn from the 2006
+	BED state-level deaths by supersector are not publicly available.  Employment shares $\omega_{i,j}$ are drawn from the 2006
 	QCEW (agglvl=54, private sector), a stable pre-GFC year that predates
 	the bulk of the identifying variation.  The Bartik instrument is:
 	\begin{equation}\label{eq:bartik_delta}
-		B^{\delta}_{s,t}
+		B^{\delta}_{i,t}
 		\;=\;
-		\sum_{j} \omega_{s,j}\cdot g^{\delta}_{-s,j,t}.
+		\sum_{j} \omega_{i,j}\cdot g^{\delta}_{-i,j,t}.
 	\end{equation}
 
 	\paragraph{Residualization}
@@ -2354,7 +2355,7 @@ Figure~\ref{fig:steady_state_curves_z}.
 	time fixed effects in the second stage; industry VA is lagged one
 	quarter to ensure strict predetermination.  The residual
 	$\nu^{\delta}_{j,t}$ is then Bartik-aggregated in place of the raw
-	rate, yielding $\tilde{B}^{\delta}_{s,t}$.
+	rate, yielding $\tilde{B}^{\delta}_{i,t}$.
 
 	The FRED BEA real value-added series begin in 2005Q1, which would
 	restrict the $\delta$ residualization sample to 2005Q2.  To recover
@@ -2396,7 +2397,7 @@ Figure~\ref{fig:steady_state_curves_z}.
 		\includegraphics[width=\linewidth]{instrument_delta_distribution.png}
 		\caption{Cross-state $\delta$ Bartik instrument distribution,
 			1997Q1--2019Q4.
-			\emph{Left:} residualized instrument $\tilde{B}^{\delta}_{s,t}$
+			\emph{Left:} residualized instrument $\tilde{B}^{\delta}_{i,t}$
 			(pp of base-year employment); shading shows 25th--75th (dark) and
 			10th--90th (light) cross-state percentile bands.
 			\emph{Right:} z-scored cross-state means of raw (red) and
@@ -2469,30 +2470,30 @@ Figure~\ref{fig:steady_state_curves_z}.
 	For each horizon $h=0,1,\ldots,20$ quarters, the panel local projection
 	estimating equation is
 	\begin{equation}\label{eq:lp}
-		y_{s,t+h} - y_{s,t-1}
+		y_{i,t+h} - y_{i,t-1}
 		\;=\;
-		\alpha_s + \alpha_t
-		+ \beta_h\,\tilde{B}^{\delta}_{s,t}
-		+ \gamma_1\,y_{s,t-1}
-		+ \gamma_2\,\log L_{s,t-1}
-		+ \varepsilon_{s,t+h},
+		\alpha_i + \alpha_t
+		+ \beta_h\,\tilde{B}^{\delta}_{i,t}
+		+ \gamma_1\,y_{i,t-1}
+		+ \gamma_2\,\log L_{i,t-1}
+		+ \varepsilon_{i,t+h},
 	\end{equation}
-	where $y_{s,t}$ is the labor market outcome of interest for state $s$ in quarter $t$,
-	$\tilde{B}^{\delta}_{s,t}$ is the residualized $\delta$ Bartik instrument
-	constructed in Section~\ref{sec:empirical_instr}, $\alpha_s$ and
-	$\alpha_t$ are state and time fixed effects, $y_{s,t-1}$ is the lagged
-	outcome, and $L_{s,t-1}$ is the lagged labor force.  The left-hand side
+	where $y_{i,t}$ is the labor market outcome of interest for state $i$ in quarter $t$,
+	$\tilde{B}^{\delta}_{i,t}$ is the residualized $\delta$ Bartik instrument
+	constructed in Section~\ref{sec:empirical_instr}, $\alpha_i$ and
+	$\alpha_t$ are state and time fixed effects, $y_{i,t-1}$ is the lagged
+	outcome, and $L_{i,t-1}$ is the lagged labor force.  The left-hand side
 	measures the cumulative $h$-period change relative to the quarter before
 	the shock, so the sequence $\{\hat\beta_h\}$ traces the impulse response
 	directly.  Standard errors are clustered at the state level ($n=50$).
 
-	The two outcomes are the state unemployment rate $u_{s,t}$ and vacancy
-	rate $v_{s,t}$, both in percentage points (unemployed persons or
+	The two outcomes are the state unemployment rate $u_{i,t}$ and vacancy
+	rate $v_{i,t}$, both in percentage points (unemployed persons or
 	vacancies as a share of the labor force).  Concretely,
-	$v_{s,t} = 100 \times V_{s,t}/L_{s,t}$, where $V_{s,t}$ is the
+	$v_{i,t} = 100 \times V_{i,t}/L_{i,t}$, where $V_{i,t}$ is the
 	quarterly average of monthly JOLTS job-openings stocks (seasonally
-	adjusted) and $L_{s,t}$ is the LAUS labor force.  The two
-	specifications differ only in the autoregressive control $y_{s,t-1}$.
+	adjusted) and $L_{i,t}$ is the LAUS labor force.  The two
+	specifications differ only in the autoregressive control $y_{i,t-1}$.
 
 	The estimation sample runs from 2001Q1, when JOLTS state vacancy data
 	become available, through 2019Q4; observations with $t+h >
@@ -2503,7 +2504,7 @@ Figure~\ref{fig:steady_state_curves_z}.
 		$+1.07$ pp vs.\ $+1.50$ pp) because the 1997--2000 expansion years
 		exhibit faster reabsorption of displaced workers.  We use the 2001Q1
 		baseline throughout to maintain a common sample across both outcomes.}
-	The instrument $\tilde{B}^{\delta}_{s,t}$ has cross-sectional standard
+	The instrument $\tilde{B}^{\delta}_{i,t}$ has cross-sectional standard
 	deviation $\hat\sigma_{\tilde{B}^\delta} = 17.4$ pp; all reported
 	$\hat\beta_h$ are scaled by $\hat\sigma_{\tilde{B}^\delta}^{-1}$ so
 	that the impulse responses correspond to a one-standard-deviation shock.
@@ -3041,9 +3042,10 @@ The second set consists of empirically identified impulse responses from the
 	continuation decisions.
 	With $P$ the lower-triangular Cholesky factor of $\hat{\Sigma}$,
 	the structural innovations are
-	$\varepsilon^z_t = u^z_t/P_{11}$ and
-	$\varepsilon^\delta_t = (u^\delta_t - P_{21}\varepsilon^z_t)/P_{22}$,
-	so $\operatorname{Cov}(\varepsilon^z,\varepsilon^\delta)=0$ by
+	$\epsilon_{zt} = u^z_t/P_{11}$ and
+	$\epsilon_{\delta t} = (u^\delta_t - P_{21}\epsilon_{zt})/P_{22}$, the innovations of
+	\eqref{eq:ar1_z} and \eqref{eq:ar1_delta},
+	so $\operatorname{Cov}(\epsilon_{zt},\epsilon_{\delta t})=0$ by
 	construction.
 
 	The two off-diagonal entries of $\hat{A}_1$ are excluded from the
@@ -3106,8 +3108,8 @@ The second set consists of empirically identified impulse responses from the
 	\emph{Comparison~B} isolates the endogenous exit margin: we set $p_0=0$ and equate the exogenous destruction
 	parameter $\bar\delta$. We keep the aggregate separation rate $\tau$ the same, which requires $s$ in the counterfactual to compensate for the loss of endogenous destruction. 
 	\emph{Comparison~C} sets $\zeta=0$ so that
-	$\rho_t\equiv1$ regardless of $N_t$, removing the
-	$N_t\to\rho_t\to w_t^{int}\to\mathrm{JCC}$ channel and
+	$\rho(N_t)\equiv1$ regardless of $N_t$, removing the
+	$N_t\to\rho(N_t)\to w_t^{int}\to\mathrm{JCC}$ channel and
 	quantifying what the baseline offers beyond the augmented
 	Gabrovski-Silva framework without product variety.
 	The markup $\mu=\varepsilon/(\varepsilon-1)$ is preserved in both specifications;
@@ -3169,8 +3171,8 @@ The second set consists of empirically identified impulse responses from the
 	A complementary channel operates through the vacancy
 	value. Log-linearizing~\eqref{eq:Kdef} and using $\mathbb{E}_t\hat{Q}_{t+1}=\rho\hat{Q}_t$,
 	which holds exactly under a one-shock approximation by undetermined
-	coefficients,\footnote{Guess $\hat{Q}_t=\phi_Q\hat{\delta}_t$; then
-	$\mathbb{E}_t\hat{Q}_{t+1}=\phi_Q\rho_\delta\hat{\delta}_t=\rho_\delta\hat{Q}_t$.
+	coefficients,\footnote{Guess $\hat{Q}_t=c_Q\hat{\delta}_t$; then
+	$\mathbb{E}_t\hat{Q}_{t+1}=c_Q\rho_\delta\hat{\delta}_t=\rho_\delta\hat{Q}_t$.
 	For a $z$ shock replace $\rho_\delta$ with $\rho_z$.  The full
 	perturbation solution additionally accounts for the $N_t$ state but
 	the qualitative result is unchanged.}
@@ -3209,7 +3211,7 @@ The second set consists of empirically identified impulse responses from the
 	in~\eqref{eq:N_lom_ll} therefore favor the high-$\delta$
 	variant on impact.  However, the baseline generates more persistence via the survival term $(1-\delta_e)\approx0.993$
 	in~\eqref{eq:N_lom_ll}, which prolongs the
-	$\rho_t\downarrow\to w_t^{int}\downarrow\to\theta_t\downarrow\to u_t\uparrow$
+	$\rho(N_t)\downarrow\to w_t^{int}\downarrow\to\theta_t\downarrow\to u_t\uparrow$
 	chain documented above.
 	
 		Under the \emph{destruction shock} (Figure~\ref{fig:mechA_delta}),
@@ -3229,7 +3231,7 @@ The second set consists of empirically identified impulse responses from the
 	baseline necessarily generates a smaller but longer-lived response.
 	In the baseline, the monthly replacement rate is only $0.66\%$ of
 	the firm stock, so after a destruction impulse the variety depression
-	is long-lived: $\rho_t$ stays depressed, $w_t^{int}=\rho_t z_t/\mu$
+	is long-lived: $\rho(N_t)$ stays depressed, $w_t^{int}=\rho(N_t) z_t/\mu$
 	remains low, and the job creation condition~\eqref{eq:jcc_eq} stays
 	tight, prolonging the recovery of $\theta_t$ and $u_t$.
 	The central quantitative message of Comparison~A is therefore the
@@ -3285,14 +3287,14 @@ The second set consists of empirically identified impulse responses from the
 	\begin{align}\label{eq:xc_decomp}
 		\chi_t^c = \underbrace{\frac{1}{\varepsilon}\frac{Y_t^c}{N_t}}_{\text{per-firm profit}} + \underbrace{\nu_{f,t}}_{\text{cont. value}},
 	\end{align}
-	where $\nu_{f,t}=\rho_t f_e/\mu$ from free entry~\eqref{eq:free_entry}.
-	A negative $z$ shock lowers $Y_t^c = \rho_t z_t\bar{z}L_{c,t}$ immediately,
+	where $\nu_{f,t}=\rho(N_t) f_e/\mu$ from free entry~\eqref{eq:free_entry}.
+	A negative $z$ shock lowers $Y_t^c = \rho(N_t) z_t\bar{z}L_{c,t}$ immediately,
 	compressing per-firm profit and lowering $\chi_t^c$ on impact, which induces exit.
 	Two forces govern subsequent dynamics.
 	First, note that a fall in $N$ raises
 	per-firm profit (market-share effect, elasticity $(2{-}\varepsilon)/(\varepsilon{-}1)$)
-	but simultaneously lowers the continuation value $\nu_f=\rho_t f_e/\mu$
-	through $\rho_t=N_t^{1/(\varepsilon-1)}$ (elasticity $1/(\varepsilon-1)$).
+	but simultaneously lowers the continuation value $\nu_f=\rho(N_t) f_e/\mu$
+	through $\rho(N_t)=N_t^{1/(\varepsilon-1)}$ (elasticity $1/(\varepsilon-1)$).
 	At $\varepsilon\approx4.3$, the profit-share elasticity ($\approx{-}0.70$)
 	dominates the continuation-value elasticity ($\approx0.30$). Hence, falling $N$
 	tends to \emph{raise} $\chi^c$ overall and constitutes a stabilizing feedback.
@@ -3356,7 +3358,7 @@ The second set consists of empirically identified impulse responses from the
 	replenishment of the firm stock and stronger mean reversion of
 	any $N$ deviation.
 	The exogenous model's low-churning firm stock therefore keeps
-	$N_t$ depressed for longer, sustaining the $\rho_t\downarrow
+	$N_t$ depressed for longer, sustaining the $\rho(N_t)\downarrow
 	\to w_t^{int}\downarrow\to\theta_t\downarrow$ chain and
 	prolonging unemployment.
 	Comparison~B thus shows, as a mirror image of Comparison~A,
@@ -3369,7 +3371,7 @@ The second set consists of empirically identified impulse responses from the
 	shock as well, though the direction is ambiguous.
 	A $\delta\uparrow$ impulse directly destroys firms, lowering $N_t$;
 	by~\eqref{eq:xc_decomp} this raises per-firm profit (market-share
-	effect) but lowers $\nu_f$ through $\rho_t$.
+	effect) but lowers $\nu_f$ through $\rho(N_t)$.
 	The net effect on $\chi^c$ --- and hence on additional endogenous exit ---
 	depends on which elasticity dominates along the transition, a
 	quantitative question the IRFs resolve.
@@ -3379,7 +3381,7 @@ The second set consists of empirically identified impulse responses from the
 	$N$-recovery and prolonging unemployment.
 
 	\medskip\noindent\textbf{Comparison C: variety effects.}
-	The third comparison sets $\zeta=0$ so that $\rho_t\equiv1$
+	The third comparison sets $\zeta=0$ so that $\rho(N_t)\equiv1$
 	regardless of $N_t$, removing the link between product variety
 	and the interior wage in equation~\eqref{eq:recruiter_compensation}.
 	The markup $\mu=\varepsilon/(\varepsilon-1)$ is unchanged; only
@@ -3391,20 +3393,20 @@ The second set consists of empirically identified impulse responses from the
 		\includegraphics[width=0.82\textwidth]{mechanism_C_z_shock}
 		\caption{Comparison C --- impulse responses to a one-standard-deviation
 		\emph{negative} technology shock. Solid black: baseline
-		($\rho_t = N_t^{1/(\varepsilon-1)}$, full variety).
+		($\rho(N_t) = N_t^{1/(\varepsilon-1)}$, full variety).
 		Dotted orange: no-variety counterfactual
-		($\rho_t\equiv1$, $\zeta=0$; markup $\mu$ unchanged).
+		($\rho(N_t)\equiv1$, $\zeta=0$; markup $\mu$ unchanged).
 		Row~1 in percentage-point level deviation from steady state;
 		rows~2--4 in $100\times\log$ deviation.}
 		\label{fig:mechC_z}
 	\end{figure}
 
 	Under the \emph{negative technology shock} (Figure~\ref{fig:mechC_z}),
-	the two models share the same direct $z\to w_t^{int}=\rho_t z_t/\mu$
+	the two models share the same direct $z\to w_t^{int}=\rho(N_t) z_t/\mu$
 	channel, but diverge through the indirect variety channel. In the
-	baseline, $z\downarrow$ reduces entry, $N_t$ falls, $\rho_t=N_t^{1/(\varepsilon-1)}$
+	baseline, $z\downarrow$ reduces entry, $N_t$ falls, $\rho(N_t)=N_t^{1/(\varepsilon-1)}$
 	falls, and $w_t^{int}$ declines by more than the direct $z$ impulse alone.
-	With $\rho_t\equiv1$, the second-round compression of $w_t^{int}$ is absent,
+	With $\rho(N_t)\equiv1$, the second-round compression of $w_t^{int}$ is absent,
 	and the gap between the two interior-wage paths is the pure $N\to\rho$
 	contribution. Because $w_t^{int}$ pins the job-creation
 	surplus~\eqref{eq:jcc_eq}, a smaller $w_t^{int}$ response implies a smaller
@@ -3412,7 +3414,7 @@ The second set consists of empirically identified impulse responses from the
 	vacancy fall.
 	This comparison identifies the variety channel unusually cleanly.  On
 	impact the two specifications are \emph{exactly} equal: $N_t$ is predetermined, so
-	$\rho_t$ has not yet moved, and $w_t^{int}=\rho_t z_t/\mu$ registers only
+	$\rho(N_t)$ has not yet moved, and $w_t^{int}=\rho(N_t) z_t/\mu$ registers only
 	the direct technology impulse in both models (both fall by $0.92\%$).  The
 	paths separate only from the second month, as the entry margin begins to
 	erode $N_t$, and the gap then widens monotonically --- reaching roughly a
@@ -3420,7 +3422,7 @@ The second set consists of empirically identified impulse responses from the
 	two lines after impact is the variety externality, with no contamination
 	from the direct effect of $z$.
 
-	The $N$ and $N_e$ panels show a further distinction. With $\rho_t\equiv1$,
+	The $N$ and $N_e$ panels show a further distinction. With $\rho(N_t)\equiv1$,
 	the firm value $\nu_f=f_e/\mu$ is a constant: it does not rise when $N$
 	recovers, so the entry Euler~\eqref{eq:firm_value_char} provides no
 	forward-looking amplification of the entry margin. The no-variety
@@ -3438,11 +3440,11 @@ The second set consists of empirically identified impulse responses from the
 
 	Under the \emph{destruction shock} (Figure~\ref{fig:mechC_delta}),
 	the variety channel works in the amplifying direction. A $\delta\uparrow$
-	impulse destroys firms, $N_t$ falls, $\rho_t$ falls, and $w_t^{int}$
+	impulse destroys firms, $N_t$ falls, $\rho(N_t)$ falls, and $w_t^{int}$
 	falls beyond what the exogenous destruction alone would imply. The lower
 	$w_t^{int}$ tightens the JCC---reducing the surplus firms extract from
 	a filled job---and simultaneously depresses entry through the free-entry
-	condition $\nu_f=\rho_t f_e/\mu$. Unemployment rises more and vacancies
+	condition $\nu_f=\rho(N_t) f_e/\mu$. Unemployment rises more and vacancies
 	fall more in the baseline than in the no-variety counterfactual because the same $N$
 	depression feeds back into wages and entry values in the full model.
 	Absent taste for diversity, $\nu_f=f_e/\mu$ is fixed, so the entry Euler is
@@ -3797,11 +3799,11 @@ The second set consists of empirically identified impulse responses from the
 		N^e&=\delta_e N/(1-\delta_e)\\
 		L^c&=\frac{r+\delta_e}{r+\delta_e+\delta_e \pi_s \mu}L,\quad L^e=\frac{\delta_e \pi_s \mu}{r+\delta_e+\delta_e\pi_s \mu}L\label{eq:labor_ss}\\
 		\chi^c&=\frac{\rho f_e}{\mu}\left(\frac{r+\delta_e}{1-\delta_e}\frac{\mu-1}{\mu \pi_s}+1\right)\\
-		\pi_s&=\frac{\mu-1}{\mu}\frac{(1-\psi_c\omega)(r+\delta_e)}{r+\delta_e+\psi_c\omega(1-\delta_e)},\quad \omega=1-\frac{(1-p_0)(1-\delta)}{1-\delta_e}\\
+		\pi_s&=\frac{\mu-1}{\mu}\frac{(1-\psi_c\varpi)(r+\delta_e)}{r+\delta_e+\psi_c\varpi(1-\delta_e)},\quad \varpi=1-\frac{(1-p_0)(1-\delta)}{1-\delta_e}\\
 		Y^{Gross}&=Y^C+\nu^f N^e=w^{int}L+Nd^f\\
 		Y&=C+\nu^fN^e\\
 		X&=e\frac{\xi}{\xi+1}Q+\kappa qv\\
-		X^c&=N\psi_c\omega\chi^c\\
+		X^c&=N\psi_c\varpi\chi^c\\
 		X^r&=(1-\delta_e)s(1-u)\,\psi_cQ(\Lambda_r-1+p_0)\\
 		Y^c&=\rho zL^c=C+X+X^c+X^r\\
 	\end{align}
@@ -3880,36 +3882,36 @@ The second set consists of empirically identified impulse responses from the
 	\end{table}
 
 	\subsection{Relationship between profit share and power law shape parameter $\psi$}
-Write $\omega\equiv1-(1-p_0)(1-\delta)/(1-\delta_e)$ for the steady-state share of
+Write $\varpi\equiv1-(1-p_0)(1-\delta)/(1-\delta_e)$ for the steady-state share of
 surviving lines that drew a positive continuation cost, $p_0(\chi^c/\chi_m)^\psi/\Lambda$
-with $\Lambda=(1-\delta_e)/(1-\delta)$, so that $X^c=N\psi_c\omega\chi^c$ by
+with $\Lambda=(1-\delta_e)/(1-\delta)$, so that $X^c=N\psi_c\varpi\chi^c$ by
 \eqref{eq:agg_fixed_costs}. The cutoff satisfies $\chi^c=Y^c(\mu-1)/(\mu N)+\rho f_e/\mu$,
-so $X^c=\psi_c\omega\bigl(Y^c(\mu-1)/\mu+N\rho f_e/\mu\bigr)$. Dividing by $Y^c=\rho zL^c$,
+so $X^c=\psi_c\varpi\bigl(Y^c(\mu-1)/\mu+N\rho f_e/\mu\bigr)$. Dividing by $Y^c=\rho zL^c$,
 \begin{align*}
-	\frac{X^c}{Y^c}=\frac{\psi_c\omega}{\mu}\left(\mu-1+\frac{f_eN}{zL^c}\right).
+	\frac{X^c}{Y^c}=\frac{\psi_c\varpi}{\mu}\left(\mu-1+\frac{f_eN}{zL^c}\right).
 \end{align*}
 The steady-state business formation Euler equation gives $d^f/\nu^f=(r+\delta_e)/(1-\delta_e)$,
 and with $Nd^f=\pi_sY^c$ this is $f_eN/(zL^c)=\mu\pi_s(1-\delta_e)/(r+\delta_e)$. Since
 $\pi_s=(\mu-1)/\mu-X^c/Y^c$,
 \begin{align*}
-	\pi_s=\frac{\mu-1}{\mu}(1-\psi_c\omega)-\frac{\psi_c\omega(1-\delta_e)\pi_s}{r+\delta_e},
+	\pi_s=\frac{\mu-1}{\mu}(1-\psi_c\varpi)-\frac{\psi_c\varpi(1-\delta_e)\pi_s}{r+\delta_e},
 \end{align*}
 and solving for $\pi_s$,
 \begin{align}\label{eq:profit_share_ss}
-	\pi_s=\frac{\mu-1}{\mu}\frac{(1-\psi_c\omega)(r+\delta_e)}{r+\delta_e+\psi_c\omega(1-\delta_e)}.
+	\pi_s=\frac{\mu-1}{\mu}\frac{(1-\psi_c\varpi)(r+\delta_e)}{r+\delta_e+\psi_c\varpi(1-\delta_e)}.
 \end{align}
-Holding $\delta_e$ fixed, $\pi_s$ falls with $\psi_c\omega$. For $\psi_c\omega=0$,
+Holding $\delta_e$ fixed, $\pi_s$ falls with $\psi_c\varpi$. For $\psi_c\varpi=0$,
 $\pi_s=(\mu-1)/\mu=1/\varepsilon$, as in \citet{bilbiie_2012}. The cutoff in terms of the
 profit share is
 \begin{align*}
 	\chi^c&=\frac{\rho}{\mu}\left(\frac{zL^c(\mu-1)}{N}+f_e\right)
 	=\frac{\rho f_e}{\mu}\left(\frac{r+\delta_e}{1-\delta_e}\frac{\mu-1}{\mu \pi_s}+1\right)
-	=\frac{\rho f_e}{\mu}\,\frac{1+r}{(1-\delta_e)(1-\psi_c\omega)},
+	=\frac{\rho f_e}{\mu}\,\frac{1+r}{(1-\delta_e)(1-\psi_c\varpi)},
 \end{align*}
 which is \eqref{eq:exit_threshold_curve}.
 
 \subsection{Resource constraint curve}
-Write $c\equiv\psi_c\omega$. Rearranging~\eqref{eq:labor_N} as
+Write $c\equiv\psi_c\varpi$. Rearranging~\eqref{eq:labor_N} as
 $N=zL(1-\delta_e)/\bigl[f_e\bigl((r+\delta_e)/(\mu\pi_s)+\delta_e\bigr)\bigr]$ and substituting
 \eqref{eq:profit_share_ss},
 \begin{align*}
@@ -4084,7 +4086,7 @@ raises the endogenous exit probability $(1-\Lambda_t)$ by 5\,\%.
 
 \paragraph{2.\ Continuation threshold}
 From the cutoff condition~\eqref{eq:cutoff_free_entry} with $\mu$ constant
-and $\rho_t = N_t^{1/(\varepsilon-1)}$:
+and $\rho(N_t) = N_t^{1/(\varepsilon-1)}$:
 \begin{align}\label{eq:xc_ll}
     \hat\chi_{c,t}
     = \underbrace{\alpha_\pi\Bigl(\hat{Y}_{c,t} - \hat{N}_t\Bigr)}_{\text{profit component}}
@@ -4123,8 +4125,8 @@ smaller but more persistent deviations.  This is the common mechanism
 underlying Comparisons~A and~B.
 
 \paragraph{4.\ Interior wage (recruiter compensation)}
-From $w_t^{int} = \rho_t z_t/\mu$~\eqref{eq:recruiter_compensation} with
-$\rho_t = N_t^{1/(\varepsilon-1)}$:
+From $w_t^{int} = \rho(N_t) z_t/\mu$~\eqref{eq:recruiter_compensation} with
+$\rho(N_t) = N_t^{1/(\varepsilon-1)}$:
 \begin{align}\label{eq:wint_ll}
     \hat{w}_t^{int} = \frac{1}{\varepsilon-1}\,\hat{N}_t + \hat{z}_t.
 \end{align}
@@ -4195,22 +4197,22 @@ empirical Beveridge curve dynamics in Section~\ref{sec:empirical_results}.
 
 \paragraph{8.\ Vacancy value and new postings}
 From~\eqref{eq:Kdef}, log-linearizing under a one-shock approximation
-($\mathbb{E}_t\hat{Q}_{t+1}=\rho_\omega\hat{Q}_t$, exact by undetermined
-coefficients for shock $\omega\in\{z,\delta\}$ with persistence $\rho_\omega$):
+($\mathbb{E}_t\hat{Q}_{t+1}=\rho_x\hat{Q}_t$, exact by undetermined
+coefficients for shock $x\in\{z,\delta\}$ with persistence $\rho_x$):
 \begin{align}\label{eq:Q_ll2}
     \hat{Q}_t
-    = \underbrace{\frac{r+\bar\delta_e}{1+r-\rho_\omega(1-\bar\delta_e)}}_{\displaystyle\mathcal{D}(\bar\delta_e,\rho_\omega)}\hat{K}_t,
+    = \underbrace{\frac{r+\bar\delta_e}{1+r-\rho_x(1-\bar\delta_e)}}_{\displaystyle\mathcal{D}(\bar\delta_e,\rho_x)}\hat{K}_t,
 \end{align}
 where $r$ is the steady-state discount rate.  The duration multiplier
 $\mathcal{D}$ is strictly increasing in $\bar\delta_e$ (since
-$\partial\mathcal{D}/\partial\bar\delta_e = (1+r)(1-\rho_\omega)/\mathrm{den}^2>0$
-for $\rho_\omega<1$) and decreasing in shock persistence $\rho_\omega$.
+$\partial\mathcal{D}/\partial\bar\delta_e = (1+r)(1-\rho_x)/\mathrm{den}^2>0$
+for $\rho_x<1$) and decreasing in shock persistence $\rho_x$.
 Intuitively, $Q$ is the present value of the per-period dividend $K$: higher
 $\bar\delta_e$ shortens the effective duration of the vacancy asset,
 amplifying its proportional response to the same $\hat{K}$ innovation.
 New vacancy postings respond via~\eqref{eq:entry_eq}:
 \begin{align}\label{eq:e_ll}
-    \hat{e}_t = \xi\,\hat{Q}_t = \xi\,\mathcal{D}(\bar\delta_e,\rho_\omega)\,\hat{K}_t,
+    \hat{e}_t = \xi\,\hat{Q}_t = \xi\,\mathcal{D}(\bar\delta_e,\rho_x)\,\hat{K}_t,
 \end{align}
 so the entry vacancy margin inherits both the duration amplification from
 $\mathcal{D}$ and the convexity of the posting cost through $\xi$.
@@ -4220,26 +4222,26 @@ Equation~\eqref{eq:Q_ll2} is derived holding $\delta_{e,t+1}$ fixed and so
 applies exactly to $z$~shocks where $\hat\delta_{e,t+1}=0$ on impact.
 For $\delta$~shocks, log-linearizing the full $K$ definition~\eqref{eq:Kdef},
 $K_t=Q_t-\beta(1-\delta_{e,t+1})Q_{t+1}$, with $\delta_{e,t+1}$ treated as a
-dynamic variable and imposing $\hat{Q}_{t+1}=\rho_\omega\hat{Q}_t$ gives
+dynamic variable and imposing $\hat{Q}_{t+1}=\rho_x\hat{Q}_t$ gives
 \begin{align}\label{eq:K_decomp}
     \hat{K}_t
     \;=\;
     \underbrace{\frac{\bar\delta_e}{r+\bar\delta_e}\,\hat\delta_{e,t+1}}_{\displaystyle(+)\;\text{duration}}
     \;+\;
-    \underbrace{\frac{1}{\mathcal{D}(\bar\delta_e,\rho_\omega)}\,\hat{Q}_t}_{\displaystyle\text{vacancy value}},
+    \underbrace{\frac{1}{\mathcal{D}(\bar\delta_e,\rho_x)}\,\hat{Q}_t}_{\displaystyle\text{vacancy value}},
 \end{align}
 or, rearranged for the vacancy value,
 \begin{align}\label{eq:Q_ll_delta}
     \hat{Q}_t
     \;=\;
-    \mathcal{D}(\bar\delta_e,\rho_\omega)\,\hat{K}_t
+    \mathcal{D}(\bar\delta_e,\rho_x)\,\hat{K}_t
     \;-\;
-    \underbrace{\frac{\bar\delta_e}{1+r-\rho_\delta(1-\bar\delta_e)}}_{\displaystyle\phi_D(\bar\delta_e,\rho_\delta)>0}
+    \underbrace{\frac{\bar\delta_e}{1+r-\rho_\delta(1-\bar\delta_e)}}_{\displaystyle c_D(\bar\delta_e,\rho_\delta)>0}
     \hat\delta_{e,t+1},
 \end{align}
 which reduces to~\eqref{eq:Q_ll2} when $\hat\delta_{e,t+1}=0$.
 Equations~\eqref{eq:K_decomp} and~\eqref{eq:Q_ll_delta} are the same relation:
-$\phi_D=\mathcal{D}\,\bar\delta_e/(r+\bar\delta_e)$ identically.  It is an
+$c_D=\mathcal{D}\,\bar\delta_e/(r+\bar\delta_e)$ identically.  It is an
 asset-pricing identity in two unknowns, so it signs neither $\hat{K}_t$ nor
 $\hat{Q}_t$ on its own.  All it says is that $\hat{Q}_t>0$ requires
 $\hat{K}_t>[\bar\delta_e/(r+\bar\delta_e)]\hat\delta_{e,t+1}$, and reading the
@@ -4259,12 +4261,12 @@ log-linearizing gives
     \;=\;
     \underbrace{-\eta_L\hat\theta_t}_{\displaystyle\text{congestion relief}}
     \;-\;
-    \underbrace{\frac{1}{\chi_K}\frac{\bar\delta_e}{1-\bar\delta_e}\,
+    \underbrace{\frac{1}{c_K}\frac{\bar\delta_e}{1-\bar\delta_e}\,
     \hat\delta_{e,t+1}}_{\displaystyle\text{survival}}
     \;+\;
-    \underbrace{\frac{1}{\chi_K}\left(\hat{S}_{t+1}+\hat{m}_{t+1}\right)}_{\displaystyle\text{surplus}},
+    \underbrace{\frac{1}{c_K}\left(\hat{S}_{t+1}+\hat{m}_{t+1}\right)}_{\displaystyle\text{surplus}},
     \qquad
-    \chi_K\equiv\frac{\bar{K}/\bar{q}}{\kappa+\bar{K}/\bar{q}}.
+    c_K\equiv\frac{\bar{K}/\bar{q}}{\kappa+\bar{K}/\bar{q}}.
 \end{align}
 A destruction shock moves all three terms.  The \emph{survival} term is
 negative and is the direct discounting effect: a position more likely to be
@@ -4276,7 +4278,7 @@ relief}: destruction raises unemployment and removes vacancies, so
 $\hat\theta_t<0$, a newly posted position fills faster, and the dividend a
 recruiter can support rises.  This, and not duration, is what can make entry
 lean against the shock.  Congestion relief enters with the matching elasticity
-$\eta_L$ while the survival term carries $1/\chi_K$, so the cushion is weaker
+$\eta_L$ while the survival term carries $1/c_K$, so the cushion is weaker
 the smaller the posting cost is as a share of total hiring costs.
 
 Combining~\eqref{eq:K_jcc_ll} with~\eqref{eq:Q_ll_delta} and the entry
@@ -4286,7 +4288,7 @@ schedule~\eqref{eq:e_ll} gives the entry response to a destruction shock,
     \;=\;
     \xi\,\mathcal{D}\,\hat{K}_t^\delta
     \;-\;
-    \xi\,\phi_D\,\hat\delta_{e,t+1},
+    \xi\,c_D\,\hat\delta_{e,t+1},
 \end{align}
 now with $\hat{K}^\delta$ supplied by~\eqref{eq:K_jcc_ll} rather than assumed.
 Two of its three components are negative, so $\hat{e}^\delta>0$ requires
@@ -4357,9 +4359,9 @@ distinction that drives the asymmetric role of $\xi$ documented in
 \label{app:comparison_D}
 
 Figures~\ref{fig:mechD_z} and~\ref{fig:mechD_delta} compare impulse
-responses under the baseline ($\xi_{\mathrm{inv}}=1.0$, solid black) and a
-counterfactual close to vacancy free entry ($\xi_{\mathrm{inv}}=0.1$, dashed blue).
-Both calibrations match the same empirical targets; $\xi_{\mathrm{inv}}$
+responses under the baseline ($1/\xi=1.0$, solid black) and a
+counterfactual close to vacancy free entry ($1/\xi=0.1$, dashed blue).
+Both calibrations match the same empirical targets; $1/\xi$
 is the only structural difference, so all parameter changes --- lower $Q$
 and $K$, higher Nash share $\phi$ --- are endogenous to the recalibration.
 Sign conventions follow Comparisons~A--C: the $z$~figure shows a
@@ -4376,14 +4378,14 @@ arise from new postings, and $\xi$ governs the elasticity of entry to the
 vacancy value $Q$.  For destruction shocks the shock slackens the market,
 so a new position fills faster and $K$ and $Q$ rise, generating an entry
 surplus that partially cushions the direct vacancy destruction.  The parameter $\xi$ controls the strength of this
-cushion: higher $\xi$ (lower $\xi_{\mathrm{inv}}$) amplifies the entry
+cushion: higher $\xi$ (lower $1/\xi$) amplifies the entry
 response and weakens the net downward pressure on vacancies.
 Whether $u$ and $v$ comove positively or negatively after a destruction
 shock therefore depends on $\xi$ --- and, as discussed below, on the
 level of $\bar\delta_e$.  Empirically, $u$ and $v$ comove
 \emph{negatively} following destruction shocks (Beveridge curve
 recessions), which requires the direct vacancy destruction to dominate
-the entry cushion.  This places a lower bound on $\xi_{\mathrm{inv}}$:
+the entry cushion.  This places a lower bound on $1/\xi$:
 too close to vacancy free entry, and the model generates the wrong sign of
 $u$-$v$ comovement for $\delta$ shocks.
 
@@ -4392,20 +4394,20 @@ $u$-$v$ comovement for $\delta$ shocks.
     \includegraphics[width=0.82\textwidth]{mechanism_D_z_shock}
     \caption{Comparison D --- impulse responses to a one-standard-deviation
     \emph{negative} technology shock.
-    Solid black: baseline ($\xi_{\mathrm{inv}}=1.0$).
-    Dashed blue: close to vacancy free entry ($\xi_{\mathrm{inv}}=0.1$, recalibrated).
+    Solid black: baseline ($1/\xi=1.0$).
+    Dashed blue: close to vacancy free entry ($1/\xi=0.1$, recalibrated).
     Row~1 in percentage-point level deviation from steady state;
     rows~2--4 in $100\times\log$ deviation.}
     \label{fig:mechD_z}
 \end{figure}
 
 Under the \emph{negative technology shock} (Figure~\ref{fig:mechD_z}),
-lowering $\xi_{\mathrm{inv}}$ substantially amplifies the labor-market
+lowering $1/\xi$ substantially amplifies the labor-market
 response.  The mechanism runs through entry.  A negative $z$ shock
 depresses $w^{int}$, compressing the JCC surplus and lowering $K$.
 Via~\eqref{eq:Q_ll2}, $Q$ falls, and by~\eqref{eq:e_ll} new vacancy
 postings contract: $\hat{e}^z<0$.  With the near-constant cost schedule
-($\xi_{\mathrm{inv}}=0.1$, $\xi=10$), any given $\hat{Q}$ movement
+($1/\xi=0.1$, $\xi=10$), any given $\hat{Q}$ movement
 generates a ten-fold larger $\hat{e}$ response.  The realized amplification
 of entry is somewhat smaller than ten-fold --- about six --- because the
 flatter cost schedule also damps $\hat{Q}$ itself ($0.48\%$ versus
@@ -4456,7 +4458,7 @@ model's amplification without naming the shock.
 Whether the entry cushion is large enough to reverse the sign of
 $u$-$v$ comovement is a joint function of $\xi$ and $\bar\delta_e$,
 not of $\xi$ alone.  To see this, consider the limit of vacancy free entry,
-$\xi_{\mathrm{inv}}\to 0$.  There $Q\approx x_m$ is pinned and
+$1/\xi\to 0$.  There $Q\approx x_m$ is pinned and
 $K=x_m(r+\delta_e)/(1+r)$ rises with $\delta_e$ (the user cost of a vacancy that destruction depreciates);
 the JCC then determines $\theta$, which \emph{falls} --- the LHS of the
 job-creation condition rises with $K$ while the RHS, proportional to
@@ -4479,15 +4481,15 @@ stock is overwhelmingly inherited rather than newly posted, and only
 inherited vacancies are exposed to the shock.  The destruction impulse is
 therefore large relative to any entry response that could offset it, and
 vacancies fall following destruction shocks \emph{even under vacancy free entry}.  Figure~\ref{fig:mechD_delta} confirms this:
-at $\xi_{\mathrm{inv}}=0.1$, vacancies rise for two months, turn negative
+at $1/\xi=0.1$, vacancies rise for two months, turn negative
 in the third, and trough at $-0.012$~pp, while the baseline at
-$\xi_{\mathrm{inv}}=1.0$ shows a stronger decline still ($-0.018$~pp).
+$1/\xi=1.0$ shows a stronger decline still ($-0.018$~pp).
 
 This is a key virtue of disciplining $\delta$ with data rather than
 setting $\delta_e=\tau$ as in \citet{coles_2018}: the empirically
 calibrated destruction rate endogenously preserves negative $u$-$v$
 comovement across the entire range of $\xi$ shown here, including free
-entry.  Convex entry costs ($\xi_{\mathrm{inv}}>0$) are not needed to
+entry.  Convex entry costs ($1/\xi>0$) are not needed to
 prevent the CK Beveridge curve shift; the low empirical $\bar\delta_e$
 already rules it out.  Paragraph~9c of \ref{app:loglin} gives the reason in
 closed form: the unemployment loading is proportional to
@@ -4923,13 +4925,13 @@ Equating the two sides,
 Equation \eqref{eq:jcc_fe_ll} contains neither $u$ nor the predetermined vacancy stock,
 because vacancy free entry pins $Q$ and $K_t$ depends only on $\delta_t$. Divide by $\eta_L$:
 \[
-	\hat\theta_t=\Phi_\theta\,\mathbb{E}_t\hat\theta_{t+1}+\text{(current and expected shocks)},
+	\hat\theta_t=\vartheta\,\mathbb{E}_t\hat\theta_{t+1}+\text{(current and expected shocks)},
 	\qquad
-	\Phi_\theta\equiv\frac{1}{1+r}\Bigl[1-\bar\tau-\frac{\phi(1-\bar\delta)\bar{f}}{\eta_L}\Bigr].
+	\vartheta\equiv\frac{1}{1+r}\Bigl[1-\bar\tau-\frac{\phi(1-\bar\delta)\bar{f}}{\eta_L}\Bigr].
 \]
-Since $\phi\geq0$, $\Phi_\theta<(1-\bar\tau)/(1+r)<1$. And $\Phi_\theta>-1$ if and only if
+Since $\phi\geq0$, $\vartheta<(1-\bar\tau)/(1+r)<1$. And $\vartheta>-1$ if and only if
 $\phi(1-\bar\delta)\bar{f}<\eta_L(2+r-\bar\tau)$, which is the condition of the lemma. It holds whenever
-$\phi\leq\eta_L$, because $(1-\bar\delta)\bar{f}<1<2+r-\bar\tau$. With $|\Phi_\theta|<1$,
+$\phi\leq\eta_L$, because $(1-\bar\delta)\bar{f}<1<2+r-\bar\tau$. With $|\vartheta|<1$,
 iterating forward and requiring a bounded solution leaves the forward sum of current and
 expected shocks as the unique solution. It does not depend on the endogenous states. With
 each shock an AR(1), every term of the sum is proportional to the current shock, so
@@ -4951,7 +4953,7 @@ two channels through which $\delta_{t-1}$ raises $u_t$: lost matches, $\bar{f}\b
 and separations, $(1-\bar\delta)\bar{f}(1-\bar{s})\bar\delta/\bar\tau$, which sum to
 $\bar{f}\bar\delta/\bar\tau$. Then $\hat{v}_t=\hat\theta_t+\hat{u}_t$, and entry is the
 residual of \eqref{eq:v_ags}. The predetermined vacancy stock feeds into nothing except
-entry. The system therefore has one unstable root, $1/\Phi_\theta$, for one jump variable,
+entry. The system therefore has one unstable root, $1/\vartheta$, for one jump variable,
 and one stable root, $\lambda_u$, for one state, and the Blanchard--Kahn condition holds.
 \end{proof}
 

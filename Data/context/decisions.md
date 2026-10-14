@@ -1,5 +1,5 @@
 # Decision Register
-**Last updated:** October 12, 2026 (D12 updated for the Oct 11 theory rebuild; S12 rewritten for the new `sec:mechanism` structure; D1 entry compressed). Earlier: October 9 (D12 added) · **Branch:** `costly_vacancy_reposting`
+**Last updated:** October 14, 2026 (D13 adopted: SVAR Block B′ replaces Bartik; D3 moot, D10 → (a) as validation). October 12: D12 updated for the Oct 11 theory rebuild; S12 rewritten for the new `sec:mechanism` structure; D1 entry compressed). Earlier: October 9 (D12 added) · **Branch:** `costly_vacancy_reposting`
 
 One entry = one decision: a *choice*, not a task. Tasks live in
 [`pending_tasks.md`](pending_tasks.md). When a decision is settled, move it to §Settled with
@@ -10,11 +10,46 @@ Status key: 🔴 blocks estimation · 🟠 blocks a paper section · 🟡 improv
 | # | Decision | Status |
 |---|---|---|
 | D2 | PATH A or PATH B as the calibration baseline | 🔴 open, recommendation PATH B |
-| D3 | How β̂ and β(θ) are made comparable | 🔴 open, recommendation shape-only baseline; revisit after E9 |
+| D3 | How β̂ and β(θ) are made comparable | ⚪ moot under D13 (Oct 14): indirect inference uses the same SVAR on data and simulations |
 | D4 | Does the LD→v IRF enter Block B? | 🟠 open, reopened by D11 |
-| D10 | Empirical target for the δ→u IRF shape | 🟡 partial, waits on E9 |
+| D10 | Empirical target for the δ→u IRF shape | 🟡 resolved to (a) as validation under D13 (Oct 14); E9 no longer needed |
 | D11 | Does the reposting margin enter this paper? | 🟡 adopted in the draft; formal go/no-go after R2 |
 | D12 | Venue and the theory-first pivot (JET?) | 🟠 open (MS), recommendation: no-go for JET; theory-forward paper for RED / JME / AEJ: Macro |
+| D13 | Conditional moments without Bartik: Block B′ = aggregate SVAR responses | 🔴 adopted as the working design Oct 14 (MS approved the plan); not yet built |
+
+---
+
+## 🔴 D13. What replaces the Bartik IRF block?
+
+**Adopted Oct 14, 2026 as the working design (MS approved the plan).** The Bartik LP paths are
+unstable beyond short horizons (E8). They therefore leave the objective and become
+**out-of-sample validation**: δ→u at h = 0–2, the δ→v trough at h = 4–6, the severity
+placebo, and the LD→v IRF.
+
+**Block B′: aggregate SVAR conditional responses.**
+- A VAR in (z, δ, s, u, v), with the shocks ordered first, as in the shock calibration.
+- Targets: the δ-shock and s-shock responses of u and v, h = 0–12 quarters.
+- Model counterpart: the same VAR estimated on simulated data (indirect inference), so the
+  same estimator runs on both sides. This settles D3 by construction.
+- Ω from a VAR bootstrap.
+
+Why Block B′ is still needed: unconditional moments cannot separate δ from s propagation. The
+s-shock response of v identifies α; the δ-shock response identifies ξ jointly with δ_e.
+
+**Consequences:**
+- E9, Ω_β (`part5_wcrb.py`) and the β(θ) extractor in LP units drop off the critical path.
+- D10 resolves to (a) as validation.
+- D4's LD→v becomes a validation moment.
+- The shock processes come from a trivariate (z, δ, s) VAR (Q2), not a bivariate VAR plus an
+  AR(1) for s.
+
+The estimator stays limited-information (Bayesian SMM / indirect inference) over Θ_e, with
+the shock processes fixed in a first step. Full-information estimation is deferred: it needs
+measurement error to avoid stochastic singularity.
+
+The full sequence is tasks Q1–Q6 in [`pending_tasks.md`](pending_tasks.md). D12's
+simple-model-first question is decided at the Q5 gate, against a threshold agreed before Q5
+runs.
 
 ---
 

@@ -1,5 +1,5 @@
 # Pending Tasks
-**Last updated:** October 13, 2026 (P8 theory-section cleanup logged; R3 flagged as the main theory gap). Oct 12: cleanup after the Oct 11–12 theory sessions: R15, R16, R12, R12c, P5 done and compressed into §Completed). · **Branch:** `costly_vacancy_reposting`
+**Last updated:** October 14, 2026 (quantitative plan Q0–Q6 adopted, D13; E9 superseded). Oct 13: P8 theory-section cleanup logged; R3 flagged as the main theory gap. Oct 12: cleanup after the Oct 11–12 theory sessions: R15, R16, R12, R12c, P5 done and compressed into §Completed). · **Branch:** `costly_vacancy_reposting`
 
 Actionable work only. Decisions live in [`decisions.md`](decisions.md), draft section status in
 [`draft_status.md`](draft_status.md), results in [`findings.md`](findings.md), the model
@@ -10,16 +10,23 @@ bring the code in line with the draft (R8), regenerate every §5 number once, an
 
 ---
 
-## Critical path
+## Critical path — the quantitative plan adopted Oct 14, 2026 ([D13](decisions.md))
 
-> **Conditional on [D12](decisions.md) (open, MS).** If the recommended theory-forward
-> structure is adopted, IRF matching leaves this paper: **0a (E9)** and **items 2 and 5** drop
-> off, **D3** becomes moot, **D10** takes option (a), and item 6 becomes calibration plus
-> moment matching. **0b** and **D11** stay for any venue, since the quantitative Beveridge sign
-> must be fixed. The theory items that D12 put on the path (R15, R16, R12c) are done.
-> Until MS decides, the path below stands.
+Bartik IRFs leave the objective and become validation. Block B′ is aggregate SVAR responses
+matched by indirect inference. Full plan: `~/.claude/plans/wiggly-gliding-pelican.md`
+(Oct 14). **Items 0a (E9), 2 and 5 below are superseded**; 0b is Q1.
 
-**0a. E9 — model-side LP test.** ⛔ Gates the Block B design ([D10](decisions.md)) and may
+| # | Task | Status |
+|---|---|---|
+| Q0 | **Presentation, in parallel.** (1) Notation audit of §§2–3 and the appendices; propose renames, apply after MS approves; add a notation table. Known clashes: e_t vs e_{zt}; ρ(N) vs ρ_x; ω vs ω_u vs ω_δ; Φ(θ) vs Φ_θ; η_L vs translog η; s in the SMCD footnote. (2) A "model at a glance" paragraph opening §2 | ⏳ started Oct 14 |
+| Q1 | **R8 + D1 + PATH B, one regeneration pass** (= 0b below). Nothing quantitative is meaningful before it | ❌ |
+| Q2 | **Trivariate (z, δ, s) VAR** for the shock processes. Extend `part6b_shock_persistence_cyclical.py`; z → δ → s; HP-1600, 1992Q3–2019Q4; off-diagonals excluded from the exogenous processes as for â₂₁. Replaces the separate AR(1) for s (corr(η^δ, η^LD) ≈ 0.49). Output `.txt` for §5.2 (N15) | ❌ |
+| Q3 | **Targets.** Block M: refresh `second_moments.jl` (λ = 1,600, all seven series) plus lead/lag cross-correlations of δ_e with u and v; Ω_m via `moments_bootstrap.py`. Block B′: a VAR in (z, δ, s, u, v), δ- and s-shock responses of u and v at h = 0–12, Ω by VAR bootstrap; model side = the same VAR on simulated data. Validation set: Bartik δ→u h = 0–2, δ→v h = 4–6, severity placebo, LD→v | ❌ after Q1, Q2 |
+| Q4 | **Identification check** (extends R2). Jacobian of [M; B′] w.r.t. Θ_e = {b, ξ⁻¹, x_v, ω_δ, p_0, α, (σ)} at the calibrated point: rank, condition number, loadings; Monte Carlo recovery. Weakly identified parameters are fixed on a reported grid | ❌ after Q3 |
+| Q5 | **Hypotheses H1–H5, then calibrated mechanism comparisons over a sensitivity grid.** H1 δ → negative u–v comovement and persistent u. H2 α > 0 necessary and sufficient for cor(u,v) ≈ −0.8. H3 business formation adds δ→u persistence beyond AGS. H4 endogenous exit is minor. H5 reactivation amplifies z and s, damps δ. Grid: ξ⁻¹ ∈ {0.5, 1, 2}, b/w ∈ {0.7, 0.8, 0.9}, ω_δ, and α bracketing cor(u,v). Comparisons A–D plus α → 0; `mechanism_stats.jl`. **Gate for D12 / simple-model-first:** agree a threshold first (e.g. the C-vs-AGS gap moves the δ→u half-life by < 25 % or cor(u,v) by < 0.1 ⇒ lead with the simple model) | ❌ after Q1, Q2 |
+| Q6 | **Estimation.** Bayesian limited-information SMM / indirect inference over Θ_e, shocks fixed from Q2 (two-step), `eq:posterior` with B′ in place of B; RWMH. Full-information estimation deferred | ❌ after Q4 |
+
+**0a. E9 — model-side LP test.** ⚪ *Superseded Oct 14 by D13.* ⛔ Gates the Block B design ([D10](decisions.md)) and may
 settle [D3](decisions.md). Run the baseline LP specification on a model-simulated 50-state
 panel. If the model LP also builds monotonically, the full IRF path is a usable target; if it
 peaks at h = 1–2, target short horizons. ⚠️ The simulated instrument must reproduce the data
