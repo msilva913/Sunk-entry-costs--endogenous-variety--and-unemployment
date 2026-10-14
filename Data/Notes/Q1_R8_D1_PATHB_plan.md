@@ -108,6 +108,15 @@ Each step ends with a passing test before the next starts.
 
 1. **Baseline snapshot.** Run the current code at p_0 = 0 and at the current default. Save the
    IRFs (`irf_baseline_pre_R8.jls`) for regression.
+   ✅ **Done Oct 14.** Script `R8_snapshot_pre.jl`, outputs `R8_snapshot_pre.jls` and `.txt`:
+   - both cases at D1 (`dest_ann = 0.0320`) with PATH B settings; SS residuals 1e-14;
+   - cases `:p0zero` (the exact regression reference) and `:base` (p_0 = 0.5, ω_δ = 0.5,
+     `dest_elast_target = 5`);
+   - shocks z, δ, s; the s shock uses ρ_s = 0.874, σ_s = 0.0854.
+
+   Environment: `Programs baseline/Project.toml` and `Manifest.toml`, built by
+   `setup_environment.jl`. Run programs with `julia --startup-file=no --project=.`; on a new
+   machine, run `Pkg.instantiate()` first.
 2. **Timing restructure only** (A), with reposting off (α absent, Λ_r ≡ 1).
    - **Test 1 (exact):** at **p_0 = 0**, Λ ≡ 1 and both timings coincide, so the new IRFs must
      equal the snapshot to ~1e-10.
