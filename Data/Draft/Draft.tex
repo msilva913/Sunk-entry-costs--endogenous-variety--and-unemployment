@@ -527,9 +527,17 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	\subsection{Laws of motion for firms, unemployment, and vacancies}
 	
 	A product line survives into  the production phase of period $t$ if it was not destroyed exogenously at the end of $t-1$ (probability 
-	$1-\delta_{t-1}$) \emph{and} its owner draws a continuation cost below the equilibrium cutoff $\chi_t^c$ at the start of $t$ 
-	(probability $F(\chi_t^c)$). Both events occur before production and 
-	matching, so $u_t$ is unemployment \emph{after} firm exit but 
+	$1-\delta_{t-1}$) \emph{and} its owner draws a continuation cost below the equilibrium cutoff $\chi_t^c$ at the start of $t$.
+	Continuation costs, in units of the consumption basket, are drawn from a mixture of a
+	mass point at zero, with probability $1-p_0$, and a bounded power law:
+	\begin{align}\label{eq:F_chi}
+		F(\chi) = (1-p_0) + p_0\left(\frac{\chi}{\chi_m}
+		\right)^\psi,
+		\quad \chi\in[0,\,\chi_m],
+	\end{align}
+	so the second event has probability $F(\chi_t^c)$. The same distribution governs the
+	reactivation of vacated positions below. Both events occur before production and
+	matching, so $u_t$ is unemployment \emph{after} firm exit but
 	\emph{before} matching. The law of motion for active product lines 
 	is
 	\begin{align}
@@ -626,7 +634,7 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	for each vacated position and resumes it whenever
 	$\alpha\chi\leq Q_t$. 
 	The reactivation probability therefore rises with the value of a vacancy $Q_t$ and shares
-	its cyclical behavior, which depends on the shock.
+	its (shock-dependent) cyclical behavior.
 
 	Because positions are held by recruiters and labor is rented competitively, how vacated
 	positions are spread across recruiters does not matter to retailers. Only the aggregate
@@ -880,9 +888,9 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	the match continues with probability $1-s_t$. Otherwise the worker separates and the recruiter may reactivate the vacancy at cost $\alpha\chi$, with $\chi\sim F$ drawn from the same distribution as the continuation cost, scaled by $\alpha$. Reactivation is optimal when the recovered vacancy covers the cost, $Q_{t+1}\geq\alpha\chi$, which occurs with probability $\Lambda_{r,t+1}$, where the reactivation rate is
 	\begin{align}\label{eq:Lambda_r}
 		\Lambda_{r,t}\equiv F\!\left(\frac{Q_t}{\alpha}\right)
-		=\min\left\{(1-p_0)+p_0\left(\frac{Q_t}{\alpha\chi_m}\right)^{\psi},\,1\right\}
+		=\min\left\{1-p_0+p_0\left(\frac{Q_t}{\alpha\chi_m}\right)^{\psi},\,1\right\}
 	\end{align}
-	using the form of $F$ in~\eqref{eq:F_chi}. Like the survival probability~\eqref{eq:Lambda}, $\Lambda_{r,t}$ evaluates $F$ at a threshold. The zero-cost atom always reactivates, so $\Lambda_{r,t}\in[1-p_0,1]$, and every vacated position is reactivated once $Q_t\geq\alpha\chi_m$. The reactivation rate rises with $Q_t$ and so shares its cyclical behavior. The expected value of a separated position is therefore the reactivation option value
+	using the form of $F$ in~\eqref{eq:F_chi}. $\Lambda_{r,t}\in[1-p_0,1]$, and every vacated position is reactivated once $Q_t\geq\alpha\chi_m$. The reactivation rate rises with $Q_t$ and so shares its cyclical behavior. The expected value of a separated position is therefore the reactivation option value
 	\begin{align}\label{eq:Qrep}
 		Q_t^{rep}\equiv\mathbb{E}\bigl[\max\{Q_t-\alpha\chi,\,0\}\bigr]
 		= Q_t\Lambda_{r,t}-\alpha\int_{0}^{Q_t/\alpha}\chi\,dF(\chi),
@@ -901,10 +909,9 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	\begin{align}\label{eq:repost_shortfall}
 		\mathcal{R}_t\equiv\mathbb{E}_tm_{t+1}(1-\delta_t)F(\chi_{t+1}^c)\left(Q_{t+1}-Q_{t+1}^{rep}\right)
 	\end{align}
-	is the expected discounted reposting shortfall: the value a
-	separated position loses relative to costless reposting,
-	through vacancies that are not reactivated and through the
-	reactivation costs paid on those that are. It vanishes as
+	is the expected discounted reposting shortfall: the value a separated position loses
+	relative to costless reposting, through the positions that are retired and the
+	reactivation costs paid on those that are not. It vanishes as
 	$\alpha\to0$. Imposing symmetry
 	in~\eqref{eq:average_hiring_cost} gives the job creation
 	condition:
@@ -973,16 +980,8 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	
 	A retailer selling variety $j$ rents labor from recruiters at 
 	wage $w_t^{int,j}$. At the beginning of each period, before 
-	production, the firm draws a continuation cost $\chi\sim F$ 
-	in units of the consumption basket, where $F$ is a mixture 
-	between a mass point at zero with probability $1-p_0$ and a 
-	bounded power law:
-	\begin{align}\label{eq:F_chi}
-		F(\chi) = (1-p_0) + p_0\left(\frac{\chi}{\chi_m}
-		\right)^\psi, 
-		\quad \chi\in[0,\,\chi_m]
-	\end{align}
-	A firm with draw $\chi>\chi_t^c$ exits; one with $\chi\leq\chi_t^c$ 
+	production, the firm draws a continuation cost $\chi\sim F$ from
+	\eqref{eq:F_chi}. A firm with draw $\chi>\chi_t^c$ exits; one with $\chi\leq\chi_t^c$ 
 	pays the cost and continues. Define the survival probability:
 	\begin{align}\label{eq:Lambda}
 		\Lambda_t \equiv F(\chi_t^c) = (1-p_0) 
