@@ -41,6 +41,28 @@ include("steady_state.jl")
 include("impulse_response_plots.jl")
 include("time_series_fun.jl")
 
+"""
+    repost_par(cal) → (α, rp)
+
+Reposting entries of PAR (positions 24–25). calibrate_shares returns α = 0 for costless
+reposting; the model then needs rp = 0 and any positive placeholder α (1.0), since α only
+enters f[39] multiplied by rp.
+"""
+repost_par(cal) = cal.α > 0 ? (cal.α, 1.0) : (1.0, 0.0)
+
+"""
+    build_PAR(cal, shocks) → Vector{Float64}
+
+Parameter vector in the order of `parameters`, from a calibration and a NamedTuple of shock
+processes (ρz, σz, ρδ, σδ, ρs, σs). Runners should build PAR this way rather than by hand.
+"""
+function build_PAR(cal, shk)
+    α_r, rp_r = repost_par(cal)
+    return [cal.f_e; cal.z; cal.δ; cal.s; cal.b; cal.ϕ; cal.r; cal.σ; cal.ε; cal.A; cal.η_L;
+            cal.κ; cal.ξ_inv; cal.x_m; cal.ψ; cal.f_m; cal.p_0;
+            shk.ρz; shk.σz; shk.ρδ; shk.σδ; shk.ρs; shk.σs; α_r; rp_r]
+end
+
 function solution_interface(model, PAR, SS_precomputed::Union{Vector{Float64},Nothing}=nothing;
                             ss_tol::Float64=1e-8)
     # ── World-age fix ────────────────────────────────────────────────────────────
@@ -119,10 +141,12 @@ flag_SSsolver  = false
 # Order must match PAR vector in run_solution.jl.
 # Removed: F (obsolete scalar CDF — endogenous F(x_c) is computed in equations)
 # Added:   ψ, f_m, p_0 (continuation cost distribution parameters)
-@syms f_e zbar δbar sbar b ϕ r σ ε A η_L κ ξ_inv x_m ψ f_m p_0 ρ_z σ_z ρ_δ σ_δ ρ_s σ_s
+# R8: α (reactivation-cost scale) and rp (reposting switch: 1 = partial reposting,
+# 0 = costless reposting, Block 1) are appended. With rp = 0, α is a placeholder (1.0).
+@syms f_e zbar δbar sbar b ϕ r σ ε A η_L κ ξ_inv x_m ψ f_m p_0 ρ_z σ_z ρ_δ σ_δ ρ_s σ_s α rp
 
 parameters = [f_e; zbar; δbar; sbar; b; ϕ; r; σ; ε; A; η_L; κ; ξ_inv; x_m; ψ; f_m; p_0;
-              ρ_z; σ_z; ρ_δ; σ_δ; ρ_s; σ_s]
+              ρ_z; σ_z; ρ_δ; σ_δ; ρ_s; σ_s; α; rp]
 
 estimate = []   # filled in when SMM is wired up
 position = []
@@ -149,13 +173,17 @@ priors   = (;)
 @syms Ntp Etp Vup Vsp zp δp δlp sp
 
 # Control variables (jump variables, determined within period t)
-@syms θ q L v e K Q ρ N_e ν_f d_f w_int w L_e L_c Y_c C λ Y x_c δ_e labor_prod C_R Y_R Y_cR w_R ls u N v_pret
-@syms θp qp Lp vp ep Kp Qp ρp N_ep ν_fp d_fp w_intp wp L_ep L_cp Y_cp Cp λp Yp x_cp δ_ep labor_prod_p C_Rp Y_Rp Y_cRp w_Rp lsp up Np v_pretp
+# Reposting controls (R8): Λ_r (reactivation rate, eq:Lambda_r), Q_rep (reactivation option
+# value, eq:Qrep), and H_t ≡ E_t[m_{t+1}(1-δ_t)Λ_{t+1} Q_rep,t+1]. The shortfall
+# 𝓡_t = Q_t - K_t - H_t (eq:repost_shortfall, using f[5]) is exactly 0 under costless
+# reposting, so it is not logged as a variable itself.
+@syms θ q L v e K Q ρ N_e ν_f d_f w_int w L_e L_c Y_c C λ Y x_c δ_e labor_prod C_R Y_R Y_cR w_R ls u N v_pret Λ_r Q_rep H
+@syms θp qp Lp vp ep Kp Qp ρp N_ep ν_fp d_fp w_intp wp L_ep L_cp Y_cp Cp λp Yp x_cp δ_ep labor_prod_p C_Rp Y_Rp Y_cRp w_Rp lsp up Np v_pretp Λ_rp Q_repp Hp
 
 x  = [Nt; Et; Vu; Vs; z; δ; δl; s]
-y  = [θ; q; L; v; e; K; Q; ρ; N_e; ν_f; d_f; w_int; w; L_e; L_c; Y_c; C; λ; Y; x_c; δ_e; labor_prod; C_R; Y_R; Y_cR; w_R; ls; u; N; v_pret]
+y  = [θ; q; L; v; e; K; Q; ρ; N_e; ν_f; d_f; w_int; w; L_e; L_c; Y_c; C; λ; Y; x_c; δ_e; labor_prod; C_R; Y_R; Y_cR; w_R; ls; u; N; v_pret; Λ_r; Q_rep; H]
 xp = [Ntp; Etp; Vup; Vsp; zp; δp; δlp; sp]
-yp = [θp; qp; Lp; vp; ep; Kp; Qp; ρp; N_ep; ν_fp; d_fp; w_intp; wp; L_ep; L_cp; Y_cp; Cp; λp; Yp; x_cp; δ_ep; labor_prod_p; C_Rp; Y_Rp; Y_cRp; w_Rp; lsp; up; Np; v_pretp]
+yp = [θp; qp; Lp; vp; ep; Kp; Qp; ρp; N_ep; ν_fp; d_fp; w_intp; wp; L_ep; L_cp; Y_cp; Cp; λp; Yp; x_cp; δ_ep; labor_prod_p; C_Rp; Y_Rp; Y_cRp; w_Rp; lsp; up; Np; v_pretp; Λ_rp; Q_repp; Hp]
 
 variables = [x; y; xp; yp]
 varnames  = vcat(Symbol.(x), Symbol.(y))
@@ -197,7 +225,7 @@ ex = [epsilon]
 #     where F(x_c) = (1-p_0) + p_0*(x_c/f_m)^ψ   [continuation cost CDF]
 #   x_c = continuation cost threshold (firms draw cost each period; exit if > x_c)
 #
-# Equation count: 8 state + 30 control = 38 total, matching nvar.
+# Equation count: 8 state + 33 control = 41 total, matching nvar.
 # f[1]–f[2]:   endogenous exit (x_c threshold, δ_e rate)
 # f[3]–f[5]:   Euler equations (JCC, business formation, K value)
 # f[6]–f[8]:   wage block (MRP, Nash wage, vacancy creation)
@@ -208,6 +236,7 @@ ex = [epsilon]
 # f[30]:       labor share
 # f[31]–f[35]: data-consistent observables
 # f[36]–f[38]: exogenous AR(1) shock processes
+# f[39]–f[41]: reposting margin (Λ_r, Q_rep, H); 𝓡 = Q − K − H enters f[3], f[7], X_r in f[16]
 #
 # Key timing notes:
 #   - δ_e,t applies to incumbents at END of period (Stage 5): destroys filled
@@ -245,14 +274,23 @@ function gen_model_equations()
     # an observable only; survival in the laws of motion is built from Λ_t directly.
     f[2] = δ_e - (1 - (1 - δl * δbar) * Λ)
 
+    # ── Reposting shortfall (eq:repost_shortfall), R8 ─────────────────────────
+    # 𝓡_t = E_t[m(1-δ_t)Λ_{t+1}(Q_{t+1} - Q^rep_{t+1})] = (Q_t - K_t) - H_t, using f[5] for
+    # the first term and f[new3] for H_t. Exactly 0 under costless reposting (Q^rep = Q).
+    R_sh  = Q  - K  - H
+    R_shp = Qp - Kp - Hp
+
     # ── [3] Job creation condition (eq:jcc_eq) ────────────────────────────────
     # κ + K/q = E_t[m_{t+1}*(1-δ_t)*Λ_{t+1}*{(1-ϕ)*(w_int'-K'-b)
-    #            - ϕ*θ'*(K'+q'*κ) + (1-s'*sbar)*(κ+K'/q')}]
+    #            - ϕ*θ'*(K'+q'*κ) + (1-s'*sbar)*(κ+K'/q') - (1-ϕ)*s'*sbar*𝓡'}]
     # Survival factor: (1-δ_t)*Λ_{t+1} = SDF_surv (current δ, next-period Λp).
+    # The wage-substituted surplus carries the shortfall with coefficient (1-ϕ): the
+    # recruiter's share (eq:surplus_wage).
     f[3] = κ + K/q - β*λp/λ * SDF_surv * (
                (1-ϕ)*(w_intp - Kp - b)
                - ϕ*θp*(Kp + qp*κ)
                + (1 - sp*sbar)*(κ + Kp/qp)
+               - (1-ϕ)*sp*sbar*R_shp
            )
 
     # ── [4] Business formation Euler (eq:firm_value_char / BGM eq:euler_bf) ───
@@ -273,9 +311,10 @@ function gen_model_equations()
     # w_int = ρ(N)*z/μ(N) = ρ*z*zbar/μ  (DS-CES: ρ = N^(1/(ε-1)), μ constant)
     f[6] = w_int - ρ * z * zbar / μ
 
-    # ── [7] Nash bargaining wage ───────────────────────────────────────────────
-    # w = ϕ*(w_int - K + θ*(K + q*κ)) + (1-ϕ)*b
-    f[7] = w - (ϕ*(w_int - K + θ*(K + q*κ)) + (1-ϕ)*b)
+    # ── [7] Nash bargaining wage (eq:wage_eq) ──────────────────────────────────
+    # w = ϕ*(w_int - K + θ*(K + q*κ) - s*sbar*𝓡) + (1-ϕ)*b: the worker bears share ϕ of the
+    # reposting shortfall, which acts like a firing cost on an exogenous separation.
+    f[7] = w - (ϕ*(w_int - K + θ*(K + q*κ) - s*sbar*R_sh) + (1-ϕ)*b)
 
     # ── [8] Vacancy creation (eq:entry_eq) ────────────────────────────────────
     # Q_t = x_m * e_t^(ξ_inv): marginal cost of posting the e_t-th vacancy
@@ -324,7 +363,12 @@ function gen_model_equations()
     # ξ_inv = 1, so only Comparison D's ξ_inv = 0.1 arm was affected (10× error).
     # steady_state.jl:362,742 and SS_numeric (line 439) already had it right.
     X   = e / (1 + ξ_inv) * Q + κ * q * v
-    f[16] = Y_c - (C + X + X_c)
+    # Reactivation costs (eq:agg_repost_costs), paid at Stage 2 of t on the positions
+    # vacated at the end of t-1 at surviving lines, Λ_t·Ṽ^s_t. The cost per vacated
+    # position is α∫₀^{Q/α}χ dF = Q·Λ_r − Q^rep, which already embeds Λ_r (do not multiply
+    # by Λ_r again). 0 under costless reposting.
+    X_r = Λ * Vs * (Q * Λ_r - Q_rep)
+    f[16] = Y_c - (C + X + X_c + X_r)
 
     # [17] New entrants: N_e = z*zbar*L_e/f_e
     f[17] = N_e - z * zbar * L_e / f_e
@@ -356,9 +400,21 @@ function gen_model_equations()
     f[22] = N - Λ * Nt
     # [23] Unemployment before matching (eq:u_lom): u_t = 1 - Λ_t·Ẽ_t
     f[23] = u - (1 - Λ * Et)
-    # [24] Pre-entry vacancies (eq:v_lom), costless reposting (Λ_r ≡ 1 until step 4):
-    #      v_pre,t = Λ_t·(Ṽ^u_t + Ṽ^s_t)
-    f[24] = v_pret - Λ * (Vu + Vs)
+    # [24] Pre-entry vacancies (eq:v_lom): v_pre,t = Λ_t·(Ṽ^u_t + Λ_r,t·Ṽ^s_t). A share
+    #      1 − Λ_r,t of the positions vacated by separations is retired permanently.
+    f[24] = v_pret - Λ * (Vu + Λ_r * Vs)
+
+    # ── Reposting margin (R8; eq:Lambda_r, eq:Qrep) ──────────────────────────
+    # [39] Reactivation rate: a vacated position is resumed iff αχ ≤ Q_t, χ ~ F (the
+    #      continuation-cost distribution), so Λ_r,t = F(Q_t/α) on the interior branch.
+    #      rp = 0 gives costless reposting: Λ_r ≡ 1.
+    f[39] = Λ_r - (1 - rp + rp * ((1 - p_0) + p_0 * (Q / (α * f_m))^ψ))
+    # [40] Reactivation option value Q^rep = E[max(Q − αχ, 0)] = Q·Λ_r − ψ_c Q(Λ_r − 1 + p_0)
+    #      (interior closed form of the cost integral); Q^rep = Q when rp = 0.
+    f[40] = Q_rep - Q * (Λ_r - rp * ψ_c * (Λ_r - 1 + p_0))
+    # [41] Expected discounted reposted value H_t = E_t[m(1−δ_t)Λ_{t+1} Q^rep_{t+1}], so that
+    #      𝓡_t = (Q_t − K_t) − H_t, with Q_t − K_t = E_t[m(1−δ_t)Λ_{t+1}Q_{t+1}] from f[5].
+    f[41] = H - β*λp/λ * SDF_surv * Q_repp
 
     # ── Laws of motion for the pre-exit states (Convention A) ──────────────────
     # δ_t is known at t and destroys at the end of t; s_t separates matches that
@@ -463,10 +519,15 @@ function SS_numeric(PAR::Vector{Float64}, targets)
                   "state would describe different economies.")
         end
     end
+    # Reposting parameters (PAR[24] = α, PAR[25] = rp), built by repost_par(cal)
+    α_exp, rp_exp = repost_par(cal)
+    (length(PAR) == length(parameters) && isapprox(PAR[24], α_exp; rtol = 1e-10) && PAR[25] == rp_exp) ||
+        error("SS_numeric: PAR must end with (α, rp) = repost_par(cal) = ($α_exp, $rp_exp); " *
+              "got length $(length(PAR)) with tail $(PAR[24:end]).")
 
     st = steady_state(cal)
     @unpack u, N, v_pret, θ, q, L, v, e, K, Q, ρ, N_e, ν_f, d_f, w_int, w,
-            L_e, L_c, Y_c, C, Y, x_c, δ_e, labor_share = st
+            L_e, L_c, Y_c, C, Y, x_c, δ_e, labor_share, Λ_r, R_sh = st
 
     # Shocks are multiplicative deviations with SS = 1 (log-deviation = 0)
     z_s, δ_s, s_s = 1.0, 1.0, 1.0
@@ -490,15 +551,24 @@ function SS_numeric(PAR::Vector{Float64}, targets)
     Et_s = (1 - u) / Λ_s
     Vu_s = (1 - cal.δ) * (1 - q) * v
     Vs_s = (1 - cal.δ) * cal.s * (1 - u)
-    # f[24] check: Λ(Ṽ^u + Ṽ^s) = (1-δ_e)[(1-q)v + s(1-u)] = v_pret under costless reposting
-    isapprox(Λ_s * (Vu_s + Vs_s), v_pret; rtol = 1e-10) ||
+    # f[24] check: Λ(Ṽ^u + Λ_r Ṽ^s) = (1-δ_e)[(1-q)v + Λ_r s(1-u)] = v_pret
+    isapprox(Λ_s * (Vu_s + Λ_r * Vs_s), v_pret; rtol = 1e-10) ||
         error("SS_numeric: pre-exit vacancy states inconsistent with v_pret")
+
+    # ── Reposting controls (f[39]–f[41]) ──────────────────────────────────────
+    # Q^rep = Q − (Q − Q^rep), and 𝓡 = (1−δ_e)(Q − Q^rep)/(1+r) in steady state, so
+    # Q − Q^rep = (1+r)𝓡/(1−δ_e); H = (1−δ_e)Q^rep/(1+r) = Q − K − 𝓡.
+    Q_rep_s = Q - (1 + cal.r) * R_sh / (1 - δ_e)
+    H_s     = (1 - δ_e) * Q_rep_s / (1 + cal.r)
+    isapprox(H_s, Q - K - R_sh; rtol = 1e-10) ||
+        error("SS_numeric: H inconsistent with Q − K − 𝓡")
 
     # ── Assemble SS vector ────────────────────────────────────────────────────
     # Order MUST match varnames = vcat(Symbol.(x), Symbol.(y)):
     #   x = [Nt, Et, Vu, Vs, z, δ, δl, s]
     #   y = [θ, q, L, v, e, K, Q, ρ, N_e, ν_f, d_f, w_int, w, L_e, L_c, Y_c,
-    #        C, λ, Y, x_c, δ_e, labor_prod, C_R, Y_R, Y_cR, w_R, ls, u, N, v_pret]
+    #        C, λ, Y, x_c, δ_e, labor_prod, C_R, Y_R, Y_cR, w_R, ls, u, N, v_pret,
+    #        Λ_r, Q_rep, H]
     SS_block = [log(val) for val in [
         Nt_s, Et_s, Vu_s, Vs_s, z_s, δ_s, 1.0, s_s,
         θ, q, L, v, e, K, Q,
@@ -507,7 +577,8 @@ function SS_numeric(PAR::Vector{Float64}, targets)
         C, λ_s, Y,
         x_c, δ_e,
         labor_prod_s, C_R_s, Y_R_s, Y_cR_s, w_R_s, ls_s,
-        u, N, v_pret
+        u, N, v_pret,
+        Λ_r, Q_rep_s, H_s
     ]]
 
     SS = vcat(SS_block, SS_block)   # current and future (same at SS)
@@ -636,7 +707,8 @@ function SS_symbolics(parameters::Vector{Sym{PyObject}}, targets)
         C_s, λ_s, Y_s,                               # controls 17–19
         x_c_s, δ_e_sym,                              # controls 20–21
         labor_prod_s, C_R_s, Y_R_s, Y_cR_s, w_R_s, ls_s,  # controls 22–27
-        u_s, N_s, v_prets                            # controls 28–30 (post-exit stocks)
+        u_s, N_s, v_prets,                           # controls 28–30 (post-exit stocks)
+        1.0, Q_s, (1 - δ_e_s) * Q_s / (1 + r)        # controls 31–33: Λ_r, Q_rep, H (costless; latent path)
     ]]
 
     SS = vcat(SS_block, SS_block)   # current and future (same at SS)

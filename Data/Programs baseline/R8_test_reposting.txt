@@ -1,0 +1,28 @@
+R8 step 4 tests — reposting dynamics. IRFs in 100 × log deviations, T = 60
+  Test 4  p0zero irf_z  max |costless − step 2| = 1.05e-11
+  Test 4  p0zero irf_δ  max |costless − step 2| = 1.90e-12
+  Test 4  p0zero irf_s  max |costless − step 2| = 5.27e-12
+  Test 4  base   irf_z  max |costless − step 2| = 6.40e-12
+  Test 4  base   irf_δ  max |costless − step 2| = 1.09e-12
+  Test 4  base   irf_s  max |costless − step 2| = 6.67e-12
+Test 4 PASSED (worst 1.05e-11, tolerance 1e-10)
+
+Λ̄_r = 0.95: unstable roots 0 (want 0); α = 649.4
+    position identity with retirement, irf_z  gap: 1 SD 8.68e-08, 1e-3 SD 8.64e-14 (ratio 9.9e-07)
+    position identity with retirement, irf_δ  gap: 1 SD 1.48e-06, 1e-3 SD 1.47e-12 (ratio 9.9e-07)
+    position identity with retirement, irf_s  gap: 1 SD 8.02e-05, 1e-3 SD 7.85e-11 (ratio 9.8e-07)
+    s shock: u[3,13] =  3.1955  1.9833   v[3,13] =  5.9268  2.1625   Λ_r[3] =  0.00013
+
+Λ̄_r = 0.85: unstable roots 0 (want 0); α = 4.365e+10
+    position identity with retirement, irf_z  gap: 1 SD 2.11e-07, 1e-3 SD 2.10e-13 (ratio 1.0e-06)
+    position identity with retirement, irf_δ  gap: 1 SD 1.48e-06, 1e-3 SD 1.46e-12 (ratio 9.9e-07)
+    position identity with retirement, irf_s  gap: 1 SD 8.18e-05, 1e-3 SD 8.00e-11 (ratio 9.8e-07)
+    s shock: u[3,13] =  3.1850  2.6867   v[3,13] =  5.4138  0.8401   Λ_r[3] =  0.00209
+
+Λ̄_r = 0.70: unstable roots 0 (want 0); α = 2.147e+28
+    position identity with retirement, irf_z  gap: 1 SD 5.38e-07, 1e-3 SD 5.35e-13 (ratio 9.9e-07)
+    position identity with retirement, irf_δ  gap: 1 SD 1.47e-06, 1e-3 SD 1.46e-12 (ratio 9.9e-07)
+    position identity with retirement, irf_s  gap: 1 SD 8.51e-05, 1e-3 SD 8.31e-11 (ratio 9.8e-07)
+    s shock: u[3,13] =  3.1597  3.5792   v[3,13] =  4.7418 -0.7814   Λ_r[3] =  0.00302
+
+Test 5 PASSED (gap ratio at 1e-3 SD: worst 1.0e-06; second order ⇒ ~1e-6)

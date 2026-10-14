@@ -146,6 +146,21 @@ Each step ends with a passing test before the next starts.
    - **Test 6:** in the κ = σ = 0, ξ → ∞, p_0 = 0 limit the code reproduces the `prop:fe`
      coefficients c_δ, c_s from `gs_free_entry_beveridge.jl`. Use a small ξ_inv, as
      `gs_finite_xi_entry_offset.jl` does.
+   ✅ **Steps 3–4 done Oct 14.**
+   - **Step 3** (`R8_test_steady_state.jl`): the costless SS is unchanged (1e-17), and 14 SS
+     identities hold at ~1e-14 for Λ̄_r ∈ {0.95, 0.85, 0.70}.
+   - **Step 4** (`R8_test_reposting.jl`): new controls Λ_r, Q_rep, H, with 𝓡 = Q − K − H
+     (zero exactly when costless); PAR gains α and rp (`build_PAR(cal, shocks)`); 41 equations.
+   - **Test 4 passed:** costless = step 2 to 1e-11.
+   - **Test 5 passed:** solves, BK holds, positions conserved up to exit and retirement
+     (second order only).
+   - **s-shock v at month 12:** +2.94 (costless), +2.16 (0.95), +0.84 (0.85), −0.78 (0.70).
+     u at month 12 rises from 1.58 to 3.58.
+   - **Shared F (MS, Oct 14: no separate shape):** d ln Λ_r/d ln Q = ψ(Λ̄_r−1+p_0)/Λ̄_r ≈ 0.006,
+     and retirement elasticity / exit elasticity = [ζ_r/(1−ζ_r)]/[ζ_ss/(1−ζ_ss)] ≈ 1/160 for any
+     ψ. The margin works through its level Λ̄_r; α is astronomically large (6.5e2, 4.4e10,
+     2.1e28) but enters only via (Q/αχ_m)^ψ.
+   - **Test 6** (free-entry closed forms vs `prop:fe`) is deferred to step 7.
 5. **D1 + PATH B defaults** (C). Confirm convergence at `dest_ann = 0.0320`. Report the
    calibrated parameter vector and δ_e/τ = 0.087.
 6. **Update the dependents.**
