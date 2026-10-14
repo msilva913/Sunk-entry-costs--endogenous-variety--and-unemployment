@@ -476,8 +476,24 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 	inelastically. The household consumes and purchases equity. A unit 
 	measure of recruiters can each create one vacancy at a time, at a 
 	sunk cost drawn from a known distribution, with each vacancy 
-	specialized to a single product line. Retailers rent labor services 
+	specialized to a single product line. Retailers rent labor services
 	from matched recruiters and produce the specialized variety.
+
+	\paragraph{The model at a glance}
+	Two blocks interact. The \emph{business formation block}, in which households invest in new
+	product lines and retailers decide whether to continue, determines the mass of product
+	lines $N_t$. The \emph{labor market block}, in which recruiters create, fill, and reactivate
+	vacancies and bargain over wages, determines unemployment $u_t$, vacancies $v_t$, and
+	tightness $\theta_t$. Three objects link them. Recruiter compensation
+	$w_t^{int}=\rho(N_t)z_t/\mu(N_t)$ carries product variety into the value of a match. The
+	survival probability of a product line, $(1-\delta_t)F(\chi_{t+1}^c)$, applies to every
+	position attached to the line, so exit destroys jobs and vacancies together. Employment
+	and vacancy costs $X_t$ in turn set output and hence the return to entry. Three shocks
+	drive the economy: technology $z_t$; product destruction $\delta_t$, which removes product
+	lines together with their positions; and match separation $s_t$, which dissolves a match
+	but leaves its position to be reactivated. Section~\ref{sec:equilibrium} derives each block,
+	and Proposition~\ref{prop:independence} states when the two separate. \ref{app:notation}
+	collects the notation.
 	
 	Each period a number $m(u_t,v_t)$ of recruiter--worker pairs form, 
 	given unemployment $u_t$ and vacancies $v_t$. We adopt the 
@@ -5468,6 +5484,70 @@ zero, which is the degenerate limit ruled out before Proposition~\ref{prop:doubl
 	%\end{figure}
 	%
 	%Now consider the effect of $\varepsilon$ under general-CES preferences.  In this case, there is no effect on the relative price.  The only impact of $\varepsilon$ is on markups $\mu=\varepsilon/(\varepsilon-1)$.  Lower markups increase
+	\section{Notation}\label{app:notation}
+
+	Bars denote steady-state values. For a shock $x\in\{z,\delta,s\}$, $\tilde{x}_t$ is the log
+	deviation; for an endogenous variable, $\hat{x}_t$ is the log deviation.
+
+	{\small
+	\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.2\linewidth}>{\raggedright\arraybackslash}p{0.54\linewidth}l@{}}
+		\toprule
+		Symbol & Meaning & Defined in \\
+		\midrule
+		\endhead
+		\bottomrule
+		\endfoot
+		\multicolumn{3}{@{}l}{\emph{Preferences and goods}} \\
+		$c_t$, $C_t$ & Consumption basket; aggregate consumption & \eqref{eq:bc_HH} \\
+		$\sigma$, $\beta$, $r$ & Risk aversion; discount factor; discount rate $1/\beta-1$ & \eqref{eq:bc_HH} \\
+		$m_{t+1}$ & Stochastic discount factor $\beta(C_{t+1}/C_t)^{-\sigma}$ & \eqref{eq:euler_shares} \\
+		$N_t$ & Mass of product lines & \eqref{eq:firm_law_motion} \\
+		$\rho(N)$ & Relative price of a variety; rises with variety & \eqref{eq:relative_price} \\
+		$\varepsilon(N)$, $\mu(N)$ & Price elasticity of demand; markup & Section~\ref{sec:environment} \\
+		$\zeta(N)$ & Benefit of variety, $N\rho'(N)/\rho(N)$ & \eqref{eq:relative_price} \\
+		\addlinespace
+		\multicolumn{3}{@{}l}{\emph{Business formation and exit}} \\
+		$N_t^e$, $f_e$, $l_t^e$ & Entrants; entry cost; labor used in entry & \eqref{eq:free_entry} \\
+		$\nu_t^f$ & Value of a product line & \eqref{eq:firm_bellman} \\
+		$R_t^f$, $d_t^f$ & Retail profits; dividend per line & \eqref{eq:retail_profits} \\
+		$\chi$, $F$ & Continuation cost and its distribution & \eqref{eq:F_chi} \\
+		$p_0$, $\psi$, $\chi_m$ & Mass on positive costs; power-law shape; upper bound & \eqref{eq:F_chi} \\
+		$\chi_t^c$, $\Lambda_t$ & Survival cutoff; survival probability $F(\chi_t^c)$ & \eqref{eq:cutoff}, \eqref{eq:Lambda} \\
+		$\delta_t$, $\delta_{e,t}$ & Exogenous destruction shock; total exit rate & \eqref{eq:delta_e_lom} \\
+		$\omega_\delta$ & Endogenous share of steady-state destruction & Section~\ref{sec:calib} \\
+		$X_t^c$, $\psi_c$ & Continuation costs paid; $\psi/(\psi+1)$ & \eqref{eq:agg_fixed_costs} \\
+		$\varpi$ & Share of surviving lines that drew a positive cost & \eqref{eq:exit_threshold_curve} \\
+		$\pi_s$ & Retail profit share of consumption output & \eqref{eq:profit_share} \\
+		$Y_t^c$, $L_t^c$ & Consumption-good output; retail employment & Section~\ref{sec:aggregation} \\
+		\addlinespace
+		\multicolumn{3}{@{}l}{\emph{Labor market}} \\
+		$u_t$, $v_t$, $\theta_t$ & Unemployment before matching; vacancies; tightness $v_t/u_t$ & \eqref{eq:u_lom}, \eqref{eq:v_lom} \\
+		$m(u,v)$, $A$, $\eta_L$ & Matching function; its scale; its elasticity in $u$ & Section~\ref{sec:environment} \\
+		$f(\theta)$, $q(\theta)$ & Job-finding and vacancy-filling rates & Section~\ref{sec:environment} \\
+		$s_t$, $\tau_t$ & Match separation shock; total separation rate & \eqref{eq:tau_lom} \\
+		$e_t$, $G$, $x_m$, $\xi$ & New vacancies; sunk-cost distribution; its bound; entry elasticity & \eqref{eq:entry_eq}, \eqref{eq:Q} \\
+		$Q_t$, $K_t$ & Value of a vacancy; its flow value & \eqref{eq:value_recruiter_unmatched}, \eqref{eq:K} \\
+		$J_t$ & Value of a filled position & \eqref{eq:value_recruiter_matched} \\
+		$\kappa$ & Cost paid per hire & \eqref{eq:average_hiring_cost} \\
+		$w_t$, $w_t^{int}$ & Wage; recruiter compensation $\rho(N_t)z_t/\mu(N_t)$ & \eqref{eq:wage_eq}, \eqref{eq:recruiter_compensation} \\
+		$b$, $\phi$ & Worker's outside option; worker's bargaining power & \eqref{eq:wage_eq} \\
+		$\alpha$, $\Lambda_{r,t}$ & Reactivation-cost scale; reactivation probability $F(Q_t/\alpha)$ & \eqref{eq:Lambda_r} \\
+		$Q_t^{rep}$, $\mathcal{R}_t$ & Reactivation option value; reposting shortfall & \eqref{eq:Qrep}, \eqref{eq:repost_shortfall} \\
+		$X_t$, $X_t^r$ & Vacancy creation and hiring costs; reactivation costs & \eqref{eq:X_total}, \eqref{eq:agg_repost_costs} \\
+		\addlinespace
+		\multicolumn{3}{@{}l}{\emph{Shocks}} \\
+		$z_t$ & Technology & \eqref{eq:ar1_z} \\
+		$\rho_x$, $\sigma_x$, $\epsilon_{xt}$ & Persistence; innovation standard deviation; unit-variance innovation, $x\in\{z,\delta,s\}$ & \eqref{eq:ar1_z}--\eqref{eq:ar1_s} \\
+		\addlinespace
+		\multicolumn{3}{@{}l}{\emph{Analytical results}} \\
+		$c_\delta$, $c_s$ & Response of tightness to each shock under vacancy free entry & Lemma~\ref{lem:theta} \\
+		$\ell_\delta$, $\ell_s$ & Direct effect of each shock on unemployment & \eqref{eq:u_fe} \\
+		$\lambda_u$, $\omega_u$ & Persistence of unemployment; hires lost when tightness falls & \eqref{eq:u_fe} \\
+		$\Phi(\theta)$ & Break-even recruiter compensation & \eqref{eq:Phi} \\
+		$N^{\max}$ & Upper bound of the resource constraint curve & \eqref{eq:curve_res_cons} \\
+	\end{longtable}
+	}
+
 		\bibliographystyle{econometrica}
 	\bibliography{references}
 	\end{document}                                                                                                                            
