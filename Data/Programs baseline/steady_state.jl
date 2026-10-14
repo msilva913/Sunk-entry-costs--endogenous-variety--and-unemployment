@@ -215,35 +215,102 @@ function L_fun(θ, δ_e, para)
 end
 
 """
-    e_fun(θ, δ_e, para)
-Entry rate (new vacancies posted per unit time).
+    e_fun(θ, δ_e, para; Λ_r = 1.0)
+Entry rate (new vacancies posted per unit time), draft eq:e_ss.
 """
-function e_fun(θ, δ_e, para)
+function e_fun(θ, δ_e, para; Λ_r = 1.0)
     @unpack s, A, η_L = para
     f = jf(θ, A, η_L)
     τ = compute_separation_rate(δ_e, s)
     u = compute_unemployment(τ, f, δ_e)
 
-    # e = δ_e*(v + L) = δ_e*(θu + L)  — draft eq:e_ss.
+    # e = δ_e(v + 1 - u) + (1-δ_e)(1-Λ_r)s(1-u)  — draft eq:e_ss.
     #
     # Derivation from the SS vacancy LOM under Convention A, where the reposting
     # base (1-u) equals the base the u LOM applies τ to, and (1-δ_e)qv = τ(1-u):
-    #     e = δ_e·v + (1-δ_e)qv - (1-δ_e)s(1-u)
-    #       = δ_e·v + (1-u)[τ - (1-δ_e)s]
-    #       = δ_e·v + (1-u)·δ_e            [τ - (1-δ_e)s = δ_e]
-    #       = δ_e(v + 1 - u).
-    return δ_e * (θ * τ + (1 - δ_e) * f) / (τ + (1 - δ_e) * f)
+    #     e = δ_e·v + (1-δ_e)qv - (1-δ_e)Λ_r s(1-u)
+    #       = δ_e·v + (1-u)[τ - (1-δ_e)Λ_r s]
+    #       = δ_e(v + 1 - u) + (1-δ_e)(1-Λ_r)s(1-u)   [τ - (1-δ_e)s = δ_e]
+    # The second term is entry that replaces positions retired at surviving lines;
+    # it vanishes with costless reposting (Λ_r = 1).
+    return δ_e * (θ * τ + (1 - δ_e) * f) / (τ + (1 - δ_e) * f) +
+           (1 - δ_e) * (1 - Λ_r) * s * (1 - u)
+end
+
+# =============================================================================
+# Partial reposting (R8; draft eq:Lambda_r, eq:Qrep, eq:repost_shortfall)
+# =============================================================================
+# A vacated position draws a reactivation cost αχ, χ ~ F, and is reactivated iff Q ≥ αχ.
+# α = 0 is costless reposting (Λ_r = 1, no shortfall); it is the default, so every caller
+# whose parameters carry no α field gets the Block 1 model.
+
+"""
+    repost_alpha(para)
+Reactivation-cost scale α; 0 (costless reposting) when `para` has no α field.
+"""
+repost_alpha(para) = hasproperty(para, :α) ? para.α : 0.0
+
+"""
+    Λr_fun(Q, para)
+Reactivation rate Λ_r = F(Q/α) = min{(1-p_0) + p_0 (Q/(α χ_m))^ψ, 1}; 1 when α = 0.
+"""
+function Λr_fun(Q, para)
+    α = repost_alpha(para)
+    α == 0 && return 1.0
+    @unpack p_0, f_m, ψ = para
+    return min(1 - p_0 + p_0 * (Q / (α * f_m))^ψ, 1.0)
+end
+
+"""
+    repost_gap(Λ_r, para)
+Shortfall per unit of vacancy value, (Q - Q^rep)/Q = (1-Λ_r) + ψ_c(Λ_r - 1 + p_0): positions
+retired plus reactivation costs paid (interior closed form of the cost integral). 0 when α = 0.
+"""
+function repost_gap(Λ_r, para)
+    repost_alpha(para) == 0 && return 0.0
+    ψ_c = para.ψ / (para.ψ + 1)
+    return (1 - Λ_r) + ψ_c * (Λ_r - 1 + para.p_0)
+end
+
+"""
+    repost_state(θ, δ_e, para)
+Steady-state entry e, vacancy value Q = e^ξ_inv x_m, and reactivation rate Λ_r, solved
+jointly: Λ_r depends on Q, and Q on e, which replaces retired positions. The map is a
+contraction at calibrated values (ψ is small), so plain iteration converges quickly.
+"""
+function repost_state(θ, δ_e, para)
+    @unpack x_m, ξ_inv = para
+    Λ_r = 1.0
+    e, Q = 0.0, 0.0
+    for _ in 1:200
+        e = e_fun(θ, δ_e, para; Λ_r)
+        Q = e^ξ_inv * x_m
+        Λ_new = Λr_fun(Q, para)
+        abs(Λ_new - Λ_r) < 1e-15 && (Λ_r = Λ_new; break)
+        Λ_r = Λ_new
+    end
+    return (; e, Q, Λ_r)
 end
 
 """
     K_fun(θ, δ_e, para)
-Value of a posted vacancy (expected discounted return to posting).
+Flow value of a posted vacancy, K = (r+δ_e)/(1+r) Q.
 """
 function K_fun(θ, δ_e, para)
-    @unpack r, x_m, ξ_inv = para
-    e = e_fun(θ, δ_e, para)
-    Q = e^ξ_inv * x_m
+    @unpack r = para
+    Q = repost_state(θ, δ_e, para).Q
     return (r + δ_e) / (1 + r) * Q
+end
+
+"""
+    shortfall_fun(θ, δ_e, para)
+Steady-state expected discounted reposting shortfall 𝓡 = (1-δ_e)(Q - Q^rep)/(1+r)
+(draft eq:repost_shortfall). 0 under costless reposting.
+"""
+function shortfall_fun(θ, δ_e, para)
+    @unpack r = para
+    st = repost_state(θ, δ_e, para)
+    return (1 - δ_e) * st.Q * repost_gap(st.Λ_r, para) / (1 + r)
 end
 
 """
@@ -262,12 +329,13 @@ end
 Nash wage given tightness θ, firm mass N, destruction rate δ_e.
 """
 function w_fun(θ, N, δ_e, para)
-    @unpack ϕ, b, z, A, η_L, κ = para
+    @unpack ϕ, b, z, A, η_L, κ, s = para
     q   = vf(θ, A, η_L)
     μ   = compute_markup(para.ε)
     w_int = N^(1 / (para.ε - 1)) * z / μ
     K   = K_fun(θ, δ_e, para)
-    return (1 - ϕ) * b + ϕ * (w_int - K + θ * (K + q * κ))
+    # draft eq:wage_eq: the worker bears share ϕ of the reposting shortfall
+    return (1 - ϕ) * b + ϕ * (w_int - K + θ * (K + q * κ) - s * shortfall_fun(θ, δ_e, para))
 end
 
 # =============================================================================
@@ -284,7 +352,9 @@ function N_jcc(θ, δ_e, para)
     q   = vf(θ, A, η_L)
     K   = K_fun(θ, δ_e, para)
     μ   = compute_markup(para.ε)
-    w_int = (1 / ((1 - δ_e) * (1 - ϕ))) * (κ * q + K) * ((r + τ) / q + (1 - δ_e) * ϕ * θ) + K + b
+    # draft eq:curve_jcc, solved for w_int; s𝓡 is the reposting shortfall (0 if costless)
+    w_int = (1 / ((1 - δ_e) * (1 - ϕ))) * (κ * q + K) * ((r + τ) / q + (1 - δ_e) * ϕ * θ) + K + b +
+            s * shortfall_fun(θ, δ_e, para)
     ρ   = w_int * (μ / z)
     return ρ^(para.ε - 1)
 end
@@ -361,16 +431,17 @@ function steady_state(para; init=0.51)
         f    = jf(θ, A, η_L)
         q    = vf(θ, A, η_L)
         K    = K_fun(θ, δ_e, para)
+        R_sh = shortfall_fun(θ, δ_e, para)   # reposting shortfall 𝓡 (0 if costless)
         L    = L_fun(θ, δ_e, para)
         u    = 1 - L
 
-        # Job Creation Condition (JCC)
+        # Job Creation Condition (JCC), draft eq:jcc_wage_ss
         lhs_jcc = (κ + K / q) * (r + τ + (1 - δ_e) * ϕ * q * θ)
 
         N     = π_s * z * L * (1 - δ_e) / (f_e * ((r + δ_e) / μ + δ_e * π_s))
         ρ     = N^(1 / (ε - 1))
         w_int = ρ * z / μ
-        rhs_jcc = (1 - δ_e) * (1 - ϕ) * (w_int - K - b)
+        rhs_jcc = (1 - δ_e) * (1 - ϕ) * (w_int - K - b - s * R_sh)
 
         # Exit Condition
         L_c     = (r + δ_e) * L / (r + δ_e + δ_e * π_s * μ)
@@ -403,24 +474,28 @@ function steady_state(para; init=0.51)
     L_e = L - L_c
     N_e = δ_e * N / (1 - δ_e)
 
-    # Labor market aggregates
+    # Labor market aggregates (entry includes replacement of retired positions)
     v      = θ * u
-    e      = δ_e * (v + 1 - u)
-    Q      = e^ξ_inv * x_m
+    rst    = repost_state(θ, δ_e, para)
+    e, Q, Λ_r = rst.e, rst.Q, rst.Λ_r
     X_v    = e / (1 + ξ_inv) * Q
     v_pret = v - e
+    R_sh   = (1 - δ_e) * Q * repost_gap(Λ_r, para) / (1 + r)   # 𝓡, draft eq:repost_shortfall
+    # Reactivation costs paid on the positions vacated at surviving lines (eq:agg_repost_costs)
+    X_r    = repost_alpha(para) == 0 ? 0.0 :
+             (1 - δ_e) * s * (1 - u) * (ψ / (ψ + 1)) * Q * (Λ_r - 1 + p_0)
 
     # Firm values
     ν_f = ρ * f_e / μ
     d_f = (r + δ_e) / (1 - δ_e) * ν_f
     X_c = N * cons * x_c
 
-    # Wages and recruiting costs
-    w   = ϕ * (w_int - K + θ * (K + q * κ)) + (1 - ϕ) * b
+    # Wages and recruiting costs (eq:wage_eq: worker bears share ϕ of s𝓡)
+    w   = ϕ * (w_int - K + θ * (K + q * κ) - s * R_sh) + (1 - ϕ) * b
     X   = X_v + κ * v * q
 
-    # Output
-    C   = Y_c - X - X_c
+    # Output (eq:rc)
+    C   = Y_c - X - X_c - X_r
     Y   = C + ν_f * N_e
 
     # Wealth and asset values
@@ -452,6 +527,7 @@ function steady_state(para; init=0.51)
         θ, δ_e, x_c, N, f, q, u, v, v_pret, e, K, ρ, N_e,
         ν_f, d_f, w_int, w, L, L_e, L_c, Q, J,
         X_v, X, X_c, C, Y_c, Y, labor_share, dest_end_frac,
+        Λ_r, R_sh, X_r,
         labor_prod, cons_share, inv_new_firm_share, vacancy_share, sunk_vac_cost_share,
         M, entrant_vac_share, x_v, search_wedge, recruiter_share, μ, ann_int_rate,
         π_s, profit_share_rec, profit_share_ret, dest_el
@@ -683,6 +759,18 @@ function calibrate_shares(targets)
     Xc_Y              = get(targets, :Xc_Y, 0.10)
     dest_elast_target = get(targets, :dest_elast_target, nothing)
     use_dest_elast    = !isnothing(dest_elast_target) && p_0 > 0.0
+    # Partial reposting (R8): target the steady-state reactivation rate Λ̄_r and back out
+    # the cost scale α (MS, Oct 14). `nothing` = costless reposting (α = 0, Block 1).
+    Λr_target = get(targets, :Λr_target, nothing)
+    repost    = !isnothing(Λr_target)
+    if repost
+        p_0 > 0.0 || error("Λr_target needs p_0 > 0: with p_0 = 0 every reactivation draw is free.")
+        1 - p_0 < Λr_target < 1 || error(
+            "Λr_target = $Λr_target must lie strictly inside (1-p_0, 1) = ($(1-p_0), 1): " *
+            "at the floor no draw is reactivated beyond the free atom, and at 1 the margin is " *
+            "saturated and cannot be linearized. Use Λr_target = nothing for costless reposting.")
+    end
+    Λ_r = repost ? Λr_target : 1.0
 
     # ------------------------------------------------------------------
     # Stage 1: Direct conversions
@@ -708,7 +796,9 @@ function calibrate_shares(targets)
     L  = 1 - u
     A  = f_corr / θ^(1 - η_L)
 
-    e   = δ_e * (v + 1 - u)
+    # draft eq:e_ss: entry replaces positions lost with exiting lines and, under partial
+    # reposting, positions retired at surviving lines
+    e   = δ_e * (v + 1 - u) + (1 - δ_e) * (1 - Λ_r) * s * (1 - u)
     N_e = δ_e / (1 - δ_e) * N
     b   = b_ratio * w
     ρ   = N^(1 / (ε - 1))
@@ -795,15 +885,25 @@ function calibrate_shares(targets)
     # Pre-compute surplus ratio for Stage 4
     surplus_ratio = (r + τ) / (1 - δ_e) / (q_corr * x_v)
 
+    # Partial reposting: shortfall per unit Q and reactivation cost per vacated position per
+    # unit Q (interior closed form of the cost integral). Both 0 with costless reposting.
+    ψ_c_r   = ψ / (ψ + 1)
+    gap_r   = repost ? (1 - Λ_r) + ψ_c_r * (Λ_r - 1 + p_0) : 0.0
+    xr_perQ = repost ? (1 - δ_e) * s * (1 - u) * ψ_c_r * (Λ_r - 1 + p_0) : 0.0
+
     # ------------------------------------------------------------------
     # Stage 4: Solve for vacancy value Q
+    # X_Y targets vacancy creation and hiring costs X only; reactivation costs X^r are
+    # reported separately (they are not in the CET recruiting-cost measure).
     # ------------------------------------------------------------------
     function loss_Q(Q_trial)
         Q_trial = abs(Q_trial)
         K     = Q_trial * (r + δ_e) / (1 + r)
         κ     = (1 - x_v) / x_v * K / q_corr
         X     = e / (1 + ξ_inv) * Q_trial + κ * q_corr * v
-        w_int = surplus_ratio * K + w + K
+        R_sh  = (1 - δ_e) * Q_trial * gap_r / (1 + r)          # 𝓡, eq:repost_shortfall
+        X_r   = xr_perQ * Q_trial                              # eq:agg_repost_costs
+        w_int = surplus_ratio * K + w + K + s * R_sh           # eq:jcc_wage_ss with w
         z     = (μ / ρ) * w_int
         f_e   = π_s * z * L_c * (1 - δ_e) * μ / (N * (r + δ_e))
         ν_f   = ρ * f_e / μ
@@ -811,17 +911,17 @@ function calibrate_shares(targets)
         Y_c   = ρ * z * L_c
         x_c   = Y_c / (ε * N) + ν_f
         X_c   = N * cons * x_c
-        C     = Y_c - X - X_c
+        C     = Y_c - X - X_c - X_r
         Y_new = C + ν_f * N_e
         Y_rec = X / X_Y
         loss_val = 100 * (Y_rec - Y_new) / (Y_rec + Y_new)
-        return loss_val, (; w_int, κ, z, f_e, K, d_f, ν_f, x_c, X_c, X, C, Y_c, Y=Y_new)
+        return loss_val, (; w_int, κ, z, f_e, K, d_f, ν_f, x_c, X_c, X, X_r, R_sh, C, Y_c, Y=Y_new)
     end
 
     Q_opt = find_zero(Q -> loss_Q(Q)[1], 1.0)
     Q     = abs(Q_opt)
     _, Q_out = loss_Q(Q)
-    @unpack w_int, κ, z, f_e, K, d_f, ν_f, x_c, X_c, X, C, Y_c = Q_out
+    @unpack w_int, κ, z, f_e, K, d_f, ν_f, x_c, X_c, X, X_r, R_sh, C, Y_c = Q_out
 
     # ------------------------------------------------------------------
     # Stage 5: Recover remaining parameters
@@ -836,18 +936,27 @@ function calibrate_shares(targets)
         f_m     = x_c / ζ^(1 / ψ)
     end
 
-    ϕ   = (w - b) / (w_int - K + θ * (K + q_corr * κ) - b)
+    # Nash wage (eq:wage_eq) with the worker's share ϕ of the shortfall s𝓡
+    ϕ   = (w - b) / (w_int - K + θ * (K + q_corr * κ) - s * R_sh - b)
     x_m = Q / e^ξ_inv
+
+    # Reactivation-cost scale from the reposting-rate target:
+    #   Λ̄_r = (1-p_0) + p_0 (Q/(α χ_m))^ψ   ⟹   α = Q / (χ_m ((Λ̄_r - 1 + p_0)/p_0)^(1/ψ))
+    α = repost ? Q / (f_m * ((Λ_r - 1 + p_0) / p_0)^(1 / ψ)) : 0.0
 
     if use_dest_elast
         Xc_Y_implied = X_c / Q_out.Y
         println("  [PATH B] implied Xc_Y (GDP share) = $(round(Xc_Y_implied*100, digits=2))%  " *
                 "(dest_el=$(round(dest_el, digits=3)), ψ=$(round(ψ, digits=4)))")
     end
+    if repost
+        println("  [REPOST] Λ̄_r=$(round(Λ_r, digits=4)) → α=$(round(α, sigdigits=5)), " *
+                "X^r/Y=$(round(X_r / Q_out.Y * 100, digits=3))%, 𝓡/Q=$(round(R_sh / Q, digits=4))")
+    end
 
     return (;
         f_e, δ, z, b, ϕ, r, σ, ε, A, η_L,
-        κ, ξ_inv, x_m, s, ψ, p_0, f_m, dest_el
+        κ, ξ_inv, x_m, s, ψ, p_0, f_m, dest_el, α
     )
 end
 
@@ -958,6 +1067,7 @@ function calibrate_shares_free_entry(targets, κ_fixed::Float64, b_w_int_target:
 
     return (;
         f_e, δ, z, b, ϕ, r, σ, ε, A, η_L,
-        κ, ξ_inv=0.0, x_m, s, ψ, p_0, f_m, dest_el
+        κ, ξ_inv=0.0, x_m, s, ψ, p_0, f_m, dest_el,
+        α = 0.0     # costless reposting; partial reposting not implemented in this path
     )
 end

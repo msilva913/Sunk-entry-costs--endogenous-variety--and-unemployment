@@ -1,0 +1,56 @@
+R8 step 3 tests — steady state with partial reposting (D1, PATH B, p_0 = 0.5)
+
+Test 3a (costless): max |SS − pre-R8 SS| over u, v, θ, N, δ_e, x_c, w, C = 1.39e-17  PASSED
+
+Λ̄_r = 0.95:  α = 649.41   Q = 7.57483   𝓡/Q = 0.0557   X^r/Y = 0.1092%   ϕ = 0.6660   b/w_int = 0.8483
+    JCC (s𝓡)                           1.34e-15  ok
+    N normalization                   -1.78e-15  ok
+    RC with X^r                        0.00e+00  ok
+    X/Y target                        -1.91e-16  ok
+    cost integral (quad vs closed)    -9.42e-07  ok
+    entry eq:e_ss                     -2.08e-17  ok
+    u LOM                             -1.04e-17  ok
+    vacancy LOM                        3.47e-17  ok
+    w normalization                   -1.33e-15  ok
+    wage (ϕs𝓡)                         0.00e+00  ok
+    Λ_r = F(Q/α)                       0.00e+00  ok
+    Λ_r round trip                     0.00e+00  ok
+    δ_e target                         0.00e+00  ok
+    θ round trip                      -3.41e-14  ok
+    𝓡 definition                      -7.77e-16  ok
+
+Λ̄_r = 0.85:  α = 4.3653e+10   Q = 4.68072   𝓡/Q = 0.1538   X^r/Y = 0.0530%   ϕ = 0.7634   b/w_int = 0.8566
+    JCC (s𝓡)                           8.39e-16  ok
+    N normalization                   -1.22e-15  ok
+    RC with X^r                        0.00e+00  ok
+    X/Y target                        -1.39e-17  ok
+    cost integral (quad vs closed)    -7.33e-07  ok
+    entry eq:e_ss                      4.34e-18  ok
+    u LOM                              1.73e-17  ok
+    vacancy LOM                        3.47e-17  ok
+    w normalization                   -9.99e-16  ok
+    wage (ϕs𝓡)                         0.00e+00  ok
+    Λ_r = F(Q/α)                       0.00e+00  ok
+    Λ_r round trip                     0.00e+00  ok
+    δ_e target                         0.00e+00  ok
+    θ round trip                      -2.63e-14  ok
+    𝓡 definition                       2.22e-16  ok
+
+Λ̄_r = 0.70:  α = 2.1468e+28   Q = 2.97546   𝓡/Q = 0.3009   X^r/Y = 0.0193%   ϕ = 0.8354   b/w_int = 0.8615
+    JCC (s𝓡)                          -9.02e-17  ok
+    N normalization                   -2.22e-16  ok
+    RC with X^r                        0.00e+00  ok
+    X/Y target                         2.60e-17  ok
+    cost integral (quad vs closed)    -4.19e-07  ok
+    entry eq:e_ss                      1.04e-17  ok
+    u LOM                              0.00e+00  ok
+    vacancy LOM                        2.08e-17  ok
+    w normalization                   -2.22e-16  ok
+    wage (ϕs𝓡)                         0.00e+00  ok
+    Λ_r = F(Q/α)                       0.00e+00  ok
+    Λ_r round trip                     0.00e+00  ok
+    δ_e target                         0.00e+00  ok
+    θ round trip                      -5.22e-15  ok
+    𝓡 definition                       3.33e-16  ok
+
+Test 3b PASSED (worst identity residual 3.41e-14, tolerance 1e-10)
