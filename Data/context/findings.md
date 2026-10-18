@@ -398,15 +398,23 @@ Even at ξ_inv = 8 (G(e) = e⁹/9), the peak moves only from h=1 to h=2.
 | 3.0 | 3.0   | 2      | 0.91         | 0.999          |
 | 3.0 | 5.0   | 2      | 0.95         | 0.999          |
 | 3.0 | 8.0   | 2      | 0.98         | 1.000          |
-| 2.0 | any   | —      | FAILED       | BK violation   |
-| 1.5 | any   | —      | FAILED       | BK violation   |
+| 2.0 | any   | —      | FAILED       | no bounded eq. (see 3) |
+| 1.5 | any   | —      | FAILED       | no bounded eq. (see 3) |
 
 **Finding: the model cannot generate a hump-shaped δ→u IRF.** Three results:
 1. The peak never moves past h=2, regardless of ξ_inv and ε.
 2. Higher ξ_inv and lower ε push the dominant eigenvalue toward a unit root (max|eig|→1),
    making the IRF extremely persistent (flat) but never hump-shaped.
-3. ε < 3 causes Blanchard-Kahn violations (indeterminacy) — the variety channel has
-   a hard determinacy ceiling.
+3. ~~ε < 3 causes Blanchard-Kahn violations (indeterminacy)~~ **Corrected Oct 18, 2026**
+   (`bk_epsilon_threshold.jl`, R8 code, D1 defaults). The failure is **non-existence** of a
+   bounded equilibrium (qzflag = 0: a predetermined root crosses 1), not indeterminacy, and
+   the threshold is ε* = **2.40** (bisected; ε = 3 was the lowest determinate value tested
+   here). ε* = 1.40 with exit off (p_0 = 0), 2.12 at b/w = 0.71; none with ρ ≡ 1 (ε ≥ 1.2).
+   The LR-BGM block alone is determinate for ε ∈ [1.05, 8], σ ∈ {1, 2}
+   (`lrbgm_determinacy.jl`). Mechanism: costs paid in goods are not neutralized by ρ(N); the
+   survival cutoff has elasticity 1/(ε−1) − s_R in N with s_R = 0.013
+   (`cutoff_profit_share.jl`), so exit amplifies a fall in N at every ε < 80, plus a
+   labor-market analog through w_int = ρ(N)z/μ. Draft: `rem:dilution_variety`.
 
 **Economics.** The δ shock destroys firms and their jobs contemporaneously (f[24], f[23]).
 Workers become unemployed in the period of the shock. The indirect channel (N↓ → ρ↓ → θ↓

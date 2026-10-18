@@ -3,6 +3,14 @@
 **Date:** June 6, 2026  
 **Purpose:** BK analysis for Definition 3.7 equilibrium (endogenous variety, σ > 0). Companion to AGS_Blanchard_Kahn.md. Restricts to DS-CES and p₀ = 0 for the main derivation; §8 discusses endogenous exit.
 
+> ⚠ **Oct 18, 2026 — the "BK for any ε > 1" conclusion does not hold for the full model.**
+> Numerically (`Programs baseline/bk_epsilon_threshold.jl`, R8 code) no bounded equilibrium
+> exists for ε < 1.40 at p₀ = 0 and ε < 2.40 at the defaults; the LR-BGM block alone is
+> determinate for ε ∈ [1.05, 8] (`lrbgm_determinacy.jl`). The leading-order derivation below
+> appears to drop the labor-market feedback through w_int = ρ(N)z/μ against goods-denominated
+> vacancy costs, and §8's claim that endogenous exit eases BK is contradicted (exit raises the
+> threshold from 1.40 to 2.40). See draft `rem:dilution_variety` and `context/findings.md`.
+
 ---
 
 ## 1. Setup and Notation

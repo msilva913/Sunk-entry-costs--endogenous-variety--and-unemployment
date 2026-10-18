@@ -1,0 +1,19 @@
+LR-BGM block (p_0 = 0, exogenous L): |generalized eigenvalues|; determinate iff exactly one > 1
+  σ = 1.0  ε = 1.05   |λ| = 0.997093, 1.006   determinate
+  σ = 1.0  ε = 1.20   |λ| = 0.996538, 1.007   determinate
+  σ = 1.0  ε = 1.40   |λ| = 0.995881, 1.007   determinate
+  σ = 1.0  ε = 1.50   |λ| = 0.995580, 1.008   determinate
+  σ = 1.0  ε = 2.00   |λ| = 0.994256, 1.009   determinate
+  σ = 1.0  ε = 2.50   |λ| = 0.993139, 1.01   determinate
+  σ = 1.0  ε = 3.00   |λ| = 0.992153, 1.011   determinate
+  σ = 1.0  ε = 4.30   |λ| = 0.989979, 1.013   determinate
+  σ = 1.0  ε = 8.00   |λ| = 0.985327, 1.018   determinate
+  σ = 2.0  ε = 1.05   |λ| = 0.998224, 1.005   determinate
+  σ = 2.0  ε = 1.20   |λ| = 0.997853, 1.005   determinate
+  σ = 2.0  ε = 1.40   |λ| = 0.997408, 1.006   determinate
+  σ = 2.0  ε = 1.50   |λ| = 0.997203, 1.006   determinate
+  σ = 2.0  ε = 2.00   |λ| = 0.996294, 1.007   determinate
+  σ = 2.0  ε = 2.50   |λ| = 0.995519, 1.008   determinate
+  σ = 2.0  ε = 3.00   |λ| = 0.994833, 1.008   determinate
+  σ = 2.0  ε = 4.30   |λ| = 0.993311, 1.01   determinate
+  σ = 2.0  ε = 8.00   |λ| = 0.990036, 1.013   determinate

@@ -1,0 +1,5 @@
+Flow-profit share s_R of the survival cutoff at the code defaults
+  ε = 4.3: flow profit 0.2835, value of a line 22.188, cutoff 22.471; s_R = 0.0126; elasticity 1/(ε−1) − s_R = 0.2904; positive for ε < 1 + 1/s_R = 80.3
+  ε = 3.0: flow profit 0.4523, value of a line 35.399, cutoff 35.851; s_R = 0.0126; elasticity 1/(ε−1) − s_R = 0.4874; positive for ε < 1 + 1/s_R = 80.3
+  ε = 2.4: flow profit 0.6236, value of a line 48.813, cutoff 49.437; s_R = 0.0126; elasticity 1/(ε−1) − s_R = 0.7017; positive for ε < 1 + 1/s_R = 80.3
+  ε = 2.0: flow profit 0.8345, value of a line 65.314, cutoff 66.148; s_R = 0.0126; elasticity 1/(ε−1) − s_R = 0.9874; positive for ε < 1 + 1/s_R = 80.3
