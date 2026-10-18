@@ -1484,6 +1484,34 @@ departure from LR-BGM is that $L_t$ and $X_t$ are endogenous, determined by the 
 market block \eqref{eq:u_lom}--\eqref{eq:v_lom}. Restoring $p_0>0$ adds endogenous exit to
 the LR-BGM core.
 
+\begin{remark}[Dilution, variety, and the units of costs]\label{rem:dilution_variety}
+	Under DS-CES, profit per line in goods, $(\mu-1)Y_t^c/(\mu N_t)$ with
+	$Y_t^c=\rho(N_t)z_tL_t^c$, has elasticity $(2-\varepsilon)/(\varepsilon-1)$ in $N_t$. It
+	combines a dilution effect of $-1$ and a variety effect of $1/(\varepsilon-1)$, which
+	cancel at $\varepsilon=2$. Which effects matter depends on the units of the cost that
+	profit is weighed against. A cost paid in labor is worth $\rho(N_t)$ in goods, so the
+	variety effect cancels and only dilution remains: with $p_0=0$, the dividend relative to
+	the entry cost in~\eqref{eq:euler_bf} falls with $N_t$ for every $\varepsilon>1$. A cost
+	paid in goods faces both effects. Exit compares draws $\chi$, paid in goods, with the
+	cutoff~\eqref{eq:cutoff_eq}. Holding $z_tL_t^c$ fixed, its elasticity in $N_t$ is
+	$1/(\varepsilon-1)-s_R$, where $s_R$ is the share of flow profit in the cutoff. The
+	remainder is the value of a line, $f_e\rho(N_t)/\mu$, which carries the variety effect
+	without dilution. Since $s_R$ is small, the cutoff rises with $N_t$ even for
+	$\varepsilon>2$, and a smaller mass of lines induces exit. Recruiter compensation
+	$w_t^{int}=\rho(N_t)z_t/\mu$~\eqref{eq:recruiter_compensation}, set against vacancy
+	costs paid in goods, adds a labor-market counterpart. Both complementarities are still
+	present at $\varepsilon=2$ and weaken only as $\varepsilon$ rises, so determinacy
+	requires $\varepsilon$ above a threshold that exceeds 2.\footnote{At the calibration
+	$s_R=0.013$, so the cutoff rises with $N_t$ for all $\varepsilon<1+1/s_R\approx80$. A
+	bounded equilibrium exists for $\varepsilon>2.40$. The threshold falls to 1.40 without
+	endogenous exit ($p_0=0$) and to 2.12 with $b/w=0.71$. Without the variety effect
+	($\rho\equiv1$) the equilibrium is determinate at every $\varepsilon\geq1.2$ we check.
+	The LR-BGM block of Remark~\ref{rem:bgm_nest} is determinate for all
+	$\varepsilon\in[1.05,8]$ and $\sigma\in\{1,2\}$; under log utility $\rho$ drops out
+	of~\eqref{eq:euler_bf} when $p_0=0$. The calibrated $\varepsilon=4.3$ lies well inside
+	the determinate region.}
+\end{remark}
+
 \subsection{Shock transmission and the \texorpdfstring{$\delta$--$s$}{delta-s} asymmetry}\label{sec:mechanism}
 
 The equilibrium laws of motion imply qualitatively distinct labor-market dynamics under
@@ -1801,18 +1829,11 @@ $\bar\rho_s>0$.
 
 The drain is proportional to $F'(\chi^c)$, the density of continuation costs at the cutoff,
 while the reposting inflow is not. Dominance therefore holds whenever the exit margin is
-inelastic enough. Under DS-CES, $g_N$ balances two opposing forces. Gross flow profit per
-line is proportional to $N^{(2-\varepsilon)/(\varepsilon-1)}$. It combines a
-market-share dilution effect ($1/N$) and a love-of-variety demand
-expansion ($\rho(N)\propto N^{1/(\varepsilon-1)}$), with net exponent
-$(2-\varepsilon)/(\varepsilon-1)$ negative for $\varepsilon>2$, so
-dilution dominates and profit falls in $N$. The option value of
-entry $f_e\rho(N)/\mu\propto N^{1/(\varepsilon-1)}$ always
-rises in $N$. At standard calibrations the option value dominates, so
-$g_N>0$. Condition~\eqref{eq:exit_cond} does not require a sign for
-$g_N$. It requires the exit margin to be inelastic enough that the
-joint determination of exit, product variety, and employment is
-well behaved: both feedback terms are proportional to $F'(\chi^c)$.
+inelastic enough. The sign of $g_N$ follows from Remark~\ref{rem:dilution_variety}: the
+value of a line dominates the cutoff, so $g_N>0$ at the calibration.
+Condition~\eqref{eq:exit_cond} does not require a sign for $g_N$. It requires the exit
+margin to be inelastic enough that the joint determination of exit, product variety, and
+employment is well behaved: both feedback terms are proportional to $F'(\chi^c)$.
 At the calibrated baseline the left-hand side of~\eqref{eq:exit_cond}
 is between 0.002 and 0.005.
 
