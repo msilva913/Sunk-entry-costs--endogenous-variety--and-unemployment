@@ -57,12 +57,7 @@
 include("run_solution_core.jl")
 
 # ── Shared shock process parameters (monthly, from part6b) ────────────────────
-ρ_z = 0.902
-σ_z = 0.0092
-ρ_δ = 0.592
-σ_δ = 0.0669
-ρ_s = 0.8741      # part6b: AR(1) on s = (τ−δ_e)/(1−δ_e), 1992Q3–2019Q4
-σ_s = 0.0854      # part6b: AR(1) residual SD. Was 0.010, a placeholder 8.5× too small
+SHK = SHOCKS_BASE   # part6b (run_solution_core.jl); never assign numbers to the symbolic shock names
 
 T_IR        = 63      # 63 months = 21 quarters = LP horizons h = 0..20 inclusive
 T_SM        = 60_000  # months of stochastic simulation for Block M moments
@@ -112,8 +107,7 @@ function solve_and_diagnose(model, targets_variant, label)
 
     zbar = z; δbar = δ; sbar = s
 
-    PAR = [f_e; zbar; δbar; sbar; b; ϕ; r; σ; ε; A; η_L; κ; ξ_inv; x_m; ψ; f_m; p_0;
-           ρ_z; σ_z; ρ_δ; σ_δ; ρ_s; σ_s]
+    PAR = build_PAR(cal, SHK)
 
     SS_numeric_val = SS_numeric(PAR, targets_variant)
 
@@ -124,8 +118,8 @@ function solve_and_diagnose(model, targets_variant, label)
     eta_full = sol.eta
 
     # ── IRFs: one shock at a time (state order x = [u, N, v_pret, z, δ, s]) ────
-    eta_z_col = reshape([0.0, 0.0, 0.0, σ_z, 0.0, 0.0], nx, 1)
-    eta_δ_col = reshape([0.0, 0.0, 0.0, 0.0, σ_δ, 0.0], nx, 1)
+    eta_z_col = shock_col(:z, SHK.σz)
+    eta_δ_col = shock_col(:δ, SHK.σδ)
     model_1shock = (; model..., ne = 1)
 
     irf_z = 100 .* DataFrame(

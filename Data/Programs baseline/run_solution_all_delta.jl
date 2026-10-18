@@ -28,12 +28,7 @@
 include("run_solution_core.jl")
 
 # ── Shared shock process parameters (monthly, from part6b) ────────────────────
-ρ_z = 0.902
-σ_z = 0.0092
-ρ_δ = 0.592
-σ_δ = 0.0669
-ρ_s = 0.90
-σ_s = 0.010
+SHK = SHOCKS_BASE   # part6b (run_solution_core.jl); never assign numbers to the symbolic shock names
 
 T_IR        = 60    # 5 years at monthly frequency
 flag_IR     = true
@@ -56,8 +51,7 @@ function solve_and_irf(targets_variant)
 
     zbar = z; δbar = δ; sbar = s
 
-    PAR = [f_e; zbar; δbar; sbar; b; ϕ; r; σ; ε; A; η_L; κ; ξ_inv; x_m; ψ; f_m; p_0;
-           ρ_z; σ_z; ρ_δ; σ_δ; ρ_s; σ_s]
+    PAR = build_PAR(cal, SHK)
 
     # Compute symbolic SS (needed by process_model to generate derivatives)
     SS_symbolic = SS_symbolics(parameters, targets_variant)
@@ -88,8 +82,8 @@ function solve_and_irf(targets_variant)
     # State order: [u, N, v_pret, z, δ, s] — shocks hit rows 4 (z), 5 (δ), 6 (s).
     # Shaped as 6×1 matrices so eta[i,:] returns a 1-element Float64 vector inside
     # simulate_model, matching sim_shocks[:,1] when ne=1.
-    eta_z_col = reshape([0.0, 0.0, 0.0, σ_z, 0.0, 0.0], nx, 1)
-    eta_δ_col = reshape([0.0, 0.0, 0.0, 0.0, σ_δ, 0.0], nx, 1)
+    eta_z_col = shock_col(:z, SHK.σz)
+    eta_δ_col = shock_col(:δ, SHK.σδ)
 
     # ne=1: one shock fired at a time; sim_shocks has 1 column, matching eta_*_col
     model_1shock = (; model..., ne = 1)
@@ -140,7 +134,11 @@ println("Solving HIGH-δ model (δ_e = τ ≈ 3.1%/month, pure exogenous)")
 println("="^60)
 
 sep_monthly = TARGETS.sep                        # = 0.031
-dest_ann_high = 1 - (1 - sep_monthly)^12        # ≈ 0.317 annually
+# CK's δ_e = τ in the limit. Since R8 the pre-exit separated-vacancy stock
+# Ṽ^s = (1−δ)·s̄·(1−u) is a log-linearized state, so s̄ must be strictly positive:
+# δ_e = τ(1 − 1e-6) gives s̄ ≈ 3e-8, and the steady state differs from δ_e = τ by ~1e-6.
+# Only z and δ shocks are used here, so the s state never moves.
+dest_ann_high = 1 - (1 - sep_monthly * (1 - 1e-6))^12   # ≈ 0.317 annually
 
 targets_high_δ = (TARGETS...,
     dest_ann      = dest_ann_high,   # implies δ_e = τ monthly

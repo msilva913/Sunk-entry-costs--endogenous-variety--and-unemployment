@@ -143,6 +143,10 @@ function solution_interface(model, PAR, SS_precomputed::Union{Vector{Float64},No
     end
 
     sol_mat = solve_model(model, deriv, eta)
+    # first_order returns empty gx, hx when Blanchard–Kahn fails (qzflag ≠ 1); fail here
+    # rather than downstream with a DimensionMismatch in simulate_model.
+    sol_mat.qzflag == 1 || error("No unique stable solution (Blanchard–Kahn fails; qzflag = " *
+                                 "$(sol_mat.qzflag)). Known region: ε < 3 (findings.md, ξ_inv × ε sweep).")
     println("Model solved")
 
     # SS is Vector{Float64}; exp recovers levels from the log-deviation representation

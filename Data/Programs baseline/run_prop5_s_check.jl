@@ -33,12 +33,8 @@
 include("run_solution_core.jl")
 using Printf
 
-ρ_z = 0.902
-σ_z = 0.0092
-ρ_δ = 0.592
-σ_δ = 0.0669
-σ_s = 0.0854      # part6b
-ρ_s_data = 0.8741 # part6b: AR(1) on s = (τ−δ_e)/(1−δ_e), 1992Q3–2019Q4, monthly
+SHK = SHOCKS_BASE   # part6b (run_solution_core.jl); never assign numbers to the symbolic shock names
+ρ_s_data = SHK.ρs # part6b: AR(1) on s = (τ−δ_e)/(1−δ_e), 1992Q3–2019Q4, monthly
 
 T_IR        = 12
 flag_IR     = true
@@ -72,12 +68,11 @@ function s_check(model, targets_variant, ρ_s_val)
     s = max(s, 0.0)
     zbar = z; δbar = δ; sbar = s
 
-    PAR = [f_e; zbar; δbar; sbar; b; ϕ; r; σ; ε; A; η_L; κ; ξ_inv; x_m; ψ; f_m; p_0;
-           ρ_z; σ_z; ρ_δ; σ_δ; ρ_s_val; σ_s]
+    PAR = build_PAR(cal, merge(SHK, (ρs = ρ_s_val,)))
     sol = solution_interface(model, PAR, SS_numeric(PAR, targets_variant))
     @unpack ss, SS, sol_mat = sol
 
-    eta_s_col = reshape([0.0, 0.0, 0.0, 0.0, 0.0, σ_s], nx, 1)
+    eta_s_col = shock_col(:s, SHK.σs)
     irf = DataFrame(simulate_model((; model..., ne = 1), sol_mat, T_IR, eta_s_col, SS,
                                    flag_IR, flag_logdev), varnames)
 

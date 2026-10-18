@@ -202,7 +202,11 @@ x_v = 0.5`, which are *not* the `TARGETS` defaults. See [D2](decisions.md).
 `run_solution_general_CES.jl` (general CES — **loads the old Matlab `posterior_mode.mat`**,
 which belongs to a previous generation of the model and must not be reused);
 `GS.jl` (Gabrovski-Silva JEDC benchmark); `run_solution_{alt,elastic,high_b,kappa,phi,
-risk_neutral,simplified}.jl` (single-parameter sensitivity runs).
+risk_neutral,simplified}.jl` (single-parameter sensitivity runs). ⚠ **Unmaintained (Oct 18,
+2026):** these call `calibrate_labor_share` (defined only in `steady_state_CK.jl` /
+`steady_state_general_CES.jl`, which the core does not include) and build PAR by hand, so
+they were broken before R8 and were not converted in Q1 step 6. Rebuild from
+`run_solution.jl` (`build_PAR`, `shock_col`, `SHOCKS_BASE`) if one is needed.
 
 ### Diagnostics and output
 

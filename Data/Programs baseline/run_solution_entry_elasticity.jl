@@ -48,12 +48,7 @@
 include("run_solution_core.jl")
 
 # ── Shared shock process parameters (monthly, from part6b) ────────────────────
-ρ_z = 0.902
-σ_z = 0.0092
-ρ_δ = 0.592
-σ_δ = 0.0669
-ρ_s = 0.90
-σ_s = 0.010
+SHK = SHOCKS_BASE   # part6b (run_solution_core.jl); never assign numbers to the symbolic shock names
 
 T_IR        = 60    # 5 years at monthly frequency
 flag_IR     = true
@@ -76,8 +71,7 @@ function solve_and_irf_D(targets_variant)
 
     zbar = z; δbar = δ; sbar = s
 
-    PAR = [f_e; zbar; δbar; sbar; b; ϕ; r; σ; ε; A; η_L; κ; ξ_inv; x_m; ψ; f_m; p_0;
-           ρ_z; σ_z; ρ_δ; σ_δ; ρ_s; σ_s]
+    PAR = build_PAR(cal, SHK)
 
     SS_symbolic    = SS_symbolics(parameters, targets_variant)
     SS_numeric_val = SS_numeric(PAR, targets_variant)
@@ -101,8 +95,8 @@ function solve_and_irf_D(targets_variant)
     sol = solution_interface(model, PAR, SS_numeric_val)
     @unpack ss, SS, sol_mat = sol
 
-    eta_z_col = reshape([0.0, 0.0, 0.0, σ_z, 0.0, 0.0], nx, 1)
-    eta_δ_col = reshape([0.0, 0.0, 0.0, 0.0, σ_δ, 0.0], nx, 1)
+    eta_z_col = shock_col(:z, SHK.σz)
+    eta_δ_col = shock_col(:δ, SHK.σδ)
 
     model_1shock = (; model..., ne = 1)
 

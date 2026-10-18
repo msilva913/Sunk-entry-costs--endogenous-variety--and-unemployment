@@ -4,9 +4,7 @@
 
 include("run_solution_core.jl")
 
-ρ_z = 0.902;  σ_z = 0.0092
-ρ_δ = 0.592;  σ_δ = 0.0669
-ρ_s = 0.8741; σ_s = 0.0854
+SHK = SHOCKS_BASE   # part6b (run_solution_core.jl); never assign numbers to the symbolic shock names
 
 T_IR    = 63
 T_SM    = 60_000
@@ -27,13 +25,12 @@ function solve_one(model, xi_val)
     cal = calibrate_shares(tgt)
     @unpack f_e, δ, s, z, b, ϕ, r, σ, ε, A, η_L, κ, ξ_inv, x_m, ψ, f_m, p_0 = cal
     s = max(s, 0.0)
-    PAR = [f_e; z; δ; s; b; ϕ; r; σ; ε; A; η_L; κ; ξ_inv; x_m; ψ; f_m; p_0;
-           ρ_z; σ_z; ρ_δ; σ_δ; ρ_s; σ_s]
+    PAR = build_PAR(cal, SHK)
     SS_val = SS_numeric(PAR, tgt)
     sol = solution_interface(model, PAR, SS_val)
     @unpack ss, SS, sol_mat = sol
 
-    eta_δ_col = reshape([0.0, 0.0, 0.0, 0.0, σ_δ, 0.0], 6, 1)
+    eta_δ_col = shock_col(:δ, SHK.σδ)
     model_1 = (; model..., ne = 1)
     irf_δ = 100 .* DataFrame(
         simulate_model(model_1, sol_mat, T_IR, eta_δ_col, SS, flag_IR, flag_logdev),

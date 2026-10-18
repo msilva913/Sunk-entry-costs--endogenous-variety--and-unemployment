@@ -54,17 +54,19 @@
 #
 # IRFs computed for z (technology) and δ (destruction) shocks.
 # Serialized output for plotting in plot_endog_exit_comparison.jl.
+#
+# ⚠ RE-SPECIFICATION OWED (R8 clause v; run in Q5, not before). Both specs here use costless
+# reposting (TARGETS.Λr_target = nothing), so spec (2) switches off exit only. Once
+# partial reposting is on (Λr_target set), p_0 = 0 removes exit AND reactivation (every
+# reactivation draw is free at p_0 = 0; calibrate_shares refuses Λr_target with p_0 = 0).
+# Then spec (2) is the "both margins off" run, and the exit-only switch is p_0 > 0 with
+# dest_end_frac = 0 (ω_δ = 0), which still needs a calibration path (ζ = 1 at ω_δ = 0).
 # =============================================================================
 
 include("run_solution_core.jl")
 using JLD2 
 # ── Shared shock process parameters (monthly, from part6b) ────────────────────
-ρ_z = 0.902
-σ_z = 0.0092
-ρ_δ = 0.592
-σ_δ = 0.0669
-ρ_s = 0.90
-σ_s = 0.010
+SHK = SHOCKS_BASE   # part6b (run_solution_core.jl); never assign numbers to the symbolic shock names
 
 T_IR        = 60    # 5 years at monthly frequency
 flag_IR     = true
@@ -86,8 +88,7 @@ function solve_and_irf_B(targets_variant)
 
     zbar = z; δbar = δ; sbar = s
 
-    PAR = [f_e; zbar; δbar; sbar; b; ϕ; r; σ; ε; A; η_L; κ; ξ_inv; x_m; ψ; f_m; p_0;
-           ρ_z; σ_z; ρ_δ; σ_δ; ρ_s; σ_s]
+    PAR = build_PAR(cal, SHK)
 
     SS_symbolic    = SS_symbolics(parameters, targets_variant)
     SS_numeric_val = SS_numeric(PAR, targets_variant)
@@ -111,8 +112,8 @@ function solve_and_irf_B(targets_variant)
     sol = solution_interface(model, PAR, SS_numeric_val)
     @unpack ss, SS, sol_mat = sol
 
-    eta_z_col = reshape([0.0, 0.0, 0.0, σ_z, 0.0, 0.0], nx, 1)
-    eta_δ_col = reshape([0.0, 0.0, 0.0, 0.0, σ_δ, 0.0], nx, 1)
+    eta_z_col = shock_col(:z, SHK.σz)
+    eta_δ_col = shock_col(:δ, SHK.σδ)
 
     model_1shock = (; model..., ne = 1)
 
@@ -160,7 +161,7 @@ println("="^60)
 
 # dest_elast_target pins the x_c channel elasticity directly (PATH B in
 # calibrate_shares). Xc_Y is an outcome, not a target.
-# dest_elast = 5 → ψ ≈ 0.033, Xc_Yc ≈ 14.5% (Abraham et al. 2019 range).
+# dest_elast = 5 → ψ ≈ 0.0136, X^c/Y ≈ 13.5% at D1 (R8_step5_defaults.txt; was 0.033 at dest_ann 0.0754).
 targets_endog = (TARGETS..., b_ratio=0.9, x_v=0.5, dest_elast_target=5.0)
 
 out_endog = solve_and_irf_B(targets_endog)

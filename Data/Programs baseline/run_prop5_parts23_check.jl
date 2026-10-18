@@ -29,12 +29,8 @@
 include("run_solution_core.jl")
 using Printf
 
-ρ_z = 0.902
-σ_z = 0.0092
-ρ_δ_data = 0.592
-σ_δ = 0.0669
-ρ_s = 0.8741
-σ_s = 0.0854
+SHK = SHOCKS_BASE   # part6b (run_solution_core.jl); never assign numbers to the symbolic shock names
+ρ_δ_data = SHK.ρδ
 
 T_IR        = 40
 flag_IR     = true
@@ -62,15 +58,14 @@ function solve(model, tv, ρ_δ)
     cal = calibrate_shares(tv)
     @unpack f_e, δ, s, z, b, ϕ, r, σ, ε, A, η_L, κ, ξ_inv, x_m, ψ, f_m, p_0 = cal
     s = max(s, 0.0)
-    PAR = [f_e; z; δ; s; b; ϕ; r; σ; ε; A; η_L; κ; ξ_inv; x_m; ψ; f_m; p_0;
-           ρ_z; σ_z; ρ_δ; σ_δ; ρ_s; σ_s]
+    PAR = build_PAR(cal, merge(SHK, (ρδ = ρ_δ,)))
     sol = solution_interface(model, PAR, SS_numeric(PAR, tv))
     return cal, sol
 end
 
-function irf_of(model, sol, col)
+function irf_of(model, sol, state, sd)
     @unpack SS, sol_mat = sol
-    eta_col = reshape(col, nx, 1)
+    eta_col = shock_col(state, sd)
     DataFrame(simulate_model((; model..., ne = 1), sol_mat, T_IR, eta_col, SS,
                              flag_IR, flag_logdev), varnames)
 end
@@ -78,7 +73,7 @@ end
 function part3_check(model, tv, ρ_δ)
     cal, sol = solve(model, tv, ρ_δ)
     ss = sol.ss
-    irf = irf_of(model, sol, [0.0, 0.0, 0.0, 0.0, σ_δ, 0.0])
+    irf = irf_of(model, sol, :δ, SHK.σδ)
     t, h1 = 2, 3
     δbar, sbar, η_L = cal.δ, cal.s, cal.η_L
     surv = 1 - ss.δ_e
@@ -149,7 +144,7 @@ println("\nPART 3 paths (p_0 = 0, ρ_δ = $ρ_δ_data, ξ_inv = 1). Levels ×1e4
 for da in (0.0320, 0.0754)
     cal, sol = solve(model, (bench..., dest_ann = da), ρ_δ_data)
     ss = sol.ss
-    irf = irf_of(model, sol, [0.0, 0.0, 0.0, 0.0, σ_δ, 0.0])
+    irf = irf_of(model, sol, :δ, SHK.σδ)
     hs = 2:min(nrow(irf), 26)
     println("  dest_ann=$da  Δv: ", join([@sprintf("%+.3f", 1e4 * ss.v * irf.v[h]) for h in hs], " "))
     println("  dest_ann=$da  Δu: ", join([@sprintf("%+.3f", 1e4 * ss.u * irf.u[h]) for h in hs], " "))
@@ -164,7 +159,7 @@ qrows = NamedTuple[]
 for (da, ρ, ξi) in grid
     cal, sol = solve(model, (bench..., dest_ann = da, ξ_inv = ξi), ρ)
     ss = sol.ss
-    irf = irf_of(model, sol, [0.0, 0.0, 0.0, 0.0, σ_δ, 0.0])
+    irf = irf_of(model, sol, :δ, SHK.σδ)
     v = [ss.v * irf.v[h] for h in 2:nrow(irf)]
     u = [ss.u * irf.u[h] for h in 2:nrow(irf)]
     nq = div(length(v), 3)
@@ -211,8 +206,8 @@ for da in (0.0320, 0.0754)
         Ẽ = (1 - ss.u) / Λ
         termN = -g_N * (1 - cal.δ) * Fp * B
         termu = g_u * Fp * Ẽ
-        irf_s = irf_of(model, sol, [0.0, 0.0, 0.0, 0.0, 0.0, σ_s])
-        irf_d = irf_of(model, sol, [0.0, 0.0, 0.0, 0.0, σ_δ, 0.0])
+        irf_s = irf_of(model, sol, :s, SHK.σs)
+        irf_d = irf_of(model, sol, :δ, SHK.σδ)
         Λhat(irf, row) = log(1 - ss.δ_e * exp(irf.δ_e[row] / 1)) - log(1 - ss.δ_e) -
                          (log(1 - cal.δ * exp(irf.δ[row])) - log(1 - cal.δ))
         @printf("dest_ann=%.4f  Λ̄=%.5f  F'(χ^c)=%.3e  g_N=%.3e  g_u=%.3e\n", da, Λ, Fp, g_N, g_u)
@@ -223,7 +218,7 @@ for da in (0.0320, 0.0754)
         @printf("   x̂_c,t:  s shock %+.3e   δ shock %+.3e\n", irf_s.x_c[2], irf_d.x_c[2])
         # Role of endogenous exit (role_of_ingredients.md): cutoff composition and
         # the endogenous-exit response relative to the exogenous δ impulse.
-        irf_z = irf_of(model, sol, [0.0, 0.0, 0.0, σ_z, 0.0, 0.0])
+        irf_z = irf_of(model, sol, :z, SHK.σz)
         profit = ss.Y_c * (μ - 1) / (μ * ss.N)
         ς = (Λ - (1 - p_0)) / p_0
         el = ψ * ς / (1 - ς)                      # elasticity of the endogenous exit rate to χ^c
@@ -232,16 +227,16 @@ for da in (0.0320, 0.0754)
                 ss.x_c, profit, 100 * profit / ss.x_c, ss.ν_f, 100 * ss.ν_f / ss.x_c)
         @printf("   endogenous exit rate %.5f/month vs τ %.4f; exit elasticity to χ^c = %.2f\n",
                 x_end, ss.δ_e + cal.s * (1 - ss.δ_e), el)
-        for (lab, ir, sz) in (("z", irf_z, σ_z), ("δ", irf_d, σ_δ), ("s", irf_s, σ_s))
+        for (lab, ir, sz) in (("z", irf_z, SHK.σz), ("δ", irf_d, SHK.σδ), ("s", irf_s, SHK.σs))
             pk = maximum(abs.(ir.x_c[2:end]))
             Δx = el * x_end * pk                  # peak level change in the endogenous exit rate
             @printf("   %s shock: peak |x̂_c| %.2e → peak Δ(endog. exit) %.2e/month; δ impulse δ̄·σ_δ = %.2e\n",
-                    lab, pk, Δx, cal.δ * σ_δ)
+                    lab, pk, Δx, cal.δ * SHK.σδ)
         end
         # Model counterpart of the part6b VAR coefficient â_21 (exit on lagged z, log
         # cycles, quarterly; data −1.05, HC3 SE 0.83): peak response of log δ_e to a
         # 1% fall in z. Rough: one-quarter VAR coefficient vs. a peak IRF ratio.
-        el_z = maximum(abs.(irf_z.δ_e[2:end])) / σ_z   # IRFs here are log deviations (not ×100)
+        el_z = maximum(abs.(irf_z.δ_e[2:end])) / SHK.σz   # IRFs here are log deviations (not ×100)
         @printf("   elasticity of δ_e to z (peak |δ̂_e| per 1%% z): %.3f   [data â_21 ≈ -1.05, SE 0.83]\n", el_z)
     catch err
         println("  FAIL baseline dest_ann=$da → ", sprint(showerror, err)[1:min(end, 200)])
