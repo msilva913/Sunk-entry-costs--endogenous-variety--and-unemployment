@@ -48,7 +48,29 @@ Reposting entries of PAR (positions 24–25). calibrate_shares returns α = 0 fo
 reposting; the model then needs rp = 0 and any positive placeholder α (1.0), since α only
 enters f[39] multiplied by rp.
 """
-repost_par(cal) = cal.α > 0 ? (cal.α, 1.0) : (1.0, 0.0)
+repost_par(cal) = hasproperty(cal, :α) && cal.α > 0 ? (cal.α, 1.0) : (1.0, 0.0)
+
+"""
+    SHOCKS_BASE
+
+Monthly shock processes for the runners. z and δ: bivariate SVAR (part6b), quarterly
+persistence converted via ρ_q^(1/3). s: AR(1) on s = (τ−δ_e)/(1−δ_e), part6b. Placeholder
+until the trivariate (z, δ, s) VAR of Q2 replaces all three. Pass a modified copy, e.g.
+`merge(SHOCKS_BASE, (ρδ = 0.9,))`, never assign numbers to the symbolic ρ_z, σ_z, ….
+"""
+const SHOCKS_BASE = (ρz = 0.902, σz = 0.0092, ρδ = 0.592, σδ = 0.0669, ρs = 0.8741, σs = 0.0854)
+
+"""
+    shock_col(state, sd) → nx×1 Matrix
+
+Single-shock column for simulate_model (with ne = 1): `sd` on the named state (:z, :δ, :s),
+zero elsewhere. Built by name because R8 changed the state vector.
+"""
+function shock_col(state, sd)
+    col = zeros(nx, 1)
+    col[findfirst(==(state), Symbol.(x)), 1] = sd
+    return col
+end
 
 """
     build_PAR(cal, shocks) → Vector{Float64}

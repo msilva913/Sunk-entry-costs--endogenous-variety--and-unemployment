@@ -23,44 +23,12 @@ process_model(model)
 
 
 ## Solution
-# ── Shock process parameters (monthly frequency) ──────────────────────────────
-# Source: part6b_shock_persistence_cyclical.py
-#   Bivariate VAR(1) on HP-filtered (λ=1600) log(z) and log(δ),
-#   Cholesky-identified with z ordered first (δ ⊥ z by construction).
-#   Quarterly parameters converted to monthly via ρ_m = ρ_q^(1/3) and
-#   unconditional-variance-matching for σ.  Sample: 1992Q3–2019Q4 (N=110).
-#   δ shock excludes the endogenous z→δ channel; that pathway lives in
-#   model equilibrium equations (exit threshold x_c).
-#   s shock: no direct data counterpart after separating δ and z — treated
-#   as a residual; set to small value pending SMM estimation.
+# Shock processes: SHOCKS_BASE in run_solution_core.jl (part6b; replaced by the Q2 VAR).
+# Never assign numbers to the symbolic ρ_z, σ_z, … (gen_model_equations reads them).
+SHK = SHOCKS_BASE
+PAR = build_PAR(cal, SHK)
 
-ρ_z = 0.902    # quarterly: 0.735; monthly via ρ_q^(1/3)
-σ_z = 0.0092   # structural z innovation SD (log-cycle units, monthly)
-ρ_δ = 0.592    # quarterly: 0.207; monthly via ρ_q^(1/3)
-σ_δ = 0.0669   # structural δ innovation SD ⊥ z (log-cycle units, monthly)
-ρ_s = 0.90     # placeholder — to be estimated via SMM
-σ_s = 0.010    # placeholder — to be estimated via SMM
-
-# Values at posterior mode (uncomment when estimation is wired up):
-# ρ_z = posterior_mode["rho_z"]
-# σ_z = posterior_mode["sigma_z"]
-# ρ_δ = posterior_mode["rho_delta"]
-# σ_δ = posterior_mode["sigma_delta"]
-# ρ_s = posterior_mode["rho_s"]
-# σ_s = posterior_mode["sigma_s"]
-
-# ── Parameter vector ──────────────────────────────────────────────────────────
-# Order must match @syms declaration in run_solution_core.jl
-@unpack f_e, δ, s, z, b, ϕ, r, σ, ε, A, η_L, κ, ξ_inv, x_m, ψ, f_m, p_0 = cal
-
-zbar = z
-δbar = δ
-sbar = s
-
-PAR = [f_e; zbar; δbar; sbar; b; ϕ; r; σ; ε; A; η_L; κ; ξ_inv; x_m; ψ; f_m; p_0;
-       ρ_z; σ_z; ρ_δ; σ_δ; ρ_s; σ_s]
-
-sol = solution_interface(model, PAR)
+sol = solution_interface(model, PAR, SS_numeric(PAR, targets))   # never the symbolic SS (M10)
 @unpack ss, SS, sol_mat = sol   # do NOT unpack eta: sol.eta is Matrix{Sym} (symbolic zeros), not Float64
 # Export: model, targets, PAR, sol (save output using serialization)
 model_output = (model, targets, PAR, sol)
@@ -68,17 +36,14 @@ serialize("model_output.jls", model_output)
 
 
 ## Impulse responses ##
-# Build numeric single-shock eta columns directly from scalar σ parameters.
-# State order: [u, N, v_pret, z, δ, s] — shocks hit rows 4 (z), 5 (δ), 6 (s).
-# Shaped as 6×1 matrices so eta[i,:] returns a 1-element Float64 vector inside
-# simulate_model, matching sim_shocks[:,1] when ne=1.
+# Single-shock columns are built by state name (shock_col), since R8 changed the state vector.
 flag_IR     = true
 flag_logdev = true
 T_IR        = 60   # 5 years at monthly frequency
 
-eta_z_col = reshape([0.0, 0.0, 0.0, σ_z, 0.0, 0.0], nx, 1)
-eta_δ_col = reshape([0.0, 0.0, 0.0, 0.0, σ_δ, 0.0], nx, 1)
-eta_s_col = reshape([0.0, 0.0, 0.0, 0.0, 0.0, σ_s], nx, 1)
+eta_z_col = shock_col(:z, SHK.σz)
+eta_δ_col = shock_col(:δ, SHK.σδ)
+eta_s_col = shock_col(:s, SHK.σs)
 
 # ne=1: one shock fired at a time; sim_shocks has 1 column, matching eta_*_col
 model_1shock = (; model..., ne = 1)
