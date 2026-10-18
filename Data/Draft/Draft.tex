@@ -1488,28 +1488,9 @@ the LR-BGM core.
 	Under DS-CES, profit per line in goods, $(\mu-1)Y_t^c/(\mu N_t)$ with
 	$Y_t^c=\rho(N_t)z_tL_t^c$, has elasticity $(2-\varepsilon)/(\varepsilon-1)$ in $N_t$. It
 	combines a dilution effect of $-1$ and a variety effect of $1/(\varepsilon-1)$, which
-	cancel at $\varepsilon=2$. Which effects matter depends on the units of the cost that
-	profit is weighed against. A cost paid in labor is worth $\rho(N_t)$ in goods, so the
-	variety effect cancels and only dilution remains: with $p_0=0$, the dividend relative to
-	the entry cost in~\eqref{eq:euler_bf} falls with $N_t$ for every $\varepsilon>1$. A cost
-	paid in goods faces both effects. Exit compares draws $\chi$, paid in goods, with the
-	cutoff~\eqref{eq:cutoff_eq}. Holding $z_tL_t^c$ fixed, its elasticity in $N_t$ is
-	$1/(\varepsilon-1)-s_R$, where $s_R$ is the share of flow profit in the cutoff. The
-	remainder is the value of a line, $f_e\rho(N_t)/\mu$, which carries the variety effect
-	without dilution. Since $s_R$ is small, the cutoff rises with $N_t$ even for
-	$\varepsilon>2$, and a smaller mass of lines induces exit. Recruiter compensation
-	$w_t^{int}=\rho(N_t)z_t/\mu$~\eqref{eq:recruiter_compensation}, set against vacancy
-	costs paid in goods, adds a labor-market counterpart. Both complementarities are still
-	present at $\varepsilon=2$ and weaken only as $\varepsilon$ rises, so determinacy
-	requires $\varepsilon$ above a threshold that exceeds 2.\footnote{At the calibration
-	$s_R=0.013$, so the cutoff rises with $N_t$ for all $\varepsilon<1+1/s_R\approx80$. A
-	bounded equilibrium exists for $\varepsilon>2.40$. The threshold falls to 1.40 without
-	endogenous exit ($p_0=0$) and to 2.12 with $b/w=0.71$. Without the variety effect
-	($\rho\equiv1$) the equilibrium is determinate at every $\varepsilon\geq1.2$ we check.
-	The LR-BGM block of Remark~\ref{rem:bgm_nest} is determinate for all
-	$\varepsilon\in[1.05,8]$ and $\sigma\in\{1,2\}$; under log utility $\rho$ drops out
-	of~\eqref{eq:euler_bf} when $p_0=0$. The calibrated $\varepsilon=4.3$ lies well inside
-	the determinate region.}
+	cancel at $\varepsilon=2$. Which effects matter depends on whether costs are paid in labor
+	or goods, and on endogenous exit. Determinacy requires $\varepsilon$ above a threshold
+	that exceeds 2 (\ref{app:determinacy}).
 \end{remark}
 
 \subsection{Shock transmission and the \texorpdfstring{$\delta$--$s$}{delta-s} asymmetry}\label{sec:mechanism}
@@ -5505,6 +5486,70 @@ zero, which is the degenerate limit ruled out before Proposition~\ref{prop:doubl
 	%\end{figure}
 	%
 	%Now consider the effect of $\varepsilon$ under general-CES preferences.  In this case, there is no effect on the relative price.  The only impact of $\varepsilon$ is on markups $\mu=\varepsilon/(\varepsilon-1)$.  Lower markups increase
+	\section{Determinacy and the elasticity of substitution}\label{app:determinacy}
+
+This appendix develops Remark~\ref{rem:dilution_variety}. Profit per line in goods has
+elasticity $(2-\varepsilon)/(\varepsilon-1)$ in $N_t$: a dilution effect of $-1$ and a
+variety effect of $1/(\varepsilon-1)$. Whether the variety effect reaches the dynamics depends
+on the units of the cost that profit is weighed against.
+
+\paragraph{Costs paid in labor} The entry cost is paid in effective labor, so its value in
+goods, $\nu_t^f=\rho(N_t)f_e/\mu$~\eqref{eq:free_entry}, scales with $\rho(N_t)$. With
+$p_0=0$, the dividend relative to the entry cost in~\eqref{eq:euler_bf} is
+$(\mu-1)z_{t+1}L_{t+1}^c/(f_eN_{t+1})$. The variety effect cancels and only dilution remains,
+for every $\varepsilon>1$. If in addition utility is logarithmic and $X_t=0$, then
+$C_t=\rho(N_t)z_tL_t^c$ and $\rho$ drops out of~\eqref{eq:euler_bf} altogether. Numerically, the
+LR-BGM block of Remark~\ref{rem:bgm_nest} with $X_t=0$ is determinate for all
+$\varepsilon\in[1.05,8]$ and $\sigma\in\{1,2\}$ at the calibrated $\bar\delta_e$, $r$ and $L$.
+
+\paragraph{Costs paid in goods} Continuation draws $\chi$, vacancy creation costs $G(e_t)$
+and the matching cost $\kappa$ are paid in goods, so they face both effects. Exit compares
+the draws with the cutoff~\eqref{eq:cutoff_eq},
+\begin{align*}
+	\chi_t^c=\frac{(\mu-1)Y_t^c}{\mu N_t}+\frac{f_e\rho(N_t)}{\mu}.
+\end{align*}
+Holding $z_tL_t^c$ fixed, flow profit has elasticity $1/(\varepsilon-1)-1$ in $N_t$ and the
+value of a line has elasticity $1/(\varepsilon-1)$, so
+\begin{align*}
+	\frac{\partial\ln\chi_t^c}{\partial\ln N_t}=\frac{1}{\varepsilon-1}-s_R,
+\end{align*}
+where $s_R$ is the share of flow profit in the cutoff. The cutoff rises with $N_t$ whenever
+$\varepsilon<1+1/s_R$. At the calibration $s_R=0.013$, so this holds for every
+$\varepsilon<80$: a smaller mass of lines lowers the cutoff and induces exit, for
+$\varepsilon>2$ as well. Recruiter compensation
+$w_t^{int}=\rho(N_t)z_t/\mu$~\eqref{eq:recruiter_compensation}, set against vacancy costs
+paid in goods, adds a labor-market counterpart: fewer lines lower the return to vacancy
+creation, employment and the return to entry. Both complementarities weaken as
+$\varepsilon$ rises, but neither vanishes at $\varepsilon=2$.
+
+\paragraph{Thresholds} When the complementarities are strong enough, the predetermined mass
+of lines acquires a root outside the unit circle and no bounded equilibrium exists.
+Table~\ref{tab:eps_threshold} reports the threshold $\varepsilon^*$ below which this happens.
+Endogenous exit raises it by one unit, and a smaller fundamental surplus by about 0.3.
+Without the variety effect the equilibrium is determinate at every $\varepsilon$ we check.
+The calibrated $\varepsilon=4.3$ lies well inside the determinate region.
+
+\begin{table}[h!]
+	\centering
+	\caption{Threshold elasticity of substitution for a bounded equilibrium}
+	\label{tab:eps_threshold}
+	\begin{tabular}{lc}
+		\hline\hline
+		Specification & $\varepsilon^*$ \\
+		\hline
+		Baseline ($p_0=0.5$, $b/w=0.9$) & 2.40 \\
+		No endogenous exit ($p_0=0$) & 1.40 \\
+		Larger fundamental surplus ($b/w=0.71$) & 2.12 \\
+		No variety effect ($\rho\equiv1$) & none for $\varepsilon\geq1.2$ \\
+		\hline\hline
+	\end{tabular}
+	\begin{minipage}{0.8\textwidth}
+		\footnotesize\textit{Notes:} No bounded equilibrium exists for $\varepsilon<\varepsilon^*$.
+		Thresholds located by bisection to 0.005, holding all other targets at the baseline
+		calibration.
+	\end{minipage}
+\end{table}
+
 	\section{Notation}\label{app:notation}
 
 	Bars denote steady-state values. For a shock $x\in\{z,\delta,s\}$, $\tilde{x}_t$ is the log
