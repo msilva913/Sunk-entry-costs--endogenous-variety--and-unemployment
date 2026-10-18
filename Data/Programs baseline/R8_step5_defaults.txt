@@ -1,0 +1,33 @@
+Q1 step 5 — code defaults: D1 (dest_ann = 0.032) + PATH B (dest_elast_target = 5.0), b/w = 0.9, x_v = 0.5
+
+Costless default: SS residual < 1e-12 (enforced), unstable roots 0 (want 0)
+  δ_e = 0.002707/month, τ = 0.0310, δ_e/τ = 0.0873 (target 0.087)
+  u = 0.07029   v = 0.03603   θ = 0.5125   Q = 10.96194   x_c = 22.47102
+  X^c/Y = 0.1353 (outcome)   X/Y = 0.0150 (target 0.015)   exit elasticity = 5.0000 (target 5.0)
+
+  Calibrated parameters:
+    f_e    = 28.911
+    z      = 1.39547
+    δ      = 0.0013533
+    s      = 0.0283702
+    b      = 0.9
+    ϕ      = 0.57946
+    r      = 0.00327374
+    σ      = 1
+    ε      = 4.3
+    A      = 0.537135
+    η_L    = 0.6
+    κ      = 0.0814566
+    ξ_inv  = 1
+    x_m    = 4193.8
+    ψ      = 0.0135881
+    f_m    = 27.4387
+    p_0    = 0.5
+
+Λ̄_r = 0.95: SS residual < 1e-12 (enforced), unstable roots 0, α = 649.4, X^r/Y = 0.1092%
+
+Λ̄_r = 0.85: SS residual < 1e-12 (enforced), unstable roots 0, α = 4.365e+10, X^r/Y = 0.0530%
+
+Λ̄_r = 0.70: SS residual < 1e-12 (enforced), unstable roots 0, α = 2.147e+28, X^r/Y = 0.0193%
+
+p_0 = 0 benchmark: SS residual < 1e-12 (enforced), unstable roots 0, δ_e/τ = 0.0873

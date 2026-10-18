@@ -5,27 +5,8 @@ using Printf
 # --- Calibration Targets and Steady-State Calculation -----
 ############################################################
 
-# Baseline targets (current calibration)
-# Uses PATH B (dest_elast_target=5.0) — Xc_Y is an outcome, not a target
-targets = (
-    X_Y=0.015,              # recruiting cost share of output
-    dest_ann=0.0754,         # annual product destruction rate
-    dest_end_frac=0.5,       # endogenous share of destruction rate
-    dest_elast_target=5.0,   # destruction elasticity wrt x_c (PATH B)
-    p_0=0.5,                 # probability of drawing from continuous part of F
-    f=0.41,                  # job-finding rate
-    η_L=0.6,                 # elasticity of matching function wrt unemployment
-    q=0.8,                   # vacancy filling rate
-    sep=0.031,               # aggregate separation rate
-    b_ratio=0.9,             # ratio of unemployment benefits to wage
-    x_v=0.5,                 # sunk share of total recruiting cost
-    ξ_inv=1.0,               # entry elasticity inverse
-    r_ann=0.04,              # annual discount rate
-    ε=4.3,                   # elasticity of substitution
-    σ=1.0,                   # inverse IES
-    N=1.0,                   # SS mass of firms (normalization)
-    w=1.0                    # SS wage (normalization)
-)
+# Baseline targets: the code defaults (D1 + PATH B since Q1 step 5). Xc_Y is an outcome.
+targets = TARGETS
 
 # Calibrate and compute steady state
 println("=== BASELINE (ξ_inv = 1.0) ===")
@@ -168,6 +149,39 @@ println("\n=== STAGE 4: Vacancy Value (Root-find Q) ===")
 println("✓ Stage 4: Recruiting share and vacancy split verified")
 
 println("\n✓ All checks passed for baseline calibration\n")
+
+
+############################################################
+# --- Partial reposting (R8): steady-state identities ------
+############################################################
+# Λ̄_r on the experiment grid; α is backed out in calibrate_shares. Same identities as
+# R8_test_steady_state.jl (which also checks the cost integral by quadrature).
+println("=== PARTIAL REPOSTING (Λ̄_r grid) ===")
+for Λr in (0.95, 0.85, 0.70)
+    cal_r = calibrate_shares(merge(targets, (Λr_target = Λr,)))
+    st = steady_state(cal_r)
+    τ_r  = compute_separation_rate(st.δ_e, cal_r.s)
+    ψc_r = cal_r.ψ / (cal_r.ψ + 1)
+    Qrep = st.Q * st.Λ_r - ψc_r * st.Q * (st.Λ_r - 1 + cal_r.p_0)
+    res = (
+        Λ_r_round_trip = st.Λ_r - Λr,
+        N_normalization = st.N - targets.N,
+        X_Y_target = st.X / st.Y - targets.X_Y,
+        JCC = st.w_int - st.w - st.K - cal_r.s * st.R_sh - (cal_r.r + τ_r) / (1 - st.δ_e) * (cal_r.κ + st.K / st.q),
+        wage = st.w - (cal_r.ϕ * (st.w_int - st.K + st.θ * (st.K + st.q * cal_r.κ) - cal_r.s * st.R_sh) + (1 - cal_r.ϕ) * cal_r.b),
+        entry = st.e - (st.δ_e * (st.v + 1 - st.u) + (1 - st.δ_e) * (1 - st.Λ_r) * cal_r.s * (1 - st.u)),
+        vacancy_LOM = st.v - ((1 - st.δ_e) * ((1 - st.q) * st.v + st.Λ_r * cal_r.s * (1 - st.u)) + st.e),
+        u_LOM = (1 - st.δ_e) * st.f * st.u - τ_r * (1 - st.u),
+        R_definition = st.R_sh - (1 - st.δ_e) * (st.Q - Qrep) / (1 + cal_r.r),
+        RC_with_Xr = st.Y_c - (st.C + st.X + st.X_c + st.X_r),
+        Λ_r_equals_F = st.Λ_r - (1 - cal_r.p_0 + cal_r.p_0 * (st.Q / (cal_r.α * cal_r.f_m))^cal_r.ψ),
+    )
+    worst_r = maximum(abs, values(res))
+    @printf("  Λ̄_r = %.2f: α = %.4g, X^r/Y = %.4f%%, worst identity residual %.2e\n",
+            Λr, cal_r.α, 100 * st.X_r / st.Y, worst_r)
+    @assert worst_r < 1e-10 "Partial reposting at Λ̄_r = $Λr: identities fail ($res)"
+end
+println("✓ Partial-reposting identities verified\n")
 
 
 ############################################################

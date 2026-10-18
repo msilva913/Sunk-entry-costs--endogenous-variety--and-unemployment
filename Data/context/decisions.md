@@ -9,7 +9,7 @@ Status key: 🔴 blocks estimation · 🟠 blocks a paper section · 🟡 improv
 
 | # | Decision | Status |
 |---|---|---|
-| D2 | PATH A or PATH B as the calibration baseline | 🔴 open, recommendation PATH B |
+| D2 | PATH A or PATH B as the calibration baseline | ✅ **settled Oct 18, 2026: PATH B** (code default since Q1 step 5) |
 | D3 | How β̂ and β(θ) are made comparable | ⚪ moot under D13 (Oct 14): indirect inference uses the same SVAR on data and simulations |
 | D4 | Does the LD→v IRF enter Block B? | 🟠 open, reopened by D11 |
 | D10 | Empirical target for the δ→u IRF shape | 🟡 resolved to (a) as validation under D13 (Oct 14); E9 no longer needed |
@@ -99,18 +99,28 @@ Venue ranking: RED, JME, AEJ: Macro, then JEDC as the safe option. TE is not a f
 
 ---
 
-## 🔴 D2. PATH A or PATH B?
+## ✅ D2. PATH A or PATH B? — settled Oct 18, 2026: PATH B
+
+**Implemented in Q1 step 5** (branch `r8_timing_reposting`). `TARGETS` in `steady_state.jl` now
+holds `dest_ann = 0.0320` (D1), `dest_elast_target = 5.0` (placeholder, estimated later),
+`b_ratio = 0.9`, `x_v = 0.5` (the mechanism-runner values, so "the baseline" means one thing in
+every file) and `Λr_target = nothing` (costless reposting). PATH A remains reachable by dropping
+`dest_elast_target`. At the defaults (`R8_step5_defaults.txt`): δ_e/τ = 0.0873, ψ = 0.0136,
+X^c/Y = 13.5 % (outcome), SS residual < 1e-12. PATH B switches itself off at p_0 = 0. **Owed:**
+§5.2 still documents PATH A with b/w = 0.71, x_v = 1.0 (P4).
+
+The record below is the pre-decision analysis (ψ values there were at `dest_ann = 0.0754`).
 
 `calibrate_shares()` has two mutually exclusive routes through Stages 2–3:
 
 | | Target | ψ | `Xc_Y` |
 |---|---|---|---|
-| **PATH A** (`steady_state.jl` default; what §5.2 documents) | `Xc_Y = 10%` | ≈ 0.014, outcome | target |
-| **PATH B** (every §5.3 runner) | `dest_elast_target` (5.0 is a placeholder) | ≈ 0.033, outcome | outcome, ≈ 14.5% |
+| **PATH A** (old default; what §5.2 documents) | `Xc_Y = 10%` | ≈ 0.014, outcome | target |
+| **PATH B** (every §5.3 runner; default since Q1 step 5) | `dest_elast_target` (5.0 is a placeholder) | ≈ 0.033, outcome | outcome, ≈ 14.5% |
 
 Both ψ values are correct for their path. The question is which object carries the prior.
-The mechanism runners also override `b_ratio = 0.9, x_v = 0.5` against the `TARGETS` defaults
-`0.71, 1.0`, so "the baseline" currently means different things in different files.
+Before Q1 step 5 the mechanism runners also overrode `b_ratio = 0.9, x_v = 0.5` against the
+`TARGETS` defaults `0.71, 1.0`.
 
 **Recommendation: PATH B, with `dest_elast_target` estimated, and §5.2 rewritten to match.**
 - The exit elasticity is externally checkable (Broer et al. IER 2025 prefer ψ near 1) and is

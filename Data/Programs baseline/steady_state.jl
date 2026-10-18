@@ -687,21 +687,15 @@ const TARGETS = (
     # --- Hard-coded calibration targets ---
     X_Y           = 0.015,  # Recruiting cost share of GDP [CET 2016] — Stage 4 target
     Xc_Y          = 0.10,   # Fixed cost share of GDP [Abraham et al. 2019] — Stage 2 target
-    # ⚠️ SUPERSEDED VALUE — D1 settled Sept 6, 2026 at dest_ann = 0.0320.
-    # 0.0754 is NOT the BED Deaths rate, despite what this comment used to claim. It is
-    # Jaimovich-Floetotto's 21% (a share of GROSS JOB LOSSES) multiplied by τ (the total
-    # SEPARATION rate) — mismatched denominators, inflating δ_e by ~1.8×. The measured
-    # BED Deaths rate, employment-weighted, 1993–2019, is 3.2 %/yr → δ_e/τ = 0.087.
-    # Still 0.0754 here only because changing it invalidates the mechanism figures and every
-    # number in draft §5.3; the switch is bundled with the ρ_s/σ_s calibration so one
-    # regeneration covers both. See context/decisions.md D1 for the full argument and the
-    # list of consequences.
-    dest_ann      = 0.0754, # ⚠️ D1 (settled Sept 6, 2026) sets this to 0.0320 (BED Deaths, δ_e/τ=0.087),
-    # but 0.0320 does NOT converge under the default PATH A (Xc_Y=0.10) — the Stage-4 Q root-find
-    # (line ~805) fails. It DOES converge under PATH B (add dest_elast_target, e.g. 5.0), which is
-    # how §5.3 figures and the M5 diagnostic (run_solution_delta_target.jl) are built. So the D1
-    # cascade is entangled with D2: implement 0.0320 by switching the default to PATH B, not by
-    # editing this line alone. Verified Sept 29, 2026. See context/decisions.md D1/D2.
+    # D1 (settled Sept 6, 2026; default since Oct 2026, Q1 step 5): BED establishment Deaths,
+    # employment-weighted, 1993–2019, 3.2 %/yr → δ_e/τ = 0.087. The old 0.0754 applied a share
+    # of gross job losses to the separation rate (see context/decisions.md D1). 0.0320 does not
+    # converge under PATH A (the Stage-4 Q root-find fails), so it is paired with PATH B below.
+    dest_ann      = 0.0320,
+    # PATH B (D2 settled, Q1 step 5): ψ pinned by the exit elasticity; X^c/Y is an outcome.
+    # 5.0 is a placeholder (principle 21) for the estimated value. Remove this entry to fall
+    # back to PATH A, which targets Xc_Y above.
+    dest_elast_target = 5.0,
     f             = 0.41,   # Gross job-finding rate [JOLTS] — corrected ÷(1-δ_e) in Stage 1
     η_L           = 0.6,    # Matching elasticity [Petrongolo & Pissarides 2001]
     q             = 0.8,    # Gross vacancy-filling rate [JOLTS] — corrected ÷(1-δ_e) in Stage 1
@@ -713,10 +707,14 @@ const TARGETS = (
     # --- Estimated (Θ_e) — default/prior values; overridden by SMM sampler ---
     dest_end_frac = 0.5,    # Endogenous share of δ_e [ESTIMATED]
     p_0           = 0.5,    # Mass on continuous cost distribution [ESTIMATED]
-    b_ratio       = 0.71,   # Replacement ratio b/w [ESTIMATED]
-    x_v           = 1.0,    # Sunk share of total recruiting cost [ESTIMATED]
+    b_ratio       = 0.9,    # Replacement ratio b/w [ESTIMATED] (mechanism-runner value; was 0.71)
+    x_v           = 0.5,    # Sunk share of total recruiting cost [ESTIMATED] (was 1.0)
     ξ_inv         = 1,      # Inverse entry elasticity [ESTIMATED]
     σ             = 1.0,    # Inverse IES [ESTIMATED]
+    # Steady-state reactivation rate. `nothing` = costless reposting (α → 0, Λ_r ≡ 1).
+    # Placeholder (principle 21): Λ̄_r is estimated in Q6; experiments use the grid
+    # {0.95, 0.85, 0.70}. When set, α is backed out in calibrate_shares.
+    Λr_target     = nothing,
 )
 
 """
@@ -726,12 +724,12 @@ Calibrate model parameters to match empirical targets in four sequential stages.
 
 Two mutually exclusive paths through Stages 2-3, selected by which target is supplied:
 
-  PATH A (legacy, default) — targets Xc_Y:
+  PATH A (legacy; reached by removing dest_elast_target from TARGETS) — targets Xc_Y:
     Stage 2: root-find Xc_Yc s.t. Xc_Y = Xc_Yc × Yc_YG × YG_Y → pins π_s = 1/ε − Xc_Yc
     Stage 3: root-find cons s.t. π_s(cons) = π_s → pins ψ = (cons/ω)/(1 − cons/ω)
     dest_elast = ψ×ζ/(1−ζ) is an OUTCOME (reported in Stage 5).
 
-  PATH B (mechanism comparisons) — targets dest_elast_target:
+  PATH B (default since Q1 step 5; D2) — targets dest_elast_target:
     Triggered when target NamedTuple contains field `dest_elast_target` (non-nothing).
     Stages 2-3 (analytic, no root-find):
       ζ   = (surv_prob − (1−p_0))/p_0            [determined in Stage 1]
