@@ -20,21 +20,21 @@ Test 3a (costless): max |SS − pre-R8 SS| over u, v, θ, N, δ_e, x_c, w, C = 1
     𝓡 definition                      -7.77e-16  ok
 
 Λ̄_r = 0.85:  α = 4.3653e+10   Q = 4.68072   𝓡/Q = 0.1538   X^r/Y = 0.0530%   ϕ = 0.7634   b/w_int = 0.8566
-    JCC (s𝓡)                           8.39e-16  ok
-    N normalization                   -1.22e-15  ok
+    JCC (s𝓡)                           9.82e-16  ok
+    N normalization                   -1.55e-15  ok
     RC with X^r                        0.00e+00  ok
-    X/Y target                        -1.39e-17  ok
+    X/Y target                        -2.26e-17  ok
     cost integral (quad vs closed)    -7.33e-07  ok
-    entry eq:e_ss                      4.34e-18  ok
-    u LOM                              1.73e-17  ok
-    vacancy LOM                        3.47e-17  ok
-    w normalization                   -9.99e-16  ok
+    entry eq:e_ss                      3.47e-18  ok
+    u LOM                             -3.47e-18  ok
+    vacancy LOM                        2.78e-17  ok
+    w normalization                   -1.33e-15  ok
     wage (ϕs𝓡)                         0.00e+00  ok
     Λ_r = F(Q/α)                       0.00e+00  ok
     Λ_r round trip                     0.00e+00  ok
     δ_e target                         0.00e+00  ok
-    θ round trip                      -2.63e-14  ok
-    𝓡 definition                       2.22e-16  ok
+    θ round trip                      -3.15e-14  ok
+    𝓡 definition                       3.33e-16  ok
 
 Λ̄_r = 0.70:  α = 2.1468e+28   Q = 2.97546   𝓡/Q = 0.3009   X^r/Y = 0.0193%   ϕ = 0.8354   b/w_int = 0.8615
     JCC (s𝓡)                          -9.02e-17  ok

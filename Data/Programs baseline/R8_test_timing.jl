@@ -1,4 +1,5 @@
 # R8_test_timing.jl
+
 # =============================================================================
 # Q1 step 2 tests (Notes/Q1_R8_D1_PATHB_plan.md): the timing restructure of
 # run_solution_core.jl, with costless reposting.
@@ -80,8 +81,8 @@ end
 log!(@sprintf("  Test 1 %s (worst %.2e, tolerance 1e-8)", worst_all < 1e-8 ? "PASSED" : "FAILED", worst_all))
 
 # ── Test 2 ────────────────────────────────────────────────────────────────────
-b = new[:base]
-log!(@sprintf("\nTest 2 (p_0 = 0.5): solved; eigenvalues of hx with |λ| ≥ 1: %d (want 0)", b.nunstable))
+rb = new[:base]   # not `b`: that name is the symbolic benefit parameter
+log!(@sprintf("\nTest 2 (p_0 = 0.5): solved; eigenvalues of hx with |λ| ≥ 1: %d (want 0)", rb.nunstable))
 function conservation_gap(r, df)
     lv(v) = getfield(r.ss, v) .* exp.(df[!, v] ./ 100)
     v, L, δe = lv(:v), lv(:L), lv(:δ_e)
@@ -96,15 +97,16 @@ end
 # Evaluate it at 1/1000 of a standard deviation (IRFs are linear in the shock size): a
 # correct model gives a gap ~1e-6 × the one-SD gap, i.e. at machine-precision scale.
 for shk in (:irf_z, :irf_δ, :irf_s)
-    df = getfield(b, shk)
-    g1, gs = conservation_gap(b, df), conservation_gap(b, df ./ 1000)
+    df = getfield(rb, shk)
+    g1, gs = conservation_gap(rb, df), conservation_gap(rb, df ./ 1000)
     log!(@sprintf("  position identity, %-6s gap in levels: 1 SD %.2e, 1e-3 SD %.2e (ratio %.1e; second order ⇒ ~1e-6)",
                   shk, g1, gs, gs / g1))
 end
 log!("\n  How much the base IRFs moved vs the pre-R8 code (expected: exit now dated t+1):")
 for shk in (:irf_z, :irf_δ, :irf_s), v in (:u, :v, :N, :θ)
-    o, n = getfield(old[:base], shk)[!, v], getfield(b, shk)[!, v]
+    o, n = getfield(old[:base], shk)[!, v], getfield(rb, shk)[!, v]
     log!(@sprintf("    %-6s %-3s  old[3,13] = %9.5f %9.5f   new[3,13] = %9.5f %9.5f",
                   shk, v, o[3], o[13], n[3], n[13]))
 end
 write("R8_test_timing.txt", join(lines, "\n") * "\n")
+

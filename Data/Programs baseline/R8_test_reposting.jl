@@ -94,9 +94,9 @@ for Λr in (0.95, 0.85, 0.70)
         log!(@sprintf("    position identity with retirement, %-6s gap: 1 SD %.2e, 1e-3 SD %.2e (ratio %.1e)",
                       shk, g1, gs, gs / g1))
     end
-    s = r.irf_s
+    irs = r.irf_s   # not `s`: in the REPL a loop assignment would overwrite the symbolic state s
     log!(@sprintf("    s shock: u[3,13] = %7.4f %7.4f   v[3,13] = %7.4f %7.4f   Λ_r[3] = %8.5f",
-                  s.u[3], s.u[13], s.v[3], s.v[13], s.Λ_r[3]))
+                  irs.u[3], irs.u[13], irs.v[3], irs.v[13], irs.Λ_r[3]))
 end
 log!(@sprintf("\nTest 5 %s (gap ratio at 1e-3 SD: worst %.1e; second order ⇒ ~1e-6)",
               worst5 < 2e-6 ? "PASSED" : "FAILED", worst5))
