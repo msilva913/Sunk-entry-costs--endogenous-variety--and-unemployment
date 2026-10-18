@@ -1,0 +1,13 @@
+Test 6: impact θ̂ per unit log shock against the prop:fe closed forms (ρ ≡ 1, κ = 0, p_0 = 0)
+
+With the product-line entry Euler (σ = 1): the user-cost channel is offset by the discount factor
+  ξ_inv = 1e-02  θ̂/δ̃ = +0.013718 vs c_δ = -0.718453;  θ̂/s̃ = -0.052269 vs c_s = -0.064306;  gap 1.02e+00
+  ξ_inv = 1e-04  θ̂/δ̃ = -0.002534 vs c_δ = -0.717493;  θ̂/s̃ = -0.050139 vs c_s = -0.064212;  gap 9.96e-01
+
+AGS emulation (clone replacement, σ = 0): must converge to c_δ, c_s as ξ_inv → 0
+  ξ_inv = 1e-05  θ̂/δ̃ = -0.683809 vs c_δ = -0.717484;  θ̂/s̃ = -0.075104 vs c_s = -0.064211;  gap 1.70e-01
+  ξ_inv = 1e-06  θ̂/δ̃ = -0.713897 vs c_δ = -0.717483;  θ̂/s̃ = -0.065397 vs c_s = -0.064211;  gap 1.85e-02
+  ξ_inv = 1e-07  θ̂/δ̃ = -0.717122 vs c_δ = -0.717483;  θ̂/s̃ = -0.064331 vs c_s = -0.064211;  gap 1.86e-03
+  ξ_inv = 1e-08  θ̂/δ̃ = -0.717447 vs c_δ = -0.717483;  θ̂/s̃ = -0.064223 vs c_s = -0.064211;  gap 1.86e-04
+
+Test 6 PASSED (gap falls monotonically to 1.86e-04 at ξ_inv = 1e-8; threshold 1e-3)

@@ -145,8 +145,13 @@ function solution_interface(model, PAR, SS_precomputed::Union{Vector{Float64},No
     sol_mat = solve_model(model, deriv, eta)
     # first_order returns empty gx, hx when Blanchard–Kahn fails (qzflag ≠ 1); fail here
     # rather than downstream with a DimensionMismatch in simulate_model.
-    sol_mat.qzflag == 1 || error("No unique stable solution (Blanchard–Kahn fails; qzflag = " *
-                                 "$(sol_mat.qzflag)). Known region: ε < 3 (findings.md, ξ_inv × ε sweep).")
+    # qzflag (first_order in solution_functions.jl): 0 = no bounded equilibrium (too many
+    # unstable roots), 2 = indeterminate, 3 = invertibility of the stable block fails.
+    sol_mat.qzflag == 1 || error("No unique stable solution: " *
+        Dict(0 => "Blanchard–Kahn fails, no bounded equilibrium (e.g. ε below ε*, bk_epsilon_threshold.txt)",
+             2 => "Blanchard–Kahn fails, indeterminate",
+             3 => "invertibility condition fails (the stable block does not span the states)")[sol_mat.qzflag] *
+        " (qzflag = $(sol_mat.qzflag)).")
     println("Model solved")
 
     # SS is Vector{Float64}; exp recovers levels from the log-deviation representation

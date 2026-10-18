@@ -1,0 +1,38 @@
+Part A — baseline at the code defaults over Λ̄_r. Responses in % (100 × log dev.), month 1 = impact.
+Simulated moments: 60000 months, quarterly averages, HP λ = 1600 on log deviations; data cor(u,v) = −0.804.
+
+[costless]  α = 0
+  z shock: u[1,12] =  -0.000  -0.104   v[1,12] =  +0.035  +0.189
+  δ shock: u[1,12] =  -0.000  +0.152   v[1,12] =  +0.005  -0.242
+  s shock: u[1,12] =  +0.000  +1.583   v[1,12] =  -0.014  +2.941
+  all shocks: cor(u,v) = +0.995   σ(u) = 8.08%   σ(v) = 15.85%
+  z only:    cor(u,v) = -0.977
+  δ only:    cor(u,v) = -0.876
+  s only:    cor(u,v) = +1.000
+
+[Λ̄_r = 0.95]  α = 649.4
+  z shock: u[1,12] =  -0.000  -0.154   v[1,12] =  +0.060  +0.291
+  δ shock: u[1,12] =  -0.000  +0.146   v[1,12] =  +0.007  -0.230
+  s shock: u[1,12] =  +0.000  +1.985   v[1,12] =  +0.001  +2.165
+  all shocks: cor(u,v) = +0.968   σ(u) = 8.21%   σ(v) = 15.12%
+  z only:    cor(u,v) = -0.961
+  δ only:    cor(u,v) = -0.869
+  s only:    cor(u,v) = +0.974
+
+[Λ̄_r = 0.85]  α = 4.365e+10
+  z shock: u[1,12] =  -0.000  -0.240   v[1,12] =  +0.108  +0.461
+  δ shock: u[1,12] =  -0.000  +0.139   v[1,12] =  +0.009  -0.213
+  s shock: u[1,12] =  +0.000  +2.689   v[1,12] =  +0.065  +0.842
+  all shocks: cor(u,v) = +0.812   σ(u) = 8.80%   σ(v) = 13.98%
+  z only:    cor(u,v) = -0.944
+  δ only:    cor(u,v) = -0.858
+  s only:    cor(u,v) = +0.823
+
+[Λ̄_r = 0.70]  α = 2.147e+28
+  z shock: u[1,12] =  -0.000  -0.352   v[1,12] =  +0.175  +0.678
+  δ shock: u[1,12] =  -0.000  +0.130   v[1,12] =  +0.012  -0.195
+  s shock: u[1,12] =  +0.000  +3.581   v[1,12] =  +0.220  -0.780
+  all shocks: cor(u,v) = +0.461   σ(u) = 10.10%   σ(v) = 12.97%
+  z only:    cor(u,v) = -0.932
+  δ only:    cor(u,v) = -0.841
+  s only:    cor(u,v) = +0.478
