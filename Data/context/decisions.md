@@ -13,7 +13,7 @@ Status key: 🔴 blocks estimation · 🟠 blocks a paper section · 🟡 improv
 | D3 | How β̂ and β(θ) are made comparable | ⚪ moot under D13 (Oct 14): indirect inference uses the same SVAR on data and simulations |
 | D4 | Does the LD→v IRF enter Block B? | 🟠 open, reopened by D11 |
 | D10 | Empirical target for the δ→u IRF shape | 🟡 resolved to (a) as validation under D13 (Oct 14); E9 no longer needed |
-| D11 | Does the reposting margin enter this paper? | 🟡 adopted in the draft; formal go/no-go after R2 |
+| D11 | Does the reposting margin enter this paper? | 🟡 in the draft and the code (Q1, Oct 19); go/no-go after Q2 + R2/Q4 |
 | D12 | Venue and the theory-first pivot (JET?) | 🟠 open (MS), recommendation: no-go for JET; theory-forward paper for RED / JME / AEJ: Macro |
 | D13 | Conditional moments without Bartik: Block B′ = aggregate SVAR responses | 🔴 adopted as the working design Oct 14 (MS approved the plan); not yet built |
 
@@ -196,6 +196,20 @@ this paper), take option (a). The robust short-horizon facts become motivating e
 estimation targets, and E9 is no longer needed.
 
 ## 🟡 D11. Does the reposting margin enter this paper?
+
+**Oct 19 record (Q1 closed).** Implementation is settled; the go/no-go is not.
+- **Settled (implementation):** reposting enters through a target Λ̄_r (`Λr_target`) with α
+  backed out; shared F with no separate reactivation shape (MS, Oct 14); threshold Q;
+  per-position draws; the switch `rp` gives the costless benchmark (`Λr_target = nothing`, the
+  default). Code: `run_solution_core.jl` f[24], f[39]–f[41], 𝓡 = Q − K − H in f[3] and f[7],
+  X^r in f[16]. Tests 3–5 verify the steady state (14 identities) and position conservation
+  with retirement (`R8_test_steady_state.txt`, `R8_test_reposting.txt`).
+- **Θ_e:** Λ̄_r replaces α ([`parameters.md`](parameters.md)).
+- **Open (go/no-go):** whether a Λ̄_r inside (1 − p_0, 1) delivers cor(u,v) ≈ −0.8 once the
+  shock processes come from the Q2 VAR, and whether Λ̄_r is identified separately from σ_s and
+  p_0 (R2/Q4). At the part6b shocks the grid reaches only +0.461 at Λ̄_r = 0.70.
+- **Related:** R19 (pricing replacement offsets `prop:fe`'s user-cost channel) is a separate
+  theory decision and does not reopen the formulation.
 
 **Oct 18 status.** In the code on `r8_timing_reposting` (Q1 steps 3–4, Oct 14): controls Λ_r,
 Q_rep, H; Λ̄_r is targeted and α backed out. Shared F (MS, Oct 14): reactivation is nearly

@@ -1,6 +1,6 @@
 # CLAUDE.md — Empirical LP Project (Firm Entry/Exit DSGE)
 **Last updated:** October 18, 2026 · **Author:** Mario Silva
-**Current branch:** `costly_vacancy_reposting` (branched from `instruments_LP_coefficient`; the most up-to-date version of the project)
+**Current branch:** `costly_vacancy_reposting` (R8 merged in Oct 19; branched from `instruments_LP_coefficient`; the most up-to-date version of the project)
 **Project paused June 7, 2026 – September 5, 2026.** Status re-verified against the repo on
 resumption; see [`context/pending_tasks.md`](context/pending_tasks.md) §Critical path.
 **Publication objective:** applied theory, quantitative macro paper publishable in a top field journal such as the *Journal of Monetary Economics* or *AEJ: Macroeconomics*, and potentially the *Journal of Political Economy*.
@@ -101,8 +101,9 @@ in; Test 6 found R19; BK ε-threshold; Remark 3 + App. K). Previous: `session_ha
 are in `context/archive/`.
 
 **Next, in order** (details in [`context/pending_tasks.md`](context/pending_tasks.md)):
-1. **Close Q1:** `model_equations.md` Code status, `parameters.md` (Λ̄_r for α), `pipeline.md`
-   conventions, D11 record; merge `r8_timing_reposting` → `costly_vacancy_reposting`.
+1. ~~**Close Q1**~~ — done Oct 19 (context files updated; `r8_timing_reposting` merged into
+   `costly_vacancy_reposting`). New finding: determinacy needs σ > σ* = 0.011
+   (`sigma_determinacy.txt`, findings.md).
 2. **R19 (theory, MS):** pricing replacement offsets `prop:fe`'s user-cost channel in the
    baseline. Double-limit check first, then a remark after `prop:fe`, then the framing.
 3. **Q2:** trivariate (z, δ, s) VAR. More urgent: with the part6b s process cor(u,v) reaches only

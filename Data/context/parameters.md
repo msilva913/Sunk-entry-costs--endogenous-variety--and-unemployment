@@ -1,5 +1,5 @@
 # Structural Parameters — Reference
-**Last updated:** September 21, 2026
+**Last updated:** October 19, 2026 (Λ̄_r replaces α in Θ_e, Q1)
 
 Complete parameter set for the Gabrovski-Silva endogenous exit model. Every parameter
 belongs to one of three groups: externally calibrated (Θ_ext), recovered per draw by the
@@ -72,14 +72,27 @@ i.e., what would change in the model if this parameter moved.
 | ω_δ | `dest_end_frac` | 0.5 | Endogenous share of total destruction: ω_δ = (δ_e − δ)/δ_e | **cor(u, v)** (Beveridge curve), cor(δ_e, u), cor(δ_e, z) | **The Beveridge curve lever.** Higher ω_δ → more of what the data calls "separation" actually destroys product lines in the model → more negative u-v comovement from the δ mechanism. This is the key parameter for reconciling the s-shock problem (`lem:accounting` Part 1) |
 | p_0 | `p_0` | 0.5 | Mass on continuous (Pareto) part of continuation cost distribution F | Interacts with ω_δ: shapes the nonlinearity of δ_e response | p_0 = 0: all firms face zero continuation cost → no endogenous exit margin. p_0 = 1: all firms draw from Pareto → maximum exit-margin responsiveness. Together with ψ, controls the curvature of the exit response. **Also caps the reposting margin: max position destruction from non-reposting = p_0** (see α below) |
 
-### Reposting margin (proposed — [D11](decisions.md), not yet in code)
+### Reposting margin (in code since R8, Oct 14–19; go/no-go in [D11](decisions.md))
 
-Adds **one** estimated parameter, α, and **no new distribution** (reuses F). Enters only if D11
-resolves in favor of the margin. Full equations: [`model_equations.md`](model_equations.md) Block 2.
+Adds **one** estimated parameter and **no new distribution** (reuses F). Full equations:
+[`model_equations.md`](model_equations.md) Block 2.
+
+**The estimated parameter is the steady-state reposting rate Λ̄_r, not α** (Q1, Oct 14).
+`calibrate_shares` takes `Λr_target` and backs out α from Λ̄_r = F(Q̄/α); α is then a Θ_d
+object like ϕ or f_m. Reason: α is not a natural unit (it ranges from 4e10 at Λ̄_r = 0.85 to
+2e28 at 0.70, `R8_test_steady_state.txt`), while Λ̄_r is a share with a direct reading. The
+interior requires 1 − p_0 < Λ̄_r < 1 (`steady_state.jl` errors otherwise).
+`Λr_target = nothing` (the `TARGETS` default) is costless reposting, implemented by the
+switch `rp = 0` in `run_solution_core.jl` (α = 0 would divide by zero, and Λ̄_r = 1 is a kink).
 
 | Symbol | Code name | Default | Economic meaning | Key moments | Intuition |
 |--------|-----------|---------|-----------------|-------------|-----------|
-| α | `alpha_r` (tbd) | tbd | Scale of the per-position reactivation cost α·χ, χ ~ F | **cor(u, v)**, LD→v IRF (level and persistence), σ(v) | On separation, each vacated position draws α·χ and is reactivated iff (Q−K) ≈ Q ≥ α·χ, giving reposting rate **Λ_r = F((Q−K)/α) ≈ F(Q/α)**. Higher α → costlier reposting → lower Λ_r → more position destruction → more negative cor(u,v). Bites for α > Q̄/f_m; below that, Λ_r = 1 (costless reposting, current model nested). One-time reactivation, per-position draws (preserves single firm size); threshold is the stock value Q−K not flow K (note §7.3b) |
+| Λ̄_r | `Λr_target` | `nothing` (costless); grid 0.95 / 0.85 / 0.70 in `R8_step7_baseline.jl` | Steady-state share of vacated positions that are reactivated | **cor(u, v)**, s-shock responses of u and v (Block B′), σ(v) | Lower Λ̄_r → more position destruction per separation → s shocks lower v → more negative cor(u,v). Step 7 (part6b shocks): cor(u,v) = +0.995 / +0.968 / +0.812 / +0.461 at costless / 0.95 / 0.85 / 0.70, against −0.804. Bounded below by 1 − p_0 |
+| α | `α` (in PAR via `repost_par`) | backed out | Scale of the per-position reactivation cost α·χ, χ ~ F | — (Θ_d) | Reactivate iff Q ≥ α·χ, so Λ_r = F(Q/α). Threshold is the stock value Q, not the flow K (note §7.3b). Per-position draws |
+
+**Shared F makes the margin act through its level.** With reactivation drawn from F,
+d ln Λ_r/d ln Q ≈ 0.006 at the defaults: Λ_r barely moves over the cycle. The margin works
+through Λ̄_r, not through cyclical reactivation (MS, Oct 14: no separate reactivation shape).
 
 **Λ_r** (reposting rate, `Lambda_r`) is a *derived* object like δ_e, not a free parameter:
 Λ_r = F(Q/α), a tracked control with its own equation. Symbol is capital Λ_r, **not** λ (which
@@ -100,15 +113,13 @@ is marginal utility of consumption).
 
 ---
 
-## Reposting margin — in the draft, not yet in the code
+## Reposting margin — background
 
-**Status September 30, 2026.** The formulation is settled ([D11](decisions.md)) and is written
-into `Draft.tex` (recruiter block, `eq:v_lom`, `eq:agg_repost_costs`, `eq:rc`/`eq:gdp`,
-`def:equilibrium`). It is **not yet in `steady_state.jl`/`run_solution_core.jl`** — that is task
-**R8**, which is blocked on two convention choices recorded in
-[`model_equations.md`](model_equations.md) f[16] and f[22]: the X_r timing (lagged flow vs
-pay-at-separation) and the draft-vs-code δ_e dating. α is also **not yet in §5.2** — no priors,
-no `tab:calib_targets` row.
+**Status October 19, 2026.** In the draft (recruiter block, `eq:v_lom`, `eq:agg_repost_costs`,
+`eq:rc`/`eq:gdp`, `def:equilibrium`) and, since R8, in `steady_state.jl` and
+`run_solution_core.jl` (see the Θ_e table above: Λ̄_r is estimated, α backed out). Still
+**not in §5.2**: no prior and no `tab:calib_targets` row for Λ̄_r (Q3/Q6). The September text
+below is about α; read "α" as "the Λ̄_r it implies".
 
 Full argument in
 [`../Notes/delta_calibration_and_the_reposting_margin.md`](../Notes/delta_calibration_and_the_reposting_margin.md);
@@ -121,10 +132,9 @@ check that F's shape fits both margins.
 
 | Symbol | Code | Economic meaning | How disciplined |
 |---|---|---|---|
-| α | `alpha` (to add) | Reposting-cost scale. Reactivation costs α·χ with χ ~ F, so Λ_r = F(Q/α) and the margin bites only for α > Q̄/χ_m | **Estimated.** LD→vacancy IRF (sign, magnitude, and shape across horizons); cor(u,v) in Block M as a secondary source. See R2 for the identification check |
-| Λ̄_r = F(Q̄/α) | — | Steady-state reactivation rate; an *outcome* of α, not a free parameter | Reported, not set |
+| Λ̄_r = F(Q̄/α) | `Λr_target` | Steady-state reactivation rate. **Estimated since Q1 (Oct 14)**; α is backed out from it | Block B′ s-shock responses of u and v; cor(u,v) in Block M. See R2/Q4 for the identification check |
 
-**Why Λ_r < 1 is the lever.** Λ_r = 1 is the current model. Λ_r < 1 makes an s shock destroy
+**Why Λ_r < 1 is the lever.** Λ_r = 1 is costless reposting (the pre-R8 model; `Λr_target = nothing`). Λ_r < 1 makes an s shock destroy
 positions as well as matches, which is what moves cor(u,v). Raising δ̄_e does *not* fix
 cor(u,v) — it improves it monotonically but by 0.108 across the whole defensible range against
 a gap near 1.8, and the relation is convex with the leverage concentrated above the range

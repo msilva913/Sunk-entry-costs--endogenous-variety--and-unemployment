@@ -1,12 +1,12 @@
 # Model Equations — Baseline and Partial-Reposting Extension
-**Created:** September 28, 2026 · **Timing audit:** October 1, 2026 · **X^c made exact:** October 11, 2026 · **Branch:** `costly_vacancy_reposting`
+**Created:** September 28, 2026 · **Timing audit:** October 1, 2026 · **X^c made exact:** October 11, 2026 · **R8 in code:** October 19, 2026 · **Branch:** `costly_vacancy_reposting`
 
 This file lists every model equation with an economic interpretation, **dated explicitly** in
 the timing of the draft (`Draft/Draft.tex`, `fig:Timing`). The draft is the reference model.
-`Programs baseline/run_solution_core.jl` implements the same 33 equations but **deviates from
-the draft's timing in two places** (see "Code status" below). Each equation carries a
-**Code** line saying whether the current code matches. This file is the specification the code
-restructuring in task R8 should implement.
+**Since R8 (Q1, Oct 14–19, 2026; branch `r8_timing_reposting`), `Programs baseline/run_solution_core.jl`
+implements the draft timing and Block 2 in 41 equations**; see "Code status" below for the
+state vector and the map to the code's f[k]. The per-equation **Code** lines record the Oct 1
+audit of the pre-R8 code and are kept as history; where they cite a deviation, it is resolved.
 
 - **Block 1** is the model with costless full reposting (Λ_r = 1).
 - **Block 2** gives the equations that change under partial reposting, the extension argued for
@@ -73,10 +73,41 @@ unemployment, but rises after a destruction shock at finite ξ (congestion relie
 ê^δ > 0 in Comparison D, numerical, R12b). Q_t is constant under vacancy free entry. The reposting option accrues to the recruiter's J, not the retailer's ν^f, so the
 dependence stays triangular and f[1]/f[4]/f[18] are unchanged in Block 2.
 
-## Code status — the two timing deviations (October 1, 2026)
+## Code status — resolved by R8 (Oct 14–19, 2026)
 
-The code is GS-style end-of-period timing in its laws of motion but draft timing in its value
-equations. Fixing this is part of R8.
+**The code now follows the draft timing and includes partial reposting.** Branch
+`r8_timing_reposting` (reconciled Oct 19, `853b053`). Tests 1–6 pass (`R8_test_*.txt`,
+`R8_test6_free_entry.txt`).
+
+- **States (8):** [Ñ_t, Ẽ_t, Ṽ^u_t, Ṽ^s_t, z_t, δ_t, δl_t, s_t], the pre-exit stocks of the
+  restructuring spec below plus the three shocks and δl_t ≡ δ_{t−1}.
+- **δl is a bookkeeping state.** It enters only f[2], the *realized* measured exit rate
+  δ_{e,t} = 1 − (1−δ_{t−1})Λ_t. Survival for the t→t+1 transition, (1−δ_t)Λ_{t+1}, uses δ_t.
+  Forward-dating δ_e to drop δl gives the *expected* rate and breaks the position identity
+  (Test 5) at first order (Oct 15).
+- **Same-period controls:** N_t, u_t, v_{pre,t}, solved jointly with χ^c_t.
+- **Reposting controls:** Λ_r, Q^rep, H. The switch `rp` selects partial (1) or costless (0)
+  reposting; α is backed out from the target Λ̄_r (`Λr_target`, `nothing` = costless).
+  The shortfall is 𝓡 = Q − K − H.
+- **41 equations.** Map to the code:
+
+| Code | Content |
+|---|---|
+| f[1]–f[8] | χ^c, δ_e (from δl), JCC with 𝓡, entry Euler, K, w^int, Nash wage with s𝓡, Q = x_m e^{ξ_inv} |
+| f[9]–f[21] | static conditions; f[16] RC includes X^r |
+| f[22]–f[24] | same-period stocks: N = ΛÑ, u = 1 − ΛẼ, v_pre = Λ(Ṽ^u + Λ_rṼ^s) |
+| f[25]–f[28] | state LOMs for Ñ, Ẽ, Ṽ^u, Ṽ^s with survival (1−δ_t) |
+| f[29] | δl′ = δ (bookkeeping) |
+| f[30]–f[35] | labor share, labor productivity, price-deflated aggregates |
+| f[36]–f[38] | AR(1) shocks z, δ, s |
+| f[39]–f[41] | Λ_r = F(Q/α), Q^rep = E max(Q − αχ, 0), H = E[m(1−δ)Λ′Q^rep′] |
+
+Below, the Oct 1 description of the pre-R8 deviations, kept for the record.
+
+### Pre-R8 deviations (October 1, 2026; resolved)
+
+The code was GS-style end-of-period timing in its laws of motion but draft timing in its value
+equations.
 
 1. **Exit dating.** Code f[2] builds `δ_e = 1 − (1−δ·δbar)·Λ` with the *current* cutoff Λ_t and
    applies it to the t→t+1 transition in f[22]–f[24]. In draft terms that is (1−δ_t)·F(χ^c_t)
@@ -99,7 +130,8 @@ and s_{t−1} but before the period-t exit draw:
 Ṽ^u_t = (1−δ_{t−1})(1−q_{t−1})v_{t−1},  Ṽ^s_t = (1−δ_{t−1})s_{t−1}(1−u_{t−1}),
 plus z_t, δ_t, s_t. Then at t: N_t = Λ_tÑ_t, u_t = 1 − Λ_tẼ_t,
 v_{pre,t} = Λ_t(Ṽ^u_t + Λ_{r,t}Ṽ^s_t), X^r_t = Λ_tṼ^s_t·α·M_t, all same-period controls solved
-jointly with χ^c_t. The lagged rates are absorbed into the states, so no lag needs tracking.
+jointly with χ^c_t. The lagged rates are absorbed into the states. (As implemented, one lag is
+tracked after all: δl_t = δ_{t−1}, for the realized δ_{e,t} only; see above.)
 Every §5.3 number must be regenerated afterwards; bundle with the D1 cascade.
 
 ## Shocks
@@ -307,7 +339,7 @@ reactivation is a sub-event of survival. The non-reactivated fraction 1 − Λ_{
 missing middle: position destruction at surviving product lines, so position conservation now
 leaks by exactly (1 − δ_{e,t+1})(1 − Λ_{r,t+1})s_t(1 − u_t). Scope choice: only the separation
 inflow is attenuated, not the unmatched carry-forward (1 − q_t)v_t.
-**Code:** not implemented (R8).
+**Code:** implemented by R8 as f[24] (v_pre = Λ(Ṽ^u + Λ_rṼ^s)) and f[27]–f[28].
 
 **f[3] Recruiter block — MODIFIED** (R7; `eq:value_recruiter_matched`, `eq:Qrep`,
 `eq:value_recruiter_surplus`, `eq:jcc`, `eq:surplus_wage`)
@@ -396,8 +428,8 @@ at Λ_r = 0.9 and 2.5× at 0.7, and is wrong at the floor, where exact X^r = 0.
 
 ## Open items
 
-1. **R8:** implement the restructured state vector (Code status above) together with Block 2.
-   (X^c is already exact, Oct 11.)
+1. ~~**R8:** implement the restructured state vector together with Block 2.~~ Done Oct 14–19
+   (Code status above).
 2. **R2:** verify on simulated data that α is separately identified from σ_s and from χ_m.
 3. **R3 / `lem:accounting` and `prop:exit_s` under partial reposting:** both assume costless reposting
    (p_0 = 0 or α → 0). A result for α > 0 (e.g. a threshold Λ_r* at which the s→v sign

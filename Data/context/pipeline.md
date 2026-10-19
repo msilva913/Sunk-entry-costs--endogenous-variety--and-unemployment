@@ -137,8 +137,8 @@ StatsBase, SymPy, TexTables, TypedTables.
 |---|---|
 | `solution_functions.jl` | Perturbation toolkit (Salazar-Perez & Seoane 2023). Not modified. |
 | `steady_state.jl` | **Canonical.** `calibrate_shares` (4 stages, PATH A/B — see [D2](decisions.md)), `steady_state`, and the free-entry variants. Holds `const TARGETS`. |
-| `run_solution_core.jl` | The 33-equation model system, symbolic parameters/variables, and `solution_interface`. Audited May 20, 2026. **`:97`** hard-errors when the steady-state residual exceeds tolerance — never downgrade it to a warning. **`:411` `SS_numeric`** now calls `steady_state(cal)` and asserts `PAR` consistency at `:455`. ⚠️ **`:498` `SS_symbolics` still carries the original gross-Lerner-share defect** — latent only because every runner passes `SS_precomputed`. Never use its output as a linearization point. `:131` still reads `estimate = []` |
-| `run_solution.jl` | Thin baseline runner; serializes `model_output.jls`. Carries **placeholder** ρ_s = 0.90, σ_s = 0.010. |
+| `run_solution_core.jl` | **The 41-equation model** (since R8, Oct 14–19, 2026): draft timing, partial reposting, states [Ñ, Ẽ, Ṽ^u, Ṽ^s, z, δ, δl, s]; equation map in [`model_equations.md`](model_equations.md) "Code status". Helpers: `repost_par(cal)` → (α, rp), `build_PAR(cal, SHK)`, `shock_col(state, sd)`, `const SHOCKS_BASE`. `SS_numeric(PAR, targets)` calls `steady_state(cal)` and errors unless `PAR == build_PAR(calibrate_shares(targets), …)`. `solution_interface` requires that numeric SS and errors on a failed BK count, citing ε* = 2.40 and σ* = 0.011. `SS_symbolics` is a placeholder (zeros): never a linearization point. The steady-state residual check hard-errors — never downgrade it to a warning. `estimate = []`, `priors = (;)` (no estimation code yet) |
+| `run_solution.jl` | Thin baseline runner (`build_PAR`, `SHOCKS_BASE`, numeric SS); serializes `model_output.jls` |
 | `time_series_fun.jl` | `simulate_model`, `monthly_to_quarterly`, `hp_filter`, `hamilton_filter`, `moments`. ⚠️ `hp_filter` was **fixed Sept 5, 2026** — it had been a first-difference smoother, not HP. `moments(...)` requires `lags=2` (two autocorrelation labels are hard-coded) |
 | `impulse_response_plots.jl` | Shared IRF plotting helpers |
 
@@ -238,7 +238,7 @@ they were broken before R8 and were not converted in Q1 step 6. Rebuild from
 `export_endog_exit_irfs.jl` (IRFs + SS → CSV), `generate_tables.jl`,
 `second_moments.jl` (⚠️ **stale and invalid**: λ=100,000, only 8 series, AND it predates the `hp_filter` fix of Sept 5, 2026 — every moment it ever produced is wrong; superseded by `simulated_moments` inside `run_solution_delta_target.jl`), `Hill estimator/` (tail-index estimation for the cost distribution).
 
-### Model code conventions (audited May 20, 2026)
+### Model code conventions (audited May 20, 2026; updated for R8 Oct 19)
 
 - **Naming** — `r` is the discount rate; `ρ` is the relative price N^(1/(ε−1)). Consistent
   with `steady_state.jl`.
@@ -246,19 +246,25 @@ they were broken before R8 and were not converted in Q1 step 6. Rebuild from
   `κ·q·v`, not `κ·v`.
 - **u LOM** — uses total `v_t = v_pret + e_t`; entrants participate in matching within
   period t (draft `eq:v_lom`).
-- **States** — `x = [u, N, v_pret, z, δ, s]`; 31 controls; monthly frequency.
-- **Equation order** — f[1] exit threshold χ^c, f[2] δ_e, f[3] JCC, f[4] business-formation
-  Euler (BGM), f[5] K value, f[6] MRP, f[7] Nash wage, f[8] vacancy creation, f[9]–f[30]
-  static conditions / LOMs / observables, f[31]–f[33] AR(1) shocks.
+- **States** (since R8) — `x = [Nt, Et, Vu, Vs, z, δ, δl, s]`: pre-exit stocks, the three
+  shocks, and δl = δ_{t−1} (bookkeeping, for the realized δ_e only); 33 controls; monthly.
+- **Equation order** — f[1] χ^c, f[2] δ_e, f[3] JCC, f[4] business-formation Euler, f[5] K,
+  f[6] w^int, f[7] Nash wage, f[8] vacancy creation, f[9]–f[21] static conditions,
+  f[22]–f[24] same-period stocks, f[25]–f[29] state LOMs, f[30]–f[35] observables,
+  f[36]–f[38] shocks, f[39]–f[41] reposting (Λ_r, Q^rep, H).
 - **Full equation reference with interpretations** — [`model_equations.md`](model_equations.md):
-  Block 1 transcribes all 33 equations from `run_solution_core.jl` with economic interpretation;
-  Block 2 gives the proposed **reposting-margin** modifications (new Λ_r rate, modified f[22],
-  f[16], f[3]) — see [D11](decisions.md). Not yet in code.
-- **SS_symbolics** — `x_c_ss = Y_c·(μ−1)/(μ·N) + ν_f` (consistent with f[1]); `C_ss`
-  includes `X_c`; `Y_ss = C + ν_f·N_e`.
+  Block 1 (baseline) and Block 2 (reposting margin, in code since R8; see [D11](decisions.md)).
+  Its "Code status" section maps the equations to the code's f[k].
+- **Defaults (`TARGETS`, Q1 step 5)** — D1 `dest_ann = 0.0320` + PATH B
+  `dest_elast_target = 5.0`, `b_ratio = 0.9`, `x_v = 0.5`, `Λr_target = nothing` (costless
+  reposting). A runner changes a target with `merge(TARGETS, (...))`, never by editing the const.
+- **PAR and shocks** — always `build_PAR(calibrate_shares(tg), SHK)`, with `SHK = SHOCKS_BASE`
+  or a NamedTuple with the same fields; never a hand-built vector (`SS_numeric` errors on a
+  mismatch). Shock columns via `shock_col(:δ, SHK.σδ)`.
+- **SS_symbolics** — a placeholder since R8 (zeros). Linearize only at `SS_numeric`.
 - **Known toolkit bug** — `eval_SS` iterates `for ip in npar` (once) instead of `1:npar`,
-  so it substitutes only the last parameter. Callers must pass a pre-computed Float64 SS to
-  `solution_interface`; `run_solution.jl` uses the slow symbolic fallback instead.
+  so it substitutes only the last parameter. Every runner passes the numeric SS, so it is
+  latent.
 
 ### `steady_state.jl` architecture (as of May 31, 2026)
 
