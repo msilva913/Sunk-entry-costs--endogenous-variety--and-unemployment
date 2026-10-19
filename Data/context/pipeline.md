@@ -196,6 +196,29 @@ for **E9**, the model-side LP test.
 Comparisons B and D use **PATH B** (`dest_elast_target = 5.0`) plus `b_ratio = 0.9,
 x_v = 0.5`, which are *not* the `TARGETS` defaults. See [D2](decisions.md).
 
+### Q1 (R8) programs and helpers — Oct 14–18, 2026 (branch `r8_timing_reposting`)
+
+Since R8 the state vector is [Ñ, Ẽ, Ṽ^u, Ṽ^s, z, δ, δl, s] (41 equations). Runners must build
+PAR with `build_PAR(cal, SHK)`, single-shock columns with `shock_col(state, sd)`, and take shock
+processes from `SHOCKS_BASE` (part6b; replaced by the Q2 VAR). Never assign numbers to the
+symbolic ρ_z, σ_z, … (`gen_model_equations` reads them). `solution_interface` errors with the
+qzflag case (0 no bounded equilibrium, 2 indeterminate, 3 invertibility). Environment:
+`Project.toml`/`Manifest.toml` + `setup_environment.jl`; run with `--project=.` after
+`Pkg.instantiate()`, or in the global environment if that already has the packages.
+
+| Program | Purpose | Output |
+|---|---|---|
+| `R8_snapshot_pre.jl` | Pre-R8 IRF snapshot (regression reference) | `R8_snapshot_pre.jls/.txt` |
+| `R8_test_timing.jl` | Tests 1–2: draft timing; p_0 = 0 reproduces the snapshot to 1.8e-12 | `.txt/.jls` |
+| `R8_test_steady_state.jl` | Test 3: steady state with partial reposting, 14 identities | `.txt` |
+| `R8_test_reposting.jl` | Tests 4–5: reposting dynamics; costless = step 2; positions conserved | `.txt/.jls` |
+| `R8_step5_defaults.jl` | Step 5: defaults converge; δ_e/τ = 0.0873; calibrated vector | `.txt` |
+| `R8_step7_baseline.jl` | Step 7: IRFs and simulated cor(u,v) over Λ̄_r (exploratory) | `.txt` |
+| `R8_test6_free_entry.jl` | Test 6: `prop:fe` closed forms under AGS emulation; documents the user-cost offset (R19) | `.txt` |
+| `bk_epsilon_threshold.jl` | BK threshold ε* by bisection under four specs (`tab:eps_threshold`) | `.txt` |
+| `lrbgm_determinacy.jl` | LR-BGM block determinacy over ε, σ (App. K) | `.txt` |
+| `cutoff_profit_share.jl` | Flow-profit share s_R of the survival cutoff (App. K) | `.txt` |
+
 ### Comparison / legacy variants
 
 `run_solution_CK.jl` and `steady_state_CK.jl` (Coles-Kelishomi benchmark);

@@ -1,5 +1,5 @@
 # CLAUDE.md — Empirical LP Project (Firm Entry/Exit DSGE)
-**Last updated:** October 12, 2026 · **Author:** Mario Silva
+**Last updated:** October 18, 2026 · **Author:** Mario Silva
 **Current branch:** `costly_vacancy_reposting` (branched from `instruments_LP_coefficient`; the most up-to-date version of the project)
 **Project paused June 7, 2026 – September 5, 2026.** Status re-verified against the repo on
 resumption; see [`context/pending_tasks.md`](context/pending_tasks.md) §Critical path.
@@ -76,10 +76,10 @@ and the δ→v trough at h=4–6. See [D10](context/decisions.md)
 **Instrument correlation:** r(δ,LD) = 0.334 after v2 + Deaths switch; industry-level financial conditions are leading explanation
 **QU placebo fails:** corr(β_unemp, β_vac) = −0.971 across horizons — demand contamination signature
 **Vacancy convention:** outcome is vacancy RATE = V/LF × 100 in pp, levels difference. Never log. Symmetric to unemployment rate.
-**Calibration:** τ̄ = 9.30%/qtr (3.10%/month). **δ̄_e is settled** ([D1](context/decisions.md), September 6, 2026): `dest_ann = 0.0320` (BED Deaths, employment-weighted, 1993–2019: 0.812%/qtr, 3.21%/yr), giving **δ_e/τ = 0.087**. ⏳ **Not yet implemented** — `Programs baseline/steady_state.jl:623` still holds the superseded `0.0754` (δ_e/τ = 0.210), which applied a gross-job-loss share to the separation rate. The previously recorded 11.6% is COVID-contaminated and has no standing.
+**Calibration:** τ̄ = 9.30%/qtr (3.10%/month). **δ̄_e is settled** ([D1](context/decisions.md)): `dest_ann = 0.0320` (BED Deaths, employment-weighted, 1993–2019), **δ_e/τ = 0.087**. **Implemented Oct 18 on `r8_timing_reposting`** (Q1 step 5): `TARGETS` holds D1 + PATH B (`dest_elast_target = 5.0`), b/w = 0.9, x_v = 0.5, `Λr_target = nothing`. D2 settled (PATH B).
 **Filter:** HP λ=1,600 on log-levels, applied identically to data and simulations. Not λ=100,000 — that flips the sign of cor(δ,u) and cor(δ,v).
 **Paper draft:** `Draft/Draft.tex` (renamed from `Draft_11May2026.tex` on June 5, 2026). Theory and empirics complete through §5.3 (theory audited and corrected Oct 11–12); §5.4 is an empty stub and §6 is unstarted. Build: three `pdflatex` passes, **never `bibtex`**. Section-by-section status and the proposition inventory: [`context/draft_status.md`](context/draft_status.md).
-**Model code:** 33-equation system in `Programs baseline/run_solution_core.jl`, audited May 20, 2026; X^c exact since Oct 11 (`payer_share` in `steady_state.jl`). Conventions, equation order, and `steady_state.jl` architecture: [`context/pipeline.md`](context/pipeline.md) Part 2.
+**Model code:** `Programs baseline/run_solution_core.jl`, restructured by R8 (Oct 14–18, branch `r8_timing_reposting`): draft timing, states [Ñ, Ẽ, Ṽ^u, Ṽ^s, z, δ, δl, s], partial reposting (Λ_r, Q_rep, H), 41 equations; X^c exact. Build PAR with `build_PAR(cal, SHK)`, shocks with `shock_col` and `SHOCKS_BASE`. Conventions and the Q1 program list: [`context/pipeline.md`](context/pipeline.md) Part 2.
 **No estimation code exists yet.** `run_solution_core.jl:131` still reads `estimate = []`; `:133` reads `priors = (;)`.
 
 ---
@@ -94,65 +94,41 @@ and the δ→v trough at h=4–6. See [D10](context/decisions.md)
 > Q2 VAR → Q3 targets → Q4 identification → Q5 hypotheses and mechanism comparisons (the D12
 > gate) → Q6 estimation.
 
-**Resume:** [`context/session_handout_20261014.md`](context/session_handout_20261014.md)
-(Oct 14: Q0 done; Q1 steps 1–4 on branch **`r8_timing_reposting`**, resume with steps 5–7;
-Julia project environment in `Programs baseline/`, run with `--project=.`). Previous:
-`context/session_handout_20261012.md` (theory rebuild, X^c fix) and `20261009` (strategy, D12).
-Older handouts are in `context/archive/`.
+**Resume:** [`context/session_handout_20261018.md`](context/session_handout_20261018.md)
+(Oct 18: Q1 steps 5–7 done on **`r8_timing_reposting`**, with `costly_vacancy_reposting` merged
+in; Test 6 found R19; BK ε-threshold; Remark 3 + App. K). Previous: `session_handout_20261014.md`
+(Q0, D13, Q1 steps 1–4), `20261012` (theory rebuild), `20261009` (strategy, D12). Older handouts
+are in `context/archive/`.
 
-**Oct 13, 2026 — review and cleanup (P8, done).** Theory-section presentation fixes. New
-`ass:vacancy_fe`; `prop:bgm_nest` is now `rem:bgm_nest`; new `rem:dmp`. Under vacancy free
-entry with e_t > 0, the model is isomorphic to DMP in which every position bears the flow user
-cost K_t, so v_pre matters only if e_t ≥ 0 binds. Propositions renumbered (fe = 4, exit_s = 5,
-equilibria = 6). ⚠ **Terminology rule (MS):** never write bare "free entry" for
-vacancies. Say "vacancy free entry" or "infinitely elastic vacancy creation"; bare "free entry"
-means product lines (`eq:free_entry`). The main remaining theory gap is **R3** (no result for
-partial reposting). Details: `context/draft_status.md` "Propositions".
+**Next, in order** (details in [`context/pending_tasks.md`](context/pending_tasks.md)):
+1. **Close Q1:** `model_equations.md` Code status, `parameters.md` (Λ̄_r for α), `pipeline.md`
+   conventions, D11 record; merge `r8_timing_reposting` → `costly_vacancy_reposting`.
+2. **R19 (theory, MS):** pricing replacement offsets `prop:fe`'s user-cost channel in the
+   baseline. Double-limit check first, then a remark after `prop:fe`, then the framing.
+3. **Q2:** trivariate (z, δ, s) VAR. More urgent: with the part6b s process cor(u,v) reaches only
+   +0.46 at Λ̄_r = 0.70 (data −0.80).
 
-The theory sections are audited and corrected (Oct 11–12). **Section 5 is the remaining
-critical path**, and the code must first be brought in line with the draft. Decisions that gate
-the rest (all MS's; [`context/decisions.md`](context/decisions.md)):
-
-1. **[D12] Venue and structure.** Recommendation: no JET pivot; a theory-forward paper for
-   RED / JME / AEJ: Macro that keeps the SVAR-calibrated mechanism and cuts Bartik to the
-   robust short-horizon facts. If adopted, E9, Ω_β and D3 leave the critical path and D10 takes
-   option (a). **The publication objective above is unchanged.**
-2. **[D2] PATH A or PATH B.** The draft documents PATH A; every §5.3 figure uses PATH B. D1
-   converges only under PATH B. Recommendation PATH B.
-3. **[D10]/[D3]** (only if IRF matching stays): E9, the model-side LP test, decides both.
-
-**Next model task: one regeneration pass R8 + D1 + PATH B** (code restructuring to the draft's
-timing plus the reposting margin; `dest_ann = 0.0320`). Spec in
-[`context/model_equations.md`](context/model_equations.md) "Code status" and Block 2. Then
-re-run Comparisons A–D, `mechanism_stats.jl`, the `run_prop5_*` checks, and update §5.3, §5.2,
-`tab:calib_targets` row 1 and the three remaining `δ̄_e/τ̄ ≈ 0.21` claims (`grep -a 0.21`).
-This is also the D11 go/no-go: under costless reposting s shocks give positive u–v comovement at
-every persistence (`prop:fe` part 3, `lem:accounting`), so the reposting margin is *necessary*
-to fix model cor(u,v) = +0.995.
-
-**Theory structure in the draft (Oct 12).** §3 limiting cases: `prop:independence`, clone
-replacement (`prop:ags`, `rem:nesting`), `prop:double_limit` (corrected), `prop:bgm_nest`.
-`sec:mechanism`: `lem:theta` + `prop:fe` (free entry, δ–s theorem, `tab:fe_irf`),
-`lem:accounting`, `rem:finite_xi`, `prop:exit_s`. Steady state: `prop:curves` (a remark),
-`ass:matching` (with `eq:Phi`) + `prop:equilibria`. Inventory and audit record:
-[`context/draft_status.md`](context/draft_status.md) "Propositions".
+**Theory structure in the draft (Oct 18).** §3 limiting cases: `prop:independence`, clone
+replacement (`prop:ags`, `rem:nesting`), `prop:double_limit`, `rem:bgm_nest`,
+`rem:dilution_variety` (Remark 3; argument in App. K `app:determinacy`). `sec:mechanism`:
+`lem:theta` + `prop:fe` (Prop. 4, `tab:fe_irf`), `lem:accounting`, `rem:finite_xi`,
+`prop:exit_s` (Prop. 5). Steady state: `rem:curves`, `ass:matching` + `prop:equilibria`
+(Prop. 6). Inventory: [`context/draft_status.md`](context/draft_status.md) "Propositions".
+⚠ **Terminology (MS):** never write bare "free entry" for vacancies ("vacancy free entry" or
+"infinitely elastic vacancy creation"); bare "free entry" means product lines.
 
 **Standing warnings.**
 - ⚠ **Build with `pdflatex` only** (three passes, `-synctex=1`, from `Data/Draft/`). Running
-  `bibtex` destroys the tracked `Draft.bbl`, because `references.bib` is not in `Data/Draft/`.
-  **Owed (MS):** add `silva_2026` (SSRN 6956640) and `den_haan_2000` to `references.bib`; both
-  exist only in `Draft.bbl`.
-- ⚠ Close TeXstudio before scripted edits to `Draft.tex` (EPERM on rename otherwise).
-  `Draft.tex` contains NUL bytes (pre-existing); use `grep -a`.
+  `bibtex` destroys the tracked `Draft.bbl`. **Owed (MS):** add `silva_2026` (SSRN 6956640) and
+  `den_haan_2000` to `references.bib`.
+- ⚠ Close TeXstudio before scripted edits to `Draft.tex`. `Draft.tex` contains NUL bytes; use
+  `grep -a`. Edit `Draft.tex` in the current checkout (both branches now carry the same draft).
+- ⚠ Shell gotchas: the Bash tool collapses backslashes in heredocs and inline `-e` strings; write
+  Julia/LaTeX edit scripts with the Write tool and `raw""` strings. `@sprintf` needs one literal
+  format string. Never assign numbers to the symbolic model names (ρ_z, s, b, …), including inside
+  REPL loops (Oct 18: `s = r.irf_s` broke `gen_model_equations` in VS Code).
+- ⚠ No GitHub credentials in the agent shell: MS pushes from his Git client.
 - ⚠ The SMCD paper is cited as a working paper only. Do not mention where it is submitted.
-- ⚠ **`Notes/role_of_ingredients.md` §2 is wrong** (variety is not what makes the δ sign survive
-  free entry). Rewrite before designing R14.
-- ⚠ §5.3 prose is committed to three runs that do not exist: novar-vs-AGS, α → 0, and a
-  re-specified Comparison B (R8 clause v).
-- **Code timing (Oct 1).** The draft is the reference model ([S10](context/decisions.md)). The
-  code dates exit one period early and uses post-exit stocks as states; fixed in R8.
-
-After the regeneration, build in order: Ω_β (`part5_wcrb.py`, full matrix; dimension set by
-D10/E9) → Ω_m (block bootstrap) → refreshed m(θ) at λ = 1,600 over all seven series → β(θ)
-extractor → objective and priors → sampler → §5.4, `app:weighting_robustness`,
-`app:robustness`, §6. Full ordered list: [`context/pending_tasks.md`](context/pending_tasks.md).
+- ⚠ **`Notes/role_of_ingredients.md` §2 is wrong**; rewrite before designing R14.
+- ⚠ §5.3 prose is committed to runs that do not exist yet (novar-vs-AGS, α → 0, re-specified
+  Comparison B); they belong to Q5.

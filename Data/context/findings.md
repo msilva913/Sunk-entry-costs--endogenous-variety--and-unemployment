@@ -1,5 +1,5 @@
 # Key Empirical Findings
-**Last updated:** October 12, 2026 (labels updated to the Oct 11 `sec:mechanism` structure; withdrawn Oct 5 threshold section compressed). Oct 11: finite-ξ, double-limit and multiplicity results. Oct 7: R15 free-entry findings.
+**Last updated:** October 18, 2026 (Q1 regeneration results; user-cost offset; BK threshold corrected in the ξ_inv × ε section). Earlier: October 12, 2026 (labels updated to the Oct 11 `sec:mechanism` structure; withdrawn Oct 5 threshold section compressed). Oct 11: finite-ξ, double-limit and multiplicity results. Oct 7: R15 free-entry findings.
 literature review of δ calibration added the same day; reposting-margin mechanism and
 inescapability added September 28; `lem:accounting` (old Prop. 5 Part 1) entry-condition check added October 1.
 Model-side results were re-run after the September 5–6 code fixes; see §D1/M5.
@@ -706,3 +706,45 @@ High crossing = calibrated θ̄ = 0.512. Low crossing: θ ≈ 0.002–0.004 with
 extrapolated Cobb–Douglas; θ ≈ 0.056–0.068, q ≈ 1, u ≈ 0.32–0.36 under clipped CD, HRW and
 2P-SMCD. ln Φ convex and ln L concave in ln θ for every bounded spec at ξ ∈ {0.5, 1, 2}; Φ itself
 is never convex and N_JC is not convex near θ = 0.
+
+## Q1 regeneration results — October 18, 2026 (R8 code, D1 + PATH B defaults; exploratory)
+
+Branch `r8_timing_reposting`. Not draft-bound: §5.3 is regenerated in Q5, after the Q2 VAR.
+
+**Defaults (`R8_step5_defaults.txt`).** δ_e/τ = 0.0873, u = 0.0703, θ = 0.5125, ψ = 0.0136,
+X^c/Y = 13.5 % (outcome), exit elasticity 5.0 (placeholder). SS residual < 1e-12 for costless
+reposting, Λ̄_r ∈ {0.95, 0.85, 0.70} and p_0 = 0.
+
+**Reactivation grid (`R8_step7_baseline.txt`).** Part6b shocks (s: AR(1), ρ_s = 0.8741,
+σ_s = 0.0854); 60,000 months, quarterly averages, HP λ = 1,600.
+
+| Λ̄_r | cor(u,v) all | s only | δ only | z only | σ(u) | s shock: v at month 12 |
+|---|---|---|---|---|---|---|
+| costless | +0.995 | +1.000 | −0.876 | −0.977 | 8.08 % | +2.94 |
+| 0.95 | +0.968 | +0.974 | −0.869 | −0.961 | 8.21 % | +2.17 |
+| 0.85 | +0.812 | +0.823 | −0.858 | −0.944 | 8.80 % | +0.84 |
+| 0.70 | +0.461 | +0.478 | −0.841 | −0.932 | 10.10 % | −0.78 |
+
+Data: −0.804. The s shock sets the sign; δ and z have the right sign at every Λ̄_r. The s-shock
+unemployment response at month 12 rises from 1.58 to 3.58 (stock depletion). Under the shared F
+reactivation is nearly inelastic (d ln Λ_r/d ln Q ≈ 0.006, Oct 14), so the margin works through
+the level Λ̄_r. Do not infer the required Λ̄_r before Q2 replaces the s process.
+
+**Pricing replacement offsets the vacancy user cost (`R8_test6_free_entry.txt`; task R19).**
+Impact θ̂ per unit log δ shock, ρ ≡ 1, κ = 0, p_0 = 0:
+
+| Economy | ξ_inv | θ̂/δ̃ | c_δ (`prop:fe`) |
+|---|---|---|---|
+| With the product-line entry Euler, σ = 1 | 1e-4 | −0.003 | −0.717 |
+| Clone replacement (AGS), σ = 0 | 1e-6 | −0.714 | −0.717 |
+| Clone replacement (AGS), σ = 0 | 1e-8 | −0.7174 | −0.7175 |
+
+With entry, β(λ′/λ)(1−δ_t)(ν′+d′) = ν pins m(1−δ_t), the factor in K_t = Q_t − m(1−δ_t)Q_{t+1}.
+In the linearized K equation the δ term (+0.45 per unit) is cancelled by the consumption-growth
+term, amplified by Q̄/K̄ = 168. At σ = 0 the entry Euler makes entry infinitely elastic (no
+unique solution), which is why the AGS check needs clone replacement. Convergence to `prop:fe`
+under AGS is slow: tenfold per decade of ξ_inv (gap 1.9e-4 at ξ_inv = 1e-8), consistent with
+the finite-ξ results above. Implication: the δ-shock Beveridge sign in the baseline comes from
+other channels (the predetermined vacancy stock at finite ξ, variety); see R19.
+
+**Determinacy in ε.** See the ξ_inv × ε sweep section (item 3, corrected Oct 18): ε* = 2.40.

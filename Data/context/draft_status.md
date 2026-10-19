@@ -1,5 +1,5 @@
 # Draft Status — `Draft/Draft.tex`
-**Last updated:** October 13, 2026 (P8 theory-section cleanup: `ass:vacancy_fe`, `rem:bgm_nest`, N^max, captions, "vacancy free entry" terminology; numbering below is current). Oct 12: context cleanup; Oct 11–12: R15 option (b) spliced, theory propositions audited and corrected, X^c made exact, `ass:matching` tightened with `eq:Phi` in the main text)
+**Last updated:** October 18, 2026 (`rem:dilution_variety` (Remark 3) + Appendix K `app:determinacy`; g_N paragraph shortened; notation appendix is now L). Earlier: October 13, 2026 (P8 theory-section cleanup: `ass:vacancy_fe`, `rem:bgm_nest`, N^max, captions, "vacancy free entry" terminology; numbering below is current). Oct 12: context cleanup; Oct 11–12: R15 option (b) spliced, theory propositions audited and corrected, X^c made exact, `ass:matching` tightened with `eq:Phi` in the main text)
 
 **Build:** compiles with 0 errors and 0 missing graphics. Two undefined references remain,
 `app:robustness` and `app:weighting_robustness` (unwritten appendices; P2); no duplicate labels.

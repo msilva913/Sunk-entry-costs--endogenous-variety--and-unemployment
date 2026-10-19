@@ -1,6 +1,6 @@
 # Context Folder — Index
 **Last reorganized:** September 5, 2026 (branch `Organize_Project_State_Estimation`)
-**Last consistency pass:** October 13, 2026 (branch `costly_vacancy_reposting`; Oct 13 review → P8 theory-section cleanup, "vacancy free entry" terminology). Oct 11–12: R15
+**Last consistency pass:** October 18, 2026 (branch `r8_timing_reposting`, with `costly_vacancy_reposting` merged in: Q1 steps 5–7, BK ε-threshold and `rem:dilution_variety` + App. K, R19 user-cost offset). Handout `session_handout_20261018.md`. Earlier: Oct 14 (Q0, D13, Q1 steps 1–4); Oct 13 (P8); Oct 11–12 (theory rebuild, X^c). Handouts before Oct 9 are in `archive/`.
 spliced (`prop:fe` leads `sec:mechanism`), every theory proposition audited and corrected, R16
 repaired, X^c made exact in draft and code, `ass:matching` tightened. Handout
 `session_handout_20261012.md`. Handouts before Oct 9 moved to `archive/`.
@@ -25,12 +25,13 @@ status notes to whichever file was open rather than the file that owns the topic
 
 ## Reading order when picking the project back up
 
-1. **`session_handout_20261014.md`** — latest handout (Oct 14: Q0 done, D13, Q1 steps 1–4 on
-   branch `r8_timing_reposting`; resume with steps 5–7). Before it: `session_handout_20261012.md`
-   (theory rebuild, X^c fix) and `session_handout_20261009.md` (strategy, D12)
+1. **`session_handout_20261018.md`** — latest handout (Oct 18: Q1 steps 5–7, Test 6 and the
+   user-cost offset R19, BK ε-threshold, Remark 3 + App. K; resume with the Q1 close-out, then
+   R19 and Q2). Before it: `session_handout_20261014.md` (Q0, D13, Q1 steps 1–4) and
+   `session_handout_20261012.md` (theory rebuild, X^c fix)
 2. `../CLAUDE.md` — one-paragraph framing, quick facts, current priorities
-3. **`pending_tasks.md`** — the critical path: **E9**, then the single regeneration pass
-   **R8 + D1 + PATH B** (if D12's recommendation is adopted, E9 drops out)
+3. **`pending_tasks.md`** — the critical path Q0–Q6 (D13): Q1 close-out, then Q2 (trivariate VAR)
+   → Q3 → Q4 → Q5 → Q6; theory task R19
 4. **`decisions.md`** — what is unsettled (D12 and D2 are the ones MS must decide), and the
    settled timing (S10–S12)
 5. `draft_status.md` — before editing `Draft.tex` (build rules, proposition inventory)

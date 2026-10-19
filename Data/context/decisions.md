@@ -197,6 +197,13 @@ estimation targets, and E9 is no longer needed.
 
 ## 🟡 D11. Does the reposting margin enter this paper?
 
+**Oct 18 status.** In the code on `r8_timing_reposting` (Q1 steps 3–4, Oct 14): controls Λ_r,
+Q_rep, H; Λ̄_r is targeted and α backed out. Shared F (MS, Oct 14): reactivation is nearly
+inelastic (d ln Λ_r/d ln Q ≈ 0.006), so the margin acts through the level Λ̄_r, not its
+cyclicality. First simulated cor(u,v) at the defaults (`R8_step7_baseline.txt`, part6b shocks):
++0.995 costless, +0.968 (0.95), +0.812 (0.85), +0.461 (0.70), against −0.804. Direction right,
+size not yet; the go/no-go waits on Q2 (shock processes) and R2/Q4 (identification).
+
 **Status (Oct 1).** Written into the draft on this branch (recruiter block, `eq:v_lom`,
 `eq:agg_repost_costs`, `eq:rc`/`eq:gdp`, `def:equilibrium`, wage appendix). Props 1 and 3
 audited and hold; `lem:accounting` and `prop:exit_s` cover the costless-reposting benchmark. Not yet in the code
