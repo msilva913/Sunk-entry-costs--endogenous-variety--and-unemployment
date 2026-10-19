@@ -1,5 +1,5 @@
 # CLAUDE.md — Empirical LP Project (Firm Entry/Exit DSGE)
-**Last updated:** October 18, 2026 · **Author:** Mario Silva
+**Last updated:** October 19, 2026 · **Author:** Mario Silva
 **Current branch:** `costly_vacancy_reposting` (R8 merged in Oct 19; branched from `instruments_LP_coefficient`; the most up-to-date version of the project)
 **Project paused June 7, 2026 – September 5, 2026.** Status re-verified against the repo on
 resumption; see [`context/pending_tasks.md`](context/pending_tasks.md) §Critical path.
@@ -94,7 +94,10 @@ and the δ→v trough at h=4–6. See [D10](context/decisions.md)
 > Q2 VAR → Q3 targets → Q4 identification → Q5 hypotheses and mechanism comparisons (the D12
 > gate) → Q6 estimation.
 
-**Resume:** [`context/session_handout_20261018.md`](context/session_handout_20261018.md)
+**Resume:** [`context/session_handout_20261019.md`](context/session_handout_20261019.md)
+(Oct 19: Oct 15 and Oct 18 work reconciled; Q1 closed and merged into `costly_vacancy_reposting`;
+σ* = 0.011 determinacy result; Q2 scoped, D14 opened). Before:
+[`context/session_handout_20261018.md`](context/session_handout_20261018.md)
 (Oct 18: Q1 steps 5–7 done on **`r8_timing_reposting`**, with `costly_vacancy_reposting` merged
 in; Test 6 found R19; BK ε-threshold; Remark 3 + App. K). Previous: `session_handout_20261014.md`
 (Q0, D13, Q1 steps 1–4), `20261012` (theory rebuild), `20261009` (strategy, D12). Older handouts
@@ -107,7 +110,9 @@ are in `context/archive/`.
 2. **R19 (theory, MS):** pricing replacement offsets `prop:fe`'s user-cost channel in the
    baseline. Double-limit check first, then a remark after `prop:fe`, then the framing.
 3. **Q2:** trivariate (z, δ, s) VAR. More urgent: with the part6b s process cor(u,v) reaches only
-   +0.46 at Λ̄_r = 0.70 (data −0.80).
+   +0.46 at Λ̄_r = 0.70 (data −0.80). Scoped Oct 19: σ_s is a univariate residual never
+   orthogonalized against z and δ; whether to orthogonalize is [D14](context/decisions.md)
+   (the model has no endogenous s). Needs the `econ2315` conda environment.
 
 **Theory structure in the draft (Oct 18).** §3 limiting cases: `prop:independence`, clone
 replacement (`prop:ags`, `rem:nesting`), `prop:double_limit`, `rem:bgm_nest`,

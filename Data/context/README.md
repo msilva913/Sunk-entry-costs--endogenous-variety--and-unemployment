@@ -1,6 +1,6 @@
 # Context Folder — Index
 **Last reorganized:** September 5, 2026 (branch `Organize_Project_State_Estimation`)
-**Last consistency pass:** October 18, 2026 (branch `r8_timing_reposting`, with `costly_vacancy_reposting` merged in: Q1 steps 5–7, BK ε-threshold and `rem:dilution_variety` + App. K, R19 user-cost offset). Handout `session_handout_20261018.md`. Earlier: Oct 14 (Q0, D13, Q1 steps 1–4); Oct 13 (P8); Oct 11–12 (theory rebuild, X^c). Handouts before Oct 9 are in `archive/`.
+**Last consistency pass:** October 19, 2026 (branch `costly_vacancy_reposting`: Q1 closed and merged, σ* determinacy, Q2 scoped, D14). Handout `session_handout_20261019.md`. Before: October 18, 2026 (Q1 steps 5–7, BK ε-threshold and `rem:dilution_variety` + App. K, R19 user-cost offset). Handout `session_handout_20261018.md`. Earlier: Oct 14 (Q0, D13, Q1 steps 1–4); Oct 13 (P8); Oct 11–12 (theory rebuild, X^c). Handouts before Oct 9 are in `archive/`.
 spliced (`prop:fe` leads `sec:mechanism`), every theory proposition audited and corrected, R16
 repaired, X^c made exact in draft and code, `ass:matching` tightened. Handout
 `session_handout_20261012.md`. Handouts before Oct 9 moved to `archive/`.
@@ -25,7 +25,9 @@ status notes to whichever file was open rather than the file that owns the topic
 
 ## Reading order when picking the project back up
 
-1. **`session_handout_20261018.md`** — latest handout (Oct 18: Q1 steps 5–7, Test 6 and the
+1. **`session_handout_20261019.md`** — latest handout (Oct 19: branches reconciled, Q1 closed and
+   merged, σ* = 0.011 determinacy result, Q2 scoped and D14 opened; resume with Q2). Before it:
+   `session_handout_20261018.md` (Oct 18: Q1 steps 5–7, Test 6 and the
    user-cost offset R19, BK ε-threshold, Remark 3 + App. K; resume with the Q1 close-out, then
    R19 and Q2). Before it: `session_handout_20261014.md` (Q0, D13, Q1 steps 1–4) and
    `session_handout_20261012.md` (theory rebuild, X^c fix)

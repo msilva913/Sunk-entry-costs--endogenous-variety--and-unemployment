@@ -16,6 +16,36 @@ Status key: 🔴 blocks estimation · 🟠 blocks a paper section · 🟡 improv
 | D11 | Does the reposting margin enter this paper? | 🟡 in the draft and the code (Q1, Oct 19); go/no-go after Q2 + R2/Q4 |
 | D12 | Venue and the theory-first pivot (JET?) | 🟠 open (MS), recommendation: no-go for JET; theory-forward paper for RED / JME / AEJ: Macro |
 | D13 | Conditional moments without Bartik: Block B′ = aggregate SVAR responses | 🔴 adopted as the working design Oct 14 (MS approved the plan); not yet built |
+| D14 | Is the s innovation orthogonalized against z and δ? | 🟠 open (MS, Oct 19); recommendation: orthogonalize (z → δ → s) in the baseline, correlated innovations as robustness |
+
+---
+
+## 🟠 D14. Is the s innovation orthogonalized against z and δ?
+
+**Raised Oct 19, 2026 (Q2 scoping).** `part6b_shock_persistence_cyclical.py` orthogonalizes
+the δ innovation against z (Cholesky; σ_δ falls) but fits s as a **univariate AR(1)**, so
+σ_s = 0.0854 is a reduced-form residual SD that still contains whatever coincides with the z
+and δ innovations. The model treats all three innovations as uncorrelated.
+
+**Why the z → δ argument does not carry over.** For δ, stripping the z-correlated part avoids
+double counting: the model generates z → χ^c → δ_e itself. The model has **no** endogenous s.
+Stripping the z- and δ-correlated part of s therefore discards real countercyclical separation
+variation that the model cannot reproduce. The script's line "the same argument applies to s"
+is wrong on this point.
+
+**Options.**
+- (a) **Orthogonalize, z → δ → s.** Smaller σ_s, so a smaller wrong-sign Beveridge contribution
+  from s, and consistency with the B′ identification (D13). Cost: the model undershoots σ(τ)
+  and the cyclicality of separations, which must be reported.
+- (b) **Correlated innovations** (as CK for (p, δ)). Faithful to the data, but it puts cross-shock
+  correlation back into a paper whose argument separates δ from s.
+- (c) **Endogenous separations** responding to z. A model change; out of scope.
+
+**Also relevant.** Noise in BED Deaths enters s = (τ − δ)/(1 − δ) with weight ≈ δ/τ ≈ 0.09, which
+builds a spurious *negative* s–δ innovation correlation. Only the joint system shows its size.
+
+**Recommendation:** (a) for the baseline, (b) as robustness, with the σ(τ) shortfall reported.
+Decide after the Q2 numbers (share of s innovation variance explained by z and δ).
 
 ---
 
