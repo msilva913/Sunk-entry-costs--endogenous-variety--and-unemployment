@@ -1,0 +1,46 @@
+Determinacy as σ falls — stable roots nk (need nx = 8); |eigenvalues| in (0.5, 2)
+
+== A baseline (p_0 = 0.5, variety)
+  σ = 1      nk =  8  determinate                        near-unit |λ|: 0.5920 0.8740 0.9020 0.9760 0.9933 1.0171 1.0231
+  σ = 0.5    nk =  8  determinate                        near-unit |λ|: 0.5920 0.8740 0.9020 0.9699 0.9917 1.0160 1.0323
+  σ = 0.2    nk =  8  determinate                        near-unit |λ|: 0.5920 0.8740 0.9020 0.9551 0.9905 1.0156 1.0501
+  σ = 0.1    nk =  8  determinate                        near-unit |λ|: 0.5920 0.8740 0.9020 0.9362 0.9901 1.0154 1.0720
+  σ = 0.05   nk =  8  determinate                        near-unit |λ|: 0.5920 0.8740 0.9020 0.9055 0.9899 1.0154 1.1090
+  σ = 0.01   nk =  7  NO STABLE SOLUTION (too few stable) near-unit |λ|: 0.5920 0.8740 0.9020 0.9897 1.0153 1.0782 1.4514
+  σ = 0.001  nk =  7  NO STABLE SOLUTION (too few stable) near-unit |λ|: 0.5920 0.8740 0.9020 0.9896 1.0012 1.0153 1.0414
+  σ = 0      nk =  7  NO STABLE SOLUTION (too few stable) near-unit |λ|: 0.5920 0.8740 0.9020 0.9896 1.0003 1.0153 1.0387
+
+== B p_0 = 0, variety
+  σ = 1      nk =  8  determinate                        near-unit |λ|: 0.5920 0.8740 0.9020 0.9841 0.9936 1.0145 1.0148
+  σ = 0.5    nk =  8  determinate                        near-unit |λ|: 0.5920 0.8740 0.9020 0.9817 0.9915 1.0157 1.0182
+  σ = 0.2    nk =  8  determinate                        near-unit |λ|: 0.5920 0.8740 0.9020 0.9742 0.9897 1.0150 1.0286
+  σ = 0.1    nk =  8  determinate                        near-unit |λ|: 0.5920 0.8740 0.9020 0.9639 0.9892 1.0149 1.0402
+  σ = 0.05   nk =  8  determinate                        near-unit |λ|: 0.5920 0.8740 0.9020 0.9478 0.9889 1.0149 1.0582
+  σ = 0.01   nk =  8  determinate                        near-unit |λ|: 0.5920 0.8381 0.8740 0.9020 0.9887 1.0148 1.1970
+  σ = 0.001  nk =  7  NO STABLE SOLUTION (too few stable) near-unit |λ|: 0.5920 0.8740 0.9020 0.9887 1.0108 1.0148 1.0199
+  σ = 0      nk =  7  NO STABLE SOLUTION (too few stable) near-unit |λ|: 0.5920 0.8740 0.9020 0.9887 1.0045 1.0148 1.0216
+
+== C p_0 = 0, ρ ≡ 1
+  σ = 1      nk =  8  determinate                        near-unit |λ|: 0.5920 0.8740 0.9020 0.9867 0.9911 1.0139 1.0153
+  σ = 0.5    nk =  8  determinate                        near-unit |λ|: 0.5920 0.8740 0.9020 0.9861 0.9895 1.0160 1.0216
+  σ = 0.2    nk =  8  determinate                        near-unit |λ|: 0.5920 0.8740 0.9020 0.9840 0.9883 1.0157 1.0438
+  σ = 0.1    nk =  8  determinate                        near-unit |λ|: 0.5920 0.8740 0.9020 0.9820 0.9880 1.0157 1.0788
+  σ = 0.05   nk =  8  determinate                        near-unit |λ|: 0.5920 0.8740 0.9020 0.9803 0.9879 1.0157 1.1526
+  σ = 0.01   nk =  8  determinate                        near-unit |λ|: 0.5920 0.8740 0.9020 0.9783 0.9879 1.0157
+  σ = 0.001  nk =  9  INDETERMINATE (too many stable)    near-unit |λ|: 0.5920 0.8740 0.9020 0.9776 0.9878 1.0157
+  σ = 0      nk =  9  INDETERMINATE (too many stable)    near-unit |λ|: 0.5920 0.8740 0.9020 0.9776 0.9878 1.0157
+
+== D p_0 = 0, ρ ≡ 1, business block frozen
+  σ = 1      nk =  8  determinate                        near-unit |λ|: 0.5920 0.8740 0.9020 0.9887 1.0164
+  σ = 0.5    nk =  8  determinate                        near-unit |λ|: 0.5920 0.8740 0.9020 0.9883 1.0160
+  σ = 0.2    nk =  8  determinate                        near-unit |λ|: 0.5920 0.8740 0.9020 0.9880 1.0158
+  σ = 0.1    nk =  8  determinate                        near-unit |λ|: 0.5920 0.8740 0.9020 0.9879 1.0158
+  σ = 0.05   nk =  8  determinate                        near-unit |λ|: 0.5920 0.8740 0.9020 0.9879 1.0157
+  σ = 0.01   nk =  8  determinate                        near-unit |λ|: 0.5920 0.8740 0.9020 0.9879 1.0157
+  σ = 0.001  nk =  8  determinate                        near-unit |λ|: 0.5920 0.8740 0.9020 0.9878 1.0157
+  σ = 0      nk =  8  determinate                        near-unit |λ|: 0.5920 0.8740 0.9020 0.9878 1.0157
+
+Critical σ* (bisection; unique bounded solution for σ > σ*):
+  A baseline (p_0 = 0.5, variety)          σ* ∈ (0.01080, 0.01080)
+  B p_0 = 0, variety                       σ* ∈ (0.00580, 0.00580)
+  C p_0 = 0, ρ ≡ 1                         σ* ∈ (0.00290, 0.00290)

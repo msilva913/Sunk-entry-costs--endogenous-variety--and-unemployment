@@ -748,3 +748,28 @@ the finite-ξ results above. Implication: the δ-shock Beveridge sign in the bas
 other channels (the predetermined vacancy stock at finite ξ, variety); see R19.
 
 **Determinacy in ε.** See the ξ_inv × ε sweep section (item 3, corrected Oct 18): ε* = 2.40.
+
+**Determinacy in σ (`sigma_determinacy.jl`, Oct 15, reconciled Oct 19).** A unique bounded
+equilibrium needs risk aversion above σ\*. The threshold comes from bisection on the stable-root
+count.
+
+| Configuration | σ\* | Below σ\* |
+|---|---|---|
+| Baseline (p_0 = 0.5, variety) | **0.0108** | no bounded equilibrium |
+| p_0 = 0, variety | 0.0058 | no bounded equilibrium |
+| p_0 = 0, ρ ≡ 1 | 0.0029 | indeterminate |
+| as above, business block frozen (N ≡ 1, L^e fixed) | none | determinate at every σ, incl. 0 |
+
+- **Same mechanism as R19.** The entry Euler, with ν_f pinned by free entry, restricts only
+  m(1−δ_t)E[ν′ + d′]. At σ = 1 that is what neutralizes the user cost (R19). As σ → 0, m stops
+  moving, so the Euler pins only the expected dividend, and the timing of entry is free. Today's
+  entry draws retail labor; tomorrow's entry restores the dividend. That is indeterminacy without
+  variety. Variety and exit add feedback (more lines → ρ → w^int → θ → output → entry), which
+  turns it into nonexistence and raises σ\*. Freezing the business block removes the free
+  direction.
+- **Use:** a justification for σ > 0, since σ = 1 is far above σ\*, and a footnote on
+  `prop:independence`. Its σ = 0 case is a point where the full model has no unique solution,
+  although the labor block alone, and AGS, are well posed.
+- **Complements ε\* = 2.40** (`bk_epsilon_threshold.jl`). Both are determinacy limits of the
+  business-formation block: ε\* through the variety loop, σ\* through the missing consumption
+  smoothing of entry.

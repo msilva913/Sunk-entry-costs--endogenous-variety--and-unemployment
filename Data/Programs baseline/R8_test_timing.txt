@@ -1,10 +1,10 @@
 R8 step 2 tests — timing restructure, costless reposting. IRFs in 100 × log deviations, T = 60
 
 Test 1 (p_0 = 0): max |new − old| over t, by shock
-  irf_z  common vars 1.84e-12   u,N,v_pret 1.23e-12   δ_e (new[t+1] vs old[t]) 0.00e+00
-  irf_δ  common vars 1.03e-13   u,N,v_pret 5.91e-14   δ_e (new[t+1] vs old[t]) 8.88e-16
-  irf_s  common vars 1.13e-12   u,N,v_pret 7.55e-13   δ_e (new[t+1] vs old[t]) 3.86e-18
-  Test 1 PASSED (worst 1.84e-12, tolerance 1e-8)
+  irf_z  common vars 1.90e-12   u,N,v_pret 1.15e-12   δ_e (new[t+1] vs old[t]) 0.00e+00
+  irf_δ  common vars 4.67e-13   u,N,v_pret 3.60e-13   δ_e (new[t+1] vs old[t]) 1.78e-15
+  irf_s  common vars 7.62e-13   u,N,v_pret 5.61e-13   δ_e (new[t+1] vs old[t]) 2.92e-18
+  Test 1 PASSED (worst 1.90e-12, tolerance 1e-8)
 
 Test 2 (p_0 = 0.5): solved; eigenvalues of hx with |λ| ≥ 1: 0 (want 0)
   position identity, irf_z  gap in levels: 1 SD 4.38e-08, 1e-3 SD 4.39e-14 (ratio 1.0e-06; second order ⇒ ~1e-6)

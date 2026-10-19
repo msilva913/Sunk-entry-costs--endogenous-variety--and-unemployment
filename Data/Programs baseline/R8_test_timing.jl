@@ -31,9 +31,7 @@ cases = Dict(
 
 function solve_case(tg)
     cal = calibrate_shares(tg)
-    @unpack f_e, δ, s, z, b, ϕ, r, σ, ε, A, η_L, κ, ξ_inv, x_m, ψ, f_m, p_0 = cal
-    PAR = [f_e; z; δ; s; b; ϕ; r; σ; ε; A; η_L; κ; ξ_inv; x_m; ψ; f_m; p_0;
-           SHK.ρz; SHK.σz; SHK.ρδ; SHK.σδ; SHK.ρs; SHK.σs]
+    PAR = build_PAR(cal, SHK)
     model = (parameters = parameters, estimate = estimate, estimation = position,
              npar = length(parameters), ns = length(estimate), priors = priors,
              x = x, y = y, xp = xp, yp = yp, variables = variables, varnames = varnames,
