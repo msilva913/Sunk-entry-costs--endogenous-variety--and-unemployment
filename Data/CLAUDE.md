@@ -104,7 +104,8 @@ and the δ→v trough at h=4–6. See [D10](context/decisions.md)
 > Q2 VAR → Q3 targets → Q4 identification → Q5 hypotheses and mechanism comparisons (the D12
 > gate) → Q6 estimation.
 
-**Resume:** [`context/session_handout_20261019.md`](context/session_handout_20261019.md)
+**Resume:** [`context/session_handout_20261020.md`](context/session_handout_20261020.md) (Oct 20: entry point for the **cloud** session — setup, reproduction checks, Q2 status, next steps). Before:
+[`context/session_handout_20261019.md`](context/session_handout_20261019.md)
 (Oct 19: Oct 15 and Oct 18 work reconciled; Q1 closed and merged into `costly_vacancy_reposting`;
 σ* = 0.011 determinacy result; Q2 scoped, D14 opened). Before:
 [`context/session_handout_20261018.md`](context/session_handout_20261018.md)
