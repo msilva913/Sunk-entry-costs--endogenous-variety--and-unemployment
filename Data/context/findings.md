@@ -866,3 +866,9 @@ count.
 - Decision pending (MS): one window for shocks and targets. (A) 1992–2019 throughout, or (B)
   1951–2019 for z, s (built from τ before 1992) and the u/v/θ moments, with δ on 1992–2019.
   Truncate at 2019Q4 before filtering either way.
+- **Oct 20, endpoint fix (S13) applied to part6b/part6c.** Truncating before filtering moves s
+  the most: monthly ρ_s 0.8741 → 0.8390 (part6b AR(1)) and, in the trivariate VAR, ρ_s
+  0.8387 → 0.7905, σ_s 0.0773 → 0.0702. z 0.902 → 0.897; δ about unchanged. The share of the
+  s innovation explained by z and δ is 1.7 %. `Q2_*.txt` (Julia) were produced before this fix,
+  and `SHOCKS_BASE` still holds the pre-S13 part6b values. Both are superseded once the S14
+  (option B) processes are built.

@@ -225,11 +225,16 @@ def hp_cycles(dat, levels):
     tau and s are both filtered over the s window rather than tau's own longer
     history. s cannot begin before BED Deaths do, and the decomposition
     compares the two cycles, which requires one trend window for both.
+
+    Every series is cut at SAMPLE_END *before* filtering (S13, Oct 20, 2026): the
+    HP trend is two-sided, so filtering through 2020+ would leak the pandemic into
+    the 2017-19 cycles.
     """
     sources = {"z": normalized_z(dat)} | {c: levels[c] for c in levels}
     out = {}
     for name, series in sources.items():
-        out[name], _ = hpfilter(np.log(series.dropna()), lamb=HP_LAMBDA)
+        series = series.dropna()
+        out[name], _ = hpfilter(np.log(series[series.index <= SAMPLE_END]), lamb=HP_LAMBDA)
     cyc = pd.DataFrame(out).dropna()
     return cyc[cyc.index <= SAMPLE_END]
 

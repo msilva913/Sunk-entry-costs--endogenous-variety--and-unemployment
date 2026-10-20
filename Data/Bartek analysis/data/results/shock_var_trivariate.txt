@@ -4,43 +4,43 @@ Data, cycles and monthly conversion as in part6b (imported).
 
 1. Companion matrix A1 (rows: equation; columns: lag of z, delta, s), HC3 t-stats
                        L.z           L.delta               L.s      R2
-z          +0.734 (+11.11)   -0.005 (-0.58)   +0.010 (+1.43)   0.576
-delta      -1.064 (-1.38)   +0.148 (+1.72)   +0.181 (+2.35)   0.133
-s          +0.309 (+0.46)   +0.362 (+2.81)   +0.590 (+4.00)   0.502
-   |eigenvalues| of A1: 0.730  0.730  0.015
+z          +0.721 (+10.10)   -0.006 (-0.63)   +0.009 (+1.15)   0.543
+delta      -1.015 (-1.20)   +0.147 (+1.69)   +0.192 (+2.14)   0.135
+s          -0.369 (-0.54)   +0.351 (+2.91)   +0.494 (+3.00)   0.455
+   |eigenvalues| of A1: 0.685  0.685  0.003
 
 2. Reduced-form residual correlations
                 z    delta        s
-z          +1.000   -0.321   -0.105
-delta      -0.321   +1.000   +0.041
-s          -0.105   +0.041   +1.000
+z          +1.000   -0.320   -0.131
+delta      -0.320   +1.000   +0.053
+s          -0.131   +0.053   +1.000
 
 3. Cholesky z -> delta -> s: quarterly innovation SDs
           reduced form  orthogonal   share explained by earlier shocks
 z               0.0058      0.0058                                0.0%
-delta           0.0564      0.0534                               10.3%
-s               0.0524      0.0521                                1.1%
-   ordering z -> s -> delta: sigma_s 0.0521 (1.1% explained), sigma_delta 0.0534 (10.3% explained)
+delta           0.0563      0.0534                               10.2%
+s               0.0499      0.0494                                1.7%
+   ordering z -> s -> delta: sigma_s 0.0494 (1.7% explained), sigma_delta 0.0534 (10.3% explained)
 
 4. Candidate monthly processes (rho = VAR diagonal, cubed root; sigma matches the
    unconditional variance, as in part6b)
               part6b (now)      (a) orthogonal      (b) correlated           alt order
            rho_m   sigma_m     rho_m   sigma_m     rho_m   sigma_m     rho_m   sigma_m
-z           0.9020  0.0092      0.9021  0.0091      0.9021  0.0091      0.9021  0.0091
-delta       0.5920  0.0669      0.5290  0.0622      0.5290  0.0657      0.5290  0.0622
-s           0.8741  0.0854      0.8387  0.0773      0.8387  0.0777      0.8387  0.0773
+z           0.9020  0.0092      0.8967  0.0091      0.8967  0.0091      0.8967  0.0091
+delta       0.5920  0.0669      0.5276  0.0621      0.5276  0.0656      0.5276  0.0621
+s           0.8741  0.0854      0.7905  0.0702      0.7905  0.0708      0.7905  0.0702
    (b) also needs the innovation correlations of section 2 (quarterly; carried to
    monthly unchanged, an approximation).
-   Univariate AR(1) for s (part6b): rho_Q 0.6678, sigma_Q 0.0557; VAR diagonal: rho_Q 0.5899.
+   Univariate AR(1) for s (part6b): rho_Q 0.5906, sigma_Q 0.0538; VAR diagonal: rho_Q 0.4940.
 
 5. Diagnostics
    Lag length (common sample of VAR(4), T = 106):
-     p = 1:  AIC   -22.034   BIC   -21.732
-     p = 2:  AIC   -22.057   BIC   -21.529
-     p = 3:  AIC   -22.027   BIC   -21.273
-     p = 4:  AIC   -22.128   BIC   -21.149
+     p = 1:  AIC   -22.166   BIC   -21.864
+     p = 2:  AIC   -22.178   BIC   -21.650
+     p = 3:  AIC   -22.160   BIC   -21.406
+     p = 4:  AIC   -22.278   BIC   -21.298
      minimum: AIC p = 4, BIC p = 1
    Ljung-Box p-values on VAR(1) residuals (lags 4, 8):
-     z      0.888  0.271
+     z      0.885  0.262
      delta  0.005  0.001
-     s      0.953  0.897
+     s      0.817  0.459
