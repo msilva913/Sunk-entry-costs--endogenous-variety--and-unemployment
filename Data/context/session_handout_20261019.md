@@ -119,3 +119,35 @@ of [`pending_tasks.md`](pending_tasks.md). What is missing from the part6b appro
   2. Decide the Beveridge lever: p_0 > 0.5 (lowers the floor of Λ̄_r but reshapes the exit
      margin), a δ → s channel, or s-shock propagation. This feeds D11, Q4 and Q5.
   3. R19 as before.
+
+## 5. Update — October 20, later
+
+**Results** (findings.md "Q2", from `Q2_p0_floor.txt` and `Q2_amplification_sweep.txt`):
+- **p_0 only sets the floor of Λ̄_r; results depend only on Λ̄_r.** cor(u,v) is −0.11 / −0.45 /
+  −0.63 at Λ̄_r = 0.45 / 0.25 / 0.10. The reposting margin alone cannot reach the data.
+- **Data SVAR (scratch):** s explains at most about 25 % of var(u) in any recursive ordering,
+  and v falls after an s shock. In the model, s explains 93–99 %.
+- **Amplification sweep:**
+  - z is under-amplified. b/w, x_v (Pissarides' per-hire cost) and ξ_inv each roughly double
+    z's contribution, to at most σ(u) ≈ 2.6 %, against about 9 % needed.
+  - **δ barely moves u (σ(u) ≈ 0.3 %, against about 6–7 %), and no lever helps.**
+  - ϕ is recovered at 0.8–0.96 but is *not* an amplification lever: Hagedorn–Manovskii
+    cancellation, a factor of at most about 1.35 at our numbers. It matters for wage
+    cyclicality.
+- **The data targets included the pandemic.** σ(u) 14.96 and cor(u,v) −0.804 were computed on
+  1951–2024. Pre-pandemic (1951–2019): σ(u) 12.48, cor(u,v) −0.925.
+- **The 1992–2019 window is post-1985.** Productivity is acyclical in it (cor(z,u) +0.13, vs
+  −0.37 for 1951–84), and CK's −0.63 productivity–separation correlation is a pre-1985 feature.
+
+**Decisions (MS):**
+- **S13:** end at 2019Q4, cut before filtering. Applied to part6b/6c; ρ_s falls to 0.79.
+- **S14 (option B):** 1951–2019 for z, s and the labor-market moments; 1992–2019 for δ.
+- Never sweep η_L or ε; both are data-pinned (saved to memory).
+
+**Next:**
+1. Build the S14 processes and refresh `SHOCKS_BASE`, and `SHK` in `sigma_determinacy.jl`.
+2. Regenerate the Block M targets on the S14 windows; formalize the data SVAR (Q3, B′).
+3. Rerun `Q2_*.jl` and `R8_step7_baseline.jl`.
+4. z-elasticity diagnostic: model z-only d ln θ/d ln z against the closed form at our
+   persistence, with the business block on and frozen.
+5. The δ-propagation gap.

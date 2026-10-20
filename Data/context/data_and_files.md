@@ -139,6 +139,22 @@ NFCI interaction variant:
 | β(δ←z) quarterly | −1.050 (SE=0.830) | part6b; endogenous exit channel — NOT in shock process |
 | corr(u^z, u^δ) | −0.284 | part6b; pre-Cholesky; absorbed by model equilibrium |
 
+> ⚠ **The part6b rows above are pre-S13 (Sept 21) values, still in `SHOCKS_BASE`.** Since Oct 20:
+> - S13 cuts every series at 2019Q4 *before* filtering. Rerun results: part6b ρ_s^m = 0.839,
+>   σ_s^m = 0.080, ρ_z^m = 0.893.
+> - The trivariate VAR (`part6c_shock_var_trivariate.py`, Q2) gives monthly
+>   ρ/σ: z 0.897/0.0091, δ 0.528/0.0621, s 0.791/0.0702.
+> - All of these are superseded by the **S14 window** (z, s on 1951–2019 with s from τ before
+>   1992; δ on 1992–2019), not yet built. See [decisions.md](decisions.md) S13/S14 and
+>   [findings.md](findings.md) "Q2" and "Sample windows".
+>
+> **LP series:** PRS85006163 is nonfarm-business **output per worker** (Shimer/HM/CK
+> standard), not per hour.
+>
+> **Block M targets:** the σ(u) 0.1496 / cor(u,v) −0.804 values cover 1951–2024, including the
+> pandemic. Under S13/S14 they become 1951–2019: σ(u) 0.1248, σ(v) 0.1382, cor(u,v) −0.925.
+> The full table has not been regenerated yet.
+
 > ✅ **δ̄ is settled — [D1](decisions.md), September 6, 2026.** BED establishment deaths,
 > employment-weighted, 1993–2019: `dest_ann = 0.0320` (3.21%/yr), **δ_e/τ = 0.087**.
 >

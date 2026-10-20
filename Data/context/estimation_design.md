@@ -22,6 +22,9 @@ Bayesian simulated method of moments over **two blocks**.
 
 **Block M — unconditional moments.** m̂ = the σ(x), contemporaneous correlations, and ρ₁(x)
 of `tab:smm_moments`, over seven series {u, v, s, f, δ, N^e, z}, in log-levels, HP λ=1,600.
+**Windows (S13/S14, Oct 20):** every series ends at 2019Q4 and is cut before filtering. u, v,
+θ, f, s and z run from 1951Q1; δ and δ-related moments from 1992Q3. Block B′ uses the same
+windows, and the shock processes are estimated on them too.
 Weight Ω_m: HAC, block bootstrap, block length 8 quarters (HP filtering induces serial
 correlation in cyclical residuals at all lags, so this is needed regardless of λ).
 

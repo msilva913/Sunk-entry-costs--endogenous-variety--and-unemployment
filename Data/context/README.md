@@ -1,6 +1,6 @@
 # Context Folder — Index
 **Last reorganized:** September 5, 2026 (branch `Organize_Project_State_Estimation`)
-**Last consistency pass:** October 19, 2026 (branch `costly_vacancy_reposting`: Q1 closed and merged, σ* determinacy, Q2 scoped, D14). Handout `session_handout_20261019.md`. Before: October 18, 2026 (Q1 steps 5–7, BK ε-threshold and `rem:dilution_variety` + App. K, R19 user-cost offset). Handout `session_handout_20261018.md`. Earlier: Oct 14 (Q0, D13, Q1 steps 1–4); Oct 13 (P8); Oct 11–12 (theory rebuild, X^c). Handouts before Oct 9 are in `archive/`.
+**Last consistency pass:** October 20, 2026 (branch `costly_vacancy_reposting`: Q2 estimated; p_0 floor and amplification sweeps; S13 endpoint 2019Q4, S14 window option B; Python env spec). Before: October 19 (Q1 closed and merged, σ* determinacy, Q2 scoped, D14). Handout `session_handout_20261019.md`. Before: October 18, 2026 (Q1 steps 5–7, BK ε-threshold and `rem:dilution_variety` + App. K, R19 user-cost offset). Handout `session_handout_20261018.md`. Earlier: Oct 14 (Q0, D13, Q1 steps 1–4); Oct 13 (P8); Oct 11–12 (theory rebuild, X^c). Handouts before Oct 9 are in `archive/`.
 spliced (`prop:fe` leads `sec:mechanism`), every theory proposition audited and corrected, R16
 repaired, X^c made exact in draft and code, `ass:matching` tightened. Handout
 `session_handout_20261012.md`. Handouts before Oct 9 moved to `archive/`.

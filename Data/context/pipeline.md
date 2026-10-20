@@ -43,7 +43,7 @@ They meet only at estimation, which does not exist yet — see
 | `part5_joint_lp.py` | Joint LP: δ and LD in the same regression | ✅ robustness, not structural ([D6](decisions.md)) |
 | `part5_joint_diagnostics.py` | Partial-R²/first-stage test of Story 1 vs. Story 2 for the zero β^LD | ✅ |
 | `part6_shock_persistence.py` | AR(1) persistence of the raw and residualized shocks | ✅ |
-| `part6b_shock_persistence_cyclical.py` | **Model shock calibration**: bivariate VAR(1) on HP-1600 log z, log δ, Cholesky z-first | ✅ → ρ_z^m, ρ_δ^m, σ_z^m, σ_δ^m |
+| `part6b_shock_persistence_cyclical.py` | **Model shock calibration**: bivariate VAR(1) on HP-1600 log z, log δ, Cholesky z-first. Since Oct 20, series are cut at 2019Q4 *before* filtering (S13). Its window (1992–2019) is superseded by S14 | ✅ → ρ_z^m, ρ_δ^m, σ_z^m, σ_δ^m |
 | `part6c_shock_var_trivariate.py` | **Q2**: trivariate VAR(1) on z, δ, s (imports part6b's series), Cholesky z → δ → s; candidate processes (a) orthogonalized, (b) correlated; lag length, Ljung–Box | ✅ Oct 20 → `shock_var_trivariate.txt/.csv` |
 | `part7_nfci.py` | Chicago Fed NFCI → quarterly | ✅ |
 | `part7b_sloos.py` | SLOOS C&I tightening in place of NFCI_risk | ⚠️ run, but **output stale** (pre-Deaths instrument, `instr_sd`=11.16) |
@@ -240,7 +240,9 @@ qzflag case (0 no bounded equilibrium, 2 indeterminate, 3 invertibility). Enviro
 | `R8_step7_baseline.jl` | Step 7: IRFs and simulated cor(u,v) over Λ̄_r (exploratory) | `.txt` |
 | `R8_test6_free_entry.jl` | Test 6: `prop:fe` closed forms under AGS emulation; documents the user-cost offset (R19) | `.txt` |
 | `sigma_determinacy.jl` | σ* by bisection under four specs (own `SHK` copy) | `.txt` |
-| `Q2_shock_processes_check.jl` | cor(u,v) over Λ̄_r at part6b vs part6c (a) processes (reads `shock_var_trivariate.csv`) | `.txt` |
+| `Q2_shock_processes_check.jl` | cor(u,v) over Λ̄_r at part6b vs part6c (a) processes (reads `shock_var_trivariate.csv`). Output predates S13; rerun after S14 | `.txt` |
+| `Q2_p0_floor.jl` | cor(u,v) over (p_0, Λ̄_r): only Λ̄_r matters; p_0 sets the floor | `.txt` |
+| `Q2_amplification_sweep.jl` | One-at-a-time levers (b/w, x_v, X_Y, ξ_inv, exit elasticity, ω_δ): ϕ, fundamental surplus, z/δ/s shares of var(u). Never sweeps η_L or ε | `.txt` |
 | `bk_epsilon_threshold.jl` | BK threshold ε* by bisection under four specs (`tab:eps_threshold`) | `.txt` |
 | `lrbgm_determinacy.jl` | LR-BGM block determinacy over ε, σ (App. K) | `.txt` |
 | `cutoff_profit_share.jl` | Flow-profit share s_R of the survival cutoff (App. K) | `.txt` |

@@ -100,6 +100,12 @@ is marginal utility of consumption).
 
 ### Shock processes (6 parameters)
 
+> ⚠ **Values below are the pre-S13 part6b calibration, still in `SHOCKS_BASE`.** To be replaced
+> by the S14 processes: a (z, s) VAR on 1951–2019 (s from τ before 1992), and the δ equation on
+> 1992–2019 with δ ordered last. Interim Oct 20 estimates (1992–2019, S13 applied, trivariate
+> VAR): ρ_z 0.897, σ_z 0.0091; ρ_δ 0.528, σ_δ 0.0621; ρ_s 0.791, σ_s 0.0702.
+> See [decisions.md](decisions.md) S13, S14, D14.
+
 | Symbol | Code name | Calibrated value | Economic meaning | Key moments | Intuition |
 |--------|-----------|-----------------|-----------------|-------------|-----------|
 | ρ_z | `rho_z` | 0.902 | Monthly persistence of technology shock | ρ₁(u), ρ₁(v), shape of z→u IRF | From VAR(1) on HP-1600 log(z), part6b. Governs how long a productivity shock propagates |

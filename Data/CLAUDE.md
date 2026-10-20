@@ -78,6 +78,16 @@ and the δ→v trough at h=4–6. See [D10](context/decisions.md)
 **Vacancy convention:** outcome is vacancy RATE = V/LF × 100 in pp, levels difference. Never log. Symmetric to unemployment rate.
 **Calibration:** τ̄ = 9.30%/qtr (3.10%/month). **δ̄_e is settled** ([D1](context/decisions.md)): `dest_ann = 0.0320` (BED Deaths, employment-weighted, 1993–2019), **δ_e/τ = 0.087**. **Implemented Oct 18 on `r8_timing_reposting`** (Q1 step 5): `TARGETS` holds D1 + PATH B (`dest_elast_target = 5.0`), b/w = 0.9, x_v = 0.5, `Λr_target = nothing`. D2 settled (PATH B).
 **Filter:** HP λ=1,600 on log-levels, applied identically to data and simulations. Not λ=100,000 — that flips the sign of cor(δ,u) and cor(δ,v).
+**Sample window (Oct 20, S13/S14):**
+- **End at 2019Q4 for every series, cut *before* filtering**, which rules out the pandemic.
+- **Start 1951Q1 for z, s and the labor-market moments; 1992Q3 only for δ** (BED).
+- s before 1992 is built from τ with δ at its mean.
+- ⚠ The old targets σ(u) = 14.96 % and cor(u,v) = −0.804 included 2020–24. Pre-pandemic
+  (1951–2019): σ(u) = 12.48 %, cor(u,v) = −0.925.
+- `SHOCKS_BASE` still holds the pre-S13 part6b values until the S14 processes are built.
+
+**Python:** `Data/environment.yml` (env `econ2315`). This machine uses Anaconda base,
+`%LOCALAPPDATA%\anaconda3\python.exe` (not on PATH); see `context/pipeline.md` "Python environment".
 **Paper draft:** `Draft/Draft.tex` (renamed from `Draft_11May2026.tex` on June 5, 2026). Theory and empirics complete through §5.3 (theory audited and corrected Oct 11–12); §5.4 is an empty stub and §6 is unstarted. Build: three `pdflatex` passes, **never `bibtex`**. Section-by-section status and the proposition inventory: [`context/draft_status.md`](context/draft_status.md).
 **Model code:** `Programs baseline/run_solution_core.jl`, restructured by R8 (Oct 14–18, branch `r8_timing_reposting`): draft timing, states [Ñ, Ẽ, Ṽ^u, Ṽ^s, z, δ, δl, s], partial reposting (Λ_r, Q_rep, H), 41 equations; X^c exact. Build PAR with `build_PAR(cal, SHK)`, shocks with `shock_col` and `SHOCKS_BASE`. Conventions and the Q1 program list: [`context/pipeline.md`](context/pipeline.md) Part 2.
 **No estimation code exists yet.** `run_solution_core.jl:131` still reads `estimate = []`; `:133` reads `priors = (;)`.
@@ -109,10 +119,16 @@ are in `context/archive/`.
    (`sigma_determinacy.txt`, findings.md).
 2. **R19 (theory, MS):** pricing replacement offsets `prop:fe`'s user-cost channel in the
    baseline. Double-limit check first, then a remark after `prop:fe`, then the framing.
-3. **Q2:** trivariate (z, δ, s) VAR. More urgent: with the part6b s process cor(u,v) reaches only
-   +0.46 at Λ̄_r = 0.70 (data −0.80). Scoped Oct 19: σ_s is a univariate residual never
-   orthogonalized against z and δ; whether to orthogonalize is [D14](context/decisions.md)
-   (the model has no endogenous s). Needs the `econ2315` conda environment.
+3. **Q2 (in progress, Oct 20):**
+   - **Done:** the trivariate VAR (`part6c`). The s innovation is nearly orthogonal (D14 low
+     stakes), and the new processes leave cor(u,v) unchanged.
+   - **p_0 grid:** results depend only on Λ̄_r; even Λ̄_r = 0.10 gives only −0.63.
+   - **Amplification sweep:** s supplies 93–99 % of var(u) in the model, against ≤ 25 % in the
+     data SVAR. z is under-amplified 3–6×, and δ barely moves u (> 20× short). ϕ is not a lever
+     (Hagedorn–Manovskii cancellation; at most about 1.35×).
+   - **Next:** build the S14 (option B) shock processes, refresh `SHOCKS_BASE`, and move the
+     targets to the S14 windows. Then the z-elasticity diagnostic (persistence vs the business
+     block) and the δ-propagation gap. Details: findings.md "Q2", handout §4–5.
 
 **Theory structure in the draft (Oct 18).** §3 limiting cases: `prop:independence`, clone
 replacement (`prop:ags`, `rem:nesting`), `prop:double_limit`, `rem:bgm_nest`,

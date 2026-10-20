@@ -145,7 +145,9 @@ Every §5.3 number must be regenerated afterwards; bundle with the D1 cascade.
 Orthogonal innovations (Cholesky, z first; `part6b`). The z→δ_e link runs through χ^c, not
 through shock covariance. Monthly calibration from `part6b`: ρ_z = 0.902, σ_z = 0.0092,
 ρ_δ = 0.592, σ_δ = 0.0669, ρ_s = 0.8741, σ_s = 0.0854. **Code:** processes match; the
-observation date differs (deviation 2).
+observation date differs (deviation 2). ⚠ These are the pre-S13 values (`SHOCKS_BASE`). They are
+to be replaced by the S14 processes: a (z, s) VAR on 1951–2019, the δ equation on 1992–2019, and
+the 2019Q4 cut before filtering ([decisions.md](decisions.md) S13/S14).
 
 ## Continuation-cost distribution
 
