@@ -1,0 +1,28 @@
+# Python environment for the empirical pipeline (Data/Bartek analysis, Data/*.py).
+#
+# Pinned to the versions verified on Oct 20, 2026 (Anaconda 2026.07 base): with them,
+# part6b_shock_persistence_cyclical.py reproduces data/results/shock_calibration.csv
+# (committed Sept 21) to 1e-12. Minor versions are pinned, patch versions are free.
+#
+# Create (one time, per machine):   conda env create -f environment.yml
+# Bring an existing env in line:    conda env update -n econ2315 -f environment.yml --prune
+# Check:  python part6b_shock_persistence_cyclical.py, then
+#         git diff --stat data/results/shock_calibration.csv  → only last-digit noise
+#
+# raw_data.pkl is a pandas pickle: keep pandas on the major version pinned here.
+name: econ2315
+channels:
+  - conda-forge
+dependencies:
+  - python=3.14
+  - numpy=2.4
+  - pandas=3.0
+  - scipy=1.18
+  - statsmodels=0.14
+  - matplotlib=3.11
+  - seaborn=0.13
+  - pyarrow=23.0
+  - requests=2.34
+  - python-dotenv
+  - tabulate=0.10
+  - fredapi=0.5

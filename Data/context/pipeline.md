@@ -70,6 +70,29 @@ They meet only at estimation, which does not exist yet — see
 > matplotlib version problem in the `econ2315` conda environment, not a logic error. The
 > call is wrapped in `try/except` so the rest of §8 still runs. Low priority.
 
+### Python environment (Oct 20, 2026)
+
+**Spec:** [`../environment.yml`](../environment.yml) (env name `econ2315`, conda-forge, minor
+versions pinned). This is the cross-machine contract, the Python counterpart of the Julia
+`Project.toml`/`Manifest.toml`. On a new machine: `conda env create -f Data/environment.yml`.
+After a spec change: `conda env update -n econ2315 -f Data/environment.yml --prune`.
+
+**Check after any environment change:** run `part6b_shock_persistence_cyclical.py` and
+`git diff --stat data/results/shock_calibration.csv`. Only last-digit noise is allowed (1e-12
+on Oct 20). Then `git checkout` the regenerated outputs.
+
+**Per machine.**
+- **Oct 20 machine (m.silva):** Anaconda 2026.07 at `%LOCALAPPDATA%\anaconda3`. Its **base**
+  env has every package and passes the check, so it is used directly; there is no `econ2315`
+  env here yet. Not on PATH: call `"$env:LOCALAPPDATA\anaconda3\python.exe"` from PowerShell.
+- **Other machine (msilv):** the original `econ2315` env, versions unrecorded. Bring it in line
+  with the update command above, then run the check.
+- Julia's private Conda Python (`~/.julia/conda/3`) is for PyCall/SymPy only. Never use it
+  for the empirical pipeline.
+
+`raw_data.pkl` (built by `observables.py`, tracked in git) is a pandas pickle: keep pandas on the
+pinned major version, or rebuild it.
+
 ### Run order for a fresh start
 
 ```
