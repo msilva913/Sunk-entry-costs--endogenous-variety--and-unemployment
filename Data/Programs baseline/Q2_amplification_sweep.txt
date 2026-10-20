@@ -1,0 +1,30 @@
+Q2 amplification sweep — working point p_0 = 0.8, Λ̄_r = 0.25; shocks part6c (a); σ in %, HP-1600 quarterly.
+Data: cor −0.804, σu 14.96, σv 14.19, σθ/σLP 11.70; SVAR shares of var(u): s ≤ ~25 %, z+δ ≈ 55–60 %.
+
+== reference
+  costless reposting         ϕ 0.580  FS0 0.160  FS 0.157 | cor +0.995  σu  6.65  σv 13.04  σθ/σLP  4.56 | σu by z  0.27 δ  0.29 s  6.60 | share z  0.2 δ  0.2 s 99.6
+  working point              ϕ 0.914  FS0 0.134  FS 0.105 | cor -0.453  σu 11.57  σv 11.19  σθ/σLP 13.66 | σu by z  1.36 δ  0.27 s 11.36 | share z  1.4 δ  0.1 s 98.5
+
+== b_ratio  (working point 0.9)
+  b_ratio = 0.8              ϕ 0.955  FS0 0.230  FS 0.201 | cor -0.400  σu 11.36  σv 10.49  σθ/σLP 12.82 | σu by z  0.73 δ  0.26 s 11.20 | share z  0.4 δ  0.1 s 99.5
+  b_ratio = 0.95             ϕ 0.842  FS0 0.086  FS 0.057 | cor -0.536  σu 12.02  σv 12.66  σθ/σLP 15.35 | σu by z  2.49 δ  0.27 s 11.62 | share z  4.4 δ  0.1 s 95.6
+
+== x_v  (working point 0.5)
+  x_v = 0.2                  ϕ 0.818  FS0 0.133  FS 0.104 | cor -0.396  σu 11.43  σv 10.83  σθ/σLP 13.21 | σu by z  2.33 δ  0.26 s 11.06 | share z  4.2 δ  0.1 s 95.7
+  x_v = 0.9                  ϕ 0.950  FS0 0.134  FS 0.105 | cor -0.482  σu 11.68  σv 11.49  σθ/σLP 13.99 | σu by z  0.92 δ  0.27 s 11.51 | share z  0.6 δ  0.1 s 99.3
+
+== X_Y  (working point 0.015)
+  X_Y = 0.0075               ϕ 0.956  FS0 0.117  FS 0.102 | cor -0.415  σu 11.41  σv 10.86  σθ/σLP 13.20 | σu by z  1.40 δ  0.26 s 11.20 | share z  1.5 δ  0.1 s 98.4
+  X_Y = 0.03                 ϕ 0.838  FS0 0.167  FS 0.109 | cor -0.513  σu 11.85  σv 11.80  σθ/σLP 14.44 | σu by z  1.30 δ  0.27 s 11.65 | share z  1.2 δ  0.1 s 98.7
+
+== ξ_inv  (working point 1)
+  ξ_inv = 0.25               ϕ 0.945  FS0 0.121  FS 0.103 | cor +0.049  σu 10.20  σv  8.75  σθ/σLP  9.28 | σu by z  2.56 δ  0.23 s  9.78 | share z  6.4 δ  0.1 s 93.5
+  ξ_inv = 4.0                ϕ 0.805  FS0 0.183  FS 0.111 | cor -0.691  σu 12.94  σv 15.68  σθ/σLP 18.54 | σu by z  0.56 δ  0.28 s 12.79 | share z  0.2 δ  0.0 s 99.8
+
+== dest_elast_target  (working point 5.0)
+  dest_elast_target = 2.5    ϕ 0.911  FS0 0.135  FS 0.105 | cor -0.456  σu 11.61  σv 11.14  σθ/σLP 14.29 | σu by z  1.25 δ  0.26 s 11.41 | share z  1.2 δ  0.1 s 98.8
+  dest_elast_target = 10.0   ϕ 0.917  FS0 0.133  FS 0.105 | cor -0.450  σu 11.52  σv 11.32  σθ/σLP 13.06 | σu by z  1.64 δ  0.27 s 11.28 | share z  2.1 δ  0.1 s 97.9
+
+== dest_end_frac  (working point 0.5)
+  dest_end_frac = 0.25       ϕ 0.911  FS0 0.135  FS 0.105 | cor -0.456  σu 11.61  σv 11.14  σθ/σLP 14.29 | σu by z  1.25 δ  0.40 s 11.41 | share z  1.2 δ  0.1 s 98.7
+  dest_end_frac = 0.75       ϕ 0.916  FS0 0.133  FS 0.105 | cor -0.451  σu 11.54  σv 11.25  σθ/σLP 13.29 | σu by z  1.50 δ  0.13 s 11.32 | share z  1.7 δ  0.0 s 98.3

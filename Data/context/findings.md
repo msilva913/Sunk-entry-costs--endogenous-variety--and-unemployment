@@ -824,3 +824,22 @@ count.
 - **After an s shock the data's v falls** (−0.6 to −1.0 % for four quarters, while u rises 1–2.4 %).
   Data separations destroy positions, which supports a low Λ̄_r.
 - To be formalized as the data side of Block B′ (Q3).
+
+**Q2: amplification sweep (`Q2_amplification_sweep.jl/.txt`, Oct 20).** Working point p_0 = 0.8,
+Λ̄_r = 0.25, shocks part6c (a). One lever at a time: b/w, x_v, X_Y, ξ_inv, exit elasticity,
+ω_δ. (η_L and ε are data-pinned and not swept.)
+- **s supplies 93.5–99.8 % of var(u) in every case.** The data SVAR says at most about 25 %.
+- **z is under-amplified.** σ(u) from z alone is 0.3–2.6 %. The data's z share (about 35 % of
+  14.96 %) needs about 9 %. The largest effects come from b/w (0.95 → 2.5 %), ξ_inv
+  (0.25 → 2.6 %) and x_v (0.2 → 2.3 %).
+- **δ barely moves u: σ(u) from δ alone is 0.13–0.40 % across every lever.** The data's δ share
+  (about 20 %) needs about 6–7 %, a gap of more than 20×. No existing lever closes it.
+- **ϕ is recovered at 0.58 (costless) and 0.80–0.96 under low reposting**, against 0.05 in
+  Hagedorn–Manovskii. Stage 4 pins ϕ from w = 1, X_Y, x_v and b/w, and the reposting
+  shortfall in the wage pushes it up. High ϕ makes the wage absorb productivity movements.
+- **σ(θ)/σ(LP) is a poor gauge of z amplification here.** s shocks move θ without moving LP, so
+  the ratio reaches 13.7 at the working point (data 11.7) while z alone moves u by 1.4 %.
+- **Fundamental surplus** (FS, net of b, the annuitized κ and s𝓡): 0.10–0.11 except through
+  b/w (0.057 at 0.95, 0.20 at 0.80).
+- The cor(u,v) gains in the sweep (−0.69 at ξ_inv = 4) work through the s channel, not
+  through z or δ.
