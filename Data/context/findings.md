@@ -836,7 +836,11 @@ count.
   (about 20 %) needs about 6–7 %, a gap of more than 20×. No existing lever closes it.
 - **ϕ is recovered at 0.58 (costless) and 0.80–0.96 under low reposting**, against 0.05 in
   Hagedorn–Manovskii. Stage 4 pins ϕ from w = 1, X_Y, x_v and b/w, and the reposting
-  shortfall in the wage pushes it up. High ϕ makes the wage absorb productivity movements.
+  shortfall in the wage pushes it up. **ϕ is not an amplification lever** (corrected Oct 20).
+  In the closed form, ϕ enters only through the factor (r+s+ϕf)/((r+s)η+ϕf) ∈ [1, 1/η]. At our
+  numbers that factor is about 1.04 at ϕ = 0.9 and about 1.35 at ϕ = 0.05, which is the
+  Hagedorn–Manovskii cancellation. High ϕ matters for wage cyclicality, a moment to check.
+  The sweep did not isolate ϕ.
 - **σ(θ)/σ(LP) is a poor gauge of z amplification here.** s shocks move θ without moving LP, so
   the ratio reaches 13.7 at the working point (data 11.7) while z alone moves u by 1.4 %.
 - **Fundamental surplus** (FS, net of b, the annuitized κ and s𝓡): 0.10–0.11 except through
