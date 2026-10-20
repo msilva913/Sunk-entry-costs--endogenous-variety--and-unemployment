@@ -130,7 +130,7 @@ def construct_data(init, final, freq):
 
     # ------------------------------------------------------------------ #
     # Labor productivity                                                   #
-    # PRS85006163: output per hour, nonfarm business sector, index        #
+    # PRS85006163: output per worker, nonfarm business sector, index      #
     # 2012=100.  Used as a growth-rate / second-moment target; the level  #
     # is not economically meaningful.                                      #
     # ------------------------------------------------------------------ #

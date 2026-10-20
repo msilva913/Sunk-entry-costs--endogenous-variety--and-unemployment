@@ -847,3 +847,22 @@ count.
   b/w (0.057 at 0.95, 0.20 at 0.80).
 - The cor(u,v) gains in the sweep (−0.69 at ξ_inv = 4) work through the s channel, not
   through z or δ.
+
+**Sample windows: the data targets include the pandemic (Oct 20).**
+- The targets σ(u) 14.96, σ(v) 14.19 and cor(u,v) −0.804 are HP-1600 over **1951–2024**
+  (`observables_moments.py`, `final = 2024`), so they include 2020–21.
+- Pre-pandemic: 1951–2019 gives σ(u) 12.48, σ(v) 13.82, cor −0.925; 1992–2019 gives 10.65,
+  11.19, −0.929.
+- The shock processes are estimated on 1992Q4–2019Q4, so shocks and targets use different
+  windows.
+- part6b HP-filters through 2025Q4 before cutting at 2019Q4, which leaks the 2020 spike into the
+  2017–19 cycles.
+- **z and the window.** PRS85006163 is nonfarm output per *worker*, the Shimer/HM/CK series
+  (the `observables.py` comment said "per hour"; fixed).
+  - The filter drives persistence: monthly ρ_z is about 0.96 at HP 10⁵ (CK 0.965) and about
+    0.91 at HP 1600, in any window.
+  - The window drives volatility and cyclicality. 1951–84: monthly σ_z 0.0158, cor(z,u) −0.37,
+    cor(z,τ) −0.67 (CK −0.63). 1985–2019: 0.0091, +0.13, −0.20.
+- Decision pending (MS): one window for shocks and targets. (A) 1992–2019 throughout, or (B)
+  1951–2019 for z, s (built from τ before 1992) and the u/v/θ moments, with δ on 1992–2019.
+  Truncate at 2019Q4 before filtering either way.
