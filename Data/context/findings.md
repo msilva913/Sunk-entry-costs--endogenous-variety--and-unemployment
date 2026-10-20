@@ -804,3 +804,23 @@ count.
   cor(u,v). **Implication:** the gap is not a shock-process artifact. The lever is the floor,
   1 − p_0 (p_0 > 0.5, which also reshapes the exit margin), or the s-shock propagation itself.
   This feeds D11, Q4 and Q5.
+
+**Q2: how far must p_0 rise? (`Q2_p0_floor.jl/.txt`, Oct 20).** Shocks part6c (a).
+- **cor(u,v) depends only on Λ̄_r. p_0 merely sets the floor.** Results at a given Λ̄_r are
+  identical for p_0 = 0.6 to 0.95; PATH B re-pins ψ, so the exit block is unchanged.
+- cor(u,v) at Λ̄_r = 0.55 / 0.45 / 0.35 / 0.25 / 0.15 / 0.10:
+  +0.115 / −0.107 / −0.297 / −0.452 / −0.577 / −0.628.
+  σ(u) rises from 9.3 % to 12.6 % (data 14.96 %).
+- **Even at Λ̄_r = 0.10 (p_0 = 0.95) the model gives −0.63, against −0.80 in the data.** The
+  reposting margin alone does not close the gap while s carries most of the variance of u.
+- α reaches 10^178 because ψ ≈ 0.007. Λ_r is then effectively a constant, and α is close to
+  Float64 overflow (10^308).
+
+**Preliminary, scratch (not yet a program): data SVAR on (z, δ, s, u, v).** HP-1600 log cycles,
+1992Q3–2019Q4, Cholesky in that order.
+- **s shocks explain only 12–26 % of the variance of u.** z explains 30–40 %, δ 17–29 %, and the
+  residual u shock 14–34 % (VAR(1) vs VAR(2), horizons 4–20 quarters). In the model, s accounts
+  for nearly all of it.
+- **After an s shock the data's v falls** (−0.6 to −1.0 % for four quarters, while u rises 1–2.4 %).
+  Data separations destroy positions, which supports a low Λ̄_r.
+- To be formalized as the data side of Block B′ (Q3).
