@@ -16,7 +16,7 @@ Status key: 🔴 blocks estimation · 🟠 blocks a paper section · 🟡 improv
 | D11 | Does the reposting margin enter this paper? | 🟡 in the draft and the code (Q1, Oct 19); go/no-go after Q2 + R2/Q4 |
 | D12 | Venue and the theory-first pivot (JET?) | 🟠 open (MS), recommendation: no-go for JET; theory-forward paper for RED / JME / AEJ: Macro |
 | D13 | Conditional moments without Bartik: Block B′ = aggregate SVAR responses | 🔴 adopted as the working design Oct 14 (MS approved the plan); not yet built |
-| D14 | Is the s innovation orthogonalized against z and δ? | 🟠 open (MS, Oct 19); recommendation: orthogonalize (z → δ → s) in the baseline, correlated innovations as robustness |
+| D14 | Is the s innovation orthogonalized against z and δ? | 🟡 low stakes after Q2 (Oct 20): z and δ explain 1.1 % of the s innovation, so (a) and (b) coincide; take (a). New question: the dropped cross-lag δ_{t−1} → s_t (t = 2.8) |
 
 ---
 
@@ -44,7 +44,18 @@ is wrong on this point.
 **Also relevant.** Noise in BED Deaths enters s = (τ − δ)/(1 − δ) with weight ≈ δ/τ ≈ 0.09, which
 builds a spurious *negative* s–δ innovation correlation. Only the joint system shows its size.
 
-**Recommendation:** (a) for the baseline, (b) as robustness, with the σ(τ) shortfall reported.
+**Oct 20 update (Q2, `part6c_shock_var_trivariate.txt`).**
+- The premise is rejected. The s innovation correlates −0.105 with z and +0.041 with δ, and
+  orthogonalizing removes 1.1 % of its variance. (a) and (b) differ in the third decimal of
+  σ_s, and no BED-noise correlation appears.
+- Take (a), for consistency with B′.
+- The live issue is a different one: lagged δ predicts s (+0.362, t = 2.81). The model lacks a
+  δ → s channel, and the diagonal convention drops it. Whether to model it (an exogenous
+  δ_{t−1} term in the s process, or an endogenous separation margin) is open, and belongs with
+  the Beveridge-gap question in D11.
+
+**Original recommendation (Oct 19):** (a) for the baseline, (b) as robustness, with the σ(τ)
+shortfall reported.
 Decide after the Q2 numbers (share of s innovation variance explained by z and δ).
 
 ---

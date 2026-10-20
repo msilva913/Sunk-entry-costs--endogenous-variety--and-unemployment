@@ -773,3 +773,34 @@ count.
 - **Complements ε\* = 2.40** (`bk_epsilon_threshold.jl`). Both are determinacy limits of the
   business-formation block: ε\* through the variety loop, σ\* through the missing consumption
   smoothing of entry.
+
+**Q2: trivariate (z, δ, s) VAR (`part6c_shock_var_trivariate.py`, Oct 20).** Output
+`Bartek analysis/data/results/shock_var_trivariate.txt/.csv`. VAR(1) on HP-1600 cycles,
+1992Q4–2019Q4 (T = 109), Cholesky z → δ → s.
+
+- **The s innovation is almost uncorrelated with the z and δ innovations.** The residual
+  correlations are −0.105 (z) and +0.041 (δ). z and δ explain **1.1 %** of the s innovation
+  variance, so orthogonalizing moves σ_s only from 0.0524 to 0.0521 (quarterly). The Oct 19
+  concern that σ_s is inflated by co-movement (D14) is **rejected**. The predicted spurious
+  negative s–δ correlation from BED noise does not appear either. The ordering z → s → δ gives
+  the same numbers.
+- **What does change σ_s is persistence.** Lagged δ predicts s (+0.362, t = 2.81). With it in
+  the system, the own-lag of s falls from 0.668 (univariate AR(1)) to 0.590. Monthly
+  (a, orthogonalized): ρ_s = 0.8387, σ_s = 0.0773 (part6b: 0.8741, 0.0854); ρ_δ = 0.5290,
+  σ_δ = 0.0622 (0.592, 0.0669); z unchanged (0.9021, 0.0091). Option (b) differs only in the
+  third decimal of σ.
+- **Cross-lags dropped by the diagonal convention:** δ_{t−1} → s_t +0.362 (t = 2.81) and
+  s_{t−1} → δ_t +0.181 (t = 2.35); z_{t−1} → δ_t −1.06 (t = −1.38). The model has no
+  δ → s channel, so the first is real dynamics the shock processes leave out.
+- **Diagnostics.** BIC picks p = 1 (AIC p = 4). The δ residual is autocorrelated (Ljung–Box
+  p = 0.005 at 4 lags), so the VAR(1) fits δ poorly; z and s residuals are clean.
+- **Model check (`Q2_shock_processes_check.jl/.txt`): the new processes do not fix the
+  Beveridge sign.** cor(u,v) at Λ̄_r = costless / 0.85 / 0.70 / 0.60 / 0.55:
+  - part6b: +0.995 / +0.812 / +0.461 / +0.215 / +0.098;
+  - part6c (a): +0.995 / +0.825 / +0.483 / +0.234 / +0.114 (data −0.804).
+
+  σ(u) falls by about 18 %. The s-only correlation stays positive down to the floor (+0.141 at
+  0.55; Λ̄_r > 1 − p_0 = 0.5), so with p_0 = 0.5 no admissible Λ̄_r delivers a negative
+  cor(u,v). **Implication:** the gap is not a shock-process artifact. The lever is the floor,
+  1 − p_0 (p_0 > 0.5, which also reshapes the exit margin), or the s-shock propagation itself.
+  This feeds D11, Q4 and Q5.

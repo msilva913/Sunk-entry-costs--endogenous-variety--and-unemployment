@@ -96,3 +96,26 @@ of [`pending_tasks.md`](pending_tasks.md). What is missing from the part6b appro
 - Never assign numbers to symbolic model names (ρ_z, s, b, δ, …), including loop variables.
 - Write Julia/LaTeX edit scripts to files; the Bash tool collapses backslashes.
 - Don't install packages without asking.
+
+---
+
+## 4. Update — October 20 (same machine)
+
+- **Python environment.** No `econ2315` env exists on this machine, but Anaconda 2026.07 base
+  (`%LOCALAPPDATA%\anaconda3\python.exe`, not on PATH) has every package. It reproduces
+  `shock_calibration.csv` to 1e-12. The spec `Data/environment.yml` is committed
+  (`pipeline.md` "Python environment"). **Other machine:** run
+  `conda env update -n econ2315 -f Data/environment.yml --prune`, then the part6b check.
+- **Q2 estimated** (`part6c_shock_var_trivariate.py`; `Q2_shock_processes_check.jl`;
+  findings.md "Q2"). It overturns the Oct 19 scoping (§1):
+  - the s innovation is nearly orthogonal to z and δ (1.1 % explained), so D14 is low stakes;
+    take (a);
+  - ρ_s and σ_s fall (monthly 0.8387 and 0.0773) because lagged δ predicts s (t = 2.81), a
+    δ → s channel the model lacks;
+  - **cor(u,v) does not improve:** +0.483 at Λ̄_r = 0.70, +0.114 at 0.55, with the floor at
+    1 − p_0 = 0.5. The Beveridge gap is not a shock-process artifact.
+- **Next, revised:**
+  1. MS: approve (a) for `SHOCKS_BASE`.
+  2. Decide the Beveridge lever: p_0 > 0.5 (lowers the floor of Λ̄_r but reshapes the exit
+     margin), a δ → s channel, or s-shock propagation. This feeds D11, Q4 and Q5.
+  3. R19 as before.
