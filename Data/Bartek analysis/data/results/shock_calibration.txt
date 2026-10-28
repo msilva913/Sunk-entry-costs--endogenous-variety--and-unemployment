@@ -1,0 +1,239 @@
+==============================================================================
+Part 6b — shock processes for z, delta and s  (part6b_shock_persistence_cyclical.py)
+==============================================================================
+
+------------------------------------------------------------------------------
+0. Method
+------------------------------------------------------------------------------
+Windows (S13, S14). Every series ends at 2019Q4, cut BEFORE filtering: the HP
+trend is two-sided, so filtering through 2020+ would leak the pandemic into the
+2017-19 cycles. z, tau and s start in 1951Q1, the window of Shimer (2005),
+Hagedorn-Manovskii (2008) and Coles-Kelishomi (2018). delta starts when BED
+Deaths do, 1992Q3. A 1992-2019 window alone would sit entirely in the
+post-1985 era, when labor productivity is acyclical, and make z look weak by
+construction.
+
+Step 1. z: univariate AR(1) on 1951Q1-2019Q4 cycles.
+    z is ordered first wherever it enters a system, so its innovation is not
+    purged of anything, and its cross-lag terms are insignificant. A
+    univariate AR(1) is then the z equation of any of the VARs below, run on
+    the longer window. It supplies rho_z and sigma_z.
+
+Step 2. delta: bivariate (z, delta) VAR(1) on 1992Q3-2019Q4, Cholesky with z
+    ordered first. Only rho_delta and sigma_delta are kept.
+    - sigma_delta. The model generates z -> chi^c -> delta_e itself, through
+      the continuation-cost threshold. If the exogenous delta innovation also
+      carried its correlation with the z innovation, that channel would be
+      counted twice. The Cholesky step strips the part of the delta
+      innovation that the same-quarter z innovation explains. This is where
+      we depart from Coles and Kelishomi (2018), who allow correlated
+      innovations because their model has no endogenous exit margin.
+    - rho_delta is the own-lag coefficient of the VAR, an OLS object formed
+      before the Cholesky step, which therefore does not touch it.
+    - The cross-lag terms are reported, not fed to the model: they are
+      equilibrium outcomes, not primitive forcing.
+    - The VAR's z equation only supplies the z innovation for the purge.
+      rho_z and sigma_z come from Step 1, on the longer window.
+
+Step 3. s: univariate AR(1) on the spliced 1951Q1-2019Q4 series. sigma_s is
+    the AR(1) residual SD, NOT orthogonalized (D14).
+    The double-counting argument of Step 2 does not carry over. The model has
+    no endogenous s, so z never moves s in the model. Purging s of its
+    correlation with z would remove separation variation the model can never
+    regenerate. Persistence is the univariate AR(1) coefficient, not the
+    diagonal of a larger VAR with the cross-lags dropped: the model's s is an
+    AR(1) on its own, so its autocorrelation should match that of s in the
+    data. The model also assumes the s and z innovations are uncorrelated.
+    Section 5 of the report tests that, against a rule fixed in advance:
+    revisit D14 if the z innovation explains at least 10 % of the s
+    innovation variance and |t| >= 2.
+
+Why s is not tau. Shimer's tau is the TOTAL separation rate: it counts workers
+whose job vanished with the product line as well as broken matches on
+surviving lines. The model's s is the second kind only. The accounting identity
+behind tab:calib_targets links them:
+
+    tau = delta_e + (1 - delta_e) s    =>    s = (tau - delta_e)/(1 - delta_e)
+
+SPLICE (s before 1992Q3). BED Deaths begin in 1992Q3; tau begins in 1951Q1.
+
+    t >= 1992Q3:  s_t = (tau_t - delta_t)/(1 - delta_t)    measured identity
+    t <  1992Q3:  s_t = (tau_t - dbar)/(1 - dbar)          dbar a constant
+
+    dbar = mean of the first SPLICE_ANCHOR_Q BED quarters (1992Q3-1994Q4).
+
+The spliced series is cut at 2019Q4, logged and HP-filtered once, over the
+whole 1951-2019 window. Log-linearizing at the means shows what each piece
+does to the cycle:
+
+    before 1992Q3:  d ln s = k_pre d ln tau,            k_pre = tau/(tau - dbar)
+    from 1992Q3:    d ln s = k_post d ln tau - w d ln delta,
+                    k_post = tau/(tau - delta),
+                    w = delta (1 - tau)/((1 - delta)(tau - delta))
+
+The report prints k_pre, k_post and w (section 4a). Three consequences:
+    1. Before 1992Q3 the s cycle is tau's cycle times a near-constant factor.
+    2. The level of dbar hardly matters for the cycle. A constant log shift
+       goes into the HP trend, and so does a slow drift in the true delta
+       (the secular fall in business dynamism). dbar only moves k_pre.
+    3. The one thing lost is delta's own cycle before 1992, which enters s
+       with weight w. No method built on tau alone can recover it, because tau
+       does not contain it. Only a separate pre-1992 exit series could.
+
+Why the early-quarter anchor, not the 1992-2019 mean. BED delta starts high
+and falls. With the BED-window mean, s would jump at 1992Q3, and the HP
+filter would turn that step into a spurious cycle on both sides of the
+splice. Anchoring dbar at the start of BED nearly removes the step. The cost
+is a slightly larger k_pre, which overstates sigma_Q a little on the BED
+window, where the true s is known. Sections 4b and 4c show both anchors.
+
+Rejected alternative: regress s on tau after 1992 and impute the fitted value.
+In cycles, the fit is k * (tau cycle), the same object as a constant dbar up
+to the scale k, so it leaves rho unchanged and only rescales sigma. On the BED
+window it understates the innovation SD. In levels it extrapolates: tau
+averages about 0.044 before 1992 and 0.024 after, so most pre-1992 values lie
+outside the range the regression is fitted on, and the fit opens a larger
+step at 1992Q3.
+
+Checks reported:
+    (a) k_pre, k_post and w.
+    (b) The step in ln s at 1992Q3 under both anchors.
+    (c) On the BED window, AR(1)s of the identity s against the constant-dbar
+        versions and tau. This measures the pre-1992 approximation where the
+        truth is known, under the untestable assumption that delta's cyclical
+        role was similar before 1992.
+    (d) AR(1)s of z and s on sub-windows of the full-sample cycles, including
+        1985-2019 (S14 iv).
+    (e) Independence (section 5): the correlation of the s and z innovations,
+        against the D14 rule.
+    (f) Ljung-Box tests on the residuals (section 6).
+
+Other key points:
+    - Pre-1992 LEVELS of s are imputed. Never use them for calibration targets
+      (s-bar, delta_e/tau). The table reports the means of delta, tau and s
+      over the BED window only.
+    - tau fell by about half between the two eras. That is irrelevant for the
+      cycles, but it matters for the tau-bar calibration target.
+    - After 1992, BED measurement noise enters s with weight w. It lowers
+      rho_s on that window relative to tau.
+    - BED Deaths are noisy at quarterly frequency: the delta equation has a low
+      R^2. Read rho_delta with caution.
+    - The 1951-2019 window spans the Great Moderation. A single AR(1) per
+      series averages two volatility regimes; section 4d shows the
+      sub-windows.
+
+Filtering and frequency. Log, then HP filter with lambda = 1,600, the quarterly
+convention that observables_moments.py also uses, so the shock processes and
+the moments see the same cyclical object. Each series is filtered over its own
+window. Quarterly estimates convert to monthly following CK:
+rho_m = rho_Q^(1/3), and sigma_m matches the unconditional variance,
+sigma_m = sigma_Q * sqrt((1 - rho_Q^2)/(1 - rho_m^2)).
+
+------------------------------------------------------------------------------
+1. Data
+------------------------------------------------------------------------------
+  raw_data.pkl: lp 1951Q1-2025Q4, tau 1951Q1-2025Q3, delta 1992Q3-2021Q4
+  Windows: z, tau, s 1951Q1-2019Q4; delta 1992Q3-2019Q4. All cut at 2019Q4 before filtering.
+  s spliced at 1992Q3 with dbar = 0.00278. On the BED window: delta/tau = 0.0958, cor(s, tau) cycles = 0.9962.
+
+==============================================================================
+2. Shock processes, monthly (HP(1,600) log cycles)
+==============================================================================
+          mean sd_cycle  rho_m  sigma_m sample_start sample_end                         source
+series                                                                                        
+z      1.00000   0.0123 0.9121 0.012790       1951Q2     2019Q4                          AR(1)
+delta  0.00225   0.0597 0.5824 0.066255       1992Q4     2019Q4  VAR(1) z->delta, sigma perp z
+tau    0.02349   0.0636 0.8486 0.075353       1951Q2     2019Q4                          AR(1)
+s      0.02129   0.0680 0.8418 0.081199       1951Q2     2019Q4               AR(1), spliced s
+
+  tau is an outcome of delta and s in the model, not a shock; it is shown
+  because it is the series the moment table targets directly.
+  mean: delta, tau and s over the BED window only (pre-1992 s is imputed).
+
+  Quarterly estimates
+        rho_Q  rho_se  rho_Q_uni  sigma_Q  sigma_Q_rf     r2  nobs
+series                                                            
+z      0.7589  0.0421     0.7589   0.0081      0.0081 0.5746   275
+delta  0.1976  0.0864     0.2581   0.0549      0.0574 0.0928   109
+tau    0.6112  0.0624     0.6112   0.0504      0.0504 0.3744   275
+s      0.5966  0.0653     0.5966   0.0546      0.0546 0.3567   275
+
+  Against SHOCKS_BASE (run_solution_core.jl; pre-S13 part6b, 1992-2019 window)
+            rho_m old  rho_m new  sigma_m old  sigma_m new
+  z            0.9020     0.9121       0.0092       0.0128
+  delta        0.5920     0.5824       0.0669       0.0663
+  s            0.8741     0.8418       0.0854       0.0812
+
+------------------------------------------------------------------------------
+3. Step 2 detail: (z, delta) VAR(1), 1992Q4-2019Q4, T = 109
+------------------------------------------------------------------------------
+  sigma_Q of delta before -> after the Cholesky step: 0.0574 -> 0.0549 (4.3% smaller).
+  That is the entire footprint of the Cholesky step; persistence is untouched by it.
+  rho_Q of delta: VAR own lag 0.1976, univariate AR(1) 0.2581.
+
+  Off-diagonals (reported, not fed to the model; HC3 t in parentheses):
+    delta <- L.z     = -1.1922 (-1.36)  endogenous exit response to z
+    z <- L.delta     = -0.0034 (-0.39)  expected near zero
+    corr(u^z, u^delta) = -0.2902  before the Cholesky step
+  VAR z equation on this window (not used): rho_Q 0.7130, sigma_Q 0.0058.
+
+  WARNING: R^2 for the delta equation is 0.0928. BED Deaths is noisy at quarterly
+  frequency (N = 109); read rho_delta with caution.
+
+------------------------------------------------------------------------------
+4. Splice checks
+------------------------------------------------------------------------------
+  Splice quarter 1992Q3. dbar (used) = 0.00278, mean of 1992Q3-1994Q4;
+  BED-window mean 0.00225 (shown for comparison).
+
+  (a) Log-linear weights. tau averages 0.0441 before the splice and 0.0235 after.
+      k_pre  = 1.0673   s cycle = k_pre * tau cycle before 1992Q3
+      k_post = 1.1059   weight on the tau cycle from 1992Q3
+      w      = 0.1037   weight on the delta cycle from 1992Q3; the part lost before it
+
+  (b) Step in ln s at 1992Q3 if dbar replaced the measured delta there:
+      dbar = first-10-quarter mean (used): -0.29%
+      dbar = BED-window mean:              -1.57%
+      For scale: SD of the s cycle = 6.79%.
+
+  (c) BED window (1992Q3-2019Q4), where the true s is known. Each series filtered
+      over that window; quarterly AR(1).
+                               sd_cycle  rho_Q  sigma_Q  cor_truth
+identity s (truth)               0.0666 0.5906   0.0538     1.0000
+const dbar, first 10 q (used)    0.0698 0.6202   0.0548     0.9958
+const dbar, BED-window mean      0.0682 0.6221   0.0535     0.9959
+tau itself                       0.0624 0.6285   0.0486     0.9959
+      The constant-dbar rows show what the pre-1992 construction does when
+      the truth is known. The gap to the identity row in rho_Q is delta's own
+      cycle (including BED noise), which no tau-based construction recovers.
+
+  (d) Sub-windows of the full-sample cycles, quarterly AR(1)
+                 rho_Q  sigma_Q  nobs
+z 1951Q1-1992Q2 0.7646   0.0093   165
+  1992Q3-2019Q4 0.7212   0.0058   109
+  1985Q1-2019Q4 0.7477   0.0058   139
+  1951Q1-2019Q4 0.7589   0.0081   275
+s 1951Q1-1992Q2 0.5786   0.0551   165
+  1992Q3-2019Q4 0.6137   0.0542   109
+  1985Q1-2019Q4 0.6463   0.0500   139
+  1951Q1-2019Q4 0.5966   0.0546   275
+
+------------------------------------------------------------------------------
+5. Independence of the s innovation (D14)
+------------------------------------------------------------------------------
+  s AR(1) residual on z AR(1) residual, 1951Q2-2019Q4, T = 275:
+      corr -0.3964, share explained R^2 = 15.7%, HC3 t = -6.59
+  Same residuals, split by era (corr_tau: the tau residual on z, which shows
+  whether the splice drives the result; before 1992 s is k_pre * tau):
+      1951Q2-1984Q4  T = 135  corr -0.549  R^2  30.1%  t -6.64  loading -3.27  corr_tau -0.549
+      1985Q1-2019Q4  T = 140  corr -0.115  R^2   1.3%  t -1.39  loading -1.01  corr_tau -0.145
+  s AR(1) residual on the (z, delta) VAR residuals, 1992Q4-2019Q4, T = 109:
+      share explained R^2 = 1.6%, t(z) = -1.28, t(delta) = -0.08
+  D14 rule (revisit if R^2 >= 10% and |t| >= 2): REVISIT: z loads on s.
+
+------------------------------------------------------------------------------
+6. Ljung-Box p-values on residuals (lags 4, 8)
+------------------------------------------------------------------------------
+  z     AR(1)  0.027  0.001
+  delta VAR    0.001  0.000
+  s     AR(1)  0.010  0.001

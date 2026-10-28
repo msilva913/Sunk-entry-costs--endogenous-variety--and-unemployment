@@ -150,7 +150,7 @@ replacement (`prop:ags`, `rem:nesting`), `prop:double_limit`, `rem:bgm_nest`,
   Julia/LaTeX edit scripts with the Write tool and `raw""` strings. `@sprintf` needs one literal
   format string. Never assign numbers to the symbolic model names (ρ_z, s, b, …), including inside
   REPL loops (Oct 18: `s = r.irf_s` broke `gen_model_equations` in VS Code).
-- ⚠ No GitHub credentials in the agent shell: MS pushes from their own Git client.
+- ⚠ Cloud sessions can push once the Claude GitHub App has access (verified Oct 28 on `costly_vacancy_reposting`). A local agent shell without credentials still relies on MS's Git client.
 - ⚠ The SMCD paper is cited as a working paper only. Do not mention where it is submitted.
 - ⚠ **`Notes/role_of_ingredients.md` §2 is wrong**; rewrite before designing R14.
 - ⚠ §5.3 prose is committed to runs that do not exist yet (novar-vs-AGS, α → 0, re-specified

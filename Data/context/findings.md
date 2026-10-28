@@ -872,3 +872,44 @@ count.
   s innovation explained by z and δ is 1.7 %. `Q2_*.txt` (Julia) were produced before this fix,
   and `SHOCKS_BASE` still holds the pre-S13 part6b values. Both are superseded once the S14
   (option B) processes are built.
+
+**Q2: S14 shock processes (`part6b_shock_persistence_cyclical.py` → `shock_calibration.txt/.csv`, Oct 28).**
+> ⚠ **Provisional: τ has a level break at 1994Q1 (CPS redesign) that `observables.py` makes worse.**
+> `observables.py:185` multiplies *pre*-1994 UEMPLT5 by 1.16. Its own comment (l. 173) says to
+> multiply by 1/1.16, and `part8_shimer_national.py` instead scales *post*-1994 values by 1.16.
+> In `separation_decomposition.png`, τ falls from about 4 % to about 2.7 % in one quarter. The HP
+> filter turns the break into spurious cycles of about +15 / −20 log points around 1993–95.
+> - Contaminated: every τ- and s-based number below, every earlier s process (including
+>   `SHOCKS_BASE`, whose 1992–2019 window contains the break), the job-finding rate (`jf` uses the
+>   same u_short), and the τ̄ target.
+> - The pre-1985 z–s result is far from the break and probably survives, but it must be rerun.
+> - Fix in `observables.py`, rebuild `raw_data.pkl` (needs the FRED key), then rerun part6b.
+>   Verify the correction factor and direction against Shimer (2012) and Elsby, Michaels and
+>   Solon (2009) through LibKey first (N11–N14).
+Three steps:
+- z: AR(1) on 1951Q1–2019Q4.
+- δ: (z, δ) VAR on 1992Q3–2019Q4, keeping ρ_δ and σ_δ ⊥ z.
+- s: AR(1) on the spliced 1951–2019 series, with σ_s not purged.
+
+Splice: before 1992Q3, s = (τ − δ̄)/(1 − δ̄), with δ̄ = 0.00278, the mean of the first 10 BED quarters.
+
+Monthly (ρ, σ):
+
+| Shock | S14 | `SHOCKS_BASE` |
+|---|---|---|
+| z | (0.9121, 0.0128) | (0.902, 0.0092) |
+| δ | (0.5824, 0.0663) | (0.592, 0.0669) |
+| s | (0.8418, 0.0812) | (0.8741, 0.0854) |
+
+- **σ_z rises 39 %.** The longer window adds the pre-1985 volatility (sub-window σ_Q 0.0093 against 0.0058).
+- **The splice is benign.**
+  - The log-linear weights are k_pre = 1.067, k_post = 1.106 and w = 0.104, where w is the weight on δ's cycle that is lost before 1992.
+  - The early anchor cuts the step in ln s at 1992Q3 from −1.57 % to −0.29 %.
+  - On the BED window, the constant-δ̄ construction gives ρ_Q 0.620 / σ_Q 0.0548, against 0.591 / 0.0538 for the true s.
+- **⚠ The D14 independence rule triggers.** The z innovation explains 15.7 % of the s innovation (corr −0.40, t = −6.59, 1951–2019). This is entirely a pre-1985 fact:
+  - 1951–84: corr −0.55, R² 30 %, loading −3.27.
+  - 1985–2019: corr −0.12, R² 1.3 %, t = −1.39.
+  - τ's residual shows the same correlation, so the splice does not produce it.
+- **Ljung-Box rejects the AR(1) for z, δ and s on these windows** (p ≤ 0.03 at lag 4).
+- D14 is reopened. Pending MS: the options are listed under D14 in `decisions.md`, Oct 28 update.
+- `part6c_shock_var_trivariate.py` imports part6b, so its committed outputs are pre-S14 and would change if rerun.
