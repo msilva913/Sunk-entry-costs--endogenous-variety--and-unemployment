@@ -66,15 +66,18 @@ def shimer_flows(u_level, e_level, u_short, freq):
     u_short = u_short.copy()
     u_short.loc[u_short.index >= CPS_REDESIGN_DATE] *= CPS_REDESIGN_FACTOR
 
-    # NOTE (Oct 28, 2026, not yet changed): u_level[1:] keeps its date
-    # labels, so pandas aligns u_next with u_level and jf_t = u_short_t/u_t,
-    # not Shimer's eq. (4), F_t = 1 - (u_{t+1} - u^s_{t+1})/u_t. Pending MS
-    # (context/pending_tasks.md, Q2).
-    u_next  = u_level[1:len(u_level)]
-    jf      = 1 - (u_next - u_short) / u_level
+    # Flows are dated by the period [t, t+1) they cover, so both use the
+    # stocks observed at t+1. Shimer eq. (4): F_t = 1 - (u_{t+1} - u^s_{t+1})/u_t.
+    # Separation rate from eq. (2) with e held at e_t over the period:
+    # u^s_{t+1} = e_t s_t (1 - exp(-f_t))/f_t.
+    # (Fixed Oct 28, 2026: the old u_level[1:] kept its date labels, so pandas
+    # aligned it with u_t and jf_t collapsed to u^s_t/u_t.)
+    u_next  = u_level.shift(-1)
+    us_next = u_short.shift(-1)
+    jf      = 1 - (u_next - us_next) / u_level
     jfh     = -np.log(1 - jf)
     denom   = -np.expm1(-jfh)
-    sh      = (u_short * jfh) / (e_level * denom)
+    sh      = (us_next * jfh) / (e_level * denom)
     s       = 1.0 - np.exp(-sh)
     s       = s.drop(pd.Timestamp("2020-03-01"), errors='ignore')
 

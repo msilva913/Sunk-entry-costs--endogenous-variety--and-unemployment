@@ -880,7 +880,7 @@ Three steps:
 - s: AR(1) on the spliced 1951–2019 series, with σ_s not purged.
 
 Splice: before 1992Q3, s = (τ − δ̄)/(1 − δ̄), with δ̄ = 0.00278, the mean of the first 10 BED quarters.
-Numbers are after the τ fix below.
+Numbers are after both τ/jf fixes below (factor and timing).
 
 Monthly (ρ, σ):
 
@@ -888,18 +888,19 @@ Monthly (ρ, σ):
 |---|---|---|
 | z | (0.9121, 0.0128) | (0.902, 0.0092) |
 | δ | (0.5824, 0.0663) | (0.592, 0.0669) |
-| s | (0.8364, 0.0751) | (0.8741, 0.0854) |
+| s | (0.8054, 0.0711) | (0.8741, 0.0854) |
 
 - **σ_z rises 39 %.** The longer window adds the pre-1985 volatility (sub-window σ_Q 0.0093 against 0.0058).
 - **The splice is benign.**
   - The log-linear weights are k_pre = 1.084, k_post = 1.096 and w = 0.093.
   - The early anchor cuts the step in ln s at 1992Q3 from −1.93 % to −0.36 %.
-  - On the BED window, the constant-δ̄ construction gives ρ_Q 0.544 / σ_Q 0.0452, against 0.506 / 0.0436 for the true s.
-- **⚠ The D14 independence rule triggers.** The z innovation explains 19.1 % of the s innovation (corr −0.44, t = −6.81, 1951–2019). It comes mostly from before 1985:
-  - 1951–84: corr −0.54, R² 29 %, loading −3.24.
-  - 1985–2019: corr −0.19, R² 3.6 %, t = −2.04.
-  - τ's residual shows the same correlation, so the splice does not produce it. D14 is reopened, pending MS.
-- **Ljung-Box rejects the AR(1) for z, δ and s on these windows** (p ≤ 0.03 at lag 4).
+  - On the BED window, the constant-δ̄ construction gives ρ_Q 0.482 / σ_Q 0.0451, against 0.442 / 0.0430 for the true s.
+- **The D14 independence rule passes, narrowly.** After the timing fix, the z innovation explains 9.2 % of the s innovation (corr −0.30, t = −4.38, 1951–2019), just under the 10 % threshold. The correlation is statistically significant.
+  - 1951–84: corr −0.36, R² 13.3 %, loading −2.13.
+  - 1985–2019: corr −0.15, R² 2.4 %, t = −1.44.
+  - Before the timing fix it read 19.1 %, so the misdated jf/τ roughly doubled it.
+  - τ's residual shows the same correlation, so the splice does not produce it.
+- **Ljung-Box rejects the AR(1) for z and δ** (p ≤ 0.03 at lag 4). For s, p = 0.29 at lag 4 and 0.014 at lag 8.
 - `part6c_shock_var_trivariate.py` imports part6b, so its committed outputs are pre-S14 and would change if rerun.
 
 **τ: the 1994 CPS-redesign correction was applied in the wrong direction (fixed Oct 28).**
@@ -912,4 +913,4 @@ Monthly (ρ, σ):
 - **Still owed:**
   - The τ̄ = 3.10 %/month target and every moment that uses τ or jf (`observables_moments.py`, Block M) must be recomputed.
   - `part8_shimer_national.py` uses 1.16 post-1994, the right direction but a different factor.
-- **Open bug (not fixed; MS to decide):** `u_level[1:]` keeps its date labels, so pandas aligns it with u_t, and jf_t = u^s_t/u_t rather than Shimer's eq. (4), F_t = 1 − (u_{t+1} − u^s_{t+1})/u_t. Means are close (0.402 against 0.401, 1951–2025 monthly), but the correlation is 0.92 monthly and 0.97 quarterly. τ inherits the one-month misalignment.
+- **Timing bug, fixed Oct 28 (MS):** `u_level[1:]` kept its date labels, so pandas aligned it with u_t, and jf_t collapsed to u^s_t/u_t. Now jf_t = 1 − (u_{t+1} − u^s_{t+1})/u_t (Shimer eq. 4), and τ uses u^s_{t+1}. Quarterly correlation of old and new: jf 0.979, τ 0.994. Means barely move (jf 1951–93 0.459 → 0.457), but the dynamics do: monthly ρ_s 0.836 → 0.805.
