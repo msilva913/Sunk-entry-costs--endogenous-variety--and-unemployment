@@ -100,20 +100,18 @@ is marginal utility of consumption).
 
 ### Shock processes (6 parameters)
 
-> ⚠ **Values below are the pre-S13 part6b calibration, still in `SHOCKS_BASE`.** To be replaced
-> by the S14 processes: a (z, s) VAR on 1951–2019 (s from τ before 1992), and the δ equation on
-> 1992–2019 with δ ordered last. Interim Oct 20 estimates (1992–2019, S13 applied, trivariate
-> VAR): ρ_z 0.897, σ_z 0.0091; ρ_δ 0.528, σ_δ 0.0621; ρ_s 0.791, σ_s 0.0702.
-> See [decisions.md](decisions.md) S13, S14, D14.
+> **Estimated S14 values (Oct 28, `shock_calibration.txt`), monthly:** ρ_z 0.9121, σ_z 0.0128; ρ_δ 0.5824, σ_δ 0.0663; ρ_s 0.8054, σ_s 0.0711. Method: [`session_handout_20261028.md`](session_handout_20261028.md) §2.
+> The "Calibrated value" column shows the S14 estimate; the code (`SHOCKS_BASE`) still holds the
+> pre-S13 value in parentheses until MS approves the swap. See [decisions.md](decisions.md) S13, S14, D14.
 
 | Symbol | Code name | Calibrated value | Economic meaning | Key moments | Intuition |
 |--------|-----------|-----------------|-----------------|-------------|-----------|
-| ρ_z | `rho_z` | 0.902 | Monthly persistence of technology shock | ρ₁(u), ρ₁(v), shape of z→u IRF | From VAR(1) on HP-1600 log(z), part6b. Governs how long a productivity shock propagates |
-| σ_z | `sigma_z` | 0.0092 | Monthly innovation SD of technology shock | σ(LP), σ(u) from z channel | Reduced-form residual SD (z ordered first in Cholesky) |
-| ρ_δ | `rho_delta` | 0.592 | Monthly persistence of destruction shock | Shape of δ→u IRF, ρ₁(δ_e) | From VAR(1), Cholesky z-first. Low persistence (quarterly ρ = 0.207) reflects noisy BED Deaths |
-| σ_δ | `sigma_delta` | 0.0669 | Monthly innovation SD of destruction shock (orthogonal to z) | σ(δ_e), cor(δ_e, u), δ→u IRF scale | The only Cholesky-dependent number: stripped of contemporaneous z covariation |
-| ρ_s | `rho_s` | 0.874 | Monthly persistence of match separation shock | ρ₁(u), ρ₁(v), ρ₁(τ) | From AR(1) on s = (τ−δ_e)/(1−δ_e), part6b. The dominant separation shock |
-| σ_s | `sigma_s` | 0.0854 | Monthly innovation SD of match separation shock | **σ(u), σ(v), cor(u, v)**, σ(θ)/σ(LP) | 8.5× larger than the 0.010 placeholder. The s shock drives most of the business cycle volatility and the (wrong-sign) Beveridge correlation. See `lem:accounting` Part 1 |
+| ρ_z | `rho_z` | 0.9121 (code 0.902) | Monthly persistence of technology shock | ρ₁(u), ρ₁(v), shape of z→u IRF | Univariate AR(1) on HP-1600 log z, 1951–2019 (part6b step 1). Governs how long a productivity shock propagates |
+| σ_z | `sigma_z` | 0.0128 (code 0.0092) | Monthly innovation SD of technology shock | σ(LP), σ(u) from z channel | AR(1) residual SD, 1951–2019. 39 % above the 1992–2019 value: the window adds pre-1985 volatility |
+| ρ_δ | `rho_delta` | 0.5824 (code 0.592) | Monthly persistence of destruction shock | Shape of δ→u IRF, ρ₁(δ_e) | Own lag of the (z, δ) VAR(1), 1992Q3–2019Q4 (part6b step 2). Low persistence (quarterly ρ = 0.198) reflects noisy BED Deaths |
+| σ_δ | `sigma_delta` | 0.0663 (code 0.0669) | Monthly innovation SD of destruction shock (orthogonal to z) | σ(δ_e), cor(δ_e, u), δ→u IRF scale | The only Cholesky-dependent number: stripped of contemporaneous z covariation, because the model generates z → χ^c → δ_e |
+| ρ_s | `rho_s` | 0.8054 (code 0.8741) | Monthly persistence of match separation shock | ρ₁(u), ρ₁(v), ρ₁(τ) | Univariate AR(1) on s = (τ−δ_e)/(1−δ_e), 1951–2019, spliced from τ before 1992Q3 (part6b step 3) |
+| σ_s | `sigma_s` | 0.0711 (code 0.0854) | Monthly innovation SD of match separation shock (not purged, D14) | **σ(u), σ(v), cor(u, v)**, σ(θ)/σ(LP) | 8.5× larger than the 0.010 placeholder. The s shock drives most of the business cycle volatility and the (wrong-sign) Beveridge correlation. See `lem:accounting` Part 1 |
 
 ---
 

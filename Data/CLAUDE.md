@@ -1,5 +1,5 @@
 # CLAUDE.md — Empirical LP Project (Firm Entry/Exit DSGE)
-**Last updated:** October 19, 2026 · **Author:** Mario Silva
+**Last updated:** October 28, 2026 · **Author:** Mario Silva
 **Current branch:** `costly_vacancy_reposting` (R8 merged in Oct 19; branched from `instruments_LP_coefficient`; the most up-to-date version of the project)
 **Project paused June 7, 2026 – September 5, 2026.** Status re-verified against the repo on
 resumption; see [`context/pending_tasks.md`](context/pending_tasks.md) §Critical path.
@@ -81,10 +81,13 @@ and the δ→v trough at h=4–6. See [D10](context/decisions.md)
 **Sample window (Oct 20, S13/S14):**
 - **End at 2019Q4 for every series, cut *before* filtering**, which rules out the pandemic.
 - **Start 1951Q1 for z, s and the labor-market moments; 1992Q3 only for δ** (BED).
-- s before 1992 is built from τ with δ at its mean.
+- s before 1992Q3 is (τ − δ̄)/(1 − δ̄), with δ̄ the mean of the first 10 BED quarters (Oct 28).
 - ⚠ The old targets σ(u) = 14.96 % and cor(u,v) = −0.804 included 2020–24. Pre-pandemic
   (1951–2019): σ(u) = 12.48 %, cor(u,v) = −0.925.
-- `SHOCKS_BASE` still holds the pre-S13 part6b values until the S14 processes are built.
+- **S14 shock processes built Oct 28** (part6b; monthly ρ/σ: z 0.9121/0.0128, δ 0.5824/0.0663,
+  s 0.8054/0.0711). `SHOCKS_BASE` still holds the pre-S13 values until MS approves the swap.
+- **τ and jf fixed Oct 28** (`observables.py`): CPS 1994 correction is UEMPLT5 × 1.1 *after* 1994,
+  and jf_t = 1 − (u_{t+1} − u^s_{t+1})/u_t. The τ̄ target and τ/jf moments must be recomputed.
 
 **Python:** `Data/environment.yml` (env `econ2315`). This machine uses Anaconda base,
 `%LOCALAPPDATA%\anaconda3\python.exe` (not on PATH); see `context/pipeline.md` "Python environment".
@@ -98,13 +101,13 @@ and the δ→v trough at h=4–6. See [D10](context/decisions.md)
 
 > **Oct 14, 2026 — the critical path is now Q0–Q6** ([`context/pending_tasks.md`](context/pending_tasks.md),
 > [D13](context/decisions.md)). Bartik IRFs leave the objective and become validation.
-> Block B′ = aggregate SVAR responses by indirect inference. Shock processes come from a
-> trivariate (z, δ, s) VAR. **E9, D3 and Ω_β are superseded**, so the D10/D3/E9 list below is
+> Block B′ = aggregate SVAR responses by indirect inference. Shock processes are three
+> independent AR(1)s (part6b, S14; Oct 28). **E9, D3 and Ω_β are superseded**, so the D10/D3/E9 list below is
 > history. The order is: Q0 notation and presentation (in parallel) → Q1 = R8 + D1 + PATH B →
 > Q2 VAR → Q3 targets → Q4 identification → Q5 hypotheses and mechanism comparisons (the D12
 > gate) → Q6 estimation.
 
-**Resume:** [`context/session_handout_20261020.md`](context/session_handout_20261020.md) (Oct 20: entry point for the **cloud** session — setup, reproduction checks, Q2 status, next steps). Before:
+**Resume:** [`context/session_handout_20261028.md`](context/session_handout_20261028.md) (Oct 28: S14 shock-process methodology in part6b, τ/jf fixes, D14 settled, next steps). Before: [`context/session_handout_20261020.md`](context/session_handout_20261020.md) (Oct 20: cloud setup, reproduction checks, Q2 status). Before:
 [`context/session_handout_20261019.md`](context/session_handout_20261019.md)
 (Oct 19: Oct 15 and Oct 18 work reconciled; Q1 closed and merged into `costly_vacancy_reposting`;
 σ* = 0.011 determinacy result; Q2 scoped, D14 opened). Before:
@@ -120,14 +123,16 @@ are in `context/archive/`.
    (`sigma_determinacy.txt`, findings.md).
 2. **R19 (theory, MS):** pricing replacement offsets `prop:fe`'s user-cost channel in the
    baseline. Double-limit check first, then a remark after `prop:fe`, then the framing.
-3. **Q2 (in progress, Oct 20):**
-   - **Done:** the trivariate VAR (`part6c`). The s innovation is nearly orthogonal (D14 low
-     stakes), and the new processes leave cor(u,v) unchanged.
+3. **Q2 (processes built Oct 28; `SHOCKS_BASE` swap pending):**
+   - **Oct 20 (superseded by Oct 28):** the trivariate VAR (`part6c`); the new processes left
+     cor(u,v) unchanged.
    - **p_0 grid:** results depend only on Λ̄_r; even Λ̄_r = 0.10 gives only −0.63.
    - **Amplification sweep:** s supplies 93–99 % of var(u) in the model, against ≤ 25 % in the
      data SVAR. z is under-amplified 3–6×, and δ barely moves u (> 20× short). ϕ is not a lever
      (Hagedorn–Manovskii cancellation; at most about 1.35×).
-   - **Next:** build the S14 (option B) shock processes, refresh `SHOCKS_BASE`, and move the
+   - **Done Oct 28:** the S14 processes (part6b three steps; handout 20261028 §2), the τ/jf fixes,
+     D14 settled (independent s; z explains 9.2 % of the s innovation, under the 10 % rule).
+   - **Next:** refresh `SHOCKS_BASE` (MS approval), recompute τ̄ and the τ/jf moments, and move the
      targets to the S14 windows. Then the z-elasticity diagnostic (persistence vs the business
      block) and the δ-propagation gap. Details: findings.md "Q2", handout §4–5.
 

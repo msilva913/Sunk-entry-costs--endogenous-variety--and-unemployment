@@ -1,6 +1,6 @@
 # Context Folder — Index
 **Last reorganized:** September 5, 2026 (branch `Organize_Project_State_Estimation`)
-**Last consistency pass:** October 20, 2026 (branch `costly_vacancy_reposting`: Q2 estimated; p_0 floor and amplification sweeps; S13 endpoint 2019Q4, S14 window option B; Python env spec). Before: October 19 (Q1 closed and merged, σ* determinacy, Q2 scoped, D14). Handout `session_handout_20261019.md`. Before: October 18, 2026 (Q1 steps 5–7, BK ε-threshold and `rem:dilution_variety` + App. K, R19 user-cost offset). Handout `session_handout_20261018.md`. Earlier: Oct 14 (Q0, D13, Q1 steps 1–4); Oct 13 (P8); Oct 11–12 (theory rebuild, X^c). Handouts before Oct 9 are in `archive/`.
+**Last consistency pass:** October 28, 2026 (S14 shock processes built in part6b; τ/jf CPS-1994 and timing fixes in `observables.py`; D14 settled; handout `session_handout_20261028.md`). Before: October 20, 2026 (branch `costly_vacancy_reposting`: Q2 estimated; p_0 floor and amplification sweeps; S13 endpoint 2019Q4, S14 window option B; Python env spec). Before: October 19 (Q1 closed and merged, σ* determinacy, Q2 scoped, D14). Handout `session_handout_20261019.md`. Before: October 18, 2026 (Q1 steps 5–7, BK ε-threshold and `rem:dilution_variety` + App. K, R19 user-cost offset). Handout `session_handout_20261018.md`. Earlier: Oct 14 (Q0, D13, Q1 steps 1–4); Oct 13 (P8); Oct 11–12 (theory rebuild, X^c). Handouts before Oct 9 are in `archive/`.
 spliced (`prop:fe` leads `sec:mechanism`), every theory proposition audited and corrected, R16
 repaired, X^c made exact in draft and code, `ass:matching` tightened. Handout
 `session_handout_20261012.md`. Handouts before Oct 9 moved to `archive/`.
@@ -25,14 +25,14 @@ status notes to whichever file was open rather than the file that owns the topic
 
 ## Reading order when picking the project back up
 
-1. **`session_handout_20261020.md`** — latest handout (Oct 20: entry point for the cloud session: setup, checks, Q2 status, next steps). Before it: `session_handout_20261019.md` (Oct 19, with Oct 20 §4–5: branches reconciled, Q1 closed and
+1. **`session_handout_20261028.md`** — latest handout (Oct 28: S14 shock-process methodology, τ/jf fixes, D14, next steps). Before it: `session_handout_20261020.md` (Oct 20: cloud setup, checks, Q2 status). Before it: `session_handout_20261019.md` (Oct 19, with Oct 20 §4–5: branches reconciled, Q1 closed and
    merged, σ* = 0.011 determinacy result, Q2 scoped and D14 opened; resume with Q2). Before it:
    `session_handout_20261018.md` (Oct 18: Q1 steps 5–7, Test 6 and the
    user-cost offset R19, BK ε-threshold, Remark 3 + App. K; resume with the Q1 close-out, then
    R19 and Q2). Before it: `session_handout_20261014.md` (Q0, D13, Q1 steps 1–4) and
    `session_handout_20261012.md` (theory rebuild, X^c fix)
 2. `../CLAUDE.md` — one-paragraph framing, quick facts, current priorities
-3. **`pending_tasks.md`** — the critical path Q0–Q6 (D13): Q1 close-out, then Q2 (trivariate VAR)
+3. **`pending_tasks.md`** — the critical path Q0–Q6 (D13): Q1 closed; Q2 (shock processes, built Oct 28; `SHOCKS_BASE` swap pending)
    → Q3 → Q4 → Q5 → Q6; theory task R19
 4. **`decisions.md`** — what is unsettled (D12 and D2 are the ones MS must decide), and the
    settled timing (S10–S12)

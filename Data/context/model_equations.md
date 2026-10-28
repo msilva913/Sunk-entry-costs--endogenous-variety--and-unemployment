@@ -142,12 +142,12 @@ Every §5.3 number must be regenerated afterwards; bundle with the D1 cascade.
 | δ | exogenous product-line destruction | log δ_t = ρ_δ log δ_{t−1} + ε^δ_t | Stage 1 of t; applied at Stage 5 |
 | s | match separation | log s_t = ρ_s log s_{t−1} + ε^s_t | Stage 1 of t; applied at Stage 5 |
 
-Orthogonal innovations (Cholesky, z first; `part6b`). The z→δ_e link runs through χ^c, not
-through shock covariance. Monthly calibration from `part6b`: ρ_z = 0.902, σ_z = 0.0092,
-ρ_δ = 0.592, σ_δ = 0.0669, ρ_s = 0.8741, σ_s = 0.0854. **Code:** processes match; the
-observation date differs (deviation 2). ⚠ These are the pre-S13 values (`SHOCKS_BASE`). They are
-to be replaced by the S14 processes: a (z, s) VAR on 1951–2019, the δ equation on 1992–2019, and
-the 2019Q4 cut before filtering ([decisions.md](decisions.md) S13/S14).
+Independent AR(1)s with uncorrelated innovations. The z→δ_e link runs through χ^c, not
+through shock covariance, so σ_δ is purged of the z innovation (Cholesky, z first). s has no
+endogenous channel, so σ_s is not purged (D14). **S14 values (Oct 28, `shock_calibration.txt`), monthly:** ρ_z 0.9121, σ_z 0.0128; ρ_δ 0.5824, σ_δ 0.0663; ρ_s 0.8054, σ_s 0.0711. Method: [`session_handout_20261028.md`](session_handout_20261028.md) §2.
+**Code:** `SHOCKS_BASE` still holds the pre-S13 values (ρ_z 0.902, σ_z 0.0092; ρ_δ 0.592,
+σ_δ 0.0669; ρ_s 0.8741, σ_s 0.0854) until MS approves the swap; the observation date differs
+(deviation 2).
 
 ## Continuation-cost distribution
 

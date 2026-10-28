@@ -20,7 +20,7 @@ Status key: 🔴 blocks estimation · 🟠 blocks a paper section · 🟡 improv
 
 ---
 
-## 🟠 D14. Is the s innovation orthogonalized against z and δ?
+## ✅ D14. Is the s innovation orthogonalized against z and δ? — **settled Oct 28 (MS): no; independent AR(1)s, σ_s not purged** (see the Oct 28 update below)
 
 **Raised Oct 19, 2026 (Q2 scoping).** `part6b_shock_persistence_cyclical.py` orthogonalizes
 the δ innovation against z (Cholesky; σ_δ falls) but fits s as a **univariate AR(1)**, so
@@ -65,7 +65,7 @@ builds a spurious *negative* s–δ innovation correlation. Only the joint syste
   1985–2019 R² 2.4 % (t = −1.44). Before the jf/τ timing fix it read 19.1 %. By the rule the
   baseline is option (i), independent s with σ_s not purged. The correlation is significant, so
   report it, and (ii) remains a natural robustness check.
-- **Open (MS), options:**
+- **Robustness options** (the baseline is (i)):
   - (i) keep independent s and report the missing z–s comovement;
   - (ii) load s on ε^z, i.e. s_t = ρ_s s_{t−1} + b·ε^z_t + ε^s_t;
   - (iii) estimate the s process on 1985–2019 only, where independence holds;

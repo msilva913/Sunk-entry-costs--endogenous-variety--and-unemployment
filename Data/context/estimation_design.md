@@ -5,7 +5,9 @@
 > - Block B (Bartik LP paths) leaves the objective; the Bartik features become validation.
 > - New **Block B′**: aggregate SVAR responses of u and v to δ and s shocks (h = 0–12),
 >   matched by indirect inference. The same VAR runs on data and simulations, so D3 is moot.
-> - Shock processes come from a trivariate (z, δ, s) VAR.
+> - Shock processes are three independent AR(1)s from part6b on the S14 windows (Oct 28):
+>   z AR(1), δ from a (z, δ) VAR with σ_δ ⊥ z, s AR(1) on the spliced series (not purged, D14).
+>   They are fixed before estimation (two-step).
 > - Build order is now Q1–Q6 in [`pending_tasks.md`](pending_tasks.md).
 > - Block M, the degrees-of-freedom normalization and the filtering rules below still apply;
 >   rewrite this file when Q3 is built.

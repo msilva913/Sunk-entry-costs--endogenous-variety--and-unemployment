@@ -81,9 +81,9 @@ NFCI interaction variant:
 | `placebo_sev_delta_vac.csv` | Severity placebo: δ → v (cleanest result) |
 | `shock_persistence.csv` | AR(1): ρ_δ=0.617/0.647, ρ_LD=0.489/0.305 |
 | `var_calibration.csv` | VAR(1): ρ_δ=0.600, ρ_LD=0.510, β(endex)=0.228 |
-| `shock_calibration.csv` | **MODEL CALIB** (renamed from `var_calibration_zd.csv`, Sept 21, 2026): one row per series for z, δ, τ, s. z and δ from the bivariate VAR(1) on HP-1600 logs, Cholesky z-first; τ and s from univariate AR(1). Monthly: ρ_z=0.902, σ_z=0.00916; ρ_δ=0.592, σ_δ=0.0669; ρ_s=0.874, σ_s=0.0854. τ is reported as a diagnostic, not a model shock |
-| `cycles_panel.png` | HP-1600 log cycles for all four series, common sample 1992Q3–2019Q4 |
-| `separation_decomposition.png` | τ, δ, s in levels and cycles; shows τ = δ + (1−δ)s. cor(cycle_s, cycle_τ) = 0.997 |
+| `shock_calibration.csv` / `.txt` | **MODEL CALIB** (S14, Oct 28): one row per series for z, δ, τ, s, with each row's sample window. z, τ, s univariate AR(1) on 1951–2019 (s spliced before 1992Q3); δ from the (z, δ) VAR on 1992Q3–2019Q4, σ_δ ⊥ z. Monthly: ρ_z 0.9121, σ_z 0.0128; ρ_δ 0.5824, σ_δ 0.0663; ρ_s 0.8054, σ_s 0.0711. τ is a diagnostic, not a shock. The `.txt` is the full report (method, splice checks, D14 test) |
+| `cycles_panel.png` | HP-1600 log cycles for all four series, each on its own window (z, τ, s 1951–2019; δ 1992Q3–2019Q4); dotted line at the splice |
+| `separation_decomposition.png` | τ, δ, s in levels and cycles, 1951–2019, with the δ̄ stand-in before the 1992Q3 splice; τ = δ + (1−δ)s. cor(cycle_s, cycle_τ) = 0.995 on the BED window |
 | `recession_scatter_primary.png` | Cross-recession fig (paper) |
 | `state_scatter_primary.png` | Cross-state fig (paper) — fig:state_scatter |
 | `jf_table2_ext_2019_latex.tex` | JF Table 2 extension (preferred sample). LaTeX tables unchanged by the Oct 5 edit |
@@ -104,7 +104,7 @@ NFCI interaction variant:
 
 | Parameter | Value | Source |
 |-----------|-------|--------|
-| τ̄ | 9.30%/qtr (3.10%/month) | Shimer (2012) total separation rate; `TARGETS.sep = 0.031` |
+| τ̄ | 9.30%/qtr (3.10%/month) | Shimer (2012) total separation rate; `TARGETS.sep = 0.031`. ⚠ **To recompute (Oct 28):** τ was rebuilt (CPS 1994 factor and timing fixes); means are now 0.0356 (1951–93) and 0.0258 (1992Q3–2019Q4) |
 | δ̄_e (deaths, 2001–2019) | **0.718%/qtr (0.239%/month; 2.84%/yr)** | BLS BED published rate `BDS…110008RQ5`, total private |
 | δ̄_e (deaths, 1993–2019) | 0.812%/qtr (3.21%/yr) | same series, longer window |
 | **δ_e/τ** | **0.087 (1993–2019) — CANONICAL** | **Settled by [D1](decisions.md), Sept 6, 2026.** `dest_ann = 0.0320`. The 2001–2019 window gives 0.077; MS chose the longer window |
@@ -129,24 +129,20 @@ NFCI interaction variant:
 | corr(η^δ, η^LD) | +0.397 (raw) / +0.488 (resid) | part6 |
 | ρ_δ (VAR industry) | 0.600 | part2d, industry-level panel |
 | β (LD←δ) | +0.228 | part2d companion matrix |
-| **ρ_z^m (model)** | **0.902** | part6b; VAR(1) HP-1600 log(z), Cholesky, 1992Q3–2019Q4 |
-| **ρ_δ^m (model)** | **0.592** | part6b; VAR(1) HP-1600 log(δ) ⊥ z, Cholesky z-first |
-| **σ_z^m (model)** | **0.0092** | part6b; unconditional-variance-matched from quarterly |
-| **σ_δ^m (model)** | **0.0669** | part6b; structural δ shock ⊥ z innovation |
-| **ρ_s^m (model)** | **0.874** | part6b (Sept 21, 2026); AR(1) on s = (τ−δ_e)/(1−δ_e), same window. Replaces the 0.90 placeholder |
-| **σ_s^m (model)** | **0.0854** | part6b; AR(1) residual SD. Replaces the 0.010 placeholder — **8.5× larger** |
-| s̄ (match separation) | 0.0213 /month | part6b; vs τ̄ = 0.0235 and δ̄_e = 0.00222 over 1992Q3–2021Q4 |
-| β(δ←z) quarterly | −1.050 (SE=0.830) | part6b; endogenous exit channel — NOT in shock process |
-| corr(u^z, u^δ) | −0.284 | part6b; pre-Cholesky; absorbed by model equilibrium |
+| **ρ_z^m (model)** | **0.9121** | part6b S14 (Oct 28); AR(1) on HP-1600 log z, 1951Q1–2019Q4 |
+| **σ_z^m (model)** | **0.0128** | part6b S14; AR(1) residual SD, unconditional-variance-matched to monthly |
+| **ρ_δ^m (model)** | **0.5824** | part6b S14; own lag of the (z, δ) VAR(1), 1992Q3–2019Q4 |
+| **σ_δ^m (model)** | **0.0663** | part6b S14; VAR residual SD ⊥ the z innovation (Cholesky z-first; 4.3 % smaller than reduced form) |
+| **ρ_s^m (model)** | **0.8054** | part6b S14; univariate AR(1) on spliced s, 1951Q1–2019Q4 |
+| **σ_s^m (model)** | **0.0711** | part6b S14; AR(1) residual SD, not purged (D14) |
+| s̄, τ̄, δ̄_e (BED window) | 0.02356 / 0.02576 / 0.00225 per month | part6b S14, 1992Q3–2019Q4 means (pre-1992 s levels are imputed: never use them for targets) |
+| β(δ←L.z) quarterly | −1.192 (t = −1.36) | part6b S14 VAR; endogenous exit channel, NOT in the shock process |
+| corr(u^z, u^δ) | −0.290 | part6b S14; before the Cholesky step |
 
-> ⚠ **The part6b rows above are pre-S13 (Sept 21) values, still in `SHOCKS_BASE`.** Since Oct 20:
-> - S13 cuts every series at 2019Q4 *before* filtering. Rerun results: part6b ρ_s^m = 0.839,
->   σ_s^m = 0.080, ρ_z^m = 0.893.
-> - The trivariate VAR (`part6c_shock_var_trivariate.py`, Q2) gives monthly
->   ρ/σ: z 0.897/0.0091, δ 0.528/0.0621, s 0.791/0.0702.
-> - All of these are superseded by the **S14 window** (z, s on 1951–2019 with s from τ before
->   1992; δ on 1992–2019), not yet built. See [decisions.md](decisions.md) S13/S14 and
->   [findings.md](findings.md) "Q2" and "Sample windows".
+> ⚠ **`SHOCKS_BASE` in the code still holds the pre-S13 part6b values** (ρ_z 0.902, σ_z 0.0092;
+> ρ_δ 0.592, σ_δ 0.0669; ρ_s 0.8741, σ_s 0.0854) until MS approves the swap. The Oct 20 interim
+> numbers (S13 rerun, part6c trivariate) are superseded. Method:
+> [`session_handout_20261028.md`](session_handout_20261028.md) §2.
 >
 > **LP series:** PRS85006163 is nonfarm-business **output per worker** (Shimer/HM/CK
 > standard), not per hour.
