@@ -874,24 +874,13 @@ count.
   (option B) processes are built.
 
 **Q2: S14 shock processes (`part6b_shock_persistence_cyclical.py` → `shock_calibration.txt/.csv`, Oct 28).**
-> ⚠ **Provisional: τ has a level break at 1994Q1 (CPS redesign) that `observables.py` makes worse.**
-> `observables.py:185` multiplies *pre*-1994 UEMPLT5 by 1.16. Its own comment (l. 173) says to
-> multiply by 1/1.16, and `part8_shimer_national.py` instead scales *post*-1994 values by 1.16.
-> In `separation_decomposition.png`, τ falls from about 4 % to about 2.7 % in one quarter. The HP
-> filter turns the break into spurious cycles of about +15 / −20 log points around 1993–95.
-> - Contaminated: every τ- and s-based number below, every earlier s process (including
->   `SHOCKS_BASE`, whose 1992–2019 window contains the break), the job-finding rate (`jf` uses the
->   same u_short), and the τ̄ target.
-> - The pre-1985 z–s result is far from the break and probably survives, but it must be rerun.
-> - Fix in `observables.py`, rebuild `raw_data.pkl` (needs the FRED key), then rerun part6b.
->   Verify the correction factor and direction against Shimer (2012) and Elsby, Michaels and
->   Solon (2009) through LibKey first (N11–N14).
 Three steps:
 - z: AR(1) on 1951Q1–2019Q4.
 - δ: (z, δ) VAR on 1992Q3–2019Q4, keeping ρ_δ and σ_δ ⊥ z.
 - s: AR(1) on the spliced 1951–2019 series, with σ_s not purged.
 
 Splice: before 1992Q3, s = (τ − δ̄)/(1 − δ̄), with δ̄ = 0.00278, the mean of the first 10 BED quarters.
+Numbers are after the τ fix below.
 
 Monthly (ρ, σ):
 
@@ -899,17 +888,28 @@ Monthly (ρ, σ):
 |---|---|---|
 | z | (0.9121, 0.0128) | (0.902, 0.0092) |
 | δ | (0.5824, 0.0663) | (0.592, 0.0669) |
-| s | (0.8418, 0.0812) | (0.8741, 0.0854) |
+| s | (0.8364, 0.0751) | (0.8741, 0.0854) |
 
 - **σ_z rises 39 %.** The longer window adds the pre-1985 volatility (sub-window σ_Q 0.0093 against 0.0058).
 - **The splice is benign.**
-  - The log-linear weights are k_pre = 1.067, k_post = 1.106 and w = 0.104, where w is the weight on δ's cycle that is lost before 1992.
-  - The early anchor cuts the step in ln s at 1992Q3 from −1.57 % to −0.29 %.
-  - On the BED window, the constant-δ̄ construction gives ρ_Q 0.620 / σ_Q 0.0548, against 0.591 / 0.0538 for the true s.
-- **⚠ The D14 independence rule triggers.** The z innovation explains 15.7 % of the s innovation (corr −0.40, t = −6.59, 1951–2019). This is entirely a pre-1985 fact:
-  - 1951–84: corr −0.55, R² 30 %, loading −3.27.
-  - 1985–2019: corr −0.12, R² 1.3 %, t = −1.39.
-  - τ's residual shows the same correlation, so the splice does not produce it.
+  - The log-linear weights are k_pre = 1.084, k_post = 1.096 and w = 0.093.
+  - The early anchor cuts the step in ln s at 1992Q3 from −1.93 % to −0.36 %.
+  - On the BED window, the constant-δ̄ construction gives ρ_Q 0.544 / σ_Q 0.0452, against 0.506 / 0.0436 for the true s.
+- **⚠ The D14 independence rule triggers.** The z innovation explains 19.1 % of the s innovation (corr −0.44, t = −6.81, 1951–2019). It comes mostly from before 1985:
+  - 1951–84: corr −0.54, R² 29 %, loading −3.24.
+  - 1985–2019: corr −0.19, R² 3.6 %, t = −2.04.
+  - τ's residual shows the same correlation, so the splice does not produce it. D14 is reopened, pending MS.
 - **Ljung-Box rejects the AR(1) for z, δ and s on these windows** (p ≤ 0.03 at lag 4).
-- D14 is reopened. Pending MS: the options are listed under D14 in `decisions.md`, Oct 28 update.
 - `part6c_shock_var_trivariate.py` imports part6b, so its committed outputs are pre-S14 and would change if rerun.
+
+**τ: the 1994 CPS-redesign correction was applied in the wrong direction (fixed Oct 28).**
+- **The bug:** `observables.py` multiplied *pre*-1994 UEMPLT5 by 1.16. The redesign *lowers* measured short-term unemployment from January 1994, so the correction belongs *after* 1994. The old code doubled the break: ln τ jumped −33.7 % at 1993Q4 → 1994Q1, against −2.8 % now.
+- **Source:** Shimer, "Reassessing the Ins and Outs of Unemployment", working paper, App. A and fn. 27, multiplies post-1994 UEMPLT5 by 1.1. Published version: *RED* 15(2), 2012, doi:10.1016/j.red.2012.02.001; its page and footnote numbers are unchecked.
+- **Fix:** `CPS_REDESIGN_FACTOR = 1.1` from 1994-01 in `shimer_flows`.
+- **Rebuild option (b) (MS):** only `s` (τ) and `jf` in `raw_data.pkl` were recomputed, from UNEMPLOY, CE16OV and UEMPLT5 (FRED CSV, Oct 28 vintage). Today's vintage reproduces the old columns exactly under the old code, and every other column is unchanged.
+- **τ means:** 1951–93 0.0439 → 0.0356 (Shimer's figure: about 3.5 %); 1994–2019 0.0225 → 0.0253.
+- **jf means:** 1951–93 0.532 → 0.459; 1994–2019 0.327 → 0.360.
+- **Still owed:**
+  - The τ̄ = 3.10 %/month target and every moment that uses τ or jf (`observables_moments.py`, Block M) must be recomputed.
+  - `part8_shimer_national.py` uses 1.16 post-1994, the right direction but a different factor.
+- **Open bug (not fixed; MS to decide):** `u_level[1:]` keeps its date labels, so pandas aligns it with u_t, and jf_t = u^s_t/u_t rather than Shimer's eq. (4), F_t = 1 − (u_{t+1} − u^s_{t+1})/u_t. Means are close (0.402 against 0.401, 1951–2025 monthly), but the correlation is 0.92 monthly and 0.97 quarterly. τ inherits the one-month misalignment.

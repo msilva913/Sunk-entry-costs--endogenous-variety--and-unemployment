@@ -3,6 +3,7 @@
 # Imports and Settings #
 #######################
 
+import io
 import time
 import numpy as np
 import pandas as pd
@@ -30,6 +31,83 @@ fred = Fred(api_key='d35aabd7dc07cd94481af3d1e2f0ecf3')
 def save_object(obj, filename):
     with open(filename, 'wb') as output:
         pickle.dump(obj, output, pickle.HIGHEST_PROTOCOL)
+
+
+# ------------------------------------------------------------------------ #
+# 1994 CPS redesign correction (fixed Oct 28, 2026).                        #
+# Since January 1994 the CPS no longer asks the unemployment duration of a  #
+# worker unemployed in consecutive months; the BLS adds the elapsed weeks   #
+# instead. Measured short-term unemployment (UEMPLT5) therefore FELL        #
+# discontinuously in the six rotation groups that are not incoming.         #
+# Shimer, "Reassessing the Ins and Outs of Unemployment" (working-paper     #
+# version, Appendix A and its footnote 27): short-term unemployment was     #
+# 41.6% of unemployment in the full CPS and 41.7% in the incoming rotation  #
+# groups over 1976-93, but 37.9% and 44.2% over 1994-2005. He keeps the     #
+# full sample through 1993 and corrects the data AFTER 1994; multiplying    #
+# UEMPLT5 by a constant 1.1 after 1994 "delivers very similar results".     #
+# We use that constant. (The code before Oct 28 multiplied PRE-1994 values  #
+# by 1.16, which doubled the break instead of removing it.)                 #
+# Published version: Review of Economic Dynamics 15(2), 2012, 127-148,      #
+# doi:10.1016/j.red.2012.02.001; check page and footnote numbers there.     #
+# ------------------------------------------------------------------------ #
+CPS_REDESIGN_DATE   = '1994-01-01'
+CPS_REDESIGN_FACTOR = 1.1
+
+
+def shimer_flows(u_level, e_level, u_short, freq):
+    """
+    Monthly job-finding and separation probabilities by the Shimer (2012)
+    continuous-time method, then quarterly averages. Inputs are the monthly
+    FRED levels UNEMPLOY, CE16OV and UEMPLT5 (thousands). Returns (s, jf):
+    s is the total separation probability tau used downstream.
+
+    The redesign correction is applied to u_short before any formula.
+    """
+    u_short = u_short.copy()
+    u_short.loc[u_short.index >= CPS_REDESIGN_DATE] *= CPS_REDESIGN_FACTOR
+
+    # NOTE (Oct 28, 2026, not yet changed): u_level[1:] keeps its date
+    # labels, so pandas aligns u_next with u_level and jf_t = u_short_t/u_t,
+    # not Shimer's eq. (4), F_t = 1 - (u_{t+1} - u^s_{t+1})/u_t. Pending MS
+    # (context/pending_tasks.md, Q2).
+    u_next  = u_level[1:len(u_level)]
+    jf      = 1 - (u_next - u_short) / u_level
+    jfh     = -np.log(1 - jf)
+    denom   = -np.expm1(-jfh)
+    sh      = (u_short * jfh) / (e_level * denom)
+    s       = 1.0 - np.exp(-sh)
+    s       = s.drop(pd.Timestamp("2020-03-01"), errors='ignore')
+
+    return s.resample(freq).mean().dropna(), jf.resample(freq).mean().dropna()
+
+
+def fetch_fred_csv(series_id):
+    """A FRED series from the public fredgraph CSV endpoint (no API key)."""
+    url = f"https://fred.stlouisfed.org/graph/fredgraph.csv?id={series_id}"
+    resp = requests.get(url, timeout=60)
+    resp.raise_for_status()
+    df = pd.read_csv(io.StringIO(resp.text), index_col=0, parse_dates=True)
+    return pd.to_numeric(df.iloc[:, 0], errors='coerce').dropna()
+
+
+def refresh_flows(path, init, final, freq):
+    """
+    Rebuild option (b), Oct 28, 2026: recompute only s (tau) and jf in an
+    existing raw_data.pkl from UNEMPLOY, CE16OV and UEMPLT5, leaving every
+    other series at its earlier vintage. Prints the change.
+    """
+    dat = pd.read_pickle(path)
+    s, jf = shimer_flows(*(fetch_fred_csv(k).loc[init:final]
+                           for k in ('UNEMPLOY', 'CE16OV', 'UEMPLT5')), freq)
+    for name, new in (('s', s), ('jf', jf)):
+        old = dat[name].copy()
+        dat[name] = new.reindex(dat.index)
+        both = pd.concat([old, dat[name]], axis=1).dropna()
+        for lo, hi in (('1951', '1993'), ('1994', '2019')):
+            b = both.loc[lo:hi]
+            print(f"  {name:2s} {lo}-{hi}: mean {b.iloc[:, 0].mean():.4f} -> "
+                  f"{b.iloc[:, 1].mean():.4f}")
+    return dat
 
 
 def fetch_bed_deaths_national():
@@ -166,35 +244,11 @@ def construct_data(init, final, freq):
 
     # ------------------------------------------------------------------ #
     # Job-finding and separation rates via Shimer (2012) method           #
-    # Continuous-time correction accounts for time-aggregation bias.      #
-    #                                                                      #
-    # 1994 CPS redesign correction: the January 1994 CPS questionnaire    #
-    # redesign artificially increased measured short-term unemployment     #
-    # (UEMPLT5) by approximately 16%.  We multiply UEMPLT5 by 1/1.16 for #
-    # dates before 1994 (equivalently, multiply post-1994 implied s_h by  #
-    # 1.16 if using pre-1994 as baseline — see Shimer 2012 footnote 8 and #
-    # Elsby, Hobijn & Sahin 2013).  We apply the adjustment directly to   #
-    # u_short so all subsequent formulas remain unchanged.                 #
+    # (see shimer_flows for the formulas and the 1994 CPS correction)     #
     # ------------------------------------------------------------------ #
-    u_level = fred.get_series('UNEMPLOY').loc[init:final]
-    e_level = fred.get_series('CE16OV').loc[init:final]
-    u_short = fred.get_series('UEMPLT5').loc[init:final]
-
-    # Apply 1994 CPS redesign correction: scale up pre-1994 short-term
-    # unemployment to be consistent with the post-redesign measurement.
-    u_short.loc[u_short.index < '1994-01-01'] *= 1.16
-
-    u_next  = u_level[1:len(u_level)]
-    jf      = 1 - (u_next - u_short) / u_level
-    jfh     = -np.log(1 - jf)
-    denom   = -np.expm1(-jfh)
-    sh      = (u_short * jfh) / (e_level * denom)
-    s       = 1.0 - np.exp(-sh)
-    s       = s.drop("2020-03-01", errors='ignore')
-
-    # Quarterly averages
-    s  = s.resample(freq).mean().dropna()
-    jf = jf.resample(freq).mean().dropna()
+    s, jf = shimer_flows(fred.get_series('UNEMPLOY').loc[init:final],
+                         fred.get_series('CE16OV').loc[init:final],
+                         fred.get_series('UEMPLT5').loc[init:final], freq)
 
     # ------------------------------------------------------------------ #
     # Labor share and real wage index                                      #
@@ -262,9 +316,15 @@ if __name__ == "__main__":
     final = '2025-10-01'
     freq = 'QS'
     load = False
+    # Oct 28, 2026 (MS, rebuild option (b)): recompute only s and jf in the
+    # existing raw_data.pkl after the CPS-redesign fix. Set to False for a full
+    # rebuild, which re-downloads every series at the current vintage.
+    flows_only = True
 
     # Load or construct data
-    if load:
+    if flows_only:
+        dat = refresh_flows("raw_data.pkl", init, final, freq)
+    elif load:
         dat = pickle.load(open("var_load_list", "rb"))
     else:
         dat = construct_data(init, final, freq)

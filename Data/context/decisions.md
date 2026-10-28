@@ -60,9 +60,10 @@ builds a spurious *negative* s–δ innovation correlation. Only the joint syste
   Oct 20 "take (a)". ρ_s now comes from the univariate AR(1), not the VAR diagonal.
 - **Rule fixed in advance:** revisit if the z innovation explains ≥ 10 % of the s innovation
   and |t| ≥ 2.
-- **Result on the S14 window (1951–2019), provisional until the τ 1994 break is fixed (findings.md): the rule triggers.** R² = 15.7 %, corr −0.40,
-  t = −6.59. It is a pre-1985 fact: 1951–84 R² 30 % (corr −0.55, loading −3.27); 1985–2019
-  R² 1.3 % (t = −1.39). τ shows the same pattern, so the splice does not cause it.
+- **Result on the S14 window (1951–2019), after the τ fix: the rule triggers.** R² = 19.1 %,
+  corr −0.44, t = −6.81. Mostly a pre-1985 fact: 1951–84 R² 29 % (corr −0.54, loading −3.24);
+  1985–2019 R² 3.6 % (corr −0.19, t = −2.04). τ shows the same pattern, so the splice does not
+  cause it.
 - **Open (MS), options:**
   - (i) keep independent s and report the missing z–s comovement;
   - (ii) load s on ε^z, i.e. s_t = ρ_s s_{t−1} + b·ε^z_t + ε^s_t;
