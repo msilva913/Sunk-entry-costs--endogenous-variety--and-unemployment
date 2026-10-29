@@ -90,7 +90,9 @@ except NameError:
 
 import part6b_shock_persistence_cyclical as p6b
 
-plt = p6b.plt
+# After part6b on purpose: part6b selects the backend (Agg as a script, inline in
+# Spyder) before pyplot is first imported, and pyplot keeps that backend.
+import matplotlib.pyplot as plt
 
 
 # ── parameters ────────────────────────────────────────────────────────────────
