@@ -243,6 +243,43 @@ def bootstrap_irf(Y, fit, order, names, H, n_boot, rng):
 
 
 # =============================================================================
+#  ONE SVAR: DATA, FITS, VARIANCE SHARES
+# =============================================================================
+
+def prepare_svar(key, spec, cyc):
+    """The SVAR's window and data matrix, its shock block and its lags."""
+    names = list(spec["vars"])
+    frame = cyc.loc[cyc.index >= spec["start"], names].dropna()
+    Y = frame.to_numpy()
+    p_bic, bic = bic_lag(Y)
+    return {"key": key, "names": names, "frame": frame, "Y": Y,
+            "block": [v for v in names if v in SHOCKS],
+            "p_bic": p_bic, "bic": bic, "lags": sorted({1, 2, p_bic})}
+
+
+def estimate_svar(sv):
+    """VAR fits at each reported lag, keyed by p."""
+    return {p: fit_var(sv["Y"], p) for p in sv["lags"]}
+
+
+def fevd_records(sv, p, fit):
+    """
+    One row per (ordering of the shock block, horizon, response, shock). The
+    shock block is permuted; u and v always follow it. In fevd's output,
+    column j belongs to shock order[j].
+    """
+    rows = []
+    for perm in itertools.permutations(sv["block"]):
+        order = list(perm) + list(OUTCOMES)
+        for h, M in fevd(fit, order, sv["names"], HORIZONS).items():
+            rows += [{"svar": sv["key"], "p": p, "p_bic": p == sv["p_bic"],
+                      "ordering": "-".join(order), "baseline": list(perm) == sv["block"],
+                      "horizon": h, "response": resp, "shock": shk, "share": float(M[i, j])}
+                     for i, resp in enumerate(sv["names"]) for j, shk in enumerate(order)]
+    return rows
+
+
+# =============================================================================
 #  REPORT
 # =============================================================================
 
@@ -251,6 +288,15 @@ def report_method():
     say(f"\n{'-'*78}\n0. Method\n{'-'*78}")
     for line in method.rstrip().splitlines():
         say(line)
+
+
+def report_lags(sv):
+    frame = sv["frame"]
+    say(f"  SVAR {sv['key']} {tuple(sv['names'])}  {frame.index[0]}-{frame.index[-1]}, "
+        f"T = {len(frame)}; BIC picks p = {sv['p_bic']}  (BIC: "
+        + ", ".join(f"{q}: {v:.3f}" for q, v in sv["bic"].items()) + ")")
+    for p, fit in sv["fits"].items():
+        say(f"      p = {p}: T = {fit['T']}, max |root| = {max_root(fit['A']):.3f}")
 
 
 def share_table(rows, svar, p, horizon):
@@ -292,42 +338,22 @@ if __name__ == "__main__":
         say(f"  {name:6s} {s_.index[0]}-{s_.index[-1]}  T = {len(s_):3d}  SD of cycle {100*s_.std():6.2f}")
 
     # ── estimation: every SVAR, BIC lag plus p = 1 and 2, every ordering ─────
-    fevd_rows, fits, data = [], {}, {}
     say(f"\n{'-'*78}\n2. Lag selection and stability\n{'-'*78}")
+    svars, fevd_rows = {}, []
     for key, spec in SVARS.items():
-        names = list(spec["vars"])
-        frame = cyc.loc[cyc.index >= spec["start"], names].dropna()
-        Y = frame.to_numpy()
-        p_bic, bic = bic_lag(Y)
-        lags = sorted({1, 2, p_bic})
-        data[key] = (frame, Y, names, p_bic)
-        say(f"  SVAR {key} {tuple(names)}  {frame.index[0]}-{frame.index[-1]}, T = {len(frame)}; "
-            f"BIC picks p = {p_bic}  (BIC: " + ", ".join(f"{q}: {v:.3f}" for q, v in bic.items()) + ")")
-        block = [v for v in names if v in SHOCKS]
-        for p in lags:
-            fit = fit_var(Y, p)
-            fits[(key, p)] = fit
-            say(f"      p = {p}: T = {fit['T']}, max |root| = {max_root(fit['A']):.3f}")
-            for perm in itertools.permutations(block):
-                order = list(perm) + list(OUTCOMES)
-                shares = fevd(fit, order, names, HORIZONS)
-                for h, M in shares.items():
-                    for i, resp in enumerate(names):
-                        for j, shk in enumerate(order):
-                            fevd_rows.append({"svar": key, "p": p, "p_bic": p == p_bic,
-                                              "ordering": "-".join(order),
-                                              "baseline": list(perm) == block,
-                                              "horizon": h, "response": resp, "shock": shk,
-                                              "share": float(M[i, j])})  # column j = order[j]
+        sv = prepare_svar(key, spec, cyc)
+        sv["fits"] = estimate_svar(sv)
+        report_lags(sv)
+        fevd_rows += [r for p, fit in sv["fits"].items() for r in fevd_records(sv, p, fit)]
+        svars[key] = sv
 
     # ── variance shares ──────────────────────────────────────────────────────
     say(f"\n{'-'*78}\n3. Shares of the variance of u and v, percent\n{'-'*78}")
     say("  Baseline ordering (z, delta, s, u, v); [min-max] over orderings of the shock block.")
     say("  h = 200 is the unconditional share, the model-side object. '-own' = residual innovation.")
-    for key in SVARS:
-        p_bic = data[key][3]
-        for p in sorted({1, 2, p_bic}):
-            say(f"\n  SVAR {key}, p = {p}{' (BIC)' if p == p_bic else ''}")
+    for key, sv in svars.items():
+        for p in sv["lags"]:
+            say(f"\n  SVAR {key}, p = {p}{' (BIC)' if p == sv['p_bic'] else ''}")
             for h in HORIZONS:
                 say(f"    h = {h}" + (" (unconditional)" if h == HORIZONS[-1] else ""))
                 for line in share_table(fevd_rows, key, p, h):
@@ -353,8 +379,9 @@ if __name__ == "__main__":
         "\n  when delta is left out, as it must be in B.")
 
     # ── impulse responses, SVAR A at the BIC lag ─────────────────────────────
-    frame, Y, names, p_bic = data["A"]
-    fitA = fits[("A", p_bic)]
+    svA = svars["A"]
+    Y, names, p_bic = svA["Y"], svA["names"], svA["p_bic"]
+    fitA = svA["fits"][p_bic]
     order = list(SVARS["A"]["vars"])
     point = irf(fitA, order, names, H_IRF)
     draws = bootstrap_irf(Y, fitA, order, names, H_IRF, N_BOOT, rng)
