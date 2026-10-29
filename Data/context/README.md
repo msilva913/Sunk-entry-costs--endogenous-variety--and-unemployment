@@ -25,7 +25,7 @@ status notes to whichever file was open rather than the file that owns the topic
 
 ## Reading order when picking the project back up
 
-1. **`session_handout_20261028.md`** — latest handout (Oct 28: S14 shock-process methodology, τ/jf fixes, D14, next steps). Before it: `session_handout_20261020.md` (Oct 20: cloud setup, checks, Q2 status). Before it: `session_handout_20261019.md` (Oct 19, with Oct 20 §4–5: branches reconciled, Q1 closed and
+1. **`session_handout_20261028.md`** — latest handout (Oct 28: S14 shock-process methodology, τ/jf fixes, D14; §6 Oct 29: `SHOCKS_BASE` swap, data SVAR `q3_data_svar.py`, next steps). Before it: `session_handout_20261020.md` (Oct 20: cloud setup, checks, Q2 status). Before it: `session_handout_20261019.md` (Oct 19, with Oct 20 §4–5: branches reconciled, Q1 closed and
    merged, σ* = 0.011 determinacy result, Q2 scoped and D14 opened; resume with Q2). Before it:
    `session_handout_20261018.md` (Oct 18: Q1 steps 5–7, Test 6 and the
    user-cost offset R19, BK ε-threshold, Remark 3 + App. K; resume with the Q1 close-out, then

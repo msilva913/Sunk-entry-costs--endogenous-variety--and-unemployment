@@ -85,7 +85,7 @@ and the δ→v trough at h=4–6. See [D10](context/decisions.md)
 - ⚠ The old targets σ(u) = 14.96 % and cor(u,v) = −0.804 included 2020–24. Pre-pandemic
   (1951–2019): σ(u) = 12.48 %, cor(u,v) = −0.925.
 - **S14 shock processes built Oct 28** (part6b; monthly ρ/σ: z 0.9121/0.0128, δ 0.5824/0.0663,
-  s 0.8054/0.0711). `SHOCKS_BASE` still holds the pre-S13 values until MS approves the swap.
+  s 0.8054/0.0711), in `SHOCKS_BASE` since Oct 29.
 - **τ and jf fixed Oct 28** (`observables.py`): CPS 1994 correction is UEMPLT5 × 1.1 *after* 1994,
   and jf_t = 1 − (u_{t+1} − u^s_{t+1})/u_t. The τ̄ target and τ/jf moments must be recomputed.
 
@@ -123,17 +123,19 @@ are in `context/archive/`.
    (`sigma_determinacy.txt`, findings.md).
 2. **R19 (theory, MS):** pricing replacement offsets `prop:fe`'s user-cost channel in the
    baseline. Double-limit check first, then a remark after `prop:fe`, then the framing.
-3. **Q2 (processes built Oct 28; `SHOCKS_BASE` swap pending):**
+3. **Q2 (done Oct 28–29; `SHOCKS_BASE` = S14 values) and Q3 started:**
    - **Oct 20 (superseded by Oct 28):** the trivariate VAR (`part6c`); the new processes left
      cor(u,v) unchanged.
    - **p_0 grid:** results depend only on Λ̄_r; even Λ̄_r = 0.10 gives only −0.63.
-   - **Amplification sweep:** s supplies 93–99 % of var(u) in the model, against ≤ 25 % in the
-     data SVAR. z is under-amplified 3–6×, and δ barely moves u (> 20× short). ϕ is not a lever
-     (Hagedorn–Manovskii cancellation; at most about 1.35×).
+   - **Amplification sweep (rerun Oct 29 at S14 shocks):** model var(u) shares z 4.9 %, δ 0.1 %,
+     s 95 %. ϕ is not a lever (Hagedorn–Manovskii cancellation).
+   - **Data SVAR (`q3_data_svar.py`, Oct 29):** z 14–35 %, δ 12–31 %, s 7–19 % of var(u). The model's
+     total σ(u) from the three shocks is about right (9.8 vs 9.1–9.7); the composition is wrong:
+     s over-propagated 1.7–2.8×, z under 2.2–3.4×, δ under 14–22× (findings.md "Q3").
    - **Done Oct 28:** the S14 processes (part6b three steps; handout 20261028 §2), the τ/jf fixes,
      D14 settled (independent s; z explains 9.2 % of the s innovation, under the 10 % rule).
-   - **Next:** refresh `SHOCKS_BASE` (MS approval), recompute τ̄ and the τ/jf moments, and move the
-     targets to the S14 windows. Then the z-elasticity diagnostic (persistence vs the business
+   - **Next:** model side of B′ (same SVAR on simulated data); recompute τ̄ and the τ/jf moments and
+     move Block M to the S14 windows. Then the z-elasticity diagnostic (persistence vs the business
      block) and the δ-propagation gap. Details: findings.md "Q2", handout §4–5.
 
 **Theory structure in the draft (Oct 18).** §3 limiting cases: `prop:independence`, clone

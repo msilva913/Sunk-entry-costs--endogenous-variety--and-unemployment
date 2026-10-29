@@ -116,3 +116,19 @@ flows-only refresh):
   fredapi).
 - With them, the old part6b reproduced the committed `shock_calibration.csv` to about 1e-12.
 - Pushing to `costly_vacancy_reposting` works.
+
+## 6. Oct 29 update
+
+- **`SHOCKS_BASE` now holds the S14 values** (`run_solution_core.jl`), and `sigma_determinacy.jl` uses it.
+  - `Q2_amplification_sweep.jl` and `Q2_p0_floor.jl` now read `SHOCKS_BASE` and have been rerun.
+  - Julia 1.12.7 runs in the container; it reproduces `R8_step5_defaults.txt` exactly.
+- **Data side of Block B′ built:** `Bartek analysis/q3_data_svar.py`, with SVARs A, B and C.
+  - **Method:** see the program's report header.
+  - **Results:** findings.md "Q3: data SVAR". In the data, z explains 14–35 %, δ 12–31 % and s 7–19 % of var(u) (A, all orderings); the model has 5 %, 0.1 % and 95 %.
+  - **Diagnosis:** the model's total σ(u) is about right; its composition is wrong.
+- **Deleted:** `part6c_shock_var_trivariate.py` with its outputs, and `Q2_shock_processes_check.jl/.txt`.
+- **Next:**
+  1. The model side of B′: the same SVAR on simulated data.
+  2. The δ-propagation decomposition and the z-elasticity diagnostic.
+  3. Block M on the S14 windows.
+  4. Rerun `sigma_determinacy` and `R8_step7_baseline` at the new shocks.

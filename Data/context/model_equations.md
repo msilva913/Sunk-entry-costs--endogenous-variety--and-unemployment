@@ -145,9 +145,8 @@ Every §5.3 number must be regenerated afterwards; bundle with the D1 cascade.
 Independent AR(1)s with uncorrelated innovations. The z→δ_e link runs through χ^c, not
 through shock covariance, so σ_δ is purged of the z innovation (Cholesky, z first). s has no
 endogenous channel, so σ_s is not purged (D14). **S14 values (Oct 28, `shock_calibration.txt`), monthly:** ρ_z 0.9121, σ_z 0.0128; ρ_δ 0.5824, σ_δ 0.0663; ρ_s 0.8054, σ_s 0.0711. Method: [`session_handout_20261028.md`](session_handout_20261028.md) §2.
-**Code:** `SHOCKS_BASE` still holds the pre-S13 values (ρ_z 0.902, σ_z 0.0092; ρ_δ 0.592,
-σ_δ 0.0669; ρ_s 0.8741, σ_s 0.0854) until MS approves the swap; the observation date differs
-(deviation 2).
+**Code:** `SHOCKS_BASE` holds the S14 values since Oct 29 (before: ρ_z 0.902, σ_z 0.0092;
+ρ_δ 0.592, σ_δ 0.0669; ρ_s 0.8741, σ_s 0.0854); the observation date differs (deviation 2).
 
 ## Continuation-cost distribution
 

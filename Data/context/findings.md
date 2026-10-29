@@ -816,7 +816,8 @@ count.
 - α reaches 10^178 because ψ ≈ 0.007. Λ_r is then effectively a constant, and α is close to
   Float64 overflow (10^308).
 
-**Preliminary, scratch (not yet a program): data SVAR on (z, δ, s, u, v).** HP-1600 log cycles,
+**Preliminary, scratch (not yet a program): data SVAR on (z, δ, s, u, v).** ⚠ **Superseded Oct 29 by
+`q3_data_svar.py`** (see "Q3: data SVAR" below); it used the pre-fix τ. HP-1600 log cycles,
 1992Q3–2019Q4, Cholesky in that order.
 - **s shocks explain only 12–26 % of the variance of u.** z explains 30–40 %, δ 17–29 %, and the
   residual u shock 14–34 % (VAR(1) vs VAR(2), horizons 4–20 quarters). In the model, s accounts
@@ -936,3 +937,45 @@ Working point, S14 shocks against part6c (a):
   - z needs σ(u) ≈ 6.8–7.9, so it is 3.2–3.7× short at the working point;
   - δ needs ≈ 5.1–6.7, so it is 17–22× short.
 - ⚠ **That data SVAR is itself out of date.** It ran on 1992Q3–2019Q4 with the pre-fix τ, which had the 1994 break inside the window, and it used one Cholesky ordering. Rebuild it (Q3 Block B′) before treating these ratios as targets.
+
+**Q3: data SVAR, Block B′ data side (`q3_data_svar.py` → `q3_data_svar.txt/_fevd.csv/_irf.csv/_irf.png`, Oct 29).**
+Recursive SVARs on HP-1600 log cycles, with the shock block (z, δ, s) ordered before (u, v). Windows follow S13/S14, and the shock cycles come from part6b.
+
+The three SVARs:
+- **A:** (z, δ, s, u, v), 1992Q3–2019Q4.
+- **B:** (z, s, u, v), 1951–2019.
+- **C:** (z, s, u, v), 1992Q3–2019Q4.
+
+BIC picks p = 1 in all three; p = 2 is also reported. All are stable (max root ≤ 0.91).
+
+Unconditional shares of var(u), in percent: baseline ordering, with [min–max] over the orderings of the shock block.
+
+| | z | δ | s | u-own + v-own |
+|---|---|---|---|---|
+| A, p = 1 | 35.2 [20.9–35.2] | 15.1 [11.7–26.2] | 9.5 [9.5–18.9] | 40.2 |
+| A, p = 2 | 26.4 [13.9–26.4] | 19.7 [15.6–30.6] | 7.2 [7.2–15.5] | 46.7 |
+| B, p = 1 | 32.8 [20.4–32.8] | — | 25.0 [25.0–37.4] | 42.2 |
+| B, p = 2 | 24.8 [16.3–24.8] | — | 18.9 [18.9–27.4] | 56.3 |
+
+- **Shares of var(v) are similar.** z 24–32 %, δ 15–18 %, s 5–7 % (A).
+- **Omitting δ (A against C) mostly inflates s.** At p = 1, s rises 9.5 → 19.1 and z 35.2 → 42.1. B's s share is therefore an upper bound.
+- **Residual u and v innovations take 40–56 % of var(u).** The three model shocks account for about 53–60 % in the data (A).
+- **IRFs (A, p = 1, one-SD shocks, log points × 100, 68 % bootstrap bands):**
+  - δ → u: +1.6 at h = 4 [0.95, 1.94].
+  - δ → v: −1.8 at h = 2 [−2.16, −1.16].
+  - s → u: +1.3 at h = 2; s → v: −1.3 at h = 2.
+  - z → u: −2.4 at h = 4.
+  - The data's v falls after an s shock, so separations destroy positions. This supports a low Λ̄_r.
+
+**Model against data (arithmetic on program outputs; not draft-bound).** Data σ(u) by shock = √share × 12.48, from A (both lags, all orderings). Model: the working point of `Q2_amplification_sweep.txt` (S14 shocks).
+
+| | Data σ(u) | Model σ(u) | Gap |
+|---|---|---|---|
+| z | 4.65–7.40 | 2.15 | 2.2–3.4× short |
+| δ | 4.27–6.90 | 0.31 | 14–22× short |
+| s | 3.35–5.43 (A); up to 7.63 (B) | 9.46 | 1.7–2.8× too large (A) |
+| Three shocks together | 9.1–9.7 (53–60 % of var(u)) | 9.80 | about right |
+
+**The model's total σ(u) is about right. Its composition is wrong:** s is over-propagated, and z and δ are under-propagated. More amplification across the board would make s overshoot further. What is needed is weaker s propagation, or at least propagation that is not uniform across the three shocks, together with stronger z and much stronger δ. In the sweep, costless reposting brings s down to σ(u) 5.61, inside the data range, but it also collapses z to 0.42.
+
+Caveat: the model's figures are true-shock shares, while the data's are Cholesky shares. The like-for-like comparison runs the same SVAR on simulated data (the model side of Block B′, not yet built).

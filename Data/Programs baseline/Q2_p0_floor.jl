@@ -1,12 +1,12 @@
 # Q2_p0_floor.jl
 # =============================================================================
 # Exploratory, NOT draft-bound. How far must p_0 rise for the reposting margin to deliver
-# the data's cor(u, v) = −0.804? Λ_r = F(Q/α) ≥ 1 − p_0, so p_0 sets the floor of Λ̄_r.
+# the data's cor(u, v) = −0.925 (1951–2019)? Λ_r = F(Q/α) ≥ 1 − p_0, so p_0 sets the floor of Λ̄_r.
 #
 # Grid: p_0 ∈ {0.5, …, 0.95} × Λ̄_r ∈ {0.55, 0.45, …, 0.10}, kept only when
 # Λ̄_r > 1 − p_0 + 0.03. Everything else at TARGETS (PATH B: ψ re-pinned by the exit
-# elasticity at each p_0). Shocks: part6c (a), the trivariate VAR, orthogonalized.
-# Moments as R8_step7_baseline.jl. Data: cor(u,v) −0.804, σ(u) 14.96 %, σ(v) 14.19 %.
+# elasticity at each p_0). Shocks: SHOCKS_BASE (S14 values since Oct 29; part6c (a) before).
+# Moments as R8_step7_baseline.jl. Data, 1951–2019 (S13): cor(u,v) −0.925, σ(u) 12.48 %, σ(v) 13.82 %.
 #
 # Output: Q2_p0_floor.txt
 # =============================================================================
@@ -22,14 +22,7 @@ const LRGRD = (0.55, 0.45, 0.35, 0.25, 0.15, 0.10)
 lines = String[]
 log!(str) = (push!(lines, str); println(str))
 
-const CAND = CSV.read(joinpath(@__DIR__, "..", "Bartek analysis", "data", "results",
-                               "shock_var_trivariate.csv"), DataFrame)
-function shocks_from(spec)
-    get(sh) = (r = CAND[(CAND.spec .== spec) .& (CAND.shock .== sh), :]; (r.rho_m[1], r.sigma_m[1]))
-    (ρz, σz), (ρδ, σδ), (ρs, σs) = get("z"), get("delta"), get("s")
-    return (; ρz, σz, ρδ, σδ, ρs, σs)
-end
-const SH = shocks_from("a_orthogonalized")
+const SH = SHOCKS_BASE
 
 model = let
     m = (parameters = parameters, estimate = estimate, estimation = position,
@@ -52,8 +45,8 @@ function moments_uv(sol, eta_m)
 end
 
 eta_all = hcat(shock_col(:z, SH.σz), shock_col(:δ, SH.σδ), shock_col(:s, SH.σs))
-log!("Q2 p_0 floor — cor(u,v) over (p_0, Λ̄_r); shocks part6c (a); $T_SM months, quarterly, HP λ = $(Int(LAM)).")
-log!("Data: cor(u,v) −0.804, σ(u) 14.96 %, σ(v) 14.19 %.")
+log!("Q2 p_0 floor — cor(u,v) over (p_0, Λ̄_r); shocks SHOCKS_BASE (S14); $T_SM months, quarterly, HP λ = $(Int(LAM)).")
+log!("Data 1951–2019: cor(u,v) −0.925, σ(u) 12.48 %, σ(v) 13.82 %.")
 for p0 in P0
     log!(@sprintf("\n== p_0 = %.2f  (floor 1 − p_0 = %.2f)", p0, 1 - p0))
     for Λr in LRGRD

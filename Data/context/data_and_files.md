@@ -82,6 +82,7 @@ NFCI interaction variant:
 | `shock_persistence.csv` | AR(1): ρ_δ=0.617/0.647, ρ_LD=0.489/0.305 |
 | `var_calibration.csv` | VAR(1): ρ_δ=0.600, ρ_LD=0.510, β(endex)=0.228 |
 | `shock_calibration.csv` / `.txt` | **MODEL CALIB** (S14, Oct 28): one row per series for z, δ, τ, s, with each row's sample window. z, τ, s univariate AR(1) on 1951–2019 (s spliced before 1992Q3); δ from the (z, δ) VAR on 1992Q3–2019Q4, σ_δ ⊥ z. Monthly: ρ_z 0.9121, σ_z 0.0128; ρ_δ 0.5824, σ_δ 0.0663; ρ_s 0.8054, σ_s 0.0711. τ is a diagnostic, not a shock. The `.txt` is the full report (method, splice checks, D14 test) |
+| `q3_data_svar.txt` / `_fevd.csv` / `_irf.csv` / `_irf.png` | **Q3 Block B′ data side** (Oct 29): SVARs A/B/C, variance shares of u and v with ordering bounds, IRFs with bootstrap bands. See findings.md "Q3: data SVAR" |
 | `cycles_panel.png` | HP-1600 log cycles for all four series, each on its own window (z, τ, s 1951–2019; δ 1992Q3–2019Q4); dotted line at the splice |
 | `separation_decomposition.png` | τ, δ, s in levels and cycles, 1951–2019, with the δ̄ stand-in before the 1992Q3 splice; τ = δ + (1−δ)s. cor(cycle_s, cycle_τ) = 0.995 on the BED window |
 | `recession_scatter_primary.png` | Cross-recession fig (paper) |
@@ -139,8 +140,8 @@ NFCI interaction variant:
 | β(δ←L.z) quarterly | −1.192 (t = −1.36) | part6b S14 VAR; endogenous exit channel, NOT in the shock process |
 | corr(u^z, u^δ) | −0.290 | part6b S14; before the Cholesky step |
 
-> ⚠ **`SHOCKS_BASE` in the code still holds the pre-S13 part6b values** (ρ_z 0.902, σ_z 0.0092;
-> ρ_δ 0.592, σ_δ 0.0669; ρ_s 0.8741, σ_s 0.0854) until MS approves the swap. The Oct 20 interim
+> **`SHOCKS_BASE` holds these S14 values since Oct 29** (before: ρ_z 0.902, σ_z 0.0092;
+> ρ_δ 0.592, σ_δ 0.0669; ρ_s 0.8741, σ_s 0.0854). The Oct 20 interim
 > numbers (S13 rerun, part6c trivariate) are superseded. Method:
 > [`session_handout_20261028.md`](session_handout_20261028.md) §2.
 >

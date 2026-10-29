@@ -44,7 +44,7 @@ They meet only at estimation, which does not exist yet — see
 | `part5_joint_diagnostics.py` | Partial-R²/first-stage test of Story 1 vs. Story 2 for the zero β^LD | ✅ |
 | `part6_shock_persistence.py` | AR(1) persistence of the raw and residualized shocks | ✅ |
 | `part6b_shock_persistence_cyclical.py` | **Model shock calibration (S14, Oct 28):** (1) z AR(1) on 1951Q1–2019Q4; (2) (z, δ) VAR(1) on 1992Q3–2019Q4, Cholesky z-first, keeping ρ_δ and σ_δ ⊥ z; (3) s AR(1) on the spliced 1951–2019 series (before 1992Q3, s = (τ − δ̄)/(1 − δ̄) with δ̄ the first-10-BED-quarter mean), σ_s not purged. Series cut at 2019Q4 before filtering (S13), each filtered over its own window. Report includes the method, splice checks, sub-windows, the D14 independence test and Ljung-Box. Run code under `if __name__ == "__main__":` | ✅ Oct 28 → `shock_calibration.csv/.txt` (ρ, σ for z, δ, s; τ as diagnostic) |
-| `part6c_shock_var_trivariate.py` | **Q2 diagnostic (Oct 20), superseded by part6b S14 (Oct 28):** trivariate VAR(1) on z, δ, s, Cholesky z → δ → s. Imports part6b, so its committed outputs are pre-S14 and would change if rerun. Rerun or retire (MS) | ⚠ stale → `shock_var_trivariate.txt/.csv` |
+| `q3_data_svar.py` | **Q3 Block B′ data side (Oct 29):** recursive SVARs A (z, δ, s, u, v) 1992Q3–2019Q4, B (z, s, u, v) 1951–2019, C (z, s, u, v) 1992Q3–2019Q4; cycles from part6b plus u, v; BIC lag (p = 1, 2 also reported); FEVD at h = 4, 8, 20, 200 with min–max over orderings of the shock block; IRFs of u, v at h = 0–12 with residual-bootstrap 68 %/90 % bands (1,000 draws). part6c (trivariate VAR) deleted Oct 29 | ✅ Oct 29 → `q3_data_svar.txt`, `_fevd.csv`, `_irf.csv`, `_irf.png` |
 | `part7_nfci.py` | Chicago Fed NFCI → quarterly | ✅ |
 | `part7b_sloos.py` | SLOOS C&I tightening in place of NFCI_risk | ⚠️ run, but **output stale** (pre-Deaths instrument, `instr_sd`=11.16) |
 | `part7c_recession_placebo.py` | Dual-severity placebo (u^nat level + change) | ✅ headline validation |
@@ -230,7 +230,7 @@ x_v = 0.5`, which are *not* the `TARGETS` defaults. See [D2](decisions.md).
 
 Since R8 the state vector is [Ñ, Ẽ, Ṽ^u, Ṽ^s, z, δ, δl, s] (41 equations). Runners must build
 PAR with `build_PAR(cal, SHK)`, single-shock columns with `shock_col(state, sd)`, and take shock
-processes from `SHOCKS_BASE` (pre-S13 part6b values; to be replaced by the S14 part6b values, Oct 28, after MS approval). Never assign numbers to the
+processes from `SHOCKS_BASE` (S14 part6b values since Oct 29). Never assign numbers to the
 symbolic ρ_z, σ_z, … (`gen_model_equations` reads them). `solution_interface` errors with the
 qzflag case (0 no bounded equilibrium, 2 indeterminate, 3 invertibility). Environment:
 `Project.toml`/`Manifest.toml` + `setup_environment.jl`; run with `--project=.` after
@@ -246,7 +246,7 @@ qzflag case (0 no bounded equilibrium, 2 indeterminate, 3 invertibility). Enviro
 | `R8_step7_baseline.jl` | Step 7: IRFs and simulated cor(u,v) over Λ̄_r (exploratory) | `.txt` |
 | `R8_test6_free_entry.jl` | Test 6: `prop:fe` closed forms under AGS emulation; documents the user-cost offset (R19) | `.txt` |
 | `sigma_determinacy.jl` | σ* by bisection under four specs (own `SHK` copy) | `.txt` |
-| `Q2_shock_processes_check.jl` | cor(u,v) over Λ̄_r at part6b vs part6c (a) processes (reads `shock_var_trivariate.csv`). Output predates S13; rerun after S14 | `.txt` |
+| ~~`Q2_shock_processes_check.jl`~~ | Deleted Oct 29 with part6c (it compared part6b against part6c processes); result kept in findings.md "Q2" | — |
 | `Q2_p0_floor.jl` | cor(u,v) over (p_0, Λ̄_r): only Λ̄_r matters; p_0 sets the floor | `.txt` |
 | `Q2_amplification_sweep.jl` | One-at-a-time levers (b/w, x_v, X_Y, ξ_inv, exit elasticity, ω_δ): ϕ, fundamental surplus, z/δ/s shares of var(u). Never sweeps η_L or ε | `.txt` |
 | `bk_epsilon_threshold.jl` | BK threshold ε* by bisection under four specs (`tab:eps_threshold`) | `.txt` |
