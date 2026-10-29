@@ -16,3 +16,8 @@ Data/Notes/*.aux
 Data/Notes/*.log
 Data/Notes/*.out
 Data/Notes/*.synctex.gz
+
+# Python bytecode caches. Regenerated on every run and specific to the
+# interpreter version; tracked copies were removed Oct 29, 2026.
+__pycache__/
+*.pyc
