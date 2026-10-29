@@ -80,6 +80,7 @@ OUTPUT
 ------
     data/results/q3_data_svar.txt        the full report (N15)
     data/results/q3_data_svar_headline.csv  headline shares of var(u), var(v)
+    data/results/q3_data_svar_headline.txt  the same as plain tables, ready to paste
     data/results/q3_data_svar_fevd.csv   shares by SVAR, lag, ordering, horizon
     data/results/q3_data_svar_irf.csv    baseline IRFs with bootstrap bands
     data/results/q3_data_svar_irf.png    IRFs of u and v to the z, delta, s shocks
@@ -95,6 +96,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from tabulate import tabulate
 
 try:
     os.chdir(Path(__file__).resolve().parent)
@@ -126,6 +128,7 @@ SVARS = {
 OUT_TXT  = p6b.RESULTS_DIR / "q3_data_svar.txt"
 OUT_FEVD = p6b.RESULTS_DIR / "q3_data_svar_fevd.csv"
 OUT_HEAD = p6b.RESULTS_DIR / "q3_data_svar_headline.csv"
+OUT_HEAD_TXT = p6b.RESULTS_DIR / "q3_data_svar_headline.txt"
 OUT_IRF  = p6b.RESULTS_DIR / "q3_data_svar_irf.csv"
 OUT_PNG  = p6b.RESULTS_DIR / "q3_data_svar_irf.png"
 
@@ -319,9 +322,10 @@ def headline_frames(rows):
     Headline variance decomposition, percent: one column group per SVAR, rows
     (variable, horizon) for var(u) and var(v) at h = 8 and the unconditional
     h = 200, each SVAR at its BIC lag.
-      head    baseline ordering; "other" = u-own + v-own, the only residual
-              split invariant to how u and v are ordered between themselves
-      bounds  "min-max" over orderings of the shock block. "other" does not
+      head    baseline ordering; "Residual" = u-own + v-own. The order of u
+              and v between themselves is arbitrary, so only their sum is
+              identified
+      bounds  "min-max" over orderings of the shock block. "Residual" does not
               move with that ordering: the block's innovations span the same
               space in any order.
     """
@@ -333,17 +337,50 @@ def headline_frames(rows):
         d = df[df.svar == key]
         shocks = [v for v in spec["vars"] if v in SHOCKS]
         b = d[d.baseline].pivot_table(index=idx, columns="shock", values="share")
-        b["other"] = b[list(OUTCOMES)].sum(axis=1)
-        head[key] = b[shocks + ["other"]]
+        b["Residual"] = b[list(OUTCOMES)].sum(axis=1)
+        head[key] = b[shocks + ["Residual"]]
         r = d[d.shock.isin(shocks)].groupby(idx + ["shock"])["share"].agg(["min", "max"])
         bk = pd.DataFrame({shk: [f"{lo:4.1f}-{hi:4.1f}" for lo, hi in
                                  r.xs(shk, level="shock").itertuples(index=False)]
                            for shk in shocks}, index=b.index)
-        bk["other"] = b["other"].map(lambda x: f"{x:4.1f}")
+        bk["Residual"] = b["Residual"].map(lambda x: f"{x:4.1f}")
         bounds[key] = bk
     names = {"response": "var", "horizon": "h"}
     return (pd.concat(head, axis=1).rename_axis(index=names, columns=["SVAR", "shock"]),
             pd.concat(bounds, axis=1).rename_axis(index=names, columns=["SVAR", "shock"]))
+
+
+LABEL   = {"z": "z", "delta": "δ", "s": "s", "u": "u", "v": "v"}
+H_LABEL = {8: "8q", 200: "LR"}
+
+
+def headline_text(head, head_bounds, svars):
+    """
+    The headline as plain monospace tables, one SVAR per block and narrow
+    enough for a phone (about 40 characters). Wrapped in ``` so that WhatsApp
+    and Slack show it in a fixed-width font.
+    """
+    blocks = ["Variance shares of u and v, % (data)"]
+    for key, sv in svars.items():
+        frame, cols = sv["frame"], list(head[key].columns)
+        names = ", ".join(LABEL[v] for v in sv["names"])
+        title = f"SVAR {key}: {names}\n{frame.index[0]}-{frame.index[-1]}, p = {sv['p_bic']}"
+        rows = [[LABEL[v], H_LABEL[h]] + [f"{x:.1f}" for x in head[key].loc[(v, h)]]
+                for v, h in head[key].index]
+        table = tabulate(rows, ["", "h"] + [LABEL.get(c, c) for c in cols], tablefmt="simple",
+                         disable_numparse=True, colalign=("left", "left") + ("right",) * len(cols))
+        shocks = [c for c in cols if c != "Residual"]
+        brows = [[LABEL[v], H_LABEL[h]] + list(head_bounds[key].loc[(v, h), shocks])
+                 for v, h in head_bounds[key].index]
+        btable = tabulate(brows, ["", "h"] + [LABEL[c] for c in shocks], tablefmt="simple",
+                          disable_numparse=True, colalign=("left", "left") + ("right",) * len(shocks))
+        blocks.append(f"{title}\n{table}\n\nRange over shock orderings\n{btable}")
+    blocks.append("8q = 8 quarters; LR = long run (h = 200).\n"
+                  "Baseline ordering: z, δ, s before u, v.\n"
+                  "Residual = u and v innovations not\n"
+                  "explained by z, δ, s; unaffected by\n"
+                  "the shock ordering.")
+    return "```\n" + "\n\n".join(blocks) + "\n```"
 
 
 def share_frames(rows):
@@ -403,12 +440,9 @@ if __name__ == "__main__":
     say(f"  h = 8 is the business-cycle horizon; h = {HORIZONS[-1]} is the unconditional share, the")
     say("  model-side object. BIC picks the lag in section 2.")
     head, head_bounds = headline_frames(fevd_rows)
-    say("\n  Headline: baseline ordering (z, delta, s, u, v), BIC lag (p = "
-        + ", ".join(f"{k} {sv['p_bic']}" for k, sv in svars.items()) + "); 'other' = u-own + v-own;")
-    say("  each SVAR's row sums to 100")
-    say(head.to_string(float_format=lambda x: f"{x:5.1f}"))
-    say("\n  Headline bounds: min-max over orderings of the shock block ('other' does not move)")
-    say(head_bounds.to_string())
+    headline = headline_text(head, head_bounds, svars)
+    say("\n  Headline: baseline ordering, BIC lag; each row sums to 100")
+    say(headline, echo=False)
     shares, bounds = share_frames(fevd_rows)
     say("\n  Detail 3a. Baseline ordering, p = 1 and 2, u-own and v-own separately; rows sum to 100")
     say(shares.to_string(float_format=lambda x: f"{x:5.1f}", na_rep="    -"))
@@ -466,9 +500,10 @@ if __name__ == "__main__":
     # ── outputs ──────────────────────────────────────────────────────────────
     pd.DataFrame(fevd_rows).to_csv(OUT_FEVD, index=False)
     head.round(2).to_csv(OUT_HEAD)          # full precision in OUT_FEVD
+    OUT_HEAD_TXT.write_text(headline + "\n", encoding="utf-8")
     irf_df.to_csv(OUT_IRF, index=False)
     OUT_TXT.write_text("\n".join(REPORT_LINES) + "\n", encoding="utf-8")
-    print(f"\nSaved: {OUT_TXT}\nSaved: {OUT_HEAD}\nSaved: {OUT_FEVD}\nSaved: {OUT_IRF}")
+    print(f"\nSaved: {OUT_TXT}\nSaved: {OUT_HEAD}\nSaved: {OUT_HEAD_TXT}\nSaved: {OUT_FEVD}\nSaved: {OUT_IRF}")
 
     fig, axes = plt.subplots(len(SHOCKS), len(OUTCOMES), figsize=(10, 9), sharex=True)
     for r_, shk in enumerate(SHOCKS):
@@ -488,11 +523,7 @@ if __name__ == "__main__":
     fig.tight_layout(rect=[0, 0, 1, 0.96])
     p6b._finish(fig, OUT_PNG)
     # ── console summary: the headline, last thing on screen ─────────────────
-    print(f"\n{'='*78}\nSUMMARY: shares of var(u) and var(v), percent; baseline ordering, BIC lag;"
-          f"\n'other' = u-own + v-own. In the namespace: head, head_bounds (DataFrames).\n{'='*78}")
-    print(head.to_string(float_format=lambda x: f"{x:5.1f}"))
-    print("\nMin-max over orderings of the shock block:")
-    for key in SVARS:
-        print(f"\n  SVAR {key}")
-        print(head_bounds[key].to_string())
+    print("\nHEADLINE (copy from ``` to ```; also in " + str(OUT_HEAD_TXT) + ")\n")
+    print(headline)
+    print("\nIn the namespace: head, head_bounds (DataFrames).")
     print("\nDone.")

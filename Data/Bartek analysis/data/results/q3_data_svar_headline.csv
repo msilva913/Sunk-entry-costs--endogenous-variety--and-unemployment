@@ -1,5 +1,5 @@
 SVAR,,A,A,A,A,B,B,B,C,C,C
-shock,,z,delta,s,other,z,s,other,z,s,other
+shock,,z,delta,s,Residual,z,s,Residual,z,s,Residual
 var,h,,,,,,,,,,
 u,8,37.25,16.13,10.71,35.91,34.4,24.12,41.48,42.79,21.13,36.08
 u,200,35.19,15.08,9.52,40.22,32.81,25.0,42.18,42.11,19.08,38.82
