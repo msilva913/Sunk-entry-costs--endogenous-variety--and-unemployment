@@ -54,6 +54,19 @@ targets. Also z. Bands: residual bootstrap (recursive design, initial values
 fixed, centered residuals resampled with replacement), N_BOOT draws, 68 % and
 90 % percentile bands.
 
+Y_t = XB + U
+Y: T x k
+Y_t: (T-p) x k
+X: (T-p) x (1+kp)
+B: (1+kp) x k
+
+Residuals: U = Y_t − X B, of size (T − p) × k.
+Covariance: Σ = UᵀU / (T − p − (1 + kp)), using the degrees-of-freedom correction.
+Identification: the Cholesky factor of Σ, in the chosen ordering, gives the impact matrix P.
+Downstream: the A_j matrices give the moving-average weights Ψh, and the impulse responses are Θh = Ψ_h P.
+Variance shares: sums of squared entries of the Θ_h.
+
+
 Caveats.
     - Recursive identification credits the earlier-ordered shocks with all
       same-quarter comovement. The ordering bounds show how much that matters.
