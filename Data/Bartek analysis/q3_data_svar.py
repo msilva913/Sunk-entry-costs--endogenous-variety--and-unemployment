@@ -249,7 +249,9 @@ def bootstrap_irf(Y, fit, order, names, H, n_boot, rng):
 def prepare_svar(key, spec, cyc):
     """The SVAR's window and data matrix, its shock block and its lags."""
     names = list(spec["vars"])
+    #Initialize according to start date
     frame = cyc.loc[cyc.index >= spec["start"], names].dropna()
+    
     Y = frame.to_numpy()
     p_bic, bic = bic_lag(Y)
     return {"key": key, "names": names, "frame": frame, "Y": Y,
