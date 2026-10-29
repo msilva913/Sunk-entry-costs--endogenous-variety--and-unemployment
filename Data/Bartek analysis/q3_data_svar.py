@@ -285,6 +285,7 @@ if __name__ == "__main__":
     report_method()
 
     cyc = build_cycles()
+    print((cyc.std()*100).map(lambda  x: f"{x:6.2f}"))
     say(f"\n{'-'*78}\n1. Data\n{'-'*78}")
     for name in cyc.columns:
         s_ = cyc[name].dropna()
