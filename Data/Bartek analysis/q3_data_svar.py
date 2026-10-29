@@ -226,8 +226,14 @@ def irf(fit, order, names, H):
     return np.array([M @ P for M in ma_coefficients(fit["A"], H)])  # (H+1, var, shock)
 
 
-def bootstrap_irf(Y, fit, order, names, H, n_boot, rng):
-    """Residual bootstrap, recursive design, initial values fixed."""
+def bootstrap_irf(Y, fit, order, names, H, n_boot, seed=SEED):
+    """
+    Residual bootstrap, recursive design, initial values fixed. The generator is
+    seeded here, not passed in, so the bands do not depend on what else ran in
+    the session (a Spyder selection or a re-run would otherwise reuse an
+    advanced generator).
+    """
+    rng = np.random.default_rng(seed)
     p, c, A = fit["p"], fit["c"], fit["A"]
     U = fit["U"] - fit["U"].mean(axis=0)
     T, k = U.shape
@@ -331,7 +337,6 @@ def share_frames(rows):
 
 if __name__ == "__main__":
     REPORT_LINES.clear()
-    rng = np.random.default_rng(SEED)
     say("=" * 78)
     say("Q3 data SVAR — Block B' data side  (q3_data_svar.py)")
     say("=" * 78)
@@ -389,7 +394,7 @@ if __name__ == "__main__":
     fitA = svA["fits"][p_bic]
     order = list(SVARS["A"]["vars"])
     point = irf(fitA, order, names, H_IRF)
-    draws = bootstrap_irf(Y, fitA, order, names, H_IRF, N_BOOT, rng)
+    draws = bootstrap_irf(Y, fitA, order, names, H_IRF, N_BOOT)
     q = {lvl: np.percentile(draws, lvl, axis=0) for lvl in (5, 16, 84, 95)}
     irf_rows = []
     for shk in SHOCKS:
