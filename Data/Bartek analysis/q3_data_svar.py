@@ -43,8 +43,8 @@ depend on the ordering inside the shock block, so the report gives the share
 of each shock at its minimum and maximum over all orderings of that block
 (6 for A, 2 for B and C). Baseline ordering: z, delta, s, u, v.
 
-Variance shares. Forecast-error variance decomposition at h = 4, 8 and 20
-quarters, and at h = 200 as the unconditional share (the model-side object:
+Variance shares. Forecast-error variance decomposition at h = 8 quarters (the
+business-cycle horizon) and at h = 200 as the unconditional share (the model-side object:
 share of the variance of HP-filtered u by shock). The residual u and v
 innovations collect everything the three shocks do not.
 
@@ -79,6 +79,7 @@ Caveats.
 OUTPUT
 ------
     data/results/q3_data_svar.txt        the full report (N15)
+    data/results/q3_data_svar_headline.csv  headline shares of var(u), var(v)
     data/results/q3_data_svar_fevd.csv   shares by SVAR, lag, ordering, horizon
     data/results/q3_data_svar_irf.csv    baseline IRFs with bootstrap bands
     data/results/q3_data_svar_irf.png    IRFs of u and v to the z, delta, s shocks
@@ -110,7 +111,7 @@ import matplotlib.pyplot as plt
 
 # ── parameters ────────────────────────────────────────────────────────────────
 BED_START  = "1992Q3"
-HORIZONS   = (4, 8, 20, 200)              # 200 = unconditional
+HORIZONS   = (8, 200)                     # business cycle; 200 = unconditional
 H_IRF      = 12
 P_MAX      = 4
 N_BOOT     = 1_000
@@ -124,6 +125,7 @@ SVARS = {
 }
 OUT_TXT  = p6b.RESULTS_DIR / "q3_data_svar.txt"
 OUT_FEVD = p6b.RESULTS_DIR / "q3_data_svar_fevd.csv"
+OUT_HEAD = p6b.RESULTS_DIR / "q3_data_svar_headline.csv"
 OUT_IRF  = p6b.RESULTS_DIR / "q3_data_svar_irf.csv"
 OUT_PNG  = p6b.RESULTS_DIR / "q3_data_svar_irf.png"
 
@@ -307,6 +309,38 @@ def report_lags(sv):
         say(f"      p = {p}: T = {fit['T']}, max |root| = {max_root(fit['A']):.3f}")
 
 
+def headline_frames(rows):
+    """
+    Headline variance decomposition, percent: one column group per SVAR, rows
+    (variable, horizon) for var(u) and var(v) at h = 8 and the unconditional
+    h = 200, each SVAR at its BIC lag.
+      head    baseline ordering; "other" = u-own + v-own, the only residual
+              split invariant to how u and v are ordered between themselves
+      bounds  "min-max" over orderings of the shock block. "other" does not
+              move with that ordering: the block's innovations span the same
+              space in any order.
+    """
+    df = pd.DataFrame(rows)
+    df = df[df.response.isin(OUTCOMES) & df.p_bic].assign(share=lambda d: 100 * d.share)
+    idx = ["response", "horizon"]
+    head, bounds = {}, {}
+    for key, spec in SVARS.items():
+        d = df[df.svar == key]
+        shocks = [v for v in spec["vars"] if v in SHOCKS]
+        b = d[d.baseline].pivot_table(index=idx, columns="shock", values="share")
+        b["other"] = b[list(OUTCOMES)].sum(axis=1)
+        head[key] = b[shocks + ["other"]]
+        r = d[d.shock.isin(shocks)].groupby(idx + ["shock"])["share"].agg(["min", "max"])
+        bk = pd.DataFrame({shk: [f"{lo:4.1f}-{hi:4.1f}" for lo, hi in
+                                 r.xs(shk, level="shock").itertuples(index=False)]
+                           for shk in shocks}, index=b.index)
+        bk["other"] = b["other"].map(lambda x: f"{x:4.1f}")
+        bounds[key] = bk
+    names = {"response": "var", "horizon": "h"}
+    return (pd.concat(head, axis=1).rename_axis(index=names, columns=["SVAR", "shock"]),
+            pd.concat(bounds, axis=1).rename_axis(index=names, columns=["SVAR", "shock"]))
+
+
 def share_frames(rows):
     """
     Two flat tables of the shares of var(u) and var(v), in percent, indexed by
@@ -361,12 +395,19 @@ if __name__ == "__main__":
 
     # ── variance shares ──────────────────────────────────────────────────────
     say(f"\n{'-'*78}\n3. Shares of the variance of u and v, percent\n{'-'*78}")
-    say(f"  h = {HORIZONS[-1]} is the unconditional share, the model-side object. Columns u and v are")
-    say("  the residual u and v innovations. BIC picks the lag in section 2.")
+    say(f"  h = 8 is the business-cycle horizon; h = {HORIZONS[-1]} is the unconditional share, the")
+    say("  model-side object. BIC picks the lag in section 2.")
+    head, head_bounds = headline_frames(fevd_rows)
+    say("\n  Headline: baseline ordering (z, delta, s, u, v), BIC lag (p = "
+        + ", ".join(f"{k} {sv['p_bic']}" for k, sv in svars.items()) + "); 'other' = u-own + v-own;")
+    say("  each SVAR's row sums to 100")
+    say(head.to_string(float_format=lambda x: f"{x:5.1f}"))
+    say("\n  Headline bounds: min-max over orderings of the shock block ('other' does not move)")
+    say(head_bounds.to_string())
     shares, bounds = share_frames(fevd_rows)
-    say("\n  3a. Baseline ordering (z, delta, s, u, v); rows sum to 100")
+    say("\n  Detail 3a. Baseline ordering, p = 1 and 2, u-own and v-own separately; rows sum to 100")
     say(shares.to_string(float_format=lambda x: f"{x:5.1f}", na_rep="    -"))
-    say("\n  3b. Min-max of each shock's share over all orderings of the shock block")
+    say("\n  Detail 3b. Min-max of each shock's share over all orderings of the shock block")
     say(bounds.to_string())
 
     # ── A against C: what omitting delta does ────────────────────────────────
@@ -419,9 +460,10 @@ if __name__ == "__main__":
 
     # ── outputs ──────────────────────────────────────────────────────────────
     pd.DataFrame(fevd_rows).to_csv(OUT_FEVD, index=False)
+    head.round(2).to_csv(OUT_HEAD)          # full precision in OUT_FEVD
     irf_df.to_csv(OUT_IRF, index=False)
     OUT_TXT.write_text("\n".join(REPORT_LINES) + "\n", encoding="utf-8")
-    print(f"\nSaved: {OUT_TXT}\nSaved: {OUT_FEVD}\nSaved: {OUT_IRF}")
+    print(f"\nSaved: {OUT_TXT}\nSaved: {OUT_HEAD}\nSaved: {OUT_FEVD}\nSaved: {OUT_IRF}")
 
     fig, axes = plt.subplots(len(SHOCKS), len(OUTCOMES), figsize=(10, 9), sharex=True)
     for r_, shk in enumerate(SHOCKS):
