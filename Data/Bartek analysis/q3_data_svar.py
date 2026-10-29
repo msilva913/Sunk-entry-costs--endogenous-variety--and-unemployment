@@ -301,23 +301,28 @@ def report_lags(sv):
         say(f"      p = {p}: T = {fit['T']}, max |root| = {max_root(fit['A']):.3f}")
 
 
-def share_table(rows, svar, p, horizon):
-    """Baseline-ordering shares at one horizon, plus min-max over orderings."""
+def share_frames(rows):
+    """
+    Two flat tables of the shares of var(u) and var(v), in percent, indexed by
+    (SVAR, lags, variable, horizon):
+      base    baseline ordering; one column per shock, u and v being the
+              residual innovations
+      bounds  "min-max" over orderings of the shock block, one column per shock
+    delta is blank for B and C, which do not contain it.
+    """
     df = pd.DataFrame(rows)
-    df = df[(df.svar == svar) & (df.p == p) & (df.horizon == horizon)]
-    base = df[df.baseline]
-    lines = []
-    for resp in OUTCOMES:
-        cells = []
-        for shk in SVARS[svar]["vars"]:
-            b = base[(base.response == resp) & (base.shock == shk)]["share"].iloc[0]
-            if shk in SHOCKS:
-                rng_ = df[(df.response == resp) & (df.shock == shk)]["share"]
-                cells.append(f"{shk} {100*b:5.1f} [{100*rng_.min():4.1f}-{100*rng_.max():4.1f}]")
-            else:
-                cells.append(f"{shk}-own {100*b:5.1f}")
-        lines.append(f"      var({resp}):  " + "   ".join(cells))
-    return lines
+    df = df[df.response.isin(OUTCOMES)].assign(share=lambda d: 100 * d.share)
+    idx = ["svar", "p", "response", "horizon"]
+    cols = list(SHOCKS) + list(OUTCOMES)
+    base = (df[df.baseline].pivot_table(index=idx, columns="shock", values="share")
+            .reindex(columns=cols))
+    rng_ = (df[df.shock.isin(SHOCKS)].groupby(idx + ["shock"])["share"]
+            .agg(["min", "max"]).unstack("shock"))
+    bounds = pd.DataFrame({shk: [f"{lo:4.1f}-{hi:4.1f}" if pd.notna(lo) else "-"
+                                 for lo, hi in zip(rng_[("min", shk)], rng_[("max", shk)])]
+                           for shk in SHOCKS}, index=rng_.index)
+    names = {"svar": "SVAR", "p": "lags", "response": "var", "horizon": "h"}
+    return base.rename_axis(index=names, columns=None), bounds.rename_axis(index=names)
 
 
 # =============================================================================
@@ -351,15 +356,13 @@ if __name__ == "__main__":
 
     # ── variance shares ──────────────────────────────────────────────────────
     say(f"\n{'-'*78}\n3. Shares of the variance of u and v, percent\n{'-'*78}")
-    say("  Baseline ordering (z, delta, s, u, v); [min-max] over orderings of the shock block.")
-    say("  h = 200 is the unconditional share, the model-side object. '-own' = residual innovation.")
-    for key, sv in svars.items():
-        for p in sv["lags"]:
-            say(f"\n  SVAR {key}, p = {p}{' (BIC)' if p == sv['p_bic'] else ''}")
-            for h in HORIZONS:
-                say(f"    h = {h}" + (" (unconditional)" if h == HORIZONS[-1] else ""))
-                for line in share_table(fevd_rows, key, p, h):
-                    say(line)
+    say(f"  h = {HORIZONS[-1]} is the unconditional share, the model-side object. Columns u and v are")
+    say("  the residual u and v innovations. BIC picks the lag in section 2.")
+    shares, bounds = share_frames(fevd_rows)
+    say("\n  3a. Baseline ordering (z, delta, s, u, v); rows sum to 100")
+    say(shares.to_string(float_format=lambda x: f"{x:5.1f}", na_rep="    -"))
+    say("\n  3b. Min-max of each shock's share over all orderings of the shock block")
+    say(bounds.to_string())
 
     # ── A against C: what omitting delta does ────────────────────────────────
     say(f"\n{'-'*78}\n4. Omitting delta: A against C on {BED_START}-{p6b.SAMPLE_END}, "
