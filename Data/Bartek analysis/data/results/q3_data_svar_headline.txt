@@ -1,22 +1,22 @@
 ```
 Variance shares of u and v, % (data)
 
-SVAR A: z, δ, s, u, v
+SVAR A: z, s, δ, u, v
 1992Q3-2019Q4, p = 1
-    h       z     δ     s    Residual
+    h       z     s     δ    Residual
 --  ---  ----  ----  ----  ----------
-u   8q   37.3  16.1  10.7        35.9
-u   LR   35.2  15.1   9.5        40.2
-v   8q   33.6  15.4   6.5        44.5
-v   LR   32.3  14.6   6.5        46.5
+u   8q   37.3  14.4  12.4        35.9
+u   LR   35.2  12.9  11.7        40.2
+v   8q   33.6   9.5  12.4        44.5
+v   LR   32.3   9.4  11.8        46.5
 
-Range over shock orderings
-    h            z          δ          s
---  ---  ---------  ---------  ---------
-u   8q   21.9-37.3  12.4-28.0  10.7-21.1
-u   LR   20.9-35.2  11.7-26.2   9.5-18.9
-v   8q   20.0-33.6  12.4-26.2   6.5-14.9
-v   LR   19.3-32.3  11.8-25.0   6.5-14.5
+Alternative ordering z, δ, s
+    h       z     s     δ
+--  ---  ----  ----  ----
+u   8q   37.3  10.7  16.1
+u   LR   35.2   9.5  15.1
+v   8q   33.6   6.5  15.4
+v   LR   32.3   6.5  14.6
 
 SVAR B: z, s, u, v
 1951Q1-2019Q4, p = 1
@@ -27,14 +27,6 @@ u   LR   32.8  25.0        42.2
 v   8q   33.8  12.5        53.7
 v   LR   32.4  15.1        52.5
 
-Range over shock orderings
-    h            z          s
---  ---  ---------  ---------
-u   8q   20.9-34.4  24.1-37.7
-u   LR   20.4-32.8  25.0-37.4
-v   8q   23.8-33.8  12.5-22.5
-v   LR   22.8-32.4  15.1-24.7
-
 SVAR C: z, s, u, v
 1992Q3-2019Q4, p = 1
     h       z     s    Residual
@@ -44,17 +36,10 @@ u   LR   42.1  19.1        38.8
 v   8q   39.5  15.6        44.9
 v   LR   38.9  15.1        46.0
 
-Range over shock orderings
-    h            z          s
---  ---  ---------  ---------
-u   8q   34.3-42.8  21.1-29.7
-u   LR   34.2-42.1  19.1-27.0
-v   8q   32.3-39.5  15.6-22.8
-v   LR   32.0-38.9  15.1-22.0
-
 8q = 8 quarters; LR = long run (h = 200).
-Baseline ordering: z, δ, s before u, v.
-Residual = u and v innovations not
-explained by z, δ, s; unaffected by
-the shock ordering.
+z first. Preferred: z, s, δ (s is
+exogenous in the model; exit responds
+to the cycle). Residual = u and v
+innovations not explained by z, δ, s;
+the same in both orderings.
 ```

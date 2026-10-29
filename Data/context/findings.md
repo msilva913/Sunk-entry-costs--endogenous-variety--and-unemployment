@@ -984,3 +984,13 @@ Caveat: the model's figures are true-shock shares, while the data's are Cholesky
 - cor(u,v) still depends only on Λ̄_r. It runs from +0.09 at Λ̄_r = 0.55 to −0.643 at 0.10, against −0.63 before, so the result is essentially unchanged.
 - The pre-pandemic target is −0.925, so the gap is wider than against the old −0.804.
 - σ(u) runs from 7.9 to 10.7 %.
+
+**Q3 data SVAR: ordering settled (MS, Oct 29); takeaways now printed by the program (`q3_data_svar.txt` §6).**
+- **Orderings:** z first in every specification.
+  - Preferred for A: z, s, δ. It is model-consistent: s is exogenous in the model, while measured exit responds within the period.
+  - z, δ, s is reported for completeness.
+  - Only the δ–s split moves between the two. In A (LR, one lag), δ + s is 24.6 % of var(u) in both.
+- **Preferred A, LR, var(u):** z 35.2, s 12.9, δ 11.7, residual 40.2.
+- **Preferred A, LR, var(v):** z 32.3, s 9.4, δ 11.8, residual 46.5.
+- **Alternative A:** δ 15.1 / s 9.5 for u, and δ 14.6 / s 6.5 for v.
+- **The model's composition gap is unaffected:** s 95 % and δ 0.1 % of var(u) in the model.

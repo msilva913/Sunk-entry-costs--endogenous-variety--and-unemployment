@@ -3,9 +3,8 @@ q3_data_svar.py
 ===============
 Data side of Block B' (Q3, decision D13): recursive SVARs on the model's three
 shocks (z, delta, s) and the labor-market outcomes (u, v). Reports how much of
-the variance of u and v each shock explains, with bounds across orderings, and
-the impulse responses of u and v to the delta and s shocks with bootstrap
-bands. The text between METHOD and OUTPUT is printed at the top of the report.
+the variance of u and v each shock explains, the impulse responses of u and v
+with bootstrap bands, and a short list of key takeaways (section 6). The text between METHOD and OUTPUT is printed at the top of the report.
 
 METHOD
 ------
@@ -20,7 +19,7 @@ z, delta and s come from part6b_shock_persistence_cyclical.py, so the SVAR sees
 exactly the cycles behind the model's shock processes.
 
 Three SVARs:
-    A  (z, delta, s, u, v)  1992Q3-2019Q4  delta's share; the full B' target
+    A  (z, s, delta, u, v)  1992Q3-2019Q4  delta's share; the full B' target
     B  (z, s, u, v)         1951Q1-2019Q4  z and s shares on the S14 window
     C  (z, s, u, v)         1992Q3-2019Q4  A against C measures what omitting
                                            delta does to the z and s shares
@@ -36,19 +35,27 @@ Estimation. Reduced-form VAR(p) with a constant, equation by equation OLS on a
 common sample. p is chosen by BIC over 1-4 (common sample of the VAR(4)); p = 1
 and p = 2 are always reported as well.
 
-Identification. Recursive (Cholesky), the shock block (z, delta, s) ordered
-before (u, v), as in the shock calibration. The shares of the shock-block
-innovations do not depend on how u and v are ordered among themselves. They do
-depend on the ordering inside the shock block, so the report gives the share
-of each shock at its minimum and maximum over all orderings of that block
-(6 for A, 2 for B and C). Baseline ordering: z, delta, s, u, v.
+Identification. Recursive (Cholesky), the shock block before (u, v), z always
+first: technology is the most plausibly exogenous series, and the model
+generates z -> delta_e within the period, so movements in delta caused by z
+count toward z's share.
+    Preferred (A): z, s, delta, u, v. Model-consistent: s is purely exogenous
+        in the model, while measured exit delta_e responds within the period
+        to aggregate conditions, so delta goes after s.
+    Alternative (A): z, delta, s, u, v, for completeness. It assigns the
+        same-quarter delta-s comovement to delta instead of s (measured s is
+        built from delta, so BED noise is common to both). Only the split
+        between delta and s changes; z, delta + s and the residual do not.
+    B and C contain only z and s, so z first leaves one ordering.
+The shares of the shock-block innovations do not depend on how u and v are
+ordered among themselves, so the report combines them as "Residual".
 
 Variance shares. Forecast-error variance decomposition at h = 8 quarters (the
 business-cycle horizon) and at h = 200 as the unconditional share (the model-side object:
 share of the variance of HP-filtered u by shock). The residual u and v
 innovations collect everything the three shocks do not.
 
-Impulse responses. Baseline ordering, one-SD structural shocks, responses of u
+Impulse responses. Preferred ordering, one-SD structural shocks, responses of u
 and v (log points x 100) at h = 0-12 to the delta and s shocks, the Block B'
 targets. Also z. Bands: residual bootstrap (recursive design, initial values
 fixed, centered residuals resampled with replacement), N_BOOT draws, 68 % and
@@ -121,7 +128,7 @@ SEED       = 20261029
 SHOCKS     = ("z", "delta", "s")
 OUTCOMES   = ("u", "v")
 SVARS = {
-    "A": {"vars": ("z", "delta", "s", "u", "v"), "start": BED_START},
+    "A": {"vars": ("z", "s", "delta", "u", "v"), "start": BED_START},  # preferred order
     "B": {"vars": ("z", "s", "u", "v"),          "start": p6b.SAMPLE_START},
     "C": {"vars": ("z", "s", "u", "v"),          "start": BED_START},
 }
@@ -278,18 +285,25 @@ def estimate_svar(sv):
     return {p: fit_var(sv["Y"], p) for p in sv["lags"]}
 
 
+def block_orderings(block):
+    """z first, the other shocks in every order; block[0] must be z."""
+    assert block[0] == "z", block
+    return [["z"] + list(perm) for perm in itertools.permutations(block[1:])]
+
+
 def fevd_records(sv, p, fit):
     """
-    One row per (ordering of the shock block, horizon, response, shock). The
-    shock block is permuted; u and v always follow it. In fevd's output,
+    One row per (ordering of the shock block, horizon, response, shock). z is
+    first in every ordering; u and v always follow the block. "baseline" marks
+    the preferred ordering, the SVAR's own variable order. In fevd's output,
     column j belongs to shock order[j].
     """
     rows = []
-    for perm in itertools.permutations(sv["block"]):
+    for perm in block_orderings(sv["block"]):
         order = list(perm) + list(OUTCOMES)
         for h, M in fevd(fit, order, sv["names"], HORIZONS).items():
             rows += [{"svar": sv["key"], "p": p, "p_bic": p == sv["p_bic"],
-                      "ordering": "-".join(order), "baseline": list(perm) == sv["block"],
+                      "ordering": "-".join(order), "baseline": perm == sv["block"],
                       "horizon": h, "response": resp, "shock": shk, "share": float(M[i, j])}
                      for i, resp in enumerate(sv["names"]) for j, shk in enumerate(order)]
     return rows
@@ -322,39 +336,48 @@ def headline_frames(rows):
     Headline variance decomposition, percent: one column group per SVAR, rows
     (variable, horizon) for var(u) and var(v) at h = 8 and the unconditional
     h = 200, each SVAR at its BIC lag.
-      head    baseline ordering; "Residual" = u-own + v-own. The order of u
-              and v between themselves is arbitrary, so only their sum is
-              identified
-      bounds  "min-max" over orderings of the shock block. "Residual" does not
-              move with that ordering: the block's innovations span the same
-              space in any order.
+      head  preferred ordering; "Residual" = u-own + v-own. The order of u and
+            v between themselves is arbitrary, so only their sum is identified
+      alt   the alternative z-first ordering, for SVARs that have one (A).
+            Columns in the same order as head; "Residual" is the same, since
+            the block's innovations span the same space in any order
     """
     df = pd.DataFrame(rows)
     df = df[df.response.isin(OUTCOMES) & df.p_bic].assign(share=lambda d: 100 * d.share)
     idx = ["response", "horizon"]
-    head, bounds = {}, {}
+    head, alt = {}, {}
     for key, spec in SVARS.items():
         d = df[df.svar == key]
         shocks = [v for v in spec["vars"] if v in SHOCKS]
-        b = d[d.baseline].pivot_table(index=idx, columns="shock", values="share")
-        b["Residual"] = b[list(OUTCOMES)].sum(axis=1)
-        head[key] = b[shocks + ["Residual"]]
-        r = d[d.shock.isin(shocks)].groupby(idx + ["shock"])["share"].agg(["min", "max"])
-        bk = pd.DataFrame({shk: [f"{lo:4.1f}-{hi:4.1f}" for lo, hi in
-                                 r.xs(shk, level="shock").itertuples(index=False)]
-                           for shk in shocks}, index=b.index)
-        bk["Residual"] = b["Residual"].map(lambda x: f"{x:4.1f}")
-        bounds[key] = bk
+
+        def table(sel):
+            b = sel.pivot_table(index=idx, columns="shock", values="share")
+            b["Residual"] = b[list(OUTCOMES)].sum(axis=1)
+            return b[shocks + ["Residual"]]
+
+        head[key] = table(d[d.baseline])
+        others = sorted(set(d.ordering[~d.baseline]))
+        if others:
+            alt[key] = table(d[d.ordering == others[0]])
     names = {"response": "var", "horizon": "h"}
     return (pd.concat(head, axis=1).rename_axis(index=names, columns=["SVAR", "shock"]),
-            pd.concat(bounds, axis=1).rename_axis(index=names, columns=["SVAR", "shock"]))
+            pd.concat(alt, axis=1).rename_axis(index=names, columns=["SVAR", "shock"]))
 
 
 LABEL   = {"z": "z", "delta": "δ", "s": "s", "u": "u", "v": "v"}
 H_LABEL = {8: "8q", 200: "LR"}
 
 
-def headline_text(head, head_bounds, svars):
+def plain_table(frame):
+    """A (variable, horizon) x column frame as a narrow monospace table."""
+    cols = list(frame.columns)
+    rows = [[LABEL[v], H_LABEL[h]] + [f"{x:.1f}" for x in frame.loc[(v, h)]]
+            for v, h in frame.index]
+    return tabulate(rows, ["", "h"] + [LABEL.get(c, c) for c in cols], tablefmt="simple",
+                    disable_numparse=True, colalign=("left", "left") + ("right",) * len(cols))
+
+
+def headline_text(head, alt, svars):
     """
     The headline as plain monospace tables, one SVAR per block and narrow
     enough for a phone (about 40 characters). Wrapped in ``` so that WhatsApp
@@ -362,25 +385,68 @@ def headline_text(head, head_bounds, svars):
     """
     blocks = ["Variance shares of u and v, % (data)"]
     for key, sv in svars.items():
-        frame, cols = sv["frame"], list(head[key].columns)
+        frame = sv["frame"]
         names = ", ".join(LABEL[v] for v in sv["names"])
-        title = f"SVAR {key}: {names}\n{frame.index[0]}-{frame.index[-1]}, p = {sv['p_bic']}"
-        rows = [[LABEL[v], H_LABEL[h]] + [f"{x:.1f}" for x in head[key].loc[(v, h)]]
-                for v, h in head[key].index]
-        table = tabulate(rows, ["", "h"] + [LABEL.get(c, c) for c in cols], tablefmt="simple",
-                         disable_numparse=True, colalign=("left", "left") + ("right",) * len(cols))
-        shocks = [c for c in cols if c != "Residual"]
-        brows = [[LABEL[v], H_LABEL[h]] + list(head_bounds[key].loc[(v, h), shocks])
-                 for v, h in head_bounds[key].index]
-        btable = tabulate(brows, ["", "h"] + [LABEL[c] for c in shocks], tablefmt="simple",
-                          disable_numparse=True, colalign=("left", "left") + ("right",) * len(shocks))
-        blocks.append(f"{title}\n{table}\n\nRange over shock orderings\n{btable}")
+        block = (f"SVAR {key}: {names}\n{frame.index[0]}-{frame.index[-1]}, p = {sv['p_bic']}\n"
+                 + plain_table(head[key]))
+        if key in alt.columns.get_level_values(0):
+            shocks = [c for c in alt[key].columns if c != "Residual"]
+            order = ", ".join(LABEL[v] for v in block_orderings(sv["block"])[1])
+            block += f"\n\nAlternative ordering {order}\n" + plain_table(alt[key][shocks])
+        blocks.append(block)
     blocks.append("8q = 8 quarters; LR = long run (h = 200).\n"
-                  "Baseline ordering: z, δ, s before u, v.\n"
-                  "Residual = u and v innovations not\n"
-                  "explained by z, δ, s; unaffected by\n"
-                  "the shock ordering.")
+                  "z first. Preferred: z, s, δ (s is\n"
+                  "exogenous in the model; exit responds\n"
+                  "to the cycle). Residual = u and v\n"
+                  "innovations not explained by z, δ, s;\n"
+                  "the same in both orderings.")
     return "```\n" + "\n\n".join(blocks) + "\n```"
+
+
+def takeaways(head, alt, irf_df, svars):
+    """Key takeaways, each with its numbers filled in from this run."""
+    LR = HORIZONS[-1]
+    A, B, C, Aa = head["A"], head["B"], head["C"], alt["A"]
+    g = lambda f, var, shk, h=LR: f.loc[(var, h), shk]
+    gap = max(abs(head.xs(8, level="h") - head.xs(LR, level="h")).max())
+    root = max(max_root(sv["fits"][sv["p_bic"]]["A"]) for sv in svars.values())
+
+    def peak(shk, resp, sign=1):
+        r = irf_df[(irf_df.shock == shk) & (irf_df.response == resp)]
+        x = r.loc[(sign * r.irf).idxmax()]
+        return int(x.h), float(x.irf)
+
+    cmp = lambda a, b: "more than" if a > b + 0.05 else ("less than" if a < b - 0.05 else "about as much as")
+    hz, hd, hs = peak("z", "u", -1)[0], peak("delta", "u")[0], peak("s", "u")[0]
+    (hvd, vd), (hvs, vs) = peak("delta", "v", -1), peak("s", "v", -1)
+    items = [
+        f"z explains {g(A,'u','z'):.0f} % of var(u) and {g(A,'v','z'):.0f} % of var(v)\n"
+        f"   (A, LR): the largest share, with z ordered first.",
+        f"Preferred ordering (z, s, delta): delta explains\n"
+        f"   {cmp(g(A,'u','delta'), g(A,'u','s'))} s of var(u) ({g(A,'u','delta'):.1f} vs {g(A,'u','s'):.1f} %) and\n"
+        f"   {cmp(g(A,'v','delta'), g(A,'v','s'))} s of var(v) ({g(A,'v','delta'):.1f} vs {g(A,'v','s'):.1f} %).\n"
+        f"   Alternative (z, delta, s): {g(Aa,'u','delta'):.1f} vs {g(Aa,'u','s'):.1f} % for u,\n"
+        f"   {g(Aa,'v','delta'):.1f} vs {g(Aa,'v','s'):.1f} % for v. The ordering moves only the split:\n"
+        f"   delta + s is {g(A,'u','delta') + g(A,'u','s'):.1f} % of var(u) in both.",
+        f"The three shocks explain at most {100 - g(A,'u','Residual'):.0f} % of var(u) and\n"
+        f"   {100 - g(A,'v','Residual'):.0f} % of var(v) (A, LR). An upper bound: they are ordered\n"
+        f"   before u and v. A three-shock model should match the\n"
+        f"   composition of this share, not total volatility.",
+        f"Shares at 8q and LR differ by at most {gap:.1f} points: HP cycles\n"
+        f"   are short-lived (largest VAR root {root:.2f}). LR here is a\n"
+        f"   business-cycle share, not a long run in levels.",
+        f"s acts fastest: the u response peaks at h = {hs} after s,\n"
+        f"   h = {hz} after z and h = {hd} after delta (A, preferred).",
+        f"Leaving delta out inflates s: on the same window, s's share\n"
+        f"   of var(u) is {g(A,'u','s'):.1f} % in A and {g(C,'u','s'):.1f} % in C. B's s share\n"
+        f"   ({g(B,'u','s'):.1f} %) is an upper bound.",
+        f"z is not weaker after 1992: its share of var(u) is\n"
+        f"   {g(B,'u','z'):.1f} % in B (1951-2019) and {g(C,'u','z'):.1f} % in C (1992-2019).",
+        f"v falls after delta and after s shocks: troughs {vd:+.2f} at\n"
+        f"   h = {hvd} and {vs:+.2f} at h = {hvs} (log points x 100). delta destroys\n"
+        f"   vacancies; v falling after s argues against costless reposting.",
+    ]
+    return "\n".join(f"{i}. {x}" for i, x in enumerate(items, 1))
 
 
 def share_frames(rows):
@@ -439,19 +505,19 @@ if __name__ == "__main__":
     say(f"\n{'-'*78}\n3. Shares of the variance of u and v, percent\n{'-'*78}")
     say(f"  h = 8 is the business-cycle horizon; h = {HORIZONS[-1]} is the unconditional share, the")
     say("  model-side object. BIC picks the lag in section 2.")
-    head, head_bounds = headline_frames(fevd_rows)
-    headline = headline_text(head, head_bounds, svars)
-    say("\n  Headline: baseline ordering, BIC lag; each row sums to 100")
+    head, alt = headline_frames(fevd_rows)
+    headline = headline_text(head, alt, svars)
+    say("\n  Headline: preferred ordering, BIC lag; each row sums to 100")
     say(headline, echo=False)
     shares, bounds = share_frames(fevd_rows)
-    say("\n  Detail 3a. Baseline ordering, p = 1 and 2, u-own and v-own separately; rows sum to 100")
+    say("\n  Detail 3a. Preferred ordering, p = 1 and 2, u-own and v-own separately; rows sum to 100")
     say(shares.to_string(float_format=lambda x: f"{x:5.1f}", na_rep="    -"))
-    say("\n  Detail 3b. Min-max of each shock's share over all orderings of the shock block")
+    say("\n  Detail 3b. Min-max of each shock's share over the z-first orderings (A: two; B, C: one)")
     say(bounds.to_string())
 
     # ── A against C: what omitting delta does ────────────────────────────────
     say(f"\n{'-'*78}\n4. Omitting delta: A against C on {BED_START}-{p6b.SAMPLE_END}, "
-        f"unconditional, baseline ordering\n{'-'*78}")
+        f"unconditional, preferred ordering\n{'-'*78}")
     df = pd.DataFrame(fevd_rows)
     for p in (1, 2):
         say(f"  p = {p}")
@@ -488,7 +554,7 @@ if __name__ == "__main__":
                                  "q84": 100 * q[84][h, i, j], "q95": 100 * q[95][h, i, j]})
     irf_df = pd.DataFrame(irf_rows)
 
-    say(f"\n{'-'*78}\n5. Impulse responses, SVAR A, p = {p_bic} (BIC), baseline ordering; "
+    say(f"\n{'-'*78}\n5. Impulse responses, SVAR A, p = {p_bic} (BIC), preferred ordering; "
         f"one-SD shocks,\n   log points x 100; [68 % band] from {N_BOOT} bootstrap draws\n{'-'*78}")
     for shk in SHOCKS:
         for resp in OUTCOMES:
@@ -496,6 +562,11 @@ if __name__ == "__main__":
             cells = [f"h{int(x.h)} {x.irf:+5.2f} [{x.q16:+5.2f},{x.q84:+5.2f}]"
                      for x in r.itertuples() if x.h in (0, 1, 2, 4, 6, 8, 12)]
             say(f"  {shk:5s} -> {resp}:  " + "  ".join(cells))
+
+    # ── key takeaways ────────────────────────────────────────────────────────
+    key_points = takeaways(head, alt, irf_df, svars)
+    say(f"\n{'-'*78}\n6. Key takeaways (numbers from this run)\n{'-'*78}")
+    say(key_points, echo=False)
 
     # ── outputs ──────────────────────────────────────────────────────────────
     pd.DataFrame(fevd_rows).to_csv(OUT_FEVD, index=False)
@@ -518,12 +589,13 @@ if __name__ == "__main__":
             ax.grid(axis="y", lw=0.4, alpha=0.4)
     for ax in axes[-1]:
         ax.set_xlabel("Quarters", fontsize=8)
-    fig.suptitle(f"SVAR A ({BED_START}-{p6b.SAMPLE_END}, p = {p_bic}): one-SD shocks, "
+    fig.suptitle(f"SVAR A ({BED_START}-{p6b.SAMPLE_END}, p = {p_bic}, order z, s, delta): one-SD shocks, "
                  f"68 % and 90 % bootstrap bands", fontsize=10)
     fig.tight_layout(rect=[0, 0, 1, 0.96])
     p6b._finish(fig, OUT_PNG)
     # ── console summary: the headline, last thing on screen ─────────────────
     print("\nHEADLINE (copy from ``` to ```; also in " + str(OUT_HEAD_TXT) + ")\n")
     print(headline)
-    print("\nIn the namespace: head, head_bounds (DataFrames).")
+    print("\nKEY TAKEAWAYS\n" + key_points)
+    print("\nIn the namespace: head, alt (DataFrames).")
     print("\nDone.")
