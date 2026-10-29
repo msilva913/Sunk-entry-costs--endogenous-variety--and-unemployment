@@ -22,7 +22,7 @@
 include("run_solution_core.jl")
 using Printf
 
-const SHK = (ρz = 0.902, σz = 0.0092, ρδ = 0.592, σδ = 0.0669, ρs = 0.874, σs = 0.0854)
+const SHK = SHOCKS_BASE        # S14 values since Oct 29, 2026 (run_solution_core.jl)
 const SIGMAS = (1.0, 0.5, 0.2, 0.1, 0.05, 0.01, 1e-3, 0.0)
 
 tA = TARGETS

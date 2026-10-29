@@ -9,8 +9,8 @@
 # creation elasticity); δ-specific: dest_elast_target (exit elasticity), dest_end_frac (ω_δ).
 #
 # Working point: TARGETS + p_0 = 0.8, Λ̄_r = 0.25 (low reposting, as the data SVAR's s → v
-# response suggests; Q2_p0_floor.txt). Shocks: part6c (a). A costless-reposting row is
-# shown for reference.
+# response suggests; Q2_p0_floor.txt). Shocks: SHOCKS_BASE (S14 values since Oct 29; part6c (a)
+# before). A costless-reposting row is shown for reference.
 #
 # Fundamental surplus (after Ljungqvist and Sargent 2017), steady state, per period, as a
 # share of the recruiter's revenue per worker w_int:
@@ -21,8 +21,9 @@
 #
 # Reported: ϕ, FS0, FS; cor(u,v), σ(u), σ(v), σ(θ)/σ(LP) with all shocks; σ(u) and the share
 # of var(u) for each shock alone (independent shocks: shares add up to about 1).
-# Data: cor −0.804, σ(u) 14.96 %, σ(v) 14.19 %, σ(θ)/σ(LP) 11.70; data SVAR shares of
-# var(u): s ≤ ~25 %, z + δ ≈ 55–60 % with shocks ordered first (findings.md, Oct 20).
+# Data, 1951–2019 (S13): cor −0.925, σ(u) 12.48 %, σ(v) 13.82 % (findings.md "Sample windows").
+# σ(θ)/σ(LP) 11.70 is the old 1951–2024 value. Data SVAR shares of var(u) (scratch, Oct 20,
+# not yet a program): s ≤ ~25 %, z + δ ≈ 55–60 % with shocks ordered first.
 #
 # Output: Q2_amplification_sweep.txt
 # =============================================================================
@@ -40,14 +41,7 @@ const SWEEP = ((:b_ratio, (0.8, 0.95)), (:x_v, (0.2, 0.9)), (:X_Y, (0.0075, 0.03
 lines = String[]
 log!(str) = (push!(lines, str); println(str))
 
-const CAND = CSV.read(joinpath(@__DIR__, "..", "Bartek analysis", "data", "results",
-                               "shock_var_trivariate.csv"), DataFrame)
-function shocks_from(spec)
-    get(sh) = (r = CAND[(CAND.spec .== spec) .& (CAND.shock .== sh), :]; (r.rho_m[1], r.sigma_m[1]))
-    (ρz, σz), (ρδ, σδ), (ρs, σs) = get("z"), get("delta"), get("s")
-    return (; ρz, σz, ρδ, σδ, ρs, σs)
-end
-const SH  = shocks_from("a_orthogonalized")
+const SH  = SHOCKS_BASE
 const ETA = hcat(shock_col(:z, SH.σz), shock_col(:δ, SH.σδ), shock_col(:s, SH.σs))
 
 model = let
@@ -97,8 +91,8 @@ function run_case(label, tg)
                   label, cal.ϕ, fs0, fs, a.c, a.su, a.sv, a.amp, one[1].su, one[2].su, one[3].su, sh...))
 end
 
-log!("Q2 amplification sweep — working point p_0 = 0.8, Λ̄_r = 0.25; shocks part6c (a); σ in %, HP-1600 quarterly.")
-log!("Data: cor −0.804, σu 14.96, σv 14.19, σθ/σLP 11.70; SVAR shares of var(u): s ≤ ~25 %, z+δ ≈ 55–60 %.")
+log!(@sprintf("Q2 amplification sweep — working point p_0 = 0.8, Λ̄_r = 0.25; shocks SHOCKS_BASE (S14): ρz %.4f σz %.4f ρδ %.4f σδ %.4f ρs %.4f σs %.4f; σ in %%, HP-1600 quarterly.", SH...))
+log!("Data 1951–2019: cor −0.925, σu 12.48, σv 13.82 (σθ/σLP 11.70 is 1951–2024); SVAR shares of var(u) (scratch): s ≤ ~25 %, z+δ ≈ 55–60 %.")
 log!("\n== reference")
 run_case("costless reposting", merge(TARGETS, (p_0 = 0.8,)))
 run_case("working point", BASE)

@@ -53,12 +53,15 @@ repost_par(cal) = (hasproperty(cal, :α) && cal.α > 0) ? (cal.α, 1.0) : (1.0, 
 """
     SHOCKS_BASE
 
-Monthly shock processes for the runners. z and δ: bivariate SVAR (part6b), quarterly
-persistence converted via ρ_q^(1/3). s: AR(1) on s = (τ−δ_e)/(1−δ_e), part6b. Placeholder
-until the trivariate (z, δ, s) VAR of Q2 replaces all three. Pass a modified copy, e.g.
-`merge(SHOCKS_BASE, (ρδ = 0.9,))`; never assign numbers to the symbolic ρ_z, σ_z, ….
+Monthly shock processes for the runners: the S14 values (Oct 28, 2026) from
+`Bartek analysis/part6b_shock_persistence_cyclical.py` (`shock_calibration.csv`). Three
+independent AR(1)s. z: AR(1), 1951–2019. δ: own lag of the (z, δ) VAR, 1992Q3–2019Q4, σ ⊥ the
+z innovation. s: AR(1) on the spliced s = (τ−δ_e)/(1−δ_e), 1951–2019, σ not purged (D14).
+Quarterly ρ converted via ρ_q^(1/3), σ matching the unconditional variance. Before Oct 29 this
+held the pre-S13 part6b values (0.902, 0.0092, 0.592, 0.0669, 0.8741, 0.0854). Pass a modified
+copy, e.g. `merge(SHOCKS_BASE, (ρδ = 0.9,))`; never assign numbers to the symbolic ρ_z, σ_z, ….
 """
-const SHOCKS_BASE = (ρz = 0.902, σz = 0.0092, ρδ = 0.592, σδ = 0.0669, ρs = 0.8741, σs = 0.0854)
+const SHOCKS_BASE = (ρz = 0.9121, σz = 0.0128, ρδ = 0.5824, σδ = 0.0663, ρs = 0.8054, σs = 0.0711)
 
 """
     build_PAR(cal, shocks) → Vector{Float64}
