@@ -979,3 +979,8 @@ Unconditional shares of var(u), in percent: baseline ordering, with [min–max] 
 **The model's total σ(u) is about right. Its composition is wrong:** s is over-propagated, and z and δ are under-propagated. More amplification across the board would make s overshoot further. What is needed is weaker s propagation, or at least propagation that is not uniform across the three shocks, together with stronger z and much stronger δ. In the sweep, costless reposting brings s down to σ(u) 5.61, inside the data range, but it also collapses z to 0.42.
 
 Caveat: the model's figures are true-shock shares, while the data's are Cholesky shares. The like-for-like comparison runs the same SVAR on simulated data (the model side of Block B′, not yet built).
+
+**Q2 p_0 floor at the S14 shocks (`Q2_p0_floor.txt`, rerun Oct 29).**
+- cor(u,v) still depends only on Λ̄_r. It runs from +0.09 at Λ̄_r = 0.55 to −0.643 at 0.10, against −0.63 before, so the result is essentially unchanged.
+- The pre-pandemic target is −0.925, so the gap is wider than against the old −0.804.
+- σ(u) runs from 7.9 to 10.7 %.
