@@ -914,3 +914,25 @@ Monthly (ρ, σ):
   - The τ̄ = 3.10 %/month target and every moment that uses τ or jf (`observables_moments.py`, Block M) must be recomputed.
   - `part8_shimer_national.py` uses 1.16 post-1994, the right direction but a different factor.
 - **Timing bug, fixed Oct 28 (MS):** `u_level[1:]` kept its date labels, so pandas aligned it with u_t, and jf_t collapsed to u^s_t/u_t. Now jf_t = 1 − (u_{t+1} − u^s_{t+1})/u_t (Shimer eq. 4), and τ uses u^s_{t+1}. Quarterly correlation of old and new: jf 0.979, τ 0.994. Means barely move (jf 1951–93 0.459 → 0.457), but the dynamics do: monthly ρ_s 0.836 → 0.805.
+
+**Q2: amplification sweep at the S14 shocks (`Q2_amplification_sweep.txt`, Oct 29).** Same working point (p_0 = 0.8, Λ̄_r = 0.25).
+
+Working point, S14 shocks against part6c (a):
+
+| | S14 | part6c (a) |
+|---|---|---|
+| σ(u) | 9.80 | 11.57 |
+| σ(u) from z alone | 2.15 | 1.36 |
+| σ(u) from δ alone | 0.31 | 0.27 |
+| σ(u) from s alone | 9.46 | 11.36 |
+| var(u) shares (z / δ / s) | 4.9 / 0.1 / 95.0 % | 1.4 / 0.1 / 98.5 % |
+| cor(u,v) | −0.472 | −0.453 |
+| σ(θ)/σ(LP) | 8.22 | 13.66 |
+
+- σ(θ)/σ(LP) falls because σ(LP) rises with σ_z.
+- **Best single levers for z:** ξ_inv = 0.25 gives 18.8 %; b/w = 0.95 gives 14.4 %; x_v = 0.2 gives 13.6 %.
+- **δ stays at ≤ 0.2 % of var(u) under every lever.**
+- **Against the scratch data SVAR** (z 30–40 %, δ 17–29 % of var(u)), applied to the data's σ(u) = 12.48:
+  - z needs σ(u) ≈ 6.8–7.9, so it is 3.2–3.7× short at the working point;
+  - δ needs ≈ 5.1–6.7, so it is 17–22× short.
+- ⚠ **That data SVAR is itself out of date.** It ran on 1992Q3–2019Q4 with the pre-fix τ, which had the 1994 break inside the window, and it used one Cholesky ordering. Rebuild it (Q3 Block B′) before treating these ratios as targets.
