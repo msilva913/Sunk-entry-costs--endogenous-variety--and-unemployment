@@ -129,11 +129,14 @@ OUT_HEAD = p6b.RESULTS_DIR / "q3_data_svar_headline.csv"
 OUT_IRF  = p6b.RESULTS_DIR / "q3_data_svar_irf.csv"
 OUT_PNG  = p6b.RESULTS_DIR / "q3_data_svar_irf.png"
 
+ECHO_METHOD = False     # True also prints the method text to the console (always in the .txt)
+
 REPORT_LINES = []
 
 
-def say(text=""):
-    print(text)
+def say(text="", echo=True):
+    if echo:
+        print(text)
     REPORT_LINES.append(str(text))
 
 
@@ -295,9 +298,11 @@ def fevd_records(sv, p, fit):
 
 def report_method():
     method = __doc__.split("METHOD\n------\n")[1].split("OUTPUT\n------")[0]
-    say(f"\n{'-'*78}\n0. Method\n{'-'*78}")
+    say(f"\n{'-'*78}\n0. Method\n{'-'*78}", echo=ECHO_METHOD)
     for line in method.rstrip().splitlines():
-        say(line)
+        say(line, echo=ECHO_METHOD)
+    if not ECHO_METHOD:
+        print("  (method text: see the top of data/results/q3_data_svar.txt)")
 
 
 def report_lags(sv):
@@ -482,4 +487,12 @@ if __name__ == "__main__":
                  f"68 % and 90 % bootstrap bands", fontsize=10)
     fig.tight_layout(rect=[0, 0, 1, 0.96])
     p6b._finish(fig, OUT_PNG)
+    # ── console summary: the headline, last thing on screen ─────────────────
+    print(f"\n{'='*78}\nSUMMARY: shares of var(u) and var(v), percent; baseline ordering, BIC lag;"
+          f"\n'other' = u-own + v-own. In the namespace: head, head_bounds (DataFrames).\n{'='*78}")
+    print(head.to_string(float_format=lambda x: f"{x:5.1f}"))
+    print("\nMin-max over orderings of the shock block:")
+    for key in SVARS:
+        print(f"\n  SVAR {key}")
+        print(head_bounds[key].to_string())
     print("\nDone.")
