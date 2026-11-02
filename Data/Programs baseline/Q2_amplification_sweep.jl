@@ -25,6 +25,11 @@
 # σ(θ)/σ(LP) 11.70 is the old 1951–2024 value. Data SVAR shares of var(u) (scratch, Oct 20,
 # not yet a program): s ≤ ~25 %, z + δ ≈ 55–60 % with shocks ordered first.
 #
+# δ-process block (Nov 2, 2026): an upper-bound test at the working point. How much can a more
+# persistent δ move u? Cases: the HP-matched δ (SHOCKS_BASE); the Hamilton-matched δ from part6b
+# (shock_calibration.csv, hamilton_matched_*); and ρ_δ raised with σ_δ rescaled so δ's unconditional
+# variance stays at the baseline value (persistence alone). Exploratory, not a calibration.
+#
 # Output: Q2_amplification_sweep.txt
 # =============================================================================
 
@@ -72,10 +77,11 @@ function fundamental_surplus(cal, ss)
            (ss.w_int - cal.b - (cal.r + τ) * cal.κ - cal.s * sh) / ss.w_int
 end
 
-function run_case(label, tg)
+function run_case(label, tg; shk = SH)
+    eta = hcat(shock_col(:z, shk.σz), shock_col(:δ, shk.σδ), shock_col(:s, shk.σs))
     res = try
         cal = calibrate_shares(tg)
-        PAR = build_PAR(cal, SH)
+        PAR = build_PAR(cal, shk)
         (cal, solution_interface(model, PAR, SS_numeric(PAR, tg)))
     catch err
         log!(@sprintf("  %-26s failed: %s", label, first(sprint(showerror, err), 100)))
@@ -83,8 +89,8 @@ function run_case(label, tg)
     end
     cal, sol = res
     fs0, fs = fundamental_surplus(cal, sol.ss)
-    a   = stats(sol, ETA)
-    one = [stats(sol, ETA[:, j:j]) for j in 1:3]
+    a   = stats(sol, eta)
+    one = [stats(sol, eta[:, j:j]) for j in 1:3]
     v2  = [o.su^2 for o in one]
     sh  = 100 .* v2 ./ sum(v2)
     log!(@sprintf("  %-26s ϕ %.3f  FS0 %.3f  FS %.3f | cor %+.3f  σu %5.2f  σv %5.2f  σθ/σLP %5.2f | σu by z %5.2f δ %5.2f s %5.2f | share z %4.1f δ %4.1f s %4.1f",
@@ -101,6 +107,20 @@ for (par, vals) in SWEEP
     for val in vals
         run_case(@sprintf("%s = %s", par, string(val)), merge(BASE, NamedTuple{(par,)}((val,))))
     end
+end
+
+# ── δ process: upper-bound test at the working point ───────────────────────
+const CAL = CSV.read(joinpath(@__DIR__, "..", "Bartek analysis", "data", "results",
+                              "shock_calibration.csv"), DataFrame)
+const DROW = CAL[CAL.series .== "delta", :]
+const ρδ_ham, σδ_ham = DROW.hamilton_matched_rho_m[1], DROW.hamilton_matched_sigma_m[1]
+same_var(ρ) = SH.σδ * sqrt((1 - ρ^2) / (1 - SH.ρδ^2))   # keeps σδ²/(1-ρδ²) at the baseline
+log!(@sprintf("\n== δ process (upper-bound test; working point; baseline ρδ %.4f σδ %.4f)", SH.ρδ, SH.σδ))
+for (label, ρ, σ) in (("δ HP-matched (baseline)", SH.ρδ, SH.σδ),
+                      (@sprintf("δ Hamilton-matched %.3f", ρδ_ham), ρδ_ham, σδ_ham),
+                      (@sprintf("δ ρ %.3f, base variance", ρδ_ham), ρδ_ham, same_var(ρδ_ham)),
+                      ("δ ρ 0.970, base variance", 0.97, same_var(0.97)))
+    run_case(@sprintf("%s (σδ %.4f)", label, σ), BASE; shk = merge(SH, (ρδ = ρ, σδ = σ)))
 end
 
 write(joinpath(@__DIR__, "Q2_amplification_sweep.txt"), join(lines, "\n") * "\n")
