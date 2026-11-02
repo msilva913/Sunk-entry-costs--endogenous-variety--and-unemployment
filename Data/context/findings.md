@@ -1024,3 +1024,20 @@ Caveat: the model's figures are true-shock shares, while the data's are Cholesky
   - `Q2_p0_floor`: cor(u,v) reaches −0.664 at Λ̄_r = 0.10 (was −0.643), with σ(u) 6.2–6.8 %.
   - `R8_step7_baseline`: rerun at the same shocks.
   - The note's §2.3 has been rewritten at the matched shocks.
+
+**δ upper-bound test (`Q2_amplification_sweep.txt`, δ-process block, Nov 2).** Working point; σ(u) from δ alone.
+
+| δ process | ρ_δ | σ_δ | σ(u) from δ |
+|---|---|---|---|
+| HP-matched (baseline) | 0.532 | 0.0641 | 0.27 |
+| **Hamilton-matched (upper bound)** | 0.892 | 0.0470 | **0.51** |
+| ρ 0.892, baseline variance | 0.892 | 0.0342 | 0.37 |
+| ρ 0.970, baseline variance | 0.970 | 0.0184 | 0.27 |
+| Data, SVAR A | | | 4.3–4.9 |
+
+- **Even the most persistent δ the data allow leaves δ about 8–10× short.** The persistence or measurement-noise fix (lever d5) can't close the gap. Persistence alone helps little: with variance held fixed, raising ρ_δ to 0.97 adds nothing after HP filtering.
+- **The gap is in the response per unit of δ** (back-of-envelope):
+  - Model (R8 step 7): a one-SD δ shock (+6.4 % in δ) raises u about 0.12 % after 12 months, roughly 0.02 per log point of δ. The data give 0.27 at the peak.
+  - Vacancies: about 0.03 per log point in the model, against 0.30 in the data.
+  - So the model under-propagates δ about tenfold, in both u and v.
+- **Next step:** the δ-propagation decomposition (d1), covering vacancies destroyed per exit, the entry response, and job-finding after δ.
