@@ -28,6 +28,21 @@ role was similar before 1992, which cannot be tested. Before 1992Q3 the s cycle
 is tau's cycle scaled by k_pre (part6b), so in B the s shock also carries a
 small piece of delta (weight w of about 0.09).
 
+Financial conditions (section 4b). Two more versions of A add a financial
+conditions index F after z and before s and delta: (z, F, s, delta, u, v),
+1992Q3-2019Q4, F fixed in second place. delta's shock is then exit net of
+same-quarter and lagged financial conditions.
+    A_F   F = NFCI, the Chicago Fed's headline index. It also tightens when the
+          economy weakens, so it strips the broad financial-and-demand bundle
+          from delta: what remains is a lower bound on pure destruction.
+    A_Fa  F = ANFCI, the index adjusted for current macro conditions: delta net
+          of financial shocks proper.
+F is a mean-zero index, so it is HP-filtered in levels (not logs), cut at
+2019Q4 first, like the other series. Source: data/cache/nfci_quarterly.parquet
+(part7_nfci.py; quarterly averages of the weekly series, 1990Q1 on). The model
+has no financial variable, so these SVARs inform what the model's delta should
+be asked to match; they are not Block B' targets.
+
 Filter robustness (section 7). Every SVAR is re-estimated on Hamilton
 cycles (h = 8, p = 4; part6b's hamilton_cycle) instead of HP cycles. The
 Hamilton filter is one-sided, so it does not blur the recursive timing
@@ -96,6 +111,8 @@ Caveats.
   s      1951Q1-2019Q4  T = 276  SD of cycle   5.77
   u      1951Q1-2019Q4  T = 276  SD of cycle  12.48
   v      1951Q1-2019Q4  T = 276  SD of cycle  13.82
+  nfci   1990Q1-2019Q4  T = 120  SD of cycle  37.94
+  anfci  1990Q1-2019Q4  T = 120  SD of cycle  46.05
 
 ------------------------------------------------------------------------------
 2. Lag selection and stability
@@ -257,6 +274,40 @@ C    1    u   4    35.6-35.6          -  26.1-26.1
   when delta is left out, as it must be in B.
 
 ------------------------------------------------------------------------------
+4b. Financial conditions: A against A with F after z, BIC lag, preferred ordering
+------------------------------------------------------------------------------
+  SVAR A_F ('z', 'nfci', 's', 'delta', 'u', 'v')  1992Q3-2019Q4, T = 110; BIC picks p = 1  (BIC: 1: -39.661, 2: -38.581, 3: -37.437, 4: -36.359)
+      p = 1: T = 109, max |root| = 0.919
+      p = 2: T = 108, max |root| = 0.905
+  SVAR A_Fa ('z', 'anfci', 's', 'delta', 'u', 'v')  1992Q3-2019Q4, T = 110; BIC picks p = 1  (BIC: 1: -39.295, 2: -38.197, 3: -37.036, 4: -35.951)
+      p = 1: T = 109, max |root| = 0.923
+      p = 2: T = 108, max |root| = 0.907
+
+  Shares of var(u) and var(v), percent; F = NFCI (A_F) or ANFCI (A_Fa); last column:
+  delta's share with delta ordered before s (the alternative ordering)
+var    h    SVAR       z     F     s     δ    Residual    δ (δ before s)
+-----  ---  ------  ----  ----  ----  ----  ----------  ----------------
+u      4q   A       34.3     -  18.5  11.3        35.9              15.4
+u      4q   A_F     25.2  23.8   8.1   6.7        36.2               7.9
+u      4q   A_Fa    26.2  19.3  10.0   7.2        37.3               8.8
+u      LR   A       35.2     -  12.9  11.7        40.2              15.1
+u      LR   A_F     18.6  46.4   4.0   5.5        25.6               6.2
+u      LR   A_Fa    19.8  43.8   5.2   5.7        25.6               6.6
+v      4q   A       31.6     -  11.1  12.3        45.0              15.5
+v      4q   A_F     22.6  25.2   2.6   7.3        42.3               8.0
+v      4q   A_Fa    23.5  21.9   3.7   7.8        43.1               8.8
+v      LR   A       32.3     -   9.4  11.8        46.5              14.6
+v      LR   A_F     17.6  44.2   2.0   5.6        30.7               6.1
+v      LR   A_Fa    18.6  42.5   2.8   5.8        30.3               6.5
+
+  delta shock, peak responses (one SD, log points x 100), preferred ordering
+SVAR    u            v
+------  -----------  -----------
+A       +1.41 (h 4)  -1.60 (h 3)
+A_F     +0.97 (h 3)  -1.13 (h 2)
+A_Fa    +0.99 (h 3)  -1.16 (h 2)
+
+------------------------------------------------------------------------------
 5. Impulse responses, SVAR A, p = 1 (BIC), preferred ordering; one-SD shocks,
    log points x 100; [68 % band] from 1000 bootstrap draws
 ------------------------------------------------------------------------------
@@ -363,3 +414,6 @@ s        v       -1.57 (h 2)  -2.99 (h 3)
 8. v falls after delta and after s shocks: troughs -1.60 at
    h = 3 and -1.57 at h = 2 (log points x 100). delta destroys
    vacancies; v falling after s argues against costless reposting.
+9. Net of financial conditions, delta's share of var(u) (LR) is
+   5.5 % with NFCI and 5.7 % with ANFCI, against 11.7 % in A.
+   F itself explains 46.4 % (NFCI) and 43.8 % (ANFCI).
