@@ -65,7 +65,11 @@ All series are quarterly, from `Data/raw_data.pkl` (built by `Data/observables.p
   - BIC chooses one lag in all three SVARs, over 1–4 on a common sample. Two lags are always reported too.
   - All are stable; the largest root is 0.910 (A), 0.884 (B) and 0.906 (C).
 - **Identification:** recursive (Cholesky), with the shock block before u and v, and **z always first** (S15, Oct 29).
-  - z first: technology is the most plausibly exogenous series. Also, the model generates z → δ_e within the period, so any exit that z drives counts toward z. The δ share is the δ shock's own contribution only.
+  - **z first.** As in much of the search literature, z is a broad aggregate productivity shock, not technology alone (citation unverified).
+    - Ordering it first credits z with all same-quarter comovement between measured productivity and the other variables, including demand-driven movements in productivity; a richer model would separate those. The z share is therefore an upper bound on technology's share.
+    - The ordering is conservative for δ. With z first and δ last (the preferred ordering), δ's share is at its minimum: about 12 % of var(u) and var(v).
+    - The model generates z → δ_e within the period, so any exit that z drives counts toward z; the δ share is the δ shock's own contribution only.
+    - The model-side SVAR must use the model's *measured* labor productivity, not the exogenous z state, with the same ordering.
   - **Preferred ordering for A: z, s, δ**, because it is model-consistent: s is purely exogenous in the model, while measured exit responds to the cycle within the period. **z, δ, s** is reported for completeness. The two differ only in how the same-quarter δ–s comovement is split; z, δ + s and the residual are identical.
   - B and C have a single ordering.
 - **Residual.** The innovations to u and v left unexplained by the three shocks are reported as one "Residual". The order of u and v between themselves is arbitrary, so only their sum is identified.
@@ -175,6 +179,8 @@ Amplifying all shocks equally (rigid wages of a general kind, a smaller fundamen
 - **Costless reposting** brings s's σ(u) down to 5.61, inside the data range, but collapses z to 0.42.
 
 So the model needs levers that act on z and δ but not s, or that damp s alone.
+
+**The z gap is an upper bound on the technology-transmission gap**, because the data's z is broader than the model's (§1.5). The model's z is pure TFP, while the data's z also absorbs demand-driven movements in measured productivity. So part of the 3.0–3.4× z gap is definitional, and amplifying the model's z until it matches the data's would overshoot. δ (13.8–15.9× too small) and s (2.1–2.5× too large) are the cleaner targets. The δ gap remains the central problem.
 
 ### 3.2 Candidate levers, by which shock they act on
 
