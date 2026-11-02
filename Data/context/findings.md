@@ -1005,3 +1005,18 @@ Caveat: the model's figures are true-shock shares, while the data's are Cholesky
   - all three: σ_Q 21–25 % too small and cycle SD 21–29 % too small.
 - **Filter-consistent (matched) monthly processes** (ρ_m, σ_m): z (0.9628, 0.0062), δ (0.5319, 0.0641), s (0.8048, 0.0437). They reproduce the data's ρ_Q and σ_Q by construction. The fixed plug-in gives z (0.9121, 0.0051), δ (0.5824, 0.0456), s (0.8054, 0.0343).
 - **Consequence for the model comparison (Q3, the note §2.3):** the model's σ(u) by shock was computed with s's σ_m 63 % too large relative to the matched value, z's twice too large, and δ's about right. The earlier statement that the model's total σ(u) is "about right," with s over-propagated 2.1–2.5×, is **void** until the model is rerun at the corrected processes. The data side (the SVAR) is unaffected.
+
+**Q2 amplification sweep at the matched shocks (`Q2_amplification_sweep.txt`, rerun Nov 2).** Working point p_0 = 0.8, Λ̄_r = 0.25; σ(u) in %.
+
+| | z | δ | s | Total |
+|---|---|---|---|---|
+| Matched shocks | 2.09 | 0.27 | 5.81 | 6.23 |
+| Old inflated shocks | 2.15 | 0.31 | 9.46 | 9.80 |
+| Data, SVAR A (HP, LR) | 7.40 | 4.27 | 4.48 | 9.65 |
+
+- **Shares of var(u):** z 11.4 %, δ 0.2 %, s 88.4 %.
+- **s is now about right.** It is 1.3× too large, so the earlier overshoot was mostly the σ bug.
+- **z barely moved.** σ_z halved, but ρ_z rose to 0.963, and the higher persistence offsets the smaller innovation. z is still 3.5× short.
+- **δ is 16× short,** and the total is now too low.
+- **Best single levers for z:** b/w = 0.95, x_v = 0.2 and ξ_inv = 0.25 each take z to 27–31 % of var(u); δ stays at 0.2 %.
+- The note's §2.3 will be rewritten once `Q2_p0_floor` and `R8_step7_baseline` finish.
