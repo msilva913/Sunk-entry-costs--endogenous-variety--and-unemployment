@@ -91,6 +91,7 @@ OUTPUT
     data/results/q3_data_svar_fevd.csv   shares by SVAR, lag, ordering, horizon
     data/results/q3_data_svar_irf.csv    baseline IRFs with bootstrap bands
     data/results/q3_data_svar_irf.png    IRFs of u and v to the z, delta, s shocks
+    data/results/q3_data_svar_levels.png the series in levels, with HP trends
 
 Run
 ---
@@ -138,6 +139,7 @@ OUT_HEAD = p6b.RESULTS_DIR / "q3_data_svar_headline.csv"
 OUT_HEAD_TXT = p6b.RESULTS_DIR / "q3_data_svar_headline.txt"
 OUT_IRF  = p6b.RESULTS_DIR / "q3_data_svar_irf.csv"
 OUT_PNG  = p6b.RESULTS_DIR / "q3_data_svar_irf.png"
+OUT_LEV  = p6b.RESULTS_DIR / "q3_data_svar_levels.png"
 
 ECHO_METHOD = False     # True also prints the method text to the console (always in the .txt)
 
@@ -153,6 +155,56 @@ def say(text="", echo=True):
 # =============================================================================
 #  DATA
 # =============================================================================
+
+def build_levels_all():
+    """
+    The five series in levels on 1951Q1-2019Q4, before any filtering: log
+    labor productivity, and delta, tau, s, u, v in percent (delta, tau and s
+    monthly). s is the spliced series of part6b.
+    """
+    dat = pd.read_pickle(p6b.RAW_DATA)
+    if not isinstance(dat.index, pd.PeriodIndex):
+        dat.index = dat.index.to_period("Q")
+    lev = p6b.build_levels(dat)
+    out = pd.DataFrame({"log z": np.log(p6b.normalized_z(dat)),
+                        "delta": 100 * lev["delta"], "tau": 100 * lev["tau"],
+                        "s": 100 * lev["s"], "u": 100 * dat["u"], "v": 100 * dat["v"]})
+    return out[(out.index >= p6b.SAMPLE_START) & (out.index <= p6b.SAMPLE_END)]
+
+
+def plot_levels(lev, out_path):
+    """
+    One panel per series in levels, with its HP(1,600) trend dashed: what the
+    filter removes. Dotted line at the start of BED (1992Q3); NBER recessions
+    shaded.
+    """
+    panels = [("log z", ["log z"], "Labor productivity (log, normalized)"),
+              ("tau", ["tau", "s"], "Total separation tau and match separation s (% per month)"),
+              ("delta", ["delta"], "Permanent exit delta (% per month, BED)"),
+              ("u", ["u"], "Unemployment rate (%)"),
+              ("v", ["v"], "Vacancy rate (%)")]
+    colors = {"log z": "#1f77b4", "tau": "#7f7f7f", "s": "#2ca02c", "delta": "#d62728",
+              "u": "#9467bd", "v": "#ff7f0e"}
+    fig, axes = plt.subplots(len(panels), 1, figsize=(10, 12), sharex=True)
+    for ax, (_, cols, title) in zip(axes, panels):
+        for c in cols:
+            x = lev[c].dropna()
+            dts = list(x.index.to_timestamp())
+            ax.plot(dts, x.values, color=colors[c], lw=1.2, label=c)
+            _, trend = p6b.hpfilter(x, lamb=p6b.HP_LAMBDA)
+            ax.plot(dts, np.asarray(trend), color=colors[c], lw=1.0, ls="--",
+                    label=f"{c}, HP trend")
+        for lo, hi in p6b.REC_SPANS:
+            ax.axvspan(pd.Timestamp(lo), pd.Timestamp(hi), alpha=0.12, color="grey")
+        ax.axvline(pd.Period(BED_START, freq="Q").to_timestamp(), color="black", ls=":", lw=1.0)
+        ax.set_title(title, fontsize=9)
+        ax.grid(axis="y", lw=0.4, alpha=0.4)
+        ax.legend(fontsize=7, loc="upper left", framealpha=0.9)
+    fig.suptitle(f"Series in levels, {p6b.SAMPLE_START}-{p6b.SAMPLE_END}, with HP({p6b.HP_LAMBDA:,}) "
+                 f"trends; dotted line: BED start {BED_START}", fontsize=10)
+    fig.tight_layout(rect=[0, 0, 1, 0.97])
+    p6b._finish(fig, out_path)
+
 
 def build_cycles():
     """z, delta, s from part6b; u and v filtered the same way."""
@@ -585,6 +637,8 @@ if __name__ == "__main__":
     irf_df.to_csv(OUT_IRF, index=False)
     OUT_TXT.write_text("\n".join(REPORT_LINES) + "\n", encoding="utf-8")
     print(f"\nSaved: {OUT_TXT}\nSaved: {OUT_HEAD}\nSaved: {OUT_HEAD_TXT}\nSaved: {OUT_FEVD}\nSaved: {OUT_IRF}")
+
+    plot_levels(build_levels_all(), OUT_LEV)
 
     fig, axes = plt.subplots(len(SHOCKS), len(OUTCOMES), figsize=(10, 9), sharex=True)
     for r_, shk in enumerate(SHOCKS):
