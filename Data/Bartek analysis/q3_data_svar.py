@@ -31,6 +31,35 @@ role was similar before 1992, which cannot be tested. Before 1992Q3 the s cycle
 is tau's cycle scaled by k_pre (part6b), so in B the s shock also carries a
 small piece of delta (weight w of about 0.09).
 
+Financial conditions (section 4b). Two more versions of A add a financial
+conditions index F after z and before s and delta: (z, F, s, delta, u, v),
+1992Q3-2019Q4, F fixed in second place. delta's shock is then exit net of
+same-quarter and lagged financial conditions.
+    A_F   F = NFCI, the Chicago Fed's headline index. It also tightens when the
+          economy weakens, so it strips the broad financial-and-demand bundle
+          from delta: what remains is a lower bound on pure destruction.
+    A_Fa  F = ANFCI, the index adjusted for current macro conditions: delta net
+          of financial shocks proper.
+F is a mean-zero index, so it is HP-filtered in levels (not logs), cut at
+2019Q4 first, like the other series. Source: data/cache/nfci_quarterly.parquet
+(part7_nfci.py; quarterly averages of the weekly series, 1990Q1 on). The model
+has no financial variable, so these SVARs inform what the model's delta should
+be asked to match; they are not Block B' targets.
+
+Mediation through delta (section 4c). How much of a shock's effect on u and
+v runs through exit? Counterfactual impulse responses in the spirit of
+Bernanke, Gertler and Watson (1997) and Sims and Zha (2006) (citations
+unverified): delta's response is held at zero by adding, each quarter, the
+delta shock that offsets it. delta is ordered after F and s, so the
+offsetting shocks move only delta, u and v within the quarter. The indirect
+effect through delta is the full response minus the counterfactual; the
+direct effect (all other channels) is the counterfactual. Reported for the F
+shock (A_F, A_Fa) and the z shock (A, A_F), with s as an alternative mediator,
+as the peak and the cumulative (h = 0-12) response of u and v and the share
+running through the mediator, with 68 % bootstrap bands. A reduced-form
+counterfactual: it assumes the VAR's dynamics are unchanged when delta is
+held fixed.
+
 Filter robustness (section 7). Every SVAR is re-estimated on Hamilton
 cycles (h = 8, p = 4; part6b's hamilton_cycle) instead of HP cycles. The
 Hamilton filter is one-sided, so it does not blur the recursive timing
@@ -96,7 +125,7 @@ OUTPUT
     data/results/q3_data_svar.txt        the full report (N15)
     data/results/q3_data_svar_headline.csv  headline shares of var(u), var(v)
     data/results/q3_data_svar_headline.txt  the same as plain tables, ready to paste
-    data/results/q3_data_svar_fevd.csv   shares by SVAR, lag, ordering, horizon
+    data/results/q3_data_svar_fevd.csv   shares by SVAR, lag, ordering, horizon (incl. A_F, A_Fa)
     data/results/q3_data_svar_irf.csv    IRFs with bootstrap bands (filter column: hp, hamilton)
     data/results/q3_data_svar_irf.png    IRFs of u and v to the z, delta, s shocks
     data/results/q3_data_svar_levels.png the series in levels, with HP trends
@@ -142,6 +171,12 @@ SVARS = {
     "B": {"vars": ("z", "s", "u", "v"),          "start": p6b.SAMPLE_START},
     "C": {"vars": ("z", "s", "u", "v"),          "start": BED_START, "align": "A"},  # A's window
 }
+# A with a financial conditions index fixed after z (section 4b; not in the headline).
+SVARS_F = {
+    "A_F":  {"vars": ("z", "nfci", "s", "delta", "u", "v"),  "start": BED_START, "fixed": ("z", "nfci")},
+    "A_Fa": {"vars": ("z", "anfci", "s", "delta", "u", "v"), "start": BED_START, "fixed": ("z", "anfci")},
+}
+NFCI_CACHE = Path("data/cache/nfci_quarterly.parquet")
 OUT_TXT  = p6b.RESULTS_DIR / "q3_data_svar.txt"
 OUT_FEVD = p6b.RESULTS_DIR / "q3_data_svar_fevd.csv"
 OUT_HEAD = p6b.RESULTS_DIR / "q3_data_svar_headline.csv"
@@ -223,6 +258,12 @@ def build_cycles(method="hp"):
     cyc = p6b.hp_cycles(dat, p6b.build_levels(dat), method)[["z", "delta", "s"]]
     for name in OUTCOMES:
         cyc[name] = p6b.log_cycle(p6b.window(dat[name]), method)
+    fin = pd.read_parquet(NFCI_CACHE)
+    fin.index = pd.PeriodIndex(fin["quarter_label"], freq="Q")
+    for name in ("nfci", "anfci"):                   # mean-zero indices: filter levels
+        x = p6b.window(fin[name])
+        cyc[name] = (p6b.hpfilter(x, lamb=p6b.HP_LAMBDA)[0] if method == "hp"
+                     else p6b.hamilton_cycle(x))
     return cyc[(cyc.index >= p6b.SAMPLE_START) & (cyc.index <= p6b.SAMPLE_END)]
 
 
@@ -336,6 +377,40 @@ def irf(fit, order, names, H):
     return np.array([M @ P for M in ma_coefficients(fit["A"], H)])  # (H+1, var, shock)
 
 
+def mediated(Theta, j, m):
+    """
+    Counterfactual responses to shock j with variable m held at zero, by
+    offsetting shocks to m (Theta: horizons x variables x shocks, columns in
+    the ordering; m is both a variable and a shock index). Returns
+    (horizons x variables).
+    """
+    H = Theta.shape[0] - 1
+    full = Theta[:, :, j]
+    eps = np.zeros(H + 1)
+    cf = full.copy()
+    for h in range(H + 1):
+        eps[h] = -cf[h, m] / Theta[0, m, m]
+        cf[h:] += eps[h] * Theta[:H + 1 - h, :, m]
+    return cf
+
+
+def mediation_rows(svar, Theta, draws, names, shock, mediator):
+    """Peak and cumulative u, v responses: full, counterfactual, share through mediator."""
+    j, m = names.index(shock), names.index(mediator)
+    out = []
+    for resp in OUTCOMES:
+        i = names.index(resp)
+        full, cf = Theta[:, i, j], mediated(Theta, j, m)[:, i]
+        share = lambda f, c: 100 * (1 - c.sum() / f.sum())
+        bs = np.array([share(D[:, i, j], mediated(D, j, m)[:, i]) for D in draws])
+        k = int(np.abs(full).argmax())
+        out.append([svar, LABEL[shock], LABEL[mediator], resp,
+                    f"{100 * full[k]:+.2f} (h {k})", f"{100 * cf[k]:+.2f}",
+                    f"{100 * full.sum():+.2f}", f"{100 * cf.sum():+.2f}",
+                    f"{share(full, cf):.0f} [{np.percentile(bs, 16):.0f}, {np.percentile(bs, 84):.0f}]"])
+    return out
+
+
 def bootstrap_irf(Y, fit, order, names, H, n_boot, seed=SEED):
     """
     Residual bootstrap, recursive design, initial values fixed. The generator is
@@ -376,7 +451,8 @@ def prepare_svar(key, spec, cyc):
     Y = frame.to_numpy()
     p_bic, bic = bic_lag(Y)
     return {"key": key, "names": names, "frame": frame, "Y": Y,
-            "block": [v for v in names if v in SHOCKS],
+            "block": [v for v in names if v not in OUTCOMES],
+            "fixed": list(spec.get("fixed", ("z",))),
             "p_bic": p_bic, "bic": bic, "lags": sorted({1, 2, p_bic})}
 
 
@@ -385,10 +461,11 @@ def estimate_svar(sv):
     return {p: fit_var(sv["Y"], p) for p in sv["lags"]}
 
 
-def block_orderings(block):
-    """z first, the other shocks in every order; block[0] must be z."""
-    assert block[0] == "z", block
-    return [["z"] + list(perm) for perm in itertools.permutations(block[1:])]
+def block_orderings(block, fixed=("z",)):
+    """The fixed head (z, and F in A_F) first, the other shocks in every order."""
+    fixed = list(fixed)
+    assert block[:len(fixed)] == fixed, (block, fixed)
+    return [fixed + list(perm) for perm in itertools.permutations(block[len(fixed):])]
 
 
 def fevd_records(sv, p, fit):
@@ -399,7 +476,7 @@ def fevd_records(sv, p, fit):
     column j belongs to shock order[j].
     """
     rows = []
-    for perm in block_orderings(sv["block"]):
+    for perm in block_orderings(sv["block"], sv["fixed"]):
         order = list(perm) + list(OUTCOMES)
         for h, M in fevd(fit, order, sv["names"], HORIZONS).items():
             rows += [{"svar": sv["key"], "p": p, "p_bic": p == sv["p_bic"],
@@ -465,7 +542,7 @@ def headline_frames(rows):
             pd.concat(alt, axis=1).rename_axis(index=names, columns=["SVAR", "shock"]))
 
 
-LABEL   = {"z": "z", "delta": "δ", "s": "s", "u": "u", "v": "v"}
+LABEL   = {"z": "z", "delta": "δ", "s": "s", "u": "u", "v": "v", "nfci": "F", "anfci": "Fa"}
 H_LABEL = {4: "4q", 8: "8q", 200: "LR"}
 
 
@@ -634,6 +711,86 @@ if __name__ == "__main__":
     say("  C's z and s shares minus A's show how much of delta's share the other shocks absorb"
         "\n  when delta is left out, as it must be in B.")
 
+    # ── financial conditions: A with NFCI or ANFCI after z ──────────────────
+    from tabulate import tabulate
+    say(f"\n{'-'*78}\n4b. Financial conditions: A against A with F after z, BIC lag, preferred ordering\n{'-'*78}")
+    fin_rows, svars_f = [], {}
+    for key, spec in SVARS_F.items():
+        sv = prepare_svar(key, spec, cyc)
+        sv["fits"] = estimate_svar(sv)
+        report_lags(sv)
+        fin_rows += [r for p, fit in sv["fits"].items() for r in fevd_records(sv, p, fit)]
+        svars_f[key] = sv
+    allf = pd.DataFrame(fevd_rows + fin_rows)
+    allf = allf[allf.p_bic & allf.response.isin(OUTCOMES)]
+
+    def fshare(svar, resp, shk, h, base=True):
+        r = allf[(allf.svar == svar) & (allf.response == resp) & (allf.shock == shk)
+                 & (allf.horizon == h) & (allf.baseline == base)]
+        return 100 * r["share"].iloc[0] if len(r) else np.nan
+
+    rows = []
+    for resp in OUTCOMES:
+        for h in HEADLINE_H:
+            for key, fcol in (("A", None), ("A_F", "nfci"), ("A_Fa", "anfci")):
+                shares = [fshare(key, resp, s_, h) for s_ in ("z",)] + \
+                         [fshare(key, resp, fcol, h) if fcol else np.nan] + \
+                         [fshare(key, resp, s_, h) for s_ in ("s", "delta")]
+                resid = 100 - np.nansum(shares)
+                d_alt = fshare(key, resp, "delta", h, base=False)
+                rows.append([resp, H_LABEL[h], key] + [("-" if np.isnan(x) else f"{x:.1f}") for x in shares]
+                            + [f"{resid:.1f}", f"{d_alt:.1f}"])
+    say("\n  Shares of var(u) and var(v), percent; F = NFCI (A_F) or ANFCI (A_Fa); last column:")
+    say("  delta's share with delta ordered before s (the alternative ordering)")
+    say(tabulate(rows, ["var", "h", "SVAR", "z", "F", "s", "δ", "Residual", "δ (δ before s)"],
+                 tablefmt="simple", disable_numparse=True, colalign=("left",) * 3 + ("right",) * 6))
+    fin_take = (f"Net of financial conditions, delta's share of var(u) (LR) is\n"
+                f"   {fshare('A_F','u','delta',HORIZONS[-1]):.1f} % with NFCI and "
+                f"{fshare('A_Fa','u','delta',HORIZONS[-1]):.1f} % with ANFCI, against "
+                f"{fshare('A','u','delta',HORIZONS[-1]):.1f} % in A.\n"
+                f"   F itself explains {fshare('A_F','u','nfci',HORIZONS[-1]):.1f} % (NFCI) and "
+                f"{fshare('A_Fa','u','anfci',HORIZONS[-1]):.1f} % (ANFCI).")
+
+    # δ → u and v, point IRFs at the BIC lag, A against A_F and A_Fa
+    rows = []
+    for key, sv in [("A", svars["A"])] + list(svars_f.items()):
+        th = irf(sv["fits"][sv["p_bic"]], list(sv["names"]), sv["names"], H_IRF)
+        j = sv["names"].index("delta")
+        cells = [key]
+        for resp in OUTCOMES:
+            path = 100 * th[:, sv["names"].index(resp), j]
+            k = int(np.abs(path).argmax())
+            cells.append(f"{path[k]:+.2f} (h {k})")
+        rows.append(cells)
+    say("\n  delta shock, peak responses (one SD, log points x 100), preferred ordering")
+    say(tabulate(rows, ["SVAR", "u", "v"], tablefmt="simple", disable_numparse=True))
+
+    # ── mediation: how much of F's and z's effect runs through delta ───────
+    say(f"\n{'-'*78}\n4c. Mediation: share of a shock's effect on u and v that runs through delta\n{'-'*78}")
+    say("  delta's response held at zero by offsetting delta shocks; BIC lag, preferred ordering.")
+    say("  Peak: response at the full path's peak (one SD, log points x 100); cumulative: sum over")
+    say(f"  h = 0-{H_IRF}. Share = 1 - counterfactual/full (cumulative), [68 % bootstrap band].\n")
+    med = []
+    for key, sv, cases in (("A",    svars["A"],      (("z", "delta"), ("z", "s"))),
+                           ("A_F",  svars_f["A_F"],  (("nfci", "delta"), ("nfci", "s"), ("z", "delta"))),
+                           ("A_Fa", svars_f["A_Fa"], (("anfci", "delta"), ("anfci", "s")))):
+        fit = sv["fits"][sv["p_bic"]]
+        Theta = irf(fit, list(sv["names"]), sv["names"], H_IRF)
+        draws = bootstrap_irf(sv["Y"], fit, list(sv["names"]), sv["names"], H_IRF, N_BOOT)
+        for shock, mediator in cases:
+            med += mediation_rows(key, Theta, draws, sv["names"], shock, mediator)
+    say(tabulate(med, ["SVAR", "shock", "via", "resp", "peak full", "peak cf", "cum full", "cum cf",
+                       "share via, %"], tablefmt="simple", disable_numparse=True))
+    say("  'via s' rows: the same exercise with s as the mediator, for comparison.")
+    med_df = pd.DataFrame(med, columns=["svar", "shock", "via", "resp", "peak_full", "peak_cf",
+                                        "cum_full", "cum_cf", "share_via"])
+    pick = lambda sv_, sh, via, r: med_df[(med_df.svar == sv_) & (med_df.shock == sh) &
+                                          (med_df.via == via) & (med_df.resp == r)].share_via.iloc[0]
+    med_take = (f"Exit as a channel: of the financial shock's cumulative effect on\n"
+                f"   u, {pick('A_F', 'F', 'δ', 'u')} % runs through delta (NFCI; ANFCI {pick('A_Fa', 'Fa', 'δ', 'u')} %);\n"
+                f"   for v, {pick('A_F', 'F', 'δ', 'v')} %. For z: {pick('A', 'z', 'δ', 'u')} % of its effect on u (A).\n"
+                f"   [68 % bootstrap bands in section 4c.]")
+
     # ── impulse responses, SVAR A at the BIC lag ─────────────────────────────
     svA = svars["A"]
     p_bic = svA["p_bic"]
@@ -694,11 +851,12 @@ if __name__ == "__main__":
 
     # ── key takeaways ────────────────────────────────────────────────────────
     key_points = takeaways(head, alt, irf_df[irf_df["filter"] == "hp"], svars, fevd_rows)
+    key_points += f"\n9. {fin_take}\n10. {med_take}"
     say(f"\n{'-'*78}\n6. Key takeaways (numbers from this run)\n{'-'*78}")
     say(key_points, echo=False)
 
     # ── outputs ──────────────────────────────────────────────────────────────
-    pd.DataFrame(fevd_rows).to_csv(OUT_FEVD, index=False)
+    pd.DataFrame(fevd_rows + fin_rows).to_csv(OUT_FEVD, index=False)
     head.round(2).to_csv(OUT_HEAD)          # full precision in OUT_FEVD
     OUT_HEAD_TXT.write_text(headline + "\n", encoding="utf-8")
     irf_df.to_csv(OUT_IRF, index=False)

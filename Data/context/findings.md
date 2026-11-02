@@ -1041,3 +1041,32 @@ Caveat: the model's figures are true-shock shares, while the data's are Cholesky
   - Vacancies: about 0.03 per log point in the model, against 0.30 in the data.
   - So the model under-propagates δ about tenfold, in both u and v.
 - **Next step:** the δ-propagation decomposition (d1), covering vacancies destroyed per exit, the entry response, and job-finding after δ.
+
+**Q3: δ net of financial conditions (`q3_data_svar.txt` §4b, Nov 2).** A with F fixed after z: (z, F, s, δ, u, v), 1992Q3–2019Q4. F = NFCI (A_F) or ANFCI (A_Fa); BIC lag 1, preferred ordering. Long-run shares of var(u), %:
+
+| | z | F | s | δ | Residual |
+|---|---|---|---|---|---|
+| A | 35.2 | — | 12.9 | 11.7 | 40.2 |
+| A_F (NFCI) | 18.6 | 46.4 | 4.0 | 5.5 | 25.6 |
+| A_Fa (ANFCI) | 19.8 | 43.8 | 5.2 | 5.7 | 25.6 |
+
+- var(v) shows the same pattern: δ falls from 11.8 to 5.6–5.8.
+- **Financial conditions take about half of δ's share.** δ falls from 11.7 % to 5.5–5.7 %, or 6.2–6.6 % with δ ordered before s. The peak δ → u response falls from +1.41 to +0.97–0.99, and δ → v from −1.60 to −1.13–1.16.
+- **ANFCI, purged of current macro conditions, gives nearly the same answer as NFCI.** So the effect isn't only financial conditions responding to the downturn.
+- **F itself takes 44–46 % of var(u).** It also absorbs z (35 → 19), s (13 → 4–5) and part of the residual. F is ordered second, so this is an upper bound on F and a lower bound on s and δ.
+- **Implied δ target net of finance** (back-of-envelope, √share × 12.48): σ(u) of about 2.9–3.0 against the model's 0.27, so about 11× short (16× before). Financial bundling explains part of the δ gap, not most of it.
+- **Side effect:** net of finance, s's σ(u) of about 2.5–2.8 is below the model's 5.81, so s would be over-propagated again by roughly 2×. Read with care: F's position credits it with all same-quarter comovement.
+- The model has no financial variable. So A_F informs what the model's δ should match; it is not a Block B′ target.
+
+**Q3: mediation, i.e. how much of a shock's effect runs through exit (`q3_data_svar.txt` §4c, Nov 2).** Counterfactual IRFs in the spirit of Bernanke–Gertler–Watson and Sims–Zha (citations unverified): δ's response is held at zero with offsetting δ shocks. The share through δ is 1 − counterfactual/full, on the cumulative u or v response over h = 0–12, with 68 % bootstrap bands.
+
+| Shock | Share of its effect on u through δ | on v | Share on u through s |
+|---|---|---|---|
+| NFCI (A_F) | **18 % [4, 27]** | 17 % [2, 27] | 26 % [8, 40] |
+| ANFCI (A_Fa) | **19 % [5, 29]** | 18 % [3, 28] | 30 % [12, 43] |
+| z (A) | 5 % [−13, 16] | 3 % [−19, 15] | 13 % [−7, 25] |
+
+- **Exit carries about a fifth of the financial shock's effect on u and v,** and the 68 % bands exclude zero. Separations carry about a quarter to a third.
+- **Productivity shocks don't work through exit** in the data; the shares are near zero and insignificant. In the model, z → χ^c → δ_e is an endogenous channel, but the data don't show it.
+- Only 68 % bands are reported; at 90 % the δ share for financial shocks may include zero (not computed).
+- Bearing on the paper's framing: exit as a channel of financial shocks is supported, but modest, about as important as separations. It is not a channel for productivity.
