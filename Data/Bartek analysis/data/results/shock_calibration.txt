@@ -296,7 +296,7 @@ delta         0.198      0.244      0.198            5.49       4.10    -25%    
 tau           0.535      0.534      0.535            4.55       3.58    -21%             5.37       4.24    -21%
 s             0.522      0.523      0.522            4.94       3.89    -21%             5.78       4.57    -21%
 
-  Monthly processes (SHOCKS_BASE uses the plug-in until decided otherwise):
+  Monthly processes (SHOCKS_BASE in run_solution_core.jl holds the matched values, Nov 2):
 
          plug-in rho_m    sigma_m    matched rho_m    sigma_m    SD cycle
 -----  ---------------  ---------  ---------------  ---------  ----------

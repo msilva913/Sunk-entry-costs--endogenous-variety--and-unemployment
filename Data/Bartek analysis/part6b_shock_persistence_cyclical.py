@@ -888,7 +888,7 @@ def report_matching(fc):
     say(tabulate(rows, ["", "rho_Q data", "plug-in", "matched", "sigma_Q data", "plug-in", "bias",
                         "SD cycle data", "plug-in", "bias"], tablefmt="simple",
                  disable_numparse=True, colalign=("left",) + ("right",) * 9))
-    say("\n  Monthly processes (SHOCKS_BASE uses the plug-in until decided otherwise):\n")
+    say("\n  Monthly processes (SHOCKS_BASE in run_solution_core.jl holds the matched values, Nov 2):\n")
     rows = [[n, f"{r.plugin_rho_m:.4f}", f"{r.plugin_sigma_m:.4f}",
              f"{r.matched_rho_m:.4f}", f"{r.matched_sigma_m:.4f}", f"{100 * r.matched_sd_cycle:.2f}"]
             for n, r in fc.iterrows()]
