@@ -209,6 +209,16 @@ How much of a shock's effect on u and v runs *through* exit? The method is a cou
 - **Productivity shocks barely work through exit** in the data, although the model's exit responds to z endogenously.
 - **For the framing:** exit is a real but modest channel for financial disturbances, and no channel for productivity. The decision on framing is open (MS).
 
+### 2.2d Baseline specification (recommendation, Nov 2)
+
+**Baseline for the Block B′ targets: SVAR A, without financial conditions.** A_F and the mediation (§2.2b–c) are the identification check reported in the paper, not the baseline. Four reasons:
+1. **It keeps data and model consistent.** Block B′ runs the same SVAR on data and model. The model has no financial variable, so the model-side SVAR is A. Treating A as A_F's counterpart would need F to be a purely exogenous control, and NFCI also responds to the downturn.
+2. **Conditioning on F removes part of the mechanism.** About a fifth of the financial shock's effect runs through exit (§2.2c). If exit is a margin through which shocks propagate, exit driven by finance is part of what δ does, and A_F understates δ's role by construction.
+3. **F moves every target, not just δ's:** z 35 → 19 % and s 13 → 4 %. With F ordered second, its 44–46 % share is an upper bound, so letting it set the targets would rest on an ordering choice.
+4. **It can't be applied consistently.** NFCI starts in 1971, so B (1951–2019) can't include it.
+
+**In the paper:** report δ's share of var(u) as a range, from about 6 % (net of financial conditions, A_F) to about 12 % (A). Use A_F and the mediation to show that δ's effect isn't financial stress relabeled. Treat the model's abstraction from financial disturbances as standard and say so; the δ × NFCI Bartik result can motivate an extension.
+
 ### 2.3 Against the model (working point of `Q2_amplification_sweep.txt`: p_0 = 0.8, Λ̄_r = 0.25)
 
 **Rerun Nov 2, 2026 at the matched (filter-consistent) shock processes** now in `SHOCKS_BASE`: z (0.9628, 0.0062), δ (0.5319, 0.0641), s (0.8048, 0.0437). The earlier version of this section used shocks whose monthly σ was inflated 1.5–2.5× by an inverted formula in part6b's `to_monthly` (Sept 21 – Nov 2). Its conclusion, that the model's total volatility was about right while s was over-propagated about 2×, was mostly an artifact of that bug. Details in findings.md.

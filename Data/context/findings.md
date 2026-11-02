@@ -1070,3 +1070,4 @@ Caveat: the model's figures are true-shock shares, while the data's are Cholesky
 - **Productivity shocks don't work through exit** in the data; the shares are near zero and insignificant. In the model, z → χ^c → δ_e is an endogenous channel, but the data don't show it.
 - Only 68 % bands are reported; at 90 % the δ share for financial shocks may include zero (not computed).
 - Bearing on the paper's framing: exit as a channel of financial shocks is supported, but modest, about as important as separations. It is not a channel for productivity.
+- **Baseline recommendation (Nov 2):** SVAR A stays the baseline for Block B′. A_F and the mediation are the identification check, and δ's share is reported as a range (about 6–12 %). Reasons in the note, §2.2d.
