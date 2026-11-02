@@ -53,15 +53,20 @@ repost_par(cal) = (hasproperty(cal, :α) && cal.α > 0) ? (cal.α, 1.0) : (1.0, 
 """
     SHOCKS_BASE
 
-Monthly shock processes for the runners: the S14 values (Oct 28, 2026) from
-`Bartek analysis/part6b_shock_persistence_cyclical.py` (`shock_calibration.csv`). Three
-independent AR(1)s. z: AR(1), 1951–2019. δ: own lag of the (z, δ) VAR, 1992Q3–2019Q4, σ ⊥ the
-z innovation. s: AR(1) on the spliced s = (τ−δ_e)/(1−δ_e), 1951–2019, σ not purged (D14).
-Quarterly ρ converted via ρ_q^(1/3), σ matching the unconditional variance. Before Oct 29 this
-held the pre-S13 part6b values (0.902, 0.0092, 0.592, 0.0669, 0.8741, 0.0854). Pass a modified
-copy, e.g. `merge(SHOCKS_BASE, (ρδ = 0.9,))`; never assign numbers to the symbolic ρ_z, σ_z, ….
+Monthly shock processes for the runners: the S14 *filter-consistent* values (Nov 2, 2026), from
+`Bartek analysis/part6b_shock_persistence_cyclical.py` (`shock_calibration.csv`, columns
+`matched_rho_m`, `matched_sigma_m`; report section 7). Three independent AR(1)s, with quarterly
+targets: z: AR(1), 1951–2019; δ: own lag of the (z, δ) VAR, 1992Q3–2019Q4, σ ⊥ the z innovation;
+s: AR(1) on the spliced s = (τ−δ_e)/(1−δ_e), 1951–2019, σ not purged (D14). Each monthly (ρ, σ) is
+chosen so that the process, averaged to quarters and HP-filtered like the model's output,
+reproduces the data's quarterly AR(1) coefficient and innovation SD.
+History: Oct 29 – Nov 2 this held the plug-in S14 values (0.9121, 0.0128, 0.5824, 0.0663, 0.8054,
+0.0711), whose σ was inflated 1.5–2.5× by an inverted formula in part6b's `to_monthly`; before
+Oct 29, the pre-S13 values (0.902, 0.0092, 0.592, 0.0669, 0.8741, 0.0854), with the same bug.
+Pass a modified copy, e.g. `merge(SHOCKS_BASE, (ρδ = 0.9,))`; never assign numbers to the
+symbolic ρ_z, σ_z, ….
 """
-const SHOCKS_BASE = (ρz = 0.9121, σz = 0.0128, ρδ = 0.5824, σδ = 0.0663, ρs = 0.8054, σs = 0.0711)
+const SHOCKS_BASE = (ρz = 0.9628, σz = 0.0062, ρδ = 0.5319, σδ = 0.0641, ρs = 0.8048, σs = 0.0437)
 
 """
     build_PAR(cal, shocks) → Vector{Float64}
