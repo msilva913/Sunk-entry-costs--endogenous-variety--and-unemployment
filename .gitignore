@@ -21,3 +21,6 @@ Data/Notes/*.synctex.gz
 # interpreter version; tracked copies were removed Oct 29, 2026.
 __pycache__/
 *.pyc
+Data/Bartek analysis/data/results/q3_data_svar_fevd.csv
+Data/Bartek analysis/data/results/q3_data_svar_irf.csv
+Data/Bartek analysis/data/results/q3_data_svar_irf.png
