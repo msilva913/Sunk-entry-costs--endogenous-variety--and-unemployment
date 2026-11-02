@@ -34,7 +34,9 @@ small piece of delta (weight w of about 0.09).
 Financial conditions (section 4b). Two more versions of A add a financial
 conditions index F after z and before s and delta: (z, F, s, delta, u, v),
 1992Q3-2019Q4, F fixed in second place. delta's shock is then exit net of
-same-quarter and lagged financial conditions.
+same-quarter and lagged financial conditions. 
+Weighed average of about 100 financial indicators (risk spreads, volatilities, funding
+conditions, leverage measures), with weights from dynamic factor model.
     A_F   F = NFCI, the Chicago Fed's headline index. It also tightens when the
           economy weakens, so it strips the broad financial-and-demand bundle
           from delta: what remains is a lower bound on pure destruction.
