@@ -42,14 +42,39 @@ All series are quarterly, from `Data/raw_data.pkl` (built by `Data/observables.p
 - The 1994 CPS correction now scales short-term unemployment *after* 1994, by Shimer's 1.1. The old code scaled the *pre*-1994 values by 1.16, which doubled the break.
 - The job-finding and separation rates are now dated correctly (Shimer eq. 4). Before, pandas aligned u_{t+1} with u_t, misdating them by a month.
 
-### 1.3 Transformation
+### 1.3 The series in levels
+
+Figure: `Data/Bartek analysis/data/results/q3_data_svar_levels.png`, from `q3_data_svar.py`. Each series is shown in levels over 1951Q1–2019Q4, with its HP-1600 trend dashed.
+
+Decade means (back-of-envelope from `raw_data.pkl`, percent):
+
+| Decade | τ (monthly) | δ (monthly) | u | v | Productivity growth (per year) |
+|---|---|---|---|---|---|
+| 1950s | 3.07 | — | 4.43 | 2.98 | 1.95 |
+| 1960s | 3.20 | — | 4.78 | 3.63 | 2.26 |
+| 1970s | 3.89 | — | 6.22 | 3.99 | 1.37 |
+| 1980s | 4.06 | — | 7.27 | 3.77 | 1.41 |
+| 1990s | 3.15 | 0.28 | 5.76 | 3.21 | 2.16 |
+| 2000s | 2.70 | 0.24 | 5.54 | 2.68 | 2.30 |
+| 2010s | 2.14 | 0.17 | 6.22 | 3.21 | 1.19 |
+
+- **Productivity trends up, with growth breaks:** the 1970s slowdown, the speed-up from the mid-1990s, and the slowdown after 2005. A linear trend misses these.
+- **Separations rise and then fall.** τ and s climb into the early 1980s, then fall by about half by the 2010s. u follows a similar arc. The usual explanation is demographic (the baby boom raising turnover, then aging out; citations unverified), together with the secular decline in turnover.
+- **δ falls by about 40 % over 1992–2019,** mostly as a level shift during 2001–2010. This is the decline in business dynamism.
+- **u and v have no trend but long swings.** The HP-1600 trend follows part of the cycle: it rises through 2009–13, so some of the slow recovery after the Great Recession counts as trend.
+
+**Implications:**
+1. **Filtering is needed.** The model is stationary around a fixed steady state, and its shocks are business-cycle shocks. A levels VAR with linear trends would leave the τ and u humps in, and would attribute them to persistent s shocks.
+2. **But HP-1600 may remove some persistence that matters,** such as slow recoveries, which is the δ mechanism. The choice of filter is under review (§3.3).
+
+### 1.4 Transformation
 
 - Logs, then an HP filter with λ = 1,600, the same as the moment targets and the model simulations.
 - Every series is cut at 2019Q4 *before* filtering (S13), so the pandemic doesn't leak into the 2017–19 cycles.
 - Each series is filtered over its own window.
 - The SD of each cycle (×100) is: z 1.23, δ 5.96, s 5.77, u 12.48, v 13.82 (report §1).
 
-### 1.4 The three SVARs
+### 1.5 The three SVARs
 
 | SVAR | Variables | Window | T | Role |
 |---|---|---|---|---|
@@ -59,7 +84,7 @@ All series are quarterly, from `Data/raw_data.pkl` (built by `Data/observables.p
 
 δ can't enter B, because before 1992Q3 a constant δ̄ has an HP cycle of exactly zero, which would distort every coefficient on δ. So in B, δ's contribution is spread over z, s and the residual. A against C measures that shift on 1992–2019. Assuming the same shift before 1992 can't be tested.
 
-### 1.5 Estimation and identification
+### 1.6 Estimation and identification
 
 - **VAR:** reduced form with a constant, estimated equation by equation by OLS.
   - BIC chooses one lag in all three SVARs, over 1–4 on a common sample. Two lags are always reported too.
@@ -180,7 +205,7 @@ Amplifying all shocks equally (rigid wages of a general kind, a smaller fundamen
 
 So the model needs levers that act on z and δ but not s, or that damp s alone.
 
-**The z gap is an upper bound on the technology-transmission gap**, because the data's z is broader than the model's (§1.5). The model's z is pure TFP, while the data's z also absorbs demand-driven movements in measured productivity. So part of the 3.0–3.4× z gap is definitional, and amplifying the model's z until it matches the data's would overshoot. δ (13.8–15.9× too small) and s (2.1–2.5× too large) are the cleaner targets. The δ gap remains the central problem.
+**The z gap is an upper bound on the technology-transmission gap**, because the data's z is broader than the model's (§1.6). The model's z is pure TFP, while the data's z also absorbs demand-driven movements in measured productivity. So part of the 3.0–3.4× z gap is definitional, and amplifying the model's z until it matches the data's would overshoot. δ (13.8–15.9× too small) and s (2.1–2.5× too large) are the cleaner targets. The δ gap remains the central problem.
 
 ### 3.2 Candidate levers, by which shock they act on
 
@@ -219,7 +244,12 @@ These are proposals, not results. None has been implemented. Citations are unver
      - (c) a fourth, hiring-side shock.
 
      (b) with (a) for robustness looks most consistent with the indirect-inference design (D13). It would need a new decision entry.
-3. **Then test the cheap levers first:** (s1), then diagnostics (z2) and (d1). Move to structural changes, (s2), (z1), (d2) or (d3), only if those fall short. Structural changes should go on their own branch, since they change `run_solution_core.jl`.
+3. **Revisit the filter and the shock processes.**
+   - The SVAR's HP filter is two-sided, which blurs the recursive timing assumption. A one-sided Hamilton filter avoids this, at the cost of 11 quarters per series (A falls to about 99).
+   - The shock processes in part6b take the AR(1) of the *filtered* data as the shock process. The model's simulations are then time-averaged and filtered again, which changes persistence and volatility.
+   - A scratch simulation suggests the effect matters mainly for z. After averaging and HP filtering, the model's z has ρ_Q of about 0.68 against 0.76 in the data, and keeps about 77 % of its SD. For s and δ the two biases roughly cancel.
+   - The fix is to choose each monthly (ρ, σ) so that the averaged and filtered simulated series matches the data's filtered AR(1) coefficient and SD. That would make part of the z gap disappear mechanically.
+4. **Then test the cheap levers first:** (s1), then diagnostics (z2) and (d1). Move to structural changes, (s2), (z1), (d2) or (d3), only if those fall short. Structural changes should go on their own branch, since they change `run_solution_core.jl`.
 
 ---
 
