@@ -138,18 +138,30 @@ Step 4. From quarterly to monthly: two mappings (section 7 of the report).
         The model's simulated output is then averaged to quarters and
         filtered again, so the model's filtered shock no longer reproduces
         the data's.
-    (b) Filter-consistent (simulated matching). Choose monthly (rho_m,
-        sigma_m) so that a monthly AR(1), averaged to quarters as the
-        model's simulations are, HP-filtered over a data-length window, and
-        fitted with the same AR(1) estimator, reproduces the data's rho_Q
-        and sigma_Q. Monte Carlo with N_MATCH replications and common random
-        numbers. The process is linear, so sigma scales exactly; only rho_m
-        needs a one-dimensional search. The match also absorbs small-sample
-        bias in the AR(1) estimate, because data and simulation use the same
-        sample length.
+    (b) Filter-consistent (simulated matching). In a nutshell: choose the
+        monthly (rho_m, sigma_m) so that, when the simulated monthly series is
+        averaged to quarters and filtered, and an AR(1) is then estimated, the
+        resulting rho_Q and sigma_Q match those of the filtered quarterly data.
+        In detail:
+          - Averaging and filtering follow the model's output: quarterly
+            averages of the monthly series (as monthly_to_quarterly does), then
+            HP(1,600) over a window as long as the data's (276 quarters for z
+            and s, 110 for delta).
+          - The estimator is the data's: OLS AR(1) with a constant. The mean
+            over N_MATCH replications (common random numbers) is matched, and
+            data-length samples also absorb the small-sample bias of the AR(1)
+            estimate.
+          - Only rho_Q and sigma_Q are targeted. The SD of the filtered cycle
+            comes along as a by-product; the rest of the autocorrelation
+            function is not targeted.
+          - delta's targets are the VAR own lag and the sigma purged of z,
+            while the simulation fits a univariate AR(1). delta is independent
+            of z in the model, so the two estimators should agree on model data.
+          - The process is linear, so sigma scales exactly; only rho_m needs a
+            one-dimensional search.
     Section 7 reports what (a) reproduces after averaging and filtering (its
-    bias) and the matched (b). The model's SHOCKS_BASE is set from one of the
-    two by decision (decisions.md).
+    bias) and the matched (b). SHOCKS_BASE (run_solution_core.jl) holds the
+    matched values since Nov 2, 2026 (MS).
 
 ------------------------------------------------------------------------------
 1. Data
