@@ -1020,3 +1020,7 @@ Caveat: the model's figures are true-shock shares, while the data's are Cholesky
 - **δ is 16× short,** and the total is now too low.
 - **Best single levers for z:** b/w = 0.95, x_v = 0.2 and ξ_inv = 0.25 each take z to 27–31 % of var(u); δ stays at 0.2 %.
 - The note's §2.3 will be rewritten once `Q2_p0_floor` and `R8_step7_baseline` finish.
+- **Rerun Nov 2 at the matched shocks:**
+  - `Q2_p0_floor`: cor(u,v) reaches −0.664 at Λ̄_r = 0.10 (was −0.643), with σ(u) 6.2–6.8 %.
+  - `R8_step7_baseline`: rerun at the same shocks.
+  - The note's §2.3 has been rewritten at the matched shocks.

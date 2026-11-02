@@ -173,29 +173,26 @@ Decade means (back-of-envelope from `raw_data.pkl`, percent):
    - The data's peak is 0.40 per unit, and the response is short-lived.
    - Part of the gap is s's low persistence (quarterly ρ ≈ 0.5), but the data's s shock clearly raises unemployment less, and more briefly, than a pure inflow shock would.
 
-### 2.3 Against the model (working point of `Q2_amplification_sweep.txt`: p_0 = 0.8, Λ̄_r = 0.25, S14 shocks)
+### 2.3 Against the model (working point of `Q2_amplification_sweep.txt`: p_0 = 0.8, Λ̄_r = 0.25)
 
-> ⚠ **Nov 2, 2026: the model numbers in this section are void until rerun.** They used `SHOCKS_BASE`
-> values whose monthly σ was inflated by an inverted formula in part6b's `to_monthly` (since Sept 21):
-> 2.5× for z, 2.1× for s and 1.5× for δ. The filter-consistent processes are in `shock_calibration.txt` §7,
-> and findings.md has the details. Rough linear scaling suggests the s overshoot largely disappears and
-> the z and δ gaps widen, so the model's total σ(u) would be too low rather than about right. Rerun before
-> relying on any number here. The data side of the comparison is unaffected.
+**Rerun Nov 2, 2026 at the matched (filter-consistent) shock processes** now in `SHOCKS_BASE`: z (0.9628, 0.0062), δ (0.5319, 0.0641), s (0.8048, 0.0437). The earlier version of this section used shocks whose monthly σ was inflated 1.5–2.5× by an inverted formula in part6b's `to_monthly` (Sept 21 – Nov 2). Its conclusion, that the model's total volatility was about right while s was over-propagated about 2×, was mostly an artifact of that bug. Details in findings.md.
 
-The data column is √share × 12.48 (*back-of-envelope*), using A, preferred ordering, long run, one lag. Two lags or the alternative ordering give similar gaps:
-- z: 3.0–3.4× too small;
-- δ: 13.8–15.9× too small;
-- s: 2.1–2.5× too large.
+The data column is √share × 12.48 (*back-of-envelope*), using A (HP), preferred ordering, long run, one lag. Ranges in the text add two lags and the alternative ordering.
 
 | σ(u), percent | Data | Model | Gap |
 |---|---|---|---|
-| z | 7.40 | 2.15 | z 3.4× too small |
-| δ | 4.27 | 0.31 | δ 13.8× too small |
-| s | 4.48 | 9.46 | s 2.1× too large |
-| Three shocks together | 9.65 (59.8 % of var(u)) | 9.80 | about right |
-| Shares of var(u): z / s / δ | 35 / 13 / 12 | 5 / 95 / 0.1 | — |
+| z | 7.40 | 2.09 | 3.5× too small (3.1–3.5×) |
+| δ | 4.27 | 0.27 | 15.8× too small (15.8–18.3×) |
+| s | 4.48 | 5.81 | 1.3× too large (1.3–1.5×) |
+| Three shocks together | 9.65 (59.8 % of var(u)) | 6.23 | 0.65× (too low) |
+| Shares of var(u): z / s / δ | 35 / 13 / 12 | 11 / 88 / 0.2 | — |
 
-**The model's total volatility from the three shocks is about right; its composition is wrong.** It over-propagates s, under-propagates z, and barely propagates δ.
+**Findings:**
+- **s is about right.** With correct shock sizes, the model's s contribution is close to the data's (1.3–1.5× too large).
+- **z is 3–3.5× too small.** Its contribution barely changed from the old run (2.09 against 2.15), even though σ_z halved, because the matched z is more persistent (ρ_m 0.963 against 0.912).
+- **δ is 16–18× too small,** and is the central problem.
+- **The model's total volatility from the three shocks is now too low,** about two thirds of the data's.
+- **The Beveridge correlation is still far off.** cor(u,v) depends only on the reposting rate Λ̄_r. It reaches −0.664 at Λ̄_r = 0.10 against −0.925 in the data (`Q2_p0_floor.txt`, rerun).
 
 **Caveat:** the model's numbers are true-shock shares, while the data's are Cholesky shares. The like-for-like comparison needs the model-side SVAR (§3.3).
 
@@ -205,20 +202,20 @@ The data column is √share × 12.48 (*back-of-envelope*), using A, preferred or
 
 ### 3.1 The problem is relative transmission, not total amplification
 
-Amplifying all shocks equally (rigid wages of a general kind, a smaller fundamental surplus, a lower b/w gap) would push s further over its data share. In the sweep, one lever at a time:
+After the Nov 2 correction, s is close to its data contribution, while z is 3–3.5× and δ 16–18× too small. Amplifying all shocks equally (rigid wages of a general kind, a smaller fundamental surplus, a lower b/w gap) would push s over its data share. In the sweep (matched shocks), one lever at a time:
 - **ϕ is not a lever** (the Hagedorn–Manovskii cancellation; findings.md "Q2").
-- **Raising z's share to 14–19 %** via b/w = 0.95, x_v = 0.2 or ξ_inv = 0.25 still leaves s at 81–86 % and δ at 0.1 %.
-- **Costless reposting** brings s's σ(u) down to 5.61, inside the data range, but collapses z to 0.42.
+- **Raising z's share to 27–31 %** via b/w = 0.95, x_v = 0.2 or ξ_inv = 0.25 still leaves z's σ(u) at 3.4–3.9, about half the data's, and δ at 0.2 %.
+- **Costless reposting** brings s's σ(u) down to 3.44, slightly below the data range, but collapses z to 0.40.
 
-So the model needs levers that act on z and δ but not s, or that damp s alone.
+So the model needs levers that act on z and δ but not on s. Damping s is now a second-order concern.
 
-**The z gap is an upper bound on the technology-transmission gap**, because the data's z is broader than the model's (§1.6). The model's z is pure TFP, while the data's z also absorbs demand-driven movements in measured productivity. So part of the 3.0–3.4× z gap is definitional, and amplifying the model's z until it matches the data's would overshoot. δ (13.8–15.9× too small) and s (2.1–2.5× too large) are the cleaner targets. The δ gap remains the central problem.
+**The z gap is an upper bound on the technology-transmission gap**, because the data's z is broader than the model's (§1.6). The model's z is pure TFP, while the data's z also absorbs demand-driven movements in measured productivity. So part of the 3.1–3.5× z gap is definitional, and amplifying the model's z until it matches the data's would overshoot. δ (15.8–18.3× too small) and s (1.3–1.5× too large) are the cleaner targets. The δ gap is the central problem.
 
 ### 3.2 Candidate levers, by which shock they act on
 
 These are proposals, not results. None has been implemented. Citations are unverified (N11–N14).
 
-**Damp s only.** The data say s's effect on u is small and brief (§2.2, items 2, 3 and 6).
+**Damp s only.** Less pressing after the Nov 2 correction, since s is now only 1.3–1.5× too large. The data say s's effect on u is small and brief (§2.2, items 2, 3 and 6).
 - **(s1) Measure s without temporary layoffs.** This is the cheapest lever, with no model change.
   - The Shimer τ counts every employment-to-unemployment flow, including temporary layoffs with recall.
   - Using the CPS unemployed by reason (job losers on temporary layoff against permanent job losers) to strip out recalls would lower σ_s and leave s as permanent separations, closer to the model's s.
@@ -237,6 +234,10 @@ These are proposals, not results. None has been implemented. Citations are unver
   - Risk: it also slows entry's response to z, so it trades δ against z. The decomposition will show whether the net effect is positive.
 - **(d3) Worse job prospects for displaced workers.** Workers from closing establishments plausibly have lower job-finding than other separators. This is specific to δ and has empirical support in the displaced-worker literature (citations unverified).
   - Implementation: a second unemployment pool, or a temporary fall in matching efficiency after δ shocks.
+- **(d5) The persistence of δ: data-based and probably first in line.**
+  - The HP-matched δ process has a monthly half-life of about one month (ρ_m 0.53). Under the Hamilton filter, the matched process has a half-life of about six months (ρ_m 0.89; `shock_calibration.txt` §8). An AR(1) can't fit both, which suggests measured δ is transitory BED noise on top of a slow-moving component.
+  - Modeling measured δ as an AR(1) plus measurement noise, and feeding the model only the persistent part, should fit under both filters. It would give the model a more persistent δ shock, which should propagate more.
+  - It is a data-side fix, not a model change.
 - **(d4) The scale of δ.** BED establishment deaths count only whole-establishment exits. The model's δ is product-line destruction, which also happens inside surviving firms. If BED understates it, σ_δ is too small for what δ means in the model. This is a measurement question, not a model change.
 
 ### 3.3 Before choosing a lever
