@@ -193,6 +193,22 @@ The idea, from the Bartik evidence (δ's effect concentrated in tight financial 
 - **What it means for the gap** (back-of-envelope): net of finance, δ's data target is σ(u) of about 2.9–3.0, so the model (0.27) is about 11× short instead of 16×. The financial bundle explains part of the δ gap, but an order of magnitude remains in the model's propagation.
 - **The model has no financial variable.** A_F tells us what the model's δ should be asked to match; it isn't a Block B′ target.
 
+### 2.2c Exit as a channel: mediation (report §4c; added Nov 2)
+
+How much of a shock's effect on u and v runs *through* exit? The method is a counterfactual impulse response: δ's response is held at zero by adding, each quarter, the δ shock that offsets it. The indirect effect is the full response minus the counterfactual (citations to the method unverified). It is a reduced-form counterfactual: the VAR's dynamics are assumed unchanged when δ is held fixed.
+
+| Shock → u, cumulative over 12 quarters | Through δ | Through s |
+|---|---|---|
+| Financial (NFCI) | 18 % [4, 27] | 26 % [8, 40] |
+| Financial (ANFCI) | 19 % [5, 29] | 30 % [12, 43] |
+| z (A) | 5 % [−13, 16] | 13 % [−7, 25] |
+
+68 % bootstrap bands; v gives similar shares.
+
+- **About a fifth of the financial shock's effect** on u and v runs through exit, comparable to what runs through separations.
+- **Productivity shocks barely work through exit** in the data, although the model's exit responds to z endogenously.
+- **For the framing:** exit is a real but modest channel for financial disturbances, and no channel for productivity. The decision on framing is open (MS).
+
 ### 2.3 Against the model (working point of `Q2_amplification_sweep.txt`: p_0 = 0.8, Λ̄_r = 0.25)
 
 **Rerun Nov 2, 2026 at the matched (filter-consistent) shock processes** now in `SHOCKS_BASE`: z (0.9628, 0.0062), δ (0.5319, 0.0641), s (0.8048, 0.0437). The earlier version of this section used shocks whose monthly σ was inflated 1.5–2.5× by an inverted formula in part6b's `to_monthly` (Sept 21 – Nov 2). Its conclusion, that the model's total volatility was about right while s was over-propagated about 2×, was mostly an artifact of that bug. Details in findings.md.

@@ -43,6 +43,20 @@ F is a mean-zero index, so it is HP-filtered in levels (not logs), cut at
 has no financial variable, so these SVARs inform what the model's delta should
 be asked to match; they are not Block B' targets.
 
+Mediation through delta (section 4c). How much of a shock's effect on u and
+v runs through exit? Counterfactual impulse responses in the spirit of
+Bernanke, Gertler and Watson (1997) and Sims and Zha (2006) (citations
+unverified): delta's response is held at zero by adding, each quarter, the
+delta shock that offsets it. delta is ordered after F and s, so the
+offsetting shocks move only delta, u and v within the quarter. The indirect
+effect through delta is the full response minus the counterfactual; the
+direct effect (all other channels) is the counterfactual. Reported for the F
+shock (A_F, A_Fa) and the z shock (A, A_F), with s as an alternative mediator,
+as the peak and the cumulative (h = 0-12) response of u and v and the share
+running through the mediator, with 68 % bootstrap bands. A reduced-form
+counterfactual: it assumes the VAR's dynamics are unchanged when delta is
+held fixed.
+
 Filter robustness (section 7). Every SVAR is re-estimated on Hamilton
 cycles (h = 8, p = 4; part6b's hamilton_cycle) instead of HP cycles. The
 Hamilton filter is one-sided, so it does not blur the recursive timing
@@ -308,6 +322,31 @@ A_F     +0.97 (h 3)  -1.13 (h 2)
 A_Fa    +0.99 (h 3)  -1.16 (h 2)
 
 ------------------------------------------------------------------------------
+4c. Mediation: share of a shock's effect on u and v that runs through delta
+------------------------------------------------------------------------------
+  delta's response held at zero by offsetting delta shocks; BIC lag, preferred ordering.
+  Peak: response at the full path's peak (one SD, log points x 100); cumulative: sum over
+  h = 0-12. Share = 1 - counterfactual/full (cumulative), [68 % bootstrap band].
+
+SVAR    shock    via    resp    peak full    peak cf    cum full    cum cf    share via, %
+------  -------  -----  ------  -----------  ---------  ----------  --------  --------------
+A       z        δ      u       -2.42 (h 4)  -2.10      -18.96      -18.10    5 [-13, 16]
+A       z        δ      v       +2.64 (h 3)  +2.27      +17.16      +16.64    3 [-19, 15]
+A       z        s      u       -2.42 (h 4)  -1.88      -18.96      -16.47    13 [-7, 25]
+A       z        s      v       +2.64 (h 3)  +2.16      +17.16      +15.37    10 [-8, 21]
+A_F     F        δ      u       +2.72 (h 5)  +2.12      +22.29      +18.25    18 [4, 27]
+A_F     F        δ      v       -2.90 (h 5)  -2.24      -21.41      -17.67    17 [2, 27]
+A_F     F        s      u       +2.72 (h 5)  +1.86      +22.29      +16.39    26 [8, 40]
+A_F     F        s      v       -2.90 (h 5)  -2.30      -21.41      -18.17    15 [-5, 29]
+A_F     z        δ      u       -1.84 (h 3)  -1.71      -11.38      -12.26    -8 [-42, 8]
+A_F     z        δ      v       +2.02 (h 2)  +1.84      +9.50       +10.58    -11 [-47, 10]
+A_Fa    Fa       δ      u       +2.60 (h 6)  +2.00      +21.58      +17.54    19 [5, 29]
+A_Fa    Fa       δ      v       -2.80 (h 5)  -2.16      -21.15      -17.42    18 [3, 28]
+A_Fa    Fa       s      u       +2.60 (h 6)  +1.73      +21.58      +15.00    30 [12, 43]
+A_Fa    Fa       s      v       -2.80 (h 5)  -2.14      -21.15      -17.15    19 [0, 33]
+  'via s' rows: the same exercise with s as the mediator, for comparison.
+
+------------------------------------------------------------------------------
 5. Impulse responses, SVAR A, p = 1 (BIC), preferred ordering; one-SD shocks,
    log points x 100; [68 % band] from 1000 bootstrap draws
 ------------------------------------------------------------------------------
@@ -417,3 +456,7 @@ s        v       -1.57 (h 2)  -2.99 (h 3)
 9. Net of financial conditions, delta's share of var(u) (LR) is
    5.5 % with NFCI and 5.7 % with ANFCI, against 11.7 % in A.
    F itself explains 46.4 % (NFCI) and 43.8 % (ANFCI).
+10. Exit as a channel: of the financial shock's cumulative effect on
+   u, 18 [4, 27] % runs through delta (NFCI; ANFCI 19 [5, 29] %);
+   for v, 17 [2, 27] %. For z: 5 [-13, 16] % of its effect on u (A).
+   [68 % bootstrap bands in section 4c.]

@@ -46,6 +46,20 @@ F is a mean-zero index, so it is HP-filtered in levels (not logs), cut at
 has no financial variable, so these SVARs inform what the model's delta should
 be asked to match; they are not Block B' targets.
 
+Mediation through delta (section 4c). How much of a shock's effect on u and
+v runs through exit? Counterfactual impulse responses in the spirit of
+Bernanke, Gertler and Watson (1997) and Sims and Zha (2006) (citations
+unverified): delta's response is held at zero by adding, each quarter, the
+delta shock that offsets it. delta is ordered after F and s, so the
+offsetting shocks move only delta, u and v within the quarter. The indirect
+effect through delta is the full response minus the counterfactual; the
+direct effect (all other channels) is the counterfactual. Reported for the F
+shock (A_F, A_Fa) and the z shock (A, A_F), with s as an alternative mediator,
+as the peak and the cumulative (h = 0-12) response of u and v and the share
+running through the mediator, with 68 % bootstrap bands. A reduced-form
+counterfactual: it assumes the VAR's dynamics are unchanged when delta is
+held fixed.
+
 Filter robustness (section 7). Every SVAR is re-estimated on Hamilton
 cycles (h = 8, p = 4; part6b's hamilton_cycle) instead of HP cycles. The
 Hamilton filter is one-sided, so it does not blur the recursive timing
@@ -361,6 +375,40 @@ def fevd(fit, order, names, horizons):
 def irf(fit, order, names, H):
     P = structural(fit, order, names)
     return np.array([M @ P for M in ma_coefficients(fit["A"], H)])  # (H+1, var, shock)
+
+
+def mediated(Theta, j, m):
+    """
+    Counterfactual responses to shock j with variable m held at zero, by
+    offsetting shocks to m (Theta: horizons x variables x shocks, columns in
+    the ordering; m is both a variable and a shock index). Returns
+    (horizons x variables).
+    """
+    H = Theta.shape[0] - 1
+    full = Theta[:, :, j]
+    eps = np.zeros(H + 1)
+    cf = full.copy()
+    for h in range(H + 1):
+        eps[h] = -cf[h, m] / Theta[0, m, m]
+        cf[h:] += eps[h] * Theta[:H + 1 - h, :, m]
+    return cf
+
+
+def mediation_rows(svar, Theta, draws, names, shock, mediator):
+    """Peak and cumulative u, v responses: full, counterfactual, share through mediator."""
+    j, m = names.index(shock), names.index(mediator)
+    out = []
+    for resp in OUTCOMES:
+        i = names.index(resp)
+        full, cf = Theta[:, i, j], mediated(Theta, j, m)[:, i]
+        share = lambda f, c: 100 * (1 - c.sum() / f.sum())
+        bs = np.array([share(D[:, i, j], mediated(D, j, m)[:, i]) for D in draws])
+        k = int(np.abs(full).argmax())
+        out.append([svar, LABEL[shock], LABEL[mediator], resp,
+                    f"{100 * full[k]:+.2f} (h {k})", f"{100 * cf[k]:+.2f}",
+                    f"{100 * full.sum():+.2f}", f"{100 * cf.sum():+.2f}",
+                    f"{share(full, cf):.0f} [{np.percentile(bs, 16):.0f}, {np.percentile(bs, 84):.0f}]"])
+    return out
 
 
 def bootstrap_irf(Y, fit, order, names, H, n_boot, seed=SEED):
@@ -717,6 +765,32 @@ if __name__ == "__main__":
     say("\n  delta shock, peak responses (one SD, log points x 100), preferred ordering")
     say(tabulate(rows, ["SVAR", "u", "v"], tablefmt="simple", disable_numparse=True))
 
+    # ── mediation: how much of F's and z's effect runs through delta ───────
+    say(f"\n{'-'*78}\n4c. Mediation: share of a shock's effect on u and v that runs through delta\n{'-'*78}")
+    say("  delta's response held at zero by offsetting delta shocks; BIC lag, preferred ordering.")
+    say("  Peak: response at the full path's peak (one SD, log points x 100); cumulative: sum over")
+    say(f"  h = 0-{H_IRF}. Share = 1 - counterfactual/full (cumulative), [68 % bootstrap band].\n")
+    med = []
+    for key, sv, cases in (("A",    svars["A"],      (("z", "delta"), ("z", "s"))),
+                           ("A_F",  svars_f["A_F"],  (("nfci", "delta"), ("nfci", "s"), ("z", "delta"))),
+                           ("A_Fa", svars_f["A_Fa"], (("anfci", "delta"), ("anfci", "s")))):
+        fit = sv["fits"][sv["p_bic"]]
+        Theta = irf(fit, list(sv["names"]), sv["names"], H_IRF)
+        draws = bootstrap_irf(sv["Y"], fit, list(sv["names"]), sv["names"], H_IRF, N_BOOT)
+        for shock, mediator in cases:
+            med += mediation_rows(key, Theta, draws, sv["names"], shock, mediator)
+    say(tabulate(med, ["SVAR", "shock", "via", "resp", "peak full", "peak cf", "cum full", "cum cf",
+                       "share via, %"], tablefmt="simple", disable_numparse=True))
+    say("  'via s' rows: the same exercise with s as the mediator, for comparison.")
+    med_df = pd.DataFrame(med, columns=["svar", "shock", "via", "resp", "peak_full", "peak_cf",
+                                        "cum_full", "cum_cf", "share_via"])
+    pick = lambda sv_, sh, via, r: med_df[(med_df.svar == sv_) & (med_df.shock == sh) &
+                                          (med_df.via == via) & (med_df.resp == r)].share_via.iloc[0]
+    med_take = (f"Exit as a channel: of the financial shock's cumulative effect on\n"
+                f"   u, {pick('A_F', 'F', 'δ', 'u')} % runs through delta (NFCI; ANFCI {pick('A_Fa', 'Fa', 'δ', 'u')} %);\n"
+                f"   for v, {pick('A_F', 'F', 'δ', 'v')} %. For z: {pick('A', 'z', 'δ', 'u')} % of its effect on u (A).\n"
+                f"   [68 % bootstrap bands in section 4c.]")
+
     # ── impulse responses, SVAR A at the BIC lag ─────────────────────────────
     svA = svars["A"]
     p_bic = svA["p_bic"]
@@ -777,7 +851,7 @@ if __name__ == "__main__":
 
     # ── key takeaways ────────────────────────────────────────────────────────
     key_points = takeaways(head, alt, irf_df[irf_df["filter"] == "hp"], svars, fevd_rows)
-    key_points += f"\n9. {fin_take}"
+    key_points += f"\n9. {fin_take}\n10. {med_take}"
     say(f"\n{'-'*78}\n6. Key takeaways (numbers from this run)\n{'-'*78}")
     say(key_points, echo=False)
 
