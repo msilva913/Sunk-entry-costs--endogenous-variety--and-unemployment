@@ -994,3 +994,14 @@ Caveat: the model's figures are true-shock shares, while the data's are Cholesky
 - **Preferred A, LR, var(v):** z 32.3, s 9.4, δ 11.8, residual 46.5.
 - **Alternative A:** δ 15.1 / s 9.5 for u, and δ 14.6 / s 6.5 for v.
 - **The model's composition gap is unaffected:** s 95 % and δ 0.1 % of var(u) in the model.
+
+**⚠ Monthly σ bug in part6b `to_monthly` (found and fixed Nov 2, 2026); filter-consistent processes (`shock_calibration.txt` §7).**
+- **The bug:** from Sept 21 (`07dcd61`) to Nov 2, `to_monthly` used σ_m = σ_Q·√((1 − ρ_Q²)/(1 − ρ_m²)). That inverts the variance-matching ratio, whose correct form is √((1 − ρ_m²)/(1 − ρ_Q²)).
+  - Every monthly σ was too large by (1 − ρ_Q²)/(1 − ρ_m²): **2.52 for z, 2.07 for s, 1.45 for δ** at the S14 estimates.
+  - This affects every `SHOCKS_BASE` since Sept 21, including the S14 values in it now (z 0.0128, δ 0.0663, s 0.0711), and every model result run at them: R8 step 7, `Q2_*.jl`, the amplification sweep.
+- **The plug-in's bias, after the fix.** A monthly AR(1) averaged to quarters and HP-filtered over a data-length window does not reproduce the data:
+  - z: persistence too low (0.688 against 0.759);
+  - δ: persistence too high (0.244 against 0.198);
+  - all three: σ_Q 21–25 % too small and cycle SD 21–29 % too small.
+- **Filter-consistent (matched) monthly processes** (ρ_m, σ_m): z (0.9628, 0.0062), δ (0.5319, 0.0641), s (0.8048, 0.0437). They reproduce the data's ρ_Q and σ_Q by construction. The fixed plug-in gives z (0.9121, 0.0051), δ (0.5824, 0.0456), s (0.8054, 0.0343).
+- **Consequence for the model comparison (Q3, the note §2.3):** the model's σ(u) by shock was computed with s's σ_m 63 % too large relative to the matched value, z's twice too large, and δ's about right. The earlier statement that the model's total σ(u) is "about right," with s over-propagated 2.1–2.5×, is **void** until the model is rerun at the corrected processes. The data side (the SVAR) is unaffected.
