@@ -56,8 +56,10 @@ count toward z's share.
 The shares of the shock-block innovations do not depend on how u and v are
 ordered among themselves, so the report combines them as "Residual".
 
-Variance shares. Forecast-error variance decomposition at h = 8 quarters (the
-business-cycle horizon) and at h = 200 as the unconditional share (the model-side object:
+Variance shares. Forecast-error variance decomposition at h = 4 and 8 quarters, and
+at h = 200 as the unconditional share. The headline shows h = 4 and h = 200: with
+HP cycles, h = 8 is nearly identical to h = 200, while h = 4 shows the short-run
+composition (s acts fastest). h = 200 is (the model-side object:
 share of the variance of HP-filtered u by shock). The residual u and v
 innovations collect everything the three shocks do not.
 
@@ -127,7 +129,8 @@ import matplotlib.pyplot as plt
 
 # ── parameters ────────────────────────────────────────────────────────────────
 BED_START  = "1992Q3"
-HORIZONS   = (8, 200)                     # business cycle; 200 = unconditional
+HORIZONS   = (4, 8, 200)                  # 200 = unconditional
+HEADLINE_H = (4, 200)                     # headline: short run and long run; 8 in the detail
 H_IRF      = 12
 P_MAX      = 4
 N_BOOT     = 1_000
@@ -431,8 +434,8 @@ def report_lags(sv):
 def headline_frames(rows):
     """
     Headline variance decomposition, percent: one column group per SVAR, rows
-    (variable, horizon) for var(u) and var(v) at h = 8 and the unconditional
-    h = 200, each SVAR at its BIC lag.
+    (variable, horizon) for var(u) and var(v) at HEADLINE_H (h = 4 and the
+    unconditional h = 200), each SVAR at its BIC lag.
       head  preferred ordering; "Residual" = u-own + v-own. The order of u and
             v between themselves is arbitrary, so only their sum is identified
       alt   the alternative z-first ordering, for SVARs that have one (A).
@@ -440,7 +443,8 @@ def headline_frames(rows):
             the block's innovations span the same space in any order
     """
     df = pd.DataFrame(rows)
-    df = df[df.response.isin(OUTCOMES) & df.p_bic].assign(share=lambda d: 100 * d.share)
+    df = df[df.response.isin(OUTCOMES) & df.p_bic & df.horizon.isin(HEADLINE_H)]
+    df = df.assign(share=lambda d: 100 * d.share)
     idx = ["response", "horizon"]
     head, alt = {}, {}
     for key, spec in SVARS.items():
@@ -462,7 +466,7 @@ def headline_frames(rows):
 
 
 LABEL   = {"z": "z", "delta": "δ", "s": "s", "u": "u", "v": "v"}
-H_LABEL = {8: "8q", 200: "LR"}
+H_LABEL = {4: "4q", 8: "8q", 200: "LR"}
 
 
 def plain_table(frame):
@@ -491,7 +495,7 @@ def headline_text(head, alt, svars):
             order = ", ".join(LABEL[v] for v in block_orderings(sv["block"])[1])
             block += f"\n\nAlternative ordering {order}\n" + plain_table(alt[key][shocks])
         blocks.append(block)
-    blocks.append("8q = 8 quarters; LR = long run (h = 200).\n"
+    blocks.append("4q = 4 quarters; LR = long run (h = 200).\n"
                   "z first. Preferred: z, s, δ (s is\n"
                   "exogenous in the model; exit responds\n"
                   "to the cycle). Residual = u and v\n"
@@ -500,12 +504,15 @@ def headline_text(head, alt, svars):
     return "```\n" + "\n\n".join(blocks) + "\n```"
 
 
-def takeaways(head, alt, irf_df, svars):
+def takeaways(head, alt, irf_df, svars, rows):
     """Key takeaways, each with its numbers filled in from this run."""
     LR = HORIZONS[-1]
     A, B, C, Aa = head["A"], head["B"], head["C"], alt["A"]
     g = lambda f, var, shk, h=LR: f.loc[(var, h), shk]
-    gap = max(abs(head.xs(8, level="h") - head.xs(LR, level="h")).max())
+    d = pd.DataFrame(rows)
+    d = d[d.baseline & d.p_bic & d.response.isin(OUTCOMES)].pivot_table(
+        index=["svar", "response", "shock"], columns="horizon", values="share")
+    gap = 100 * (d[8] - d[LR]).abs().max()
     root = max(max_root(sv["fits"][sv["p_bic"]]["A"]) for sv in svars.values())
 
     def peak(shk, resp, sign=1):
@@ -529,9 +536,10 @@ def takeaways(head, alt, irf_df, svars):
         f"   {100 - g(A,'v','Residual'):.0f} % of var(v) (A, LR). An upper bound: they are ordered\n"
         f"   before u and v. A three-shock model should match the\n"
         f"   composition of this share, not total volatility.",
-        f"Shares at 8q and LR differ by at most {gap:.1f} points: HP cycles\n"
-        f"   are short-lived (largest VAR root {root:.2f}). LR here is a\n"
-        f"   business-cycle share, not a long run in levels.",
+        f"s matters more in the short run: {g(A,'u','s',4):.1f} % of var(u) at 4q\n"
+        f"   against {g(A,'u','s'):.1f} % in the LR (A). Shares at 8q and LR differ by at\n"
+        f"   most {gap:.1f} points: HP cycles are short-lived (largest VAR\n"
+        f"   root {root:.2f}), so LR is a business-cycle share.",
         f"s acts fastest: the u response peaks at h = {hs} after s,\n"
         f"   h = {hz} after z and h = {hd} after delta (A, preferred).",
         f"Leaving delta out inflates s: on the same window, s's share\n"
@@ -594,8 +602,9 @@ if __name__ == "__main__":
 
     # ── variance shares ──────────────────────────────────────────────────────
     say(f"\n{'-'*78}\n3. Shares of the variance of u and v, percent\n{'-'*78}")
-    say(f"  h = 8 is the business-cycle horizon; h = {HORIZONS[-1]} is the unconditional share, the")
-    say("  model-side object. BIC picks the lag in section 2.")
+    say(f"  Headline: h = 4 and h = {HORIZONS[-1]}, the unconditional share (the model-side object);")
+    say("  the detail tables add h = 8.")
+    say("  BIC picks the lag in section 2.")
     head, alt = headline_frames(fevd_rows)
     headline = headline_text(head, alt, svars)
     say("\n  Headline: preferred ordering, BIC lag; each row sums to 100")
@@ -684,7 +693,7 @@ if __name__ == "__main__":
     irf_df = pd.concat([irf_df, irf_h], ignore_index=True)
 
     # ── key takeaways ────────────────────────────────────────────────────────
-    key_points = takeaways(head, alt, irf_df[irf_df["filter"] == "hp"], svars)
+    key_points = takeaways(head, alt, irf_df[irf_df["filter"] == "hp"], svars, fevd_rows)
     say(f"\n{'-'*78}\n6. Key takeaways (numbers from this run)\n{'-'*78}")
     say(key_points, echo=False)
 

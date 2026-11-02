@@ -111,9 +111,9 @@ Decade means (back-of-envelope from `raw_data.pkl`, percent):
 
 | | z | s | δ | Residual |
 |---|---|---|---|---|
-| var(u), 8q | 37.3 | 14.4 | 12.4 | 35.9 |
+| var(u), 4q | 34.3 | 18.5 | 11.3 | 35.9 |
 | var(u), long run | 35.2 | 12.9 | 11.7 | 40.2 |
-| var(v), 8q | 33.6 | 9.5 | 12.4 | 44.5 |
+| var(v), 4q | 31.6 | 11.1 | 12.3 | 45.0 |
 | var(v), long run | 32.3 | 9.4 | 11.8 | 46.5 |
 
 **A, alternative ordering (z, δ, s):** the long-run s / δ split is 9.5 / 15.1 for u and 6.5 / 14.6 for v. z and the residual are unchanged.
@@ -134,7 +134,7 @@ Decade means (back-of-envelope from `raw_data.pkl`, percent):
    - The ordering moves only the split. δ + s is 24.6 % of var(u) either way.
    - δ's larger role for v fits the paper's mechanism: product-line exit destroys vacancies.
 3. **The three shocks explain at most 60 % of var(u) and 53 % of var(v).** That's an upper bound: ordering them before u and v credits them with any same-quarter effect of demand or financial shocks on measured productivity and separations. The residual, 40–47 %, reflects forces outside the model, measurement error, and propagation a one-lag VAR misses.
-4. **Shares barely change between 8 quarters and the long run** (at most 4.3 points). That is mostly mechanical: HP cycles are short-lived. So the "long run" here is a business-cycle share, not a long run in levels.
+4. **s matters more in the short run:** 18.5 % of var(u) at 4 quarters, against 12.9 % in the long run. Shares at 8 quarters and the long run differ by at most 3.3 points (8q rows are in the report's detail tables). That is mostly mechanical: HP cycles are short-lived, so the "long run" here is a business-cycle share, not a long run in levels.
 5. **Leaving δ out inflates s.** On the same window, s's share of var(u) is 12.9 % in A and 19.1 % in C. So B's 25.0 % for s is an upper bound on s's role over 1951–2019.
 6. **z is not weaker after 1992.** Its share of var(u) is 32.8 % in B (1951–2019) and 42.1 % in C (1992–2019). Part of S14's rationale was that a post-1985 window makes z look weak; that came from z's correlation with u, not from its variance contribution. The rationale should be restated before the paper relies on it.
 

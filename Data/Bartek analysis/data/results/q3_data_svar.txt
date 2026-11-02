@@ -53,8 +53,10 @@ count toward z's share.
 The shares of the shock-block innovations do not depend on how u and v are
 ordered among themselves, so the report combines them as "Residual".
 
-Variance shares. Forecast-error variance decomposition at h = 8 quarters (the
-business-cycle horizon) and at h = 200 as the unconditional share (the model-side object:
+Variance shares. Forecast-error variance decomposition at h = 4 and 8 quarters, and
+at h = 200 as the unconditional share. The headline shows h = 4 and h = 200: with
+HP cycles, h = 8 is nearly identical to h = 200, while h = 4 shows the short-run
+composition (s acts fastest). h = 200 is (the model-side object:
 share of the variance of HP-filtered u by shock). The residual u and v
 innovations collect everything the three shocks do not.
 
@@ -111,8 +113,9 @@ Caveats.
 ------------------------------------------------------------------------------
 3. Shares of the variance of u and v, percent
 ------------------------------------------------------------------------------
-  h = 8 is the business-cycle horizon; h = 200 is the unconditional share, the
-  model-side object. BIC picks the lag in section 2.
+  Headline: h = 4 and h = 200, the unconditional share (the model-side object);
+  the detail tables add h = 8.
+  BIC picks the lag in section 2.
 
   Headline: preferred ordering, BIC lag; each row sums to 100
 ```
@@ -122,38 +125,38 @@ SVAR A: z, s, δ, u, v
 1992Q3-2019Q4, p = 1
     h       z     s     δ    Residual
 --  ---  ----  ----  ----  ----------
-u   8q   37.3  14.4  12.4        35.9
+u   4q   34.3  18.5  11.3        35.9
 u   LR   35.2  12.9  11.7        40.2
-v   8q   33.6   9.5  12.4        44.5
+v   4q   31.6  11.1  12.3        45.0
 v   LR   32.3   9.4  11.8        46.5
 
 Alternative ordering z, δ, s
     h       z     s     δ
 --  ---  ----  ----  ----
-u   8q   37.3  10.7  16.1
+u   4q   34.3  14.4  15.4
 u   LR   35.2   9.5  15.1
-v   8q   33.6   6.5  15.4
+v   4q   31.6   7.8  15.5
 v   LR   32.3   6.5  14.6
 
 SVAR B: z, s, u, v
 1951Q1-2019Q4, p = 1
     h       z     s    Residual
 --  ---  ----  ----  ----------
-u   8q   34.4  24.1        41.5
+u   4q   31.2  34.6        34.2
 u   LR   32.8  25.0        42.2
-v   8q   33.8  12.5        53.7
+v   4q   32.9  16.6        50.5
 v   LR   32.4  15.1        52.5
 
 SVAR C: z, s, u, v
 1992Q3-2019Q4, p = 1
     h       z     s    Residual
 --  ---  ----  ----  ----------
-u   8q   42.8  21.1        36.1
+u   4q   35.6  26.1        38.3
 u   LR   42.1  19.1        38.8
-v   8q   39.5  15.6        44.9
+v   4q   33.2  18.0        48.8
 v   LR   38.9  15.1        46.0
 
-8q = 8 quarters; LR = long run (h = 200).
+4q = 4 quarters; LR = long run (h = 200).
 z first. Preferred: z, s, δ (s is
 exogenous in the model; exit responds
 to the cycle). Residual = u and v
@@ -164,57 +167,81 @@ the same in both orderings.
   Detail 3a. Preferred ordering, p = 1 and 2, u-own and v-own separately; rows sum to 100
                       z  delta     s     u     v
 SVAR lags var h                                 
-A    1    u   8    37.3   12.4  14.4  12.9  23.0
+A    1    u   4    34.3   11.3  18.5  25.4  10.5
+              8    37.3   12.4  14.4  12.9  23.0
               200  35.2   11.7  12.9  13.9  26.3
-          v   8    33.6   12.4   9.5   5.3  39.2
+          v   4    31.6   12.3  11.1   7.8  37.2
+              8    33.6   12.4   9.5   5.3  39.2
               200  32.3   11.8   9.4   8.2  38.4
-     2    u   8    27.2   15.7  11.8  21.5  23.8
+     2    u   4    29.2   13.6  13.2  31.5  12.6
+              8    27.2   15.7  11.8  21.5  23.8
               200  26.4   15.6  11.3  20.1  26.6
-          v   8    24.0   14.8   7.9  13.3  40.0
+          v   4    25.7   12.9   7.5  17.8  36.1
+              8    24.0   14.8   7.9  13.3  40.0
               200  24.3   14.6   8.0  13.7  39.3
-B    1    u   8    34.4      -  24.1  14.9  26.6
+B    1    u   4    31.2      -  34.6  16.6  17.6
+              8    34.4      -  24.1  14.9  26.6
               200  32.8      -  25.0  15.8  26.4
-          v   8    33.8      -  12.5   9.4  44.3
+          v   4    32.9      -  16.6   5.2  45.3
+              8    33.8      -  12.5   9.4  44.3
               200  32.4      -  15.1  10.5  42.0
-     2    u   8    26.1      -  19.1  22.1  32.7
+     2    u   4    22.3      -  24.6  27.7  25.4
+              8    26.1      -  19.1  22.1  32.7
               200  24.8      -  18.9  23.2  33.1
-          v   8    27.6      -  11.2  10.1  51.1
+          v   4    24.7      -  13.6   9.0  52.7
+              8    27.6      -  11.2  10.1  51.1
               200  25.9      -  12.0  12.6  49.5
-C    1    u   8    42.8      -  21.1  14.3  21.8
+C    1    u   4    35.6      -  26.1  27.4  11.0
+              8    42.8      -  21.1  14.3  21.8
               200  42.1      -  19.1  14.2  24.6
-          v   8    39.5      -  15.6   6.1  38.8
+          v   4    33.2      -  18.0   9.9  39.0
+              8    39.5      -  15.6   6.1  38.8
               200  38.9      -  15.1   8.1  37.9
-     2    u   8    30.1      -  18.1  27.3  24.5
+     2    u   4    29.5      -  19.5  36.7  14.3
+              8    30.1      -  18.1  27.3  24.5
               200  29.6      -  17.6  25.9  26.9
-          v   8    26.6      -  13.3  18.6  41.4
+          v   4    26.1      -  12.7  23.0  38.2
+              8    26.6      -  13.3  18.6  41.4
               200  26.8      -  13.4  18.8  41.1
 
   Detail 3b. Min-max of each shock's share over the z-first orderings (A: two; B, C: one)
                            z      delta          s
 SVAR lags var h                                   
-A    1    u   8    37.3-37.3  12.4-16.1  10.7-14.4
+A    1    u   4    34.3-34.3  11.3-15.4  14.4-18.5
+              8    37.3-37.3  12.4-16.1  10.7-14.4
               200  35.2-35.2  11.7-15.1   9.5-12.9
-          v   8    33.6-33.6  12.4-15.4   6.5- 9.5
+          v   4    31.6-31.6  12.3-15.5   7.8-11.1
+              8    33.6-33.6  12.4-15.4   6.5- 9.5
               200  32.3-32.3  11.8-14.6   6.5- 9.4
-     2    u   8    27.2-27.2  15.7-19.9   7.6-11.8
+     2    u   4    29.2-29.2  13.6-17.8   9.0-13.2
+              8    27.2-27.2  15.7-19.9   7.6-11.8
               200  26.4-26.4  15.6-19.7   7.2-11.3
-          v   8    24.0-24.0  14.8-18.2   4.6- 7.9
+          v   4    25.7-25.7  12.9-16.0   4.4- 7.5
+              8    24.0-24.0  14.8-18.2   4.6- 7.9
               200  24.3-24.3  14.6-18.0   4.7- 8.0
-B    1    u   8    34.4-34.4          -  24.1-24.1
+B    1    u   4    31.2-31.2          -  34.6-34.6
+              8    34.4-34.4          -  24.1-24.1
               200  32.8-32.8          -  25.0-25.0
-          v   8    33.8-33.8          -  12.5-12.5
+          v   4    32.9-32.9          -  16.6-16.6
+              8    33.8-33.8          -  12.5-12.5
               200  32.4-32.4          -  15.1-15.1
-     2    u   8    26.1-26.1          -  19.1-19.1
+     2    u   4    22.3-22.3          -  24.6-24.6
+              8    26.1-26.1          -  19.1-19.1
               200  24.8-24.8          -  18.9-18.9
-          v   8    27.6-27.6          -  11.2-11.2
+          v   4    24.7-24.7          -  13.6-13.6
+              8    27.6-27.6          -  11.2-11.2
               200  25.9-25.9          -  12.0-12.0
-C    1    u   8    42.8-42.8          -  21.1-21.1
+C    1    u   4    35.6-35.6          -  26.1-26.1
+              8    42.8-42.8          -  21.1-21.1
               200  42.1-42.1          -  19.1-19.1
-          v   8    39.5-39.5          -  15.6-15.6
+          v   4    33.2-33.2          -  18.0-18.0
+              8    39.5-39.5          -  15.6-15.6
               200  38.9-38.9          -  15.1-15.1
-     2    u   8    30.1-30.1          -  18.1-18.1
+     2    u   4    29.5-29.5          -  19.5-19.5
+              8    30.1-30.1          -  18.1-18.1
               200  29.6-29.6          -  17.6-17.6
-          v   8    26.6-26.6          -  13.3-13.3
+          v   4    26.1-26.1          -  12.7-12.7
+              8    26.6-26.6          -  13.3-13.3
               200  26.8-26.8          -  13.4-13.4
 
 ------------------------------------------------------------------------------
@@ -256,43 +283,43 @@ C    1    u   8    42.8-42.8          -  21.1-21.1
   Shares of var(u) and var(v), percent: HP against Hamilton
 SVAR    var    h    shock       HP    Hamilton
 ------  -----  ---  --------  ----  ----------
-A       u      8q   z         37.3        34.5
-A       u      8q   s         14.4        11.8
-A       u      8q   δ         12.4         7.8
-A       u      8q   Residual  35.9        45.9
+A       u      4q   z         34.3        28.1
+A       u      4q   s         18.5        12.0
+A       u      4q   δ         11.3         6.1
+A       u      4q   Residual  35.9        53.8
 A       u      LR   z         35.2        40.8
 A       u      LR   s         12.9        10.7
 A       u      LR   δ         11.7         7.7
 A       u      LR   Residual  40.2        40.7
-A       v      8q   z         33.6        19.6
-A       v      8q   s          9.5        14.5
-A       v      8q   δ         12.4         7.1
-A       v      8q   Residual  44.5        58.8
+A       v      4q   z         31.6        11.7
+A       v      4q   s         11.1        14.9
+A       v      4q   δ         12.3         2.9
+A       v      4q   Residual  45.0        70.5
 A       v      LR   z         32.3        25.7
 A       v      LR   s          9.4        13.2
 A       v      LR   δ         11.8         8.2
 A       v      LR   Residual  46.5        52.9
-B       u      8q   z         34.4        56.2
-B       u      8q   s         24.1        13.6
-B       u      8q   Residual  41.5        30.2
+B       u      4q   z         31.2        43.0
+B       u      4q   s         34.6        16.3
+B       u      4q   Residual  34.2        40.7
 B       u      LR   z         32.8        54.4
 B       u      LR   s         25.0        13.2
 B       u      LR   Residual  42.2        32.4
-B       v      8q   z         33.8        27.7
-B       v      8q   s         12.5         6.6
-B       v      8q   Residual  53.7        65.7
+B       v      4q   z         32.9        23.7
+B       v      4q   s         16.6         7.9
+B       v      4q   Residual  50.5        68.5
 B       v      LR   z         32.4        27.8
 B       v      LR   s         15.1         7.3
 B       v      LR   Residual  52.5        65.0
-C       u      8q   z         42.8        27.8
-C       u      8q   s         21.1        30.6
-C       u      8q   Residual  36.1        41.6
+C       u      4q   z         35.6        21.5
+C       u      4q   s         26.1        30.3
+C       u      4q   Residual  38.3        48.2
 C       u      LR   z         42.1        35.6
 C       u      LR   s         19.1        27.1
 C       u      LR   Residual  38.8        37.3
-C       v      8q   z         39.5        14.3
-C       v      8q   s         15.6        33.1
-C       v      8q   Residual  44.9        52.6
+C       v      4q   z         33.2         8.0
+C       v      4q   s         18.0        29.6
+C       v      4q   Residual  48.8        62.5
 C       v      LR   z         38.9        21.2
 C       v      LR   s         15.1        30.9
 C       v      LR   Residual  46.0        47.9
@@ -322,9 +349,10 @@ s        v       -1.57 (h 2)  -2.99 (h 3)
    53 % of var(v) (A, LR). An upper bound: they are ordered
    before u and v. A three-shock model should match the
    composition of this share, not total volatility.
-4. Shares at 8q and LR differ by at most 4.3 points: HP cycles
-   are short-lived (largest VAR root 0.91). LR here is a
-   business-cycle share, not a long run in levels.
+4. s matters more in the short run: 18.5 % of var(u) at 4q
+   against 12.9 % in the LR (A). Shares at 8q and LR differ by at
+   most 3.3 points: HP cycles are short-lived (largest VAR
+   root 0.91), so LR is a business-cycle share.
 5. s acts fastest: the u response peaks at h = 2 after s,
    h = 4 after z and h = 4 after delta (A, preferred).
 6. Leaving delta out inflates s: on the same window, s's share
