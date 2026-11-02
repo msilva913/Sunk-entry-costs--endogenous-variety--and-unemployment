@@ -178,6 +178,16 @@ Step 4. From quarterly to monthly: two mappings (section 7 of the report).
     bias) and the matched (b). SHOCKS_BASE (run_solution_core.jl) holds the
     matched values since Nov 2, 2026 (MS).
 
+Step 5. Filter robustness (section 8). Everything in Steps 1-4b is repeated
+    with the Hamilton regression filter in place of HP: the cycle at t + h is
+    the residual from regressing y_{t+h} on a constant and y_t, ..., y_{t-p+1},
+    with h = 8 and p = 4 (quarterly). It is one-sided, so the first h + p - 1
+    = 11 quarters of each series are lost. The matching applies the same
+    filter to the simulated quarterly averages. If the monthly AR(1) describes
+    a shock well, both filters should recover similar monthly (rho_m,
+    sigma_m); a large gap means the AR(1) is misspecified at the frequencies
+    where the two filters differ. HP remains the baseline.
+
 OUTPUT
 ------
     data/results/shock_calibration.csv          the table, one row per series
@@ -250,6 +260,8 @@ import matplotlib.pyplot as plt
 
 # ── parameters ────────────────────────────────────────────────────────────────
 HP_LAMBDA       = 1_600
+HAMILTON_H      = 8                      # Hamilton filter: horizon (quarters)
+HAMILTON_P      = 4                      # Hamilton filter: lags in the regression
 SAMPLE_START    = "1951Q1"               # S14: z, tau, s and labor-market moments
 SAMPLE_END      = "2019Q4"               # S13: pre-pandemic, cut before filtering
 ROBUST_START    = "1985Q1"               # S14 (iv): robustness window
@@ -383,16 +395,40 @@ def hp_log_cycle(series):
     return cycle
 
 
-def hp_cycles(dat, levels):
+def hamilton_cycle(y, h=HAMILTON_H, p=HAMILTON_P):
     """
-    Log-HP cycles, one column per series, each filtered over its own window.
+    Hamilton regression filter on a (log) series: the cycle at t + h is the
+    residual from OLS of y_{t+h} on [1, y_t, ..., y_{t-p+1}]. One-sided; the
+    first h + p - 1 observations have no cycle.
+    """
+    v, n = np.asarray(y, dtype=float), len(y)
+    rows = range(p - 1, n - h)
+    X = np.array([[1.0] + [v[t - j] for j in range(p)] for t in rows])
+    Y = np.array([v[t + h] for t in rows])
+    resid = Y - X @ np.linalg.lstsq(X, Y, rcond=None)[0]
+    return pd.Series(resid, index=y.index[p - 1 + h:])
+
+
+def log_cycle(series, method="hp"):
+    """Log cycle of a level series over its own (cut) window, by filter."""
+    if method == "hp":
+        return hp_log_cycle(series)
+    if method == "hamilton":
+        return hamilton_cycle(np.log(series))
+    raise ValueError(f"unknown filter {method!r}")
+
+
+def hp_cycles(dat, levels, method="hp"):
+    """
+    Log cycles, one column per series, each filtered over its own window
+    (the name predates the Hamilton option; method="hp" is the baseline).
 
     z, tau and s are filtered over SAMPLE_START-SAMPLE_END; delta over its BED
     window, so it is NaN before 1992Q3. Every series is cut at SAMPLE_END
     *before* filtering (S13).
     """
     sources = {"z": normalized_z(dat)} | {c: levels[c] for c in ("delta", "tau", "s")}
-    return pd.DataFrame({name: hp_log_cycle(window(series))
+    return pd.DataFrame({name: log_cycle(window(series), method)
                          for name, series in sources.items()})
 
 
@@ -640,11 +676,22 @@ def hp_cycle_matrix(n, lamb=HP_LAMBDA):
     return np.eye(n) - np.linalg.inv(np.eye(n) + lamb * K.T @ K)
 
 
-def simulated_stats(rho_m, eps, C):
+def hamilton_rows(q, h=HAMILTON_H, p=HAMILTON_P):
+    """hamilton_cycle applied to each row of q (replications x quarters)."""
+    n = q.shape[1]
+    rows = np.arange(p - 1, n - h)
+    X = np.stack([np.ones((q.shape[0], len(rows)))] + [q[:, rows - j] for j in range(p)], axis=2)
+    Y = q[:, rows + h]
+    beta = np.linalg.solve(np.einsum("rmi,rmj->rij", X, X), np.einsum("rmi,rm->ri", X, Y)[..., None])[..., 0]
+    return Y - np.einsum("rmi,ri->rm", X, beta)
+
+
+def simulated_stats(rho_m, eps, C, nq=None):
     """
     Monthly AR(1) with unit innovation SD on the draws eps (replications x
-    months), averaged to quarters, filtered with C, then the same AR(1)
-    estimator as fit_ar1 (OLS with a constant). Returns the means over
+    months), averaged to quarters, filtered, then the same AR(1) estimator as
+    fit_ar1 (OLS with a constant). C is the HP cycle matrix, or the string
+    "hamilton" (then nq gives the number of quarters). Returns the means over
     replications of rho_Q, sigma_Q (residual SD) and the SD of the cycle.
     """
     R, M = eps.shape
@@ -652,9 +699,9 @@ def simulated_stats(rho_m, eps, C):
     x[:, 0] = eps[:, 0] / np.sqrt(1 - rho_m ** 2)            # stationary start
     for k in range(1, M):
         x[:, k] = rho_m * x[:, k - 1] + eps[:, k]
-    nq = C.shape[0]
+    nq = C.shape[0] if nq is None else nq
     q = x[:, BURN_M:BURN_M + 3 * nq].reshape(R, nq, 3).mean(axis=2)
-    c = q @ C.T
+    c = hamilton_rows(q) if isinstance(C, str) else q @ C.T
     y, z = c[:, 1:], c[:, :-1]
     yd, zd = y - y.mean(axis=1, keepdims=True), z - z.mean(axis=1, keepdims=True)
     b = (yd * zd).sum(axis=1) / (zd * zd).sum(axis=1)
@@ -663,45 +710,53 @@ def simulated_stats(rho_m, eps, C):
     return float(b.mean()), float(sig.mean()), float(c.std(axis=1, ddof=1).mean())
 
 
-def match_process(rho_Q, sigma_Q, nq, rng):
+def match_process(rho_Q, sigma_Q, nq, rng, method="hp"):
     """
     Monthly (rho_m, sigma_m) whose averaged and filtered simulation
-    reproduces (rho_Q, sigma_Q) on an nq-quarter sample. Returns the matched
-    pair, the draws and the filter matrix (for the plug-in check).
+    reproduces (rho_Q, sigma_Q) on an nq-quarter sample (nq = quarters before
+    filtering). Returns the matched pair, the draws and the filter (for the
+    plug-in check).
     """
     from scipy.optimize import brentq
     eps = rng.standard_normal((N_MATCH, BURN_M + 3 * nq))
-    C = hp_cycle_matrix(nq)
-    gap = lambda r: simulated_stats(r, eps, C)[0] - rho_Q
+    C = hp_cycle_matrix(nq) if method == "hp" else method
+    stats = lambda r: simulated_stats(r, eps, C, nq)
+    gap = lambda r: stats(r)[0] - rho_Q
     lo, hi = 0.0, 0.999
+    attained = True
     if gap(lo) >= 0:                     # even white noise is too persistent
-        rho_m = lo
+        rho_m, attained = lo, False
+    elif gap(hi) <= 0:                   # no stationary AR(1) is persistent enough
+        rho_m, attained = hi, False
     else:
         rho_m = brentq(gap, lo, hi, xtol=1e-6)
-    sigma_m = sigma_Q / simulated_stats(rho_m, eps, C)[1]
-    return rho_m, sigma_m, eps, C
+    sigma_m = sigma_Q / stats(rho_m)[1]
+    return rho_m, sigma_m, eps, C, attained
 
 
-def filter_consistent(table, cyc, var):
+def filter_consistent(table, cyc, var, method="hp"):
     """
     One row per series: the quarterly target, the plug-in monthly process and
     what it reproduces after averaging and filtering, and the matched process.
-    Sample lengths are the estimation windows of the targets.
+    The simulated samples have as many quarters as the series had before
+    filtering (the Hamilton filter then drops the first h + p - 1, as in the
+    data).
     """
     rng = np.random.default_rng(MATCH_SEED)
+    lost = HAMILTON_H + HAMILTON_P - 1 if method == "hamilton" else 0
     rows = []
     for name in SERIES:
         r = table.loc[name]
-        nq = len(window(cyc[name], r["sample_start"], r["sample_end"])) + 1   # + the lagged quarter
-        rho_m, sigma_m, eps, C = match_process(r["rho_Q"], r["sigma_Q"], nq, rng)
-        pr, ps, psd = simulated_stats(r["rho_m"], eps, C)
-        mr, ms, msd = simulated_stats(rho_m, eps, C)
+        nq = len(cyc[name].dropna()) + lost
+        rho_m, sigma_m, eps, C, attained = match_process(r["rho_Q"], r["sigma_Q"], nq, rng, method)
+        pr, ps, psd = simulated_stats(r["rho_m"], eps, C, nq)
+        mr, ms, msd = simulated_stats(rho_m, eps, C, nq)
         rows.append({"series": name, "nq": nq, "rho_Q": r["rho_Q"], "sigma_Q": r["sigma_Q"],
                      "sd_cycle": r["sd_cycle"],
                      "plugin_rho_m": r["rho_m"], "plugin_sigma_m": r["sigma_m"],
                      "plugin_rho_Q": pr, "plugin_sigma_Q": ps * r["sigma_m"],
                      "plugin_sd_cycle": psd * r["sigma_m"],
-                     "matched_rho_m": rho_m, "matched_sigma_m": sigma_m,
+                     "matched_rho_m": rho_m, "matched_sigma_m": sigma_m, "attained": attained,
                      "matched_rho_Q": mr, "matched_sigma_Q": ms * sigma_m,
                      "matched_sd_cycle": msd * sigma_m})
     return pd.DataFrame(rows).set_index("series")
@@ -841,6 +896,31 @@ def report_matching(fc):
                  tablefmt="simple", disable_numparse=True, colalign=("left",) + ("right",) * 5))
     say("\n  sigma_Q is the AR(1) residual SD (delta: purged of z), SD cycle the SD of the")
     say("  filtered series, both x 100. tau is a diagnostic, not a model shock.")
+
+
+def report_filter_comparison(fc, fc_h):
+    from tabulate import tabulate
+    half = lambda r: np.log(0.5) / np.log(r) if 0 < r < 1 else np.nan
+    say(f"\n{'-'*78}\n8. Filter robustness: HP({HP_LAMBDA:,}) against Hamilton (h = {HAMILTON_H}, "
+        f"p = {HAMILTON_P})\n{'-'*78}")
+    say("  Data targets (quarterly AR(1) on the filtered series) and the matched monthly")
+    say("  processes under each filter. Similar monthly processes mean the AR(1) fits the")
+    say("  shock across the frequencies where the filters differ.\n")
+    rows = []
+    for n in fc.index:
+        a, b = fc.loc[n], fc_h.loc[n]
+        rows.append([n, f"{a.rho_Q:.3f}", f"{b.rho_Q:.3f}", f"{100*a.sigma_Q:.2f}", f"{100*b.sigma_Q:.2f}",
+                     f"{a.matched_rho_m:.4f}" + ("" if a.attained else "*"),
+                     f"{b.matched_rho_m:.4f}" + ("" if b.attained else "*"),
+                     f"{a.matched_sigma_m:.4f}", f"{b.matched_sigma_m:.4f}",
+                     f"{half(a.matched_rho_m):.1f}", f"{half(b.matched_rho_m):.1f}"])
+    say(tabulate(rows, ["", "rho_Q HP", "Ham", "sigma_Q HP", "Ham", "rho_m HP", "Ham",
+                        "sigma_m HP", "Ham", "half-life HP", "Ham"], tablefmt="simple",
+                 disable_numparse=True, colalign=("left",) + ("right",) * 10))
+    say("\n  * target not attainable by any stationary monthly AR(1) (rho_m capped at 0.999):")
+    say("    the averaged, filtered AR(1) cannot be as persistent as the data.")
+    say("  sigma_Q x 100; half-life of the monthly process in months. Hamilton samples start")
+    say(f"  {HAMILTON_H + HAMILTON_P - 1} quarters later (z, tau, s from 1953Q4; delta from 1995Q2).")
 
 
 def report_residuals(fits, var):
@@ -1026,6 +1106,16 @@ if __name__ == "__main__":
     fc = filter_consistent(table, cyc, var)
     report_matching(fc)
     table = table.join(fc[["matched_rho_m", "matched_sigma_m", "plugin_rho_Q", "plugin_sigma_Q"]])
+
+    # ── Step 5: the same with the Hamilton filter ───────────────────────────
+    cyc_h = hp_cycles(dat, levels, method="hamilton")
+    fits_h = {name: fit_ar1(cyc_h[name]) for name in SERIES}
+    var_h = fit_var_cholesky(cyc_h)
+    table_h = build_table(levels, cyc_h, fits_h, var_h, splice)
+    fc_h = filter_consistent(table_h, cyc_h, var_h, method="hamilton")
+    report_filter_comparison(fc, fc_h)
+    table = table.join(fc_h[["rho_Q", "sigma_Q", "matched_rho_m", "matched_sigma_m"]]
+                       .add_prefix("hamilton_"))
 
     # ── outputs ─────────────────────────────────────────────────────────────
     out_csv = RESULTS_DIR / "shock_calibration.csv"

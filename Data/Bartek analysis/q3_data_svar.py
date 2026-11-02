@@ -31,6 +31,12 @@ role was similar before 1992, which cannot be tested. Before 1992Q3 the s cycle
 is tau's cycle scaled by k_pre (part6b), so in B the s shock also carries a
 small piece of delta (weight w of about 0.09).
 
+Filter robustness (section 7). Every SVAR is re-estimated on Hamilton
+cycles (h = 8, p = 4; part6b's hamilton_cycle) instead of HP cycles. The
+Hamilton filter is one-sided, so it does not blur the recursive timing
+assumption, but it drops the first 11 quarters of each series (A starts in
+1995Q2, T = 99). HP remains the baseline of sections 2-6.
+
 Estimation. Reduced-form VAR(p) with a constant, equation by equation OLS on a
 common sample. p is chosen by BIC over 1-4 (common sample of the VAR(4)); p = 1
 and p = 2 are always reported as well.
@@ -89,7 +95,7 @@ OUTPUT
     data/results/q3_data_svar_headline.csv  headline shares of var(u), var(v)
     data/results/q3_data_svar_headline.txt  the same as plain tables, ready to paste
     data/results/q3_data_svar_fevd.csv   shares by SVAR, lag, ordering, horizon
-    data/results/q3_data_svar_irf.csv    baseline IRFs with bootstrap bands
+    data/results/q3_data_svar_irf.csv    IRFs with bootstrap bands (filter column: hp, hamilton)
     data/results/q3_data_svar_irf.png    IRFs of u and v to the z, delta, s shocks
     data/results/q3_data_svar_levels.png the series in levels, with HP trends
 
@@ -131,7 +137,7 @@ OUTCOMES   = ("u", "v")
 SVARS = {
     "A": {"vars": ("z", "s", "delta", "u", "v"), "start": BED_START},  # preferred order
     "B": {"vars": ("z", "s", "u", "v"),          "start": p6b.SAMPLE_START},
-    "C": {"vars": ("z", "s", "u", "v"),          "start": BED_START},
+    "C": {"vars": ("z", "s", "u", "v"),          "start": BED_START, "align": "A"},  # A's window
 }
 OUT_TXT  = p6b.RESULTS_DIR / "q3_data_svar.txt"
 OUT_FEVD = p6b.RESULTS_DIR / "q3_data_svar_fevd.csv"
@@ -206,15 +212,49 @@ def plot_levels(lev, out_path):
     p6b._finish(fig, out_path)
 
 
-def build_cycles():
-    """z, delta, s from part6b; u and v filtered the same way."""
+def build_cycles(method="hp"):
+    """z, delta, s from part6b; u and v filtered the same way ("hp" or "hamilton")."""
     dat = pd.read_pickle(p6b.RAW_DATA)
     if not isinstance(dat.index, pd.PeriodIndex):
         dat.index = dat.index.to_period("Q")
-    cyc = p6b.hp_cycles(dat, p6b.build_levels(dat))[["z", "delta", "s"]]
+    cyc = p6b.hp_cycles(dat, p6b.build_levels(dat), method)[["z", "delta", "s"]]
     for name in OUTCOMES:
-        cyc[name] = p6b.hp_log_cycle(p6b.window(dat[name]))
+        cyc[name] = p6b.log_cycle(p6b.window(dat[name]), method)
     return cyc[(cyc.index >= p6b.SAMPLE_START) & (cyc.index <= p6b.SAMPLE_END)]
+
+
+def estimate_all(cyc, report=True):
+    """Every SVAR on one set of cycles: fits at each lag and the FEVD rows."""
+    svars, rows = {}, []
+    for key, spec in SVARS.items():
+        sv = prepare_svar(key, spec, cyc)
+        sv["fits"] = estimate_svar(sv)
+        if report:
+            report_lags(sv)
+        rows += [r for p, fit in sv["fits"].items() for r in fevd_records(sv, p, fit)]
+        svars[key] = sv
+    return svars, rows
+
+
+def irf_frame(svA, filt):
+    """SVAR A at its BIC lag, preferred ordering: point IRFs and bootstrap bands."""
+    Y, names, p_bic = svA["Y"], svA["names"], svA["p_bic"]
+    fitA = svA["fits"][p_bic]
+    order = list(SVARS["A"]["vars"])
+    point = irf(fitA, order, names, H_IRF)
+    draws = bootstrap_irf(Y, fitA, order, names, H_IRF, N_BOOT)
+    q = {lvl: np.percentile(draws, lvl, axis=0) for lvl in (5, 16, 84, 95)}
+    rows = []
+    for shk in SHOCKS:
+        j = names.index(shk)
+        for resp in list(OUTCOMES) + [shk]:          # u, v, and the shocked series itself
+            i = names.index(resp)
+            for h in range(H_IRF + 1):
+                rows.append({"filter": filt, "svar": "A", "p": p_bic, "shock": shk, "response": resp,
+                             "h": h, "irf": 100 * point[h, i, j],
+                             "q05": 100 * q[5][h, i, j], "q16": 100 * q[16][h, i, j],
+                             "q84": 100 * q[84][h, i, j], "q95": 100 * q[95][h, i, j]})
+    return pd.DataFrame(rows)
 
 
 # =============================================================================
@@ -320,10 +360,15 @@ def bootstrap_irf(Y, fit, order, names, H, n_boot, seed=SEED):
 # =============================================================================
 
 def prepare_svar(key, spec, cyc):
-    """The SVAR's window and data matrix, its shock block and its lags."""
+    """The SVAR's window and data matrix, its shock block and its lags. With
+    "align", the window starts where that SVAR's data start (C uses A's
+    window, which the Hamilton filter moves to 1995Q2)."""
     names = list(spec["vars"])
+    start = spec["start"]
+    if "align" in spec:
+        start = cyc[list(SVARS[spec["align"]]["vars"])].dropna().index[0]
     #Initialize according to start date
-    frame = cyc.loc[cyc.index >= spec["start"], names].dropna()
+    frame = cyc.loc[cyc.index >= start, names].dropna()
     
     Y = frame.to_numpy()
     p_bic, bic = bic_lag(Y)
@@ -545,13 +590,7 @@ if __name__ == "__main__":
 
     # ── estimation: every SVAR, BIC lag plus p = 1 and 2, every ordering ─────
     say(f"\n{'-'*78}\n2. Lag selection and stability\n{'-'*78}")
-    svars, fevd_rows = {}, []
-    for key, spec in SVARS.items():
-        sv = prepare_svar(key, spec, cyc)
-        sv["fits"] = estimate_svar(sv)
-        report_lags(sv)
-        fevd_rows += [r for p, fit in sv["fits"].items() for r in fevd_records(sv, p, fit)]
-        svars[key] = sv
+    svars, fevd_rows = estimate_all(cyc)
 
     # ── variance shares ──────────────────────────────────────────────────────
     say(f"\n{'-'*78}\n3. Shares of the variance of u and v, percent\n{'-'*78}")
@@ -588,23 +627,8 @@ if __name__ == "__main__":
 
     # ── impulse responses, SVAR A at the BIC lag ─────────────────────────────
     svA = svars["A"]
-    Y, names, p_bic = svA["Y"], svA["names"], svA["p_bic"]
-    fitA = svA["fits"][p_bic]
-    order = list(SVARS["A"]["vars"])
-    point = irf(fitA, order, names, H_IRF)
-    draws = bootstrap_irf(Y, fitA, order, names, H_IRF, N_BOOT)
-    q = {lvl: np.percentile(draws, lvl, axis=0) for lvl in (5, 16, 84, 95)}
-    irf_rows = []
-    for shk in SHOCKS:
-        j = names.index(shk)
-        for resp in list(OUTCOMES) + [shk]:          # u, v, and the shocked series itself
-            i = names.index(resp)
-            for h in range(H_IRF + 1):
-                irf_rows.append({"svar": "A", "p": p_bic, "shock": shk, "response": resp,
-                                 "h": h, "irf": 100 * point[h, i, j],
-                                 "q05": 100 * q[5][h, i, j], "q16": 100 * q[16][h, i, j],
-                                 "q84": 100 * q[84][h, i, j], "q95": 100 * q[95][h, i, j]})
-    irf_df = pd.DataFrame(irf_rows)
+    p_bic = svA["p_bic"]
+    irf_df = irf_frame(svA, "hp")
 
     say(f"\n{'-'*78}\n5. Impulse responses, SVAR A, p = {p_bic} (BIC), preferred ordering; "
         f"one-SD shocks,\n   log points x 100; [68 % band] from {N_BOOT} bootstrap draws\n{'-'*78}")
@@ -625,8 +649,42 @@ if __name__ == "__main__":
             cells.append(f"peak {resp} {x.irf:+5.2f} at h = {int(x.h)}, per unit {x.irf / own:+5.2f}")
         say(f"  {shk:5s} own impact {own:+5.2f}:  " + ";  ".join(cells))
 
+    # ── filter robustness: everything again on Hamilton cycles ──────────────
+    cyc_h = build_cycles("hamilton")
+    svars_h, fevd_h = estimate_all(cyc_h, report=False)
+    head_h, alt_h = headline_frames(fevd_h)
+    irf_h = irf_frame(svars_h["A"], "hamilton")
+    say(f"\n{'-'*78}\n7. Filter robustness: Hamilton (h = {p6b.HAMILTON_H}, p = {p6b.HAMILTON_P}) "
+        f"against HP, BIC lag, preferred ordering\n{'-'*78}")
+    for key, sv in svars_h.items():
+        fr = sv["frame"]
+        say(f"  SVAR {key} (Hamilton): {fr.index[0]}-{fr.index[-1]}, T = {len(fr)}, BIC p = {sv['p_bic']}, "
+            f"max |root| = {max_root(sv['fits'][sv['p_bic']]['A']):.3f}")
+    from tabulate import tabulate
+    rows = []
+    for key in SVARS:
+        for v, h in head[key].index:
+            for c in head[key].columns:
+                rows.append([key, LABEL[v], H_LABEL[h], LABEL.get(c, c),
+                             f"{head[key].loc[(v, h), c]:.1f}", f"{head_h[key].loc[(v, h), c]:.1f}"])
+    say("\n  Shares of var(u) and var(v), percent: HP against Hamilton")
+    say(tabulate(rows, ["SVAR", "var", "h", "shock", "HP", "Hamilton"], tablefmt="simple",
+                 disable_numparse=True, colalign=("left",) * 4 + ("right",) * 2))
+    say("\n  Peak responses of u and v, SVAR A, one-SD shocks, log points x 100 (h of the peak)")
+    rows = []
+    for shk in SHOCKS:
+        for resp in OUTCOMES:
+            cells = [LABEL[shk], resp]
+            for d in (irf_df, irf_h):
+                r = d[(d.shock == shk) & (d.response == resp)]
+                x = r.loc[r.irf.abs().idxmax()]
+                cells.append(f"{x.irf:+.2f} (h {int(x.h)})")
+            rows.append(cells)
+    say(tabulate(rows, ["shock", "resp", "HP", "Hamilton"], tablefmt="simple", disable_numparse=True))
+    irf_df = pd.concat([irf_df, irf_h], ignore_index=True)
+
     # ── key takeaways ────────────────────────────────────────────────────────
-    key_points = takeaways(head, alt, irf_df, svars)
+    key_points = takeaways(head, alt, irf_df[irf_df["filter"] == "hp"], svars)
     say(f"\n{'-'*78}\n6. Key takeaways (numbers from this run)\n{'-'*78}")
     say(key_points, echo=False)
 
@@ -644,7 +702,9 @@ if __name__ == "__main__":
     for r_, shk in enumerate(SHOCKS):
         for c_, resp in enumerate(OUTCOMES):
             ax = axes[r_, c_]
-            d = irf_df[(irf_df.shock == shk) & (irf_df.response == resp)]
+            d = irf_df[(irf_df["filter"] == "hp") & (irf_df.shock == shk) & (irf_df.response == resp)]
+            dh = irf_df[(irf_df["filter"] == "hamilton") & (irf_df.shock == shk) & (irf_df.response == resp)]
+            ax.plot(dh.h, dh.irf, color="#d62728", lw=1.4, ls="--", label="Hamilton")
             ax.fill_between(d.h, d.q05, d.q95, color="#1f77b4", alpha=0.15, lw=0)
             ax.fill_between(d.h, d.q16, d.q84, color="#1f77b4", alpha=0.30, lw=0)
             ax.plot(d.h, d.irf, color="#1f77b4", lw=1.8)
