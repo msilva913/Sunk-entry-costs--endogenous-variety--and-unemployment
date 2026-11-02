@@ -140,9 +140,31 @@ Other key points:
 Filtering and frequency. Log, then HP filter with lambda = 1,600, the quarterly
 convention that observables_moments.py also uses, so the shock processes and
 the moments see the same cyclical object. Each series is filtered over its own
-window. Quarterly estimates convert to monthly following CK:
-rho_m = rho_Q^(1/3), and sigma_m matches the unconditional variance,
-sigma_m = sigma_Q * sqrt((1 - rho_Q^2)/(1 - rho_m^2)).
+window.
+
+Step 4. From quarterly to monthly: two mappings (section 7 of the report).
+    The targets are the quarterly statistics above: the AR(1) coefficient
+    rho_Q and innovation SD sigma_Q of the filtered cycle (for delta, the VAR
+    own lag and the purged sigma).
+    (a) Plug-in, following CK: rho_m = rho_Q^(1/3), and sigma_m matches the
+        unconditional variance, sigma_m = sigma_Q sqrt((1 - rho_m^2)/(1 - rho_Q^2)).
+        (The code had this ratio inverted from Sept 21 to Nov 2, 2026.)
+        It treats the filtered data cycle as if it were the shock process.
+        The model's simulated output is then averaged to quarters and
+        filtered again, so the model's filtered shock no longer reproduces
+        the data's.
+    (b) Filter-consistent (simulated matching). Choose monthly (rho_m,
+        sigma_m) so that a monthly AR(1), averaged to quarters as the
+        model's simulations are, HP-filtered over a data-length window, and
+        fitted with the same AR(1) estimator, reproduces the data's rho_Q
+        and sigma_Q. Monte Carlo with N_MATCH replications and common random
+        numbers. The process is linear, so sigma scales exactly; only rho_m
+        needs a one-dimensional search. The match also absorbs small-sample
+        bias in the AR(1) estimate, because data and simulation use the same
+        sample length.
+    Section 7 reports what (a) reproduces after averaging and filtering (its
+    bias) and the matched (b). The model's SHOCKS_BASE is set from one of the
+    two by decision (decisions.md).
 
 OUTPUT
 ------
@@ -227,6 +249,11 @@ RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 # D14 rule: revisit the independence of s if the z innovation explains at least
 # this share of the s innovation variance AND the loading has |t| >= 2.
 INDEP_R2_MAX = 0.10
+
+# Simulated matching of the monthly processes (Step 4b).
+N_MATCH    = 500          # Monte Carlo replications, common random numbers
+BURN_M     = 240          # monthly burn-in before the first simulated quarter
+MATCH_SEED = 20261102
 
 # SHOCKS_BASE in run_solution_core.jl (pre-S13 part6b, Sept 21), for comparison.
 SHOCKS_BASE = {"z": (0.902, 0.0092), "delta": (0.592, 0.0669), "s": (0.8741, 0.0854)}
@@ -433,7 +460,10 @@ def to_monthly(rho_Q, sigma_Q):
     if rho_Q <= 0:
         raise ValueError(f"rho_Q = {rho_Q:.4f} <= 0; monthly conversion undefined.")
     rho_m = rho_Q ** (1 / 3)
-    return rho_m, sigma_Q * np.sqrt((1 - rho_Q**2) / (1 - rho_m**2))
+    # Var = sigma^2/(1 - rho^2) equal at both frequencies => sigma_m = sigma_Q sqrt((1-rho_m^2)/(1-rho_Q^2)).
+    # (Fixed Nov 2, 2026: Sept 21 - Nov 2 the ratio was inverted, inflating sigma_m by
+    # (1-rho_Q^2)/(1-rho_m^2): about 2.5 for z, 2.1 for s, 1.5 for delta.)
+    return rho_m, sigma_Q * np.sqrt((1 - rho_m**2) / (1 - rho_Q**2))
 
 
 def build_table(levels, cyc, fits, var, bed_start):
@@ -586,6 +616,86 @@ def ljung_box(resid, lags=(4, 8)):
 
 
 # =============================================================================
+#  FILTER-CONSISTENT MONTHLY PROCESSES (Step 4b)
+# =============================================================================
+
+def hp_cycle_matrix(n, lamb=HP_LAMBDA):
+    """C with cycle = C @ y for an n-quarter series: C = I - (I + lamb K'K)^-1,
+    K the second-difference matrix. The same filter as statsmodels' hpfilter."""
+    K = np.zeros((n - 2, n))
+    for i in range(n - 2):
+        K[i, i:i + 3] = (1.0, -2.0, 1.0)
+    return np.eye(n) - np.linalg.inv(np.eye(n) + lamb * K.T @ K)
+
+
+def simulated_stats(rho_m, eps, C):
+    """
+    Monthly AR(1) with unit innovation SD on the draws eps (replications x
+    months), averaged to quarters, filtered with C, then the same AR(1)
+    estimator as fit_ar1 (OLS with a constant). Returns the means over
+    replications of rho_Q, sigma_Q (residual SD) and the SD of the cycle.
+    """
+    R, M = eps.shape
+    x = np.empty_like(eps)
+    x[:, 0] = eps[:, 0] / np.sqrt(1 - rho_m ** 2)            # stationary start
+    for k in range(1, M):
+        x[:, k] = rho_m * x[:, k - 1] + eps[:, k]
+    nq = C.shape[0]
+    q = x[:, BURN_M:BURN_M + 3 * nq].reshape(R, nq, 3).mean(axis=2)
+    c = q @ C.T
+    y, z = c[:, 1:], c[:, :-1]
+    yd, zd = y - y.mean(axis=1, keepdims=True), z - z.mean(axis=1, keepdims=True)
+    b = (yd * zd).sum(axis=1) / (zd * zd).sum(axis=1)
+    resid = yd - b[:, None] * zd
+    sig = np.sqrt((resid ** 2).sum(axis=1) / (resid.shape[1] - 2))
+    return float(b.mean()), float(sig.mean()), float(c.std(axis=1, ddof=1).mean())
+
+
+def match_process(rho_Q, sigma_Q, nq, rng):
+    """
+    Monthly (rho_m, sigma_m) whose averaged and filtered simulation
+    reproduces (rho_Q, sigma_Q) on an nq-quarter sample. Returns the matched
+    pair, the draws and the filter matrix (for the plug-in check).
+    """
+    from scipy.optimize import brentq
+    eps = rng.standard_normal((N_MATCH, BURN_M + 3 * nq))
+    C = hp_cycle_matrix(nq)
+    gap = lambda r: simulated_stats(r, eps, C)[0] - rho_Q
+    lo, hi = 0.0, 0.999
+    if gap(lo) >= 0:                     # even white noise is too persistent
+        rho_m = lo
+    else:
+        rho_m = brentq(gap, lo, hi, xtol=1e-6)
+    sigma_m = sigma_Q / simulated_stats(rho_m, eps, C)[1]
+    return rho_m, sigma_m, eps, C
+
+
+def filter_consistent(table, cyc, var):
+    """
+    One row per series: the quarterly target, the plug-in monthly process and
+    what it reproduces after averaging and filtering, and the matched process.
+    Sample lengths are the estimation windows of the targets.
+    """
+    rng = np.random.default_rng(MATCH_SEED)
+    rows = []
+    for name in SERIES:
+        r = table.loc[name]
+        nq = len(window(cyc[name], r["sample_start"], r["sample_end"])) + 1   # + the lagged quarter
+        rho_m, sigma_m, eps, C = match_process(r["rho_Q"], r["sigma_Q"], nq, rng)
+        pr, ps, psd = simulated_stats(r["rho_m"], eps, C)
+        mr, ms, msd = simulated_stats(rho_m, eps, C)
+        rows.append({"series": name, "nq": nq, "rho_Q": r["rho_Q"], "sigma_Q": r["sigma_Q"],
+                     "sd_cycle": r["sd_cycle"],
+                     "plugin_rho_m": r["rho_m"], "plugin_sigma_m": r["sigma_m"],
+                     "plugin_rho_Q": pr, "plugin_sigma_Q": ps * r["sigma_m"],
+                     "plugin_sd_cycle": psd * r["sigma_m"],
+                     "matched_rho_m": rho_m, "matched_sigma_m": sigma_m,
+                     "matched_rho_Q": mr, "matched_sigma_Q": ms * sigma_m,
+                     "matched_sd_cycle": msd * sigma_m})
+    return pd.DataFrame(rows).set_index("series")
+
+
+# =============================================================================
 #  REPORT
 # =============================================================================
 
@@ -695,6 +805,30 @@ def report_independence(fits, var):
     revisit = z["r2"] >= INDEP_R2_MAX and abs(z["t"]) >= 2
     say(f"  D14 rule (revisit if R^2 >= {100*INDEP_R2_MAX:.0f}% and |t| >= 2): "
         f"{'REVISIT: z loads on s' if revisit else 'independence holds; keep sigma_s unpurged'}.")
+
+
+def report_matching(fc):
+    from tabulate import tabulate
+    say(f"\n{'-'*78}\n7. From quarterly to monthly: plug-in bias and filter-consistent processes\n{'-'*78}")
+    say("  Each monthly process is simulated, averaged to quarters, HP-filtered over a")
+    say(f"  data-length window and fitted with the same AR(1) estimator ({N_MATCH} replications).")
+    say("  The plug-in should reproduce the data's quarterly statistics; the bias is the gap.\n")
+    rows = [[n, f"{r.rho_Q:.3f}", f"{r.plugin_rho_Q:.3f}", f"{r.matched_rho_Q:.3f}",
+             f"{100 * r.sigma_Q:.2f}", f"{100 * r.plugin_sigma_Q:.2f}",
+             f"{100 * (r.plugin_sigma_Q / r.sigma_Q - 1):+.0f}%",
+             f"{100 * r.sd_cycle:.2f}", f"{100 * r.plugin_sd_cycle:.2f}",
+             f"{100 * (r.plugin_sd_cycle / r.sd_cycle - 1):+.0f}%"] for n, r in fc.iterrows()]
+    say(tabulate(rows, ["", "rho_Q data", "plug-in", "matched", "sigma_Q data", "plug-in", "bias",
+                        "SD cycle data", "plug-in", "bias"], tablefmt="simple",
+                 disable_numparse=True, colalign=("left",) + ("right",) * 9))
+    say("\n  Monthly processes (SHOCKS_BASE uses the plug-in until decided otherwise):\n")
+    rows = [[n, f"{r.plugin_rho_m:.4f}", f"{r.plugin_sigma_m:.4f}",
+             f"{r.matched_rho_m:.4f}", f"{r.matched_sigma_m:.4f}", f"{100 * r.matched_sd_cycle:.2f}"]
+            for n, r in fc.iterrows()]
+    say(tabulate(rows, ["", "plug-in rho_m", "sigma_m", "matched rho_m", "sigma_m", "SD cycle"],
+                 tablefmt="simple", disable_numparse=True, colalign=("left",) + ("right",) * 5))
+    say("\n  sigma_Q is the AR(1) residual SD (delta: purged of z), SD cycle the SD of the")
+    say("  filtered series, both x 100. tau is a diagnostic, not a model shock.")
 
 
 def report_residuals(fits, var):
@@ -875,6 +1009,11 @@ if __name__ == "__main__":
     report_splice(levels, splice, dbar, dbar_full, cyc)
     report_independence(fits, var)
     report_residuals(fits, var)
+
+    # ── Step 4: quarterly to monthly, plug-in against filter-consistent ─────
+    fc = filter_consistent(table, cyc, var)
+    report_matching(fc)
+    table = table.join(fc[["matched_rho_m", "matched_sigma_m", "plugin_rho_Q", "plugin_sigma_Q"]])
 
     # ── outputs ─────────────────────────────────────────────────────────────
     out_csv = RESULTS_DIR / "shock_calibration.csv"

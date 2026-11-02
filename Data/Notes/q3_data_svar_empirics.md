@@ -175,6 +175,13 @@ Decade means (back-of-envelope from `raw_data.pkl`, percent):
 
 ### 2.3 Against the model (working point of `Q2_amplification_sweep.txt`: p_0 = 0.8, Λ̄_r = 0.25, S14 shocks)
 
+> ⚠ **Nov 2, 2026: the model numbers in this section are void until rerun.** They used `SHOCKS_BASE`
+> values whose monthly σ was inflated by an inverted formula in part6b's `to_monthly` (since Sept 21):
+> 2.5× for z, 2.1× for s and 1.5× for δ. The filter-consistent processes are in `shock_calibration.txt` §7,
+> and findings.md has the details. Rough linear scaling suggests the s overshoot largely disappears and
+> the z and δ gaps widen, so the model's total σ(u) would be too low rather than about right. Rerun before
+> relying on any number here. The data side of the comparison is unaffected.
+
 The data column is √share × 12.48 (*back-of-envelope*), using A, preferred ordering, long run, one lag. Two lags or the alternative ordering give similar gaps:
 - z: 3.0–3.4× too small;
 - δ: 13.8–15.9× too small;

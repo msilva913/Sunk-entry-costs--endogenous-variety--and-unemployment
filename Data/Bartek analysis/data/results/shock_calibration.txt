@@ -125,9 +125,31 @@ Other key points:
 Filtering and frequency. Log, then HP filter with lambda = 1,600, the quarterly
 convention that observables_moments.py also uses, so the shock processes and
 the moments see the same cyclical object. Each series is filtered over its own
-window. Quarterly estimates convert to monthly following CK:
-rho_m = rho_Q^(1/3), and sigma_m matches the unconditional variance,
-sigma_m = sigma_Q * sqrt((1 - rho_Q^2)/(1 - rho_m^2)).
+window.
+
+Step 4. From quarterly to monthly: two mappings (section 7 of the report).
+    The targets are the quarterly statistics above: the AR(1) coefficient
+    rho_Q and innovation SD sigma_Q of the filtered cycle (for delta, the VAR
+    own lag and the purged sigma).
+    (a) Plug-in, following CK: rho_m = rho_Q^(1/3), and sigma_m matches the
+        unconditional variance, sigma_m = sigma_Q sqrt((1 - rho_m^2)/(1 - rho_Q^2)).
+        (The code had this ratio inverted from Sept 21 to Nov 2, 2026.)
+        It treats the filtered data cycle as if it were the shock process.
+        The model's simulated output is then averaged to quarters and
+        filtered again, so the model's filtered shock no longer reproduces
+        the data's.
+    (b) Filter-consistent (simulated matching). Choose monthly (rho_m,
+        sigma_m) so that a monthly AR(1), averaged to quarters as the
+        model's simulations are, HP-filtered over a data-length window, and
+        fitted with the same AR(1) estimator, reproduces the data's rho_Q
+        and sigma_Q. Monte Carlo with N_MATCH replications and common random
+        numbers. The process is linear, so sigma scales exactly; only rho_m
+        needs a one-dimensional search. The match also absorbs small-sample
+        bias in the AR(1) estimate, because data and simulation use the same
+        sample length.
+    Section 7 reports what (a) reproduces after averaging and filtering (its
+    bias) and the matched (b). The model's SHOCKS_BASE is set from one of the
+    two by decision (decisions.md).
 
 ------------------------------------------------------------------------------
 1. Data
@@ -141,10 +163,10 @@ sigma_m = sigma_Q * sqrt((1 - rho_Q^2)/(1 - rho_m^2)).
 ==============================================================================
           mean sd_cycle  rho_m  sigma_m sample_start sample_end                         source
 series                                                                                        
-z      1.00000   0.0123 0.9121 0.012790       1951Q2     2019Q4                          AR(1)
-delta  0.00225   0.0597 0.5824 0.066255       1992Q4     2019Q4  VAR(1) z->delta, sigma perp z
-tau    0.02576   0.0537 0.8118 0.065802       1951Q2     2019Q4                          AR(1)
-s      0.02356   0.0578 0.8054 0.071077       1951Q2     2019Q4               AR(1), spliced s
+z      1.00000   0.0123 0.9121 0.005067       1951Q2     2019Q4                          AR(1)
+delta  0.00225   0.0597 0.5824 0.045558       1992Q4     2019Q4  VAR(1) z->delta, sigma perp z
+tau    0.02576   0.0537 0.8118 0.031437       1951Q2     2019Q4                          AR(1)
+s      0.02356   0.0578 0.8054 0.034344       1951Q2     2019Q4               AR(1), spliced s
 
   tau is an outcome of delta and s in the model, not a shock; it is shown
   because it is the series the moment table targets directly.
@@ -160,9 +182,9 @@ s      0.5225  0.0587     0.5225   0.0494      0.0494 0.2730   275
 
   Against SHOCKS_BASE (run_solution_core.jl; pre-S13 part6b, 1992-2019 window)
             rho_m old  rho_m new  sigma_m old  sigma_m new
-  z            0.9020     0.9121       0.0092       0.0128
-  delta        0.5920     0.5824       0.0669       0.0663
-  s            0.8741     0.8054       0.0854       0.0711
+  z            0.9020     0.9121       0.0092       0.0051
+  delta        0.5920     0.5824       0.0669       0.0456
+  s            0.8741     0.8054       0.0854       0.0343
 
 ------------------------------------------------------------------------------
 3. Step 2 detail: (z, delta) VAR(1), 1992Q4-2019Q4, T = 109
@@ -237,3 +259,29 @@ s 1951Q1-1992Q2 0.5501   0.0535   165
   z     AR(1)  0.027  0.001
   delta VAR    0.001  0.000
   s     AR(1)  0.287  0.014
+
+------------------------------------------------------------------------------
+7. From quarterly to monthly: plug-in bias and filter-consistent processes
+------------------------------------------------------------------------------
+  Each monthly process is simulated, averaged to quarters, HP-filtered over a
+  data-length window and fitted with the same AR(1) estimator (500 replications).
+  The plug-in should reproduce the data's quarterly statistics; the bias is the gap.
+
+         rho_Q data    plug-in    matched    sigma_Q data    plug-in    bias    SD cycle data    plug-in    bias
+-----  ------------  ---------  ---------  --------------  ---------  ------  ---------------  ---------  ------
+z             0.759      0.688      0.759            0.81       0.64    -21%             1.23       0.88    -29%
+delta         0.198      0.244      0.198            5.49       4.10    -25%             5.97       4.23    -29%
+tau           0.535      0.534      0.535            4.55       3.58    -21%             5.37       4.24    -21%
+s             0.522      0.523      0.522            4.94       3.89    -21%             5.78       4.57    -21%
+
+  Monthly processes (SHOCKS_BASE uses the plug-in until decided otherwise):
+
+         plug-in rho_m    sigma_m    matched rho_m    sigma_m    SD cycle
+-----  ---------------  ---------  ---------------  ---------  ----------
+z               0.9121     0.0051           0.9628     0.0062        1.24
+delta           0.5824     0.0456           0.5319     0.0641        5.60
+tau             0.8118     0.0314           0.8124     0.0399        5.39
+s               0.8054     0.0343           0.8048     0.0437        5.80
+
+  sigma_Q is the AR(1) residual SD (delta: purged of z), SD cycle the SD of the
+  filtered series, both x 100. tau is a diagnostic, not a model shock.
