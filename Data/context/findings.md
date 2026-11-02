@@ -938,7 +938,7 @@ Working point, S14 shocks against part6c (a):
   - δ needs ≈ 5.1–6.7, so it is 17–22× short.
 - ⚠ **That data SVAR is itself out of date.** It ran on 1992Q3–2019Q4 with the pre-fix τ, which had the 1994 break inside the window, and it used one Cholesky ordering. Rebuild it (Q3 Block B′) before treating these ratios as targets.
 
-**Q3: data SVAR, Block B′ data side (`q3_data_svar.py` → `q3_data_svar.txt/_fevd.csv/_irf.csv/_irf.png`, Oct 29).**
+**Q3: data SVAR, Block B′ data side (`q3_data_svar.py` → `q3_data_svar.txt/_fevd.csv/_irf.csv/_irf.png`, Oct 29).** Full write-up with the impulse responses and the model implications: [`../Notes/q3_data_svar_empirics.md`](../Notes/q3_data_svar_empirics.md) (Nov 2).
 Recursive SVARs on HP-1600 log cycles, with the shock block (z, δ, s) ordered before (u, v). Windows follow S13/S14, and the shock cycles come from part6b.
 
 The three SVARs:

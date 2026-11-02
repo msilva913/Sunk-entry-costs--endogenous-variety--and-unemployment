@@ -545,7 +545,7 @@ if __name__ == "__main__":
     irf_rows = []
     for shk in SHOCKS:
         j = names.index(shk)
-        for resp in OUTCOMES:
+        for resp in list(OUTCOMES) + [shk]:          # u, v, and the shocked series itself
             i = names.index(resp)
             for h in range(H_IRF + 1):
                 irf_rows.append({"svar": "A", "p": p_bic, "shock": shk, "response": resp,
@@ -562,6 +562,16 @@ if __name__ == "__main__":
             cells = [f"h{int(x.h)} {x.irf:+5.2f} [{x.q16:+5.2f},{x.q84:+5.2f}]"
                      for x in r.itertuples() if x.h in (0, 1, 2, 4, 6, 8, 12)]
             say(f"  {shk:5s} -> {resp}:  " + "  ".join(cells))
+    say("\n  Scale: each shock's impact on its own series, and the peak u and v responses per unit")
+    say("  of that impact (log points per log point; signs as estimated)")
+    for shk in SHOCKS:
+        own = irf_df[(irf_df.shock == shk) & (irf_df.response == shk) & (irf_df.h == 0)].irf.iloc[0]
+        cells = []
+        for resp in OUTCOMES:
+            r = irf_df[(irf_df.shock == shk) & (irf_df.response == resp)]
+            x = r.loc[r.irf.abs().idxmax()]
+            cells.append(f"peak {resp} {x.irf:+5.2f} at h = {int(x.h)}, per unit {x.irf / own:+5.2f}")
+        say(f"  {shk:5s} own impact {own:+5.2f}:  " + ";  ".join(cells))
 
     # ── key takeaways ────────────────────────────────────────────────────────
     key_points = takeaways(head, alt, irf_df, svars)

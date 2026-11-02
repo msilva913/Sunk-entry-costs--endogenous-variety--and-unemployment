@@ -234,6 +234,12 @@ C    1    u   8    42.8-42.8          -  21.1-21.1
   s     -> u:  h0 +1.12 [+0.87,+1.31]  h1 +1.42 [+1.03,+1.66]  h2 +1.54 [+1.06,+1.80]  h4 +1.39 [+0.79,+1.68]  h6 +0.97 [+0.38,+1.30]  h8 +0.48 [-0.03,+0.77]  h12 -0.27 [-0.52,-0.03]
   s     -> v:  h0 -0.36 [-0.59,-0.07]  h1 -1.32 [-1.63,-0.87]  h2 -1.57 [-1.91,-1.01]  h4 -1.28 [-1.65,-0.62]  h6 -0.74 [-1.09,-0.13]  h8 -0.20 [-0.50,+0.26]  h12 +0.45 [+0.15,+0.66]
 
+  Scale: each shock's impact on its own series, and the peak u and v responses per unit
+  of that impact (log points per log point; signs as estimated)
+  z     own impact +0.54:  peak u -2.42 at h = 4, per unit -4.47;  peak v +2.64 at h = 3, per unit +4.87
+  delta own impact +5.24:  peak u +1.41 at h = 4, per unit +0.27;  peak v -1.60 at h = 3, per unit -0.30
+  s     own impact +3.82:  peak u +1.54 at h = 2, per unit +0.40;  peak v -1.57 at h = 2, per unit -0.41
+
 ------------------------------------------------------------------------------
 6. Key takeaways (numbers from this run)
 ------------------------------------------------------------------------------
