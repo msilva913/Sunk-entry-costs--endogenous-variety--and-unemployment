@@ -34,3 +34,7 @@ Data 1951–2019: cor −0.925, σu 12.48, σv 13.82 (σθ/σLP 11.70 is 1951–
   δ Hamilton-matched 0.892 (σδ 0.0470) ϕ 0.914  FS0 0.134  FS 0.105 | cor -0.517  σu  6.24  σv  6.69  σθ/σLP  9.52 | σu by z  2.09 δ  0.51 s  5.81 | share z 11.4 δ  0.7 s 87.9
   δ ρ 0.892, base variance (σδ 0.0342) ϕ 0.914  FS0 0.134  FS 0.105 | cor -0.516  σu  6.23  σv  6.67  σθ/σLP  9.50 | σu by z  2.09 δ  0.37 s  5.81 | share z 11.4 δ  0.4 s 88.2
   δ ρ 0.970, base variance (σδ 0.0184) ϕ 0.914  FS0 0.134  FS 0.105 | cor -0.516  σu  6.23  σv  6.67  σθ/σLP  9.49 | σu by z  2.09 δ  0.27 s  5.81 | share z 11.4 δ  0.2 s 88.4
+
+== clone replacement (f[4]: Ñ_{t+1} = Ñ̄ = 1.001357; working point, matched shocks; compare "working point" above)
+  clone replacement          ϕ 0.914  FS0 0.134  FS 0.105 | cor -0.578  σu  6.50  σv  7.55  σθ/σLP  8.69 | σu by z  2.53 δ  0.42 s  5.91 | share z 15.4 δ  0.4 s 84.1
+  clone repl., costless repost ϕ 0.580  FS0 0.160  FS 0.157 | cor +0.958  σu  3.51  σv  6.80  σθ/σLP  2.53 | σu by z  0.46 δ  0.32 s  3.45 | share z  1.7 δ  0.8 s 97.4

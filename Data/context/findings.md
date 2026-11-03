@@ -1071,3 +1071,16 @@ Caveat: the model's figures are true-shock shares, while the data's are Cholesky
 - Only 68 % bands are reported; at 90 % the δ share for financial shocks may include zero (not computed).
 - Bearing on the paper's framing: exit as a channel of financial shocks is supported, but modest, about as important as separations. It is not a channel for productivity.
 - **Baseline recommendation (Nov 2):** SVAR A stays the baseline for Block B′. A_F and the mediation are the identification check, and δ's share is reported as a range (about 6–12 %). Reasons in the note, §2.2d.
+
+**Clone-replacement test at the working point (`Q2_amplification_sweep.txt`, clone block, Nov 3).** Only the product-line entry Euler is replaced: f[4] becomes Ñ_{t+1} = Ñ̄ = 1.001357, so destroyed lines are replaced at no priced cost. Costly reposting, endogenous exit and variety stay on.
+
+| | σ(u) from z | δ | s | Total | cor(u,v) |
+|---|---|---|---|---|---|
+| Working point (priced entry) | 2.09 | 0.27 | 5.81 | 6.23 | −0.516 |
+| Clone replacement | 2.53 | 0.42 | 5.91 | 6.50 | −0.578 |
+
+- **Removing the R19 offset and priced replacement raises δ's σ(u) by about half,** from 0.27 to 0.42. δ is still about 7–10× short of the data (3.0–4.3). z rises a little (2.09 → 2.53) and s is unchanged.
+- **So free product-line entry is a real but secondary part of the δ gap at the working point.** The large θ response under AGS (−0.72 per unit, Test 6) needs vacancy free entry (ξ_inv → 0), x_v = 1 and σ = 0. At the working point vacancy creation is inelastic (R15: stock elasticity 0.073 at ξ = 1), so the user-cost channel moves θ little even without the offset.
+- **Implication:** entry congestion, which interpolates toward slower replacement, is unlikely to close the gap on its own. The bottleneck is elsewhere: δ's small direct footprint (δ_e/τ = 0.087) together with inelastic vacancy creation, and possibly the survivor-gain offset. The δ propagation decomposition is the next step.
+- A costless-reposting variant collapses z (σ(u) 0.46) and gives cor(u,v) +0.96, so the reposting margin remains necessary.
+- Technical note: `process_model` compiles the equations into global functions, so a second model built in the same session replaces the first. The clone block therefore runs last.
