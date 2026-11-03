@@ -30,6 +30,11 @@
 # (shock_calibration.csv, hamilton_matched_*); and ρ_δ raised with σ_δ rescaled so δ's unconditional
 # variance stays at the baseline value (persistence alone). Exploratory, not a calibration.
 #
+# Clone-replacement block (Nov 3, 2026): the working point with only the product-line entry Euler
+# f[4] replaced by Ñ_{t+1} = 1 (entry replaces exactly what δ destroys, unpriced), as in R8 Test 6.
+# Everything else, including the costly reposting margin (Λ̄_r = 0.25), endogenous exit (p_0 = 0.8)
+# and variety, is unchanged. It isolates the replacement-pricing channel (R19).
+#
 # Output: Q2_amplification_sweep.txt
 # =============================================================================
 
@@ -49,22 +54,25 @@ log!(str) = (push!(lines, str); println(str))
 const SH  = SHOCKS_BASE
 const ETA = hcat(shock_col(:z, SH.σz), shock_col(:δ, SH.σδ), shock_col(:s, SH.σs))
 
-model = let
+function build_model(; clone = false)
+    f = gen_model_equations()
+    clone && (f[4] = Ntp - 1)               # clone replacement: no product-line entry Euler
     m = (parameters = parameters, estimate = estimate, estimation = position,
          npar = length(parameters), ns = length(estimate), priors = priors,
          x = x, y = y, xp = xp, yp = yp, variables = variables, varnames = varnames,
          nx = nx, ny = ny, nvar = nvar, e = ex, eta = eta, ne = ne,
-         f = gen_model_equations(), nf = nvar, SS = SS_symbolics(parameters, TARGETS),
+         f = f, nf = nvar, SS = SS_symbolics(parameters, TARGETS),
          PAR_SS = parameters[:], flag_order = flag_order, flag_deviation = flag_deviation,
          flag_SSsolver = flag_SSsolver)
     process_model(m)
     m
 end
+model = build_model()
 
 hpq(sim, v) = hp_filter(Float64.(monthly_to_quarterly(sim[!, [v]])[!, v]), LAM)
 
-function stats(sol, eta_m)
-    sim = DataFrame(simulate_model((; model..., ne = size(eta_m, 2)), sol.sol_mat, T_SM, eta_m,
+function stats(sol, eta_m; mdl = model)
+    sim = DataFrame(simulate_model((; mdl..., ne = size(eta_m, 2)), sol.sol_mat, T_SM, eta_m,
                                    sol.SS, false, true), varnames)
     hu, hv, hθ, hlp = hpq(sim, :u), hpq(sim, :v), hpq(sim, :θ), hpq(sim, :labor_prod)
     return (c = cor(hu, hv), su = 100std(hu), sv = 100std(hv), amp = std(hθ) / std(hlp))
@@ -77,20 +85,20 @@ function fundamental_surplus(cal, ss)
            (ss.w_int - cal.b - (cal.r + τ) * cal.κ - cal.s * sh) / ss.w_int
 end
 
-function run_case(label, tg; shk = SH)
+function run_case(label, tg; shk = SH, mdl = model)
     eta = hcat(shock_col(:z, shk.σz), shock_col(:δ, shk.σδ), shock_col(:s, shk.σs))
     res = try
         cal = calibrate_shares(tg)
         PAR = build_PAR(cal, shk)
-        (cal, solution_interface(model, PAR, SS_numeric(PAR, tg)))
+        (cal, solution_interface(mdl, PAR, SS_numeric(PAR, tg)))
     catch err
         log!(@sprintf("  %-26s failed: %s", label, first(sprint(showerror, err), 100)))
         return
     end
     cal, sol = res
     fs0, fs = fundamental_surplus(cal, sol.ss)
-    a   = stats(sol, eta)
-    one = [stats(sol, eta[:, j:j]) for j in 1:3]
+    a   = stats(sol, eta; mdl)
+    one = [stats(sol, eta[:, j:j]; mdl) for j in 1:3]
     v2  = [o.su^2 for o in one]
     sh  = 100 .* v2 ./ sum(v2)
     log!(@sprintf("  %-26s ϕ %.3f  FS0 %.3f  FS %.3f | cor %+.3f  σu %5.2f  σv %5.2f  σθ/σLP %5.2f | σu by z %5.2f δ %5.2f s %5.2f | share z %4.1f δ %4.1f s %4.1f",
@@ -122,5 +130,12 @@ for (label, ρ, σ) in (("δ HP-matched (baseline)", SH.ρδ, SH.σδ),
                       ("δ ρ 0.970, base variance", 0.97, same_var(0.97)))
     run_case(@sprintf("%s (σδ %.4f)", label, σ), BASE; shk = merge(SH, (ρδ = ρ, σδ = σ)))
 end
+
+# ── clone replacement at the working point (R19 isolated) ──────────────────
+const MODEL_CLONE = build_model(clone = true)
+log!("\n== clone replacement (f[4]: Ñ_{t+1} = 1; working point, matched shocks)")
+run_case("working point (baseline)", BASE)
+run_case("clone replacement", BASE; mdl = MODEL_CLONE)
+run_case("clone repl., costless repost", merge(TARGETS, (p_0 = 0.8,)); mdl = MODEL_CLONE)
 
 write(joinpath(@__DIR__, "Q2_amplification_sweep.txt"), join(lines, "\n") * "\n")
