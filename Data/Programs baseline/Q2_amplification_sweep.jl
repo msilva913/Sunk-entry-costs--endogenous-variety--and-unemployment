@@ -54,9 +54,12 @@ log!(str) = (push!(lines, str); println(str))
 const SH  = SHOCKS_BASE
 const ETA = hcat(shock_col(:z, SH.σz), shock_col(:δ, SH.σδ), shock_col(:s, SH.σs))
 
-function build_model(; clone = false)
+function build_model(; clone_N = nothing)
     f = gen_model_equations()
-    clone && (f[4] = Ntp - 1)               # clone replacement: no product-line entry Euler
+    # Clone replacement: the product-line entry Euler gives way to Ñ_{t+1} = Ñ̄, so entry replaces
+    # exactly what δ destroys. Ñ̄ is the working point's steady-state pre-exit stock (AGS's
+    # normalization Ñ = 1 does not hold here).
+    clone_N === nothing || (f[4] = Ntp - clone_N)
     m = (parameters = parameters, estimate = estimate, estimation = position,
          npar = length(parameters), ns = length(estimate), priors = priors,
          x = x, y = y, xp = xp, yp = yp, variables = variables, varnames = varnames,
@@ -132,9 +135,15 @@ for (label, ρ, σ) in (("δ HP-matched (baseline)", SH.ρδ, SH.σδ),
 end
 
 # ── clone replacement at the working point (R19 isolated) ──────────────────
-const MODEL_CLONE = build_model(clone = true)
-log!("\n== clone replacement (f[4]: Ñ_{t+1} = 1; working point, matched shocks)")
-run_case("working point (baseline)", BASE)
+# process_model compiles the equations into global functions, so building a second model
+# replaces the first: this block must come last, and its reference row is "working point" above.
+function pre_exit_N(tg)
+    cal = calibrate_shares(tg); st = steady_state(cal)
+    return st.N / ((1 - st.δ_e) / (1 - cal.δ))
+end
+const NT_SS = pre_exit_N(BASE)
+const MODEL_CLONE = build_model(clone_N = NT_SS)
+log!(@sprintf("\n== clone replacement (f[4]: Ñ_{t+1} = Ñ̄ = %.6f; working point, matched shocks; compare \"working point\" above)", NT_SS))
 run_case("clone replacement", BASE; mdl = MODEL_CLONE)
 run_case("clone repl., costless repost", merge(TARGETS, (p_0 = 0.8,)); mdl = MODEL_CLONE)
 
