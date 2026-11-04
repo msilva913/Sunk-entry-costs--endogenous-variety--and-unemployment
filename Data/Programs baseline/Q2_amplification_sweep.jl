@@ -35,6 +35,11 @@
 # Everything else, including the costly reposting margin (Λ̄_r = 0.25), endogenous exit (p_0 = 0.8)
 # and variety, is unchanged. It isolates the replacement-pricing channel (R19).
 #
+# Two-way ξ block (Nov 4, 2026): ξ_inv ∈ XI_GRID under priced entry and under clone replacement.
+# With priced entry the user cost barely moves (R19), so the elasticity of vacancy creation should
+# matter little; under clone replacement it should matter if R19 and inelastic creation are jointly
+# the bottleneck.
+#
 # Output: Q2_amplification_sweep.txt
 # =============================================================================
 
@@ -134,6 +139,13 @@ for (label, ρ, σ) in (("δ HP-matched (baseline)", SH.ρδ, SH.σδ),
     run_case(@sprintf("%s (σδ %.4f)", label, σ), BASE; shk = merge(SH, (ρδ = ρ, σδ = σ)))
 end
 
+# ── two-way ξ sweep, priced-entry half (must precede the clone model) ─────
+const XI_GRID = (4.0, 1.0, 0.25, 0.1, 0.03, 0.01)
+log!("\n== two-way ξ sweep: priced entry (working point otherwise)")
+for xi in XI_GRID
+    run_case(@sprintf("priced, ξ_inv = %g", xi), merge(BASE, (ξ_inv = xi,)))
+end
+
 # ── clone replacement at the working point (R19 isolated) ──────────────────
 # process_model compiles the equations into global functions, so building a second model
 # replaces the first: this block must come last, and its reference row is "working point" above.
@@ -146,5 +158,10 @@ const MODEL_CLONE = build_model(clone_N = NT_SS)
 log!(@sprintf("\n== clone replacement (f[4]: Ñ_{t+1} = Ñ̄ = %.6f; working point, matched shocks; compare \"working point\" above)", NT_SS))
 run_case("clone replacement", BASE; mdl = MODEL_CLONE)
 run_case("clone repl., costless repost", merge(TARGETS, (p_0 = 0.8,)); mdl = MODEL_CLONE)
+
+log!("\n== two-way ξ sweep: clone replacement (working point otherwise)")
+for xi in XI_GRID
+    run_case(@sprintf("clone, ξ_inv = %g", xi), merge(BASE, (ξ_inv = xi,)); mdl = MODEL_CLONE)
+end
 
 write(joinpath(@__DIR__, "Q2_amplification_sweep.txt"), join(lines, "\n") * "\n")
