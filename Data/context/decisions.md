@@ -20,6 +20,34 @@ Status key: 🔴 blocks estimation · 🟠 blocks a paper section · 🟡 improv
 
 ---
 
+## 🟠 D15. Two-part paper: AGS first, then the full model with business formation
+
+**Proposed Nov 4, 2026 (MS); adopted conditionally, pending two gates.**
+
+**The plan.**
+- **Part 1: an AGS model,** building on Gabrovski–Silva (and through it on Coles and Kelishomi), estimated against the data SVAR. σ = 0 for the closed forms, with clone replacement, no variety and no endogenous exit. It adds costly reactivation of vacancies after s shocks, with its own cost distribution, decoupled from exit (in the current code it draws from F with floor 1 − p_0, which forces it to be costless at p_0 = 0).
+- **Part 2: the full model with business formation.** It argues that frictionless business formation undoes destruction shocks (R19: priced replacement offsets the vacancy user cost), so the data require frictions in replacement, namely entry congestion.
+
+**Why.**
+- Every dynamic theorem in the draft already works in the AGS corner: `lem:theta`, `prop:fe`, `rem:dmp`, `lem:accounting`, `rem:finite_xi`. They belong in Part 1. The full-model results belong in Part 2: `prop:independence`, `prop:double_limit`, `rem:bgm_nest`, `rem:dilution_variety`, `prop:exit_s`, `rem:curves`, `prop:equilibria`.
+- `prop:ags` becomes the bridge between the parts, and R19 becomes Part 2's theoretical result.
+- In the two-way ξ sweep (findings.md, Nov 4), the model's composition is closest to the data near the AGS corner.
+
+**Gates before restructuring the draft.**
+1. **Proper AGS at the matched shocks:** σ = 0, no variety, no endogenous exit, decoupled costly reactivation, nearly free vacancy creation. Through the model-side SVAR it should match the composition: s about right, z close, δ within about 2× of the data.
+2. **Entry congestion × ξ in the full model,** on its own branch: does it approach the clone-replacement results?
+
+**Risks.**
+- **(i) Part 1's novelty relative to GS** (AGS with σ = κ = 0 is GS), so the paper's novelty rests on Part 2. If gate 2 fails, the choice is an AGS-only paper or reframing Part 2's conclusion.
+- **(ii) Length.** Estimate Part 1 fully, and in Part 2 estimate only the new parameters.
+- **(iii) The bridge:** σ is 0 in Part 1 and above σ* in Part 2. Show AGS at Part 2's σ so the bridge varies only business formation.
+- **(iv) Shared reactivation specification:** the decoupled reactivation must be the same in both parts, so that `prop:ags` holds exactly.
+- **(v) The Beveridge correlation** (−0.59 at best against −0.93) is unresolved in both parts.
+
+**Estimation in both parts:** indirect inference (D13). The same SVAR A runs on data and on simulated data, using the model's measured productivity and realized exit, and the conditional responses of u and v to the z, s and δ shocks are matched. That needs no extra shocks. Variance shares and total volatility would need measurement error or a residual shock.
+
+---
+
 ## ✅ D14. Is the s innovation orthogonalized against z and δ? — **settled Oct 28 (MS): no; independent AR(1)s, σ_s not purged** (see the Oct 28 update below)
 
 **Raised Oct 19, 2026 (Q2 scoping).** `part6b_shock_persistence_cyclical.py` orthogonalizes
