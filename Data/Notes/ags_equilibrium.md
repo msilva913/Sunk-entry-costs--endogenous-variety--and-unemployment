@@ -88,7 +88,84 @@ K_t, C_t and 𝓡_t are the functions of (θ, e, δ) defined above. That's three
 ### Special cases
 
 - **Vacancy free entry (ξ → ∞):** Q = x_m is constant, so Λ_r and Q^rep are constants, K_t = x_m[1 − β(1 − δ_t)] depends only on δ_t, and 𝓡_t = β(1 − δ_t)(x_m − Q^rep) is proportional to survival. E2 then pins θ_t as a function of the current shocks alone, the analog of `lem:theta` with the 𝓡 term: θ does not load on the stocks (u, Ṽ^u, Ṽ^s). `ags_run_solution.jl` section 2 checks this numerically. In this limit, reactivation is a constant attenuation, not a cyclical margin. s shocks still move θ, through two terms in E2: the expected continuation (1 − s_{t+1})C_{t+1}, as in DMP, and the shortfall (1 − ϕ)s_{t+1}𝓡_{t+1}. (The first version said only the shortfall term; that was wrong.)
-- **Costless reactivation (p_r → 0, or a → 0):** Λ_r = 1 and 𝓡 = 0. With κ = 0 this is Gabrovski–Silva with aggregate shocks, and additionally with s ≡ 0 it is Coles–Kelishomi (`rem:nesting`).
+- **Costless reactivation (p_r = 0, so Λ̄_r = 1):** the formulas give Λ_r ≡ 1 and Q^rep = Q, so 𝓡 = 0, and the scale a has no effect. The limit a → 0 with p_r > 0 is the same economy. (Λ̄_r = 1 with p_r > 0 is not: every position is reactivated, but the costly draws still pay, so 𝓡 > 0.) With κ = 0 this is Gabrovski–Silva with aggregate shocks, and additionally with s ≡ 0 it is Coles–Kelishomi (`rem:nesting`).
+
+### Steady state
+
+**Notation.** f, q and θ are rates conditional on survival (JOLTS gross rates divided by 1 − δ), τ = δ + (1 − δ)s, and β = 1/(1 + r). The suffix _Q denotes a steady-state ratio per unit of Q: K_Q = K/Q, κ_Q = κ/Q, R_Q = 𝓡/Q. These ratios are code shorthand (`calibrate_ags`), not model objects: κ is the per-hire cost (a parameter), K the user cost and 𝓡 the reactivation shortfall (both endogenous).
+
+#### Forward: from parameters to the steady state (`steady_state_ags`)
+
+Given (δ, s, r, A, η, b, ϕ, κ, x_m, ξ_inv, z̄, a, p_r, ψ_r), the steady state reduces to one equation in θ, with a scalar equation for Q nested inside.
+
+**Step 1: flows (the Beveridge curve).** For a given θ:
+
+  q = Aθ^{−η},  f = θq,  u = τ / (τ + (1 − δ)f),  v = θu.
+
+**Step 2: positions.** Creation replaces the positions destroyed with product lines and the vacated positions that are retired:
+
+  e(Q) = δ(v + 1 − u) + (1 − δ)(1 − Λ_r(Q)) s (1 − u),  Q = x_m e(Q)^{ξ_inv}.
+
+Q − x_m e(Q)^{ξ_inv} is increasing in Q (a higher Q raises reactivation, which lowers the creation needed), so Q is unique. With costless reactivation, e is explicit and so is Q; under vacancy free entry (ξ_inv = 0), Q = x_m.
+
+**Step 3: prices of a position.**
+
+  K = Q (r + δ)/(1 + r),  𝓡 = (1 − δ)(Q − Q^rep(Q))/(1 + r).
+
+K is interest plus the risk that destruction removes the position. 𝓡 is the expected value lost at separation, through retirement or reactivation costs.
+
+**Step 4: job creation.** E2 in steady state, with the wage substituted:
+
+  (1 − ϕ)(z̄ − K − b − s𝓡) − ϕθ(K + qκ)  =  (r + τ)/(1 − δ) · (κ + K/q).
+
+The left side is the recruiter's share of the flow surplus. The right side is the cost of a hire, κ + K/q, annuitized over the match's expected life: from E2, (κ + K/q)[1 + r − (1 − δ)(1 − s)] = (1 − δ) × flow, and 1 + r − (1 − δ)(1 − s) = r + τ. Solve for θ; the wage w then follows from the Nash equation.
+
+**Uniqueness.** As θ rises, the left side falls and the right side rises, so the two cross once:
+- θ(K + qκ) = θK + fκ rises;
+- K rises, because v rises, so e rises, so Q rises;
+- 𝓡 rises with Q, because d(Q − Q^rep)/dQ = 1 − Λ_r ≥ 0;
+- K/q rises, because q falls and K rises.
+
+This is DMP's job-creation logic, except that the vacancy cost K rises with θ, through creation, instead of being a constant c.
+
+#### Backward: from targets to parameters (`calibrate_ags`)
+
+Calibration runs the same chain in reverse, and every unknown then enters linearly:
+
+| Step | Forward (given parameters) | Backward (given targets) |
+|---|---|---|
+| Flows | θ unknown → q, f, u, v | f, q from JOLTS → θ, u, v and A directly |
+| Positions | solve Q = x_m e(Q)^{ξ_inv} | Λ̄_r is a target, so e is explicit; Q from X/Y; then x_m = Q/e^{ξ_inv} and a from Λ̄_r |
+| Job creation | solve for θ | solve for z̄ |
+| Wage | gives w | w = 1 is a target, so it gives ϕ |
+
+With the _Q ratios, K_Q = (r + δ)/(1 + r), κ_Q = (1 − x_v)/x_v · K_Q/q and R_Q = (1 − δ)·gap/(1 + r), where gap = (1 − Λ̄_r) + ψ_r/(1 + ψ_r)·(Λ̄_r − 1 + p_r). Job creation then reads
+
+  z̄ − w = zw_Q · Q,  zw_Q = K_Q + s·R_Q + (r + τ)/(1 − δ) · (κ_Q + K_Q/q):
+
+flow profit per worker covers the user cost, the expected reactivation loss and the annuitized hiring cost. Recruiting costs are X = X_Q · Q with X_Q = e/(1 + ξ_inv) + κ_Q·q·v. Since Y = z̄(1 − u) is also linear in Q, the target X/Y pins Q in closed form:
+
+  Q = X_Y · w · (1 − u) / [X_Q − X_Y · zw_Q · (1 − u)].
+
+**Where the cost of a match comes from** (approximate, worked by hand from the calibrated values in `ags_steady_state_checks.txt`; not produced by a program):
+
+| | user cost K_Q | reactivation s·R_Q | annuitized hiring | zw_Q | Q |
+|---|---|---|---|---|---|
+| Costless, ξ_inv 1 | 92 % | 0 | 8 % | 0.0065 | 9.74 |
+| Λ̄_r 0.25, ξ_inv 1 | 21 % | 77 % | 2 % | 0.0283 | 1.27 |
+
+With Λ̄_r = 0.25, the expected reactivation loss is about three quarters of the cost of a match. A fixed X/Y then forces Q down, the flow surplus z̄ − w shrinks, and Nash bargaining hits w = 1 only with ϕ near 1 (see "Implied bargaining power" in §6). The small steady-state share of the hiring cost understates κ's role over the cycle: κ is fixed while K moves with Q, so a larger κ share makes the hiring cost less procyclical (Pissarides 2009). Setting κ = 0 (x_v = 1) lowers σ(u) from z from 5.76 to 3.88 in `ags_run_solution.txt`.
+
+#### Comparison with the baseline (`steady_state.jl`)
+
+| | AGS | Baseline |
+|---|---|---|
+| Calibration | closed form | Stage 4 root-finds Q: output includes variety and fixed costs, so it is not linear in Q (PATH A adds two more root-finds) |
+| Forward solve | one equation in θ, with a scalar equation for Q nested inside | a multi-dimensional system (θ with N and the exit cutoff x_c, through variety and survival), plus the Λ_r ↔ Q iteration in `repost_state` |
+
+**Which one is used when.** In estimation, each draw goes through the calibration: the estimated parameters (ξ_inv, x_v, b/w, Λ̄_r, p_r, ψ_r and the shocks) plus the fixed targets back out the rest, so the long-run targets hold exactly at every draw. In AGS that step is closed form. The forward solve serves two purposes:
+- checks: `ags_steady_state_checks.jl` solves forward from the calibrated parameters and recovers the targets;
+- counterfactuals that hold parameters fixed (for example, a higher δ̄ with x_m and z̄ unchanged), which calibration cannot do, since it would re-target and absorb the change.
 
 ## 4. Observables (for the SVAR)
 
