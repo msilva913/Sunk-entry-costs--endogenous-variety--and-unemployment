@@ -106,25 +106,28 @@ function calibrate_ags(tg = AGS_TARGETS)
     A  = fc / θ^(1 - η_L)
     e  = δ * (v + L) + (1 - δ) * (1 - Λ_r) * s * L   # replaces destroyed and retired positions
 
-    # Everything per unit Q: K = kQ, κ = κQ·Q, 𝓡 = gQ·Q
-    k    = (r + δ) / (1 + r)
-    κQ   = (1 - x_v) / x_v * k / qc
+    # Steady-state ratios per unit of Q (suffix _Q): K_Q = K/Q (user cost), κ_Q = κ/Q (per-hire
+    # cost, fixed relative to K/q by x_v), R_Q = 𝓡/Q (reactivation shortfall). They let the
+    # X/Y target pin Q in closed form.
+    K_Q  = (r + δ) / (1 + r)
+    κ_Q  = (1 - x_v) / x_v * K_Q / qc
     gap  = (1 - Λ_r) + ψ_r / (ψ_r + 1) * (Λ_r - 1 + p_r)     # 0 when p_r = 0, Λ_r = 1
-    gQ   = (1 - δ) * gap / (1 + r)
-    # Job creation in steady state: z̄ = w + K + s𝓡 + (r+τ)/(1−δ)·(κ + K/q), linear in Q
-    cw   = k + s * gQ + (r + τ) / (1 - δ) * (κQ + k / qc)
-    # Recruiting costs X = eQ/(1+ξ_inv) + κ q v, linear in Q
-    aX   = e / (1 + ξ_inv) + κQ * qc * v
-    den  = aX - X_Y * cw * L
-    if !(den > 0)
+    R_Q  = (1 - δ) * gap / (1 + r)
+    # Job creation in steady state: z̄ − w = K + s𝓡 + (r+τ)/(1−δ)·(κ + K/q) = zw_Q·Q
+    zw_Q = K_Q + s * R_Q + (r + τ) / (1 - δ) * (κ_Q + K_Q / qc)
+    # Recruiting costs X = eQ/(1+ξ_inv) + κ q v = X_Q·Q
+    X_Q  = e / (1 + ξ_inv) + κ_Q * qc * v
+    # X/Y target with Y = z̄L = (w + zw_Q·Q)L:  X_Q·Q = X_Y (w + zw_Q·Q) L
+    den  = X_Q - X_Y * zw_Q * L
+    if den <= 0
         error("X_Y = $X_Y is infeasible: recruiting costs cannot reach that share of output.")
     end
     Q    = X_Y * w * L / den
 
-    K    = k * Q
-    κ    = κQ * Q
-    R_sh = gQ * Q
-    zbar = w + cw * Q
+    K    = K_Q * Q
+    κ    = κ_Q * Q
+    R_sh = R_Q * Q
+    zbar = w + zw_Q * Q
     b    = b_ratio * w
     ϕ    = (w - b) / (zbar - K + θ * (K + qc * κ) - s * R_sh - b)
     if !(0 < ϕ < 1)

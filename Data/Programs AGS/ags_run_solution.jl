@@ -170,8 +170,8 @@ say(@sprintf("  %-6s %-6s %8s %8s %8s %8s", "shock", "var", "impact", "peak", "a
 irfs = [irf(sol, i) for i in 1:3]
 for (i, name) in enumerate(("z", "δ", "s")), v in (:u, :v, :θ, :Q, :Λ_r)
     p = irfs[i][2:end, v]
-    k = argmax(abs.(p))
-    say(@sprintf("  %-6s %-6s %8.3f %8.3f %8d %8.3f", name, v, p[1], p[k], k, p[24]))
+    peak = argmax(abs.(p))
+    say(@sprintf("  %-6s %-6s %8.3f %8.3f %8d %8.3f", name, v, p[1], p[peak], peak, p[24]))
 end
 
 plt = plot(layout = (3, 3), size = (900, 700), legend = false)
