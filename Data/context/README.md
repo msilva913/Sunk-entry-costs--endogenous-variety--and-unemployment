@@ -55,6 +55,7 @@ status notes to whichever file was open rather than the file that owns the topic
 
 | Path | Contents |
 |---|---|
+| `../Notes/ags_equilibrium.md` | **Nov 4, 2026.** Part 1 of D15: the AGS model with costly reactivation (σ = 0, clone replacement, three shocks). DMP plus three modifications; equilibrium in two states (u, v_pre) and two jump variables (θ, e); special cases; observables; when the reactivation bound binds; parameters |
 | `../Notes/q3_data_svar_empirics.md` | **Nov 2, 2026.** The data SVAR (Block B′ data side, `q3_data_svar.py`): setup, specifications, windows and data availability; variance decomposition and impulse responses of u and v; the model's composition gap; candidate levers for raising z and δ transmission relative to s. Read before working on Q3–Q5 |
 | `../Notes/delta_calibration_and_the_reposting_margin.md` | **Sept 23, 2026.** Why δ̄_e = 3.2 % against BGM/GS/Shao-Silos at 10 %; why raising δ̄_e cannot fix the Beveridge curve; the reposting rate λ and whether to estimate it. Recommends keeping [D1](decisions.md) settled |
 | `../Notes/beveridge_free_entry_GS.tex` (+ `.pdf`) | **Oct 6–7, 2026. Superseded Oct 11 by the draft** (`lem:theta`, `prop:fe`, `app:proof_fe`, with translated notation). Keep for the full derivation of every log-linear equation in GS's dating. Numbers: `../Programs baseline/gs_free_entry_beveridge.jl` |
