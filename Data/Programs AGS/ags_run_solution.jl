@@ -168,16 +168,36 @@ say(@sprintf("Shocks (monthly, S14): ρz %.4f σz %.4f ρδ %.4f σδ %.4f ρs %
 say("Impulse responses to one-SD shocks (month 1 = impact; peak = largest |response|):")
 say(@sprintf("  %-6s %-6s %8s %8s %8s %8s", "shock", "var", "impact", "peak", "at", "month 24"))
 irfs = [irf(sol, i) for i in 1:3]
-for (i, name) in enumerate(("z", "δ", "s")), v in (:u, :v, :θ, :Q, :Λ_r)
+const IRF_VARS = (:u, :v, :e, :θ, :Q, :K, :Λ_r)
+for (i, name) in enumerate(("z", "δ", "s")), v in IRF_VARS
     p = irfs[i][2:end, v]
     peak = argmax(abs.(p))
     say(@sprintf("  %-6s %-6s %8.3f %8.3f %8d %8.3f", name, v, p[1], p[peak], peak, p[24]))
 end
 
-plt = plot(layout = (3, 3), size = (900, 700), legend = false)
-for (i, name) in enumerate(("z", "δ", "s")), (j, v) in enumerate((:u, :v, :θ))
-    plot!(plt[i, j], 0:T_IR-2, irfs[i][2:end, v], title = "$name → $v", lw = 2)
-    hline!(plt[i, j], [0], color = :gray, ls = :dash)
+# Figure: columns = shocks, rows = the shock's own path, then the variables. One series per
+# panel, so no legend; each panel has its own y-scale (responses differ by orders of magnitude).
+const SHOCK_STATE = (:z, :δ, :s)
+const ROWS = (:shock, IRF_VARS...)
+const LINE, ZERO, SURFACE = "#2a78d6", "#8a8984", "#fcfcfb"   # dataviz reference palette
+plt = plot(layout = (length(ROWS), 3), size = (1050, 1650), legend = false,
+           background_color = SURFACE, titlefontsize = 10, tickfontsize = 7,
+           guidefontsize = 8, gridalpha = 0.15, framestyle = :axes, left_margin = 7Plots.mm)
+for (j, name) in enumerate(("z", "δ", "s")), (i, v) in enumerate(ROWS)
+    if v == :shock
+        col, ttl = SHOCK_STATE[j], "$name shock: $name itself"
+    else
+        col, ttl = v, "$name shock: $v"
+    end
+    path = irfs[j][2:end, col]
+    plot!(plt[i, j], 0:length(path)-1, path, title = ttl, lw = 2, color = LINE)
+    if i == length(ROWS)
+        xlabel!(plt[i, j], "months")
+    end
+    if j == 1
+        ylabel!(plt[i, j], "%")
+    end
+    hline!(plt[i, j], [0], color = ZERO, lw = 1, ls = :dash)
 end
 savefig(plt, "ags_irf.png")
 
