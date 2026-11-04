@@ -78,7 +78,9 @@ function build_PAR(cal, shk)
     α_r, rp_r = repost_par(cal)
     return [cal.f_e; cal.z; cal.δ; cal.s; cal.b; cal.ϕ; cal.r; cal.σ; cal.ε; cal.A; cal.η_L;
             cal.κ; cal.ξ_inv; cal.x_m; cal.ψ; cal.f_m; cal.p_0;
-            shk.ρz; shk.σz; shk.ρδ; shk.σδ; shk.ρs; shk.σs; α_r; rp_r]
+            shk.ρz; shk.σz; shk.ρδ; shk.σδ; shk.ρs; shk.σs; α_r; rp_r;
+            hasproperty(cal, :p_r) ? cal.p_r : cal.p_0;      # reactivation-cost mass (Nov 4)
+            hasproperty(cal, :ψ_r) ? cal.ψ_r : cal.ψ]         # reactivation-cost shape
 end
 
 """
@@ -146,10 +148,10 @@ flag_SSsolver  = false
 # =============================================================================
 # Order must match build_PAR. Shocks enter as multiplicative deviations around 1
 # (δ·δbar is the destruction rate, s·sbar the separation rate).
-@syms f_e zbar δbar sbar b ϕ r σ ε A η_L κ ξ_inv x_m ψ f_m p_0 ρ_z σ_z ρ_δ σ_δ ρ_s σ_s α rp
+@syms f_e zbar δbar sbar b ϕ r σ ε A η_L κ ξ_inv x_m ψ f_m p_0 ρ_z σ_z ρ_δ σ_δ ρ_s σ_s α rp p_r ψ_r
 
 parameters = [f_e; zbar; δbar; sbar; b; ϕ; r; σ; ε; A; η_L; κ; ξ_inv; x_m; ψ; f_m; p_0;
-              ρ_z; σ_z; ρ_δ; σ_δ; ρ_s; σ_s; α; rp]
+              ρ_z; σ_z; ρ_δ; σ_δ; ρ_s; σ_s; α; rp; p_r; ψ_r]
 
 estimate = []   # filled in when estimation is wired up (Q6)
 position = []
@@ -158,6 +160,7 @@ priors   = (;)
 β   = 1 / (1 + r)
 μ   = ε / (ε - 1)          # markup (DS-CES)
 ψ_c = ψ / (ψ + 1)          # conditional mean of a power-law draw relative to its threshold
+ψ_cr = ψ_r / (ψ_r + 1)     # the same for the reactivation-cost distribution F_r (Nov 4)
 
 # =============================================================================
 # Variables
@@ -332,8 +335,8 @@ function gen_model_equations()
     # ── Partial reposting (eq:Lambda_r, eq:Qrep) ─────────────────────────────
     # A vacated position is resumed iff αχ ≤ Q_t, with χ ~ F (the continuation-cost distribution).
     # rp switches the margin on (1) or to costless reposting (0).
-    f[39] = Λ_r - (1 - rp + rp * ((1 - p_0) + p_0 * (Q / (α * f_m))^ψ))   # [39] Λ_r = F(Q/α)
-    f[40] = Q_rep - Q * (Λ_r - rp * ψ_c * (Λ_r - 1 + p_0))               # [40] E max(Q − αχ, 0)
+    f[39] = Λ_r - (1 - rp + rp * ((1 - p_r) + p_r * (Q / (α * f_m))^ψ_r))   # [39] Λ_r = F_r(Q/α)
+    f[40] = Q_rep - Q * (Λ_r - rp * ψ_cr * (Λ_r - 1 + p_r))                # [40] E max(Q − αχ, 0)
     f[41] = H - m * SDF_surv * Q_repp                                   # [41] H = E[m(1−δ)Λ'Q^rep']
 
     return f

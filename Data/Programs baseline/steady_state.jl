@@ -252,14 +252,23 @@ repost_alpha(para) = hasproperty(para, :α) ? para.α : 0.0
 
 """
     Λr_fun(Q, para)
-Reactivation rate Λ_r = F(Q/α) = min{(1-p_0) + p_0 (Q/(α χ_m))^ψ, 1}; 1 when α = 0.
+Reactivation rate Λ_r = F_r(Q/α) = min{(1-p_r) + p_r (Q/(α χ_m))^ψ_r, 1}; 1 when α = 0.
+F_r falls back to the exit distribution (p_0, ψ) when `para` carries no p_r, ψ_r.
 """
 function Λr_fun(Q, para)
     α = repost_alpha(para)
     α == 0 && return 1.0
-    @unpack p_0, f_m, ψ = para
-    return min(1 - p_0 + p_0 * (Q / (α * f_m))^ψ, 1.0)
+    p_r, ψ_r = repost_dist(para)
+    return min(1 - p_r + p_r * (Q / (α * para.f_m))^ψ_r, 1.0)
 end
+
+"""
+    repost_dist(para) → (p_r, ψ_r)
+The reactivation-cost distribution's mass and shape; the exit distribution's (p_0, ψ) when
+`para` has no p_r, ψ_r fields (the coupled specification before Nov 4, 2026).
+"""
+repost_dist(para) = (hasproperty(para, :p_r) ? para.p_r : para.p_0,
+                     hasproperty(para, :ψ_r) ? para.ψ_r : para.ψ)
 
 """
     repost_gap(Λ_r, para)
@@ -268,8 +277,9 @@ retired plus reactivation costs paid (interior closed form of the cost integral)
 """
 function repost_gap(Λ_r, para)
     repost_alpha(para) == 0 && return 0.0
-    ψ_c = para.ψ / (para.ψ + 1)
-    return (1 - Λ_r) + ψ_c * (Λ_r - 1 + para.p_0)
+    p_r, ψ_r = repost_dist(para)
+    ψ_c = ψ_r / (ψ_r + 1)
+    return (1 - Λ_r) + ψ_c * (Λ_r - 1 + p_r)
 end
 
 """
@@ -715,6 +725,11 @@ const TARGETS = (
     # Placeholder (principle 21): Λ̄_r is estimated in Q6; experiments use the grid
     # {0.95, 0.85, 0.70}. When set, α is backed out in calibrate_shares.
     Λr_target     = nothing,
+    # Reactivation-cost distribution F_r (Nov 4, 2026; D15): mass 1 - p_r at zero cost, power
+    # law with shape ψ_r up to α·χ_m. `nothing` = use the exit distribution's p_0 and ψ, the
+    # coupled specification before Nov 4 (reproduces every earlier result).
+    p_r           = nothing,
+    ψ_r           = nothing,
 )
 
 """
@@ -761,10 +776,15 @@ function calibrate_shares(targets)
     # the cost scale α (MS, Oct 14). `nothing` = costless reposting (α = 0, Block 1).
     Λr_target = get(targets, :Λr_target, nothing)
     repost    = !isnothing(Λr_target)
+    # Reactivation-cost distribution: its own mass p_r (and shape ψ_r, resolved below once
+    # PATH B has pinned ψ); `nothing` falls back to the exit distribution.
+    p_r_t = get(targets, :p_r, nothing)
+    ψ_r_t = get(targets, :ψ_r, nothing)
+    p_r   = isnothing(p_r_t) ? p_0 : p_r_t
     if repost
-        p_0 > 0.0 || error("Λr_target needs p_0 > 0: with p_0 = 0 every reactivation draw is free.")
-        1 - p_0 < Λr_target < 1 || error(
-            "Λr_target = $Λr_target must lie strictly inside (1-p_0, 1) = ($(1-p_0), 1): " *
+        p_r > 0.0 || error("Λr_target needs p_r > 0: with p_r = 0 every reactivation draw is free.")
+        1 - p_r < Λr_target < 1 || error(
+            "Λr_target = $Λr_target must lie strictly inside (1-p_r, 1) = ($(1-p_r), 1): " *
             "at the floor no draw is reactivated beyond the free atom, and at 1 the margin is " *
             "saturated and cannot be linearized. Use Λr_target = nothing for costless reposting.")
     end
@@ -885,9 +905,10 @@ function calibrate_shares(targets)
 
     # Partial reposting: shortfall per unit Q and reactivation cost per vacated position per
     # unit Q (interior closed form of the cost integral). Both 0 with costless reposting.
-    ψ_c_r   = ψ / (ψ + 1)
-    gap_r   = repost ? (1 - Λ_r) + ψ_c_r * (Λ_r - 1 + p_0) : 0.0
-    xr_perQ = repost ? (1 - δ_e) * s * (1 - u) * ψ_c_r * (Λ_r - 1 + p_0) : 0.0
+    ψ_r     = isnothing(ψ_r_t) ? ψ : ψ_r_t
+    ψ_c_r   = ψ_r / (ψ_r + 1)
+    gap_r   = repost ? (1 - Λ_r) + ψ_c_r * (Λ_r - 1 + p_r) : 0.0
+    xr_perQ = repost ? (1 - δ_e) * s * (1 - u) * ψ_c_r * (Λ_r - 1 + p_r) : 0.0
 
     # ------------------------------------------------------------------
     # Stage 4: Solve for vacancy value Q
@@ -939,8 +960,8 @@ function calibrate_shares(targets)
     x_m = Q / e^ξ_inv
 
     # Reactivation-cost scale from the reposting-rate target:
-    #   Λ̄_r = (1-p_0) + p_0 (Q/(α χ_m))^ψ   ⟹   α = Q / (χ_m ((Λ̄_r - 1 + p_0)/p_0)^(1/ψ))
-    α = repost ? Q / (f_m * ((Λ_r - 1 + p_0) / p_0)^(1 / ψ)) : 0.0
+    #   Λ̄_r = (1-p_r) + p_r (Q/(α χ_m))^ψ_r   ⟹   α = Q / (χ_m ((Λ̄_r - 1 + p_r)/p_r)^(1/ψ_r))
+    α = repost ? Q / (f_m * ((Λ_r - 1 + p_r) / p_r)^(1 / ψ_r)) : 0.0
 
     if use_dest_elast
         Xc_Y_implied = X_c / Q_out.Y
@@ -954,7 +975,7 @@ function calibrate_shares(targets)
 
     return (;
         f_e, δ, z, b, ϕ, r, σ, ε, A, η_L,
-        κ, ξ_inv, x_m, s, ψ, p_0, f_m, dest_el, α
+        κ, ξ_inv, x_m, s, ψ, p_0, f_m, dest_el, α, p_r, ψ_r
     )
 end
 

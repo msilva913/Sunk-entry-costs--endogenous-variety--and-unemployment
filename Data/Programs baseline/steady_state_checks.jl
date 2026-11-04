@@ -161,8 +161,8 @@ for Λr in (0.95, 0.85, 0.70)
     cal_r = calibrate_shares(merge(targets, (Λr_target = Λr,)))
     st = steady_state(cal_r)
     τ_r  = compute_separation_rate(st.δ_e, cal_r.s)
-    ψc_r = cal_r.ψ / (cal_r.ψ + 1)
-    Qrep = st.Q * st.Λ_r - ψc_r * st.Q * (st.Λ_r - 1 + cal_r.p_0)
+    ψc_r = cal_r.ψ_r / (cal_r.ψ_r + 1)
+    Qrep = st.Q * st.Λ_r - ψc_r * st.Q * (st.Λ_r - 1 + cal_r.p_r)
     res = (
         Λ_r_round_trip = st.Λ_r - Λr,
         N_normalization = st.N - targets.N,
@@ -174,7 +174,7 @@ for Λr in (0.95, 0.85, 0.70)
         u_LOM = (1 - st.δ_e) * st.f * st.u - τ_r * (1 - st.u),
         R_definition = st.R_sh - (1 - st.δ_e) * (st.Q - Qrep) / (1 + cal_r.r),
         RC_with_Xr = st.Y_c - (st.C + st.X + st.X_c + st.X_r),
-        Λ_r_equals_F = st.Λ_r - (1 - cal_r.p_0 + cal_r.p_0 * (st.Q / (cal_r.α * cal_r.f_m))^cal_r.ψ),
+        Λ_r_equals_F = st.Λ_r - (1 - cal_r.p_r + cal_r.p_r * (st.Q / (cal_r.α * cal_r.f_m))^cal_r.ψ_r),
     )
     worst_r = maximum(abs, values(res))
     @printf("  Λ̄_r = %.2f: α = %.4g, X^r/Y = %.4f%%, worst identity residual %.2e\n",
