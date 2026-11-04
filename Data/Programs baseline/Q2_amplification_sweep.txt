@@ -35,6 +35,22 @@ Data 1951–2019: cor −0.925, σu 12.48, σv 13.82 (σθ/σLP 11.70 is 1951–
   δ ρ 0.892, base variance (σδ 0.0342) ϕ 0.914  FS0 0.134  FS 0.105 | cor -0.516  σu  6.23  σv  6.67  σθ/σLP  9.50 | σu by z  2.09 δ  0.37 s  5.81 | share z 11.4 δ  0.4 s 88.2
   δ ρ 0.970, base variance (σδ 0.0184) ϕ 0.914  FS0 0.134  FS 0.105 | cor -0.516  σu  6.23  σv  6.67  σθ/σLP  9.49 | σu by z  2.09 δ  0.27 s  5.81 | share z 11.4 δ  0.2 s 88.4
 
+== two-way ξ sweep: priced entry (working point otherwise)
+  priced, ξ_inv = 4          ϕ 0.805  FS0 0.183  FS 0.111 | cor -0.676  σu  6.56  σv  7.98  σθ/σLP 11.32 | σu by z  0.92 δ  0.29 s  6.42 | share z  2.0 δ  0.2 s 97.8
+  priced, ξ_inv = 1          ϕ 0.914  FS0 0.134  FS 0.105 | cor -0.516  σu  6.23  σv  6.66  σθ/σLP  9.49 | σu by z  2.09 δ  0.27 s  5.81 | share z 11.4 δ  0.2 s 88.4
+  priced, ξ_inv = 0.25       ϕ 0.945  FS0 0.121  FS 0.103 | cor -0.341  σu  6.11  σv  7.10  σθ/σLP  9.16 | σu by z  3.36 δ  0.24 s  5.06 | share z 30.6 δ  0.2 s 69.3
+  priced, ξ_inv = 0.1        ϕ 0.951  FS0 0.119  FS 0.103 | cor -0.312  σu  6.23  σv  8.24  σθ/σLP 10.00 | σu by z  4.07 δ  0.22 s  4.68 | share z 43.1 δ  0.1 s 56.8
+  priced, ξ_inv = 0.03       ϕ 0.954  FS0 0.118  FS 0.102 | cor -0.327  σu  6.52  σv  9.70  σθ/σLP 11.40 | σu by z  4.76 δ  0.18 s  4.43 | share z 53.5 δ  0.1 s 46.4
+  priced, ξ_inv = 0.01       ϕ 0.955  FS0 0.117  FS 0.102 | cor -0.340  σu  6.81  σv 10.65  σθ/σLP 12.39 | σu by z  5.15 δ  0.15 s  4.43 | share z 57.4 δ  0.0 s 42.5
+
 == clone replacement (f[4]: Ñ_{t+1} = Ñ̄ = 1.001357; working point, matched shocks; compare "working point" above)
   clone replacement          ϕ 0.914  FS0 0.134  FS 0.105 | cor -0.578  σu  6.50  σv  7.55  σθ/σLP  8.69 | σu by z  2.53 δ  0.42 s  5.91 | share z 15.4 δ  0.4 s 84.1
   clone repl., costless repost ϕ 0.580  FS0 0.160  FS 0.157 | cor +0.958  σu  3.51  σv  6.80  σθ/σLP  2.53 | σu by z  0.46 δ  0.32 s  3.45 | share z  1.7 δ  0.8 s 97.4
+
+== two-way ξ sweep: clone replacement (working point otherwise)
+  clone, ξ_inv = 4           ϕ 0.805  FS0 0.183  FS 0.111 | cor -0.685  σu  6.63  σv  8.18  σθ/σLP  9.51 | σu by z  1.02 δ  0.34 s  6.48 | share z  2.4 δ  0.3 s 97.3
+  clone, ξ_inv = 1           ϕ 0.914  FS0 0.134  FS 0.105 | cor -0.578  σu  6.50  σv  7.55  σθ/σLP  8.69 | σu by z  2.53 δ  0.42 s  5.91 | share z 15.4 δ  0.4 s 84.1
+  clone, ξ_inv = 0.25        ϕ 0.945  FS0 0.121  FS 0.103 | cor -0.536  σu  6.82  σv  9.05  σθ/σLP  9.64 | σu by z  4.30 δ  0.67 s  5.21 | share z 40.2 δ  1.0 s 58.8
+  clone, ξ_inv = 0.1         ϕ 0.951  FS0 0.119  FS 0.103 | cor -0.554  σu  7.16  σv 10.62  σθ/σLP 10.84 | σu by z  5.25 δ  0.98 s  4.76 | share z 53.9 δ  1.9 s 44.3
+  clone, ξ_inv = 0.03        ϕ 0.954  FS0 0.118  FS 0.102 | cor -0.580  σu  7.49  σv 12.32  σθ/σLP 12.15 | σu by z  6.00 δ  1.45 s  4.24 | share z 64.2 δ  3.7 s 32.1
+  clone, ξ_inv = 0.01        ϕ 0.955  FS0 0.117  FS 0.102 | cor -0.593  σu  7.63  σv 13.25  σθ/σLP 12.85 | σu by z  6.31 δ  1.77 s  3.92 | share z 68.3 δ  5.4 s 26.4

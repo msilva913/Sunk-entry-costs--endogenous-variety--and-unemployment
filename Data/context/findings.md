@@ -1084,3 +1084,28 @@ Caveat: the model's figures are true-shock shares, while the data's are Cholesky
 - **Implication:** entry congestion, which interpolates toward slower replacement, is unlikely to close the gap on its own. The bottleneck is elsewhere: δ's small direct footprint (δ_e/τ = 0.087) together with inelastic vacancy creation, and possibly the survivor-gain offset. The δ propagation decomposition is the next step.
 - A costless-reposting variant collapses z (σ(u) 0.46) and gives cor(u,v) +0.96, so the reposting margin remains necessary.
 - Technical note: `process_model` compiles the equations into global functions, so a second model built in the same session replaces the first. The clone block therefore runs last.
+
+**Two-way ξ sweep: priced entry × clone replacement (`Q2_amplification_sweep.txt`, Nov 4).** Working point, matched shocks; σ(u) from δ / z / s.
+
+| ξ_inv | Priced entry | Clone replacement |
+|---|---|---|
+| 4 | 0.29 / 0.92 / 6.42 | 0.34 / 1.02 / 6.48 |
+| 1 (working point) | 0.27 / 2.09 / 5.81 | 0.42 / 2.53 / 5.91 |
+| 0.25 | 0.24 / 3.36 / 5.06 | 0.67 / 4.30 / 5.21 |
+| 0.1 | 0.22 / 4.07 / 4.68 | 0.98 / 5.25 / 4.76 |
+| 0.03 | 0.18 / 4.76 / 4.43 | 1.45 / 6.00 / 4.24 |
+| 0.01 | 0.15 / 5.15 / 4.43 | **1.77 / 6.31 / 3.92** |
+
+Data (SVAR A): δ 3.0–4.3, z 7.40, s 3.9–4.5.
+
+- **The bottleneck is the interaction.**
+  - With priced entry, more elastic vacancy creation *lowers* δ's effect (0.29 → 0.15), because replacement refills destroyed vacancies faster. It raises z's, from 0.92 to 5.15.
+  - With clone replacement, more elastic creation raises δ about fourfold, from 0.42 to 1.77 at ξ_inv = 0.01.
+  - Neither change works alone: R19 (priced replacement) and inelastic vacancy creation jointly mute δ.
+- **Near the AGS / GS corner (clone replacement, ξ_inv = 0.01), the composition is close to the data:**
+  - z 6.31 against 7.40, where the data's figure is an upper bound;
+  - s 3.92 against 3.9–4.5;
+  - δ 1.77 against 3.0–4.3 (about 3.0 net of finance), still 1.7–2.4× short;
+  - σ(v) 13.25 against 13.82, σ(θ)/σ(LP) 12.85 against 11.70, total σ(u) 7.63 against 9.65.
+- **cor(u,v) stays too weak** in every case, at −0.31 to −0.69 against −0.93.
+- **Implication:** the data favor slow or unpriced replacement of product lines together with elastic vacancy creation. Clone replacement is a device, so the structural question is which entry friction reproduces it. Entry congestion frees ν and weakens the R19 pin, but holds replacement back rather than making it instant and unpriced. The next test is congestion × ξ.
