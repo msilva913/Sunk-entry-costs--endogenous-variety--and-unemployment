@@ -61,11 +61,45 @@ const X_Y_BRIDGE = 0.0167
 
 # ── Reactivation ────────────────────────────────────────────────────────────
 
-"""Λ_r = F_r(Q) = min{(1−p_r) + p_r (Q/a)^ψ_r, 1}; identically 1 when p_r = 0."""
-Λr_ags(Q, cal) = min(1 - cal.p_r + cal.p_r * (Q / cal.a)^cal.ψ_r, 1.0)
+# Reactivation-cost distribution F_r (Notes/ags_equilibrium.md §2): c = 0 with probability
+# 1 − p_r; with probability p_r, c ~ power law on [0, a]: Pr(c ≤ x) = (x/a)^ψ_r. A vacated
+# position is reactivated iff c ≤ Q. Both functions below are exact for every Q > 0; first-order
+# perturbation (f[9], f[10] in ags_run_solution.jl) uses the interior branch Q ≤ a.
 
-"""E max(Q − c, 0) per vacated position, interior closed form: Q[Λ_r − ψ_r/(1+ψ_r)(Λ_r − 1 + p_r)]; Q when p_r = 0."""
-Qrep_ags(Q, Λ_r, cal) = Q * (Λ_r - cal.ψ_r / (cal.ψ_r + 1) * (Λ_r - 1 + cal.p_r))
+"""
+    Λr_ags(Q, cal)
+Reactivation rate Λ_r = F_r(Q): (1 − p_r) + p_r (Q/a)^ψ_r while Q ≤ a; 1 once Q > a (every
+costly draw is accepted). Identically 1 when p_r = 0.
+"""
+function Λr_ags(Q, cal)
+    @unpack p_r, ψ_r, a = cal
+    if Q <= a
+        return (1 - p_r) + p_r * (Q / a)^ψ_r
+    else
+        return 1.0
+    end
+end
+
+"""
+    Qrep_ags(Q, cal)
+Expected net value of a vacated position, E max(Q − c, 0) = Q·Λ_r − E[c; c ≤ Q]. With
+ψ_c,r = ψ_r/(ψ_r + 1), the mean of a power-law draw on [0, x] relative to x:
+- Q ≤ a: accepted costly draws (share Λ_r − 1 + p_r) cost ψ_c,r·Q on average, so
+  Q^rep = Q[Λ_r − ψ_c,r (Λ_r − 1 + p_r)];
+- Q > a: every draw is accepted (Λ_r = 1) and the costly ones cost ψ_c,r·a on average, so
+  Q^rep = Q − p_r ψ_c,r a.
+Q when p_r = 0.
+"""
+function Qrep_ags(Q, cal)
+    @unpack p_r, ψ_r, a = cal
+    ψ_cr = ψ_r / (ψ_r + 1)
+    if Q <= a
+        Λ_r = Λr_ags(Q, cal)
+        return Q * (Λ_r - ψ_cr * (Λ_r - 1 + p_r))
+    else
+        return Q - p_r * ψ_cr * a
+    end
+end
 
 # ── Calibration ─────────────────────────────────────────────────────────────
 
@@ -171,7 +205,7 @@ function steady_state_ags(cal)
             Q = find_zero(Q -> Q - x_m * e_of(Q)^ξ_inv, (1e-12, 1e6), Bisection())
         end
         Λ_r  = Λr_ags(Q, cal)
-        Qrep = Qrep_ags(Q, Λ_r, cal)
+        Qrep = Qrep_ags(Q, cal)
         K    = Q * (r + δ) / (1 + r)
         R_sh = (1 - δ) * (Q - Qrep) / (1 + r)
         w    = ϕ * (zbar - K + θ * (K + q * κ) - s * R_sh) + (1 - ϕ) * b

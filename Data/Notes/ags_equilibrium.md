@@ -32,15 +32,49 @@ Utility is linear (σ = 0), so the discount factor is a constant β. Destroyed p
 - **Creation:** creating e_t new positions costs Q(e_t) = x_m e_t^{1/ξ} at the margin. Heterogeneous creation costs give an upward-sloping supply of positions, with elasticity ξ. Vacancy free entry is the limit ξ → ∞, where Q = x_m.
 - **Hiring:** there is a per-hire cost κ ≥ 0, which is zero in Gabrovski–Silva.
 
-**Reactivation:** each vacated position draws a cost c from F_r.
-- F_r has a mass 1 − p_r at zero, and the rest follows a power law with shape ψ_r on [0, a].
-- The position is reactivated iff c ≤ Q_t. So the reactivation probability is
+**Reactivation:** a position vacated by a separation at the end of t − 1 draws a reactivation cost c at t, i.i.d. across positions and periods, from F_r. It is reactivated iff c ≤ Q_t (paying c and keeping a position worth Q_t beats retiring it), and retired otherwise.
 
-  Λ_r(Q) = min{ (1 − p_r) + p_r (Q/a)^{ψ_r}, 1 },
+*The distribution F_r.* A mixture of an atom at zero and a bounded power law:
+- with probability 1 − p_r, c = 0 (the position is reactivated free);
+- with probability p_r, c is drawn from a power law on [0, a]: Pr(c ≤ x | costly) = (x/a)^{ψ_r} for 0 ≤ x ≤ a, with density ψ_r x^{ψ_r − 1}/a^{ψ_r}.
 
-  and the expected net value of a vacated position is
+So the CDF is F_r(x) = (1 − p_r) + p_r (x/a)^{ψ_r} for 0 ≤ x ≤ a, and 1 for x > a. The three parameters:
+- **p_r ∈ [0, 1]**, the share of positions with a positive cost; p_r = 0 is costless reactivation;
+- **a > 0**, the largest possible cost, which sets the scale; calibrated from Λ̄_r;
+- **ψ_r > 0**, the shape. ψ_r = 1 is uniform on [0, a]; ψ_r < 1 puts more mass near zero; ψ_r > 1 puts more mass near a. ψ_r is also the elasticity of Λ_r − (1 − p_r) with respect to Q, so it governs how strongly reactivation responds to Q.
 
-  Q^rep(Q) = E max{Q − c, 0} = Q·[Λ_r(Q) − ψ_{c,r}(Λ_r(Q) − 1 + p_r)],   ψ_{c,r} = ψ_r/(1 + ψ_r).
+A useful property: conditional on being costly and below x ≤ a, the draw averages E[c | costly, c ≤ x] = ψ_{c,r}·x, with ψ_{c,r} = ψ_r/(1 + ψ_r) (one half when uniform).
+
+*The reactivation rate* is the probability that c ≤ Q:
+
+  Λ_r(Q) = F_r(Q) = (1 − p_r) + p_r (Q/a)^{ψ_r}  if Q ≤ a,
+  Λ_r(Q) = 1                                       if Q > a  (every costly draw is accepted).
+
+*The expected net value of a vacated position* is what it is worth, Q, if reactivated, less the cost paid:
+
+  Q^rep(Q) = E max{Q − c, 0} = Q·Λ_r(Q) − E[c · 1{c ≤ Q}].
+
+The atom costs nothing, so only accepted costly draws pay. Their probability is p_r·min{Q/a, 1}^{ψ_r}, and their average cost is ψ_{c,r}·min{Q, a}. Hence:
+- **Q ≤ a (interior):** the accepted costly draws are a share Λ_r − (1 − p_r) and cost ψ_{c,r}Q on average, so
+
+  Q^rep(Q) = Q·[ Λ_r(Q) − ψ_{c,r}(Λ_r(Q) − 1 + p_r) ];
+
+- **Q > a (bound):** every position is reactivated (Λ_r = 1), and the costly ones cost ψ_{c,r}·a on average, so
+
+  Q^rep(Q) = Q − p_r ψ_{c,r} a.
+
+The two branches meet at Q = a, where both give a(1 − p_r ψ_{c,r}). The interior branch, rearranged by type of position:
+
+  Q^rep/Q = (1 − p_r) · 1 + (Λ_r − 1 + p_r)(1 − ψ_{c,r}) + (1 − Λ_r) · 0:
+
+free positions keep all of Q, costly positions that are reactivated keep Q net of their average cost, and retired positions keep nothing.
+
+*Checks.*
+- p_r = 0 gives Λ_r = 1 and Q^rep = Q.
+- If no costly draw is accepted (Λ_r = 1 − p_r), Q^rep = (1 − p_r)Q.
+- At the working point (Λ̄_r = 0.25, p_r = 0.8, ψ_r = 1, so Q̄/a = 1/16), Q^rep/Q = 0.20 + 0.05 × 0.5 = 0.225: a vacated position keeps 22.5 % of its value on average.
+
+`ags_steady_state_checks.jl` verifies both branches against numerical integration for Q/a from 1/16 to 10. The first-order solution uses the interior branch, which is exact as long as Q stays below a (§5).
 
 **Wages:** Nash bargaining, with worker share ϕ and flow value of unemployment b.
 

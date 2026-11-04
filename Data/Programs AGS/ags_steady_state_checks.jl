@@ -16,11 +16,17 @@ include("ags_steady_state.jl")
 lines = String[]
 say(str) = (push!(lines, str); println(str))
 
-"""E max(Q − c, 0) by the midpoint rule on c = Q y^(1/ψ_r) (smooth in y)."""
+"""
+E max(Q − c, 0) by the midpoint rule, valid for any Q. Accepted costly draws lie on [0, m],
+m = min(Q, a); with c = m y^(1/ψ_r) the integrand is smooth in y:
+p_r ∫_0^m (Q − c) dF = p_r (m/a)^ψ_r ∫_0^1 (Q − m y^(1/ψ_r)) dy.
+"""
 function Qrep_numeric(Q, cal; n = 200_000)
+    @unpack p_r, ψ_r, a = cal
+    m = min(Q, a)
     y = ((1:n) .- 0.5) ./ n
-    cont = cal.p_r * (Q / cal.a)^cal.ψ_r * Q * sum(1 .- y .^ (1 / cal.ψ_r)) / n
-    return (1 - cal.p_r) * Q + cont
+    cont = p_r * (m / a)^ψ_r * sum(Q .- m .* y .^ (1 / ψ_r)) / n
+    return (1 - p_r) * Q + cont
 end
 
 const CASES = (
@@ -75,6 +81,28 @@ for (label, over) in CASES
     end
     @assert worst < 1e-10 && qerr < 1e-8 "AGS steady-state checks fail for case: $label"
 end
+
+# Both branches of Λr_ags and Qrep_ags, away from the steady state: Q from below a to past it.
+say("\nReactivation functions over Q/a (both branches), against quadrature:")
+say(@sprintf("%-22s %7s %8s %10s %10s %10s", "case", "Q/a", "Λ_r", "Q^rep/Q", "quadrature", "rel. err"))
+for (label, over) in (("p_r 0.8, ψ_r 1",   (;)),
+                      ("p_r 0.8, ψ_r 0.5", (ψ_r = 0.5,)),
+                      ("p_r 0.5, ψ_r 2",   (p_r = 0.5, ψ_r = 2.0, Λr_target = 0.7)))
+    cal = calibrate_ags(merge(AGS_TARGETS, over))
+    for ratio in (0.0625, 0.5, 1.0, 2.0, 10.0)
+        Q    = ratio * cal.a
+        qrep = Qrep_ags(Q, cal)
+        qnum = Qrep_numeric(Q, cal)
+        err  = abs(qrep - qnum) / Q
+        say(@sprintf("%-22s %7.4f %8.4f %10.6f %10.6f %10.2e", label, ratio, Λr_ags(Q, cal),
+                     qrep / Q, qnum / Q, err))
+        if !(err < 1e-8)
+            say("    FAILED: Q^rep against quadrature at Q/a = $ratio")
+        end
+        @assert err < 1e-8 "Qrep_ags fails against quadrature: $label, Q/a = $ratio"
+    end
+end
+
 say("")
 say("u_target compares with the flow-balance unemployment τ/(τ + f), f gross (JOLTS).")
 say("bound ×: Q must rise by this factor before Λ_r reaches 1 (Notes/ags_equilibrium.md §5).")
