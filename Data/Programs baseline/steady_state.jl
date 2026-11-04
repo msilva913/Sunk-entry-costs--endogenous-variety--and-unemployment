@@ -241,43 +241,28 @@ end
 # Partial reposting (R8; draft eq:Lambda_r, eq:Qrep, eq:repost_shortfall)
 # =============================================================================
 # A vacated position draws a reactivation cost αχ, χ ~ F, and is reactivated iff Q ≥ αχ.
-# α = 0 is costless reposting (Λ_r = 1, no shortfall); it is the default, so every caller
-# whose parameters carry no α field gets the Block 1 model.
-
-"""
-    repost_alpha(para)
-Reactivation-cost scale α; 0 (costless reposting) when `para` has no α field.
-"""
-repost_alpha(para) = hasproperty(para, :α) ? para.α : 0.0
+# α = 0 is costless reposting (Λ_r = 1, no shortfall). Every calibration (calibrate_shares,
+# calibrate_shares_free_entry) returns α and the reactivation-cost distribution (p_r, ψ_r).
 
 """
     Λr_fun(Q, para)
 Reactivation rate Λ_r = F_r(Q/α) = min{(1-p_r) + p_r (Q/(α χ_m))^ψ_r, 1}; 1 when α = 0.
-F_r falls back to the exit distribution (p_0, ψ) when `para` carries no p_r, ψ_r.
 """
 function Λr_fun(Q, para)
-    α = repost_alpha(para)
+    @unpack α, p_r, ψ_r, f_m = para
     α == 0 && return 1.0
-    p_r, ψ_r = repost_dist(para)
-    return min(1 - p_r + p_r * (Q / (α * para.f_m))^ψ_r, 1.0)
+    return min(1 - p_r + p_r * (Q / (α * f_m))^ψ_r, 1.0)
 end
 
 """
-    repost_dist(para) → (p_r, ψ_r)
-The reactivation-cost distribution's mass and shape; the exit distribution's (p_0, ψ) when
-`para` has no p_r, ψ_r fields (the coupled specification before Nov 4, 2026).
-"""
-repost_dist(para) = (hasproperty(para, :p_r) ? para.p_r : para.p_0,
-                     hasproperty(para, :ψ_r) ? para.ψ_r : para.ψ)
-
-"""
     repost_gap(Λ_r, para)
-Shortfall per unit of vacancy value, (Q - Q^rep)/Q = (1-Λ_r) + ψ_c(Λ_r - 1 + p_0): positions
-retired plus reactivation costs paid (interior closed form of the cost integral). 0 when α = 0.
+Shortfall per unit of vacancy value, (Q - Q^rep)/Q = (1-Λ_r) + ψ_c,r(Λ_r - 1 + p_r), with
+ψ_c,r = ψ_r/(ψ_r+1): positions retired plus reactivation costs paid (interior closed form of
+the cost integral). 0 when α = 0.
 """
 function repost_gap(Λ_r, para)
-    repost_alpha(para) == 0 && return 0.0
-    p_r, ψ_r = repost_dist(para)
+    @unpack α, p_r, ψ_r = para
+    α == 0 && return 0.0
     ψ_c = ψ_r / (ψ_r + 1)
     return (1 - Λ_r) + ψ_c * (Λ_r - 1 + p_r)
 end
@@ -492,8 +477,8 @@ function steady_state(para; init=0.51)
     v_pret = v - e
     R_sh   = (1 - δ_e) * Q * repost_gap(Λ_r, para) / (1 + r)   # 𝓡, draft eq:repost_shortfall
     # Reactivation costs paid on the positions vacated at surviving lines (eq:agg_repost_costs)
-    X_r    = repost_alpha(para) == 0 ? 0.0 :
-             (1 - δ_e) * s * (1 - u) * (ψ / (ψ + 1)) * Q * (Λ_r - 1 + p_0)
+    X_r    = para.α == 0 ? 0.0 :
+             (1 - δ_e) * s * (1 - u) * (para.ψ_r / (para.ψ_r + 1)) * Q * (Λ_r - 1 + para.p_r)
 
     # Firm values
     ν_f = ρ * f_e / μ
@@ -703,7 +688,7 @@ const TARGETS = (
     # converge under PATH A (the Stage-4 Q root-find fails), so it is paired with PATH B below.
     dest_ann      = 0.0320,
     # PATH B (D2 settled, Q1 step 5): ψ pinned by the exit elasticity; X^c/Y is an outcome.
-    # 5.0 is a placeholder (principle 21) for the estimated value. Remove this entry to fall
+    # 5.0 is a placeholder (principle 21) for the estimated value. Set it to `nothing` to fall
     # back to PATH A, which targets Xc_Y above.
     dest_elast_target = 5.0,
     f             = 0.41,   # Gross job-finding rate [JOLTS] — corrected ÷(1-δ_e) in Stage 1
@@ -739,13 +724,13 @@ Calibrate model parameters to match empirical targets in four sequential stages.
 
 Two mutually exclusive paths through Stages 2-3, selected by which target is supplied:
 
-  PATH A (legacy; reached by removing dest_elast_target from TARGETS) — targets Xc_Y:
+  PATH A (legacy; reached by setting dest_elast_target = nothing) — targets Xc_Y:
     Stage 2: root-find Xc_Yc s.t. Xc_Y = Xc_Yc × Yc_YG × YG_Y → pins π_s = 1/ε − Xc_Yc
     Stage 3: root-find cons s.t. π_s(cons) = π_s → pins ψ = (cons/ω)/(1 − cons/ω)
     dest_elast = ψ×ζ/(1−ζ) is an OUTCOME (reported in Stage 5).
 
   PATH B (default since Q1 step 5; D2) — targets dest_elast_target:
-    Triggered when target NamedTuple contains field `dest_elast_target` (non-nothing).
+    Triggered when dest_elast_target is a number (not `nothing`) and p_0 > 0.
     Stages 2-3 (analytic, no root-find):
       ζ   = (surv_prob − (1−p_0))/p_0            [determined in Stage 1]
       ψ   = dest_elast_target × (1−ζ)/ζ           [direct inversion of dest_elast formula]
@@ -766,21 +751,15 @@ Two mutually exclusive paths through Stages 2-3, selected by which target is sup
 Returns NamedTuple of 18 parameters (including dest_el — calibrated distribution elasticity).
 """
 function calibrate_shares(targets)
-    @unpack X_Y, dest_ann, dest_end_frac, p_0, f, η_L, q, sep, b_ratio,
-            x_v, ξ_inv, ε, r_ann, σ, N, w = targets
-    # Optional targets — use get() for backward compatibility with older call sites
-    Xc_Y              = get(targets, :Xc_Y, 0.10)
-    dest_elast_target = get(targets, :dest_elast_target, nothing)
-    use_dest_elast    = !isnothing(dest_elast_target) && p_0 > 0.0
+    @unpack X_Y, Xc_Y, dest_ann, dest_end_frac, dest_elast_target, p_0, f, η_L, q, sep,
+            b_ratio, x_v, ξ_inv, ε, r_ann, σ, N, w, Λr_target = targets
+    use_dest_elast = !isnothing(dest_elast_target) && p_0 > 0.0
     # Partial reposting (R8): target the steady-state reactivation rate Λ̄_r and back out
-    # the cost scale α (MS, Oct 14). `nothing` = costless reposting (α = 0, Block 1).
-    Λr_target = get(targets, :Λr_target, nothing)
-    repost    = !isnothing(Λr_target)
-    # Reactivation-cost distribution: its own mass p_r (and shape ψ_r, resolved below once
-    # PATH B has pinned ψ); `nothing` falls back to the exit distribution.
-    p_r_t = get(targets, :p_r, nothing)
-    ψ_r_t = get(targets, :ψ_r, nothing)
-    p_r   = isnothing(p_r_t) ? p_0 : p_r_t
+    # the cost scale α (MS, Oct 14). Λr_target = nothing is costless reposting (α = 0, Block 1).
+    repost = !isnothing(Λr_target)
+    # Reactivation-cost distribution F_r: targets.p_r and targets.ψ_r, or the exit
+    # distribution's p_0 and ψ when they are `nothing` (ψ_r is resolved after PATH B pins ψ).
+    p_r = something(targets.p_r, p_0)
     if repost
         p_r > 0.0 || error("Λr_target needs p_r > 0: with p_r = 0 every reactivation draw is free.")
         1 - p_r < Λr_target < 1 || error(
@@ -905,7 +884,7 @@ function calibrate_shares(targets)
 
     # Partial reposting: shortfall per unit Q and reactivation cost per vacated position per
     # unit Q (interior closed form of the cost integral). Both 0 with costless reposting.
-    ψ_r     = isnothing(ψ_r_t) ? ψ : ψ_r_t
+    ψ_r     = something(targets.ψ_r, ψ)
     ψ_c_r   = ψ_r / (ψ_r + 1)
     gap_r   = repost ? (1 - Λ_r) + ψ_c_r * (Λ_r - 1 + p_r) : 0.0
     xr_perQ = repost ? (1 - δ_e) * s * (1 - u) * ψ_c_r * (Λ_r - 1 + p_r) : 0.0
@@ -991,11 +970,9 @@ Stages 1–3 identical to calibrate_shares. Stage 4 differs:
   - Root-find over Q to satisfy X_Y; ϕ recovered from Nash in Stage 5.
 """
 function calibrate_shares_free_entry(targets, κ_fixed::Float64, b_w_int_target::Float64)
-    @unpack X_Y, dest_ann, dest_end_frac, p_0, f, η_L, q, sep, b_ratio,
-            ξ_inv, ε, r_ann, σ, N, w = targets
-    Xc_Y              = get(targets, :Xc_Y, 0.10)
-    dest_elast_target = get(targets, :dest_elast_target, nothing)
-    use_dest_elast    = !isnothing(dest_elast_target) && p_0 > 0.0
+    @unpack X_Y, Xc_Y, dest_ann, dest_end_frac, dest_elast_target, p_0, f, η_L, q, sep,
+            b_ratio, ξ_inv, ε, r_ann, σ, N, w = targets
+    use_dest_elast = !isnothing(dest_elast_target) && p_0 > 0.0
 
     δ_e       = 1 - (1 - dest_ann)^(1 / 12)
     δ         = (1 - dest_end_frac) * δ_e
@@ -1087,6 +1064,7 @@ function calibrate_shares_free_entry(targets, κ_fixed::Float64, b_w_int_target:
     return (;
         f_e, δ, z, b, ϕ, r, σ, ε, A, η_L,
         κ, ξ_inv=0.0, x_m, s, ψ, p_0, f_m, dest_el,
-        α = 0.0     # costless reposting; partial reposting not implemented in this path
+        α = 0.0,    # costless reposting; partial reposting not implemented in this path
+        p_r = p_0, ψ_r = ψ
     )
 end

@@ -48,7 +48,7 @@ The switch exists because the costless case cannot be reached through α itself:
 divides by zero in Q/(α χ_m), and Λ̄_r = 1 sits on F's kink. calibrate_shares returns
 α = 0 without a reposting target; then rp = 0 and α = 1.0 is an inert placeholder.
 """
-repost_par(cal) = (hasproperty(cal, :α) && cal.α > 0) ? (cal.α, 1.0) : (1.0, 0.0)
+repost_par(cal) = cal.α > 0 ? (cal.α, 1.0) : (1.0, 0.0)
 
 """
     SHOCKS_BASE
@@ -78,9 +78,7 @@ function build_PAR(cal, shk)
     α_r, rp_r = repost_par(cal)
     return [cal.f_e; cal.z; cal.δ; cal.s; cal.b; cal.ϕ; cal.r; cal.σ; cal.ε; cal.A; cal.η_L;
             cal.κ; cal.ξ_inv; cal.x_m; cal.ψ; cal.f_m; cal.p_0;
-            shk.ρz; shk.σz; shk.ρδ; shk.σδ; shk.ρs; shk.σs; α_r; rp_r;
-            hasproperty(cal, :p_r) ? cal.p_r : cal.p_0;      # reactivation-cost mass (Nov 4)
-            hasproperty(cal, :ψ_r) ? cal.ψ_r : cal.ψ]         # reactivation-cost shape
+            shk.ρz; shk.σz; shk.ρδ; shk.σδ; shk.ρs; shk.σs; α_r; rp_r; cal.p_r; cal.ψ_r]
 end
 
 """

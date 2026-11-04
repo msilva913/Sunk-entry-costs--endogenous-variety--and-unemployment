@@ -62,7 +62,8 @@ function calibration_table(cal, targets)
 end
 
 
-targets = (
+targets = merge(TARGETS, (
+    dest_elast_target = nothing,   # PATH A: targets Xc_Y (this table predates PATH B)
     X_Y=0.015,        # recruiting cost share of output
     Xc_Y=0.10,         # fixed cost share of output (Abraham, Bormans, Konings, Roeger)
     dest_ann=0.0754,   # annual product destruction rate
@@ -81,7 +82,7 @@ targets = (
     σ=1.0,             # inverse IES (Estimated)
     N=1.0,             # SS mass of firms (normalization)
     w=1.0              # SS wage (normalization)
-)
+))
 
 
 """

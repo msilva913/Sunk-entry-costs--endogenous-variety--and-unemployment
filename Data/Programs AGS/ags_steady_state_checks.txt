@@ -1,0 +1,13 @@
+AGS steady-state checks (ags_steady_state.jl). Monthly; residuals in absolute terms.
+case                                   ϕ       κ       Q        z̄        a     Λ_r   bound ×     worst  Q^rep err
+GS: costless, ξ_inv 1             0.6079  0.0724  9.7425   1.0630   0.0000  1.0000       Inf  5.55e-16   0.00e+00
+costly 0.25, ξ_inv 1              0.9225  0.0094  1.2688   1.0359  20.3014  0.2500        16  9.33e-15   4.37e-17
+costly 0.25, ξ_inv 0.01           0.9596  0.0047  0.6356   1.0180  10.1696  0.2500        16  1.72e-14   4.37e-17
+costly 0.25, ξ_inv 0.01, x_v 1    0.9792  0.0000  0.6418   1.0180  10.2685  0.2500        16  4.42e-14   0.00e+00
+costly 0.25, ψ_r 0.5              0.9225  0.0094  1.2685   1.0356 324.7258  0.2500       256  1.81e-14   1.04e-13
+costly 0.70                       0.8482  0.0201  2.7022   1.0594   4.3235  0.7000       1.6  4.22e-15   0.00e+00
+costly 0.95                       0.6755  0.0539  7.2562   1.1339   7.7399  0.9500      1.07  1.55e-15   0.00e+00
+
+u_target compares with the flow-balance unemployment τ/(τ + f), f gross (JOLTS).
+bound ×: Q must rise by this factor before Λ_r reaches 1 (Notes/ags_equilibrium.md §5).
+✓ All AGS steady-state checks passed.
