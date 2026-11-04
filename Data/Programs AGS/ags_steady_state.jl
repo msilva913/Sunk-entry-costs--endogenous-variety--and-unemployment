@@ -27,8 +27,9 @@ using Parameters, Roots, Printf
 
 """
 Default AGS targets. Values shared with the baseline match steady_state.jl TARGETS.
-Λr_target = nothing gives costless reactivation (Λ_r ≡ 1: Gabrovski–Silva with three shocks).
-The reactivation defaults are the D15 working point (Λ̄_r = 0.25, p_r = 0.8, ψ_r = 1).
+Reactivation: p_r = 0 with Λr_target = 1 is costless reactivation (Λ_r ≡ 1, Q^rep = Q:
+Gabrovski–Silva with three shocks); otherwise 1 − p_r < Λr_target < 1. The defaults are the D15
+working point (Λ̄_r = 0.25, p_r = 0.8, ψ_r = 1).
 """
 const AGS_TARGETS = (
     dest_ann  = 0.0320,   # BED Deaths, employment-weighted, 1993–2019 (D1)
@@ -42,8 +43,8 @@ const AGS_TARGETS = (
     x_v       = 0.5,      # sunk share of recruiting cost: K/q over (κ + K/q)
     X_Y       = 0.015,    # recruiting cost share of output (Part 1: the data target)
     ξ_inv     = 1.0,      # inverse elasticity of vacancy creation (0 = vacancy free entry)
-    Λr_target = 0.25,     # steady-state reactivation rate; nothing = costless
-    p_r       = 0.8,      # mass of the costly part of F_r
+    Λr_target = 0.25,     # steady-state reactivation rate (1 when p_r = 0)
+    p_r       = 0.8,      # mass of the costly part of F_r; 0 = costless reactivation
     ψ_r       = 1.0,      # shape of F_r's power law
 )
 
@@ -60,11 +61,11 @@ const X_Y_BRIDGE = 0.0167
 
 # ── Reactivation ────────────────────────────────────────────────────────────
 
-"""Λ_r = F_r(Q) = min{(1−p_r) + p_r (Q/a)^ψ_r, 1}; 1 under costless reactivation (a = 0)."""
-Λr_ags(Q, cal) = cal.a == 0 ? 1.0 : min(1 - cal.p_r + cal.p_r * (Q / cal.a)^cal.ψ_r, 1.0)
+"""Λ_r = F_r(Q) = min{(1−p_r) + p_r (Q/a)^ψ_r, 1}; identically 1 when p_r = 0."""
+Λr_ags(Q, cal) = min(1 - cal.p_r + cal.p_r * (Q / cal.a)^cal.ψ_r, 1.0)
 
-"""E max(Q − c, 0) per vacated position, interior closed form: Q[Λ_r − ψ_r/(1+ψ_r)(Λ_r − 1 + p_r)]."""
-Qrep_ags(Q, Λ_r, cal) = cal.a == 0 ? Q : Q * (Λ_r - cal.ψ_r / (cal.ψ_r + 1) * (Λ_r - 1 + cal.p_r))
+"""E max(Q − c, 0) per vacated position, interior closed form: Q[Λ_r − ψ_r/(1+ψ_r)(Λ_r − 1 + p_r)]; Q when p_r = 0."""
+Qrep_ags(Q, Λ_r, cal) = Q * (Λ_r - cal.ψ_r / (cal.ψ_r + 1) * (Λ_r - 1 + cal.p_r))
 
 # ── Calibration ─────────────────────────────────────────────────────────────
 
@@ -75,12 +76,21 @@ Parameters of the AGS model from targets `tg` (see AGS_TARGETS). Closed form; no
 """
 function calibrate_ags(tg = AGS_TARGETS)
     @unpack dest_ann, sep, f, q, η_L, r_ann, w, b_ratio, x_v, X_Y, ξ_inv, Λr_target, p_r, ψ_r = tg
-    repost = !isnothing(Λr_target)
-    if repost
-        p_r > 0 || error("Λr_target needs p_r > 0.")
-        1 - p_r < Λr_target < 1 || error("Λr_target = $Λr_target must lie inside (1−p_r, 1) = ($(1-p_r), 1).")
+    # p_r = 0: costless reactivation, so Λ̄_r must be 1. p_r > 0: Λ̄_r strictly inside
+    # (1 − p_r, 1): above the free atom's floor and off the kink of min{·, 1}.
+    if p_r == 0
+        if Λr_target != 1
+            error("p_r = 0 is costless reactivation: set Λr_target = 1 (got $Λr_target).")
+        end
+    else
+        if !(0 < p_r ≤ 1)
+            error("p_r = $p_r must lie in [0, 1].")
+        end
+        if !(1 - p_r < Λr_target < 1)
+            error("Λr_target = $Λr_target must lie inside (1−p_r, 1) = ($(1-p_r), 1).")
+        end
     end
-    Λ_r = repost ? Λr_target : 1.0
+    Λ_r = Λr_target
 
     # Rates, flows and stocks
     δ  = 1 - (1 - dest_ann)^(1 / 12)
@@ -99,14 +109,16 @@ function calibrate_ags(tg = AGS_TARGETS)
     # Everything per unit Q: K = kQ, κ = κQ·Q, 𝓡 = gQ·Q
     k    = (r + δ) / (1 + r)
     κQ   = (1 - x_v) / x_v * k / qc
-    gap  = repost ? (1 - Λ_r) + ψ_r / (ψ_r + 1) * (Λ_r - 1 + p_r) : 0.0
+    gap  = (1 - Λ_r) + ψ_r / (ψ_r + 1) * (Λ_r - 1 + p_r)     # 0 when p_r = 0, Λ_r = 1
     gQ   = (1 - δ) * gap / (1 + r)
     # Job creation in steady state: z̄ = w + K + s𝓡 + (r+τ)/(1−δ)·(κ + K/q), linear in Q
     cw   = k + s * gQ + (r + τ) / (1 - δ) * (κQ + k / qc)
     # Recruiting costs X = eQ/(1+ξ_inv) + κ q v, linear in Q
     aX   = e / (1 + ξ_inv) + κQ * qc * v
     den  = aX - X_Y * cw * L
-    den > 0 || error("X_Y = $X_Y is infeasible: recruiting costs cannot reach that share of output.")
+    if !(den > 0)
+        error("X_Y = $X_Y is infeasible: recruiting costs cannot reach that share of output.")
+    end
     Q    = X_Y * w * L / den
 
     K    = k * Q
@@ -115,12 +127,19 @@ function calibrate_ags(tg = AGS_TARGETS)
     zbar = w + cw * Q
     b    = b_ratio * w
     ϕ    = (w - b) / (zbar - K + θ * (K + qc * κ) - s * R_sh - b)
-    0 < ϕ < 1 || error("Implied bargaining power ϕ = $ϕ lies outside (0, 1).")
+    if !(0 < ϕ < 1)
+        error("Implied bargaining power ϕ = $ϕ lies outside (0, 1).")
+    end
     x_m  = Q / e^ξ_inv
-    a    = repost ? Q / ((Λ_r - 1 + p_r) / p_r)^(1 / ψ_r) : 0.0
+    # Scale of F_r from Λ̄_r. With p_r = 0, a has no effect; Q is an inert placeholder.
+    if p_r == 0
+        a = Q
+    else
+        a = Q / ((Λ_r - 1 + p_r) / p_r)^(1 / ψ_r)
+    end
 
     return (δ = δ, s = s, r = r, A = A, η_L = η_L, b = b, ϕ = ϕ, κ = κ, x_m = x_m,
-            ξ_inv = ξ_inv, zbar = zbar, a = a, p_r = repost ? p_r : 0.0, ψ_r = ψ_r,
+            ξ_inv = ξ_inv, zbar = zbar, a = a, p_r = p_r, ψ_r = ψ_r,
             targets = tg)
 end
 
@@ -143,7 +162,11 @@ function steady_state_ags(cal)
         v = θ * u
         e_of(Q) = δ * (v + 1 - u) + (1 - δ) * (1 - Λr_ags(Q, cal)) * s * (1 - u)
         # Q − x_m e(Q)^ξ_inv is increasing in Q (e falls as reactivation rises): one root
-        Q = ξ_inv == 0 ? x_m : find_zero(Q -> Q - x_m * e_of(Q)^ξ_inv, (1e-12, 1e6), Bisection())
+        if ξ_inv == 0
+            Q = x_m
+        else
+            Q = find_zero(Q -> Q - x_m * e_of(Q)^ξ_inv, (1e-12, 1e6), Bisection())
+        end
         Λ_r  = Λr_ags(Q, cal)
         Qrep = Qrep_ags(Q, Λ_r, cal)
         K    = Q * (r + δ) / (1 + r)
@@ -159,4 +182,10 @@ function steady_state_ags(cal)
 end
 
 """Upper bound of F_r: Λ_r = 1 once Q/Q̄ exceeds this factor (Notes/ags_equilibrium.md §5)."""
-bound_factor(cal, Λ̄_r) = cal.a == 0 ? Inf : (cal.p_r / (Λ̄_r - 1 + cal.p_r))^(1 / cal.ψ_r)
+function bound_factor(cal, Λ̄_r)
+    if cal.p_r == 0
+        return Inf
+    else
+        return (cal.p_r / (Λ̄_r - 1 + cal.p_r))^(1 / cal.ψ_r)
+    end
+end

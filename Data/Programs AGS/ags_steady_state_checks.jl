@@ -18,14 +18,13 @@ say(str) = (push!(lines, str); println(str))
 
 """E max(Q − c, 0) by the midpoint rule on c = Q y^(1/ψ_r) (smooth in y)."""
 function Qrep_numeric(Q, cal; n = 200_000)
-    cal.a == 0 && return Q
     y = ((1:n) .- 0.5) ./ n
     cont = cal.p_r * (Q / cal.a)^cal.ψ_r * Q * sum(1 .- y .^ (1 / cal.ψ_r)) / n
     return (1 - cal.p_r) * Q + cont
 end
 
 const CASES = (
-    ("GS: costless, ξ_inv 1",          (Λr_target = nothing,)),
+    ("GS: costless, ξ_inv 1",          (p_r = 0.0, Λr_target = 1.0)),
     ("costly 0.25, ξ_inv 1",           (;)),
     ("costly 0.25, ξ_inv 0.01",        (ξ_inv = 0.01,)),
     ("costly 0.25, ξ_inv 0.01, x_v 1", (ξ_inv = 0.01, x_v = 1.0)),
@@ -43,7 +42,7 @@ for (label, over) in CASES
     st  = steady_state_ags(cal)
     @unpack δ, s, r, A, η_L, b, ϕ, κ, x_m, ξ_inv, zbar = cal
     τ  = δ + (1 - δ) * s
-    Λ̄  = isnothing(tg.Λr_target) ? 1.0 : tg.Λr_target
+    Λ̄  = tg.Λr_target
     X  = st.e * st.Q / (1 + ξ_inv) + κ * st.q * st.v
     Y  = zbar * (1 - st.u)
     res = (
@@ -68,8 +67,12 @@ for (label, over) in CASES
     qerr  = abs(Qrep_numeric(st.Q, cal) - st.Qrep) / st.Q
     say(@sprintf("%-32s %7.4f %7.4f %7.4f %8.4f %8.4f %7.4f %9.3g %9.2e %10.2e", label, ϕ, κ,
                  st.Q, zbar, cal.a, st.Λ_r, bound_factor(cal, Λ̄), worst, qerr))
-    worst < 1e-10 || say("    FAILED: $(res)")
-    qerr  < 1e-8  || say("    FAILED: Q^rep closed form against quadrature, relative error $qerr")
+    if !(worst < 1e-10)
+        say("    FAILED: $(res)")
+    end
+    if !(qerr  < 1e-8 )
+        say("    FAILED: Q^rep closed form against quadrature, relative error $qerr")
+    end
     @assert worst < 1e-10 && qerr < 1e-8 "AGS steady-state checks fail for case: $label"
 end
 say("")

@@ -44,15 +44,15 @@ const T_IR, T_SM, LAM = 60, 60_000, 1_600.0
 # =============================================================================
 flag_order, flag_deviation, flag_SSsolver = 1, true, false
 
-@syms δbar sbar r A η_L b ϕ κ x_m ξ_inv zbar a p_r ψ_r rp ρ_z σ_z ρ_δ σ_δ ρ_s σ_s
-parameters = [δbar; sbar; r; A; η_L; b; ϕ; κ; x_m; ξ_inv; zbar; a; p_r; ψ_r; rp;
+@syms δbar sbar r A η_L b ϕ κ x_m ξ_inv zbar a p_r ψ_r ρ_z σ_z ρ_δ σ_δ ρ_s σ_s
+parameters = [δbar; sbar; r; A; η_L; b; ϕ; κ; x_m; ξ_inv; zbar; a; p_r; ψ_r;
               ρ_z; σ_z; ρ_δ; σ_δ; ρ_s; σ_s]
 estimate, position, priors = [], [], (;)
 
-"""PAR in the order of `parameters`. rp = 0 switches reactivation off (Λ_r ≡ 1); a is then inert."""
+"""PAR in the order of `parameters`. p_r = 0 is costless reactivation (Λ_r ≡ 1, Q^rep = Q)."""
 build_PAR(cal, shk) = [cal.δ; cal.s; cal.r; cal.A; cal.η_L; cal.b; cal.ϕ; cal.κ; cal.x_m;
-                       cal.ξ_inv; cal.zbar; cal.a == 0 ? 1.0 : cal.a; cal.p_r; cal.ψ_r;
-                       cal.a == 0 ? 0.0 : 1.0; shk.ρz; shk.σz; shk.ρδ; shk.σδ; shk.ρs; shk.σs]
+                       cal.ξ_inv; cal.zbar; cal.a; cal.p_r; cal.ψ_r;
+                       shk.ρz; shk.σz; shk.ρδ; shk.σδ; shk.ρs; shk.σs]
 
 @syms Et Vu Vs z δ s Etp Vup Vsp zp δp sp
 @syms u θ q v v_pre e Q K Λ_r Q_rep H w
@@ -87,8 +87,8 @@ function ags_equations()
     f[8]  = κ + K / q - β * S * (                               # E2: job creation
                 (1 - ϕ) * (zbar * zp - Kp - b) - ϕ * θp * (Kp + qp * κ)
                 + (1 - sp * sbar) * (κ + Kp / qp) - (1 - ϕ) * sp * sbar * R_shp)
-    f[9]  = Λ_r - (1 - rp + rp * ((1 - p_r) + p_r * (Q / a)^ψ_r))   # Λ_r = F_r(Q)
-    f[10] = Q_rep - Q * (Λ_r - rp * ψ_cr * (Λ_r - 1 + p_r))         # E max(Q − c, 0)
+    f[9]  = Λ_r - ((1 - p_r) + p_r * (Q / a)^ψ_r)               # Λ_r = F_r(Q); 1 if p_r = 0
+    f[10] = Q_rep - Q * (Λ_r - ψ_cr * (Λ_r - 1 + p_r))          # E max(Q − c, 0); Q if p_r = 0
     f[11] = H - β * S * Q_repp                                  # H = β(1−δ)E Q^rep'
     f[12] = w - (ϕ * (zbar * z - K + θ * (K + q * κ) - s * sbar * R_sh) + (1 - ϕ) * b)  # wage
     # Laws of motion (E3, E4)
@@ -127,10 +127,14 @@ function solve_ags(tg; shk = SHK)
     SS, st = SS_ags(cal)
     PAR_SS = Base.invokelatest(eval_PAR_SS, PAR)
     err = maximum(abs, Base.invokelatest(eval_SS_error, PAR_SS, SS))
-    err < 1e-10 || error("AGS steady-state residual $err")
+    if !(err < 1e-10)
+        error("AGS steady-state residual $err")
+    end
     deriv = Base.invokelatest(eval_deriv, PAR_SS, SS)
     sol   = solve_model(model, deriv, Base.invokelatest(eval_ShockVAR, PAR))
-    sol.qzflag == 1 || error("Blanchard–Kahn failed (qzflag = $(sol.qzflag))")
+    if !(sol.qzflag == 1)
+        error("Blanchard–Kahn failed (qzflag = $(sol.qzflag))")
+    end
     return (cal = cal, st = st, SS = SS, sol_mat = sol)
 end
 
@@ -182,14 +186,15 @@ savefig(plt, "ags_irf.png")
 # =============================================================================
 iθ = findfirst(==(:θ), Symbol.(y))
 say("\nCheck: θ's loading on the stocks Ẽ, Ṽ^u, Ṽ^s (max |gx|) relative to its loading on z, as ξ_inv → 0.")
-for (label, over) in (("costless", (Λr_target = nothing,)), ("costly 0.25", (;)))
+for (label, over) in (("costless", (p_r = 0.0, Λr_target = 1.0)), ("costly 0.25", (;)))
     rel = map((1e-2, 1e-4, 1e-6)) do ξ
         g = solve_ags(merge(AGS_TARGETS, over, (ξ_inv = ξ,))).sol_mat.gx[iθ, :]
         maximum(abs, g[1:3]) / abs(g[4])
     end
     say(@sprintf("  %-12s ξ_inv 1e-2: %.1e   1e-4: %.1e   1e-6: %.1e", label, rel...))
-    (rel[3] < 1e-2 && rel[2] < rel[1] / 10 && rel[3] < rel[2] / 10) ||
+    if !(rel[3] < 1e-2 && rel[2] < rel[1] / 10 && rel[3] < rel[2] / 10)
         error("θ's loading on the stocks does not vanish as ξ_inv → 0 ($label)")
+    end
 end
 say("✓ θ is a function of the current shocks alone in the vacancy free entry limit.")
 
@@ -201,8 +206,8 @@ say("Data, SVAR A (1992Q3–2019Q4, long run): σ(u) z 7.40, δ 4.27, s 4.48; co
 say(@sprintf("  %-34s %7s %7s | %6s %6s %6s %6s | %5s %5s %5s", "case", "ϕ", "cor", "σu", "z",
              "δ", "s", "%z", "%δ", "%s"))
 for (label, over) in (
-        ("GS: costless, ξ_inv 1",           (Λr_target = nothing,)),
-        ("GS: costless, ξ_inv 0.01",        (Λr_target = nothing, ξ_inv = 0.01)),
+        ("GS: costless, ξ_inv 1",           (p_r = 0.0, Λr_target = 1.0)),
+        ("GS: costless, ξ_inv 0.01",        (p_r = 0.0, Λr_target = 1.0, ξ_inv = 0.01)),
         ("costly 0.25, ξ_inv 1",            (;)),
         ("costly 0.25, ξ_inv 0.25",         (ξ_inv = 0.25,)),
         ("costly 0.25, ξ_inv 0.01",         (ξ_inv = 0.01,)),
