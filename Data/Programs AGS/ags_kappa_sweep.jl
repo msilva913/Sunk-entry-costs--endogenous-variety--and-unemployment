@@ -21,11 +21,10 @@
 # own window (10.65): z 6.32, δ 3.64, s 3.82; three shocks together 8.24. Ad hoc (Nov 5, 2026);
 # q3_data_svar.py must produce these before they are cited.
 #
-# Output: ags_kappa_sweep.txt, ags_kappa_irf.png. Includes ags_run_solution.jl, which reruns and
-# rewrites its own outputs (unchanged).
+# Output: ags_kappa_sweep.txt, ags_kappa_irf.png.
 # =============================================================================
 
-include("ags_run_solution.jl")
+include("ags_model.jl")
 
 const XV_GRID = (1.0, 0.75, 0.5, 0.25, 0.1, 0.05)
 const XI_GRID = (1.0, 0.01)

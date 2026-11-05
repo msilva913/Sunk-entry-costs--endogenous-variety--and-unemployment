@@ -12,19 +12,14 @@
 #
 # Moments come from time_series_fun.jl moment_table (the form of the draft's Table 3), on
 # quarterly averages of the simulated monthly series, HP-1600, with all shocks and with each shock
-# alone. Model counterparts of the data series:
-#   u, v, θ, z (labor productivity: output per worker is z̄·z);
-#   s, the separation rate (the state s);
-#   f = (1 − δ_t) A θ_t^(1−η), the gross job-finding rate (the data's jf);
-#   δ_e,t = δ_{t−1}, measured exit (BED Deaths dates destruction one month later).
+# alone. Model counterparts of the data series: ags_model.jl model_quarterly.
 # Data: data/results/q3_data_svar_cycles_hp.csv from q3_data_svar.py (same HP cycles as the SVAR),
 # 1951Q1–2019Q4 and SVAR A's window 1992Q3–2019Q4. δ starts in 1992Q3 (pairwise complete).
 #
-# Output: ags_xi_sweep.txt. Includes ags_run_solution.jl, which reruns and rewrites its own
-# outputs (unchanged).
+# Output: ags_xi_sweep.txt.
 # =============================================================================
 
-include("ags_run_solution.jl")
+include("ags_model.jl")
 using CSV
 
 const XI_GRID  = (4.0, 2.0, 1.0, 0.5, 0.25, 0.1, 0.03, 0.01)
@@ -37,24 +32,6 @@ const DATA_CSV = joinpath(@__DIR__, "..", "Bartek analysis", "data", "results",
 
 out = String[]
 note(str) = (push!(out, str); println(str))
-hp(xq) = hp_filter(Float64.(xq), LAM)
-
-"""Quarterly HP cycles of the model counterparts, from a monthly simulation in log deviations."""
-function model_cycles(sim, cal)
-    m = DataFrame()
-    m.u = sim.u
-    m.v = sim.v
-    m.θ = sim.θ
-    m.z = sim.z
-    m.s = sim.s
-    # gross job-finding rate: log(1 − δ̄e^δ̂) − log(1 − δ̄) + (1 − η)θ̂
-    m.f = log.(1 .- cal.δ .* exp.(sim.δ)) .- log(1 - cal.δ) .+ (1 - cal.η_L) .* sim.θ
-    # measured exit δ_e,t = δ_{t−1}
-    m.δ = vcat(0.0, sim.δ[1:end-1])
-    q = monthly_to_quarterly(m)
-    return DataFrame([c => hp(q[!, c]) for c in names(q)])
-end
-
 """Simulated quarterly cycles with the shocks in `cols` (1 z, 2 δ, 3 s)."""
 function simulate_cycles(r, cols)
     eta_m = hcat([shock_col(i, SDS[i]) for i in cols]...)

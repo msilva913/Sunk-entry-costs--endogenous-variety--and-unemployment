@@ -1,0 +1,70 @@
+==============================================================================
+Q3 model SVAR — Block B' model side (q3_model_svar.py)
+==============================================================================
+q3_model_svar.py -- Block B' model side: SVAR A on simulated AGS data, against the data.
+
+Data: SVAR A, 1992Q3-2019Q4, T = 110, p = 1 (BIC), HP-1600, ordering z, s, delta, u, v; 1000 bootstrap draws.
+
+------------------------------------------------------------------------------
+1. Validation: long-sample SVARs against the model's true responses
+------------------------------------------------------------------------------
+  Responses of u and v normalized by the shock variable's own response at h = 0; peak
+  (largest |response|) and its quarter. Gap = max over h of |SVAR − true| / max |true|.
+  raw: unfiltered long sample (the clean test); HP: filtered long sample (filter effect).
+
+case        shock    resp    true          raw, p = 1          raw, BIC p          HP, p = 1
+----------  -------  ------  ------------  ------------------  ------------------  ------------------
+default     z        u       -2.276 (h 7)  -1.825 (h 9)  25 %  -1.939 (h 8)  15 %  -0.980 (h 3)  88 %
+default     z        v       +3.896 (h 6)  +3.025 (h 7)  24 %  +3.352 (h 5)  14 %  +1.919 (h 3)  78 %
+default     δ        u       +0.147 (h 1)  +0.081 (h 1)  45 %  +0.082 (h 1)  45 %  +0.077 (h 1)  48 %
+default     δ        v       -0.133 (h 2)  -0.077 (h 2)  42 %  -0.080 (h 2)  40 %  -0.072 (h 2)  48 %
+default     s        u       +0.957 (h 2)  +0.867 (h 1)  16 %  +0.860 (h 2)  10 %  +0.828 (h 1)  54 %
+default     s        v       -0.738 (h 4)  -0.672 (h 4)  19 %  -0.665 (h 4)  11 %  -0.611 (h 3)  68 %
+compromise  z        u       -4.264 (h 6)  -3.565 (h 7)  20 %  -3.701 (h 6)  14 %  -2.298 (h 3)  87 %
+compromise  z        v       +7.375 (h 4)  +6.045 (h 5)  19 %  +6.457 (h 4)  12 %  +4.192 (h 2)  80 %
+compromise  δ        u       +0.143 (h 1)  +0.076 (h 1)  47 %  +0.078 (h 1)  46 %  +0.072 (h 1)  49 %
+compromise  δ        v       -0.098 (h 2)  -0.053 (h 2)  45 %  -0.060 (h 2)  39 %  -0.045 (h 2)  56 %
+compromise  s        u       +0.871 (h 1)  +0.819 (h 1)  16 %  +0.797 (h 1)  11 %  +0.784 (h 1)  46 %
+compromise  s        v       -0.413 (h 4)  -0.401 (h 4)  32 %  -0.364 (h 4)  21 %  -0.375 (h 3)  92 %
+
+  BIC lag on the long samples: default: raw p = 4, HP p = 4, compromise: raw p = 4, HP p = 4 (data p = 1, used for all small-sample comparisons).
+
+------------------------------------------------------------------------------
+2. Impulse responses: data against the model (small-sample mean, T = 110)
+------------------------------------------------------------------------------
+  One-SD shocks, log points x 100; peak (largest |response|) and its quarter.
+  Data: point [16, 84 % bootstrap]. Model: mean over windows [16, 84 % across windows].
+
+shock    resp    data                        default                     compromise
+-------  ------  --------------------------  --------------------------  --------------------------
+z        z       +0.54 (h 0) [+0.49, +0.56]  +0.80 (h 0) [+0.74, +0.86]  +0.78 (h 0) [+0.73, +0.84]
+z        u       -2.42 (h 4) [-2.83, -1.57]  -0.74 (h 3) [-1.27, -0.18]  -1.69 (h 3) [-2.28, -1.12]
+z        v       +2.64 (h 3) [+1.77, +3.09]  +1.43 (h 3) [+1.04, +1.82]  +3.11 (h 1) [+2.75, +3.45]
+δ        δ       +5.24 (h 0) [+4.60, +5.43]  +5.44 (h 0) [+5.05, +5.81]  +5.44 (h 0) [+5.06, +5.80]
+δ        u       +1.41 (h 4) [+0.83, +1.73]  +0.41 (h 1) [+0.25, +0.56]  +0.38 (h 1) [+0.24, +0.53]
+δ        v       -1.60 (h 3) [-1.95, -0.95]  -0.38 (h 2) [-0.57, -0.21]  -0.22 (h 2) [-0.63, +0.16]
+s        s       +3.82 (h 0) [+3.49, +3.89]  +4.56 (h 0) [+4.23, +4.87]  +4.60 (h 0) [+4.26, +4.93]
+s        u       +1.54 (h 2) [+1.06, +1.80]  +3.72 (h 1) [+3.41, +4.09]  +3.55 (h 1) [+3.23, +3.90]
+s        v       -1.57 (h 2) [-1.91, -1.01]  -2.72 (h 3) [-3.13, -2.31]  -1.70 (h 3) [-2.24, -1.17]
+  Own responses (z → z, δ → δ, s → s) check the shock processes (part6b), not the propagation.
+
+------------------------------------------------------------------------------
+3. Distance: J = Σ ((model − data)/sd_data)², u and v, h = 0–12
+------------------------------------------------------------------------------
+case                              responses    J z    J δ    J s    J total
+--------------------------------  -----------  -----  -----  -----  ---------
+default (x_v 0.5, ξ_inv 1)        one SD       103.7  101.9  159.6  365.2
+default (x_v 0.5, ξ_inv 1)        scaled       144.0  97.0   106.0  347.0
+compromise (x_v 0.25, ξ_inv 0.5)  one SD       70.8   119.2  204.8  394.7
+compromise (x_v 0.25, ξ_inv 0.5)  scaled       81.0   112.9  148.3  342.2
+  78 moments; J ≈ 78 would mean the model is within about one data SD on average.
+
+  Scaled peaks (response per 1 % own impact; data, default, compromise):
+shock    resp    data          default       compromise
+-------  ------  ------------  ------------  ------------
+z        u       -4.469 (h 4)  -0.931 (h 3)  -2.162 (h 3)
+z        v       +4.872 (h 3)  +1.793 (h 3)  +3.992 (h 1)
+δ        u       +0.269 (h 4)  +0.075 (h 1)  +0.070 (h 1)
+δ        v       -0.304 (h 3)  -0.070 (h 2)  -0.040 (h 2)
+s        u       +0.404 (h 2)  +0.816 (h 1)  +0.772 (h 1)
+s        v       -0.410 (h 2)  -0.597 (h 3)  -0.370 (h 3)
