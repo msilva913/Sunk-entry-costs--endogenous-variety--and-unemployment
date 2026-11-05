@@ -37,10 +37,19 @@ unverified). Model = the small-sample mean. Reported in total and by shock, twic
                measures whether the SVAR sees shocks of the same size in model and data; the
                scaled one measures propagation alone.
 
+A second target for the delta shock (section 4). In the data, delta is also estimated net of
+financial conditions: A_F = (z, NFCI, s, delta, u, v), q3_data_svar.py section 4b. The model has
+no NFCI, so A_F cannot be run on simulated data; the model's SVAR A delta responses are compared
+with the data's A_F delta responses instead. This breaks the same-estimator rule of Block B'
+(the data side conditions on NFCI, the model side does not), so A_F is a bound, not the target:
+NFCI also tightens when the economy weakens, so conditioning on it removes some true delta
+effect as well as financial contamination. A and A_F bracket the data's delta responses.
+
 Outputs:
     data/results/q3_model_svar.txt   the report
     data/results/q3_model_svar.csv   IRFs: data (point, 16/84 %), model small-sample mean and
-                                     16/84 %, long sample, true (normalized), by case
+                                     16/84 %, long sample, true (normalized), by case; for the
+                                     delta shock also data_AF (point, sd) from A_F
     data/results/q3_model_svar.png   u and v responses to z, s, delta: data band, model cases
 """
 
@@ -235,6 +244,81 @@ if __name__ == "__main__":
     say(tabulate(tab, ["shock", "resp", "data", "default", "compromise"], tablefmt="simple",
                  disable_numparse=True))
 
+    # ── 4. delta: the A_F target ────────────────────────────────────────────
+    svF = q3.prepare_svar("A_F", q3.SVARS_F["A_F"], cyc)
+    pF, namesF = svF["p_bic"], svF["names"]
+    fitF = q3.fit_var(svF["Y"], pF)
+    ThF = q3.irf(fitF, namesF, namesF, H)
+    drF = q3.bootstrap_irf(svF["Y"], fitF, namesF, namesF, H, q3.N_BOOT)
+    jF = namesF.index("delta")                   # A_F is in its own variable order
+    iFd = namesF.index("delta")
+    dF   = {r: ThF[:, namesF.index(r), jF] for r in ("delta",) + OUTCOMES}
+    sdF  = {r: drF[:, :, namesF.index(r), jF].std(axis=0) for r in OUTCOMES}
+    drF_s = drF[:, :, :, jF] / drF[:, 0, iFd, jF][:, None, None]          # scaled, draw by draw
+    dF_s  = {r: dF[r] / dF["delta"][0] for r in OUTCOMES}
+    sdF_s = {r: drF_s[:, :, namesF.index(r)].std(axis=0) for r in OUTCOMES}
+    loF = {r: np.percentile(drF[:, :, namesF.index(r), jF], 16, axis=0) for r in OUTCOMES}
+    hiF = {r: np.percentile(drF[:, :, namesF.index(r), jF], 84, axis=0) for r in OUTCOMES}
+    frF = svF["frame"]
+
+    say(f"\n{'-'*78}\n4. The delta shock against two data targets: A and A_F (net of NFCI)\n{'-'*78}")
+    say(f"  A_F: {frF.index[0]}-{frF.index[-1]}, T = {len(frF)}, p = {pF} (BIC), ordering {', '.join(namesF)}.")
+    say("  The model side is SVAR A in both comparisons (the model has no NFCI): A_F is a bound.\n")
+    jd, idd = NAMES.index("delta"), NAMES.index("delta")
+    scaled_mean = {c: np.array([normalized(X) for X in res[c]["reps"]]).mean(axis=0) for c in CASES}
+
+    def pk(x):
+        k = int(np.abs(x).argmax())
+        return f"{100 * x[k]:+.2f} (h {k})"
+
+    def pk_s(x):
+        k = int(np.abs(x).argmax())
+        return f"{x[k]:+.3f} (h {k})"
+
+    tab = [["own impact", f"{100 * Theta_d[0, idd, jd]:.2f}", f"{100 * dF['delta'][0]:.2f}"] +
+           [f"{100 * res[c]['mean'][0, idd, jd]:.2f}" for c in CASES]]
+    for r in OUTCOMES:
+        i = NAMES.index(r)
+        tab.append([f"δ → {r}, one SD", pk(Theta_d[:, i, jd]), pk(dF[r])] +
+                   [pk(res[c]["mean"][:, i, jd]) for c in CASES])
+        tab.append([f"δ → {r}, per 1 %", pk_s(Theta_d_scaled[:, i, jd]), pk_s(dF_s[r])] +
+                   [pk_s(scaled_mean[c][:, i, jd]) for c in CASES])
+    say(tabulate(tab, ["", "data A", "data A_F", "model default", "model compromise"],
+                 tablefmt="simple", disable_numparse=True))
+
+    tab = []
+    for c in CASES:
+        cells = [CASE_LABEL[c]]
+        for scale in ("one SD", "scaled"):
+            for target in ("A", "A_F"):
+                J = 0.0
+                for r in OUTCOMES:
+                    i = NAMES.index(r)
+                    if scale == "one SD":
+                        M = res[c]["mean"][:, i, jd]
+                        if target == "A":
+                            D, sd = Theta_d[:, i, jd], sd_d[:, i, jd]
+                        else:
+                            D, sd = dF[r], sdF[r]
+                    else:
+                        M = scaled_mean[c][:, i, jd]
+                        if target == "A":
+                            D, sd = Theta_d_scaled[:, i, jd], sd_scaled[:, i, jd]
+                        else:
+                            D, sd = dF_s[r], sdF_s[r]
+                    J += (((M - D) / sd) ** 2).sum()
+                cells.append(f"{J:.1f}")
+        tab.append(cells)
+    say("\n  J δ (u and v, h = 0–12, 26 moments), against each data target:")
+    say(tabulate(tab, ["case", "one SD, A", "one SD, A_F", "scaled, A", "scaled, A_F"],
+                 tablefmt="simple", disable_numparse=True))
+    for r in OUTCOMES:
+        sel = (out.shock == "delta") & (out.response == r)
+        for c in CASES:
+            out.loc[sel & (out.case == c), "data_AF"] = dF[r]
+            out.loc[sel & (out.case == c), "data_AF_sd"] = sdF[r]
+    out.to_csv(OUT_CSV, index=False)
+
     # ── figure ──────────────────────────────────────────────────────────────
     pal = {"default": "#2a78d6", "compromise": "#eb6834"}
     hh = np.arange(H + 1)
@@ -246,6 +330,9 @@ if __name__ == "__main__":
             ax.fill_between(hh, 100 * lo_d[:, i, j], 100 * hi_d[:, i, j], color="#c3c2b7",
                             alpha=0.6, lw=0, label="data, 68 % band")
             ax.plot(hh, 100 * Theta_d[:, i, j], color="#52514e", lw=2, label="data")
+            if shk == "delta":
+                ax.plot(hh, 100 * dF[resp], color="#52514e", lw=1.5, ls=":",
+                        label="data, A_F (net of NFCI)")
             for case in CASES:
                 ax.plot(hh, 100 * res[case]["mean"][:, i, j], color=pal[case], lw=2,
                         label=f"model, {CASE_LABEL[case]}")
@@ -257,6 +344,7 @@ if __name__ == "__main__":
             if a == len(SHOCKS) - 1:
                 ax.set_xlabel("quarters")
     axes[0, 0].legend(fontsize=7, frameon=False)
+    axes[1, 0].legend(fontsize=7, frameon=False)
     fig.suptitle(f"SVAR A: data ({frame.index[0]}–{frame.index[-1]}) against the AGS model, "
                  f"small-sample mean (T = {len(frame)})", fontsize=11)
     fig.tight_layout()

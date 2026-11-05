@@ -68,3 +68,23 @@ z        v       +4.872 (h 3)  +1.793 (h 3)  +3.992 (h 1)
 δ        v       -0.304 (h 3)  -0.070 (h 2)  -0.040 (h 2)
 s        u       +0.404 (h 2)  +0.816 (h 1)  +0.772 (h 1)
 s        v       -0.410 (h 2)  -0.597 (h 3)  -0.370 (h 3)
+
+------------------------------------------------------------------------------
+4. The delta shock against two data targets: A and A_F (net of NFCI)
+------------------------------------------------------------------------------
+  A_F: 1992Q3-2019Q4, T = 110, p = 1 (BIC), ordering z, nfci, s, delta, u, v.
+  The model side is SVAR A in both comparisons (the model has no NFCI): A_F is a bound.
+
+                data A        data A_F      model default    model compromise
+--------------  ------------  ------------  ---------------  ------------------
+own impact      5.24          5.18          5.44             5.44
+δ → u, one SD   +1.41 (h 4)   +0.97 (h 3)   +0.41 (h 1)      +0.38 (h 1)
+δ → u, per 1 %  +0.269 (h 4)  +0.187 (h 3)  +0.075 (h 1)     +0.070 (h 1)
+δ → v, one SD   -1.60 (h 3)   -1.13 (h 2)   -0.38 (h 2)      -0.22 (h 2)
+δ → v, per 1 %  -0.304 (h 3)  -0.217 (h 2)  -0.070 (h 2)     -0.040 (h 2)
+
+  J δ (u and v, h = 0–12, 26 moments), against each data target:
+case                              one SD, A    one SD, A_F    scaled, A    scaled, A_F
+--------------------------------  -----------  -------------  -----------  -------------
+default (x_v 0.5, ξ_inv 1)        101.9        59.1           97.0         55.2
+compromise (x_v 0.25, ξ_inv 0.5)  119.2        74.9           112.9        69.2
