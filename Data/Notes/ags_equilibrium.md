@@ -263,3 +263,64 @@ The baseline's `calibrate_shares`, adapted. The long-run targets hold exactly at
 - **Reactivation costs** are excluded from X, as in the baseline.
 
 **Implied bargaining power.** At Λ̄_r = 0.25, ϕ = 0.92 (0.96 at ξ_inv = 0.01), against 0.61 with costless reactivation. The baseline working point has the same feature (ϕ = 0.914): a low Λ̄_r raises e, so a fixed X/Y forces Q down, leaving little surplus for Nash bargaining to split. Whether to accept ϕ near 1, or target ϕ and let X/Y be an outcome, is open.
+
+## 7. Transmission: when does a shock that raises u also raise v?
+
+*Added Nov 5, 2026. Evidence from `../Programs AGS/ags_xi_sweep.txt` (ξ_inv grid at x_v = 0.5 and 0.25, everything else at `AGS_TARGETS`) and `ags_kappa_sweep.txt`. The account of Coles and Kelishomi below is a hypothesis about their setting, not a summary of their paper (citation unverified).*
+
+### 7.1 The accounting
+
+From v = θu,
+
+  d log v = d log θ + d log u.
+
+u is a slow-moving stock; θ is a jump variable. A shock that raises u produces a Beveridge-curve movement (v falls) only if it lowers θ by more, in percent, than it raises u, over the horizon the quarterly HP cycle picks up. Otherwise v rises with u. Two forces lower θ:
+- **incentives (E2):** a higher user cost K, a lower match value (more expected separation, through (1 − s_{t+1})), or a larger reactivation shortfall s𝓡;
+- **the stock of positions:** with inelastic creation, destroyed or retired positions are replaced slowly, so v falls directly.
+
+### 7.2 Separation shocks (s)
+
+- **Incentives are weak.** Near vacancy free entry, Q and K are almost constant, and s lowers θ only through (1 − s_{t+1}) and s𝓡.
+- **The stock effect needs inelastic creation.** At Λ̄_r = 0.25, three quarters of vacated positions are retired. With elastic creation they are replaced at once; with inelastic creation replacement needs Q to rise, which is slow and costly.
+- **Unemployment rises strongly** (σ(u) from s is 4.6–6.4).
+
+So with elastic creation d log u dominates and v rises with u: this is Shimer's (2005) separation-shock problem in DMP, where free entry pins θ. Inelastic creation restores the Beveridge relation.
+
+| ξ_inv (x_v = 0.5) | 4 | 1 | 0.5 | 0.25 | 0.1 | 0.01 |
+|---|---|---|---|---|---|---|
+| cor(u, v), s alone | −0.65 | −0.42 | −0.17 | **+0.19** | +0.64 | +0.98 |
+
+The sign flips at ξ_inv ≈ 0.3 (x_v = 0.5) and ≈ 0.45 (x_v = 0.25). s is the largest shock, so this drags cor(u, v) with all shocks to −0.34 to −0.41 at low ξ_inv; the best value in the grid is −0.66 at ξ_inv = 4 (data −0.925).
+
+### 7.3 Destruction shocks (δ)
+
+δ has a channel that s lacks: it enters the user cost directly. In the vacancy free entry limit, K_t = x_m[1 − β(1 − δ_t)], so a higher δ_t raises the cost of holding every position and lowers θ through E2 even with perfectly elastic creation (the user-cost channel of `prop:fe` in the draft). Destruction also removes vacancies directly, which matters with inelastic creation.
+
+| ξ_inv (x_v = 0.5) | 4 | 1 | 0.5 | 0.25 | 0.1 | 0.01 |
+|---|---|---|---|---|---|---|
+| cor(u, v), δ alone | −0.85 | −0.81 | −0.79 | −0.79 | −0.89 | −0.49 |
+| v trough after a one-SD δ shock, % (month) | −0.32 (7) | −0.25 (7) | −0.21 (6) | −0.17 (6) | −0.12 (5) | −0.76 (0) |
+
+- **The Beveridge relation holds at every ξ_inv.** Inelasticity changes its timing: with inelastic creation v falls gradually to a trough at month 6–7; with elastic creation it drops on impact and recovers fast.
+- **It weakens as creation becomes elastic,** because destroyed vacancies are replaced at once, and because the δ shock is transitory (ρ_δ = 0.53 a month): θ recovers within months while u stays high for a year or more.
+- **σ(u) from δ stays at 0.52–0.79 throughout.** δ's size problem (§4 of the empirical note's comparison) is separate from ξ.
+
+### 7.4 One destruction shock (Coles and Kelishomi) against two
+
+With s ≡ 0, every separation destroys the position, and the model's single destruction shock does the work of both δ and s. *Hypothesis:* if that shock is calibrated to the total separation rate, with elastic creation and transitory shocks, a shock moves u a lot while θ's fall is brief, which is the mechanism of §7.2. A single shock can then produce a counterfactual (positive) Beveridge relation. Separating δ (destroys jobs and positions, raises the user cost) from s (ends matches, leaves the positions) is what lets δ keep the Beveridge relation and confines the problem to s at elastic creation.
+
+### 7.5 Link to R19
+
+In the full model, the product-line entry Euler pins m(1 − δ), which cancels δ's effect on the user cost (the R19 offset). If so, priced entry removes exactly the channel of §7.3: δ would then behave like s, and could produce positive comovement at elastic creation. That would be a further reason for clone replacement in Part 1, and a sense in which R19 does more than damp volatility. *Not yet checked.*
+
+### 7.6 The trade-off in ξ
+
+- **z amplification wants elastic creation.** At x_v = 0.25, σ(u) from z reaches the data's 6.32 near ξ_inv ≈ 0.07.
+- **Three moments want inelastic creation (ξ_inv ≳ 0.5):** a mild cor(u, z) (data −0.22, 1951–2019; Gabrovski and Silva's point), the s Beveridge relation (§7.2), and the δ Beveridge relation's gradual timing (§7.3).
+- **The best compromise in the grid** (x_v = 0.25, ξ_inv = 0.5) gives σ(u) from z 3.81 (data 6.32), cor(u, z) −0.27 (−0.22), cor(u, v | s) −0.04, cor(u, v) −0.47 (−0.925).
+
+### 7.7 Checks not yet run
+
+1. AGS with a CK-style destruction shock (δ̄ at the total separation rate, s̄ ≈ 0), at ξ_inv = 0.01 and 1: does cor(u, v | δ) turn positive (§7.4)?
+2. The full model at the working point, priced entry against clone replacement: does R19 weaken or flip δ's Beveridge relation (§7.5)?
+3. A two-way grid x_v ∈ {0.25, 0.1, 0.05} × ξ_inv ∈ {1, 0.5, 0.25}: does a high per-hire share at moderate inelasticity satisfy §7.6?
