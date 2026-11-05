@@ -131,6 +131,9 @@ OUTPUT
     data/results/q3_data_svar_irf.csv    IRFs with bootstrap bands (filter column: hp, hamilton)
     data/results/q3_data_svar_irf.png    IRFs of u and v to the z, delta, s shocks
     data/results/q3_data_svar_levels.png the series in levels, with HP trends
+    data/results/q3_data_svar_cycles_hp.csv  the HP cycles (u, v, theta, jf, z, s, delta),
+                                         1951Q1-2019Q4, read by the Julia moment tables
+                                         (time_series_fun.jl moment_table)
 
 Run
 ---
@@ -186,6 +189,7 @@ OUT_HEAD_TXT = p6b.RESULTS_DIR / "q3_data_svar_headline.txt"
 OUT_IRF  = p6b.RESULTS_DIR / "q3_data_svar_irf.csv"
 OUT_PNG  = p6b.RESULTS_DIR / "q3_data_svar_irf.png"
 OUT_LEV  = p6b.RESULTS_DIR / "q3_data_svar_levels.png"
+OUT_CYC  = p6b.RESULTS_DIR / "q3_data_svar_cycles_hp.csv"
 
 ECHO_METHOD = False     # True also prints the method text to the console (always in the .txt)
 
@@ -259,6 +263,8 @@ def build_cycles(method="hp"):
         dat.index = dat.index.to_period("Q")
     cyc = p6b.hp_cycles(dat, p6b.build_levels(dat), method)[["z", "delta", "s"]]
     for name in OUTCOMES:
+        cyc[name] = p6b.log_cycle(p6b.window(dat[name]), method)
+    for name in ("theta", "jf"):                     # for the moment tables, not the SVARs
         cyc[name] = p6b.log_cycle(p6b.window(dat[name]), method)
     fin = pd.read_parquet(NFCI_CACHE)
     fin.index = pd.PeriodIndex(fin["quarter_label"], freq="Q")
@@ -669,6 +675,7 @@ if __name__ == "__main__":
     report_method()
 
     cyc = build_cycles()
+    cyc[["u", "v", "theta", "jf", "z", "s", "delta"]].to_csv(OUT_CYC, index_label="quarter")
     print((cyc.std()*100).map(lambda  x: f"{x:6.2f}"))
     say(f"\n{'-'*78}\n1. Data\n{'-'*78}")
     for name in cyc.columns:
