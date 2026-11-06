@@ -1,6 +1,8 @@
 # ags_kappa_sweep.jl
 # =============================================================================
-# Exploratory, not draft-bound. How much does the per-hire cost κ amplify z in the AGS model,
+# Exploratory, not draft-bound. TRUE-SHOCK statistics (each shock simulated alone): diagnostics
+# only, not comparable with the data's SVAR numbers (decisions.md S16); the like-for-like
+# comparison is Bartek analysis/q3_model_svar.py. How much does the per-hire cost κ amplify z in the AGS model,
 # with every other ingredient unchanged?
 #
 # κ is set through x_v, the sunk share of recruiting cost: κ = (1 − x_v)/x_v · K/q, so x_v = 1 is

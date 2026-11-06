@@ -1,6 +1,17 @@
 # Estimation Design — Conditional + Unconditional Moments
 **Last updated:** September 23, 2026 (Oct 12: determinacy item 1 updated) · **Status:** design settled in the draft; **no code written**
 
+> ⚠️ **Superseded, Nov 6, 2026 ([D13 amended](decisions.md), [S16](decisions.md)).**
+> - **The objective is Block B′ only:** the responses of u and v to the **z**, s and δ shocks,
+>   h = 0–12 (78 moments), by indirect inference (SVAR A on data and on simulated windows;
+>   `Bartek analysis/q3_model_svar.py`). Diagonal weighting for now.
+> - **Block M leaves the objective.** Table 3's unconditional moments are reported as validation;
+>   shock-series moments are first-step calibration (part6b) only.
+> - **Conditional second moments** implied by the identified shocks are reported, not targeted,
+>   and on the model side always come through the same SVAR on simulated data.
+> - Open: re-matching z and s on B′'s window (1992Q3–2019Q4); one-SD vs scaled responses; the
+>   weighting matrix. Sections below on Block M and the two-block posterior are history.
+>
 > ⚠️ **Superseded in part, Oct 14, 2026 ([D13](decisions.md)).**
 > - Block B (Bartik LP paths) leaves the objective; the Bartik features become validation.
 > - New **Block B′**: aggregate SVAR responses of u and v to δ and s shocks (h = 0–12),

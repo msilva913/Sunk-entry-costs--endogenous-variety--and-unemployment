@@ -1,5 +1,5 @@
 # Decision Register
-**Last updated:** October 14, 2026 (D13 adopted: SVAR Block B′ replaces Bartik; D3 moot, D10 → (a) as validation). October 12: D12 updated for the Oct 11 theory rebuild; S12 rewritten for the new `sec:mechanism` structure; D1 entry compressed). Earlier: October 9 (D12 added) · **Branch:** `costly_vacancy_reposting`
+**Last updated:** November 6, 2026 (D13 amended: z responses join Block B′, built on the model side; S16: the objective is impulse responses only, Block M leaves it). October 14, 2026 (D13 adopted: SVAR Block B′ replaces Bartik; D3 moot, D10 → (a) as validation). October 12: D12 updated for the Oct 11 theory rebuild; S12 rewritten for the new `sec:mechanism` structure; D1 entry compressed). Earlier: October 9 (D12 added) · **Branch:** `costly_vacancy_reposting`
 
 One entry = one decision: a *choice*, not a task. Tasks live in
 [`pending_tasks.md`](pending_tasks.md). When a decision is settled, move it to §Settled with
@@ -15,7 +15,7 @@ Status key: 🔴 blocks estimation · 🟠 blocks a paper section · 🟡 improv
 | D10 | Empirical target for the δ→u IRF shape | 🟡 resolved to (a) as validation under D13 (Oct 14); E9 no longer needed |
 | D11 | Does the reposting margin enter this paper? | 🟡 in the draft and the code (Q1, Oct 19); go/no-go after Q2 + R2/Q4 |
 | D12 | Venue and the theory-first pivot (JET?) | 🟠 open (MS), recommendation: no-go for JET; theory-forward paper for RED / JME / AEJ: Macro |
-| D13 | Conditional moments without Bartik: Block B′ = aggregate SVAR responses | 🔴 adopted as the working design Oct 14 (MS approved the plan); not yet built |
+| D13 | Conditional moments without Bartik: Block B′ = aggregate SVAR responses | 🔴 adopted Oct 14; **amended Nov 6 (MS): z-shock responses included**; model side built (`q3_model_svar.py`); open: re-matched z, s processes for B′'s window, the weighting matrix |
 | D14 | Is the s innovation orthogonalized against z and δ? | 🟡 low stakes after Q2 (Oct 20): z and δ explain 1.1 % of the s innovation, so (a) and (b) coincide; take (a). New question: the dropped cross-lag δ_{t−1} → s_t (t = 2.8) |
 
 ---
@@ -109,6 +109,27 @@ Decide after the Q2 numbers (share of s innovation variance explained by z and �
 ---
 
 ## 🔴 D13. What replaces the Bartik IRF block?
+
+**Amended Nov 6, 2026 (MS).**
+- **Targets:** the responses of u and v to the **z**, s and δ shocks, h = 0–12 (78 moments). z
+  responses are a key part of transmission in search models; the Oct 14 plan listed only δ and s.
+- **The objective is these impulse responses only** (S16): Block M leaves the objective.
+- **Model side built** (`Bartek analysis/q3_model_svar.py`, simulations from
+  `Programs AGS/ags_svar_sim.jl`): SVAR A, the data's own functions, on 200 simulated windows of
+  110 quarters filtered as the data are (z, s, u, v over 276 quarters, δ over 110); the model's
+  response is the mean over windows.
+- **Weighting:** diagonal, inverse data bootstrap variances, for now. A diagonal distance
+  underweights joint misfits (u and v to the same shock); a block structure is a Q6 question.
+- **Open:** (i) the z and s processes for B′. S14 calibrates them on 1951–2019, B′ runs on
+  1992Q3–2019Q4, where both are smaller and less persistent (z innovation 0.58 against 0.81, s 4.30
+  against 4.94), so the model feeds the SVAR shocks of the wrong size; proposal: re-match z and s on
+  B′'s window for B′ only (Block M no longer needs S14's). (ii) Whether B′ matches one-SD responses
+  (with re-matched processes) or responses scaled by own impact; one-SD recommended once the
+  processes are re-matched, because scaling equalizes the impact but not the persistence of the
+  shock.
+- **Identification caveats** (validation, `q3_model_svar.txt` §1): on the model's own data the SVAR
+  recovers z and s within 10–15 % but δ only about 55 % (exit's one-month measurement lag); shared
+  by data and model, so the comparison is unbiased, but the data's δ effect is likely understated.
 
 **Adopted Oct 14, 2026 as the working design (MS approved the plan).** The Bartik LP paths are
 unstable beyond short horizons (E8). They therefore leave the objective and become
@@ -373,4 +394,5 @@ that destroy a vacancy), so cor(u,v) cannot separate them; the LD→v IRF should
 | S13 | **Sample endpoint 2019Q4 for every series, applied *before* filtering** (shock processes, Block M moments, Block B′ VAR) | Oct 20, 2026 (MS) | Rules out pandemic effects. HP filtering through 2020+ leaks the 2020 spike into the 2017–19 cycles, and the old moment targets (σ(u) 14.96, cor(u,v) −0.804) included 2020–24; the pre-pandemic values are 12.48 and −0.925 (1951–2019). The **start** of the window is still open (findings.md "Sample windows") |
 | S14 | **Sample window, option B: 1951Q1–2019Q4 for z, s and the labor-market moments (u, v, θ, f, s, z); 1992Q3–2019Q4 only for δ and δ-related moments** | Oct 20, 2026 (MS) | The literature standard (Shimer 2005, Hagedorn–Manovskii 2008, Coles–Kelishomi 2018) and the comparison referees will make. 1992–2019 alone sits entirely in the post-1985 era, when labor productivity is acyclical with u (cor +0.13 vs −0.37 before 1985), so z looks weak by construction. **Spec:** (i) s before 1992Q3 built from τ with δ held at a constant δ̄, (τ − δ̄)/(1 − δ̄); **amended Oct 28 (MS): δ̄ = mean of the first 10 BED quarters (1992Q3–1994Q4), which removes the step at the splice**; the measured identity from 1992Q3 (cyclically s ≈ τ: correlation 0.99, δ/τ ≈ 0.09). (ii) Shock processes, **amended Oct 28 (MS)**: z an AR(1) on 1951–2019; δ from the (z, δ) VAR on 1992–2019, keeping ρ_δ and σ_δ ⊥ z (the part6b double-counting argument); s a univariate AR(1) on 1951–2019, σ_s not purged (D14). Off-diagonals excluded. All in `part6b_shock_persistence_cyclical.py`. (iii) Block M and B′ moments on the same windows. (iv) Robustness: 1985–2019. (v) End cut at 2019Q4 before filtering (S13). **Implemented Oct 28** (`shock_calibration.txt`) |
 | S15 | **Data SVAR identification (Block B′): z first; preferred ordering z, s, δ, then u, v; z, δ, s reported for completeness; u and v residual innovations combined (their relative order is arbitrary)** | Oct 29, 2026 (MS) | z is the most plausibly exogenous series, and the model generates z → δ_e within the period, so z-driven exit counts toward z. s is purely exogenous in the model, while measured exit responds to the cycle within the period, so δ goes after s. The δ–s order moves only the δ–s split (`q3_data_svar.py`) |
+| S16 | **Estimation objective: Block B′ impulse responses only.** (i) Targets: u and v responses to the z, s and δ shocks, h = 0–12 (D13 amended). (ii) Unconditional moments (Table 3, `tab:smm_moments`) leave the objective and are **reported** as validation, model against data: about 40 % of var(u) comes from shocks outside the model, so targeting them would make z, s and δ do the work of the missing shocks. (iii) Moments of the shock series (σ, ρ of z, s, δ) are first-step calibration only (part6b), never in the distance. (iv) Conditional second moments (σ, cor, ρ₁ of u, v, θ, z implied by the identified shocks) are **reported, not targeted**: they are functions of the impulse responses at all horizons and add no information, but summarize volatility and comovement and flag joint misfits. (v) **Both sides go through the SVAR**: the model's reported conditional moments come from the same SVAR on simulated windows, never from true-shock simulations, which the SVAR does not recover exactly (δ about 55 %); true-shock statistics are diagnostics only | Nov 6, 2026 (MS) | The data's conditional moments are 6.29 (z), 3.63 (δ), 3.80 (s) for σ(u), 8.20 for the three together, 60 % of var(u) (`q3_model_svar.txt` §5). Earlier comparisons that set true-shock model numbers against the data's SVAR numbers (gate-1 tables, the sweeps, `ags_equilibrium.md` §7.6) are not like for like and must be restated. Caveat: the SVAR responses also rest on an identifying assumption (outside shocks do not load on the z, s, δ innovations within the quarter); δ last and A_F (NFCI) are the robustness checks |
 | S12 | **Structure of `sec:mechanism` (R15 option (b), MS, Oct 11).** (1) `lem:theta` + `prop:fe`: free entry (ξ = ∞), closed-form δ–s contrast, rigorous statement; informal discussion with `tab:fe_irf`. (2) `lem:accounting`: old Prop. 5 Parts 1 (s) and 3 (δ), h = 1 accounting at any entry technology, p_0 = 0. (3) `rem:finite_xi`: the finite-ξ entry cushion, numerical. (4) `prop:exit_s`: old Part 2 (p_0 > 0, α → 0), to first order in F′, under `eq:exit_cond` and inflow-dominates-drain | Oct 5 (statements), Oct 11 (structure) | `prop:fe` is sharper where both apply and carries the δ–s asymmetry as a theorem; the accounting lemma covers finite ξ; exit is a separate mechanism. Under S10 θ_t and e_t respond to period-t shocks. At p_0 = 0 condition (ii) binds at most 2.6% (0.7% at D1) (`run_prop5_s_check.jl`); the δ part's first-month sign is fragile at monthly frequency (entry offsets 81% at D1) but vacancies fall from month 2 (`run_prop5_parts23_check.jl`). The old Part 3 sufficient condition (R12c) was wrong and became `rem:finite_xi` |

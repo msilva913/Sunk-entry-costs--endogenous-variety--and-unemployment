@@ -47,12 +47,25 @@ with the data's A_F delta responses instead. This breaks the same-estimator rule
 NFCI also tightens when the economy weakens, so conditioning on it removes some true delta
 effect as well as financial contamination. A and A_F bracket the data's delta responses.
 
+Conditional second moments (section 5). Reported, not targeted (decisions.md S16). The second
+moments of u, v, theta (= v - u in logs) and z implied by the identified z, delta and s shocks,
+each alone and together: with orthonormal shocks, var(x | J) = sum_h sum_{j in J} Theta_h(x, j)^2,
+cov(x, y | J) = sum_h sum_j Theta_h(x, j) Theta_h(y, j), and the first autocorrelation from
+sum_h Theta_h Theta_{h+1}, summed to h = 200. They are functions of the impulse responses (all
+horizons), so they add no information to them; they summarize volatility and comovement, and flag
+joint misfits (e.g. cor(u, v | s)) that a diagonal distance underweights. Both sides go through the
+SVAR: the data's SVAR A, and the same SVAR on each simulated window (mean over windows). The model's
+true-shock statistics (the sweeps) are not comparable with these: the SVAR recovers only about half
+of delta's true effect (section 1).
+
 Outputs:
     data/results/q3_model_svar.txt   the report
     data/results/q3_model_svar.csv   IRFs: data (point, 16/84 %), model small-sample mean and
                                      16/84 %, long sample, true (normalized), by case; for the
                                      delta shock also data_AF (point, sd) from A_F
     data/results/q3_model_svar.png   u and v responses to z, s, delta: data band, model cases
+    data/results/q3_model_svar_moments.csv  conditional second moments: data (point, 16/84 %),
+                                     model cases (mean, 16/84 % across windows)
 """
 
 from pathlib import Path
@@ -77,6 +90,9 @@ H         = q3.H_IRF
 OUT_TXT   = p6b.RESULTS_DIR / "q3_model_svar.txt"
 OUT_CSV   = p6b.RESULTS_DIR / "q3_model_svar.csv"
 OUT_PNG   = p6b.RESULTS_DIR / "q3_model_svar.png"
+OUT_MOM   = p6b.RESULTS_DIR / "q3_model_svar_moments.csv"
+H_MOM     = 200                                  # horizons summed for the conditional moments
+COND_SETS = (("z", ("z",)), ("δ", ("delta",)), ("s", ("s",)), ("z, δ, s", ("z", "delta", "s")))
 LINES = []
 
 
@@ -89,6 +105,31 @@ def svar_irf(frame, p):
     """SVAR A's IRFs (H+1, var, shock), recursive in NAMES order, on a frame of cycles."""
     Y = frame[NAMES].to_numpy()
     return q3.irf(q3.fit_var(Y, p), NAMES, NAMES, H)
+
+
+def cond_moments(Theta):
+    """
+    Second moments implied by the identified shocks (orthonormal), for each set in COND_SETS:
+    σ(u), σ(v), σ(θ) in %, cor(u, v), cor(u, z), ρ1(u), ρ1(v). Theta: (H+1, var, shock) in
+    NAMES order; θ = v − u. cor(u, z) is reported only when z moves (sets containing z).
+    """
+    iu, iv, iz = NAMES.index("u"), NAMES.index("v"), NAMES.index("z")
+    out = {}
+    for lab, shocks in COND_SETS:
+        J = [NAMES.index(s) for s in shocks]
+        U, V, Z = Theta[:, iu, J], Theta[:, iv, J], Theta[:, iz, J]
+        TH = V - U
+        var = lambda X: (X ** 2).sum()
+        cov = lambda X, Y: (X * Y).sum()
+        ac1 = lambda X: (X[:-1] * X[1:]).sum() / var(X)
+        row = {"σ(u)": 100 * np.sqrt(var(U)), "σ(v)": 100 * np.sqrt(var(V)),
+               "σ(θ)": 100 * np.sqrt(var(TH)), "cor(u,v)": cov(U, V) / np.sqrt(var(U) * var(V)),
+               "ρ1(u)": ac1(U), "ρ1(v)": ac1(V)}
+        if "z" in shocks:
+            row["cor(u,z)"] = cov(U, Z) / np.sqrt(var(U) * var(Z))
+            row["σ(θ)/σ(z)"] = np.sqrt(var(TH) / var(Z))
+        out[lab] = row
+    return out
 
 
 def normalized(Theta):
@@ -321,6 +362,43 @@ if __name__ == "__main__":
             out.loc[sel & (out.case == c), "data_AF_sd"] = sdF[r]
     out.to_csv(OUT_CSV, index=False)
 
+    # ── 5. conditional second moments, through the SVAR on both sides ───────
+    say(f"\n{'-'*78}\n5. Conditional second moments implied by the identified shocks (reported, not targeted)\n{'-'*78}")
+    say(f"  Sums over h = 0–{H_MOM} of the SVAR's impulse responses; data: point [16, 84 % bootstrap];")
+    say("  model: mean over windows [16, 84 % across windows]. Both sides through SVAR A.\n")
+    Y = svA["Y"]
+    m_data = cond_moments(q3.irf(fitA, NAMES, NAMES, H_MOM))
+    drawsL = q3.bootstrap_irf(Y, fitA, NAMES, NAMES, H_MOM, q3.N_BOOT)
+    m_draws = [cond_moments(D) for D in drawsL]
+    m_model = {}
+    for case in CASES:
+        reps = pd.read_csv(MODEL_DIR / f"ags_svar_reps_{case}.csv")
+        m_model[case] = [cond_moments(q3.irf(q3.fit_var(g[NAMES].to_numpy(), p), NAMES, NAMES, H_MOM))
+                         for _, g in reps.groupby("rep")]
+    # total VAR-implied σ(u) (all five shocks), for the three shocks' share
+    tot_data = 100 * np.sqrt((q3.irf(fitA, NAMES, NAMES, H_MOM)[:, NAMES.index("u"), :] ** 2).sum())
+    rows_csv, tab = [], []
+    for lab, _ in COND_SETS:
+        for stat in m_data[lab]:
+            d = m_data[lab][stat]
+            bs = np.array([x[lab][stat] for x in m_draws])
+            cells = [lab, stat, f"{d:+.2f} [{np.percentile(bs, 16):+.2f}, {np.percentile(bs, 84):+.2f}]"]
+            rec = {"set": lab, "stat": stat, "data": d, "data_lo": np.percentile(bs, 16),
+                   "data_hi": np.percentile(bs, 84)}
+            for case in CASES:
+                ms = np.array([x[lab][stat] for x in m_model[case]])
+                cells.append(f"{ms.mean():+.2f} [{np.percentile(ms, 16):+.2f}, {np.percentile(ms, 84):+.2f}]")
+                rec |= {f"{case}_mean": ms.mean(), f"{case}_lo": np.percentile(ms, 16),
+                        f"{case}_hi": np.percentile(ms, 84)}
+            tab.append(cells)
+            rows_csv.append(rec)
+    say(tabulate(tab, ["shocks", "statistic", "data", "default", "compromise"], tablefmt="simple",
+                 disable_numparse=True))
+    say(f"\n  Data: σ(u) from all five SVAR shocks {tot_data:.2f}; the three model shocks give "
+        f"{m_data['z, δ, s']['σ(u)']:.2f}, {100 * (m_data['z, δ, s']['σ(u)'] / tot_data) ** 2:.0f} % of the variance.")
+    say("  σ in % (log points × 100) of the HP cycle; θ = v − u. cor(u,z) and σ(θ)/σ(z) only where z moves.")
+    pd.DataFrame(rows_csv).to_csv(OUT_MOM, index=False)
+
     # ── figure ──────────────────────────────────────────────────────────────
     pal = {"default": "#2a78d6", "compromise": "#eb6834"}
     hh = np.arange(H + 1)
@@ -353,4 +431,4 @@ if __name__ == "__main__":
     fig.savefig(OUT_PNG, dpi=150)
 
     OUT_TXT.write_text("\n".join(LINES) + "\n", encoding="utf-8")
-    print(f"\nSaved: {OUT_TXT}\nSaved: {OUT_CSV}\nSaved: {OUT_PNG}")
+    print(f"\nSaved: {OUT_TXT}\nSaved: {OUT_CSV}\nSaved: {OUT_PNG}\nSaved: {OUT_MOM}")

@@ -266,6 +266,8 @@ The baseline's `calibrate_shares`, adapted. The long-run targets hold exactly at
 
 ## 7. Transmission: when does a shock that raises u also raise v?
 
+> ⚠️ **Nov 6, 2026 (decisions.md S16):** the model numbers in this section are **true-shock** statistics (one shock simulated at a time). The data numbers they are set against (σ(u) by shock 6.32, 3.64, 3.82) come through the SVAR, which does not recover the model's shocks exactly (δ about 55 %). The like-for-like comparison runs the same SVAR on simulated data: `../Bartek analysis/data/results/q3_model_svar.txt` §5. The mechanisms below stand; the model–data gaps quoted here are to be restated from that output.
+
 *Added Nov 5, 2026. Evidence from `../Programs AGS/ags_xi_sweep.txt` (ξ_inv grid at x_v = 0.5 and 0.25, everything else at `AGS_TARGETS`) and `ags_kappa_sweep.txt`. The account of Coles and Kelishomi below is a hypothesis about their setting, not a summary of their paper (citation unverified).*
 
 ### 7.1 The accounting

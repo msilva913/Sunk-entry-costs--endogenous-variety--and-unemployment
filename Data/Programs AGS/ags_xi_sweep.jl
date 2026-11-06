@@ -1,6 +1,8 @@
 # ags_xi_sweep.jl
 # =============================================================================
-# Exploratory, not draft-bound. The trade-off in the elasticity of vacancy creation. Elastic
+# Exploratory, not draft-bound. TRUE-SHOCK statistics (each shock simulated alone): diagnostics
+# only, not comparable with the data's SVAR numbers (decisions.md S16); the like-for-like
+# comparison is Bartek analysis/q3_model_svar.py. The trade-off in the elasticity of vacancy creation. Elastic
 # creation (small ξ_inv) amplifies z (ags_kappa_sweep.jl), but some inelasticity is needed for
 #   (1) a mild comovement of unemployment with labor productivity under z shocks (the point in
 #       Gabrovski and Silva): with inelastic creation, u lags productivity, which weakens the
