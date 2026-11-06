@@ -4,9 +4,11 @@
 #
 # Sections:
 #   1. The model at AGS_TARGETS: steady state, impulse responses of u, v, θ, Q, Λ_r.
-#   2. Check: with nearly free vacancy creation (ξ_inv → 0), Q is constant, so job creation pins
-#      θ_t as a function of the current shocks alone: θ does not load on the stocks Ẽ, Ṽ^u, Ṽ^s
-#      (the analog of the draft's lem:theta; Notes/ags_equilibrium.md §3, special cases).
+#   2. Check: with nearly free vacancy creation (ξ_inv → 0) and linear utility (σ = 0), Q is
+#      constant and discounting is constant, so job creation pins θ_t as a function of the
+#      current shocks alone: θ does not load on the stocks Ẽ, Ṽ^u, Ṽ^s (the analog of the draft's
+#      lem:theta; Notes/ags_equilibrium.md §3). With σ > 0 the discount factor depends on
+#      consumption, which depends on the stocks, so the result holds only at σ = 0.
 #   3. D15 gate 1, stage (a): σ(u) by shock and cor(u, v), quarterly averages, HP-1600, at the
 #      S14 shock processes (Programs baseline/run_solution_core.jl SHOCKS_BASE).
 # Output: ags_run_solution.txt, ags_irf.png
@@ -22,9 +24,9 @@ say(str) = (push!(lines, str); println(str))
 # =============================================================================
 sol = solve_ags(AGS_TARGETS)
 say("AGS model with costly reactivation (ags_run_solution.jl). Monthly; responses in % (100 × log dev.).")
-say(@sprintf("Targets: Λ̄_r %.2f, p_r %.2f, ψ_r %.2f, ξ_inv %.2f, x_v %.2f, b/w %.2f, X/Y %.3f.",
+say(@sprintf("Targets: Λ̄_r %.2f, p_r %.2f, ψ_r %.2f, ξ_inv %.2f, x_v %.2f, b/w %.2f, X/Y %.3f, σ %.2f.",
              AGS_TARGETS.Λr_target, AGS_TARGETS.p_r, AGS_TARGETS.ψ_r, AGS_TARGETS.ξ_inv,
-             AGS_TARGETS.x_v, AGS_TARGETS.b_ratio, AGS_TARGETS.X_Y))
+             AGS_TARGETS.x_v, AGS_TARGETS.b_ratio, AGS_TARGETS.X_Y, AGS_TARGETS.σ))
 say(@sprintf("Steady state: u %.4f, θ %.4f, Q %.4f, Λ_r %.3f; ϕ %.4f, κ %.4f, z̄ %.4f, a %.3f.",
              sol.st.u, sol.st.θ, sol.st.Q, sol.st.Λ_r, sol.cal.ϕ, sol.cal.κ, sol.cal.zbar, sol.cal.a))
 say(@sprintf("Shocks (monthly, S14): ρz %.4f σz %.4f ρδ %.4f σδ %.4f ρs %.4f σs %.4f.\n", SHK...))
@@ -69,8 +71,8 @@ savefig(plt, "ags_irf.png")
 # 2. Check: nearly free vacancy creation ⇒ θ depends on the current shocks only
 # =============================================================================
 iθ = findfirst(==(:θ), Symbol.(y))
-say("\nCheck: θ's loading on the stocks Ẽ, Ṽ^u, Ṽ^s (max |gx|) relative to its loading on z, as ξ_inv → 0.")
-for (label, over) in (("costless", (p_r = 0.0, Λr_target = 1.0)), ("costly 0.25", (;)))
+say("\nCheck (σ = 0): θ's loading on the stocks Ẽ, Ṽ^u, Ṽ^s (max |gx|) relative to its loading on z, as ξ_inv → 0.")
+for (label, over) in (("costless", (p_r = 0.0, Λr_target = 1.0, σ = 0.0)), ("costly 0.25", (σ = 0.0,)))
     rel = map((1e-2, 1e-4, 1e-6)) do ξ
         g = solve_ags(merge(AGS_TARGETS, over, (ξ_inv = ξ,))).sol_mat.gx[iθ, :]
         maximum(abs, g[1:3]) / abs(g[4])
@@ -86,7 +88,8 @@ say("✓ θ is a function of the current shocks alone in the vacancy free entry 
 # 3. D15 gate 1, stage (a): σ(u) by shock, true shocks
 # =============================================================================
 say("\nD15 gate 1, stage (a). Simulated $(T_SM) months, quarterly averages, HP λ = $(Int(LAM)).")
-say("Data, SVAR A (1992Q3–2019Q4, long run): σ(u) z 7.40, δ 4.27, s 4.48; cor(u,v) 1951–2019 −0.925.")
+say("TRUE-SHOCK statistics: not comparable with the data's SVAR numbers (decisions.md S16); the")
+say("like-for-like comparison is Bartek analysis/q3_model_svar.py.")
 say(@sprintf("  %-34s %7s %7s | %6s %6s %6s %6s | %5s %5s %5s", "case", "ϕ", "cor", "σu", "z",
              "δ", "s", "%z", "%δ", "%s"))
 for (label, over) in (

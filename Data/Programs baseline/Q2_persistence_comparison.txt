@@ -7,7 +7,7 @@ for z / δ / s; u peaks at h 4 / 4 / 2.
 
 z shock alone
   model                            σ(u)   σ(v)  ρ₁(u)  ρ₁(v) cor(u,v) cor(u,LP)  u peak (quarter)
-  AGS                              0.95   1.70  0.941  0.919  -0.918   -0.320  -0.420 (5)
+  AGS                              1.48   2.66  0.944  0.923  -0.922   -0.283  -0.676 (6)
   full, no exit, priced            1.01   1.80  0.944  0.922  -0.921   -0.213  -0.518 (7)
   full, no exit, σ 0.1, priced     1.06   1.89  0.946  0.926  -0.924   -0.312  -0.511 (7)
   full, no exit, clone             1.55   2.78  0.945  0.924  -0.922   -0.288  -0.712 (6)
@@ -18,7 +18,7 @@ z shock alone
 
 δ shock alone
   model                            σ(u)   σ(v)  ρ₁(u)  ρ₁(v) cor(u,v) cor(u,LP)  u peak (quarter)
-  AGS                              0.57   0.57  0.739  0.818  -0.808     +NaN  +0.260 (1)
+  AGS                              0.57   0.61  0.748  0.823  -0.816     +NaN  +0.262 (1)
   full, no exit, priced            0.54   0.62  0.737  0.821  -0.777   -0.058  +0.260 (1)
   full, no exit, σ 0.1, priced     0.56   0.64  0.747  0.826  -0.792   -0.117  +0.260 (1)
   full, no exit, clone             1.10   1.55  0.808  0.828  -0.977   -0.204  +0.489 (1)
@@ -29,7 +29,7 @@ z shock alone
 
 s shock alone
   model                            σ(u)   σ(v)  ρ₁(u)  ρ₁(v) cor(u,v) cor(u,LP)  u peak (quarter)
-  AGS                              4.67   4.26  0.790  0.756  -0.409     +NaN  +2.096 (1)
+  AGS                              4.70   4.66  0.797  0.775  -0.458     +NaN  +2.103 (1)
   full, no exit, priced            4.66   4.35  0.789  0.765  -0.418   +0.936  +2.110 (1)
   full, no exit, σ 0.1, priced     4.67   4.38  0.790  0.767  -0.425   +0.871  +2.110 (1)
   full, no exit, clone             4.73   4.76  0.799  0.781  -0.474   -0.955  +2.111 (1)

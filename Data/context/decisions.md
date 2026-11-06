@@ -24,6 +24,8 @@ Status key: 🔴 blocks estimation · 🟠 blocks a paper section · 🟡 improv
 
 **Proposed Nov 4, 2026 (MS); adopted conditionally, pending two gates.**
 
+**Nov 6 (MS): AGS gets the full model's household.** CRRA utility (σ = 1 default, σ = 0 the linear-utility benchmark), ownership of firms through shares, a riskless bond; firms discount with m_{t+1} = β(C_{t+1}/C_t)^{−σ} (`Programs AGS/ags_model.jl` f[19]–f[21]; `Notes/ags_equilibrium.md` §2, §8). Reason: so that Part 2's business formation is not confounded with consumption smoothing and endogenous discounting. The steady state does not depend on σ; σ = 0 reproduces the earlier AGS outputs exactly.
+
 **The plan.**
 - **Part 1: an AGS model,** building on Gabrovski–Silva (and through it on Coles and Kelishomi), estimated against the data SVAR. σ = 0 for the closed forms, with clone replacement, no variety and no endogenous exit. It adds costly reactivation of vacancies after s shocks, with its own cost distribution, decoupled from exit (in the current code it draws from F with floor 1 − p_0, which forces it to be costless at p_0 = 0).
 - **Part 2: the full model with business formation.** It argues that frictionless business formation undoes destruction shocks (R19: priced replacement offsets the vacancy user cost), so the data require frictions in replacement, namely entry congestion.

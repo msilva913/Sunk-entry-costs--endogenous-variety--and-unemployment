@@ -34,23 +34,23 @@ const T_IR, T_SM, LAM = 60, 60_000, 1_600.0
 # =============================================================================
 flag_order, flag_deviation, flag_SSsolver = 1, true, false
 
-@syms δbar sbar r A η_L b ϕ κ x_m ξ_inv zbar a p_r ψ_r ρ_z σ_z ρ_δ σ_δ ρ_s σ_s
-parameters = [δbar; sbar; r; A; η_L; b; ϕ; κ; x_m; ξ_inv; zbar; a; p_r; ψ_r;
+@syms δbar sbar r A η_L b ϕ κ x_m ξ_inv zbar a p_r ψ_r σ ρ_z σ_z ρ_δ σ_δ ρ_s σ_s
+parameters = [δbar; sbar; r; A; η_L; b; ϕ; κ; x_m; ξ_inv; zbar; a; p_r; ψ_r; σ;
               ρ_z; σ_z; ρ_δ; σ_δ; ρ_s; σ_s]
 estimate, position, priors = [], [], (;)
 
 """PAR in the order of `parameters`. p_r = 0 is costless reactivation (Λ_r ≡ 1, Q^rep = Q)."""
 build_PAR(cal, shk) = [cal.δ; cal.s; cal.r; cal.A; cal.η_L; cal.b; cal.ϕ; cal.κ; cal.x_m;
-                       cal.ξ_inv; cal.zbar; cal.a; cal.p_r; cal.ψ_r;
+                       cal.ξ_inv; cal.zbar; cal.a; cal.p_r; cal.ψ_r; cal.σ;
                        shk.ρz; shk.σz; shk.ρδ; shk.σδ; shk.ρs; shk.σs]
 
 @syms Et Vu Vs z δ s Etp Vup Vsp zp δp sp
-@syms u θ q v v_pre e Q K Λ_r Q_rep H w
-@syms up θp qp vp v_prep ep Qp Kp Λ_rp Q_repp Hp wp
+@syms u θ q v v_pre e Q K Λ_r Q_rep H w C V Rf
+@syms up θp qp vp v_prep ep Qp Kp Λ_rp Q_repp Hp wp Cp Vp Rfp
 x  = [Et; Vu; Vs; z; δ; s]
-y  = [u; θ; q; v; v_pre; e; Q; K; Λ_r; Q_rep; H; w]
+y  = [u; θ; q; v; v_pre; e; Q; K; Λ_r; Q_rep; H; w; C; V; Rf]
 xp = [Etp; Vup; Vsp; zp; δp; sp]
-yp = [up; θp; qp; vp; v_prep; ep; Qp; Kp; Λ_rp; Q_repp; Hp; wp]
+yp = [up; θp; qp; vp; v_prep; ep; Qp; Kp; Λ_rp; Q_repp; Hp; wp; Cp; Vp; Rfp]
 variables = [x; y; xp; yp]
 varnames  = vcat(Symbol.(x), Symbol.(y))
 nx, ny = length(x), length(y)
@@ -62,9 +62,16 @@ ex = [epsilon]
 function ags_equations()
     f    = fill(Sym("x"), nvar)
     β    = 1 / (1 + r)
+    m    = β * (Cp / C)^(-σ)                # household discount factor m_{t+1}; β when σ = 0
     S    = 1 - δ * δbar                     # survival of destruction from t to t+1
-    R_sh, R_shp = Q - K - H, Qp - Kp - Hp   # 𝓡 = β(1−δ)E[Q' − Q^rep'], by f[7] and f[11]
+    R_sh, R_shp = Q - K - H, Qp - Kp - Hp   # 𝓡 = E[m(1−δ)(Q' − Q^rep')], by f[7] and f[11]
     ψ_cr = ψ_r / (ψ_r + 1)
+    # Investment: creating positions and hiring (X), reactivating vacated positions (X^r)
+    X    = e * Q / (1 + ξ_inv) + κ * q * v
+    X_r  = Vs * (Q * Λ_r - Q_rep)
+    Xp   = ep * Qp / (1 + ξ_inv) + κ * qp * vp
+    X_rp = Vsp * (Qp * Λ_rp - Q_repp)
+    Dp   = (zbar * zp - wp) * (1 - up) - Xp - X_rp     # dividends at t+1
     # Post-reactivation stocks and matching
     f[1]  = u - (1 - Et)                                        # unemployment entering matching
     f[2]  = θ - v / u                                           # tightness
@@ -73,13 +80,13 @@ function ags_equations()
     f[5]  = v_pre - (Vu + Λ_r * Vs)                             # inherited vacancies
     # Positions: creation, user cost, reactivation
     f[6]  = Q - x_m * e^ξ_inv                                   # creation cost Q(e)
-    f[7]  = K - (Q - β * S * Qp)                                # user cost
-    f[8]  = κ + K / q - β * S * (                               # E2: job creation
+    f[7]  = K - (Q - m * S * Qp)                                # user cost
+    f[8]  = κ + K / q - m * S * (                               # E2: job creation
                 (1 - ϕ) * (zbar * zp - Kp - b) - ϕ * θp * (Kp + qp * κ)
                 + (1 - sp * sbar) * (κ + Kp / qp) - (1 - ϕ) * sp * sbar * R_shp)
     f[9]  = Λ_r - ((1 - p_r) + p_r * (Q / a)^ψ_r)               # Λ_r = F_r(Q); 1 if p_r = 0
     f[10] = Q_rep - Q * (Λ_r - ψ_cr * (Λ_r - 1 + p_r))          # E max(Q − c, 0); Q if p_r = 0
-    f[11] = H - β * S * Q_repp                                  # H = β(1−δ)E Q^rep'
+    f[11] = H - m * S * Q_repp                                  # H = E[m(1−δ) Q^rep']
     f[12] = w - (ϕ * (zbar * z - K + θ * (K + q * κ) - s * sbar * R_sh) + (1 - ϕ) * b)  # wage
     # Laws of motion (E3, E4)
     f[13] = Etp - S * ((1 - s * sbar) * (1 - u) + A * θ^(1 - η_L) * u)
@@ -89,6 +96,10 @@ function ags_equations()
     f[16] = log(zp) - ρ_z * log(z)
     f[17] = log(δp) - ρ_δ * log(δ)
     f[18] = log(sp) - ρ_s * log(s)
+    # Household (Notes/ags_equilibrium.md §2): resources, the share Euler, the bond Euler
+    f[19] = C - (zbar * z * (1 - u) - X - X_r)                  # resource constraint
+    f[20] = V - m * (Vp + Dp)                                   # shares: V = E[m(V' + D')]
+    f[21] = 1 - Rf * m                                          # riskless bond: 1 = R^f E[m]
     return f
 end
 
@@ -106,7 +117,8 @@ function SS_ags(cal)
     Vs = (1 - cal.δ) * cal.s * (1 - st.u)
     Vu = (1 - cal.δ) * (1 - st.q) * st.v
     blk = log.([1 - st.u, Vu, Vs, 1.0, 1.0, 1.0,
-                st.u, st.θ, st.q, st.v, st.v_pre, st.e, st.Q, st.K, st.Λ_r, st.Qrep, st.H, st.w])
+                st.u, st.θ, st.q, st.v, st.v_pre, st.e, st.Q, st.K, st.Λ_r, st.Qrep, st.H, st.w,
+                st.C, st.V, st.Rf])
     return vcat(blk, blk), st
 end
 
