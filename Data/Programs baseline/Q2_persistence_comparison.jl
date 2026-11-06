@@ -17,6 +17,10 @@
 #                AGS's, so the same proportional δ shock is half as large in absolute terms;
 # each with priced entry (the entry Euler) and clone replacement (f[4]: Ñ_{t+1} = Ñ̄; isolates
 # the pricing of replacement, R19).
+# σ check (Nov 6): without exit and with clone replacement, the full model's δ effect on u is twice
+# AGS's although both hold product lines fixed. Remaining differences: σ = 1 (δ moves consumption
+# and the discount factor) and labor used to replace destroyed lines. The no-exit cases are rerun
+# at σ = 0.1 and 0.03 (clone) and 0.1 (priced); what is left at small σ is the entry-labor channel.
 # For each shock alone: σ(u), σ(v), ρ₁(u), ρ₁(v), cor(u, v), cor(u, labor productivity) on
 # quarterly averages, HP-1600, and the quarter in which u's impulse response peaks. Statistics
 # from time_series_fun.jl (shock_moments, peak_quarter), as for AGS.
@@ -32,10 +36,14 @@ const AGS_CSV   = joinpath(@__DIR__, "..", "Programs AGS", "ags_persistence.csv"
 const SHK_B     = shock_processes(SHOCK_CSV; prefix = "bprime")
 const T_SM, LAM, T_IRF_M = 60_000, 1_600.0, 60
 const REPOST    = (Λr_target = 0.25, p_r = 0.8, ψ_r = 1.0)
+const NO_EXIT = merge(TARGETS, (p_0 = 0.0, dest_end_frac = 0.0, Xc_Y = 0.0), REPOST)
 const CASES = (
-    ("no exit",    merge(TARGETS, (p_0 = 0.0, dest_end_frac = 0.0, Xc_Y = 0.0), REPOST)),
+    ("no exit",    NO_EXIT),
     ("working pt", merge(TARGETS, (p_0 = 0.8,), REPOST)),
 )
+const SIGMA_PRICED = (("no exit, σ 0.1", merge(NO_EXIT, (σ = 0.1,))),)
+const SIGMA_CLONE  = (("no exit, σ 0.1", merge(NO_EXIT, (σ = 0.1,))),
+                      ("no exit, σ 0.03", merge(NO_EXIT, (σ = 0.03,))))
 
 lines = String[]
 log!(str) = (push!(lines, str); println(str))
@@ -91,10 +99,10 @@ end
 # functions, so each model is built just before its cases run.
 res = DataFrame()
 model = build_model()
-for (lab, tg) in CASES
+for (lab, tg) in (CASES..., SIGMA_PRICED...)
     append!(res, run_case("full, $lab, priced", tg, model))
 end
-for (lab, tg) in CASES
+for (lab, tg) in (CASES..., SIGMA_CLONE...)
     m_clone = build_model(clone_N = pre_exit_N(tg))
     append!(res, run_case("full, $lab, clone", tg, m_clone))
 end
@@ -107,11 +115,12 @@ log!("Reactivation as in AGS (Λ̄_r 0.25, p_r 0.8, ψ_r 1). Quarterly averages,
 log!("largest |response| of u to a one-SD shock (0 = impact), and its value in %.")
 log!("Data, through SVAR A (q3_model_svar.txt §5): ρ₁(u) 0.96 / 0.96 / 0.94 and cor(u,v) −0.98 / −0.98 / −0.96")
 log!("for z / δ / s; u peaks at h 4 / 4 / 2.")
-order = ["AGS", "full, no exit, priced", "full, no exit, clone", "full, working pt, priced",
+order = ["AGS", "full, no exit, priced", "full, no exit, σ 0.1, priced", "full, no exit, clone",
+         "full, no exit, σ 0.1, clone", "full, no exit, σ 0.03, clone", "full, working pt, priced",
          "full, working pt, clone"]
 for name in ("z", "δ", "s")
     log!("\n$name shock alone")
-    log!(@sprintf("  %-26s %6s %6s %6s %6s %7s %8s  %s", "model", "σ(u)", "σ(v)", "ρ₁(u)", "ρ₁(v)",
+    log!(@sprintf("  %-30s %6s %6s %6s %6s %7s %8s  %s", "model", "σ(u)", "σ(v)", "ρ₁(u)", "ρ₁(v)",
                   "cor(u,v)", "cor(u,LP)", "u peak (quarter)"))
     for c in order
         r = res[(res.case .== c) .& (res.shock .== name), :]
@@ -119,7 +128,7 @@ for name in ("z", "δ", "s")
             continue
         end
         r = r[1, :]
-        log!(@sprintf("  %-26s %6.2f %6.2f %6.3f %6.3f %+7.3f %+8.3f  %+.3f (%d)", c, r.σu, r.σv, r.ρu,
+        log!(@sprintf("  %-30s %6.2f %6.2f %6.3f %6.3f %+7.3f %+8.3f  %+.3f (%d)", c, r.σu, r.σv, r.ρu,
                       r.ρv, r.cuv, r.cup, r.u_peak, r.u_peak_q))
     end
 end
