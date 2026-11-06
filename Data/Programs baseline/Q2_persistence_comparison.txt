@@ -1,0 +1,32 @@
+Persistence and comovement by shock: AGS against the full model (TRUE shocks, not comparable with
+the data's SVAR numbers; decisions.md S16). Block B′ shock processes: ρz 0.9409 σz 0.0045 ρδ 0.5319 σδ 0.0641 ρs 0.7524 σs 0.0401 (monthly).
+Reactivation as in AGS (Λ̄_r 0.25, p_r 0.8, ψ_r 1). Quarterly averages, HP-1600; u peak: quarter of the
+largest |response| of u to a one-SD shock (0 = impact), and its value in %.
+Data, through SVAR A (q3_model_svar.txt §5): ρ₁(u) 0.96 / 0.96 / 0.94 and cor(u,v) −0.98 / −0.98 / −0.96
+for z / δ / s; u peaks at h 4 / 4 / 2.
+
+z shock alone
+  model                        σ(u)   σ(v)  ρ₁(u)  ρ₁(v) cor(u,v) cor(u,LP)  u peak (quarter)
+  AGS                          0.95   1.70  0.941  0.919  -0.918   -0.320  -0.420 (5)
+  full, no exit, priced        1.01   1.80  0.944  0.922  -0.921   -0.213  -0.518 (7)
+  full, no exit, clone         1.55   2.78  0.945  0.924  -0.922   -0.288  -0.712 (6)
+  full, working pt, priced     1.13   1.97  0.948  0.929  -0.924   -0.104  -0.634 (9)
+  full, working pt, clone      1.60   2.86  0.945  0.924  -0.923   -0.301  -0.734 (6)
+
+δ shock alone
+  model                        σ(u)   σ(v)  ρ₁(u)  ρ₁(v) cor(u,v) cor(u,LP)  u peak (quarter)
+  AGS                          0.57   0.57  0.739  0.818  -0.808     +NaN  +0.260 (1)
+  full, no exit, priced        0.54   0.62  0.737  0.821  -0.777   -0.058  +0.260 (1)
+  full, no exit, clone         1.10   1.55  0.808  0.828  -0.977   -0.204  +0.489 (1)
+  full, working pt, priced     0.27   0.32  0.740  0.824  -0.780   +0.799  +0.131 (1)
+  full, working pt, clone      0.43   0.54  0.792  0.860  -0.988   -0.348  +0.192 (1)
+
+s shock alone
+  model                        σ(u)   σ(v)  ρ₁(u)  ρ₁(v) cor(u,v) cor(u,LP)  u peak (quarter)
+  AGS                          4.67   4.26  0.790  0.756  -0.409     +NaN  +2.096 (1)
+  full, no exit, priced        4.66   4.35  0.789  0.765  -0.418   +0.936  +2.110 (1)
+  full, no exit, clone         4.73   4.76  0.799  0.781  -0.474   -0.955  +2.111 (1)
+  full, working pt, priced     4.62   4.36  0.786  0.765  -0.407   -0.357  +2.109 (1)
+  full, working pt, clone      4.72   4.76  0.799  0.780  -0.470   -0.987  +2.107 (1)
+
+cor(u,LP): AGS's labor productivity is z; the full model's is measured Y/(ρL). NaN: LP does not move.

@@ -327,6 +327,52 @@ function window_filter(q::DataFrame, n_filter::Int, n_keep::Int;
     return out
 end
 
+"""
+    shock_moments(cyc; prod = "z") → NamedTuple
+
+Volatility, persistence and comovement of unemployment from quarterly cycles that are already
+logged and filtered (columns u, v and the productivity series `prod`): σ(u), σ(v) in %, ρ₁(u),
+ρ₁(v), cor(u, v), and cor(u, prod) (NaN when `prod` does not move, e.g. under a δ shock alone).
+Used for AGS and the full model alike, so both are measured by the same code.
+"""
+function shock_moments(cyc::DataFrame; prod = "z")
+    u, v, p = cyc.u, cyc.v, cyc[!, prod]
+    ac1(x) = cor(x[2:end], x[1:end-1])
+    if std(p) > 1e-8
+        cup = cor(u, p)
+    else
+        cup = NaN
+    end
+    return (σu = 100std(u), σv = 100std(v), ρu = ac1(u), ρv = ac1(v), cuv = cor(u, v), cup = cup)
+end
+
+"""
+    peak_quarter(m) → (quarter, value)
+
+Quarterly averages of a monthly impulse response `m` (m[1] = impact month), and the quarter
+(0 = impact quarter) and value of the largest absolute response.
+"""
+function peak_quarter(m::AbstractVector)
+    nq = length(m) ÷ 3
+    q = [mean(m[3k-2:3k]) for k in 1:nq]
+    k = argmax(abs.(q))
+    return k - 1, q[k]
+end
+
+"""
+    shock_processes(csv; prefix = "bprime") → (ρz, σz, ρδ, σδ, ρs, σs)
+
+Monthly shock processes from part6b's shock_calibration.csv: columns `<prefix>_rho_m` and
+`<prefix>_sigma_m` ("bprime": Block B′'s, z and s re-matched on SVAR A's window; "matched": S14).
+"""
+function shock_processes(csv::AbstractString; prefix = "bprime")
+    c = CSV.read(csv, DataFrame)
+    val(name, what) = c[findfirst(==(name), c.series), Symbol("$(prefix)_$(what)")]
+    return (ρz = val("z", "rho_m"),     σz = val("z", "sigma_m"),
+            ρδ = val("delta", "rho_m"), σδ = val("delta", "sigma_m"),
+            ρs = val("s", "rho_m"),     σs = val("s", "sigma_m"))
+end
+
 function time_series_object(out::Matrix, fields::Vector{Symbol})
     sim_length = size(out)[1]
     initial = Date(1800, 1, 1)

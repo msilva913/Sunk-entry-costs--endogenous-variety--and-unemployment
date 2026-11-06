@@ -47,16 +47,8 @@ end
 const N_FILTER, N_KEEP = data_windows(DATA_CSV)
 const BURN, N_REP = 40, 200                             # quarters
 
-"""Block B′ shock processes (ρ_m, σ_m) for z, δ, s from part6b's shock_calibration.csv."""
-function bprime_shocks()
-    c = CSV.read(joinpath(@__DIR__, "..", "Bartek analysis", "data", "results",
-                          "shock_calibration.csv"), DataFrame)
-    get(name, col) = c[findfirst(==(name), c.series), col]
-    return (ρz = get("z", :bprime_rho_m),     σz = get("z", :bprime_sigma_m),
-            ρδ = get("delta", :bprime_rho_m), σδ = get("delta", :bprime_sigma_m),
-            ρs = get("s", :bprime_rho_m),     σs = get("s", :bprime_sigma_m))
-end
-const SHK_B = bprime_shocks()
+const SHOCK_CSV = joinpath(@__DIR__, "..", "Bartek analysis", "data", "results", "shock_calibration.csv")
+const SHK_B = shock_processes(SHOCK_CSV; prefix = "bprime")
 const SDS_B = (SHK_B.σz, SHK_B.σδ, SHK_B.σs)
 println(@sprintf("Block B′ shocks (monthly): ρz %.4f σz %.4f ρδ %.4f σδ %.4f ρs %.4f σs %.4f", SHK_B...))
 const T_LONG = 3 * N_REP * (N_FILTER + BURN)            # months
