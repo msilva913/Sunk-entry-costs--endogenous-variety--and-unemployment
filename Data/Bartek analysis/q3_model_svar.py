@@ -12,9 +12,11 @@ Simulated data: Programs AGS/ags_svar_sim.jl, two cases:
     default      AGS_TARGETS (x_v 0.5, xi_inv 1)
     compromise   x_v 0.25, xi_inv 0.5 (Notes/ags_equilibrium.md section 7.6)
 For each case:
-    small sample  N_REP windows of T = 110 quarters (SVAR A's length), each HP-filtered on its
-                  own; the model's IRF is the mean over windows (indirect inference: model and
-                  data go through the same small-sample estimator);
+    small sample  N_REP windows of T = 110 quarters (SVAR A's length), filtered as the data are:
+                  z, s, u, v over the preceding 276 quarters (1951Q1-2019Q4 in the data), delta
+                  over the 110 alone (window_filter in time_series_fun.jl). The model's IRF is the
+                  mean over windows (indirect inference: model and data go through the same
+                  small-sample estimator);
     long sample   one HP-filtered run of 30,000 quarters (the population SVAR);
     true          the model's quarterly-averaged IRFs to one-SD monthly shocks (validation).
 

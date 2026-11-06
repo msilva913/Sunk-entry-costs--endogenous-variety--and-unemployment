@@ -299,6 +299,34 @@ function hp_filter(y, lambda::Real)
     return y .- trend
 end
 
+"""
+    window_filter(q, n_filter, n_keep; short = String[], filter = x -> hp_filter(x, 1600))
+
+Filter a quarterly frame the way the data are filtered, then keep the last `n_keep` rows.
+- Every column is filtered over the last `n_filter` rows of `q`, except
+- the columns in `short`: series that exist only in the last `n_keep` rows (in the data,
+  BED exit starts with SVAR A's window), filtered over those rows alone.
+The series must already be in logs; this function only filters and cuts.
+`filter` maps a vector to its cycle of the same length (HP-1600 by default).
+"""
+function window_filter(q::DataFrame, n_filter::Int, n_keep::Int;
+                       short = String[], filter = x -> hp_filter(x, 1600))
+    if n_keep > n_filter || n_filter > nrow(q)
+        error("window_filter: need n_keep ≤ n_filter ≤ nrow(q); got $n_keep, $n_filter, $(nrow(q)).")
+    end
+    span = q[end-n_filter+1:end, :]
+    out = DataFrame()
+    for c in names(span)
+        x = Float64.(span[!, c])
+        if c in short
+            out[!, c] = filter(x[end-n_keep+1:end])
+        else
+            out[!, c] = filter(x)[end-n_keep+1:end]
+        end
+    end
+    return out
+end
+
 function time_series_object(out::Matrix, fields::Vector{Symbol})
     sim_length = size(out)[1]
     initial = Date(1800, 1, 1)
