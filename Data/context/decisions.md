@@ -15,7 +15,7 @@ Status key: 🔴 blocks estimation · 🟠 blocks a paper section · 🟡 improv
 | D10 | Empirical target for the δ→u IRF shape | 🟡 resolved to (a) as validation under D13 (Oct 14); E9 no longer needed |
 | D11 | Does the reposting margin enter this paper? | 🟡 in the draft and the code (Q1, Oct 19); go/no-go after Q2 + R2/Q4 |
 | D12 | Venue and the theory-first pivot (JET?) | 🟠 open (MS), recommendation: no-go for JET; theory-forward paper for RED / JME / AEJ: Macro |
-| D13 | Conditional moments without Bartik: Block B′ = aggregate SVAR responses | 🔴 adopted Oct 14; **amended Nov 6 (MS): z-shock responses included**; model side built (`q3_model_svar.py`); open: re-matched z, s processes for B′'s window, the weighting matrix |
+| D13 | Conditional moments without Bartik: Block B′ = aggregate SVAR responses | 🔴 adopted Oct 14; **amended Nov 6 (MS): z-shock responses included**; model side built (`q3_model_svar.py`); B′'s z, s processes re-matched on its window (Nov 6); open: one-SD vs scaled, the weighting matrix |
 | D14 | Is the s innovation orthogonalized against z and δ? | 🟡 low stakes after Q2 (Oct 20): z and δ explain 1.1 % of the s innovation, so (a) and (b) coincide; take (a). New question: the dropped cross-lag δ_{t−1} → s_t (t = 2.8) |
 
 ---
@@ -120,13 +120,19 @@ Decide after the Q2 numbers (share of s innovation variance explained by z and �
   response is the mean over windows.
 - **Weighting:** diagonal, inverse data bootstrap variances, for now. A diagonal distance
   underweights joint misfits (u and v to the same shock); a block structure is a Q6 question.
-- **Open:** (i) the z and s processes for B′. S14 calibrates them on 1951–2019, B′ runs on
+- **Settled Nov 6 (MS): B′'s shock processes.** S14 calibrates z and s on 1951–2019, but B′ runs on
   1992Q3–2019Q4, where both are smaller and less persistent (z innovation 0.58 against 0.81, s 4.30
-  against 4.94), so the model feeds the SVAR shocks of the wrong size; proposal: re-match z and s on
-  B′'s window for B′ only (Block M no longer needs S14's). (ii) Whether B′ matches one-SD responses
-  (with re-matched processes) or responses scaled by own impact; one-SD recommended once the
-  processes are re-matched, because scaling equalizes the impact but not the persistence of the
-  shock.
+  against 4.94). For B′, z and s are re-matched on B′'s window with the S14 method (filter over
+  1951–2019, fit the AR(1) on 1992Q3–2019Q4, the simulation doing the same): z (0.9409, 0.0045),
+  s (0.7524, 0.0401) monthly, against S14's (0.9628, 0.0062) and (0.8048, 0.0437); δ keeps S14's
+  (0.5319, 0.0641). part6b section 9, `shock_calibration.csv` columns `bprime_*`; used by
+  `ags_svar_sim.jl`. The model's one-SD impacts in the SVAR now match the data's (z 0.57 vs 0.54,
+  s 4.01 vs 3.82, δ 5.44 vs 5.24). What remains is persistence: the data SVAR's own z and s paths
+  die faster than the AR(1)s imply (z 0.58 a quarter later against 0.73 in the model), because in
+  the data lagged u and v predict z and s. Closing that needs the processes matched to the SVAR's
+  own responses (Q6). **Still open:** one-SD against scaled responses (one-SD recommended now). (ii) Whether B′ matches one-SD responses or responses scaled by own impact; one-SD recommended now
+  that the processes are re-matched, because scaling equalizes the impact but not the persistence of
+  the shock.
 - **Identification caveats** (validation, `q3_model_svar.txt` §1): on the model's own data the SVAR
   recovers z and s within 10–15 % but δ only about 55 % (exit's one-month measurement lag); shared
   by data and model, so the comparison is unbiased, but the data's δ effect is likely understated.

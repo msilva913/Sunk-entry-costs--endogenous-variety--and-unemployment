@@ -8,7 +8,8 @@ the model's u and v residuals are close to combinations of the first three; with
 last, the Cholesky columns of z, s and delta stay well defined. Variance shares are not compared
 (they need measurement error or residual shocks: the Block M decision).
 
-Simulated data: Programs AGS/ags_svar_sim.jl, two cases:
+Simulated data: Programs AGS/ags_svar_sim.jl, with Block B''s shock processes (part6b section 9:
+z and s re-matched on SVAR A's window, delta as in S14; decisions.md D13), two cases:
     default      AGS_TARGETS (x_v 0.5, xi_inv 1)
     compromise   x_v 0.25, xi_inv 0.5 (Notes/ags_equilibrium.md section 7.6)
 For each case:

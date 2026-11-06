@@ -20,6 +20,10 @@
 # Series, as in the data CSV (q3_data_svar_cycles_hp.csv): z, s, delta (measured exit δ_{t−1}),
 # u, v; see ags_model.jl model_quarterly.
 #
+# Shock processes: Block B′'s (decisions.md D13), from part6b section 9 (shock_calibration.csv,
+# columns bprime_rho_m, bprime_sigma_m): z and s re-matched on SVAR A's window, δ as in S14. The
+# S14 processes (SHOCKS_BASE / SHK) fit 1951–2019 and are larger and more persistent for z and s.
+#
 # Output (regenerated, not tracked): ags_svar_long_<case>.csv, ags_svar_raw_<case>.csv,
 # ags_svar_reps_<case>.csv, ags_svar_true_<case>.csv in this folder.
 # =============================================================================
@@ -42,6 +46,19 @@ function data_windows(path)
 end
 const N_FILTER, N_KEEP = data_windows(DATA_CSV)
 const BURN, N_REP = 40, 200                             # quarters
+
+"""Block B′ shock processes (ρ_m, σ_m) for z, δ, s from part6b's shock_calibration.csv."""
+function bprime_shocks()
+    c = CSV.read(joinpath(@__DIR__, "..", "Bartek analysis", "data", "results",
+                          "shock_calibration.csv"), DataFrame)
+    get(name, col) = c[findfirst(==(name), c.series), col]
+    return (ρz = get("z", :bprime_rho_m),     σz = get("z", :bprime_sigma_m),
+            ρδ = get("delta", :bprime_rho_m), σδ = get("delta", :bprime_sigma_m),
+            ρs = get("s", :bprime_rho_m),     σs = get("s", :bprime_sigma_m))
+end
+const SHK_B = bprime_shocks()
+const SDS_B = (SHK_B.σz, SHK_B.σδ, SHK_B.σs)
+println(@sprintf("Block B′ shocks (monthly): ρz %.4f σz %.4f ρδ %.4f σδ %.4f ρs %.4f σs %.4f", SHK_B...))
 const T_LONG = 3 * N_REP * (N_FILTER + BURN)            # months
 const H_Q = 12                              # quarters, as H_IRF in q3_data_svar.py
 const SVAR_VARS = ["z", "s", "δ", "u", "v"]
@@ -50,8 +67,8 @@ const SVAR_VARS = ["z", "s", "δ", "u", "v"]
 to_data_names(df) = rename(df[!, SVAR_VARS], "δ" => "delta")
 
 for (case, tg) in CASES
-    r = solve_ags(tg)
-    eta_m = hcat([shock_col(i, SDS[i]) for i in 1:3]...)
+    r = solve_ags(tg; shk = SHK_B)
+    eta_m = hcat([shock_col(i, SDS_B[i]) for i in 1:3]...)
     sim = DataFrame(simulate_model((; model..., ne = 3), r.sol_mat, T_LONG, eta_m, r.SS,
                                    false, true), varnames)
     q = model_quarterly(sim, r.cal)
@@ -77,7 +94,7 @@ for (case, tg) in CASES
     n_m = 3 * (H_Q + 1)
     for (i, name) in enumerate(("z", "delta", "s"))
         path = DataFrame(simulate_model((; model..., ne = 1), r.sol_mat, n_m + 1,
-                                        shock_col(i, SDS[i]), r.SS, true, true), varnames)
+                                        shock_col(i, SDS_B[i]), r.SS, true, true), varnames)
         path = path[2:end, :]                      # month 1 = impact
         avg = nothing
         for lag in 0:2                             # shock in month 1 + lag of quarter 0
