@@ -32,7 +32,14 @@ const T_IR, T_SM, LAM = 60, 60_000, 1_600.0
 # =============================================================================
 # Model
 # =============================================================================
-flag_order, flag_deviation, flag_SSsolver = 1, true, false
+# Order of the perturbation: 1 (log-linear, the default) or 2 (pruned second order), set by the
+# environment variable AGS_ORDER before this file is included (e.g. AGS_ORDER=2 julia ...).
+if haskey(ENV, "AGS_ORDER")
+    flag_order = parse(Int, ENV["AGS_ORDER"])
+else
+    flag_order = 1
+end
+flag_deviation, flag_SSsolver = true, false
 
 @syms δbar sbar r A η_L b ϕ κ x_m ξ_inv zbar a p_r ψ_r σ ρ_z σ_z ρ_δ σ_δ ρ_s σ_s
 parameters = [δbar; sbar; r; A; η_L; b; ϕ; κ; x_m; ξ_inv; zbar; a; p_r; ψ_r; σ;
