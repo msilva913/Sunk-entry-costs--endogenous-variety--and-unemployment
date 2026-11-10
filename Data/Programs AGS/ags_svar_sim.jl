@@ -63,10 +63,10 @@ const SDS_B = (SHK_B.σz, SHK_B.σδ, SHK_B.σs)
 println(@sprintf("Block B′ shocks (monthly): ρz %.4f σz %.4f ρδ %.4f σδ %.4f ρs %.4f σs %.4f", SHK_B...))
 const T_LONG = 3 * N_REP * (N_FILTER + BURN)            # months
 const H_Q = 12                              # quarters, as H_IRF in q3_data_svar.py
-const SVAR_VARS = ["z", "s", "δ", "u", "v"]
+const SVAR_VARS = ["z", "s", "δ", "u", "v", "f"]   # f: the gross job-finding rate (persistence tests)
 
-"""Rename the model columns to the data CSV's names (δ → delta)."""
-to_data_names(df) = rename(df[!, SVAR_VARS], "δ" => "delta")
+"""Rename the model columns to the data CSV's names (δ → delta, f → jf)."""
+to_data_names(df) = rename(df[!, SVAR_VARS], "δ" => "delta", "f" => "jf")
 
 manifest = DataFrame()
 for (case, tg) in CASES
@@ -109,7 +109,7 @@ for (case, tg) in CASES
                 avg .+= qi ./ 3
             end
         end
-        qd = DataFrame(avg, ["z", "s", "delta", "u", "v"])
+        qd = DataFrame(avg, ["z", "s", "delta", "u", "v", "jf"])
         insertcols!(qd, 1, :shock => name, :h => 0:nrow(qd)-1)
         append!(tru, qd)
     end
