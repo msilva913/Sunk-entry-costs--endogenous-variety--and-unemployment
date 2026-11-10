@@ -424,61 +424,125 @@ In the full model without exit and with clone replacement, σ = 1 doubles δ's e
 1. Destruction wipes out the internal funds of the lines that die; their replacements start poor. Aggregate net worth falls.
 2. The economy's lines must now fund creation with more borrowing: leverage rises, and so does the premium on external funds.
 3. Creating a position becomes more expensive for **every** line, so creation, vacancies and job finding fall.
-4. Net worth is rebuilt slowly from retained earnings, so the premium stays high for a while; together with the run-down of inherited vacancies, this delays the peak of u.
-5. The default risk priced into the premium also rises with δ itself (§10.3), which adds an immediate effect.
+4. Net worth is rebuilt slowly from retained earnings, so the premium stays high for a while; together with the run-down of inherited vacancies, this delays the peak of u. How slowly depends on the cost of moving funds between households and lines (§10.3, the payout cost).
+
+*Correction (Nov 10).* An earlier version listed a fifth channel: default risk priced into the loan rate rises with δ itself. Under limited liability with fairly priced loans it cancels. Lenders charge R_t = Ψ_t/(1 − δ_t), but owners repay only if the line survives, so the expected repayment per unit borrowed is Ψ_t, whatever δ_t is (§10.3). δ_t moves the line's cost of funds only through net worth and leverage.
 
 **After an s shock**, net worth is not destroyed. Re-creating retired positions raises borrowing for a while, a flow that fades rather than a stock that must be rebuilt, so the premium moves briefly and s stays short-lived. **After a z shock**, profits and hence net worth move with productivity, so the friction amplifies and prolongs z (a financial accelerator).
 
 **What this is and is not.**
-- It is **not costly state verification as such.** We use the reduced form that Bernanke, Gertler and Gilchrist (1999) derive from costly state verification: an external finance premium that rises with leverage. The contract is not modelled.
+- It is **not costly state verification as such.** We use the reduced form that Bernanke, Gertler and Gilchrist (1999) derive from costly state verification: an external finance premium that rises with leverage. The contract is not modeled.
 - It is **not Kiyotaki and Moore (1997).** There, borrowing is limited by the market value of collateral, and falling asset prices feed back on borrowing. Here the natural collateral would be positions valued at Q, but separations retire about eight times as many positions as destruction removes (§10.1), so mark-to-market collateral would make s the larger shock to borrowing capacity: the wrong asymmetry. The asymmetry needs net worth that is lost only at liquidation, as in BGG, where failing entrepreneurs lose their net worth.
 - It is **not a credit-search friction** (Wasmer and Weil 2004; Petrosky-Nadeau and Wasmer 2013, 2015). Congestion in a credit market rises with the number of projects seeking funds, which after s shocks (many retired positions to re-create) exceeds that after δ shocks, so it too would make s the persistent shock.
+- **Households own the lines.** There is no separate class of entrepreneurs, and no tax advantage of debt. The line's payout, borrowing and creation choices maximize the value of the household's shares (§10.3).
 
-### 10.3 Modified equations (AGS, monthly)
+### 10.3 The line's problem and the modified equations (AGS, monthly)
 
-Unchanged: E1, E2 (job creation) and the user cost K in form, E3–E4, the reactivation block, the wage, and the household's Euler equations. Changed: creation, the resource constraint and dividends. New: the state W_t and the variables B_t and Ψ_t.
+*Revised Nov 10. Replaces the earlier version, which fixed the retained share of earnings at γ_w (the shortcut in Petrosky-Nadeau 2014, who fixes it at 0.98). Here retention is chosen. The arithmetic in this section is rough and not program output (N15).*
 
-- **Funds needed** for creating positions and hiring:
-  X_t = x_m e_t^{1+ξ_inv}/(1 + ξ_inv) + κ q_t v_t.
-- **Debt:** B_t = X_t − W_t, assumed positive (net worth never covers all creation).
-- **External finance premium:**
-  Ψ_t = Ψ^a(b_t) / (1 − δ_t),  Ψ^a(b) = Ψ̄^a (b/b̄)^χ,  b_t = B_t/W_t.
-  Ψ^a is the agency premium, rising in leverage with elasticity χ (the BGG reduced form). The factor 1/(1 − δ_t) prices default: loans to lines destroyed at the end of t are not repaid, so lenders break even only if surviving borrowers pay more.
-- **Creation (replaces Q_t = x_m e_t^{ξ_inv}):** the value of a new position must cover its marginal resource cost and the premium on the funds that pay for it,
-  Q_t = Ψ_t x_m e_t^{ξ_inv}.
-  A higher premium means fewer positions are created at a given value Q, and through Q it raises the user cost K_t = Q_t − E_t[m_{t+1}(1 − δ_t)Q_{t+1}], the channel through which job creation (E2) responds.
-- **Net worth (new law of motion):**
-  W_{t+1} = (1 − δ_t) γ_w [ Π_{t+1} − Ψ_t B_t ] + δ_t ω̄,
-  with Π_{t+1} = (z̄ z_{t+1} − w_{t+1})(1 − u_{t+1}) − X^r_{t+1} the lines' operating cash flow, γ_w < 1 the share of earnings retained (the rest is paid out, so lines cannot outgrow the constraint), (1 − δ_t) the internal funds of destroyed lines (lost), and ω̄ the endowment of replacement lines.
-- **Payouts and resources:** dividends to households are (1 − γ_w)(Π − ΨB) plus lenders' net receipts. If the agency premium is a deadweight cost (BGG's monitoring cost), the resource constraint becomes
-  C_t = z̄ z_t(1 − u_t) − X_t − X^r_t − (Ψ^a_{t−1} − 1) B_{t−1}(1 − δ_{t−1});
-  if it is a transfer to lenders, it drops out of resources. (A choice to settle.)
+**Requirements.** (i) Households own the lines, and every financing choice is optimal for them. (ii) No dependence on the tax code. (iii) One aggregate state for the friction (two at most, §10.4). (iv) The trigger is the death of lines (§10.1).
 
-**Aggregation.** Lines differ in net worth (replacements start poorer than survivors). With a financing contract linear in net worth, all lines choose the same leverage, aggregate creation depends only on aggregate W, and the premium on aggregate leverage (as in BGG). Combined with AGS's aggregate creation market (Q(e)), one state W_t suffices. This is an assumption and should be stated.
+**Timing within month t, for a line i alive at its start.**
+1. The line holds internal funds n_{i,t}, retained at the end of t − 1.
+2. It creates e_{i,t} positions at the price P_t = x_m e_t^{ξ_inv}, which every line takes as given. This is AGS's upward-sloping supply of positions from heterogeneous creation opportunities (§2); the rents P_t e_t − X_t go to the households that own the opportunities. Outlays O_{i,t} = P_t e_{i,t} (whether hiring costs κ q_t v_t are financed too is open, §10.7).
+3. It borrows the rest within the month: B_{i,t} = O_{i,t} − n_{i,t} > 0. Leverage is b_{i,t} = B_{i,t}/n_{i,t}.
+4. Production yields the cash flow π_{i,t} of the line's positions (operating profit less reactivation costs).
+5. At the end of the month the line is destroyed with probability δ_t (known at t). A destroyed line defaults on its loan and its cash is lost. A surviving line repays R_{i,t} B_{i,t}.
+6. A survivor pays the dividend d_{i,t} and carries n_{i,t+1} into t + 1.
 
-**What stays from AGS:** clone replacement (N fixed; no variety, no priced entry, so no R19 offset), σ = 1, the three shocks, costly reactivation. **New parameters:** χ (elasticity of the premium to leverage), steady-state leverage b̄ (with γ_w or ω̄ backed out), the steady-state premium Ψ̄^a (a spread), and whether the premium is deadweight.
+**Lenders** are households. The risk-free rate within the month is zero. The premium Ψ(b) − 1 is a deadweight agency cost, as BGG's monitoring cost (recommended; a transfer would leave lenders with rents). Lenders break even if (1 − δ_t) R_{i,t} = Ψ(b_{i,t}), so
+  R_{i,t} = Ψ(b_{i,t})/(1 − δ_t),  Ψ(b) = 1 + ψ̄ (b/b̄)^χ.
 
-### 10.4 What to expect, and the open problem of size
+**Funds carried forward** by a survivor:
+  n_{i,t+1} = π_{i,t} − R_{i,t} B_{i,t} − n_{i,t} φ(ϑ_{i,t}),  ϑ_{i,t} = d_{i,t}/n_{i,t},
+with the payout cost φ(ϑ) = ϑ + (κ_d/2)(ϑ − ϑ̄)². Paying out ϑ n costs the line n φ(ϑ). The cost is homogeneous of degree one in (d, n). This is what keeps the problem linear (§10.4). It is Jermann and Quadrini's (2012) payout cost, φ(d) = d + κ(d − d̄)², rescaled by the line's funds. A negative ϑ is an equity injection, at a rising cost. ϑ̄ is set to the steady-state payout ratio, so the cost has no steady-state effect: it governs only how fast funds can move between households and lines.
 
-- **Shape and asymmetry: right by construction.** A delay (net worth is a slow stock, inherited vacancies run down), action through creation and job finding, and a short-lived s.
-- **Size: the open problem.** A one-SD δ shock raises the monthly destruction rate by about 6 % of 0.27 %, for a few months, so it destroys the internal funds of roughly 0.04 % of lines over a quarter: aggregate W falls by about 0.04 % (rough arithmetic, not program output). With leverage and χ in the usual range, the premium would move by a few tenths of a percent at most, likely an order of magnitude short of the data's response. The friction becomes quantitatively important only if (i) the internal funds lost when an establishment dies are large relative to its share of activity, or (ii) the measured δ shock understates how much line-level value is destroyed (§2.2 of the empirical note: about a third of δ's effect is accounted for by NFCI).
-- **The empirical anchor:** the δ → F test (SVAR with δ ordered before NFCI: does a δ shock tighten financial conditions, and how much of δ's effect on u runs through them?). If financial conditions respond strongly, the friction has an anchor at scale; if not, it explains the shape but not the size.
+**Values** (household units, linear in funds): λ_t is the value of a unit of a survivor's end-of-month cash, and ω_t the value of a unit of funds at the start of the month. Positions' cash flows accrue to the line, so they are valued at λ as well.
 
-### 10.5 Closest papers on the specification (all citations unverified)
+**Optimality conditions.** They are the same for every line, since each line's problem is linear in its funds and positions.
+- **Payout:** 1 = λ_t φ'(ϑ_t). Paying a dividend of 1 costs φ' of cash.
+- **Retention:** λ_t = E_t[m_{t+1} ω_{t+1}]. A unit retained at the end of t is a unit of funds at the start of t + 1.
+- **Value of internal funds:** a unit of funds at the start of t reduces borrowing by one and lowers leverage, so the survivor's repayment falls by Ψ^n(b_t)/(1 − δ_t):
+  ω_t = λ_t [ Ψ^n(b_t) + (1 − δ_t)(ϑ_t φ'(ϑ_t) − φ(ϑ_t)) ],  Ψ^n(b) = Ψ(b) + b(1 + b)Ψ'(b).
+  The default factor cancels: (1 − δ_t) R = Ψ. The second term is zero at ϑ̄.
+- **Creation:** a position is worth its price plus the premium on the marginal unit borrowed to buy it:
+  Q_t = Ψ^m(b_t) x_m e_t^{ξ_inv},  Ψ^m(b) = Ψ(b) + bΨ'(b),
+  with Q_t the value of a new position in units of the line's cash (as in AGS: value to the owners divided by λ_t). Ψ^m (borrowing at given funds) and Ψ^n (funds at given outlays) differ because the premium depends on B/n.
+- **Job creation and the user cost:** E1–E2 and K_t keep their form, with the household's m_{t+1} replaced by the line's discount factor
+  m̃_{t+1} = m_{t+1} λ_{t+1}/λ_t.
+  When funds are scarce (λ_t high), the line discounts future cash flows more heavily relative to today's.
+
+**Steady state.** ϑ̄ sets φ'(ϑ̄) = 1, so λ̄ = 1, ω̄ = 1/β and m̃ = m. The value of funds then gives
+  Ψ^n(b̄) = 1/β,  so  ψ̄ = r/(1 + χ(1 + b̄)),  r = 1/β − 1.
+This is why lines never become self-financing, and why no tax advantage or separate class of entrepreneurs is needed. A retained unit earns the premium it saves, but households discount it by r. Lines retain until the marginal saving falls to r. The premium therefore persists in the steady state. δ plays no role here, because limited liability passes default losses to lenders, who price them. This answers the earlier worry that the line death rate is too low to prevent self-financing: in BGG the death rate does that work because entrepreneurs are a separate, patient class; with household ownership impatience does it.
+- The steady-state spread is not free: given χ and b̄, it is pinned by r. With r = 4 % a year, b̄ = 0.5 (one third of outlays borrowed, as in Petrosky-Nadeau) and χ = 1, ψ̄ ≈ 1.6 % a year. BGG target 200 bp; Petrosky-Nadeau 70 bp.
+- Caveat: the loans last one month, so ψ̄ is a spread on monthly paper; observed spreads are on longer debt. The mapping needs care before ψ̄ is a calibration target.
+- The steady-state payout ratio ϑ̄ follows from stationarity of W (below); x_m absorbs Ψ^m(b̄) in the calibration of Q.
+
+**Aggregate law of motion of funds.** Sum over lines (exact, by linearity; §10.4). Survivors carry their cash; destroyed lines lose theirs; replacement lines receive an endowment n^0 from households:
+  W_{t+1} = (1 − δ_t)[ Π_t − φ(ϑ_t) W_t ] − Ψ(b_t) B_t + δ_t n^0,  B_t = O_t − W_t,  b_t = B_t/W_t.
+The trigger is the (1 − δ_t) on survivors' cash. Repayments −Ψ(b_t)B_t do not depend on δ_t, since lenders absorb destroyed lines' debt.
+
+**Resources.** With the premium deadweight,
+  C_t = z̄ z_t(1 − u_t) − X_t − X^r_t − (Ψ(b_t) − 1) B_t − (1 − δ_t)(κ_d/2)(ϑ_t − ϑ̄)² W_t − δ_t n^0 + (cash of destroyed lines, if recovered).
+Whether destroyed lines' cash is lost to the economy (a deadweight liquidation loss) or recovered by households (lost to the line, not to resources) is a modeling choice. Either way it is lost to the line, which is what the mechanism needs. The recovered case is cleaner for resources.
+
+**Roles of the new parameters.**
+
+| Parameter | Role | Discipline |
+|---|---|---|
+| b̄ | steady-state leverage | share of creation funded externally |
+| χ | slope of the premium in leverage | response of spreads to leverage; with b̄ and r, pins ψ̄ |
+| κ_d | cost of moving funds; speed at which W rebuilds | the source of persistence. As κ_d → 0, households inject funds at once, W jumps, and the friction affects only the level of the premium, not its persistence |
+| n^0 | endowment of replacement lines | with ϑ̄, stationarity of W |
+
+**Still open.** The wage. Nash bargaining over a surplus that the line values at λ_t and the worker at household units adds a wage channel (in Petrosky-Nadeau, credit conditions shift the firm's bargaining position). Whether to bargain in household units or in cash units must be settled.
+
+### 10.4 Aggregation: one state, and when two types are needed
+
+**Why one state suffices.** Each line's problem is linear in its funds and its positions:
+- the price of positions P_t is a market price;
+- the premium depends on leverage, not size;
+- the payout cost is homogeneous of degree one;
+- the destruction hazard does not depend on the line's funds.
+
+So every line has the same λ_t, ω_t, b_t and ϑ_t, and its choices scale with its funds. Lines do differ in funds (replacements start with n^0), but aggregate creation, borrowing and payouts depend only on W_t. The cross-line distribution exists but does not affect aggregates. This is the aggregation in BGG and Carlstrom–Fuerst (citations unverified). **The friction adds one state, W_t.**
+
+**What would break it:** a fixed cost of financing per line; a premium depending on the line's absolute size; a constraint that binds for some lines and not others; decreasing returns within the line. **The last one bites in Part 2:** a product line faces a downward-sloping demand curve (elasticity ε), so its revenue is concave in its own output, and its choices no longer scale with its funds. Part 2 needs funds held where returns are linear, for example a competitive sector that creates positions and sells them to lines. It does not need to be settled for AGS.
+
+**Two types (new and mature lines), if needed.** Within scope (MS, Nov 10), but not required by the specification above. It becomes useful if the evidence says the friction falls on young lines (Cooley and Quadrini; citation to verify), for example if new lines face a higher premium (ψ̄_new > ψ̄_mature). Then:
+- new lines mature at a constant hazard ζ, so the share of new lines N^new_t is one aggregate state:
+  N^new_{t+1} = (1 − δ_t)(1 − ζ) N^new_t + δ_t;
+- each type's problem is linear, so funds W^new_t and W^mat_t are two aggregate states;
+- a δ shock raises the share of new lines and lowers average funds; s does not. The composition decays at rate ζ, so it is a slow, line-level state that satisfies §10.1(2).
+
+Its size has the same problem as §10.5. With ζ = 1/36 (three years to maturity), the steady-state share of new lines is δ/(δ + ζ) ≈ 9 %. A one-SD δ shock adds about 0.05 % of lines as new ones over a quarter, so the new share rises by about 0.5 % of itself (rough arithmetic). Two types widen the asymmetry between δ and s; they do not by themselves deliver the size.
+
+### 10.5 What to expect, and the open problem of size
+
+- **Shape and asymmetry: right by construction.** A delay (net worth is a slow stock, inherited vacancies run down), action through creation and job finding, and a short-lived s. The delay depends on κ_d.
+- **Size: the open problem.** A one-SD δ shock raises the monthly destruction rate by about 6 % of 0.27 %, for a few months, so it destroys the internal funds of roughly 0.04 % of lines over a quarter: aggregate W falls by about 0.04 % (rough arithmetic, not program output). With leverage and χ in the usual range, the premium would move by a few tenths of a percent at most, likely an order of magnitude short of the data's response. The steady-state spread cannot be raised to help: it is pinned by r (§10.3). The friction becomes quantitatively important only if (i) the internal funds lost when an establishment dies are large relative to its share of activity, or (ii) the measured δ shock understates how much line-level value is destroyed (§2.2 of the empirical note: about a third of δ's effect is accounted for by NFCI).
+- **The empirical anchor:** the δ → F test. An SVAR with δ ordered before a measure of financial conditions: does a δ shock tighten them, and how much of δ's effect on u runs through them? Candidates are NFCI and Gilchrist and Zakrajšek's (2012) excess bond premium (monthly from 1973; citation unverified). If financial conditions respond strongly, the friction has an anchor at scale; if not, it explains the shape but not the size.
+
+### 10.6 Closest papers on the specification (all citations unverified)
+
+*Updated Nov 10 after reading the copies in `../Key papers/`.*
 
 | Paper | Friction | Relation to this proposal |
 |---|---|---|
-| Bernanke, Gertler and Gilchrist (1999), *Handbook of Macroeconomics* | costly state verification; external finance premium rising in leverage; entrepreneurs' net worth | **our reduced form.** They apply it to capital investment; we apply it to creating positions, and make destruction itself the shock to net worth. |
-| Carlstrom and Fuerst (1997), *AER* | agency costs, net worth, investment | the same family; an alternative timing of the contract. |
-| Petrosky-Nadeau (2014), *RED*, "Credit, vacancies and unemployment fluctuations" | (I believe) an agency-cost friction on financing vacancy costs in DMP, with firm net worth | **the closest labor-market application.** Differences: durable positions, destruction as the trigger that destroys net worth, costly reactivation. Please confirm the specification. |
-| Christiano, Motto and Rostagno (2014), *AER*, "Risk shocks" | BGG with time-varying dispersion of firm outcomes | a δ shock that raises default risk is close in spirit to their risk shock; their estimation finds such shocks important. |
-| Kiyotaki and Moore (1997), *JPE* | borrowing limited by collateral value; asset-price feedback | not chosen: mark-to-market collateral (positions at Q) gives the wrong δ–s asymmetry (§10.2). Its asset-price multiplier would help with size, if collateral were line-specific. |
+| Bernanke, Gertler and Gilchrist (1999), *Handbook of Macroeconomics* | costly state verification; external finance premium rising in leverage; entrepreneurs' net worth | **our reduced form.** Entrepreneurs survive with constant probability; the quarterly death rate (0.0272) is chosen to hit leverage of 0.5 and a 200 bp spread, "to preclude ... the entrepreneurial sector ... [becoming] fully self-financing", and its constancy "facilitates aggregation". Here household impatience does the first job, and linearity the second. |
+| Carlstrom and Fuerst (1997), *AER* | agency costs, net worth, investment; loans within the period | the contract behind Petrosky-Nadeau's timing. |
+| Petrosky-Nadeau (2014), *RED*, "Credit, vacancies and unemployment fluctuations" | Carlstrom–Fuerst costly state verification on vacancy costs, financed by loans within the period over accumulated net worth | **the closest labor-market application.** Households own the representative firm, but retention is fixed at ς = 0.98 so that firms do not self-finance: the shortcut §10.3 replaces. Linearity gives a representative firm. Net worth accumulation lags the peak of θ; θ volatility ×1.9 (×2.4 with time-varying liquidation costs as credit shocks). Calibration: 1.5 % quarterly default, one third of vacancy costs funded externally, 70 bp premium. Differences here: durable positions, destruction as the trigger, costly reactivation, chosen retention. |
+| Jermann and Quadrini (2012), *AER* | enforcement constraint on working capital; financial shocks; payout cost | **source of the payout cost** (κ = 0.146 in their units), which §10.3 rescales to keep linearity. Their debt rests on a tax advantage (τ = 0.35); with τ = 0 and κ = 0 financial shocks have no real effect. Here debt rests on timing (outlays before revenue) and the premium on impatience, with no tax. |
+| Cooley and Quadrini, "Financial markets and firm dynamics" (*AER* 2001, I believe; the file is dated 2010, check) | heterogeneous firms; financing and exit depend on size and age | **cite, do not build.** A full distribution of firms, outside scope. Its evidence that young and small firms face tighter financing motivates the two-type option (§10.4). |
+| Gilchrist and Zakrajšek (2012), *AER* | measurement: credit spreads, excess bond premium | **the δ → F test** (§10.5). |
+| Christiano, Motto and Rostagno (2014), *AER*, "Risk shocks" | BGG with time-varying dispersion of firm outcomes | a δ shock that raises default risk is close in spirit to their risk shock. |
+| Kiyotaki and Moore (1997), *JPE* | borrowing limited by collateral value; asset-price feedback | not chosen: mark-to-market collateral gives the wrong δ–s asymmetry (§10.2). |
 | Gertler and Karadi (2011), *JME*; Gertler and Kiyotaki (2010) | lender (bank) net worth constraint | an alternative trigger: losses on loans to dying lines deplete lenders' capital. Similar scale arithmetic. |
-| Jermann and Quadrini (2012), *AER* | enforcement constraint on working capital; financial shocks | relevant if hiring is financed within the period; their financial shocks correspond to reading δ as partly a symptom of financial disturbances. |
-| Wasmer and Weil (2004), *AER*; Petrosky-Nadeau and Wasmer (2013, *AEJ: Macro*; 2015, *JME*) | search frictions in credit markets | not chosen: congestion would be driven by s (§10.2). |
+| Wasmer and Weil (2004), *AER*; Petrosky-Nadeau and Wasmer (2013, *AEJ: Macro*; 2015, *JME*) | search frictions in credit (and, in 2015, goods) markets | not chosen for credit: congestion would be driven by s (§10.2). The 2015 paper's goods-market friction is the main alternative to finance (customer capital lost when a line dies); add it to `../Key papers/`. |
 
-### 10.6 Next steps
+### 10.7 Next steps
 
-1. The δ → F test (§10.4).
-2. If it supports a financial channel at scale: code §10.3 in AGS (one new state), calibrate b̄, Ψ̄^a and χ to the corporate-finance evidence, and run it through the SVAR against the δ target.
-3. Settle the open choices: deadweight versus transfer premium; whether hiring costs (κ) are financed as well as creation; the timing of default.
+1. The δ → F test (§10.5), with the excess bond premium and NFCI.
+2. If it supports a financial channel at scale: code §10.3 in AGS (one new state, W), calibrate b̄, χ and κ_d, and run it through the SVAR against the δ target.
+3. Settle the open choices: whether hiring costs (κ) are financed as well as creation; whether destroyed lines' cash is recovered by households; the units of wage bargaining; the mapping of the monthly spread ψ̄ to observed spreads.
