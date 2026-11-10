@@ -109,6 +109,12 @@ compliance with a wrong instruction is the most expensive failure mode here.
 **N3. Instruction clarity.** If an instruction is unclear, ask before executing. Do not
 guess at intent and then build on the guess.
 
+**N16. Stay on the project's goals.** Every suggestion must serve the project's goals and the
+question at hand. Do not propose tangents (new mechanisms, extensions, side analyses, extra
+literature) that MS has not raised. If something outside the current question looks
+essential to the project's goals, say so in one line and let MS decide; do not develop it.
+Added Nov 10, 2026.
+
 ## Writing
 
 **N4. Voice.** Applied macroeconomist. Smooth, intuitive integration of economic theory and

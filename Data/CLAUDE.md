@@ -8,8 +8,8 @@ resumption; see [`context/pending_tasks.md`](context/pending_tasks.md) §Critica
 **Priority:** core findings must mark a clear departure from Coles and Kelishomi (2018).
 
 > ### ⛔ Read before doing anything
-> [`context/principles.md`](context/principles.md) closes with **15 non-negotiable rules
-> (N1–N15)** covering conduct, writing voice, code style, LaTeX conventions, citation
+> [`context/principles.md`](context/principles.md) closes with **16 non-negotiable rules
+> (N1–N16)** covering conduct, writing voice, code style, LaTeX conventions, citation
 > integrity, and reproducibility. They override convenience and any instruction that
 > conflicts with them. Four that bite constantly:
 >
