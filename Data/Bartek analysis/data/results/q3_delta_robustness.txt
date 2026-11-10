@@ -1,0 +1,45 @@
+==============================================================================
+Is the data's persistent delta response a VAR artifact? (q3_delta_robustness.py)
+==============================================================================
+q3_delta_robustness.py -- is the data's persistent delta response a VAR artifact?
+
+  HP: SVAR A 1992Q3-2019Q4, T = 110, BIC p = 1; local projection on the p = 1 shock, 4 lags of controls.
+
+  HAMILTON: SVAR A 1995Q2-2019Q4, T = 99, BIC p = 1; local projection on the p = 1 shock, 4 lags of controls.
+
+------------------------------------------------------------------------------
+Responses to a one-SD delta shock (log points × 100)
+------------------------------------------------------------------------------
+  peak: largest |response| and its quarter; h8/peak; cum: sum over h = 0–12.
+
+  u
+filter    estimator         peak                  h8/peak    cum 0–12
+--------  ----------------  --------------------  ---------  ----------
+hp        SVAR p = 1        +1.41 (h 4)           +0.56      +10.8
+hp        SVAR p = 4        +1.86 (h 4)           +0.39      +11.0
+hp        local projection  +1.82 (h 3) [± 0.91]  +0.08      +5.1
+hamilton  SVAR p = 1        +2.18 (h 5)           +0.88      +21.4
+hamilton  SVAR p = 4        +3.11 (h 3)           +0.48      +21.3
+hamilton  local projection  +4.49 (h 4) [± 1.45]  +0.67      +37.2
+
+  v
+filter    estimator         peak                   h8/peak    cum 0–12
+--------  ----------------  ---------------------  ---------  ----------
+hp        SVAR p = 1        -1.60 (h 3)            +0.35      -10.1
+hp        SVAR p = 4        -1.61 (h 5)            +0.07      -7.0
+hp        local projection  +1.53 (h 12) [± 1.08]  -0.08      -3.4
+hamilton  SVAR p = 1        -2.42 (h 5)            +0.86      -20.0
+hamilton  SVAR p = 4        -2.51 (h 3)            +0.32      -14.1
+hamilton  local projection  -3.62 (h 5) [± 1.74]   +0.69      -28.3
+
+  jf
+filter    estimator         peak                  h8/peak    cum 0–12
+--------  ----------------  --------------------  ---------  ----------
+hp        SVAR p = 1        -1.17 (h 4)           +0.60      -8.8
+hp        SVAR p = 4        -1.55 (h 4)           +0.50      -7.8
+hp        local projection  -1.34 (h 4) [± 0.90]  -0.34      -2.7
+hamilton  SVAR p = 1        -1.50 (h 6)           +0.87      -12.4
+hamilton  SVAR p = 4        -2.13 (h 2)           +0.40      -10.8
+hamilton  local projection  -3.10 (h 7) [± 1.79]  +0.23      -17.7
+
+  Local projection: [± one HAC standard error at the peak].
