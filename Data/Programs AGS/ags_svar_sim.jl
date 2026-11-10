@@ -25,16 +25,27 @@
 # S14 processes (SHOCKS_BASE / SHK) fit 1951–2019 and are larger and more persistent for z and s.
 #
 # Output (regenerated, not tracked): ags_svar_long_<case>.csv, ags_svar_raw_<case>.csv,
-# ags_svar_reps_<case>.csv, ags_svar_true_<case>.csv in this folder.
+# ags_svar_reps_<case>.csv, ags_svar_true_<case>.csv, and the case list ags_svar_cases.csv.
 # =============================================================================
 
 include("ags_model.jl")
 using CSV
 
-const CASES = (
-    ("default",    AGS_TARGETS),                                   # x_v 0.5, ξ_inv 1
-    ("compromise", merge(AGS_TARGETS, (x_v = 0.25, ξ_inv = 0.5))), # Notes/ags_equilibrium.md §7.6
-)
+# Cases (Nov 10, 2026: exercise 1, z amplification through the per-hire cost at moderate
+# inelasticity): ξ_inv ∈ {1, 0.5} × x_v ∈ {0.5, 0.25, 0.1, 0.05} (κ's share of the cost of a hire
+# 50–95 %). Two keep their earlier names: "default" (ξ_inv 1, x_v 0.5, AGS_TARGETS) and
+# "compromise" (ξ_inv 0.5, x_v 0.25; Notes/ags_equilibrium.md §7.6).
+function case_name(ξ, xv)
+    if ξ == 1.0 && xv == 0.5
+        return "default"
+    elseif ξ == 0.5 && xv == 0.25
+        return "compromise"
+    else
+        return "xi$(ξ)_xv$(xv)"
+    end
+end
+const CASES = [(case_name(ξ, xv), merge(AGS_TARGETS, (x_v = xv, ξ_inv = ξ)))
+               for ξ in (1.0, 0.5) for xv in (0.5, 0.25, 0.1, 0.05)]
 const DATA_CSV = joinpath(@__DIR__, "..", "Bartek analysis", "data", "results",
                           "q3_data_svar_cycles_hp.csv")
 
@@ -47,8 +58,7 @@ end
 const N_FILTER, N_KEEP = data_windows(DATA_CSV)
 const BURN, N_REP = 40, 200                             # quarters
 
-const SHOCK_CSV = joinpath(@__DIR__, "..", "Bartek analysis", "data", "results", "shock_calibration.csv")
-const SHK_B = shock_processes(SHOCK_CSV; prefix = "bprime")
+const SHK_B = SHK                          # Block B′'s processes (ags_model.jl)
 const SDS_B = (SHK_B.σz, SHK_B.σδ, SHK_B.σs)
 println(@sprintf("Block B′ shocks (monthly): ρz %.4f σz %.4f ρδ %.4f σδ %.4f ρs %.4f σs %.4f", SHK_B...))
 const T_LONG = 3 * N_REP * (N_FILTER + BURN)            # months
@@ -58,6 +68,7 @@ const SVAR_VARS = ["z", "s", "δ", "u", "v"]
 """Rename the model columns to the data CSV's names (δ → delta)."""
 to_data_names(df) = rename(df[!, SVAR_VARS], "δ" => "delta")
 
+manifest = DataFrame()
 for (case, tg) in CASES
     r = solve_ags(tg; shk = SHK_B)
     eta_m = hcat([shock_col(i, SDS_B[i]) for i in 1:3]...)
@@ -103,6 +114,9 @@ for (case, tg) in CASES
         append!(tru, qd)
     end
     CSV.write("ags_svar_true_$case.csv", tru)
+    push!(manifest, (case = case, x_v = tg.x_v, xi_inv = tg.ξ_inv, sigma = tg.σ, phi = r.cal.ϕ,
+                     kappa = r.cal.κ))
     println(@sprintf("%s: ϕ %.3f, %d months simulated, %d replications of %d quarters (filtered over %d).",
                      case, r.cal.ϕ, T_LONG, N_REP, N_KEEP, N_FILTER))
 end
+CSV.write("ags_svar_cases.csv", manifest)       # read by q3_model_svar.py

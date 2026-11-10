@@ -10,7 +10,7 @@
 #      lem:theta; Notes/ags_equilibrium.md §3). With σ > 0 the discount factor depends on
 #      consumption, which depends on the stocks, so the result holds only at σ = 0.
 #   3. D15 gate 1, stage (a): σ(u) by shock and cor(u, v), quarterly averages, HP-1600, at the
-#      S14 shock processes (Programs baseline/run_solution_core.jl SHOCKS_BASE).
+#      Block B′'s shock processes (ags_model.jl SHK).
 # Output: ags_run_solution.txt, ags_irf.png
 # =============================================================================
 
@@ -29,7 +29,7 @@ say(@sprintf("Targets: Λ̄_r %.2f, p_r %.2f, ψ_r %.2f, ξ_inv %.2f, x_v %.2f, 
              AGS_TARGETS.x_v, AGS_TARGETS.b_ratio, AGS_TARGETS.X_Y, AGS_TARGETS.σ))
 say(@sprintf("Steady state: u %.4f, θ %.4f, Q %.4f, Λ_r %.3f; ϕ %.4f, κ %.4f, z̄ %.4f, a %.3f.",
              sol.st.u, sol.st.θ, sol.st.Q, sol.st.Λ_r, sol.cal.ϕ, sol.cal.κ, sol.cal.zbar, sol.cal.a))
-say(@sprintf("Shocks (monthly, S14): ρz %.4f σz %.4f ρδ %.4f σδ %.4f ρs %.4f σs %.4f.\n", SHK...))
+say(@sprintf("Shocks (monthly, Block B′): ρz %.4f σz %.4f ρδ %.4f σδ %.4f ρs %.4f σs %.4f.\n", SHK...))
 
 say("Impulse responses to one-SD shocks (month 1 = impact; peak = largest |response|):")
 say(@sprintf("  %-6s %-6s %8s %8s %8s %8s", "shock", "var", "impact", "peak", "at", "month 24"))

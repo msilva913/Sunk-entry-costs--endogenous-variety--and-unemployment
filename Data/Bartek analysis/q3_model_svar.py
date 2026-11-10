@@ -67,6 +67,12 @@ Outputs:
     data/results/q3_model_svar.png   u and v responses to z, s, delta: data band, model cases
     data/results/q3_model_svar_moments.csv  conditional second moments: data (point, 16/84 %),
                                      model cases (mean, 16/84 % across windows)
+    data/results/q3_model_svar_grid.png  z -> u, v by per-hire share, at each xi_inv (section 6)
+
+Case grid (section 6; Nov 10, 2026). Can a large per-hire cost kappa amplify z at moderate
+inelasticity of vacancy creation (xi_inv 0.5 and 1), where the comovement moments survive? The
+grid crosses xi_inv in {1, 0.5} with x_v in {0.5, 0.25, 0.1, 0.05} (kappa's share of a hire
+50-95 %), sigma = 1, Block B''s processes; one row per case with the conditional moments and J.
 """
 
 from pathlib import Path
@@ -82,8 +88,23 @@ import q3_data_svar as q3
 import part6b_shock_persistence_cyclical as p6b
 
 MODEL_DIR = Path("../Programs AGS")
-CASES     = ("default", "compromise")
-CASE_LABEL = {"default": "default (x_v 0.5, ξ_inv 1)", "compromise": "compromise (x_v 0.25, ξ_inv 0.5)"}
+# Cases: the list ags_svar_sim.jl simulated (Programs AGS/ags_svar_cases.csv). The detailed
+# sections (1, 2, 4, 5, figure) use the two headline cases; section 6 and the distance cover all.
+MANIFEST  = pd.read_csv(MODEL_DIR / "ags_svar_cases.csv").set_index("case")
+CASES     = tuple(MANIFEST.index)
+HEADLINE  = ("default", "compromise")
+
+
+def case_label(c):
+    r = MANIFEST.loc[c]
+    lab = f"x_v {r.x_v:g}, ξ_inv {r.xi_inv:g}"
+    if c in HEADLINE:
+        lab = f"{c} ({lab})"
+    return lab
+
+
+CASE_LABEL = {c: case_label(c) for c in CASES}
+OUT_GRID  = p6b.RESULTS_DIR / "q3_model_svar_grid.png"
 NAMES     = list(q3.SVARS["A"]["vars"])          # z, s, delta, u, v
 SHOCKS    = q3.SHOCKS                            # z, delta, s
 OUTCOMES  = q3.OUTCOMES                          # u, v
@@ -205,7 +226,7 @@ if __name__ == "__main__":
     say("  (largest |response|) and its quarter. Gap = max over h of |SVAR − true| / max |true|.")
     say("  raw: unfiltered long sample (the clean test); HP: filtered long sample (filter effect).\n")
     tab = []
-    for case in CASES:
+    for case in HEADLINE:
         R = res[case]
         T = normalized(R["true"])
         for shk in SHOCKS:
@@ -223,7 +244,7 @@ if __name__ == "__main__":
     say(tabulate(tab, ["case", "shock", "resp", "true", f"raw, p = {p}", "raw, BIC p", f"HP, p = {p}"],
                  tablefmt="simple", disable_numparse=True))
     say("\n  BIC lag on the long samples: " +
-        ", ".join(f"{c}: raw p = {res[c]['p_raw']}, HP p = {res[c]['p_long']}" for c in CASES) +
+        ", ".join(f"{c}: raw p = {res[c]['p_raw']}, HP p = {res[c]['p_long']}" for c in HEADLINE) +
         f" (data p = {p}, used for all small-sample comparisons).")
 
     # ── 2. data against model, small sample ────────────────────────────────
@@ -240,12 +261,12 @@ if __name__ == "__main__":
             kd = int(np.abs(Theta_d[:, i, j]).argmax())
             cells = [q3.LABEL[shk], q3.LABEL.get(resp, resp),
                      f"{100*Theta_d[kd,i,j]:+.2f} (h {kd}) [{100*lo_d[kd,i,j]:+.2f}, {100*hi_d[kd,i,j]:+.2f}]"]
-            for case in CASES:
+            for case in HEADLINE:
                 M = res[case]
                 km = int(np.abs(M["mean"][:, i, j]).argmax())
                 cells.append(f"{100*M['mean'][km,i,j]:+.2f} (h {km}) [{100*M['lo'][km,i,j]:+.2f}, {100*M['hi'][km,i,j]:+.2f}]")
             tab.append(cells)
-    say(tabulate(tab, ["shock", "resp", "data"] + list(CASES), tablefmt="simple", disable_numparse=True))
+    say(tabulate(tab, ["shock", "resp", "data"] + list(HEADLINE), tablefmt="simple", disable_numparse=True))
     say("  Own responses (z → z, δ → δ, s → s) check the shock processes (part6b), not the propagation.")
 
     # ── 3. distance ─────────────────────────────────────────────────────────
@@ -281,7 +302,7 @@ if __name__ == "__main__":
         for resp in OUTCOMES:
             i = NAMES.index(resp)
             cells = [q3.LABEL[shk], resp]
-            for X in [Theta_d_scaled] + [np.array([normalized(Y) for Y in res[c]["reps"]]).mean(axis=0) for c in CASES]:
+            for X in [Theta_d_scaled] + [np.array([normalized(Y) for Y in res[c]["reps"]]).mean(axis=0) for c in HEADLINE]:
                 k = int(np.abs(X[:, i, j]).argmax())
                 cells.append(f"{X[k, i, j]:+.3f} (h {k})")
             tab.append(cells)
@@ -320,13 +341,13 @@ if __name__ == "__main__":
         return f"{x[k]:+.3f} (h {k})"
 
     tab = [["own impact", f"{100 * Theta_d[0, idd, jd]:.2f}", f"{100 * dF['delta'][0]:.2f}"] +
-           [f"{100 * res[c]['mean'][0, idd, jd]:.2f}" for c in CASES]]
+           [f"{100 * res[c]['mean'][0, idd, jd]:.2f}" for c in HEADLINE]]
     for r in OUTCOMES:
         i = NAMES.index(r)
         tab.append([f"δ → {r}, one SD", pk(Theta_d[:, i, jd]), pk(dF[r])] +
-                   [pk(res[c]["mean"][:, i, jd]) for c in CASES])
+                   [pk(res[c]["mean"][:, i, jd]) for c in HEADLINE])
         tab.append([f"δ → {r}, per 1 %", pk_s(Theta_d_scaled[:, i, jd]), pk_s(dF_s[r])] +
-                   [pk_s(scaled_mean[c][:, i, jd]) for c in CASES])
+                   [pk_s(scaled_mean[c][:, i, jd]) for c in HEADLINE])
     say(tabulate(tab, ["", "data A", "data A_F", "model default", "model compromise"],
                  tablefmt="simple", disable_numparse=True))
 
@@ -388,7 +409,8 @@ if __name__ == "__main__":
                    "data_hi": np.percentile(bs, 84)}
             for case in CASES:
                 ms = np.array([x[lab][stat] for x in m_model[case]])
-                cells.append(f"{ms.mean():+.2f} [{np.percentile(ms, 16):+.2f}, {np.percentile(ms, 84):+.2f}]")
+                if case in HEADLINE:
+                    cells.append(f"{ms.mean():+.2f} [{np.percentile(ms, 16):+.2f}, {np.percentile(ms, 84):+.2f}]")
                 rec |= {f"{case}_mean": ms.mean(), f"{case}_lo": np.percentile(ms, 16),
                         f"{case}_hi": np.percentile(ms, 84)}
             tab.append(cells)
@@ -414,7 +436,7 @@ if __name__ == "__main__":
             if shk == "delta":
                 ax.plot(hh, 100 * dF[resp], color="#52514e", lw=1.5, ls=":",
                         label="data, A_F (net of NFCI)")
-            for case in CASES:
+            for case in HEADLINE:
                 ax.plot(hh, 100 * res[case]["mean"][:, i, j], color=pal[case], lw=2,
                         label=f"model, {CASE_LABEL[case]}")
             ax.axhline(0, color="#8a8984", lw=1, ls="--")
@@ -431,5 +453,59 @@ if __name__ == "__main__":
     fig.tight_layout()
     fig.savefig(OUT_PNG, dpi=150)
 
+    # ── 6. the case grid: z amplification through κ at moderate inelasticity ─
+    say(f"\n{'-'*78}\n6. Case grid: ξ_inv × x_v (κ's share of a hire = 1 − x_v), through the SVAR\n{'-'*78}")
+    say("  Conditional moments (section 5) and the one-SD distance (section 3), every case. Model: mean")
+    say("  over windows. Data: SVAR A. 'cor uz|z' = cor(u, z) under z alone; 'θ/z' = σ(θ)/σ(z) under z.\n")
+    head = ["case", "ϕ", "σu z", "σu δ", "σu s", "σu all", "cor uv z", "cor uv δ", "cor uv s",
+            "cor uz|z", "θ/z", "ρ1 u|z", "J z", "J δ", "J s", "J"]
+
+    def grid_row(label, mom, J=None, phi=None):
+        cells = [label, "" if phi is None else f"{phi:.2f}"]
+        cells += [f"{mom[s]['σ(u)']:.2f}" for s in ("z", "δ", "s", "z, δ, s")]
+        cells += [f"{mom[s]['cor(u,v)']:+.2f}" for s in ("z", "δ", "s")]
+        cells += [f"{mom['z']['cor(u,z)']:+.2f}", f"{mom['z']['σ(θ)/σ(z)']:.1f}", f"{mom['z']['ρ1(u)']:.2f}"]
+        if J is None:
+            cells += ["", "", "", ""]
+        else:
+            cells += [f"{J[s]:.0f}" for s in SHOCKS] + [f"{sum(J.values()):.0f}"]
+        return cells
+
+    tab = [grid_row("data", m_data)]
+    for case in CASES:
+        mean_mom = {lab: {st: np.mean([x[lab][st] for x in m_model[case]]) for st in m_model[case][0][lab]}
+                    for lab, _ in COND_SETS}
+        J = distance(res[case]["mean"], Theta_d, sd_d)
+        tab.append(grid_row(CASE_LABEL[case], mean_mom, J, MANIFEST.loc[case].phi))
+    say(tabulate(tab, head, tablefmt="simple", disable_numparse=True))
+    say("  J: one-SD responses of u and v, h = 0–12 (26 moments per shock, 78 in total).")
+
+    # figure: z → u and z → v by x_v, one row per ξ_inv
+    grid_pal = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100"]     # dataviz reference palette, fixed order
+    xis = sorted(MANIFEST.xi_inv.unique(), reverse=True)
+    fig2, axes2 = plt.subplots(len(xis), len(OUTCOMES), figsize=(10, 3.6 * len(xis)), sharex=True)
+    jz = NAMES.index("z")
+    for a, xi in enumerate(xis):
+        cs = MANIFEST[MANIFEST.xi_inv == xi].sort_values("x_v", ascending=False)
+        for b, resp in enumerate(OUTCOMES):
+            i, ax = NAMES.index(resp), axes2[a, b]
+            ax.fill_between(hh, 100 * lo_d[:, i, jz], 100 * hi_d[:, i, jz], color="#c3c2b7", alpha=0.6,
+                            lw=0, label="data, 68 % band")
+            ax.plot(hh, 100 * Theta_d[:, i, jz], color="#52514e", lw=2, label="data")
+            for k, (case, r) in enumerate(cs.iterrows()):
+                ax.plot(hh, 100 * res[case]["mean"][:, i, jz], color=grid_pal[k], lw=2,
+                        label=f"x_v {r.x_v:g} (κ share {100 * (1 - r.x_v):.0f} %)")
+            ax.axhline(0, color="#8a8984", lw=1, ls="--")
+            ax.set_title(f"z shock → {resp}, ξ_inv = {xi:g}", fontsize=10)
+            ax.grid(alpha=0.15)
+            if b == 0:
+                ax.set_ylabel("log points × 100")
+            if a == len(xis) - 1:
+                ax.set_xlabel("quarters")
+    axes2[0, 0].legend(fontsize=7, frameon=False)
+    fig2.suptitle("SVAR A, z shock: data against AGS by per-hire share (small-sample mean)", fontsize=11)
+    fig2.tight_layout()
+    fig2.savefig(OUT_GRID, dpi=150)
+
     OUT_TXT.write_text("\n".join(LINES) + "\n", encoding="utf-8")
-    print(f"\nSaved: {OUT_TXT}\nSaved: {OUT_CSV}\nSaved: {OUT_PNG}\nSaved: {OUT_MOM}")
+    print(f"\nSaved: {OUT_TXT}\nSaved: {OUT_CSV}\nSaved: {OUT_PNG}\nSaved: {OUT_MOM}\nSaved: {OUT_GRID}")

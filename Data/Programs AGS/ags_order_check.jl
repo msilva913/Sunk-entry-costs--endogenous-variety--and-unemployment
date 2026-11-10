@@ -23,9 +23,8 @@
 include("ags_model.jl")
 using CSV, StatsBase
 
-const SHOCK_CSV = joinpath(@__DIR__, "..", "Bartek analysis", "data", "results", "shock_calibration.csv")
 const DATA_CSV  = joinpath(@__DIR__, "..", "Bartek analysis", "data", "results", "q3_data_svar_cycles_hp.csv")
-const SHK_B = shock_processes(SHOCK_CSV; prefix = "bprime")
+const SHK_B = SHK                          # Block B′'s processes (ags_model.jl)
 const SDS_B = (SHK_B.σz, SHK_B.σδ, SHK_B.σs)
 const CASES = (
     ("default (x_v 0.5, ξ_inv 1)",     AGS_TARGETS),

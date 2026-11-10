@@ -55,8 +55,20 @@ case                              responses    J z    J δ    J s    J total
 --------------------------------  -----------  -----  -----  -----  ---------
 default (x_v 0.5, ξ_inv 1)        one SD       116.5  103.3  105.1  324.9
 default (x_v 0.5, ξ_inv 1)        scaled       126.4  98.2   94.2   318.9
+x_v 0.25, ξ_inv 1                 one SD       93.8   107.8  111.2  312.9
+x_v 0.25, ξ_inv 1                 scaled       101.7  102.3  99.8   303.8
+x_v 0.1, ξ_inv 1                  one SD       73.1   115.1  127.1  315.3
+x_v 0.1, ξ_inv 1                  scaled       76.9   108.9  114.4  300.2
+x_v 0.05, ξ_inv 1                 one SD       72.7   120.6  142.8  336.0
+x_v 0.05, ξ_inv 1                 scaled       73.1   113.9  128.8  315.8
+x_v 0.5, ξ_inv 0.5                one SD       87.1   110.0  123.3  320.4
+x_v 0.5, ξ_inv 0.5                scaled       93.8   104.2  111.0  309.1
 compromise (x_v 0.25, ξ_inv 0.5)  one SD       73.8   116.0  138.7  328.5
 compromise (x_v 0.25, ξ_inv 0.5)  scaled       77.1   109.7  125.2  312.0
+x_v 0.1, ξ_inv 0.5                one SD       82.7   124.0  163.3  370.1
+x_v 0.1, ξ_inv 0.5                scaled       81.1   117.0  147.8  345.9
+x_v 0.05, ξ_inv 0.5               one SD       116.0  128.8  179.9  424.8
+x_v 0.05, ξ_inv 0.5               scaled       111.3  121.4  163.1  395.8
   78 moments; J ≈ 78 would mean the model is within about one data SD on average.
 
   Scaled peaks (response per 1 % own impact; data, default, compromise):
@@ -87,7 +99,13 @@ own impact      5.24          5.18          5.44             5.44
 case                              one SD, A    one SD, A_F    scaled, A    scaled, A_F
 --------------------------------  -----------  -------------  -----------  -------------
 default (x_v 0.5, ξ_inv 1)        103.3        60.4           98.2         56.2
+x_v 0.25, ξ_inv 1                 107.8        64.3           102.3        59.7
+x_v 0.1, ξ_inv 1                  115.1        70.9           108.9        65.5
+x_v 0.05, ξ_inv 1                 120.6        76.1           113.9        70.0
+x_v 0.5, ξ_inv 0.5                110.0        66.3           104.2        61.4
 compromise (x_v 0.25, ξ_inv 0.5)  116.0        71.9           109.7        66.3
+x_v 0.1, ξ_inv 0.5                124.0        79.5           117.0        72.9
+x_v 0.05, ξ_inv 0.5               128.8        84.1           121.4        77.0
 
 ------------------------------------------------------------------------------
 5. Conditional second moments implied by the identified shocks (reported, not targeted)
@@ -128,3 +146,22 @@ z, δ, s   σ(θ)/σ(z)    +21.70 [+17.85, +24.76]  +10.49 [+8.47, +12.56]  +11.
 
   Data: σ(u) from all five SVAR shocks 10.60; the three model shocks give 8.20, 60 % of the variance.
   σ in % (log points × 100) of the HP cycle; θ = v − u. cor(u,z) and σ(θ)/σ(z) only where z moves.
+
+------------------------------------------------------------------------------
+6. Case grid: ξ_inv × x_v (κ's share of a hire = 1 − x_v), through the SVAR
+------------------------------------------------------------------------------
+  Conditional moments (section 5) and the one-SD distance (section 3), every case. Model: mean
+  over windows. Data: SVAR A. 'cor uz|z' = cor(u, z) under z alone; 'θ/z' = σ(θ)/σ(z) under z.
+
+case                              ϕ     σu z    σu δ    σu s    σu all    cor uv z    cor uv δ    cor uv s    cor uz|z    θ/z    ρ1 u|z    J z    J δ    J s    J
+--------------------------------  ----  ------  ------  ------  --------  ----------  ----------  ----------  ----------  -----  --------  -----  -----  -----  ---
+data                                    6.29    3.63    3.80    8.20      -0.98       -0.98       -0.96       -0.19       17.8   0.96
+default (x_v 0.5, ξ_inv 1)        0.92  1.55    0.81    4.50    4.89      -0.77       -0.66       -0.45       -0.43       5.5    0.89      117    103    105    325
+x_v 0.25, ξ_inv 1                 0.86  1.90    0.81    4.43    4.96      -0.83       -0.64       -0.39       -0.45       6.8    0.91      94     108    111    313
+x_v 0.1, ξ_inv 1                  0.73  2.55    0.81    4.33    5.16      -0.89       -0.61       -0.26       -0.48       8.9    0.92      73     115    127    315
+x_v 0.05, ξ_inv 1                 0.62  3.11    0.81    4.23    5.38      -0.90       -0.56       -0.13       -0.49       10.5   0.92      73     121    143    336
+x_v 0.5, ξ_inv 0.5                0.94  2.06    0.80    4.30    4.91      -0.85       -0.64       -0.29       -0.47       7.3    0.91      87     110    123    320
+compromise (x_v 0.25, ξ_inv 0.5)  0.89  2.59    0.80    4.21    5.08      -0.89       -0.60       -0.17       -0.49       9.0    0.92      74     116    139    328
+x_v 0.1, ξ_inv 0.5                0.78  3.43    0.81    4.07    5.45      -0.90       -0.52       +0.03       -0.51       11.4   0.91      83     124    163    370
+x_v 0.05, ξ_inv 0.5               0.67  4.07    0.82    3.97    5.80      -0.89       -0.46       +0.16       -0.53       13.3   0.91      116    129    180    425
+  J: one-SD responses of u and v, h = 0–12 (26 moments per shock, 78 in total).

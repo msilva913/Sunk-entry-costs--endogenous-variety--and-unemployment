@@ -16,8 +16,7 @@
 include("ags_model.jl")
 using CSV
 
-const SHOCK_CSV = joinpath(@__DIR__, "..", "Bartek analysis", "data", "results", "shock_calibration.csv")
-const SHK_B = shock_processes(SHOCK_CSV; prefix = "bprime")
+const SHK_B = SHK                          # Block B′'s processes (ags_model.jl)
 const SDS_B = (SHK_B.σz, SHK_B.σδ, SHK_B.σs)
 const T_IRF_M = 3 * 20                      # months of impulse response (20 quarters)
 

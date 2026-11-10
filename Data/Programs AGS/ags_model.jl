@@ -25,8 +25,13 @@ include(joinpath(BASELINE_DIR, "time_series_fun.jl"))
 include("ags_steady_state.jl")
 using DataFrames, Statistics, Printf, Plots
 
-# Same values as SHOCKS_BASE in run_solution_core.jl (S14, filter-consistent; part6b).
-const SHK = (ρz = 0.9628, σz = 0.0062, ρδ = 0.5319, σδ = 0.0641, ρs = 0.8048, σs = 0.0437)
+# Shock processes: Block B′'s (decisions.md D13), from part6b section 9 (shock_calibration.csv,
+# columns bprime_*): z and s matched on SVAR A's window 1992Q3–2019Q4, δ as in S14. Since Nov 10,
+# 2026 the AGS default, so every AGS program uses the shocks of the SVAR comparison. Before: the
+# S14 values (SHOCKS_BASE in run_solution_core.jl: ρz 0.9628 σz 0.0062 ρδ 0.5319 σδ 0.0641
+# ρs 0.8048 σs 0.0437), whose z and s fit 1951–2019.
+const SHOCK_CSV = joinpath(@__DIR__, "..", "Bartek analysis", "data", "results", "shock_calibration.csv")
+const SHK = shock_processes(SHOCK_CSV; prefix = "bprime")
 const T_IR, T_SM, LAM = 60, 60_000, 1_600.0
 
 # =============================================================================

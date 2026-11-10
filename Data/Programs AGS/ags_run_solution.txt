@@ -1,47 +1,47 @@
 AGS model with costly reactivation (ags_run_solution.jl). Monthly; responses in % (100 × log dev.).
 Targets: Λ̄_r 0.25, p_r 0.80, ψ_r 1.00, ξ_inv 1.00, x_v 0.50, b/w 0.90, X/Y 0.015, σ 1.00.
 Steady state: u 0.0703, θ 0.5125, Q 1.2688, Λ_r 0.250; ϕ 0.9225, κ 0.0094, z̄ 1.0359, a 20.301.
-Shocks (monthly, S14): ρz 0.9628 σz 0.0062 ρδ 0.5319 σδ 0.0641 ρs 0.8048 σs 0.0437.
+Shocks (monthly, Block B′): ρz 0.9409 σz 0.0045 ρδ 0.5319 σδ 0.0641 ρs 0.7524 σs 0.0401.
 
 Impulse responses to one-SD shocks (month 1 = impact; peak = largest |response|):
   shock  var      impact     peak       at month 24
-  z      u        -0.000   -1.244       24   -1.244
-  z      v         0.525    2.125       20    2.095
-  z      e         0.799    0.799        1    0.082
-  z      θ         0.525    3.356       22    3.339
-  z      Q         0.799    0.799        1    0.082
-  z      K         9.005    9.005        1    0.456
-  z      Λ_r       0.160    0.160        1    0.016
+  z      u        -0.000   -0.677       19   -0.658
+  z      v         0.356    1.166       15    1.062
+  z      e         0.542    0.542        1    0.002
+  z      θ         0.356    1.831       17    1.720
+  z      Q         0.542    0.542        1    0.002
+  z      K         6.304    6.304        1   -0.180
+  z      Λ_r       0.108    0.108        1    0.000
   δ      u        -0.000    0.281        3    0.090
   δ      v         0.023   -0.267        8   -0.125
   δ      e         0.035    0.042        5    0.017
   δ      θ         0.023   -0.497        6   -0.215
   δ      Q         0.035    0.042        5    0.017
-  δ      K         0.132    0.540        6    0.229
+  δ      K         0.132    0.541        6    0.229
   δ      Λ_r       0.007    0.008        5    0.003
-  s      u         0.000    2.528        5    1.175
-  s      v         0.447   -2.122       14   -1.561
-  s      e         0.681    0.681        1    0.225
-  s      θ         0.447   -4.185       11   -2.736
-  s      Q         0.681    0.681        1    0.225
-  s      K        -1.398    4.402       11    2.908
-  s      Λ_r       0.136    0.136        1    0.045
+  s      u         0.000    2.123        4    0.828
+  s      v         0.344   -1.738       12   -1.128
+  s      e         0.523    0.523        1    0.158
+  s      θ         0.344   -3.380       10   -1.955
+  s      Q         0.523    0.523        1    0.158
+  s      K        -0.982    3.588       10    2.080
+  s      Λ_r       0.105    0.105        1    0.032
 
 Check (σ = 0): θ's loading on the stocks Ẽ, Ṽ^u, Ṽ^s (max |gx|) relative to its loading on z, as ξ_inv → 0.
-  costless     ξ_inv 1e-2: 4.4e+00   1e-4: 1.6e-01   1e-6: 1.9e-03
-  costly 0.25  ξ_inv 1e-2: 9.1e-01   1e-4: 2.1e-02   1e-6: 2.2e-04
+  costless     ξ_inv 1e-2: 5.0e+00   1e-4: 1.6e-01   1e-6: 2.0e-03
+  costly 0.25  ξ_inv 1e-2: 9.6e-01   1e-4: 2.2e-02   1e-6: 2.3e-04
 ✓ θ is a function of the current shocks alone in the vacancy free entry limit.
 
 D15 gate 1, stage (a). Simulated 60000 months, quarterly averages, HP λ = 1600.
 TRUE-SHOCK statistics: not comparable with the data's SVAR numbers (decisions.md S16); the
 like-for-like comparison is Bartek analysis/q3_model_svar.py.
   case                                     ϕ     cor |     σu      z      δ      s |    %z    %δ    %s
-  GS: costless, ξ_inv 1               0.6079  +0.933 |   3.54   0.43   0.60   3.45 |   1.5   2.9  95.6
-  GS: costless, ξ_inv 0.01            0.7461  -0.196 |   5.70   4.30   0.58   3.69 |  57.0   1.0  42.0
-  costly 0.25, ξ_inv 1                0.9225  -0.561 |   6.45   2.48   0.57   5.88 |  15.0   0.8  84.2
-  costly 0.25, ξ_inv 0.25             0.9504  -0.508 |   6.70   4.15   0.55   5.20 |  38.7   0.7  60.7
-  costly 0.25, ξ_inv 0.01             0.9596  -0.567 |   7.40   6.18   0.59   4.03 |  69.7   0.6  29.6
-  costly 0.25, ξ_inv 0.01, x_v 1      0.9792  -0.467 |   6.41   4.96   0.63   4.01 |  59.9   1.0  39.2
-  costly 0.70, ξ_inv 0.01             0.9178  -0.526 |   7.22   5.79   0.58   4.25 |  64.6   0.6  34.7
-  bridge: 0.25, ξ_inv 0.01, X/Y 1.67%  0.9552  -0.568 |   7.42   6.16   0.59   4.08 |  69.1   0.6  30.3
+  GS: costless, ξ_inv 1               0.6079  +0.927 |   2.92   0.23   0.60   2.83 |   0.6   4.3  95.0
+  GS: costless, ξ_inv 0.01            0.7461  -0.036 |   4.25   2.94   0.58   3.00 |  47.9   1.9  50.2
+  costly 0.25, ξ_inv 1                0.9225  -0.524 |   5.01   1.48   0.57   4.70 |   8.9   1.3  89.7
+  costly 0.25, ξ_inv 0.25             0.9504  -0.443 |   5.10   2.72   0.55   4.24 |  28.9   1.2  69.9
+  costly 0.25, ξ_inv 0.01             0.9596  -0.513 |   5.60   4.48   0.59   3.29 |  64.3   1.1  34.6
+  costly 0.25, ξ_inv 0.01, x_v 1      0.9792  -0.454 |   5.12   3.85   0.63   3.30 |  56.7   1.5  41.8
+  costly 0.70, ξ_inv 0.01             0.9178  -0.456 |   5.44   4.14   0.58   3.46 |  58.1   1.1  40.8
+  bridge: 0.25, ξ_inv 0.01, X/Y 1.67%  0.9552  -0.515 |   5.61   4.47   0.59   3.33 |  63.6   1.1  35.3
 σu: all three shocks; z, δ, s: σ(u) with that shock alone; %: shares of the sum of variances.

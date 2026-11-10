@@ -383,3 +383,23 @@ In the full model without exit and with clone replacement, σ = 1 doubles δ's e
 - AGS at σ = 1 is the right Part 1 benchmark for the bridge: it shares the household and the discount factor with Part 2.
 - The Part 1 → Part 2 comparison has three steps, not two: AGS (free clones); the full model with clone replacement (costly, forced replacement: adds the consumption–discount channel for δ); the full model with priced entry (flexible replacement: removes it, R19).
 - Persistence after δ and s is still missing at σ = 1 (ρ₁(u) 0.73–0.80 through the SVAR, against 0.94–0.96 in the data). Endogenous discounting adds size and comovement, not delay.
+
+## 9. Can the per-hire cost amplify z at moderate inelasticity? (exercise 1)
+
+*Added Nov 10, 2026. Through the SVAR on both sides, σ = 1, Block B′'s processes: `../Bartek analysis/data/results/q3_model_svar.txt` §6 and `q3_model_svar_grid.png`. Since Nov 10 Block B′'s processes are the AGS default (`ags_model.jl` SHK), so the sweeps use them too.*
+
+| ξ_inv, x_v (κ's share of a hire) | ϕ | σ(u) from z (data 6.29) | cor(u, v \| s) (data −0.96) | cor(u, v \| δ) (data −0.98) | cor(u, z \| z) (data −0.19) | J z / J s / J |
+|---|---|---|---|---|---|---|
+| 1, 0.5 (50 %), default | 0.92 | 1.55 | −0.45 | −0.66 | −0.43 | 117 / 105 / 325 |
+| 1, 0.25 (75 %) | 0.86 | 1.90 | −0.39 | −0.64 | −0.45 | 94 / 111 / **313** |
+| 1, 0.05 (95 %) | 0.62 | 3.11 | −0.13 | −0.56 | −0.49 | 73 / 143 / 336 |
+| 0.5, 0.25 (75 %), compromise | 0.89 | 2.59 | −0.17 | −0.60 | −0.49 | 74 / 139 / 328 |
+| 0.5, 0.05 (95 %) | 0.67 | 4.07 | **+0.16** | −0.46 | −0.53 | 116 / 180 / 425 |
+
+1. **κ amplifies z, but at most to about half of the data** at moderate ξ_inv: σ(u) from z reaches 3.1 (ξ_inv = 1) and 4.1 (ξ_inv = 0.5) at a 95 % per-hire share, against 6.29.
+2. **It costs the s Beveridge relation.** A larger per-hire share makes holding a vacancy cheap (K small), so vacancies rise with unemployment after an s shock: cor(u, v | s) weakens from −0.45 to −0.13 (ξ_inv = 1) and turns positive at ξ_inv = 0.5. δ's comovement weakens too. The true-shock κ sweep missed this: σ(u) from s barely moves, but the comovement does.
+3. **cor(u, z | z) stays too negative** (−0.43 to −0.53 against −0.19) in every case.
+4. **The z response is too short-lived as well as too small.** In the data, u stays below trend for about 12 quarters after a z shock; in the model it returns by quarter 6–8 at every κ (figure). So z shares δ's and s's persistence problem.
+5. **The best distance** (313, ξ_inv = 1, x_v = 0.25) is barely below the default's (325).
+
+**Implication.** Within AGS, κ is not the answer for z: it closes at most half the gap, only at implausible per-hire shares, and at the cost of s. z needs another amplifier, and all three shocks need a source of persistence, which is consistent with a single missing slow-moving state in job creation (Part 2, or one of the alternatives in the discussion of Nov 6).
