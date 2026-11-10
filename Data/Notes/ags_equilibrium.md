@@ -403,3 +403,82 @@ In the full model without exit and with clone replacement, σ = 1 doubles δ's e
 5. **The best distance** (313, ξ_inv = 1, x_v = 0.25) is barely below the default's (325).
 
 **Implication.** Within AGS, κ is not the answer for z: it closes at most half the gap, only at implausible per-hire shares, and at the cost of s. z needs another amplifier, and all three shocks need a source of persistence, which is consistent with a single missing slow-moving state in job creation (Part 2, or one of the alternatives in the discussion of Nov 6).
+
+## 10. A financial friction on creating positions (proposal; branch `d15_ags_finance`)
+
+*Added Nov 10, 2026. A proposal for discussion: not yet coded or calibrated. Motivation: in the data, a one-SD δ shock raises u by about 1.5–2 % with a delayed peak at three to four quarters, through depressed job finding (`../Bartek analysis/data/results/q3_delta_robustness.txt`, `q3_persistence_tests.txt`); AGS peaks at about 0.4 in the first quarter, and business formation does not help (`../Programs baseline/Q2_full_channels.txt`). All citations below are unverified (N11–N14); check them before anything enters the draft.*
+
+### 10.1 What the data and the calibration require of any δ mechanism
+
+1. **It must act on job creation, with a delay.** The persistent part of δ's effect on u runs through job finding, not inflows, and it builds for three to four quarters.
+2. **It must be triggered by the death of product lines, not by the loss of positions.** With costly reactivation at Λ̄_r = 0.25, separations retire three quarters of the positions they vacate. Per month in steady state, destruction removes δ(v + 1 − u) ≈ 0.26 % of positions, while retirement after separations removes (1 − δ)(1 − Λ̄_r)s(1 − u) ≈ 2.0 %; per one-SD shock, an s shock retires about five times as many positions as a δ shock destroys. Yet δ's effect on u in the data is at least as large as s's and more persistent. So the δ–s asymmetry cannot come from the number of positions lost. It must come from something destroyed only when an establishment dies.
+3. **It must leave s short-lived:** with enough lags (p = 4), the data's s response fades within a few quarters and overshoots.
+
+### 10.2 The friction, and its economic rationale
+
+**Creating positions needs funds up front.** Creating a position (posting it, building the capacity behind it) and hiring are paid before the job produces. A line pays these costs partly from its **internal funds** (net worth) and partly by **borrowing**. External funds cost more than internal funds, and the premium rises with the line's leverage: a lender's expected losses from default and the costs of dealing with them grow as the borrower has less of its own money at stake.
+
+**Internal funds are line-specific and are lost when the line dies.** They are the owners' equity and the firm-specific assets of the establishment: when it is liquidated, they have no resale value, and its debt defaults. A replacement line (a clone, in AGS) starts with only a small endowment. **A separation does not liquidate anything:** the line survives with its internal funds, and a retired position reduces its profits, not its equity.
+
+**The mechanism after a δ shock.**
+1. Destruction wipes out the internal funds of the lines that die; their replacements start poor. Aggregate net worth falls.
+2. The economy's lines must now fund creation with more borrowing: leverage rises, and so does the premium on external funds.
+3. Creating a position becomes more expensive for **every** line, so creation, vacancies and job finding fall.
+4. Net worth is rebuilt slowly from retained earnings, so the premium stays high for a while; together with the run-down of inherited vacancies, this delays the peak of u.
+5. The default risk priced into the premium also rises with δ itself (§10.3), which adds an immediate effect.
+
+**After an s shock**, net worth is not destroyed. Re-creating retired positions raises borrowing for a while, a flow that fades rather than a stock that must be rebuilt, so the premium moves briefly and s stays short-lived. **After a z shock**, profits and hence net worth move with productivity, so the friction amplifies and prolongs z (a financial accelerator).
+
+**What this is and is not.**
+- It is **not costly state verification as such.** We use the reduced form that Bernanke, Gertler and Gilchrist (1999) derive from costly state verification: an external finance premium that rises with leverage. The contract is not modelled.
+- It is **not Kiyotaki and Moore (1997).** There, borrowing is limited by the market value of collateral, and falling asset prices feed back on borrowing. Here the natural collateral would be positions valued at Q, but separations retire about eight times as many positions as destruction removes (§10.1), so mark-to-market collateral would make s the larger shock to borrowing capacity: the wrong asymmetry. The asymmetry needs net worth that is lost only at liquidation, as in BGG, where failing entrepreneurs lose their net worth.
+- It is **not a credit-search friction** (Wasmer and Weil 2004; Petrosky-Nadeau and Wasmer 2013, 2015). Congestion in a credit market rises with the number of projects seeking funds, which after s shocks (many retired positions to re-create) exceeds that after δ shocks, so it too would make s the persistent shock.
+
+### 10.3 Modified equations (AGS, monthly)
+
+Unchanged: E1, E2 (job creation) and the user cost K in form, E3–E4, the reactivation block, the wage, and the household's Euler equations. Changed: creation, the resource constraint and dividends. New: the state W_t and the variables B_t and Ψ_t.
+
+- **Funds needed** for creating positions and hiring:
+  X_t = x_m e_t^{1+ξ_inv}/(1 + ξ_inv) + κ q_t v_t.
+- **Debt:** B_t = X_t − W_t, assumed positive (net worth never covers all creation).
+- **External finance premium:**
+  Ψ_t = Ψ^a(b_t) / (1 − δ_t),  Ψ^a(b) = Ψ̄^a (b/b̄)^χ,  b_t = B_t/W_t.
+  Ψ^a is the agency premium, rising in leverage with elasticity χ (the BGG reduced form). The factor 1/(1 − δ_t) prices default: loans to lines destroyed at the end of t are not repaid, so lenders break even only if surviving borrowers pay more.
+- **Creation (replaces Q_t = x_m e_t^{ξ_inv}):** the value of a new position must cover its marginal resource cost and the premium on the funds that pay for it,
+  Q_t = Ψ_t x_m e_t^{ξ_inv}.
+  A higher premium means fewer positions are created at a given value Q, and through Q it raises the user cost K_t = Q_t − E_t[m_{t+1}(1 − δ_t)Q_{t+1}], the channel through which job creation (E2) responds.
+- **Net worth (new law of motion):**
+  W_{t+1} = (1 − δ_t) γ_w [ Π_{t+1} − Ψ_t B_t ] + δ_t ω̄,
+  with Π_{t+1} = (z̄ z_{t+1} − w_{t+1})(1 − u_{t+1}) − X^r_{t+1} the lines' operating cash flow, γ_w < 1 the share of earnings retained (the rest is paid out, so lines cannot outgrow the constraint), (1 − δ_t) the internal funds of destroyed lines (lost), and ω̄ the endowment of replacement lines.
+- **Payouts and resources:** dividends to households are (1 − γ_w)(Π − ΨB) plus lenders' net receipts. If the agency premium is a deadweight cost (BGG's monitoring cost), the resource constraint becomes
+  C_t = z̄ z_t(1 − u_t) − X_t − X^r_t − (Ψ^a_{t−1} − 1) B_{t−1}(1 − δ_{t−1});
+  if it is a transfer to lenders, it drops out of resources. (A choice to settle.)
+
+**Aggregation.** Lines differ in net worth (replacements start poorer than survivors). With a financing contract linear in net worth, all lines choose the same leverage, aggregate creation depends only on aggregate W, and the premium on aggregate leverage (as in BGG). Combined with AGS's aggregate creation market (Q(e)), one state W_t suffices. This is an assumption and should be stated.
+
+**What stays from AGS:** clone replacement (N fixed; no variety, no priced entry, so no R19 offset), σ = 1, the three shocks, costly reactivation. **New parameters:** χ (elasticity of the premium to leverage), steady-state leverage b̄ (with γ_w or ω̄ backed out), the steady-state premium Ψ̄^a (a spread), and whether the premium is deadweight.
+
+### 10.4 What to expect, and the open problem of size
+
+- **Shape and asymmetry: right by construction.** A delay (net worth is a slow stock, inherited vacancies run down), action through creation and job finding, and a short-lived s.
+- **Size: the open problem.** A one-SD δ shock raises the monthly destruction rate by about 6 % of 0.27 %, for a few months, so it destroys the internal funds of roughly 0.04 % of lines over a quarter: aggregate W falls by about 0.04 % (rough arithmetic, not program output). With leverage and χ in the usual range, the premium would move by a few tenths of a percent at most, likely an order of magnitude short of the data's response. The friction becomes quantitatively important only if (i) the internal funds lost when an establishment dies are large relative to its share of activity, or (ii) the measured δ shock understates how much line-level value is destroyed (§2.2 of the empirical note: about a third of δ's effect is accounted for by NFCI).
+- **The empirical anchor:** the δ → F test (SVAR with δ ordered before NFCI: does a δ shock tighten financial conditions, and how much of δ's effect on u runs through them?). If financial conditions respond strongly, the friction has an anchor at scale; if not, it explains the shape but not the size.
+
+### 10.5 Closest papers on the specification (all citations unverified)
+
+| Paper | Friction | Relation to this proposal |
+|---|---|---|
+| Bernanke, Gertler and Gilchrist (1999), *Handbook of Macroeconomics* | costly state verification; external finance premium rising in leverage; entrepreneurs' net worth | **our reduced form.** They apply it to capital investment; we apply it to creating positions, and make destruction itself the shock to net worth. |
+| Carlstrom and Fuerst (1997), *AER* | agency costs, net worth, investment | the same family; an alternative timing of the contract. |
+| Petrosky-Nadeau (2014), *RED*, "Credit, vacancies and unemployment fluctuations" | (I believe) an agency-cost friction on financing vacancy costs in DMP, with firm net worth | **the closest labor-market application.** Differences: durable positions, destruction as the trigger that destroys net worth, costly reactivation. Please confirm the specification. |
+| Christiano, Motto and Rostagno (2014), *AER*, "Risk shocks" | BGG with time-varying dispersion of firm outcomes | a δ shock that raises default risk is close in spirit to their risk shock; their estimation finds such shocks important. |
+| Kiyotaki and Moore (1997), *JPE* | borrowing limited by collateral value; asset-price feedback | not chosen: mark-to-market collateral (positions at Q) gives the wrong δ–s asymmetry (§10.2). Its asset-price multiplier would help with size, if collateral were line-specific. |
+| Gertler and Karadi (2011), *JME*; Gertler and Kiyotaki (2010) | lender (bank) net worth constraint | an alternative trigger: losses on loans to dying lines deplete lenders' capital. Similar scale arithmetic. |
+| Jermann and Quadrini (2012), *AER* | enforcement constraint on working capital; financial shocks | relevant if hiring is financed within the period; their financial shocks correspond to reading δ as partly a symptom of financial disturbances. |
+| Wasmer and Weil (2004), *AER*; Petrosky-Nadeau and Wasmer (2013, *AEJ: Macro*; 2015, *JME*) | search frictions in credit markets | not chosen: congestion would be driven by s (§10.2). |
+
+### 10.6 Next steps
+
+1. The δ → F test (§10.4).
+2. If it supports a financial channel at scale: code §10.3 in AGS (one new state), calibrate b̄, Ψ̄^a and χ to the corporate-finance evidence, and run it through the SVAR against the δ target.
+3. Settle the open choices: deadweight versus transfer premium; whether hiring costs (κ) are financed as well as creation; the timing of default.
