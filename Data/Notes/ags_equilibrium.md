@@ -16,7 +16,7 @@ Start from DMP. Add three things.
 2. **Destruction δ removes jobs *and* vacancies.** Product lines are destroyed at rate δ, and with them every position attached, filled or vacant. Separation s ends a match but leaves the position.
 3. **Reactivation is costly.** A position vacated by a separation is reactivated only if its reactivation cost is below the value of a vacancy. Otherwise it is retired. With costless reactivation, the model is Gabrovski–Silva with aggregate shocks, and with s ≡ 0 it is Coles–Kelishomi.
 
-Utility is linear (σ = 0), so the discount factor is a constant β. Destroyed product lines are replaced by clones at no cost ("clone replacement"), so there is no business-formation block. The shocks are productivity z, destruction δ and separation s.
+Households have CRRA utility (σ = 1 by default, as in the full model) and own the firms, so jobs and positions are valued with the household's discount factor m_{t+1} = β(C_{t+1}/C_t)^{−σ} (§2, "The household and its savings decision"). σ = 0 is linear utility and constant discounting, the Gabrovski–Silva benchmark. Destroyed product lines are replaced by clones at no cost ("clone replacement"), so there is no business-formation block. The shocks are productivity z, destruction δ and separation s.
 
 ## 2. Environment
 
@@ -78,20 +78,41 @@ free positions keep all of Q, costly positions that are reactivated keep Q net o
 
 **Wages:** Nash bargaining, with worker share ϕ and flow value of unemployment b.
 
+**The household and its savings decision** (added Nov 6, 2026; `ags_model.jl` f[19]–f[21]).
+- **Members and income.** A representative household of measure one. Each member supplies one unit of labor inelastically. Employed members earn w_t; unemployed members have the non-market flow b, which sets the outside option in bargaining but is not a market resource (as in the full model). The household pools income and consumes C_t, with utility E_0 Σ_t β^t C_t^{1−σ}/(1 − σ).
+- **Assets.** (i) Shares in a mutual fund that owns every firm, in fixed supply normalized to 1, with ex-dividend price V_t and dividends D_t; (ii) a one-period riskless bond in zero net supply with gross return R^f_t.
+- **Budget:** C_t + V_t S_{t+1} + B_{t+1} = w_t(1 − u_t) + (V_t + D_t) S_t + R^f_{t−1} B_t.
+- **First-order conditions,** with m_{t+1} ≡ β(C_{t+1}/C_t)^{−σ}:
+  - shares: V_t = E_t[ m_{t+1}(V_{t+1} + D_{t+1}) ];
+  - bond: 1 = R^f_t E_t[ m_{t+1} ].
+- **Market clearing:** S = 1 and B = 0, so C_t = w_t(1 − u_t) + D_t. With dividends D_t = (z̄z_t − w_t)(1 − u_t) − X_t − X^r_t, this is the resource constraint
+  C_t = z̄z_t(1 − u_t) − X_t − X^r_t,
+  where X_t = e_t Q_t/(1 + ξ_inv) + κ q_t v_t is creating positions and hiring, and X^r_t = Ṽ^s_t(Q_t Λ_{r,t} − Q^rep_t) is reactivation costs.
+
+**How to read the savings decision.**
+1. **The household cannot change the economy's saving by trading.** Shares are in fixed supply and bonds net to zero. Aggregate saving happens inside firms, as investment in durable positions: creation (e_t at marginal cost Q_t), the per-hire cost κ and reactivation costs. These positions are the economy's capital.
+2. **The household's Euler equations set the price of saving instead.** The discount factor m_{t+1}, equivalently the riskless rate R^f_t, adjusts until the household is willing to consume exactly what firms do not invest.
+3. **Firms act for their shareholders,** valuing matches (E2) and positions (K, 𝓡) with m_{t+1}. So the household's willingness to shift consumption over time disciplines firms' investment.
+4. **After a transitory shock that makes current resources scarce relative to the future** (output falls, or investment must rise), R^f rises and m falls. That lowers the value of a new match and of a vacant position, so firms cut creation and hiring. This frees resources and smooths consumption, at the cost of a deeper fall in vacancies and job finding. The more investment can be postponed (elastic creation), the smaller the rise in R^f.
+5. **σ = 0:** the household is indifferent to the timing of consumption, R^f = 1/β at all dates, and firms' investment does not feed back on discounting (Gabrovski–Silva).
+6. **The share price is determined but feeds back on nothing here:** with clone replacement there is no entry decision. In the full model the same equation, with free entry of product lines, becomes the entry Euler, which pins m_{t+1}(1 − δ_t): priced entry is a flexible investment margin that holds the discount factor in place (R19).
+
 ## 3. Equilibrium
 
-Three objects collect the dynamics:
-- the **user cost** of a vacancy, K_t ≡ Q_t − β(1 − δ_t) E_t Q_{t+1};
-- the **hiring cost** per match, C_t ≡ κ + K_t / q(θ_t);
-- the **reactivation shortfall**, 𝓡_t ≡ β(1 − δ_t) E_t[ Q_{t+1} − Q^rep(Q_{t+1}) ], the expected value lost because reactivation isn't free.
+Three objects collect the dynamics, all valued with the household's discount factor m_{t+1} = β(C_{t+1}/C_t)^{−σ}:
+- the **user cost** of a vacancy, K_t ≡ Q_t − E_t[ m_{t+1}(1 − δ_t) Q_{t+1} ];
+- the **hiring cost** per match, Γ_t ≡ κ + K_t / q(θ_t);
+- the **reactivation shortfall**, 𝓡_t ≡ E_t[ m_{t+1}(1 − δ_t)( Q_{t+1} − Q^rep(Q_{t+1}) ) ], the expected value lost because reactivation isn't free.
 
-**Definition (equilibrium).** Given u_0, Ṽ^u_0, Ṽ^s_0 and the shock processes for (z_t, δ_t, s_t), an equilibrium is a stochastic sequence {θ_t, e_t, u_{t+1}, Ṽ^u_{t+1}, Ṽ^s_{t+1}}, with Q_t = Q(e_t), such that for all t:
+(The first version of this note wrote C_t for the hiring cost; it is Γ_t now that C_t is consumption.)
+
+**Definition (equilibrium).** Given u_0, Ṽ^u_0, Ṽ^s_0 and the shock processes for (z_t, δ_t, s_t), an equilibrium is a stochastic sequence {θ_t, e_t, C_t, u_{t+1}, Ṽ^u_{t+1}, Ṽ^s_{t+1}}, with Q_t = Q(e_t), such that for all t:
 
 **(E1) Vacancies:**
   θ_t u_t = v_{pre,t} + e_t,   v_{pre,t} = Ṽ^u_t + Λ_r(Q_t) Ṽ^s_t.
 
 **(E2) Job creation:**
-  C_t = β(1 − δ_t) E_t[ (1 − ϕ)(z_{t+1} − K_{t+1} − b) − ϕ θ_{t+1} K_{t+1} − ϕ f(θ_{t+1}) κ + (1 − s_{t+1}) C_{t+1} − (1 − ϕ) s_{t+1} 𝓡_{t+1} ].
+  Γ_t = E_t{ m_{t+1}(1 − δ_t)[ (1 − ϕ)(z_{t+1} − K_{t+1} − b) − ϕ θ_{t+1} K_{t+1} − ϕ f(θ_{t+1}) κ + (1 − s_{t+1}) Γ_{t+1} − (1 − ϕ) s_{t+1} 𝓡_{t+1} ] }.
 
 **(E3) Unemployment:**
   u_{t+1} = u_t − (1 − δ_t) f(θ_t) u_t + τ_t (1 − u_t),   τ_t = δ_t + (1 − δ_t) s_t.
@@ -100,33 +121,37 @@ Three objects collect the dynamics:
   Ṽ^u_{t+1} = (1 − δ_t)(1 − q(θ_t)) v_t   (unmatched vacancies),
   Ṽ^s_{t+1} = (1 − δ_t) s_t (1 − u_t)      (positions vacated by separation, reactivated at t+1 or retired).
 
-K_t, C_t and 𝓡_t are the functions of (θ, e, δ) defined above. That's three state variables (u, Ṽ^u, Ṽ^s) and two jump variables (θ, e), against one state (u) and one jump (θ) in DMP.
+**(E5) Resources:** C_t = z̄ z_t(1 − u_t) − X_t − X^r_t, with X_t and X^r_t as in §2.
+
+K_t, Γ_t and 𝓡_t are the functions of (θ, e, C, δ) defined above. That's three state variables (u, Ṽ^u, Ṽ^s) and three jump variables (θ, e, C), against one state (u) and one jump (θ) in DMP. With σ = 0, C drops out of E2 and the user cost, and the system is E1–E4 with constant β. The share price V_t and the riskless rate R^f_t follow from the Euler equations in §2 and feed back on nothing.
 
 *Why v_pre is not a state.* Inherited vacancies v_{pre,t} = Ṽ^u_t + Λ_r(Q_t)Ṽ^s_t depend on Q_t, a jump variable, through the reactivation rate. The two predetermined stocks must therefore be carried separately. (The first version of this note wrote E4 for v_pre with Λ_r(Q_{t+1}) and called v_pre a state, which is inconsistent.) With costless reactivation (Λ_r ≡ 1), v_pre = Ṽ^u + Ṽ^s is predetermined and the state collapses to (u, v_pre).
 
 **Recovered afterwards** (they don't enter E1–E4):
 - the wage, w_t = ϕ[ z_t − K_t + θ_t(K_t + q(θ_t)κ) − s_t 𝓡_t ] + (1 − ϕ)b;
 - the match surplus;
-- consumption.
+- the share price V_t and the riskless rate R^f_t (§2).
 
 ### How it relates to DMP, term by term
 
 | | DMP | This model |
 |---|---|---|
 | Vacancy cost | flow cost c | user cost K_t = Q_t − β(1−δ_t)E_t Q_{t+1}: depreciation through δ, plus capital gains if e moves |
-| Survival in discounting | 1 − s | 1 − δ discounts the match; s enters the continuation (1 − s)C |
+| Discounting | constant β (risk-neutral) | m_{t+1} = β(C_{t+1}/C_t)^{−σ}, the owners' discount factor; β when σ = 0 |
+| Survival in discounting | 1 − s | 1 − δ discounts the match; s enters the continuation (1 − s)Γ |
 | Separation | costless: the firm re-posts | the shortfall s·𝓡 enters the surplus like a firing cost, borne in part (1 − ϕ) by the recruiter |
 | Vacancy stock | jump variable | states: carried-over vacancies Ṽ^u and vacated positions Ṽ^s, plus creation e |
 | Destruction | not separate from s | removes jobs *and* the vacancies attached (E3 and E4 both carry 1 − δ) |
 
 ### Special cases
 
-- **Vacancy free entry (ξ → ∞):** Q = x_m is constant, so Λ_r and Q^rep are constants, K_t = x_m[1 − β(1 − δ_t)] depends only on δ_t, and 𝓡_t = β(1 − δ_t)(x_m − Q^rep) is proportional to survival. E2 then pins θ_t as a function of the current shocks alone, the analog of `lem:theta` with the 𝓡 term: θ does not load on the stocks (u, Ṽ^u, Ṽ^s). `ags_run_solution.jl` section 2 checks this numerically. In this limit, reactivation is a constant attenuation, not a cyclical margin. s shocks still move θ, through two terms in E2: the expected continuation (1 − s_{t+1})C_{t+1}, as in DMP, and the shortfall (1 − ϕ)s_{t+1}𝓡_{t+1}. (The first version said only the shortfall term; that was wrong.)
+- **Vacancy free entry (ξ → ∞), with σ = 0:** Q = x_m is constant, so Λ_r and Q^rep are constants, K_t = x_m[1 − β(1 − δ_t)] depends only on δ_t, and 𝓡_t = β(1 − δ_t)(x_m − Q^rep) is proportional to survival. E2 then pins θ_t as a function of the current shocks alone, the analog of `lem:theta` with the 𝓡 term: θ does not load on the stocks (u, Ṽ^u, Ṽ^s). `ags_run_solution.jl` section 2 checks this numerically. In this limit, reactivation is a constant attenuation, not a cyclical margin. s shocks still move θ, through two terms in E2: the expected continuation (1 − s_{t+1})C_{t+1}, as in DMP, and the shortfall (1 − ϕ)s_{t+1}𝓡_{t+1}. (The first version said only the shortfall term; that was wrong.) **With σ > 0 the result fails:** m_{t+1} depends on consumption, which depends on the stocks, so θ loads on them too (`ags_run_solution.jl` section 2 therefore checks it at σ = 0).
+- **Linear utility (σ = 0):** m = β, R^f = 1/β; the household block drops out of E2 and the user cost. This is the version Gabrovski and Silva, Shimer and Hagedorn–Manovskii work with.
 - **Costless reactivation (p_r = 0, so Λ̄_r = 1):** the formulas give Λ_r ≡ 1 and Q^rep = Q, so 𝓡 = 0, and the scale a has no effect. The limit a → 0 with p_r > 0 is the same economy. (Λ̄_r = 1 with p_r > 0 is not: every position is reactivated, but the costly draws still pay, so 𝓡 > 0.) With κ = 0 this is Gabrovski–Silva with aggregate shocks, and additionally with s ≡ 0 it is Coles–Kelishomi (`rem:nesting`).
 
 ### Steady state
 
-**Notation.** f, q and θ are rates conditional on survival (JOLTS gross rates divided by 1 − δ), τ = δ + (1 − δ)s, and β = 1/(1 + r). The suffix _Q denotes a steady-state ratio per unit of Q: K_Q = K/Q, κ_Q = κ/Q, R_Q = 𝓡/Q. These ratios are code shorthand (`calibrate_ags`), not model objects: κ is the per-hire cost (a parameter), K the user cost and 𝓡 the reactivation shortfall (both endogenous).
+**Notation.** f, q and θ are rates conditional on survival (JOLTS gross rates divided by 1 − δ), τ = δ + (1 − δ)s, and β = 1/(1 + r). **In steady state m = β whatever σ,** so the steady state and the calibration below do not depend on σ; σ affects only the dynamics. The household side adds C = z̄(1 − u) − X − X^r, V = D/r and R^f = 1 + r. The suffix _Q denotes a steady-state ratio per unit of Q: K_Q = K/Q, κ_Q = κ/Q, R_Q = 𝓡/Q. These ratios are code shorthand (`calibrate_ags`), not model objects: κ is the per-hire cost (a parameter), K the user cost and 𝓡 the reactivation shortfall (both endogenous).
 
 #### Forward: from parameters to the steady state (`steady_state_ags`)
 
@@ -263,3 +288,118 @@ The baseline's `calibrate_shares`, adapted. The long-run targets hold exactly at
 - **Reactivation costs** are excluded from X, as in the baseline.
 
 **Implied bargaining power.** At Λ̄_r = 0.25, ϕ = 0.92 (0.96 at ξ_inv = 0.01), against 0.61 with costless reactivation. The baseline working point has the same feature (ϕ = 0.914): a low Λ̄_r raises e, so a fixed X/Y forces Q down, leaving little surplus for Nash bargaining to split. Whether to accept ϕ near 1, or target ϕ and let X/Y be an outcome, is open.
+
+## 7. Transmission: when does a shock that raises u also raise v?
+
+> ⚠️ **Nov 6, 2026: the tables in this section are at σ = 0** (linear utility, the default before Nov 6). The default is now σ = 1; §8 gives what changes.
+>
+> ⚠️ **Nov 6, 2026 (decisions.md S16):** the model numbers in this section are **true-shock** statistics (one shock simulated at a time). The data numbers they are set against (σ(u) by shock 6.32, 3.64, 3.82) come through the SVAR, which does not recover the model's shocks exactly (δ about 55 %). The like-for-like comparison runs the same SVAR on simulated data: `../Bartek analysis/data/results/q3_model_svar.txt` §5. The mechanisms below stand; the model–data gaps quoted here are to be restated from that output.
+
+*Added Nov 5, 2026. Evidence from `../Programs AGS/ags_xi_sweep.txt` (ξ_inv grid at x_v = 0.5 and 0.25, everything else at `AGS_TARGETS`) and `ags_kappa_sweep.txt`. The account of Coles and Kelishomi below is a hypothesis about their setting, not a summary of their paper (citation unverified).*
+
+### 7.1 The accounting
+
+From v = θu,
+
+  d log v = d log θ + d log u.
+
+u is a slow-moving stock; θ is a jump variable. A shock that raises u produces a Beveridge-curve movement (v falls) only if it lowers θ by more, in percent, than it raises u, over the horizon the quarterly HP cycle picks up. Otherwise v rises with u. Two forces lower θ:
+- **incentives (E2):** a higher user cost K, a lower match value (more expected separation, through (1 − s_{t+1})), or a larger reactivation shortfall s𝓡;
+- **the stock of positions:** with inelastic creation, destroyed or retired positions are replaced slowly, so v falls directly.
+
+### 7.2 Separation shocks (s)
+
+- **Incentives are weak.** Near vacancy free entry, Q and K are almost constant, and s lowers θ only through (1 − s_{t+1}) and s𝓡.
+- **The stock effect needs inelastic creation.** At Λ̄_r = 0.25, three quarters of vacated positions are retired. With elastic creation they are replaced at once; with inelastic creation replacement needs Q to rise, which is slow and costly.
+- **Unemployment rises strongly** (σ(u) from s is 4.6–6.4).
+
+So with elastic creation d log u dominates and v rises with u: this is Shimer's (2005) separation-shock problem in DMP, where free entry pins θ. Inelastic creation restores the Beveridge relation.
+
+| ξ_inv (x_v = 0.5) | 4 | 1 | 0.5 | 0.25 | 0.1 | 0.01 |
+|---|---|---|---|---|---|---|
+| cor(u, v), s alone | −0.65 | −0.42 | −0.17 | **+0.19** | +0.64 | +0.98 |
+
+The sign flips at ξ_inv ≈ 0.3 (x_v = 0.5) and ≈ 0.45 (x_v = 0.25). s is the largest shock, so this drags cor(u, v) with all shocks to −0.34 to −0.41 at low ξ_inv; the best value in the grid is −0.66 at ξ_inv = 4 (data −0.925).
+
+### 7.3 Destruction shocks (δ)
+
+δ has a channel that s lacks: it enters the user cost directly. In the vacancy free entry limit, K_t = x_m[1 − β(1 − δ_t)], so a higher δ_t raises the cost of holding every position and lowers θ through E2 even with perfectly elastic creation (the user-cost channel of `prop:fe` in the draft). Destruction also removes vacancies directly, which matters with inelastic creation.
+
+| ξ_inv (x_v = 0.5) | 4 | 1 | 0.5 | 0.25 | 0.1 | 0.01 |
+|---|---|---|---|---|---|---|
+| cor(u, v), δ alone | −0.85 | −0.81 | −0.79 | −0.79 | −0.89 | −0.49 |
+| v trough after a one-SD δ shock, % (month) | −0.32 (7) | −0.25 (7) | −0.21 (6) | −0.17 (6) | −0.12 (5) | −0.76 (0) |
+
+- **The Beveridge relation holds at every ξ_inv.** Inelasticity changes its timing: with inelastic creation v falls gradually to a trough at month 6–7; with elastic creation it drops on impact and recovers fast.
+- **It weakens as creation becomes elastic,** because destroyed vacancies are replaced at once, and because the δ shock is transitory (ρ_δ = 0.53 a month): θ recovers within months while u stays high for a year or more.
+- **σ(u) from δ stays at 0.52–0.79 throughout.** δ's size problem (§4 of the empirical note's comparison) is separate from ξ.
+
+### 7.4 One destruction shock (Coles and Kelishomi) against two
+
+With s ≡ 0, every separation destroys the position, and the model's single destruction shock does the work of both δ and s. *Hypothesis:* if that shock is calibrated to the total separation rate, with elastic creation and transitory shocks, a shock moves u a lot while θ's fall is brief, which is the mechanism of §7.2. A single shock can then produce a counterfactual (positive) Beveridge relation. Separating δ (destroys jobs and positions, raises the user cost) from s (ends matches, leaves the positions) is what lets δ keep the Beveridge relation and confines the problem to s at elastic creation.
+
+### 7.5 Link to R19
+
+In the full model, the product-line entry Euler pins m(1 − δ), which cancels δ's effect on the user cost (the R19 offset). If so, priced entry removes exactly the channel of §7.3: δ would then behave like s, and could produce positive comovement at elastic creation. That would be a further reason for clone replacement in Part 1, and a sense in which R19 does more than damp volatility. *Not yet checked.*
+
+### 7.6 The trade-off in ξ
+
+- **z amplification wants elastic creation.** At x_v = 0.25, σ(u) from z reaches the data's 6.32 near ξ_inv ≈ 0.07.
+- **Three moments want inelastic creation (ξ_inv ≳ 0.5):** a mild cor(u, z) (data −0.22, 1951–2019; Gabrovski and Silva's point), the s Beveridge relation (§7.2), and the δ Beveridge relation's gradual timing (§7.3).
+- **The best compromise in the grid** (x_v = 0.25, ξ_inv = 0.5) gives σ(u) from z 3.81 (data 6.32), cor(u, z) −0.27 (−0.22), cor(u, v | s) −0.04, cor(u, v) −0.47 (−0.925).
+
+### 7.7 Checks not yet run
+
+1. AGS with a CK-style destruction shock (δ̄ at the total separation rate, s̄ ≈ 0), at ξ_inv = 0.01 and 1: does cor(u, v | δ) turn positive (§7.4)?
+2. The full model at the working point, priced entry against clone replacement: does R19 weaken or flip δ's Beveridge relation (§7.5)?
+3. A two-way grid x_v ∈ {0.25, 0.1, 0.05} × ξ_inv ∈ {1, 0.5, 0.25}: does a high per-hire share at moderate inelasticity satisfy §7.6?
+
+## 8. Endogenous discounting: σ = 1 against σ = 0
+
+*Added Nov 6, 2026. Sources: `../Programs AGS/ags_run_solution.txt`, `ags_xi_sweep.txt`, `ags_persistence.csv` (true shocks, model against model); `../Bartek analysis/data/results/q3_model_svar.txt` (through the SVAR, model against data). Block B′'s shock processes in the SVAR comparison.*
+
+### 8.1 What σ = 1 changes in AGS
+
+| | σ = 0 | σ = 1 |
+|---|---|---|
+| σ(u) from z, through the SVAR: default / compromise (data 6.29) | 1.19 / 2.09 | **1.55 / 2.59** |
+| σ(u) from δ, through the SVAR (data 3.63) | 0.79 / 0.77 | 0.81 / 0.80 |
+| σ(u) from s, through the SVAR (data 3.80) | 4.44 / 4.13 | 4.50 / 4.21 |
+| cor(u, v \| s), through the SVAR (data −0.96) | −0.40 / −0.03 | −0.45 / −0.17 |
+| distance J, one-SD responses: default / compromise | 362 / 351 | **325 / 329** |
+| cor(u, v \| s), true shocks, ξ_inv = 0.01, x_v = 0.5 | +0.98 | **+0.42** |
+| cor(u, v \| δ), true shocks, ξ_inv = 0.01, x_v = 0.5 | −0.49 | **−0.94** |
+
+1. **z gains 25–30 %.** The channel is the discount factor's (§2), but its direction has not yet been traced through the responses of C, m and R^f; that check is pending.
+2. **Endogenous discounting disciplines elastic creation.** At σ = 0 and elastic creation, retired and destroyed positions are re-created at once, which produced the anti-Beveridge movement after s shocks (+0.98) and weakened δ's (−0.49). At σ = 1 that re-creation must be paid for out of consumption, R^f rises and slows it, so cor(u, v | s) falls to +0.42 and cor(u, v | δ) tightens to −0.94. The sign of cor(u, v | s) now flips only below ξ_inv ≈ 0.2 (σ = 0: ≈ 0.3).
+3. **δ's size and persistence barely change** (σ(u) 0.57 true-shock at ξ_inv = 1; ρ₁(u) ≈ 0.75; u peaks in quarter 1). Neither does any shock's persistence.
+
+### 8.2 Why the full model with clone replacement gains more for δ
+
+In the full model without exit and with clone replacement, σ = 1 doubles δ's effect (σ(u) 1.10 against 0.58 at σ = 0.03); in AGS it does not (0.57 at both). The difference is **forced, costly replacement**. In the full model, destroyed product lines must be re-created at once and entry uses labor, so a δ shock makes current resources scarce whatever firms do, consumption dips, and R^f rises. In AGS clones are free, so a δ shock only removes jobs and positions, and creation can be postponed. The earlier reading that entry labor is negligible holds only at σ ≈ 0: **entry labor matters through its interaction with σ.** Under priced entry, entry is a flexible investment margin and the entry Euler pins m(1 − δ), so σ barely matters (0.54 against 0.56; R19).
+
+### 8.3 Implications
+
+- AGS at σ = 1 is the right Part 1 benchmark for the bridge: it shares the household and the discount factor with Part 2.
+- The Part 1 → Part 2 comparison has three steps, not two: AGS (free clones); the full model with clone replacement (costly, forced replacement: adds the consumption–discount channel for δ); the full model with priced entry (flexible replacement: removes it, R19).
+- Persistence after δ and s is still missing at σ = 1 (ρ₁(u) 0.73–0.80 through the SVAR, against 0.94–0.96 in the data). Endogenous discounting adds size and comovement, not delay.
+
+## 9. Can the per-hire cost amplify z at moderate inelasticity? (exercise 1)
+
+*Added Nov 10, 2026. Through the SVAR on both sides, σ = 1, Block B′'s processes: `../Bartek analysis/data/results/q3_model_svar.txt` §6 and `q3_model_svar_grid.png`. Since Nov 10 Block B′'s processes are the AGS default (`ags_model.jl` SHK), so the sweeps use them too.*
+
+| ξ_inv, x_v (κ's share of a hire) | ϕ | σ(u) from z (data 6.29) | cor(u, v \| s) (data −0.96) | cor(u, v \| δ) (data −0.98) | cor(u, z \| z) (data −0.19) | J z / J s / J |
+|---|---|---|---|---|---|---|
+| 1, 0.5 (50 %), default | 0.92 | 1.55 | −0.45 | −0.66 | −0.43 | 117 / 105 / 325 |
+| 1, 0.25 (75 %) | 0.86 | 1.90 | −0.39 | −0.64 | −0.45 | 94 / 111 / **313** |
+| 1, 0.05 (95 %) | 0.62 | 3.11 | −0.13 | −0.56 | −0.49 | 73 / 143 / 336 |
+| 0.5, 0.25 (75 %), compromise | 0.89 | 2.59 | −0.17 | −0.60 | −0.49 | 74 / 139 / 328 |
+| 0.5, 0.05 (95 %) | 0.67 | 4.07 | **+0.16** | −0.46 | −0.53 | 116 / 180 / 425 |
+
+1. **κ amplifies z, but at most to about half of the data** at moderate ξ_inv: σ(u) from z reaches 3.1 (ξ_inv = 1) and 4.1 (ξ_inv = 0.5) at a 95 % per-hire share, against 6.29.
+2. **It costs the s Beveridge relation.** A larger per-hire share makes holding a vacancy cheap (K small), so vacancies rise with unemployment after an s shock: cor(u, v | s) weakens from −0.45 to −0.13 (ξ_inv = 1) and turns positive at ξ_inv = 0.5. δ's comovement weakens too. The true-shock κ sweep missed this: σ(u) from s barely moves, but the comovement does.
+3. **cor(u, z | z) stays too negative** (−0.43 to −0.53 against −0.19) in every case.
+4. **The z response is too short-lived as well as too small.** In the data, u stays below trend for about 12 quarters after a z shock; in the model it returns by quarter 6–8 at every κ (figure). So z shares δ's and s's persistence problem.
+5. **The best distance** (313, ξ_inv = 1, x_v = 0.25) is barely below the default's (325).
+
+**Implication.** Within AGS, κ is not the answer for z: it closes at most half the gap, only at implausible per-hire shares, and at the cost of s. z needs another amplifier, and all three shocks need a source of persistence, which is consistent with a single missing slow-moving state in job creation (Part 2, or one of the alternatives in the discussion of Nov 6).

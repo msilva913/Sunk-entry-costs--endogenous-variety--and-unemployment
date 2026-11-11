@@ -49,6 +49,72 @@ function moments(dat, var_RSD, var_corr; lags =2, verbose=true)
 end
 
 
+"""
+    moment_table(df; rel_to = nothing) → DataFrame
+
+Business-cycle moments in the form of the draft's Table 3 (tab:smm_moments): the standard
+deviation, the lower-triangular matrix of contemporaneous correlations, and the first-order
+autocorrelation. Used for data and model alike.
+
+`df` holds the series of interest, one column each, in the order the rows and columns should
+appear (e.g. u, v, s, f, δ, z). The series must already be transformed (logged) and filtered
+(HP, Hamilton, …); this function does neither. Missing values are allowed: every statistic uses
+the observations available for it (pairwise complete), as Table 3 does for its shorter series.
+
+Columns of the result:
+- `variable`;
+- `sd`, σ(x);
+- `sd_rel`, σ(x)/σ(rel_to), when `rel_to` names a column (e.g. :z for relative to productivity);
+- one column per variable with cor(x, y), filled on and below the diagonal (`missing` above);
+- `ac1`, cor(x_t, x_{t−1}) over consecutive pairs that are both observed.
+"""
+function moment_table(df::DataFrame; rel_to = nothing)
+    vars = names(df)
+    function pair_cor(a, b)
+        keep = .!ismissing.(a) .& .!ismissing.(b)
+        return cor(Float64.(a[keep]), Float64.(b[keep]))
+    end
+    sds = [std(collect(skipmissing(df[!, v]))) for v in vars]
+    tab = DataFrame(variable = vars, sd = sds)
+    if !isnothing(rel_to)
+        tab.sd_rel = sds ./ std(collect(skipmissing(df[!, String(rel_to)])))
+    end
+    for (j, w) in enumerate(vars)
+        col = Vector{Union{Missing,Float64}}(missing, length(vars))
+        for (i, v) in enumerate(vars)
+            if i >= j
+                col[i] = pair_cor(df[!, v], df[!, w])
+            end
+        end
+        tab[!, w] = col
+    end
+    tab.ac1 = [pair_cor(df[2:end, v], df[1:end-1, v]) for v in vars]
+    return tab
+end
+
+"""
+    moment_table_text(tab; digits = 3) → Vector{String}
+
+Fixed-width lines of a `moment_table` result, for console output and text reports.
+"""
+function moment_table_text(tab::DataFrame; digits = 3)
+    cols = names(tab)
+    function cell(x)
+        if ismissing(x)
+            return ""
+        elseif x isa AbstractString
+            return x
+        else
+            return string(round(x; digits = digits))
+        end
+    end
+    width = [max(length(c), maximum(length(cell(x)) for x in tab[!, c])) + 2 for c in cols]
+    head = join(lpad.(cols, width))
+    body = [join(lpad.([cell(tab[r, c]) for c in cols], width)) for r in 1:nrow(tab)]
+    return vcat(head, body)
+end
+
+
 function hamilton_filter(x::Vector; h=8)
     x_h = ShiftedArrays.lag(x, h)
     x_h1 = ShiftedArrays.lag(x_h, 1)
@@ -231,6 +297,80 @@ function hp_filter(y, lambda::Real)
     trend = A \ collect(float.(y))
 
     return y .- trend
+end
+
+"""
+    window_filter(q, n_filter, n_keep; short = String[], filter = x -> hp_filter(x, 1600))
+
+Filter a quarterly frame the way the data are filtered, then keep the last `n_keep` rows.
+- Every column is filtered over the last `n_filter` rows of `q`, except
+- the columns in `short`: series that exist only in the last `n_keep` rows (in the data,
+  BED exit starts with SVAR A's window), filtered over those rows alone.
+The series must already be in logs; this function only filters and cuts.
+`filter` maps a vector to its cycle of the same length (HP-1600 by default).
+"""
+function window_filter(q::DataFrame, n_filter::Int, n_keep::Int;
+                       short = String[], filter = x -> hp_filter(x, 1600))
+    if n_keep > n_filter || n_filter > nrow(q)
+        error("window_filter: need n_keep ≤ n_filter ≤ nrow(q); got $n_keep, $n_filter, $(nrow(q)).")
+    end
+    span = q[end-n_filter+1:end, :]
+    out = DataFrame()
+    for c in names(span)
+        x = Float64.(span[!, c])
+        if c in short
+            out[!, c] = filter(x[end-n_keep+1:end])
+        else
+            out[!, c] = filter(x)[end-n_keep+1:end]
+        end
+    end
+    return out
+end
+
+"""
+    shock_moments(cyc; prod = "z") → NamedTuple
+
+Volatility, persistence and comovement of unemployment from quarterly cycles that are already
+logged and filtered (columns u, v and the productivity series `prod`): σ(u), σ(v) in %, ρ₁(u),
+ρ₁(v), cor(u, v), and cor(u, prod) (NaN when `prod` does not move, e.g. under a δ shock alone).
+Used for AGS and the full model alike, so both are measured by the same code.
+"""
+function shock_moments(cyc::DataFrame; prod = "z")
+    u, v, p = cyc.u, cyc.v, cyc[!, prod]
+    ac1(x) = cor(x[2:end], x[1:end-1])
+    if std(p) > 1e-8
+        cup = cor(u, p)
+    else
+        cup = NaN
+    end
+    return (σu = 100std(u), σv = 100std(v), ρu = ac1(u), ρv = ac1(v), cuv = cor(u, v), cup = cup)
+end
+
+"""
+    peak_quarter(m) → (quarter, value)
+
+Quarterly averages of a monthly impulse response `m` (m[1] = impact month), and the quarter
+(0 = impact quarter) and value of the largest absolute response.
+"""
+function peak_quarter(m::AbstractVector)
+    nq = length(m) ÷ 3
+    q = [mean(m[3k-2:3k]) for k in 1:nq]
+    k = argmax(abs.(q))
+    return k - 1, q[k]
+end
+
+"""
+    shock_processes(csv; prefix = "bprime") → (ρz, σz, ρδ, σδ, ρs, σs)
+
+Monthly shock processes from part6b's shock_calibration.csv: columns `<prefix>_rho_m` and
+`<prefix>_sigma_m` ("bprime": Block B′'s, z and s re-matched on SVAR A's window; "matched": S14).
+"""
+function shock_processes(csv::AbstractString; prefix = "bprime")
+    c = CSV.read(csv, DataFrame)
+    val(name, what) = c[findfirst(==(name), c.series), Symbol("$(prefix)_$(what)")]
+    return (ρz = val("z", "rho_m"),     σz = val("z", "sigma_m"),
+            ρδ = val("delta", "rho_m"), σδ = val("delta", "sigma_m"),
+            ρs = val("s", "rho_m"),     σs = val("s", "sigma_m"))
 end
 
 function time_series_object(out::Matrix, fields::Vector{Symbol})

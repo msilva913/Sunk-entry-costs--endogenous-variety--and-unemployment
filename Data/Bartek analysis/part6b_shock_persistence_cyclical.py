@@ -188,6 +188,18 @@ Step 5. Filter robustness (section 8). Everything in Steps 1-4b is repeated
     sigma_m); a large gap means the AR(1) is misspecified at the frequencies
     where the two filters differ. HP remains the baseline.
 
+Step 6. Processes for SVAR A's window (section 9; Block B', decisions.md D13).
+    SVAR A runs on 1992Q3-2019Q4 (BED's window), while Steps 1 and 3 fit z and
+    s on 1951-2019. After 1992 both are smaller and less persistent, so the
+    model would feed the SVAR shocks of the wrong size. For Block B' only, z
+    and s are re-matched on the SVAR window: the targets are the AR(1) on the
+    same HP cycles (filtered over 1951-2019, as SVAR A uses them) restricted
+    to 1992Q3-2019Q4, and the simulated side filters over the same 276
+    quarters and fits the AR(1) on the last 110. delta is already fitted on
+    that window and keeps its matched process. The S14 processes stay for
+    everything else. Output: columns bprime_rho_m, bprime_sigma_m (z and s
+    re-matched, delta = matched).
+
 OUTPUT
 ------
     data/results/shock_calibration.csv          the table, one row per series
@@ -686,12 +698,14 @@ def hamilton_rows(q, h=HAMILTON_H, p=HAMILTON_P):
     return Y - np.einsum("rmi,ri->rm", X, beta)
 
 
-def simulated_stats(rho_m, eps, C, nq=None):
+def simulated_stats(rho_m, eps, C, nq=None, n_keep=None):
     """
     Monthly AR(1) with unit innovation SD on the draws eps (replications x
     months), averaged to quarters, filtered, then the same AR(1) estimator as
     fit_ar1 (OLS with a constant). C is the HP cycle matrix, or the string
-    "hamilton" (then nq gives the number of quarters). Returns the means over
+    "hamilton" (then nq gives the number of quarters). With n_keep, the AR(1)
+    is fitted on the last n_keep filtered quarters only (filter over a long
+    span, estimate on a window, as SVAR A's data are). Returns the means over
     replications of rho_Q, sigma_Q (residual SD) and the SD of the cycle.
     """
     R, M = eps.shape
@@ -702,6 +716,8 @@ def simulated_stats(rho_m, eps, C, nq=None):
     nq = C.shape[0] if nq is None else nq
     q = x[:, BURN_M:BURN_M + 3 * nq].reshape(R, nq, 3).mean(axis=2)
     c = hamilton_rows(q) if isinstance(C, str) else q @ C.T
+    if n_keep is not None:
+        c = c[:, -n_keep:]
     y, z = c[:, 1:], c[:, :-1]
     yd, zd = y - y.mean(axis=1, keepdims=True), z - z.mean(axis=1, keepdims=True)
     b = (yd * zd).sum(axis=1) / (zd * zd).sum(axis=1)
@@ -710,17 +726,17 @@ def simulated_stats(rho_m, eps, C, nq=None):
     return float(b.mean()), float(sig.mean()), float(c.std(axis=1, ddof=1).mean())
 
 
-def match_process(rho_Q, sigma_Q, nq, rng, method="hp"):
+def match_process(rho_Q, sigma_Q, nq, rng, method="hp", n_keep=None):
     """
     Monthly (rho_m, sigma_m) whose averaged and filtered simulation
     reproduces (rho_Q, sigma_Q) on an nq-quarter sample (nq = quarters before
-    filtering). Returns the matched pair, the draws and the filter (for the
-    plug-in check).
+    filtering; with n_keep, the statistics are fitted on the last n_keep).
+    Returns the matched pair, the draws and the filter (for the plug-in check).
     """
     from scipy.optimize import brentq
     eps = rng.standard_normal((N_MATCH, BURN_M + 3 * nq))
     C = hp_cycle_matrix(nq) if method == "hp" else method
-    stats = lambda r: simulated_stats(r, eps, C, nq)
+    stats = lambda r: simulated_stats(r, eps, C, nq, n_keep)
     gap = lambda r: stats(r)[0] - rho_Q
     lo, hi = 0.0, 0.999
     attained = True
@@ -759,6 +775,38 @@ def filter_consistent(table, cyc, var, method="hp"):
                      "matched_rho_m": rho_m, "matched_sigma_m": sigma_m, "attained": attained,
                      "matched_rho_Q": mr, "matched_sigma_Q": ms * sigma_m,
                      "matched_sd_cycle": msd * sigma_m})
+    return pd.DataFrame(rows).set_index("series")
+
+
+def window_match(cyc, table, start):
+    """
+    Step 6: z and s re-matched on SVAR A's window (start to SAMPLE_END), for
+    Block B'. Targets: the AR(1) on the cycles (filtered over the full sample)
+    restricted to the window. Simulation: filter over the series' full length,
+    fit on the last n_keep quarters. Also reports what the S14 matched process
+    implies on the window.
+    """
+    rng = np.random.default_rng(MATCH_SEED)
+    rows = []
+    for name in ("z", "s"):
+        full = cyc[name].dropna()
+        win = window(full, start=start)
+        fit = fit_ar1(win)
+        nq, n_keep = len(full), len(win)
+        rho_m, sigma_m, eps, C, attained = match_process(fit["rho_Q"], fit["sigma_Q"], nq, rng,
+                                                         n_keep=n_keep)
+        r14 = table.loc[name]
+        sr, ss, ssd = simulated_stats(r14["matched_rho_m"], eps, C, nq, n_keep)
+        mr, ms, msd = simulated_stats(rho_m, eps, C, nq, n_keep)
+        rows.append({"series": name, "start": str(win.index[0]), "end": str(win.index[-1]),
+                     "nq": nq, "n_keep": n_keep,
+                     "win_rho_Q": fit["rho_Q"], "win_sigma_Q": fit["sigma_Q"],
+                     "win_sd_cycle": float(win.std()),
+                     "s14_rho_m": r14["matched_rho_m"], "s14_sigma_m": r14["matched_sigma_m"],
+                     "s14_win_rho_Q": sr, "s14_win_sigma_Q": ss * r14["matched_sigma_m"],
+                     "bprime_rho_m": rho_m, "bprime_sigma_m": sigma_m, "bprime_attained": attained,
+                     "bprime_rho_Q": mr, "bprime_sigma_Q": ms * sigma_m,
+                     "bprime_sd_cycle": msd * sigma_m})
     return pd.DataFrame(rows).set_index("series")
 
 
@@ -896,6 +944,27 @@ def report_matching(fc):
                  tablefmt="simple", disable_numparse=True, colalign=("left",) + ("right",) * 5))
     say("\n  sigma_Q is the AR(1) residual SD (delta: purged of z), SD cycle the SD of the")
     say("  filtered series, both x 100. tau is a diagnostic, not a model shock.")
+
+
+def report_window_match(wm):
+    from tabulate import tabulate
+    w0 = wm.iloc[0]
+    say(f"\n{'-'*78}\n9. Processes for SVAR A's window (Block B'): z and s re-matched on "
+        f"{w0.start}-{w0.end}\n{'-'*78}")
+    say(f"  Cycles filtered over {w0.nq} quarters, AR(1) on the last {w0.n_keep}; the simulation does")
+    say(f"  the same ({N_MATCH} replications). 'S14 on window': what the S14 matched process")
+    say("  implies on this window. delta is already fitted on the window and keeps its process.\n")
+    rows = [[n, f"{r.win_rho_Q:.3f}", f"{r.s14_win_rho_Q:.3f}", f"{r.bprime_rho_Q:.3f}",
+             f"{100 * r.win_sigma_Q:.2f}", f"{100 * r.s14_win_sigma_Q:.2f}", f"{100 * r.bprime_sigma_Q:.2f}"]
+            for n, r in wm.iterrows()]
+    say(tabulate(rows, ["", "rho_Q window", "S14 on window", "re-matched", "sigma_Q window",
+                        "S14 on window", "re-matched"], tablefmt="simple", disable_numparse=True,
+                 colalign=("left",) + ("right",) * 6))
+    say("\n  Monthly processes for Block B' (z and s re-matched; delta as matched in section 7):\n")
+    rows = [[n, f"{r.s14_rho_m:.4f}", f"{r.s14_sigma_m:.4f}", f"{r.bprime_rho_m:.4f}",
+             f"{r.bprime_sigma_m:.4f}", "yes" if r.bprime_attained else "NO"] for n, r in wm.iterrows()]
+    say(tabulate(rows, ["", "S14 rho_m", "S14 sigma_m", "B' rho_m", "B' sigma_m", "attained"],
+                 tablefmt="simple", disable_numparse=True, colalign=("left",) + ("right",) * 5))
 
 
 def report_filter_comparison(fc, fc_h):
@@ -1116,6 +1185,15 @@ if __name__ == "__main__":
     report_filter_comparison(fc, fc_h)
     table = table.join(fc_h[["rho_Q", "sigma_Q", "matched_rho_m", "matched_sigma_m"]]
                        .add_prefix("hamilton_"))
+
+    # ── Step 6: z and s re-matched on SVAR A's window (Block B') ─────────────
+    wm = window_match(cyc, table, splice)
+    report_window_match(wm)
+    table["bprime_rho_m"] = table["matched_rho_m"]
+    table["bprime_sigma_m"] = table["matched_sigma_m"]
+    for name in wm.index:
+        table.loc[name, "bprime_rho_m"] = wm.loc[name, "bprime_rho_m"]
+        table.loc[name, "bprime_sigma_m"] = wm.loc[name, "bprime_sigma_m"]
 
     # ── outputs ─────────────────────────────────────────────────────────────
     out_csv = RESULTS_DIR / "shock_calibration.csv"

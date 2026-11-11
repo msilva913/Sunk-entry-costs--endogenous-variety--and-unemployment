@@ -4,7 +4,11 @@
 # decision D15; equations in Notes/ags_equilibrium.md). Standalone: no variety, no product-line
 # entry block, no endogenous exit. Destroyed product lines are replaced by clones at no cost.
 #
-# Economy (monthly). Linear utility (σ = 0), so the discount factor is β = 1/(1+r).
+# Economy (monthly). A representative household with CRRA utility C^(1−σ)/(1−σ) owns the firms
+#   (shares in a mutual fund, fixed supply 1) and can trade a riskless bond in zero net supply;
+#   firms value jobs and positions with its discount factor m_{t+1} = β(C_{t+1}/C_t)^(−σ). In
+#   steady state m = β = 1/(1+r) whatever σ, so the calibration and the steady state do not
+#   depend on σ; σ = 0 is linear utility (Gabrovski–Silva). See Notes/ags_equilibrium.md §2.
 #   Output per worker z̄·z. No markup: there is no variety, so z is measured productivity.
 #   Matching q(θ) = Aθ^(−η), f(θ) = θ q(θ).
 #   Positions are durable. Creation: Q = x_m e^ξ_inv (marginal cost of the e-th new position).
@@ -46,6 +50,8 @@ const AGS_TARGETS = (
     Λr_target = 0.25,     # steady-state reactivation rate (1 when p_r = 0)
     p_r       = 0.8,      # mass of the costly part of F_r; 0 = costless reactivation
     ψ_r       = 1.0,      # shape of F_r's power law
+    σ         = 1.0,      # inverse IES (CRRA; log utility, as the full model's TARGETS); 0 =
+                          # linear utility (the Gabrovski–Silva benchmark). Dynamics only.
 )
 
 """
@@ -109,7 +115,7 @@ end
 Parameters of the AGS model from targets `tg` (see AGS_TARGETS). Closed form; no root-finding.
 """
 function calibrate_ags(tg = AGS_TARGETS)
-    @unpack dest_ann, sep, f, q, η_L, r_ann, w, b_ratio, x_v, X_Y, ξ_inv, Λr_target, p_r, ψ_r = tg
+    @unpack dest_ann, sep, f, q, η_L, r_ann, w, b_ratio, x_v, X_Y, ξ_inv, Λr_target, p_r, ψ_r, σ = tg
     # p_r = 0: costless reactivation, so Λ̄_r must be 1. p_r > 0: Λ̄_r strictly inside
     # (1 − p_r, 1): above the free atom's floor and off the kink of min{·, 1}.
     if p_r == 0
@@ -176,7 +182,7 @@ function calibrate_ags(tg = AGS_TARGETS)
     end
 
     return (δ = δ, s = s, r = r, A = A, η_L = η_L, b = b, ϕ = ϕ, κ = κ, x_m = x_m,
-            ξ_inv = ξ_inv, zbar = zbar, a = a, p_r = p_r, ψ_r = ψ_r,
+            ξ_inv = ξ_inv, zbar = zbar, a = a, p_r = p_r, ψ_r = ψ_r, σ = σ,
             targets = tg)
 end
 
@@ -215,7 +221,21 @@ function steady_state_ags(cal)
     end
 
     θ = find_zero(t -> given_θ(t)[1], (1e-4, 1e2), Bisection())
-    return given_θ(θ)[2]
+    st = given_θ(θ)[2]
+
+    # Household side. Output z̄(1 − u); investment = creating positions and hiring (X) plus
+    # reactivation costs (X^r, paid on the Ṽ^s = (1−δ)s(1−u) vacated positions). b is a
+    # non-market flow: it enters bargaining, not resources (as in the full model).
+    Vs   = (1 - δ) * s * (1 - st.u)
+    X    = st.e * st.Q / (1 + ξ_inv) + κ * st.q * st.v
+    X_r  = Vs * (st.Q * st.Λ_r - st.Qrep)
+    C    = zbar * (1 - st.u) - X - X_r                  # resource constraint
+    D    = (zbar - st.w) * (1 - st.u) - X - X_r          # dividends: profits net of investment
+    if C <= 0 || D <= 0
+        error("steady_state_ags: consumption $C or dividends $D not positive.")
+    end
+    V    = D / r                                         # share price: V = β(V + D)
+    return (; st..., X, X_r, C, D, V, Rf = 1 + r)        # Rf: gross riskless rate, 1/β
 end
 
 """Upper bound of F_r: Λ_r = 1 once Q/Q̄ exceeds this factor (Notes/ags_equilibrium.md §5)."""

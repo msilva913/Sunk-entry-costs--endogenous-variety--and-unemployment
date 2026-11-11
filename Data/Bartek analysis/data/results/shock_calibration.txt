@@ -173,6 +173,18 @@ Step 5. Filter robustness (section 8). Everything in Steps 1-4b is repeated
     sigma_m); a large gap means the AR(1) is misspecified at the frequencies
     where the two filters differ. HP remains the baseline.
 
+Step 6. Processes for SVAR A's window (section 9; Block B', decisions.md D13).
+    SVAR A runs on 1992Q3-2019Q4 (BED's window), while Steps 1 and 3 fit z and
+    s on 1951-2019. After 1992 both are smaller and less persistent, so the
+    model would feed the SVAR shocks of the wrong size. For Block B' only, z
+    and s are re-matched on the SVAR window: the targets are the AR(1) on the
+    same HP cycles (filtered over 1951-2019, as SVAR A uses them) restricted
+    to 1992Q3-2019Q4, and the simulated side filters over the same 276
+    quarters and fits the AR(1) on the last 110. delta is already fitted on
+    that window and keeps its matched process. The S14 processes stay for
+    everything else. Output: columns bprime_rho_m, bprime_sigma_m (z and s
+    re-matched, delta = matched).
+
 ------------------------------------------------------------------------------
 1. Data
 ------------------------------------------------------------------------------
@@ -326,3 +338,22 @@ s           0.522  0.797          4.94   5.78      0.8048   0.9069        0.0437
     the averaged, filtered AR(1) cannot be as persistent as the data.
   sigma_Q x 100; half-life of the monthly process in months. Hamilton samples start
   11 quarters later (z, tau, s from 1953Q4; delta from 1995Q2).
+
+------------------------------------------------------------------------------
+9. Processes for SVAR A's window (Block B'): z and s re-matched on 1992Q3-2019Q4
+------------------------------------------------------------------------------
+  Cycles filtered over 276 quarters, AR(1) on the last 110; the simulation does
+  the same (500 replications). 'S14 on window': what the S14 matched process
+  implies on this window. delta is already fitted on the window and keeps its process.
+
+      rho_Q window    S14 on window    re-matched    sigma_Q window    S14 on window    re-matched
+--  --------------  ---------------  ------------  ----------------  ---------------  ------------
+z            0.721            0.750         0.721              0.58             0.81          0.58
+s            0.446            0.517         0.446              4.30             4.94          4.30
+
+  Monthly processes for Block B' (z and s re-matched; delta as matched in section 7):
+
+      S14 rho_m    S14 sigma_m    B' rho_m    B' sigma_m    attained
+--  -----------  -------------  ----------  ------------  ----------
+z        0.9628         0.0062      0.9409        0.0045         yes
+s        0.8048         0.0437      0.7524        0.0401         yes
