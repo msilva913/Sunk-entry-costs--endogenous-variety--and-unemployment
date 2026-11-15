@@ -81,7 +81,7 @@ With respect to the true data generating process, the impulse response of a SVAR
 It misses the propagation. The model's response peaks after one quarter and is near zero after four; the data's builds for four quarters. Summed over three years, the model delivers about a tenth of the data's response. % q3_model_svar.txt §2; q3_persistence_tests.txt Test 1
 The gap does not close with the reactivation rate. A lower reactivation rate makes separations destroy more positions, and with it the model's response to separations becomes persistent, as in \citet{coles_2018}. The response to destruction does not change at all. The reactivation rate is identified by the separation responses; the destruction response is then a test the model fails at any reactivation rate. Losing positions is not what makes destruction persistent. Productivity shocks show the same pattern: the model's impact is about right and its persistence is not.
 
-\paragraph{Contribution} The paper makes three contributions. First, it measures destruction directly and documents that shocks to destruction and to match separation move unemployment and vacancies differently, with destruction acting through job finding and with a delay. Second, it derives a search model that nests \citet{coles_2018} and \citet{gabrovski_2025} and adds costly reactivation and household ownership of firms, so that the response to separations disciplines how many positions separations destroy. Third, it compares model and data through the same SVAR, shock by shock, which turns the destruction response into a test that positions-based propagation fails.
+\paragraph{Contribution} The paper makes three contributions. First, it measures destruction directly and documents that shocks to destruction and to match separation move unemployment and vacancies differently, with destruction acting through job finding and with a delay. Second, it derives a search model that nests \citet{coles_2018} and \citet{gabrovski_2025} and adds costly reactivation and household ownership of firms, so that the response to separations disciplines how many positions separations destroy. Third, it compares model and data through the same SVAR, shock by shock, which turns the destruction response into a novel test.
 
 \paragraph{Roadmap} Section~\ref{sec:beyond_ck} explains why the two margins must be separated. Section~\ref{sec:data} describes the data and Section~\ref{sec:stylized} the stylized facts. Section~\ref{sec:svar} sets out the SVAR and Section~\ref{sec:facts} its results. Section~\ref{sec:model} derives the model, Section~\ref{sec:calibration} calibrates it and Section~\ref{sec:results} confronts it with the data. Section~\ref{sec:puzzle} states the puzzle.
 
@@ -126,20 +126,20 @@ $v$, vacancies & Help-Wanted Index to 2000, JOLTS openings after, over the labor
 \end{table}
 % TODO(MS): the composite Help-Wanted Index (Barnichon) needs a verified citation (N11-N14).
 
-\paragraph{Destruction} BED Deaths count establishments with positive employment that report zero for four consecutive quarters. Their employment, divided by payroll employment and by three, is a monthly rate of job loss through establishment death. It is available from 1992Q3, which sets the window of every system that contains it.
+ BED Deaths count establishments with positive employment that report zero for four consecutive quarters. Their employment, divided by payroll employment and by three, is a monthly rate of job loss through establishment death. It is available from 1992Q3, which sets the window of every system that contains it.
 % TODO(MS): the calibration uses the 1993-2019 employment-weighted rate dest_ann = 3.2% a year
 % (0.27% a month, D1), while the series used for the cycle averages 0.225% a month over 1992Q4-2019Q4
 % (shock_calibration.txt §2). The two denominators differ; reconcile or explain.
 
-\paragraph{Separations} The total separation rate $\tau$ follows \citet{shimer_2005}, from unemployment, employment and short-term unemployment, with the short-term series scaled by 1.1 after the 1994 CPS redesign. Workers whose establishment dies are among those separations. The accounting identity
+ The total separation rate $\tau$ follows \citet{shimer_2005}, from unemployment, employment and short-term unemployment, with the short-term series scaled by 1.1 after the 1994 CPS redesign. Workers whose establishment dies are among those separations. The accounting identity
 \begin{equation}
 \tau_t = \delta_t + (1-\delta_t)s_t
 \end{equation}
 recovers the match separation rate $s_t=(\tau_t-\delta_t)/(1-\delta_t)$ from 1992Q3. Before then, $\delta$ is held at the mean of the first ten BED quarters, $\bar\delta=0.00278$ a month. % shock_calibration.txt §1
 Log-linearized, the splice makes the cycle of $s$ a near-constant multiple of the cycle of $\tau$ before 1992, so the only information lost is the cycle of $\delta$ itself before 1992. On the BED window the cycles of $s$ and $\tau$ have a correlation of 0.994. % shock_calibration.txt §1
 
-\paragraph{Filtering} Every series is cut at 2019Q4 before filtering, so the pandemic does not leak into the 2017--19 cycles through the two-sided filter. Each series is then logged and HP-filtered with $\lambda=1{,}600$ over its own window. The model's simulated data go through the same steps. The standard deviations of the cycles, in percent, are 1.23 for $z$, 5.96 for $\delta$, 5.77 for $s$, 12.48 for $u$ and 13.82 for $v$. % q3_data_svar.txt §1
-Appendix~\ref{app:filters} reports the shock processes under the filter of \citet{hamilton_2018}.
+ Every series is cut at 2019Q4 before filtering, so the pandemic does not leak into the 2017--19 cycles through the two-sided filter. Each series is then logged and HP-filtered with $\lambda=1{,}600$ over its own window. The model's simulated data go through the same steps. The standard deviations of the cycles, in percent, are 1.23 for $z$, 5.96 for $\delta$, 5.77 for $s$, 12.48 for $u$ and 13.82 for $v$. % q3_data_svar.txt §1
+\ref{app:filters} reports the shock processes under the regression filter by \citet{hamilton_2018}.
 
 
 % =============================================================================
@@ -235,7 +235,7 @@ These are unconditional moments. They mix the effects of every shock, and they c
 
 \paragraph{Inference} Bands come from a residual bootstrap with a recursive design and fixed initial values, 1,000 draws, seeded so they reproduce. We report 68 and 90 percent bands.
 
-\paragraph{The model side} The comparison with the model runs the same SVAR on simulated data (Section~\ref{sec:results}): 200 windows of 110 quarters, each simulated monthly, averaged to quarters, and filtered as the data are. The model's measured productivity is its $z$; its measured exit is destruction dated one month later. The model's true responses are reported only as diagnostics: the SVAR does not recover the model's shocks exactly (Appendix~\ref{app:validation}).
+\paragraph{The model side} The comparison with the model runs the same SVAR on simulated data (Section~\ref{sec:results}): 200 windows of 110 quarters, each simulated monthly, averaged to quarters, and filtered as the data are. The model's measured productivity is its $z$; its measured exit is destruction dated one month later. The model's true responses are reported only as diagnostics: the SVAR does not recover the model's shocks exactly (\ref{app:validation}).
 
 % =============================================================================
 \section{Responses to destruction and separation shocks}\label{sec:facts}
@@ -308,11 +308,11 @@ The local projections regress each outcome on the identified destruction shock w
 
 \subsection{Is the destruction shock something else?}\label{sec:checks}
 
-The destruction shock is the death-rate innovation not explained by same-quarter productivity and separations. Two disturbances could still masquerade as it: financial disturbances, which raise deaths and depress hiring, and demand shocks, which do the same. We order a proxy for each before $\delta$. This gives the proxy all same-quarter comovement with $\delta$, so the share it absorbs is an upper bound.
+The destruction shock is the death-rate innovation not explained by same-quarter productivity and separations. Two disturbances can plausibly masquerade as destruction shocks: financial shocks and demand shocks, each of which raise deaths and depress hiring. To investigate potential contamination, we order a proxy for each before $\delta$. This gives the proxy all same-quarter comovement with $\delta$, so the share it absorbs is an upper bound.
 
 \begin{itemize}
 \item \textit{Financial conditions.} We use the excess bond premium of \citet{gilchrist_2012}, the component of corporate bond spreads not explained by expected default. Its innovation is nearly uncorrelated with the destruction innovation (0.05). Ordered first, it absorbs 24 percent of the cumulative response of unemployment (68 percent band $-5$ to 46). % q3_finance_delta.txt
-\item \textit{Demand.} Demand moves the share of capacity in use \citep{silva_urias_2025, bai_2025}. We use the Federal Reserve's total capacity utilization. Its innovation is correlated with destruction at $-0.30$; ordered first, it absorbs 14 percent (7 to 30). % q3_delta_cu.txt
+\item \textit{Demand.} Demand affects total capacity utilization\citep{silva_urias_2025, bai_2025}. We use the Federal Reserve's total capacity utilization. Its innovation is correlated with destruction at $-0.30$; ordered first, it absorbs 14 percent (7 to 30). % q3_delta_cu.txt
 \item \textit{Both.} With utilization and the bond premium both ordered first, the response of unemployment peaks at 1.03 after four quarters, against 1.41 in SVAR~A; 29 percent is absorbed (2 to 55). % q3_delta_joint.txt
 \end{itemize}
 
