@@ -15,7 +15,7 @@
 # Output: ags_finance_irf.txt, ags_finance_irf.csv
 # =============================================================================
 
-using CSV
+using CSV, Printf, DataFrames, Statistics   # loaded here: macros in the branches below are parsed before the includes
 const NQ = 13
 if isempty(ARGS)
     MODE = "fin"
