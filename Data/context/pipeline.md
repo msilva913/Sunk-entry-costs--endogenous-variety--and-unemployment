@@ -324,6 +324,10 @@ they were broken before R8 and were not converted in Q1 step 6. Rebuild from
 
 Run from `Programs AGS/` with `julia --project="../Programs baseline" <file>`. `ags_model.jl` (model, solver, helpers) is included by the runners; `ags_finance_model.jl` (§10.3 financial friction) is standalone because the toolkit's derivative functions are global. `ags_finance_irf.jl` writes `ags_finance_irf.txt/.csv`; `julia ags_finance_irf.jl ags` writes the AGS reference `ags_finance_reference.csv`.
 
+`ags_reactivation_grid.jl` writes `ags_reactivation_grid.txt` (true-shock δ and s responses across Λ̄_r; Draft_AGS Table on the puzzle).
+
+**Part 1 draft:** `Data/Draft_AGS/ags_draft.tex` (elsarticle; pdflatex three times, bibliography written out, no bibtex). Each number carries a comment naming its program output.
+
 **Cloud container setup (Nov 15):** Julia 1.12.7 via juliaup (`curl -fsSL https://install.julialang.org | sh -s -- -y --default-channel 1.12.7`), `Pkg.instantiate()` in `Programs baseline`, and `pip install sympy` for the system Python that PyCall uses (`/usr/bin/python3`).
 
 ## Part 3 — Paper library utility
