@@ -1,4 +1,5 @@
 # The AGS model with costly reactivation: equilibrium conditions
+AGS = **augmented Gabrovski–Silva**: Gabrovski and Silva's model with aggregate shocks, costly reactivation, a per-hire cost and the household's discount factor.
 **Written:** November 4, 2026 · **For:** Part 1 of the two-part plan (decision D15)
 **Status:** a derivation for discussion. Code: [`../Programs AGS/`](../Programs%20AGS/)
 (`ags_steady_state.jl`, `ags_steady_state_checks.jl`, `ags_run_solution.jl`). Corrected Nov 4:
