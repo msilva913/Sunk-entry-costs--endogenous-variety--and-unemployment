@@ -571,3 +571,92 @@ Its size has the same problem as §10.5. With ζ = 1/36 (three years to maturity
 - **z and δ share a diagnosis:** the model gets the impact roughly right and misses persistence (the z gap survives orthogonalizing z to utilization: 2.8–4.4× cumulative). One slow state in job creation may serve both.
 - **Open decisions** (decisions.md D16, D17): the paper's identity (evidence plus diagnostic, or a mechanism paper); z labeled as measured productivity.
 - **Next, if pursued:** the reactivation-rate check through the SVAR as a pipeline program; the open choices of §10.3 only if finance stays.
+
+### 10.9 Other candidate δ-propagation mechanisms: assessments (Nov 15, 2026)
+
+*Discussion with MS, no model code. Papers read in full from `../Key papers/markdown/`. The one new number, s → CU, comes from `../Bartek analysis/q3_delta_cu.py` (section 2; output `q3_delta_cu.txt`).*
+
+**Requirements any candidate must meet** (from §10.7–10.8 and the SVAR comparison):
+- (i) make θ more sensitive to z, since the z amplitude is short: σ(u|z) 1.55 against 6.29;
+- (ii) a slow-moving state that δ shifts and s does not, since the low-Λ̄_r overidentification argument needs s to stay unaffected;
+- (iii) job finding that does not fall right after s. In the data the outflow contribution at h 0 is −1.02; in the model it is +0.10. The model's SVAR s → u peak is 3.18 at h 1, against 1.54 at h 2 in the data.
+
+**Hall–Milgrom credible bargaining.**
+- **Verdict: amplification only.** It works through the fundamental surplus, as Gabrovski and Silva (JEDC) put it: "both compress the surplus available to finance vacancy creation". So to first order the κ grid (§9) already covers it.
+- It helps (i).
+- It adds no state, so it does nothing for (ii).
+- It deepens the job-finding fall after s, so it works against (iii).
+- Hall and Milgrom (2008) is verified only through Christiano, Eichenbaum and Trabandt (2016, line 90) and Gabrovski and Silva. Citation unverified; source missing.
+
+**Diminishing returns to labor.**
+- **Fixed factor that survives shocks: verdict, a stabilizer.** The marginal product rises after job loss. That speeds recovery after δ and s and damps z.
+- **Fixed factor that δ destroys (firm or line stock N): verdict, ruled out.** Here diminishing returns propagates only if N rebuilds slowly. But N moves −0.02 to −0.04 % after a one-SD δ shock (`Q2_full_channels.txt`), and diminishing returns scales that by only about 1/(1−α).
+- It also predicts output per worker falls after δ, while the data show +0.05 to +0.10 (SVAR A, h 5–11).
+
+**Goods-market frictions: Petrosky-Nadeau and Wasmer (2015, JME 72, 97–113, doi:10.1016/j.jmoneco.2015.01.006).**
+- **Setup.** A project is one job and one product, moving through stages credit → labor → "worker, no customer" (g) → selling (π).
+- **Where persistence comes from.** Their abstract: "countercyclical goods market tightness and prices alter future profit flows and raise persistence". The stocks drive it (p. 107): "The extensive search margins are slower to adjust as they depend on the evolution of state variables driven by stock-flow equations."
+- **The z hump** comes from goods supply arriving before demand: tightness ξ = C₀/N_g falls, and the bargained price falls.
+- **Merits:**
+  - real stock-flow propagation, which survives with fixed search effort;
+  - the result does not depend on the wage rule (Table 4);
+  - amplification without credit frictions: σ(θ) is 0.03 in the labor-only model (L) and 0.15 with goods frictions added (GL, Table 3);
+  - one project per job, which matches AGS's positions.
+- **Demerits:**
+  1. **Wrong sign for δ (decisive).** Their link from goods to labor is that "the greater ξt, the greater the demand from consumers relative to goods awaiting consumers, and the shorter the producer's search" (p. 101). δ destroys products and frees their customers, so ξ rises. That raises λ and P, so the value of hiring rises and δ recovers faster. The same logic predicts seller utilization rises after δ; CU falls.
+  2. **s also destroys the customer.** An s_L separation returns the firm to stage l (eq. 4), and the consumer returns to D₀ with probability s_c + (1−s_c)s_L (eq. 6). A δ-only customer state would be our assumption, not theirs.
+  3. **The household side is ad hoc.**
+     - "consumers do not have the ability to transfer wealth from one period to the next" (p. 99);
+     - utility is linear;
+     - the numeraire is "produced by a technology without labor" and supplied "as a transfer" (fn. 11);
+     - pooled lump-sum income;
+     - an exogenous r.
+     This is incompatible with household ownership and m = β(C′/C)^{−σ}.
+  4. **Persistence is only partial.** The autocorrelation of Δθ is 0.30 against 0.68 in the data (Table 3).
+  5. **Weak discipline.** τ is mapped from product turnover by assumption, and a ±50 % change in τ changes nothing (Table 4).
+  6. **Internal inconsistencies.** ν_G is 1.40 in Table 2 and 1.5 in Table 4; η_σ is 1.75/2.25 in the text and 1.90/2.10 in Table 4; the "variant 4" in the text is variant 3 in the table.
+- **Viability:** none for δ or s. For z possibly, but κ or credible bargaining does that at far lower cost. BRS-style shopping effort is static (no relationship capital), so it amplifies but does not propagate. Under constant-returns matching, no goods-market matching friction can make demand vanish after δ; that needs a demand-side channel.
+
+**Unemployment-risk channel: Broer, Druedahl, Harmenberg and Öberg (2025, IER, doi:10.1111/iere.12773).**
+
+*Model.*
+- Zero-liquidity HANK-SAM in the style of Ravn and Sterk (2021):
+  - workers have CRRA preferences (σ = 2) and cannot borrow, with bonds in zero net supply, so consumption equals income;
+  - the employed worker's Euler equation prices the bond (eq. 22);
+  - unemployed workers get home production ϑ = 0.9 W, so consumption drops 10 % on job loss;
+  - risk-neutral capitalists own the firms;
+  - the real wage is fixed (Hall), with Rotemberg pricing and a Taylor rule.
+- One-worker firms:
+  - **endogenous** separations, through Pareto continuation costs: δ_t = δ_ss (V/V_ss)^{−ψ} with ψ = 1;
+  - vacancy creation as in Coles–Kelishomi: ι_t = ι_ss (V^v/V^v_ss)^ξ with ξ = 0.05;
+  - vacancies destroyed at a constant δ_ss.
+- **Shocks: TFP and the discount factor only.** There are no exogenous separation shocks. The model is solved by linearized perfect-foresight (MIT-shock) paths.
+- **Proposition 1:** p̂ˣ_t = −Ω(urisk_t − βE urisk_{t+1}). Here Ω is the "fear of unemployment" term divided by pricing frictions times monetary policy, so Ω → 0 under flexible prices.
+- **Proposition 2:** supply and demand shocks have equivalent labor-market effects, up to scale.
+
+*Empirics.*
+- Barnichon–Brownlees smooth local projections on Romer–Romer monetary shocks and Fernald TFP; CPS gross flows, 1967–2019. **No SVAR.**
+- The model is not passed through local projections on simulated data. It targets two statistics computed from model responses (Fig. 9): the separation share of var(u), 40 %, and the 9-month lag from the separation-rate peak to the job-finding trough.
+- Fact 1: the separation share is 40–59 % (28 % after 1987). Fact 2: separations lead job finding by 6–16 months.
+
+*Results.*
+- The URC is 35 % of the variance of u, against 20 % in DMP with exogenous separations and free entry.
+- Endogenous separations raise the URC. Sluggish vacancy creation lowers its share but amplifies the total response.
+- Their reasoning: "households care more about near-term income loss relative to long-term income loss" (p. 2).
+- The hump for transitory shocks comes from CK vacancy depletion: separations "raise the number of matches but … not vacancies" (p. 2). Further humps need "habit formation or sticky expectations" (fn. 19).
+
+*Assessment for AGS.*
+- **(a) No propagation.** Proposition 1 adds no state.
+- **(b) It cannot tell δ from s.** urisk = δ_{t+1}(1−λ_{t+1}) is blind to whether the job loss destroys the position. AGS's inflow is τ = δ + s(1−δ), and s's inflow is larger and comes earlier. Since near-term risk dominates, the URC would amplify s on impact more than δ, which is the wrong direction (point iii).
+- **(c) The data agree that utilization does not single out δ.** A one-SD s shock lowers CU by −0.31 at h 0 and −0.58 at h 1, back to zero by h 7; cumulative over h 0–12 it is −1.76, against −2.08 for δ (HP, p = 1, (z, s, δ, CU, u, v)). So the fall in CU after δ (−0.48 at h 2) is not a δ signature. A generic job-loss demand channel is consistent with it, but it cannot explain why u stays high longer after δ. **This weakens the demand lead for D16 Path 2.**
+- **(d) Structural cost.** It needs a New Keynesian block plus incomplete markets. AGS is real, with a representative household, and with σ = 1 it already contains the complete-markets channel, which dampens (Broer et al., eqs. 26–27).
+- **(e) Possible use for z amplitude**, like κ.
+- **Verdict:** not a mechanism for this paper.
+
+*For the paper (literature and framing, not mechanism).*
+- **Positioning.** Broer et al. list as future work "a distinction between separations and job destruction" (p. 17). That is this paper's question.
+- **Their Fact 2 lumps δ and s together.** CPS EU flows include both. Whether the delayed job-finding fall is specific to δ is testable with the flows decomposition by shock (q3_persistence_tests Test 2 for δ); not yet run.
+- **Sluggish creation.** Their ξ = 0.05, against AGS's ξ = 1 and CK's 0.265. Lower ξ is positions-based, so it would lengthen s as well. Not tested in AGS.
+- **Literature they cite, to verify before use (N11–N14):** Ravn and Sterk (2021), McKay and Reis (2021), Challe (2020), Gornemann et al. (2021), Kekre (2022); Fujita and Ramey (2009), Shimer (2012), Elsby et al. (2009), Barnichon (2012); Leduc and Liu (2020), Haefke and Reiter (2020), Mercan et al. (2024), Engbom (2021), den Haan et al. (2021).
+
+**Bottom line (Nov 15).** No candidate mechanism we have examined (positions, finance, variety, diminishing returns, κ, credible bargaining, goods-market matching, unemployment risk) is δ-specific and propagating. The evidence points to D16 Path 1.
