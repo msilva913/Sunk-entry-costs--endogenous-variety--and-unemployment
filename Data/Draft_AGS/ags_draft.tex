@@ -359,7 +359,7 @@ Figure~\ref{fig:timing} shows the order of events within period $t$. The aggrega
 	\node[ebox] (B2) at (5.5, 3.2) {Reactivate vacated position if $\alpha\chi\leq Q_t$\\Create $e_t=G(Q_t)$};
 	\node[box] (B3) at (9.5, 3.2) {Produce $z_t$\\Bargain $w_t$\\Unemployed: $b$};
 	\node[box] (B4) at (13.5, 3.2) {Match $m(u_t,v_t)$\\$\theta_t=v_t/u_t$};
-	\node[ebox] (B5) at (18.5, 3.2) {Destruction $\delta_t$\\Separation $s_t$\\Update $u_{t+1}$, $v_{t+1}$};
+	\node[ebox] (B5) at (18.5, 3.2) {Destruction $\delta_t$\\Separation $s_t$\\Update $u_{t+1}$, $v^u_{t+1}$, $v^s_{t+1}$};
 	\node[gbox] (C1) at (5.5, -2.8) {$\delta_{e,t}=\delta_{t-1}$\\$\tau_t=\delta_{t-1}+(1{-}\delta_{t-1})s_{t-1}$\\$1{-}u_t$ employed, produce in $t$};
 	\node[gbox] (C2) at (13.5, -2.2) {Unmatched after matching:\\$(1{-}f(\theta_t))u_t$};
 	\node[gbox] (C3) at (18.5, -2.8) {$s_t$ hits the $1{-}u_t$ only\\New matches $f(\theta_t)u_t$:\\exposed to $\delta_t$, not $s_t$};
@@ -444,23 +444,28 @@ Substituting \eqref{eq:wage} into \eqref{eq:average_hiring_cost} and \eqref{eq:v
 + (1-s_{t+1})\left(\kappa+\frac{K_{t+1}}{q(\theta_{t+1})}\right) - (1-\phi)s_{t+1}\mathcal{R}_{t+1}\Big].
 \end{multline}
 
-Unemployment and vacancies evolve as
+Unemployment and the two inherited vacancy stocks evolve as
 \begin{align}
 u_{t+1} &= u_t - (1-\delta_t)f(\theta_t)u_t + \tau_{t+1}(1-u_t), \label{eq:u_lom}\\
-v_t &= (1-\delta_{e,t})\big[(1-q(\theta_{t-1}))v_{t-1} + \Lambda_{r,t}s_{t-1}(1-u_{t-1})\big] + e_t. \label{eq:v_lom}
+v^u_{t+1} &= (1-\delta_t)\big(1-q(\theta_t)\big)v_t, \label{eq:vu_lom}\\
+v^s_{t+1} &= (1-\delta_t)s_t(1-u_t), \label{eq:vs_lom}
 \end{align}
-Current vacancies are unmatched vacancies that survived destruction, positions vacated by separation and reactivated, and new positions. Destruction multiplies both inherited terms, so a destruction shock removes vacancies as well as jobs. The inherited stock depends on $\Lambda_{r,t}$, a function of $Q_t$, so the two inherited components are carried as separate states.
+where $v^u_{t+1}$ is the stock of vacancies that went unmatched in $t$ and survived destruction, and $v^s_{t+1}$ is the stock of positions vacated by separation at the end of $t$, whose reactivation is decided at the start of $t+1$. Vacancies in period $t$ then combine the two inherited stocks with new positions,
+\begin{equation}\label{eq:v_lom}
+v_t = v^u_t + \Lambda_{r,t}v^s_t + e_t.
+\end{equation}
+Destruction reduces both inherited stocks, so a destruction shock removes vacancies as well as jobs. Unmatched vacancies are posted again with certainty, whereas vacated positions are posted only if reactivated, with probability $\Lambda_{r,t}=F_r(Q_t/\alpha)$. Because $Q_t$ responds to the shocks of period $t$, the number of inherited vacancies actually posted, $v^u_t+\Lambda_{r,t}v^s_t$, is not known at the end of $t-1$; only the two stocks are, and they must be carried as separate states. With costless reactivation, $\Lambda_{r,t}=1$ and the two stocks collapse into a single predetermined stock of vacancies, $v^u_t+v^s_t$, as in \citet{gabrovski_2025}; the same holds under vacancy free entry, where $Q_t$ and hence $\Lambda_{r,t}$ are constant. Finally, creation $e_t=G(Q_t)$ is non-negative by construction, so positions are never scrapped other than through destruction or retirement.
 
-Output is $z_t(1-u_t)$. Spending on creation and hiring is $X_t = \frac{\xi}{1+\xi}Q_te_t + \kappa q(\theta_t)v_t$, and spending on reactivation is $X_t^r = (1-\delta_{e,t})s_{t-1}(1-u_{t-1})\big(Q_t\Lambda_{r,t}-Q_t^{rep}\big)$. Consumption is
+Output is $z_t(1-u_t)$. Spending on creation and hiring is $X_t = \frac{\xi}{1+\xi}Q_te_t + \kappa q(\theta_t)v_t$, and spending on reactivation is $X_t^r = v^s_t\big(Q_t\Lambda_{r,t}-Q_t^{rep}\big)$. Consumption is
 \begin{equation}\label{eq:resources}
 C_t = z_t(1-u_t) - X_t - X_t^r.
 \end{equation}
 
 \begin{definition}
-Given initial stocks and the processes \eqref{eq:ar1_z}--\eqref{eq:ar1_s}, an equilibrium is a stochastic sequence $\{\theta_t, e_t, C_t, u_{t+1}, v_t\}$ with $Q_t$, $\Lambda_{r,t}$ and $Q_t^{rep}$ given by \eqref{eq:Q}--\eqref{eq:Qrep}, $m_{t+1}$ by \eqref{eq:sdf}, and $K_t$ and $\mathcal{R}_t$ by \eqref{eq:K}--\eqref{eq:repost_shortfall}, such that job creation \eqref{eq:jcc}, the laws of motion \eqref{eq:u_lom}--\eqref{eq:v_lom} and the resource constraint \eqref{eq:resources} hold for all $t$.
+Given initial stocks and the processes \eqref{eq:ar1_z}--\eqref{eq:ar1_s}, an equilibrium is a stochastic sequence $\{\theta_t, e_t, C_t, u_{t+1}, v^u_{t+1}, v^s_{t+1}\}$ with $Q_t$, $\Lambda_{r,t}$ and $Q_t^{rep}$ given by \eqref{eq:Q}--\eqref{eq:Qrep}, $m_{t+1}$ by \eqref{eq:sdf}, and $K_t$ and $\mathcal{R}_t$ by \eqref{eq:K}--\eqref{eq:repost_shortfall}, such that job creation \eqref{eq:jcc}, the laws of motion \eqref{eq:u_lom}--\eqref{eq:v_lom} and the resource constraint \eqref{eq:resources} hold for all $t$.
 \end{definition}
 
-The jump variables are $\theta_t$, $e_t$ and $C_t$; the states are unemployment, the two inherited vacancy stocks and the shocks. Table~\ref{tab:dmp} compares the model with DMP.
+The jump variables are $\theta_t$, $e_t$ and $C_t$; the states are $u_t$, $v^u_t$, $v^s_t$ and the shocks. Table~\ref{tab:dmp} compares the model with DMP.
 
 \begin{table}[H]
 \centering
@@ -473,7 +478,7 @@ The jump variables are $\theta_t$, $e_t$ and $C_t$; the states are unemployment,
 Vacancy cost & flow cost & flow value $K_t$: interest, depreciation through $\delta_t$, capital losses when creation falls \\
 Discounting & $\beta$ & $m_{t+1}=\beta(C_{t+1}/C_t)^{-\sigma}$ \\
 Separation & the firm posts again & the shortfall $s_t\mathcal{R}_t$ acts like a firing cost \\
-Vacancies & jump variable & inherited stocks plus creation $e_t$ \\
+Vacancies & jump variable & inherited stocks $v^u_t$, $v^s_t$ plus creation $e_t$ \\
 Destruction & not separate from separation & removes jobs and the vacancies attached \\
 \bottomrule
 \end{tabular}
@@ -748,6 +753,7 @@ $z_t$, $\delta_t$, $s_t$ & Productivity; destruction rate; match separation rate
 $\rho_x$, $\sigma_x$, $\epsilon_{xt}$ & Persistence; innovation SD; unit-variance innovation, $x\in\{z,\delta,s\}$ & \eqref{eq:ar1_z}--\eqref{eq:ar1_s} \\
 $\delta_{e,t}$, $\tau_t$ & Measured exit $\delta_{t-1}$; total separation rate & Section~\ref{sec:environment} \\
 $u_t$, $v_t$, $\theta_t$ & Unemployment before matching; vacancies; tightness & \eqref{eq:u_lom}, \eqref{eq:v_lom} \\
+$v^u_t$, $v^s_t$ & Inherited unmatched vacancies; positions vacated by separation & \eqref{eq:vu_lom}, \eqref{eq:vs_lom} \\
 $m(u,v)$, $A$, $\eta_L$ & Matching function; scale; elasticity in $u$ & Section~\ref{sec:environment} \\
 $f(\theta)$, $q(\theta)$ & Job-finding and vacancy-filling rates & Section~\ref{sec:environment} \\
 $e_t$, $G$, $x_m$, $\xi$ & New positions; sunk-cost distribution; its bound; entry elasticity & \eqref{eq:Q} \\
