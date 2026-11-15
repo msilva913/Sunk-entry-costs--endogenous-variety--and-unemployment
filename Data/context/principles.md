@@ -130,8 +130,10 @@ formulaic openings, lists of short claims) is a failure of this rule (MS, Nov 15
 **American English**, not British. Write "behavior" with no *u*, "modeling" with one *l*,
 "analyze" and "normalize" with a *z*.
 
-**N5. Sentences.** Break long sentences into shorter ones. Prefer a period to a dash or a
-semicolon. Em-dashes in particular should be rare.
+**N5. Sentences.** Sentence length follows Mario Silva's published papers (N4): moderate-length,
+connected sentences that carry the argument with connectives ("Consequently", "Moreover", "In
+contrast"), not strings of very short declaratives. Avoid run-ons; em-dashes are occasional, not
+habitual (MS, Nov 15, 2026).
 
 **N6. Exhibits.** Figure and table captions describe only the objects displayed, succinctly.
 All interpretation, mechanism analysis, and intuition belongs in the body text. A caption

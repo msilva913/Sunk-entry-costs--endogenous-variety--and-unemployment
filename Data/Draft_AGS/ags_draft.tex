@@ -49,7 +49,7 @@
 \address[affil1]{Economics Department, Northeastern University}
 
 \begin{abstract}
-\textit{Provisional.} Workers lose their jobs in two ways. A match ends while the employer survives, or the establishment itself closes. We measure the second margin directly with establishment deaths from the Business Employment Dynamics and separate it from match separations in a recursive SVAR for 1992--2019. The two shocks propagate differently. A short-lived rise in establishment deaths raises unemployment for about two years, with a peak after four quarters, mostly through lower job finding. A separation shock acts faster and fades sooner. The destruction response survives controls for financial conditions and capacity utilization. We then build a search model with durable job positions and costly reactivation of vacated positions, which nests Coles and Kelishomi (2018) and Gabrovski and Silva (2025), and confront it with the same SVAR on simulated data. The model gets the impact of a destruction shock right but not its persistence: its response peaks after one quarter and is gone within a year. The failure does not depend on the reactivation rate, which governs the response to separations and leaves the response to destruction unchanged. Losing positions is not what makes destruction persistent.
+\textit{Provisional.} Workers lose their jobs in two ways: a match ends while the employer carries on, or the establishment itself closes. We measure the second margin directly with establishment deaths from the Business Employment Dynamics, separate it from match separations, and estimate their effects in a recursive SVAR for 1992--2019. The two shocks propagate very differently. A short-lived rise in establishment deaths raises unemployment for about two years, with a peak after four quarters, mostly through a lower job-finding rate, whereas a separation shock acts faster and fades sooner. The destruction response survives controls for financial conditions and capacity utilization. We then develop a search model with durable job positions and costly reactivation of vacated positions, which nests \citet{coles_2018} and \citet{gabrovski_2025}, and confront it with the same SVAR run on simulated data. The model gets the impact of a destruction shock right but not its persistence: its response peaks after one quarter and is gone within a year. This failure does not depend on the reactivation rate, which governs the response to separations but leaves the response to destruction unchanged. Losing positions, in other words, is not what makes destruction persistent.
 \end{abstract}
 \begin{keyword}
 job destruction \sep separations \sep establishment exit \sep unemployment \sep vacancies \sep structural VAR
@@ -60,52 +60,54 @@ job destruction \sep separations \sep establishment exit \sep unemployment \sep 
 \section{Introduction}\label{sec:introduction}
 % =============================================================================
 
-Unemployment in the United States is volatile and persistent. Its cyclical component has a standard deviation of 12.5 percent and a quarterly autocorrelation of 0.89, and it moves against vacancies with a correlation of $-0.93$ (Section~\ref{sec:stylized}).
+Unemployment in the United States is volatile and persistent. Over 1951--2019 its cyclical component has a standard deviation of 12.5 percent and a quarterly autocorrelation of 0.89, and it moves against vacancies with a correlation of $-0.93$ (Section~\ref{sec:stylized}).
 % q3_stylized_moments.txt
-Much of the search literature asks whether productivity shocks can account for this volatility \citep{shimer_2005, hagedorn_2008, pissarides_2009}. Another strand studies how job destruction and separations shape unemployment \citep{mortensen_1994, den_haan_2000, elsby_2013}. This paper asks a narrower question with broad implications: does it matter \emph{how} workers lose their jobs?
+A large literature asks whether productivity shocks can generate fluctuations of this size \citep{shimer_2005, hagedorn_2008, pissarides_2009}, while another studies how job destruction and separations shape the dynamics of unemployment \citep{mortensen_1994, den_haan_2000, elsby_2013}. In this paper we ask a related question that has received less attention: does it matter \emph{how} workers lose their jobs?
 
-Unemployment can rise from either greater job destruction or a lower job finding rate. A worker can lose a job either because the match dissolves--with the employer and business opportunity carrying on--or because an establishment closes and takes every job with it. The search literature usually treats these as one flow. \citet{coles_2018} develop and estimate a model with finitely elastic vacancy creation and a single separation shock, which jointly destroys jobs and vacancies. Finitely elastic vacancy creation causes a separation shock to raise unemployment without inducing a vacancy spike, thus reproducing the negative comovement of unemployment and vacancies (the Beveridge curve).
+Unemployment can rise from either greater job destruction or a lower job finding rate. A worker can lose a job either because the match dissolves---with the employer and business opportunity carrying on---or because an establishment closes and takes every job with it. The search literature usually treats these as one flow. \citet{coles_2018} develop and estimate a model with finitely elastic vacancy creation and a single separation shock, which jointly destroys jobs and vacancies. Finitely elastic vacancy creation causes a separation shock to raise unemployment without inducing a vacancy spike, thus reproducing the negative comovement of unemployment and vacancies (the Beveridge curve).
 
 \citet{gabrovski_2025} decompose separation into match separation and destruction flows. They show that this helps generate a mild unemployment-labor productivity comovement in response to a productivity shock while fitting labor market correlations well. The intuition is that, due to sunk costs, vacancies are reposted following match separation and are thus less tied to current productivity.
 
 In this paper, we build on \citet{gabrovski_2025} and \citet{coles_2018}. We distinguish match separation from destruction and also consider stochastic shocks to each. We measure establishment deaths directly, with the employment-weighted death rate from the Business Employment Dynamics (BED), and recover match separations by imputing the aggregate separation rate following \citet{shimer_2005} and using an accounting identity. A recursive SVAR on 1992--2019 then gives the response of unemployment and vacancies to each.
 
-The SVAR analysis reveals that the two separation shocks transmit differently. A one-standard-deviation rise in the death rate raises unemployment by 0.35 percent on impact and keeps raising it for four quarters, to a peak of 1.4 percent; the response is gone by about the twelfth quarter. % q3_data_svar.txt §5; Notes/q3_data_svar_empirics.md §2.2
-The rise in deaths itself lasts barely a quarter. The persistent part runs mostly through job finding rather than through inflows into unemployment. A separation shock moves unemployment sooner, with a peak after two quarters, and fades sooner. % q3_persistence_tests.txt Test 2; q3_data_svar.txt
-The destruction response survives local projections, the Hamilton filter, more lags, and controls for financial conditions and capacity utilization; with both controls its peak is about a quarter lower and its timing unchanged under the HP filter.
+Our SVAR analysis reveals that the two separation margins transmit very differently. A one-standard-deviation rise in the death rate raises unemployment by 0.35 percent on impact, and unemployment keeps rising for four quarters to a peak of 1.4 percent before returning to trend after about three years.
+% q3_data_svar.txt §5; Notes/q3_data_svar_empirics.md §2.2
+Strikingly, the rise in deaths itself lasts barely a quarter, and the persistent part of the response runs mostly through a lower job-finding rate rather than through inflows into unemployment. A separation shock, on the other hand, moves unemployment sooner, peaks after two quarters, and fades sooner.
+% q3_persistence_tests.txt Test 2; q3_data_svar.txt
+The destruction response survives local projections, the Hamilton filter, additional lags, and controls for financial conditions and capacity utilization; with both controls its peak is about a quarter lower and its timing unchanged under the HP filter.
 
-We generalize the labor search model by \citet{gabrovski_2025}. There are three shocks, productivity $z$, destruction $\delta$ and separation $s$. Job positions are durable assets. Destruction removes jobs and the vacancies attached to them. A separation ends a match but leaves the position open. However, reactivating a vacancy is costly, and an employer reactivates only if the cost falls below the value of a vacancy. With costless reactivation the model is \citet{gabrovski_2025} with aggregate shocks; with no separations it is \citet{coles_2018}. Households own the firms and value jobs with their stochastic discount factor.
+We generalize the labor search model of \citet{gabrovski_2025}. Our model features three shocks: productivity $z$, destruction $\delta$ and separation $s$. Job positions are durable assets, so destruction removes jobs together with the vacancies attached to them, whereas a separation ends a match but leaves the position open. Reactivating a vacated position is costly, however, and an employer reactivates it only if the cost falls below the value of a vacancy. With costless reactivation our model is \citet{gabrovski_2025} with aggregate shocks, and without separations it has the structure of \citet{coles_2018}. Households own the firms and value jobs with their stochastic discount factor.
 
-With respect to the true data generating process, the impulse response of a SVAR can differ because of timing and averaging, filtering, lag truncation, and small samples. To compare consistently, we run the same SVAR on simulated data, and the model gets the impact of a destruction shock right: 0.35 percent in both.
-% q3_model_svar.csv, delta -> u, h = 0
-It misses the propagation. The model's response peaks after one quarter and is near zero after four; the data's builds for four quarters. Summed over three years, the model delivers about a tenth of the data's response. % q3_model_svar.txt §2; q3_persistence_tests.txt Test 1
-The gap does not close with the reactivation rate. A lower reactivation rate makes separations destroy more positions, and with it the model's response to separations becomes persistent, as in \citet{coles_2018}. The response to destruction does not change at all. The reactivation rate is identified by the separation responses; the destruction response is then a test the model fails at any reactivation rate. Losing positions is not what makes destruction persistent. Productivity shocks show the same pattern: the model's impact is about right and its persistence is not.
+The impulse responses of an SVAR can differ from those of the true data generating process because of time aggregation, filtering, lag truncation and small samples. We therefore compare model and data by running the same SVAR on simulated data. The model then gets the impact of a destruction shock right, at 0.35 percent in both, but it misses the propagation: its response peaks after one quarter and is near zero after four, whereas the data's builds for four quarters. Summed over three years, the model delivers about a tenth of the data's response.
+% q3_model_svar.csv, delta -> u, h = 0; q3_model_svar.txt §2; q3_persistence_tests.txt Test 1
+Importantly, the gap does not close with the reactivation rate. A lower reactivation rate makes separations destroy more positions, and the model's response to separations then becomes persistent, as in \citet{coles_2018}, but its response to destruction does not change at all. Since the separation responses identify the reactivation rate, the destruction response becomes a test that the model fails at any reactivation rate. In other words, losing positions is not what makes destruction persistent. Productivity shocks show the same pattern: the model's impact response is about right, but its persistence is not.
 
 The paper makes three contributions. First, it measures destruction directly and documents that shocks to destruction and to match separation move unemployment and vacancies differently, with destruction acting through job finding and with a delay. Second, it derives a search model that nests \citet{coles_2018} and \citet{gabrovski_2025} and adds costly reactivation and household ownership of firms, so that the response to separations disciplines how many positions separations destroy. Third, it compares model and data through the same SVAR, shock by shock, which turns the destruction response into a novel test.
 
-Section~\ref{sec:beyond_ck} explains why the two margins must be separated. Section~\ref{sec:data} describes the data and Section~\ref{sec:stylized} the stylized facts. Section~\ref{sec:svar} sets out the SVAR and Section~\ref{sec:facts} its results. Section~\ref{sec:model} derives the model, Section~\ref{sec:calibration} calibrates it and Section~\ref{sec:results} confronts it with the data. Section~\ref{sec:puzzle} states the puzzle.
+The remainder of the paper is organized as follows. Section~\ref{sec:beyond_ck} explains why the two margins must be separated. Section~\ref{sec:data} describes the data and Section~\ref{sec:stylized} documents stylized facts. Section~\ref{sec:svar} presents the SVAR and Section~\ref{sec:facts} its results. Section~\ref{sec:model} develops the model, Section~\ref{sec:calibration} calibrates it, and Section~\ref{sec:results} confronts it with the data. Section~\ref{sec:puzzle} states the puzzle.
 
 % =============================================================================
 \section{Why separate destruction from separation}\label{sec:beyond_ck}
 % =============================================================================
 
-In \citet{coles_2018}, every separation destroys the job. Vacancies are a stock that is rebuilt only by new investment, with an inelastic creation technology. A recession raises separations, the pulse of laid-off workers depletes the vacancy stock, and job finding falls for a long time. The model matches the persistence of unemployment, vacancies and tightness (their Table~5: an autocorrelation of 0.95 for unemployment against 0.94 in the data, and 0.88 under free entry). Its separation process is persistent in its own right, with a quarterly autocorrelation of 0.73.
+In \citet{coles_2018}, every separation destroys the job. Vacancies are a stock that can be rebuilt only through new investment in an inelastic creation technology. Consequently, when a recession raises separations, the pulse of laid-off workers depletes the vacancy stock and job finding falls for a long time. This mechanism allows their model to match the persistence of unemployment, vacancies and tightness: the autocorrelation of unemployment is 0.95 in the model against 0.94 in the data, compared with 0.88 under vacancy free entry (their Table~5). Their separation process, however, is persistent in its own right, with a quarterly autocorrelation of 0.73.
 % CK p. 127-128 and Table 5 (Key papers/Coles_Kelishomi_2018.pdf).
 
-That account treats every separation as destruction. In the data, most separations are not. Workers at establishments that close are 8.7 percent of all separations over 1992--2019. % shock_calibration.txt §1: delta/tau = 0.0873
-The rest are matches that end at surviving employers. \citet{gabrovski_2025} separate the two margins: destruction removes the job and the position; a separation ends the match and leaves the position, which is posted again.
+This account treats every separation as destruction, whereas in the data most separations are not. Workers at establishments that close account for only 8.7 percent of all separations over 1992--2019; the rest are matches that end at surviving employers.
+% shock_calibration.txt §1: delta/tau = 0.0873
+\citet{gabrovski_2025} therefore separate the two margins: destruction removes both the job and the position, whereas a separation ends the match and leaves the position, which the firm posts again. The distinction also changes what can be tested. With a single separation shock, persistence can only be assessed unconditionally, against the autocorrelation of unemployment. With two shocks it can be assessed conditionally, by asking whether unemployment responds more persistently to the shock that destroys establishments or to the one that ends matches. The answer distinguishes mechanisms: if persistence came from lost positions and their slow re-creation, the shock that removes more positions should be the persistent one.
 
-With one separation shock, persistence can only be tested unconditionally, against the autocorrelation of unemployment. With two shocks it can be tested conditionally: does unemployment respond more persistently to the shock that destroys establishments, or to the one that ends matches? The answer distinguishes mechanisms. If persistence came from lost positions and slow re-creation, the shock that removes more positions would be the persistent one.
+Which shock removes more positions depends, in turn, on how many of the positions vacated by separations are retired rather than reactivated. We therefore treat the reactivation rate $\bar\Lambda_r$ as a parameter. With costless reactivation, separations remove no positions; as $\bar\Lambda_r$ falls, separations retire more of them, and below a reactivation rate of roughly 0.9 they retire more positions than destruction removes. The response of vacancies to separations disciplines $\bar\Lambda_r$, since in the data vacancies fall after a separation shock, which requires low reactivation.
+% TODO: the 0.9 threshold is arithmetic on the steady state (handout §10.1); move to a program before it stays in.
 
-Which shock removes more positions depends on how many of the positions vacated by separations are retired rather than reactivated. We let the reactivation rate $\bar\Lambda_r$ be a parameter. With costless reactivation, separations remove no positions. As $\bar\Lambda_r$ falls, separations retire more of them, and below a reactivation rate of roughly 0.9 they retire more positions than destruction removes. The response of vacancies to separations disciplines $\bar\Lambda_r$: in the data vacancies fall after a separation shock, which requires low reactivation. % TODO: the 0.9 threshold is arithmetic on the steady state (handout §10.1); move to a program before it stays in.
-
-We generalize \citet{coles_2018} along the lines of \citet{gabrovski_2025} in three ways. We measure destruction directly, from establishment deaths, rather than identifying it with all separations. We add costly reactivation, so that separations can destroy positions too, at a rate the data pin down. And we compare model and data through the same SVAR, shock by shock, rather than through unconditional moments. The conditional comparison is what reveals the puzzle.
+In sum, we generalize \citet{coles_2018} along the lines of \citet{gabrovski_2025} in three ways: i) we measure destruction directly, from establishment deaths, rather than identifying it with all separations; ii) we add costly reactivation, so that separations can destroy positions too, at a rate disciplined by the data; and iii) we compare model and data through the same SVAR, shock by shock, rather than through unconditional moments. As we show below, it is this conditional comparison that reveals the puzzle.
 
 % =============================================================================
 \section{Data and measurement}\label{sec:data}
 % =============================================================================
 
-All series are quarterly. Table~\ref{tab:data} lists them. % Notes/q3_data_svar_empirics.md §1.2
+All series are quarterly, and Table~\ref{tab:data} lists their sources and sample windows.
+% Notes/q3_data_svar_empirics.md §1.2
 
 \begin{table}[H]
 \centering
@@ -135,25 +137,21 @@ $v$, vacancies & Help-Wanted Index to 2000, JOLTS openings after, over the labor
 \begin{equation}
 \tau_t = \delta_t + (1-\delta_t)s_t
 \end{equation}
-recovers the match separation rate $s_t=(\tau_t-\delta_t)/(1-\delta_t)$ from 1992Q3. Before then, $\delta$ is held at the mean of the first ten BED quarters, $\bar\delta=0.00278$ a month. % shock_calibration.txt §1
-Log-linearized, the splice makes the cycle of $s$ a near-constant multiple of the cycle of $\tau$ before 1992, so the only information lost is the cycle of $\delta$ itself before 1992. On the BED window the cycles of $s$ and $\tau$ have a correlation of 0.994. % shock_calibration.txt §1
+recovers the match separation rate $s_t=(\tau_t-\delta_t)/(1-\delta_t)$ from 1992Q3. Before then, $\delta$ is held at the mean of the first ten BED quarters, $\bar\delta=0.00278$ a month.\footnote{Log-linearized, the splice makes the cycle of $s$ a near-constant multiple of the cycle of $\tau$ before 1992, so the only information lost is the cycle of $\delta$ itself before 1992. On the BED window the cycles of $s$ and $\tau$ have a correlation of 0.994.}
+% shock_calibration.txt §1
 
  Every series is cut at 2019Q4 before filtering, so the pandemic does not leak into the 2017--19 cycles through the two-sided filter. Each series is then logged and HP-filtered with $\lambda=1{,}600$ over its own window. The model's simulated data go through the same steps. The standard deviations of the cycles, in percent, are 1.23 for $z$, 5.96 for $\delta$, 5.77 for $s$, 12.48 for $u$ and 13.82 for $v$. % q3_data_svar.txt §1
-\ref{app:filters} reports the shock processes under the regression filter by \citet{hamilton_2018}.
-
+Appendix~\ref{app:filters} reports the shock processes under the regression filter by \citet{hamilton_2018}.
 
 % =============================================================================
 \section{Stylized facts}\label{sec:stylized}
 % =============================================================================
 
-Establishment exit is a distinct and cyclical margin of job loss. Table~\ref{tab:jf_t2_ext_2019} extends Table~2 of \citet{jaimovich_2008} through 2019Q4 with BED data and adds establishment deaths, which BED did not publish when they wrote.
+Establishment exit is a distinct and cyclical margin of job loss. Table~\ref{tab:jf_t2_ext_2019} extends Table~2 of \citet{jaimovich_2008} through 2019Q4 with BED data and adds establishment deaths, which BED had not yet published when they wrote.
 % Bartek analysis/part11_jf_table2.py -> data/results/jf_table2_ext_2019_latex.tex, jf_table2_extension.txt
-Opening establishments account for 20.0 percent of gross job gains and closing establishments for 19.5 percent of gross job losses. Dying establishments, the permanent subset of closings, account for 12.0 percent: about one job lost in eight is lost at an establishment that never reopens. The rest of the closings margin is temporary shutdowns. All three margins move with the cycle. Deaths vary at 0.187 times the cyclical variation of total job losses under the Hamilton filter and 0.180 under the HP filter, against 0.239 and 0.223 for closings. Permanent exit is itself cyclical, and it is separately measurable from other job loss, which makes the decomposition of separations empirically tractable.
-
-The 12 percent is a share of gross job losses, a job flow. The share relevant for unemployment is a worker flow: workers at dying establishments are 8.7 percent of all separations into unemployment.
-% shock_calibration.txt §1: delta/tau = 0.0873
-The two differ because gross job losses include contractions at continuing establishments that are not separations into unemployment, and separations include matches that end without any loss of jobs.
-% TODO(MS): confirm the wording of this reconciliation.
+Opening establishments account for 20.0 percent of gross job gains and closing establishments for 19.5 percent of gross job losses. Dying establishments, the permanent subset of closings, account for 12.0 percent, so that about one job lost in eight is lost at an establishment that never reopens; the rest of the closings margin consists of temporary shutdowns.\footnote{The 12 percent is a share of gross job losses, a job flow. The share relevant for unemployment is a worker flow: workers at dying establishments account for 8.7 percent of all separations into unemployment. The two differ because gross job losses include contractions at continuing establishments that are not separations into unemployment, and separations include matches that end without any loss of jobs.}
+% shock_calibration.txt §1: delta/tau = 0.0873. TODO(MS): confirm the wording of the reconciliation in the footnote.
+All three margins move with the cycle. Deaths vary at 0.187 times the cyclical variation of total job losses under the Hamilton filter and 0.180 under the HP filter, against 0.239 and 0.223 for closings. Permanent exit is thus itself cyclical, and because it is separately measurable from other job loss, the decomposition of separations is empirically tractable.
 
 	\begin{table}[H]
 \centering
@@ -187,7 +185,7 @@ Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 &
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:moments} reports business-cycle moments. Unemployment and vacancies are volatile, persistent and strongly negatively correlated. Match separations are countercyclical and move with unemployment in the same quarter. Destruction is barely correlated with unemployment in the same quarter, but it leads it: the correlation of destruction with unemployment four quarters later is 0.41, against 0.06 contemporaneously. Separations lead unemployment by about one quarter.
+Table~\ref{tab:moments} reports business-cycle moments of the labor market and of the three shocks. Unemployment and vacancies are volatile, persistent and strongly negatively correlated. Match separations are countercyclical and move with unemployment in the same quarter. Destruction, in contrast, is barely correlated with unemployment in the same quarter, but it leads it: the correlation of destruction with unemployment four quarters later is 0.41, against 0.06 contemporaneously, whereas separations lead unemployment by about one quarter.
 
 \begin{table}[H]
 \centering
@@ -215,27 +213,22 @@ $\delta$ & 0.06 & 0.21 & 0.33 & 0.41 & 0.23 \\
 \end{table}
 % Bartek analysis/q3_stylized_moments.py -> data/results/q3_stylized_moments.txt
 
-These are unconditional moments. They mix the effects of every shock, and they cannot say whether destruction leads unemployment because it causes later unemployment or because both respond to something else. The SVAR of Section~\ref{sec:svar} addresses that.
+These are, of course, unconditional moments. They mix the effects of every shock, and they cannot tell whether destruction leads unemployment because it causes later unemployment or because both respond to something else. The SVAR of Section~\ref{sec:svar} addresses precisely this question.
 
 % =============================================================================
 \section{The SVAR}\label{sec:svar}
 % =============================================================================
 
-The baseline system, SVAR~A, is a reduced-form VAR in $(z, s, \delta, u, v)$ on 1992Q3--2019Q4, $T=110$, with a constant, estimated equation by equation by OLS. The BIC chooses one lag over one to four on a common sample; we report two and four lags as well. The VAR is stable, with a largest root of 0.910. % q3_data_svar.txt; Notes/q3_data_svar_empirics.md §1.6
+Our baseline system, SVAR~A, is a reduced-form VAR in $(z, s, \delta, u, v)$ estimated equation by equation by OLS with a constant on 1992Q3--2019Q4 ($T=110$). The BIC selects one lag among one to four on a common sample, and we also report results with two and four lags. The estimated VAR is stable, with a largest root of 0.910.
+% q3_data_svar.txt; Notes/q3_data_svar_empirics.md §1.6
 
-Shocks are identified recursively, with the shock block before $(u, v)$:
+We identify the shocks recursively, ordering the shock block before $(u, v)$:
 \begin{equation}
 (z, s, \delta, u, v).
 \end{equation}
-\begin{itemize}
-\item \textit{$z$ first.} We read the $z$ shock as a shock to measured productivity, not to technology. Measured productivity also moves with demand: in a model of goods-market search estimated on capacity utilization, shopping-effort shocks explain 46 percent of the forecast-error variance of the Solow residual \citep[Table 4]{silva_urias_2025}. Ordering $z$ first credits it with all same-quarter comovement between productivity and the other variables. Section~\ref{sec:checks} reports $z$ orthogonalized to capacity utilization.
-\item \textit{$s$ before $\delta$.} In the model, $s$ is exogenous while measured exit is dated a month after destruction. The alternative order changes only how the same-quarter comovement of $\delta$ and $s$ is split.
-\item \textit{$u$ and $v$ last.} Their innovations not explained by the three shocks form a residual; only its total is identified.
-\end{itemize}
+Three features of the ordering deserve comment. First, we order $z$ first and interpret its shock as a shock to measured productivity rather than to technology. Measured productivity also moves with demand: in a model of goods-market search estimated on capacity utilization data, shopping-effort shocks explain 46 percent of the forecast-error variance of the Solow residual \citep[Table 4]{silva_urias_2025}. Ordering $z$ first credits it with all same-quarter comovement between productivity and the other variables, and Section~\ref{sec:checks} therefore also reports $z$ orthogonalized to capacity utilization. Second, we order $s$ before $\delta$ because $s$ is exogenous in the model while measured exit is dated a month after destruction; the alternative ordering only changes how the same-quarter comovement of $\delta$ and $s$ is split between them. Third, $u$ and $v$ come last, and their innovations not explained by the three shocks form a residual of which only the total is identified. Confidence bands come from a residual bootstrap with a recursive design and fixed initial values, with 1,000 draws seeded so that they reproduce; we report 68 and 90 percent bands.
 
-Bands come from a residual bootstrap with a recursive design and fixed initial values, 1,000 draws, seeded so they reproduce. We report 68 and 90 percent bands.
-
-The comparison with the model runs the same SVAR on simulated data (Section~\ref{sec:results}): 200 windows of 110 quarters, each simulated monthly, averaged to quarters, and filtered as the data are. The model's measured productivity is its $z$; its measured exit is destruction dated one month later. The model's true responses are reported only as diagnostics: the SVAR does not recover the model's shocks exactly (\ref{app:validation}).
+The comparison with the model runs the same SVAR on simulated data (Section~\ref{sec:results}): 200 windows of 110 quarters, each simulated monthly, averaged to quarters, and filtered as the data are. The model's measured productivity is its $z$, and its measured exit is destruction dated one month later. We report the model's true responses only as diagnostics, since the SVAR does not recover the model's shocks exactly (Appendix~\ref{app:validation}).
 
 % =============================================================================
 \section{Responses to destruction and separation shocks}\label{sec:facts}
@@ -243,7 +236,8 @@ The comparison with the model runs the same SVAR on simulated data (Section~\ref
 
 \subsection{Responses to the three shocks}
 
-Table~\ref{tab:data_irf} and Figure~\ref{fig:data_irf} report the responses. % q3_data_svar.txt §5; empirics note §2.2
+Table~\ref{tab:data_irf} and Figure~\ref{fig:data_irf} report the responses of unemployment and vacancies to the three shocks.
+% q3_data_svar.txt §5; empirics note §2.2
 
 \begin{table}[H]
 \centering
@@ -270,18 +264,15 @@ $\delta\to v$ & $-0.22$ & $-1.59$ & $-1.48$ & $-0.56$ & $-1.60$ at $h=3$ \\
 \caption{SVAR A: responses of $u$ and $v$ to one-standard-deviation shocks (log points $\times$ 100). Solid line: HP-filtered cycles, with 68 and 90 percent bootstrap bands. Dashed line: Hamilton-filtered cycles, point estimate.}\label{fig:data_irf}
 \end{figure}
 
-\begin{itemize}
-\item \textit{Every shock moves unemployment and vacancies in opposite directions}, with peaks after two to four quarters.
-\item \textit{Destruction propagates far beyond the jobs it removes.} The rise in the death rate lasts about a quarter: its quarterly autocorrelation is 0.20. % shock_calibration.txt §2
-Unemployment keeps rising for four quarters and is still significantly above trend after eight.
-\item \textit{Separations act faster and fade sooner.} Unemployment peaks after two quarters, and with four lags the response is gone within a few quarters and overshoots. % q3_persistence_tests.txt Test 1
-\item \textit{Vacancies fall after separations.} With costless reactivation they would rise, as the vacated positions are posted again.
-\end{itemize}
+Every shock moves unemployment and vacancies in opposite directions, with peaks after two to four quarters. The response to destruction stands out, however, because it propagates far beyond the jobs the shock removes. The rise in the death rate lasts about a quarter, with a quarterly autocorrelation of 0.20, yet unemployment keeps rising for four quarters and remains significantly above trend after eight.
+% shock_calibration.txt §2
+Separation shocks, in contrast, act faster and fade sooner: unemployment peaks after two quarters, and with four lags the response is gone within a few quarters and overshoots. Finally, vacancies fall after separations, whereas with costless reactivation they would rise as vacated positions are posted again.
+% q3_persistence_tests.txt Test 1
 
 \subsection{Inflows and outflows}
 
-Appending the job-finding rate to the SVAR splits each response of unemployment into an inflow and an outflow part, using the steady-state flow identity $d\ln u \approx (1-\bar u)(d\ln\tau - d\ln f)$. After a destruction shock, the inflow part peaks within two quarters and is nearly gone by the fourth; the outflow part builds to its peak at the fourth quarter. Summed over three years, outflows account for 8.3 of the 9.7 points the identity attributes; inflows for 1.5. % q3_persistence_tests.txt Test 2
-The persistent effect of destruction runs through lower job finding.
+Appending the job-finding rate to the SVAR splits each response of unemployment into an inflow and an outflow part, using the steady-state flow identity $d\ln u \approx (1-\bar u)(d\ln\tau - d\ln f)$. After a destruction shock, the inflow part peaks within two quarters and is nearly gone by the fourth, while the outflow part builds to its peak at the fourth quarter. Summed over three years, outflows account for 8.3 of the 9.7 points the identity attributes, and inflows for only 1.5. Thus, the persistent effect of destruction runs through a lower job-finding rate.
+% q3_persistence_tests.txt Test 2
 
 \subsection{Robustness of the destruction response}
 
@@ -304,11 +295,12 @@ Hamilton & Local projection & $+4.49$ (4) \\
 \end{table}
 % q3_delta_robustness.txt
 
-The local projections regress each outcome on the identified destruction shock with four lags of the system as controls \citep{jorda_2005}. The hump and its timing survive every specification. Its duration beyond about two years does not: under HP, the local projection is back to zero by the eighth quarter. % q3_delta_robustness.txt: h8/peak +0.08
+To check that the hump is not an artifact of the VAR's dynamics, we also estimate local projections that regress each outcome on the identified destruction shock with four lags of the system as controls \citep{jorda_2005}. As Table~\ref{tab:robust} shows, the hump and its timing survive every specification, although its duration beyond about two years does not: under HP, the local projection is back to zero by the eighth quarter.
+% q3_delta_robustness.txt: h8/peak +0.08
 
 \subsection{Is the destruction shock something else?}\label{sec:checks}
 
-The destruction shock is the death-rate innovation not explained by same-quarter productivity and separations. Two disturbances could masquerade as destruction shocks: financial shocks and demand shocks, each of which can raise deaths and depress hiring. We order a proxy for each before $\delta$. This gives the proxy all same-quarter comovement with $\delta$, so the share of the destruction response it absorbs is an upper bound on contamination.
+The destruction shock is the death-rate innovation not explained by same-quarter productivity and separations. Two disturbances could nonetheless masquerade as destruction shocks: financial shocks and demand shocks, each of which can raise deaths and depress hiring. To investigate potential contamination, we order a proxy for each before $\delta$. This gives the proxy all same-quarter comovement with $\delta$, so the share of the destruction response it absorbs is an upper bound on contamination.
 
 For financial disturbances we use the excess bond premium of \citet{gilchrist_2012}, the component of corporate bond spreads not explained by expected default. Its innovation is nearly uncorrelated with the destruction innovation (0.05). Ordered first, it absorbs 24 percent of the cumulative response of unemployment over three years (68 percent band $-5$ to 46).
 % q3_finance_delta.txt
@@ -320,18 +312,18 @@ Models with frictions in the goods market make the link explicit: output is the 
 
 The innovation in total capacity utilization is correlated with the destruction innovation at $-0.30$. Ordered first, utilization absorbs 14 percent of the cumulative response of unemployment (7 to 30). With utilization and the bond premium both ordered first, the response of unemployment peaks at 1.03 after four quarters, against 1.41 in SVAR~A, and 29 percent is absorbed (2 to 55).
 % q3_delta_cu.txt; q3_delta_joint.txt
-Under the HP filter the destruction response keeps its shape and timing. Under the Hamilton filter the joint control flattens it, but the seven-variable system on 99 quarters is too imprecise to tell (absorbed share 58 percent, band $-16$ to 95).
+Under the HP filter, therefore, the destruction response keeps its shape and timing. Under the Hamilton filter the joint control flattens it, but the seven-variable system on 99 quarters is too imprecise to tell (absorbed share 58 percent, band $-16$ to 95).
 % q3_delta_joint.txt
-Two caveats remain. Capacity utilization covers manufacturing, mining and utilities, while most deaths are in services. And demand that moves neither utilization nor spreads is not controlled for.
+Two caveats remain, however: capacity utilization covers manufacturing, mining and utilities, while most deaths are in services, and demand that moves neither utilization nor spreads is not controlled for.
 
-Ordering utilization before productivity orthogonalizes the productivity innovation to same-quarter utilization as well. This is a conservative version of a technology shock, since it assigns to utilization any technology-driven change in utilization. It lowers the cumulative response of unemployment to productivity by 13 percent per unit of $z$ with one lag, and by more with four, and leaves the destruction response as in the utilization-first system above.
+Ordering utilization before productivity also orthogonalizes the productivity innovation to same-quarter utilization. This yields a conservative version of a technology shock, since it assigns to utilization any technology-driven change in utilization. It lowers the cumulative response of unemployment to productivity by 13 percent per unit of $z$ with one lag, and by more with four, and it leaves the destruction response as in the utilization-first system above.
 % q3_z_purged.txt: ratio per 1% 0.87 (p=1), 0.58 (p=4)
 
 % =============================================================================
 \section{The model}\label{sec:model}
 % =============================================================================
 
-Time is monthly. The model starts from DMP and adds three features: durable job positions, destruction that removes positions, and costly reactivation of positions vacated by separations. Notation follows the full model of the companion paper; Appendix~\ref{app:notation} collects it.
+Time is discrete, with a period of one month. Our model starts from the DMP framework and adds three features: i) durable job positions, ii) destruction that removes positions, and iii) costly reactivation of positions vacated by separations. We follow the notation of the full model in the companion paper, collected in Appendix~\ref{app:notation}.
 
 \subsection{Environment}\label{sec:environment}
 
@@ -341,9 +333,9 @@ Productivity $z_t$, destruction $\delta_t$ and match separation $s_t$ each follo
 \log \delta_t &= \rho_\delta \log \delta_{t-1} + (1-\rho_\delta)\log\bar{\delta} + \sigma_\delta\epsilon_{\delta t}, \label{eq:ar1_delta}\\
 \log s_t &= \rho_s \log s_{t-1} + (1-\rho_s)\log\bar{s} + \sigma_s\epsilon_{st}, \label{eq:ar1_s}
 \end{align}
-where $\bar z$, $\bar\delta$ and $\bar s$ are the long-run means and the innovations are mutually uncorrelated with unit variance. A worker producing in $t$ produces $z_t$.
+where $\bar z$, $\bar\delta$ and $\bar s$ are the long-run means and the innovations are mutually uncorrelated with unit variance. Each employed worker produces $z_t$ units of output.
 
-Figure~\ref{fig:timing} shows the order of events within period $t$. The aggregate state, including $\delta_t$ and $s_t$, is observed at the start of the period. Positions vacated at the end of $t-1$ are then reactivated or retired, and new positions are created. Employed workers produce, wages are bargained, and the $u_t$ unemployed meet the $v_t$ vacancies. At the end of the period, destruction and separation take effect. Separation hits only the $1-u_t$ matches in place at the start of $t$; matches formed in $t$ face destruction at the end of $t$ and separation first at the end of $t+1$. Destruction at the end of $t-1$ is measured as exit in $t$: $\delta_{e,t}=\delta_{t-1}$.
+Figure~\ref{fig:timing} shows the order of events within period $t$. The aggregate state, including $\delta_t$ and $s_t$, is observed at the start of the period. Positions vacated at the end of $t-1$ are then reactivated or retired, and new positions are created. Employed workers produce, wages are bargained, and the $u_t$ unemployed workers meet the $v_t$ vacancies. At the end of the period, destruction and separation take effect. Importantly, separation hits only the $1-u_t$ matches in place at the start of $t$, whereas matches formed in $t$ face destruction at the end of $t$ and separation first at the end of $t+1$. Destruction at the end of $t-1$ is measured as exit in $t$, so that $\delta_{e,t}=\delta_{t-1}$.
 
 \tikzset{>=latex}
 \begin{figure}[H]
@@ -381,13 +373,13 @@ Figure~\ref{fig:timing} shows the order of events within period $t$. The aggrega
 \caption{Timing within period $t$. Turquoise: decisions and events. Grey: implied stocks and rates. Yellow band: destruction and separation at the end of $t$.}\label{fig:timing}
 \end{figure}
 
-A constant-returns matching function $m(u,v)$ with tightness $\theta_t=v_t/u_t$ gives the vacancy-filling rate $q(\theta)=A\theta^{-\eta_L}$ and the job-finding rate $f(\theta)=\theta q(\theta)$. A new match produces from the next period if its position survives.
+Unemployed workers and vacancies meet through a constant-returns matching function $m(u,v)$. With tightness $\theta_t=v_t/u_t$, the vacancy-filling rate is $q(\theta)=A\theta^{-\eta_L}$ and the job-finding rate is $f(\theta)=\theta q(\theta)$. A new match starts producing in the next period if its position survives.
 
 A job position is a durable asset. Recruiters draw sunk costs of opening a position from the power law $G(x)=(x/x_m)^{\xi}$ on $[0,x_m]$ and open one whenever the cost is below the value of a vacancy $Q_t$, so $e_t=G(Q_t)$ new positions are created and
 \begin{equation}\label{eq:Q}
 Q_t = x_m e_t^{1/\xi}.
 \end{equation}
-The entry elasticity $\xi$ governs how elastic creation is; vacancy free entry is the limit $\xi\to\infty$, where $Q_t=x_m$. Hiring costs $\kappa\ge0$ per match. Destruction removes a product line and every position attached to it, filled or vacant; a destroyed line is replaced by an identical one at no cost (clone replacement). Separation ends a match and leaves the position.
+The entry elasticity $\xi$ governs how elastic creation is, and vacancy free entry is the limit $\xi\to\infty$, in which $Q_t=x_m$. In addition, each hire costs $\kappa\ge0$. Destruction removes a product line and every position attached to it, filled or vacant, and a destroyed line is replaced by an identical one at no cost (clone replacement). Separation, in contrast, ends a match and leaves the position.
 
 A position vacated by a separation at the end of $t-1$ draws a reactivation cost $\alpha\chi$ at $t$, independently across positions and periods, with cumulative distribution function
 \begin{equation}
@@ -417,7 +409,7 @@ A filled position produces $z_t$, pays $w_t$ and, at the end of the period, surv
 \begin{equation}\label{eq:value_matched}
 J_t = z_t - w_t + \E_t m_{t+1}(1-\delta_t)\big[(1-s_t)J_{t+1}+s_tQ_{t+1}^{rep}\big].
 \end{equation}
-A vacancy is filled with probability $q(\theta_t)$, paying $\kappa$, and otherwise carries over. Creation equates its value to $Q_t$:
+A vacancy is filled with probability $q(\theta_t)$, in which case the recruiter pays $\kappa$, and otherwise carries over. Since recruiters create positions until the marginal sunk cost equals the value of a vacancy, that value equals $Q_t$:
 \begin{equation}\label{eq:value_unmatched}
 Q_t = q(\theta_t)\big[\E_tm_{t+1}(1-\delta_t)J_{t+1}-\kappa\big] + \big(1-q(\theta_t)\big)\E_tm_{t+1}(1-\delta_t)Q_{t+1}.
 \end{equation}
@@ -524,7 +516,8 @@ the recruiter's share of the flow surplus covers the hiring cost, annuitized ove
 
 \subsection{Long-run targets}
 
-The calibration runs the steady state in reverse. Every unknown then enters linearly, so it is in closed form (Table~\ref{tab:targets}). % ags_steady_state.jl AGS_TARGETS, calibrate_ags
+We calibrate the model by running the steady state in reverse. Because every unknown then enters linearly, the calibration is in closed form (Table~\ref{tab:targets}).
+% ags_steady_state.jl AGS_TARGETS, calibrate_ags
 
 \begin{table}[H]
 \centering
@@ -545,7 +538,7 @@ $b/w$ & 0.9 & & $b$ \\
 Sunk share of the cost of a hire & 0.5 & & $\kappa$ \\
 Recruiting costs / output & 1.5\% & & $Q$, then $x_m$ \\
 Entry elasticity & 1 & & $\xi$ \\
-Reactivation rate & 0.25 & working value & $a$ \\
+Reactivation rate & 0.25 & working value & $\alpha$ \\
 Costly share, shape & 0.8, 1 & working values & $p_r$, $\psi_r$ \\
 Risk aversion & 1 & & $\sigma$ \\
 \bottomrule
@@ -576,16 +569,15 @@ $\Lambda_r$ & 0.25 & $\alpha$ & 20.30 \\
 \end{table}
 % ags_run_solution.txt; ags_steady_state_checks.txt
 
-Two features matter for what follows.
-\begin{itemize}
-\item \textit{Bargaining power is close to one.} With a low reactivation rate, separations retire many positions, so creation $e$ is large and a fixed recruiting-cost share forces $Q$ down. Little flow surplus is left, and the wage normalization requires $\phi=0.92$, against 0.61 with costless reactivation. % ags_steady_state_checks.txt
-Whether to target $\phi$ instead and let $X/Y$ be an outcome is open.
-\item \textit{Reactivation stays away from its bound.} $\Lambda_r$ reaches one only if $Q$ rises sixteenfold, so the first-order solution, which uses the interior branch, is exact in practice. % ags_steady_state_checks.txt: bound × 16
-\end{itemize}
+Two features of the calibration matter for what follows. First, bargaining power is close to one. With a low reactivation rate, separations retire many positions, so creation $e$ is large and a fixed recruiting-cost share forces $Q$ down. Little flow surplus is then left, and the wage normalization requires $\phi=0.92$, against 0.61 with costless reactivation; whether to target $\phi$ instead and let $X/Y$ be an outcome is an open choice.
+% ags_steady_state_checks.txt
+Second, reactivation stays well away from its bound: $\Lambda_r$ reaches one only if $Q$ rises sixteenfold, so the first-order solution, which uses the interior branch, is exact in practice.
+% ags_steady_state_checks.txt: bound × 16
 
 \subsection{Shock processes}\label{sec:shocks}
 
-Each shock follows an AR(1) in logs at a monthly frequency. The processes are estimated on the data in three steps, then converted to a monthly frequency so that simulated data, averaged and filtered like the data, reproduce the data's quarterly statistics. % shock_calibration.txt §0, §7, §9
+Each shock follows an AR(1) in logs at a monthly frequency. We estimate the processes on the data in three steps and then convert them to a monthly frequency, so that simulated data, averaged and filtered like the data, reproduce the data's quarterly statistics.
+% shock_calibration.txt §0, §7, §9
 
 \paragraph{Step 1: productivity} A univariate AR(1) on the quarterly cycle of $z$. Productivity is ordered first in every system, so its innovation is not orthogonalized, and its cross-lag terms are insignificant.
 
@@ -596,10 +588,12 @@ Each shock follows an AR(1) in logs at a monthly frequency. The processes are es
 
 \paragraph{Step 3: separations} A univariate AR(1) on the spliced series, with the residual not orthogonalized. The model has no endogenous separations, so productivity never moves $s$ in the model, and purging $s$ of its correlation with $z$ would remove variation the model cannot regenerate. The rule fixed in advance was to revisit this if the productivity innovation explains at least 10 percent of the separation innovation; it explains 9.2 percent. % shock_calibration.txt §5
 
-Plugging the quarterly estimates into monthly processes understates the data's quarterly statistics: time averaging and the filter cut the standard deviation of the cycle by 21 to 29 percent. % shock_calibration.txt §7
+Plugging the quarterly estimates directly into monthly processes would understate the data's quarterly statistics, since time averaging and the filter cut the standard deviation of the cycle by 21 to 29 percent.
+% shock_calibration.txt §7
 We therefore choose each monthly $(\rho,\sigma)$ so that simulated data, averaged to quarters, filtered over a data-length window and fitted with the same estimator, reproduce the data's quarterly persistence and innovation size (500 replications).
 
-SVAR~A runs on 1992Q3--2019Q4. Productivity and separations are less persistent and less volatile on that window than over 1951--2019, so their processes are matched again on it: the cycles are filtered over the long window and the AR(1) is fitted on the last 110 quarters, in the data and in the simulations. Destruction is already estimated on the window. Table~\ref{tab:shocks} gives the processes used throughout. % shock_calibration.txt §9
+Finally, SVAR~A runs on 1992Q3--2019Q4, and productivity and separations are less persistent and less volatile on that window than over 1951--2019. We therefore match their processes again on it, filtering the cycles over the long window and fitting the AR(1) on the last 110 quarters, in the data and in the simulations alike. Destruction is already estimated on the window. Table~\ref{tab:shocks} gives the processes used throughout.
+% shock_calibration.txt §9
 
 \begin{table}[H]
 \centering
@@ -622,8 +616,10 @@ $s$ & 0.8048 & 0.0437 & 0.7524 & 0.0401 \\
 \section{The model against the SVAR}\label{sec:results}
 % =============================================================================
 
-The model is solved by first-order perturbation in logs; a pruned second-order solution changes the moments negligibly. % ags_order_check.txt
-It is simulated monthly. The same SVAR is run on 200 simulated windows of 110 quarters, each filtered as the data are, and we report the mean over windows. Two cases are shown: the baseline and a ``compromise'' with a smaller sunk share of the cost of a hire and more elastic creation ($x_v=0.25$, $\xi=2$), which in an earlier grid traded off the amplification of productivity against the comovement after separations best. % ags_xi_sweep.txt; Notes/ags_equilibrium.md §7.6
+We solve the model by first-order perturbation in logs; a pruned second-order solution changes the moments negligibly.
+% ags_order_check.txt
+We simulate it monthly, run the same SVAR on 200 simulated windows of 110 quarters, each filtered as the data are, and report the mean over windows. We show two cases: the baseline and a ``compromise'' with a smaller sunk share of the cost of a hire and more elastic creation ($x_v=0.25$, $\xi=2$), which in an earlier grid traded off the amplification of productivity against the comovement after separations best.
+% ags_xi_sweep.txt; Notes/ags_equilibrium.md §7.6
 
 \subsection{Impulse responses}
 
@@ -652,11 +648,8 @@ $s$ & $v$ & $-1.57$ (2) [$-1.91$, $-1.01$] & $-2.49$ (3) & $-1.80$ (3) \\
 \caption{Responses of $u$ and $v$ through SVAR A (log points $\times$ 100). Data: point estimate and 68 percent bootstrap band; dotted line: SVAR with NFCI ordered before $\delta$. Model: mean over 200 simulated windows of 110 quarters, baseline and compromise cases.}\label{fig:model_irf}
 \end{figure}
 
-\begin{itemize}
-\item \textit{Productivity.} The model's responses are a quarter to a half of the data's at the peak and die out faster. Summed over three years, the baseline delivers 3.7 points against the data's 19.0. % q3_persistence_tests.txt Test 1
-\item \textit{Destruction.} The model gets the impact right but peaks after one quarter instead of four. Summed over three years: 1.1 against 10.8. % q3_persistence_tests.txt Test 1
-\item \textit{Separations.} The model's impact is twice the data's, and the response is front-loaded.
-\end{itemize}
+Table~\ref{tab:irf_compare} and Figure~\ref{fig:model_irf} compare the responses. For productivity, the model's responses are a quarter to a half of the data's at the peak and die out faster; summed over three years, the baseline delivers 3.7 points against the data's 19.0. For destruction, the model gets the impact right but peaks after one quarter instead of four, and summed over three years it delivers 1.1 points against 10.8. For separations, on the other hand, the model's impact response is twice the data's, and the response is front-loaded.
+% q3_persistence_tests.txt Test 1
 
 \subsection{Conditional moments}
 
@@ -686,16 +679,17 @@ All three & $\sigma(u)$ & 8.20 [6.19, 9.68] & 4.89 & 5.08 \\
 \end{table}
 % q3_model_svar.txt §5
 
-The pattern is the same for productivity and destruction: too little volatility and too little persistence. Separations are about right in size but wrong in comovement: the model's vacancies fall too little relative to unemployment. A distance over the 78 responses of $u$ and $v$ ($J=\sum((\text{model}-\text{data})/\text{sd}_{\text{data}})^2$) is 325 for the baseline, against about 78 for a model within one data standard error on average; no case in the grid does much better. % q3_model_svar.txt §3, §6
+The pattern is the same for productivity and destruction: the model generates too little volatility and too little persistence. Separations, in contrast, are about right in size but wrong in comovement, since the model's vacancies fall too little relative to unemployment. A distance over the 78 responses of $u$ and $v$, $J=\sum((\text{model}-\text{data})/\text{sd}_{\text{data}})^2$, equals 325 for the baseline, against about 78 for a model within one data standard error on average, and no case in the grid does much better.
+% q3_model_svar.txt §3, §6
 
 % =============================================================================
 \section{The puzzle}\label{sec:puzzle}
 % =============================================================================
 
-After a destruction shock the model matches the data on impact and then loses the response within a year; the data's keeps building for four quarters. The same holds for productivity. Both gaps are about persistence, not size on impact.
+After a destruction shock, the model matches the data on impact and then loses the response within a year, whereas the data's response keeps building for four quarters. The same holds for productivity. Both gaps are thus about persistence, not about the size of the response on impact.
 
-If persistence came from lost positions, lowering the reactivation rate would supply it. It does, for separations, and not for destruction (Table~\ref{tab:reactivation}). As $\bar\Lambda_r$ falls from one to 0.03, the cumulative response of unemployment to a separation shock rises from 3.6 to 15.8 points and vacancies come to fall after separations, which is the mechanism of \citet{coles_2018}. The response to destruction does not change: it peaks after one quarter at 0.26 to 0.29 in every case. % ags_reactivation_grid.txt
-Reactivation applies only to positions vacated by separations; a destroyed position is gone whatever the reactivation rate.
+If persistence came from lost positions, lowering the reactivation rate would supply it. As Table~\ref{tab:reactivation} shows, it does so for separations but not for destruction. As $\bar\Lambda_r$ falls from one to 0.03, the cumulative response of unemployment to a separation shock rises from 3.6 to 15.8 points and vacancies come to fall after separations, which is the mechanism of \citet{coles_2018}. The response to destruction, however, does not change: it peaks after one quarter at 0.26 to 0.29 in every case. The reason is simple. Reactivation applies only to positions vacated by separations, whereas a destroyed position is gone whatever the reactivation rate.
+% ags_reactivation_grid.txt
 
 \begin{table}[H]
 \centering
@@ -717,9 +711,9 @@ $\bar\Lambda_r$ & $\phi$ & peak (q) & sum, q0--12 & peak (q) & sum, q0--12 & at 
 \end{table}
 % ags_reactivation_grid.txt. True shocks (model against model). TODO: rerun through SVAR A.
 
-The separation responses identify the reactivation rate. Once it is set, the destruction response has no free parameter left in the positions channel, and the model fails it at any reactivation rate. Unconditional persistence, the moment \citet{coles_2018} match, cannot make this distinction: a low reactivation rate with persistent separations reproduces it. The conditional responses can.
+This yields an overidentifying test. The separation responses identify the reactivation rate, and once it is set, the destruction response has no free parameter left in the positions channel; the model fails it at any reactivation rate. Unconditional persistence, the moment \citet{coles_2018} match, cannot make this distinction, because a low reactivation rate combined with persistent separations reproduces it. The conditional responses can.
 
-A short-lived rise in establishment deaths, which removes few positions, depresses job finding for about two years, while larger losses of positions through separations do not. Something lost only when an establishment dies, or something that a death sets in motion, keeps job creation low. Within the model, neither the number of positions lost nor how fast they are re-created supplies it.
+The puzzle, then, is the following. A short-lived rise in establishment deaths, which removes few positions, depresses job finding for about two years, while larger losses of positions through separations do not. Something lost only when an establishment dies, or something that a death sets in motion, keeps job creation low. Within the model, neither the number of positions lost nor how fast they are re-created supplies it.
 
 % =============================================================================
 \section{Conclusion}\label{sec:conclusion}
@@ -735,9 +729,8 @@ Under the filter of \citet{hamilton_2018} ($h=8$, $p=4$) the processes are more 
 
 \section{Does the SVAR recover the model's responses?}\label{app:validation}
 
-On long simulated samples without filtering, SVAR~A with the BIC lag recovers the model's true responses to productivity and separations within 9 to 15 percent of their peak, and those to destruction within 43 to 47 percent; the HP filter widens all gaps. % q3_model_svar.txt §1
-This is why model and data are compared through the same SVAR, not through the model's true responses.
-
+On long simulated samples without filtering, SVAR~A with the BIC lag recovers the model's true responses to productivity and separations within 9 to 15 percent of their peak, and those to destruction within 43 to 47 percent, and the HP filter widens all gaps. This is why we compare model and data through the same SVAR rather than through the model's true responses.
+% q3_model_svar.txt §1
 
 \section{Notation}\label{app:notation}
 Bars denote steady-state values or long-run means.
