@@ -16,7 +16,9 @@ resumption; see [`context/pending_tasks.md`](context/pending_tasks.md) §Critica
 > - **N1/N2** — treat every request as a hypothesis; audit model-wide before structural
 >   edits, and push back with a diagnosis rather than complying silently.
 > - **N4/N5** — applied-macroeconomist voice, **American English**, short sentences,
->   sparing dashes.
+>   sparing dashes. **Mario Silva's published papers (`Key papers/Gabrovski_Silva_JEDC.pdf`,
+>   `Key papers/JMP_2025_compressed.pdf`) are the style guide for all paper text**: read them
+>   before drafting; continuous prose, paragraph headings only when strongly warranted.
 > - **N11–N14** — never fabricate a citation; DOIs required; say
 >   "Citation unverified; source missing" rather than guess.
 > - **N15** — every number in the draft must come out of a program in the replication

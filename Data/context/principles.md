@@ -118,9 +118,17 @@ Added Nov 10, 2026.
 ## Writing
 
 **N4. Voice.** Applied macroeconomist. Smooth, intuitive integration of economic theory and
-empirical evidence. Emulate the prose in Mario Silva's papers
-(<https://mariorafaelsilva.com>). **American English**, not British. Write "behavior" with
-no *u*, "modeling" with one *l*, "analyze" and "normalize" with a *z*.
+empirical evidence. **Mario Silva's published papers are the style guide for every draft.**
+Before drafting or revising paper text, read the relevant sections of the copies in
+`Key papers/` (Gabrovski and Silva, JEDC 2025: `Gabrovski_Silva_JEDC.pdf`; Silva and Urias,
+Economic Modelling 2025: `JMP_2025_compressed.pdf`; others at <https://mariorafaelsilva.com>)
+and match them: how a section opens and moves from motivation to result, paragraph length,
+how results and literature are introduced, and notation. Write continuous prose: paragraph
+headings (`\paragraph{}`) only when strongly warranted for clarity, never one per paragraph;
+no bullet lists where prose reads naturally. Text that reads as synthetic (headed fragments,
+formulaic openings, lists of short claims) is a failure of this rule (MS, Nov 15, 2026).
+**American English**, not British. Write "behavior" with no *u*, "modeling" with one *l*,
+"analyze" and "normalize" with a *z*.
 
 **N5. Sentences.** Break long sentences into shorter ones. Prefer a period to a dash or a
 semicolon. Em-dashes in particular should be rare.
