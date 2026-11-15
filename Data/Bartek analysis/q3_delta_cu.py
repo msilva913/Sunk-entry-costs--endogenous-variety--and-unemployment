@@ -140,6 +140,17 @@ if __name__ == "__main__":
     for h in range(H + 1):
         say(f"    h {h:2d}: {100 * s['Theta'][h, iF, jd]:+6.2f}  [{lo[h]:+6.2f}, {hi[h]:+6.2f}]")
 
+    # s -> CU: an unemployment-risk (demand) channel is blind to whether the job loss destroys the
+    # position, so it predicts utilization falls after s at least as much as after delta
+    # (Broer et al. 2025, IER: front-loaded job-loss risk drives precautionary saving).
+    js = s["names"].index("s")
+    lo_s, hi_s = 100 * np.percentile(s["draws"][:, :, iF, js], [16, 84], axis=0)
+    say(f"\n  s → CU by quarter ({fwd_specs[0][0]}), log points × 100, point [68 %]:")
+    for h in range(H + 1):
+        say(f"    h {h:2d}: {100 * s['Theta'][h, iF, js]:+6.2f}  [{lo_s[h]:+6.2f}, {hi_s[h]:+6.2f}]")
+    say(f"  cum 0–12: s → CU {100 * s['Theta'][:, iF, js].sum():+.2f}, "
+        f"δ → CU {100 * s['Theta'][:, iF, jd].sum():+.2f}")
+
     # ── figure ──────────────────────────────────────────────────────────────
     hh = np.arange(H + 1)
     fig, axes = plt.subplots(1, 3, figsize=(13, 4))

@@ -246,6 +246,7 @@ Program `q3_delta_cu.py`; CU = Federal Reserve G.17 total capacity utilization (
 | Hamilton | −0.27 | +1.66 (h 5) | +2.18 (h 5) | 27 % [1, 55] |
 
 - **CU after δ (the signature):** a one-SD δ shock lowers CU by −0.15 on impact and −0.48 at h 2, back to zero by h 8 (68 % band excludes zero h 0–6). Holding CU at zero removes about half of δ → u (47 % [22, 79] at p = 1; 54 % Hamilton; p = 4 unreliable).
+- **CU after s (added Nov 15, same SVAR):** a one-SD s shock lowers CU by −0.31 on impact, −0.58 at h 1 and −0.57 at h 2, back to zero by h 7 (68 % band excludes zero h 0–5); cumulative over h 0–12 −1.76, against −2.08 for δ. The utilization fall is therefore not a δ signature: both job-loss shocks lower utilization by similar amounts, with s slightly earlier. This qualifies the reading below.
 - **Reading:** identification and transmission are different questions. CU first changes only the δ shock's identification and removes little (the δ shock is mostly not demand). CU after δ measures transmission: a gradual fall in utilization, with no fall in labor productivity (which a search-demand shock would produce), is more consistent with δ propagating through demand than with contamination. Closures of under-used plants would raise survivors' utilization, so the fall is not mechanical. A lead, not a finding: the mediation is reduced-form and imprecise.
 
 ### 2.2g δ net of utilization and EBP jointly (added Nov 15)
