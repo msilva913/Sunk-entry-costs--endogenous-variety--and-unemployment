@@ -659,4 +659,20 @@ Its size has the same problem as §10.5. With ζ = 1/36 (three years to maturity
 - **Sluggish creation.** Their ξ = 0.05, against AGS's ξ = 1 and CK's 0.265. Lower ξ is positions-based, so it would lengthen s as well. Not tested in AGS.
 - **Literature they cite, to verify before use (N11–N14):** Ravn and Sterk (2021), McKay and Reis (2021), Challe (2020), Gornemann et al. (2021), Kekre (2022); Fujita and Ramey (2009), Shimer (2012), Elsby et al. (2009), Barnichon (2012); Leduc and Liu (2020), Haefke and Reiter (2020), Mercan et al. (2024), Engbom (2021), den Haan et al. (2021).
 
+**Precedents for the destruction/separation split (read Nov 15; credited in the draft).**
+- **Fujita and Ramey (2007, JEDC 31, 3671–3698, doi:10.1016/j.jedc.2006.12.008).**
+  - Model: a sunk creation cost K·n_t (unit elasticity, as AGS's ξ = 1). Positions last "until eliminated by obsolescence". They distinguish obsolescence λ^o from "normal" separation λ^n, after which the position is reposted at no cost.
+  - Calibration: from BED gross job destruction (Faberman 2004), giving λ^o = 0.021 and λ^n = 0.018 a month. Both rates are constant, and productivity shocks are the only shocks.
+  - Result: employment "attains its peak five quarters following the shock".
+  - **Open question for AGS:** the same creation technology does not propagate z in our model. TODO(MS) in the results section of the draft.
+- **Haefke and Reiter (2020, "Long Live the Vacancy", IHS WP 22; `Key papers/Haefke_Reiter_2020.pdf`, open access).**
+  - Model: endogenous "job destruction" δ_j (the vacancy is destroyed) and "match destruction" δ_m (the vacancy re-enters the stock), with Hall–Milgrom wages.
+  - Driven by one productivity shock. They name the "vacancy depletion channel".
+- **What is still ours:** independent stochastic shocks to each margin; destruction measured as establishment deaths (δ/τ = 0.087, against Fujita–Ramey's gross-destruction λ^o, which is over half of separations); costly reactivation; and the conditional SVAR test.
+
+**Literature added to the draft from Broer et al. (Nov 15; scope A + B + C).**
+- Fujita and Ramey 2009; Shimer 2012; Elsby, Michaels and Solon 2009; Leduc and Liu 2020; Mercan, Schoefer and Sedláček 2024; den Haan, Freund and Rendahl 2021; Merz and Yashiv 2007.
+- DOIs are verified with LibKey or web search. Claims rest on Broer et al.'s characterizations, as MS authorized; the quotes are in `%` comments.
+- Left out: Mueller 2017 (DOI not verified), Engbom 2021 (topic not verified), Fujita and Ramey 2005.
+
 **Bottom line (Nov 15).** No candidate mechanism we have examined (positions, finance, variety, diminishing returns, κ, credible bargaining, goods-market matching, unemployment risk) is δ-specific and propagating. The evidence points to D16 Path 1.

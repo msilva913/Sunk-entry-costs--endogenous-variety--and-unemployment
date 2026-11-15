@@ -64,7 +64,10 @@ Unemployment in the United States is volatile and persistent. Over 1951--2019 it
 % q3_stylized_moments.txt
 A large literature asks whether productivity shocks can generate fluctuations of this size \citep{shimer_2005, hagedorn_2008, pissarides_2009}, while another studies how job destruction and separations shape the dynamics of unemployment \citep{mortensen_1994, den_haan_2000, elsby_2013}. In this paper we ask a related question that has received less attention: does it matter \emph{how} workers lose their jobs?
 
-Unemployment can rise from either greater job destruction or a lower job finding rate. A worker can lose a job either because the match dissolves---with the employer and business opportunity carrying on---or because an establishment closes and takes every job with it. The search literature usually treats these as one flow. \citet{coles_2018} develop and estimate a model with finitely elastic vacancy creation and a single separation shock, which jointly destroys jobs and vacancies. Finitely elastic vacancy creation causes a separation shock to raise unemployment without inducing a vacancy spike, thus reproducing the negative comovement of unemployment and vacancies (the Beveridge curve).
+Unemployment can rise from either greater job destruction or a lower job finding rate. A worker can lose a job either because the match dissolves---with the employer and business opportunity carrying on---or because an establishment closes and takes every job with it. The search literature usually treats these as one flow. Exceptions are \citet{fujita_2007} and \citet{haefke_2020}, whose models distinguish separations that destroy the job from separations that return it to the pool of vacancies; in both, however, the two separation rates are either constant or driven by a single productivity shock, so neither asks how the economy responds to each margin separately.
+% fujita_2007 p. 3684: obsolescence lambda^o vs "normal" separation lambda^n, "both the worker and firm enter the matching pools"; constant rates (Table 1), productivity shocks only.
+% haefke_2020 p. 9 (IHS WP 22): "Upon separation of an employment relationship, the job can either survive or be destroyed. We allow either of these to happen and call the two types of separation match destruction and job destruction"; abstract: "with only one shock".
+Building on the long-lived vacancies of \citet{fujita_2007}, \citet{coles_2018} develop and estimate a model with finitely elastic vacancy creation and a single separation shock, which jointly destroys jobs and vacancies. Finitely elastic vacancy creation causes a separation shock to raise unemployment without inducing a vacancy spike, thus reproducing the negative comovement of unemployment and vacancies (the Beveridge curve).
 
 \citet{gabrovski_2025} decompose separation into match separation and destruction flows. They show that this helps generate a mild unemployment-labor productivity comovement in response to a productivity shock while fitting labor market correlations well. The intuition is that, due to sunk costs, vacancies are reposted following match separation and are thus less tied to current productivity.
 
@@ -76,13 +79,22 @@ Strikingly, the rise in deaths itself lasts barely a quarter, and the persistent
 % q3_persistence_tests.txt Test 2; q3_data_svar.txt
 The destruction response survives local projections, the Hamilton filter, additional lags, and controls for financial conditions and capacity utilization; with both controls its peak is about a quarter lower and its timing unchanged under the HP filter.
 
-We generalize the labor search model of \citet{gabrovski_2025}. Our model features three shocks: productivity $z$, destruction $\delta$ and separation $s$. Job positions are durable assets, so destruction removes jobs together with the vacancies attached to them, whereas a separation ends a match but leaves the position open. Reactivating a vacated position is costly, however, and an employer reactivates it only if the cost falls below the value of a vacancy. With costless reactivation our model is \citet{gabrovski_2025} with aggregate shocks, and without separations it has the structure of \citet{coles_2018}. Households own the firms and value jobs with their stochastic discount factor.
+We generalize the labor search model of \citet{gabrovski_2025}. Our model features three shocks: productivity $z$, destruction $\delta$ and separation $s$. Job positions are durable assets, so destruction removes jobs together with the vacancies attached to them, whereas a separation ends a match but leaves the position open. Reactivating a vacated position is costly, however, and an employer reactivates it only if the cost falls below the value of a vacancy. With costless reactivation our model is \citet{gabrovski_2025} with aggregate shocks, and without separations it has the structure of \citet{coles_2018}. Its creation technology, in which positions are created at a sunk cost that rises with the number created and last until they are destroyed, is that of \citet{fujita_2007}.
+% fujita_2007 p. 3684: "a cost of K n_t for creating a new job position, where n_t indicates the total number of positions created"; "Once a position is created, it continues to exist, either filled or unfilled, until eliminated by obsolescence."
+Households own the firms and value jobs with their stochastic discount factor.
 
 The impulse responses of an SVAR can differ from those of the true data generating process because of time aggregation, filtering, lag truncation and small samples. We therefore compare model and data by running the same SVAR on simulated data. The model then gets the impact of a destruction shock right, at 0.35 percent in both, but it misses the propagation: its response peaks after one quarter and is near zero after four, whereas the data's builds for four quarters. Summed over three years, the model delivers about a tenth of the data's response.
 % q3_model_svar.csv, delta -> u, h = 0; q3_model_svar.txt §2; q3_persistence_tests.txt Test 1
 Importantly, the gap does not close with the reactivation rate. A lower reactivation rate makes separations destroy more positions, and the model's response to separations then becomes persistent, as in \citet{coles_2018}, but its response to destruction does not change at all. Since the separation responses identify the reactivation rate, the destruction response becomes a test that the model fails at any reactivation rate. In other words, losing positions is not what makes destruction persistent. Productivity shocks show the same pattern: the model's impact response is about right, but its persistence is not.
 
-The paper makes three contributions. First, it measures destruction directly and documents that shocks to destruction and to match separation move unemployment and vacancies differently, with destruction acting through job finding and with a delay. Second, it derives a search model that nests \citet{coles_2018} and \citet{gabrovski_2025} and adds costly reactivation and household ownership of firms, so that the response to separations disciplines how many positions separations destroy. Third, it compares model and data through the same SVAR, shock by shock, which turns the destruction response into a novel test.
+The paper makes three contributions. First, it measures destruction directly and documents that shocks to destruction and to match separation move unemployment and vacancies differently, with destruction acting through job finding and with a delay. This is a shock-specific counterpart to the finding of \citet{broer_2025} that separations lead the job-finding rate. Second, it derives a search model that nests \citet{coles_2018} and \citet{gabrovski_2025} and adds costly reactivation and household ownership of firms, so that the response to separations disciplines how many positions separations destroy. Third, it compares model and data through the same SVAR, shock by shock, which turns the destruction response into a novel test.
+
+Our paper relates to two strands of literature. The first decomposes fluctuations in unemployment into inflows and outflows. \citet{fujita_2009} attribute 41 percent of the fluctuations in unemployment to the separation rate and \citet{shimer_2012} 28 percent, while \citet{elsby_2009} argue that separations matter most when unemployment starts to rise from a low point. More recently, \citet{broer_2025} show that, in the unconditional data and after monetary and productivity shocks alike, separations account for 40 to 59 percent of the fluctuations in unemployment and lead the job-finding rate by six to sixteen months. They name the distinction between separations and job destruction as a topic for future research, and our SVAR draws exactly that distinction.
+% per broer_2025 (characterization of secondary papers authorized by MS, Nov 15): p. 6 "FR document that fluctuations in the separation share account for 41% of the fluctuations in the unemployment rate. Shimer (2012) documents a smaller contribution of fluctuations in the separation rate of 28%"; p. 2 "Elsby et al. (2009), Barnichon (2012), and Elsby et al. (2015) argue that separations are more important when unemployment starts to increase from a low point or begin to fall from a peak"; p. 5 "ranging between 40% and 59% across the different settings ... with the separation rate leading the job-finding rate by between 6 and 16 months"; p. 17 "a distinction between separations and job destruction".
+The second strand treats vacancies as a stock. \citet{fujita_2007} show that a sunk cost of creating positions, which makes the vacancy stock predetermined, generates hump-shaped responses of tightness and employment to productivity shocks. \citet{coles_2018} add shocks to job destruction, and \citet{haefke_2020} name the resulting vacancy depletion channel: newly unemployed workers absorb vacancies that are replenished only gradually. Finitely elastic vacancy creation has since been used to study recruiting intensity \citep{leduc_2020}, congestion in matching \citep{mercan_2024}, uncertainty \citep{den_haan_2021} and the unemployment-risk channel \citep{broer_2025}, while convex posting costs offer an alternative source of sluggish vacancies \citep{merz_2007}. In \citet{fujita_2007}, \citet{coles_2018} and \citet{haefke_2020}, persistence comes from a vacancy stock that is rebuilt only slowly. Our destruction response tests this mechanism directly, because destruction removes positions without a separation in between.
+% fujita_2007 p. 3672-3673: "This modification transforms vacancies into a predetermined variable"; p. 3688: "employment jumps by a small amount at impact and attains its peak five quarters following the shock".
+% haefke_2020 p. 1: CK "illustrate the persistence and magnification of business cycle shocks that arise when a large number of newly unemployed job-seekers deplete the vacancy pool that then replenishes only gradually" (labelled "vacancy depletion").
+% per broer_2025 p. 2: "finitely elastic vacancy creation ... (see, e.g., Coles and Kelishomi 2018; Leduc and Liu 2020; Haefke and Reiter 2020; Mercan et al. 2024; Engbom 2021; and Den Haan et al. 2021)"; fn. 15: "convex vacancy-posting costs, as in Merz and Yashiv (2007)". Topics from titles.
 
 The remainder of the paper is organized as follows. Section~\ref{sec:beyond_ck} explains why the two margins must be separated. Section~\ref{sec:data} describes the data and Section~\ref{sec:stylized} documents stylized facts. Section~\ref{sec:svar} presents the SVAR and Section~\ref{sec:facts} its results. Section~\ref{sec:model} develops the model, Section~\ref{sec:calibration} calibrates it, and Section~\ref{sec:results} confronts it with the data. Section~\ref{sec:puzzle} states the puzzle.
 
@@ -95,7 +107,7 @@ In \citet{coles_2018}, every separation destroys the job. Vacancies are a stock 
 
 This account treats every separation as destruction, whereas in the data most separations are not. Workers at establishments that close account for only 8.7 percent of all separations over 1992--2019; the rest are matches that end at surviving employers.
 % shock_calibration.txt §1: delta/tau = 0.0873
-\citet{gabrovski_2025} therefore separate the two margins: destruction removes both the job and the position, whereas a separation ends the match and leaves the position, which the firm posts again. The distinction also changes what can be tested. With a single separation shock, persistence can only be assessed unconditionally, against the autocorrelation of unemployment. With two shocks it can be assessed conditionally, by asking whether unemployment responds more persistently to the shock that destroys establishments or to the one that ends matches. The answer distinguishes mechanisms: if persistence came from lost positions and their slow re-creation, the shock that removes more positions should be the persistent one.
+\citet{gabrovski_2025}, like \citet{fujita_2007} and \citet{haefke_2020} before them, therefore separate the two margins: destruction removes both the job and the position, whereas a separation ends the match and leaves the position, which the firm posts again. The distinction also changes what can be tested. With a single separation shock, persistence can only be assessed unconditionally, against the autocorrelation of unemployment. With two shocks it can be assessed conditionally, by asking whether unemployment responds more persistently to the shock that destroys establishments or to the one that ends matches. The answer distinguishes mechanisms: if persistence came from lost positions and their slow re-creation, the shock that removes more positions should be the persistent one.
 
 Which shock removes more positions depends, in turn, on how many of the positions vacated by separations are retired rather than reactivated. We therefore treat the reactivation rate $\bar\Lambda_r$ as a parameter. With costless reactivation, separations remove no positions; as $\bar\Lambda_r$ falls, separations retire more of them, and below a reactivation rate of roughly 0.9 they retire more positions than destruction removes. The response of vacancies to separations disciplines $\bar\Lambda_r$, since in the data vacancies fall after a separation shock, which requires low reactivation.
 % TODO: the 0.9 threshold is arithmetic on the steady state (handout §10.1); move to a program before it stays in.
@@ -271,7 +283,8 @@ Separation shocks, in contrast, act faster and fade sooner: unemployment peaks a
 
 \subsection{Inflows and outflows}
 
-Appending the job-finding rate to the SVAR splits each response of unemployment into an inflow and an outflow part, using the steady-state flow identity $d\ln u \approx (1-\bar u)(d\ln\tau - d\ln f)$. After a destruction shock, the inflow part peaks within two quarters and is nearly gone by the fourth, while the outflow part builds to its peak at the fourth quarter. Summed over three years, outflows account for 8.3 of the 9.7 points the identity attributes, and inflows for only 1.5. Thus, the persistent effect of destruction runs through a lower job-finding rate.
+Appending the job-finding rate to the SVAR splits each response of unemployment into an inflow and an outflow part, using the steady-state flow identity $d\ln u \approx (1-\bar u)(d\ln\tau - d\ln f)$.\footnote{The identity is the log-linear form of the steady-state decomposition $u^{ss}=\tau/(\tau+f)$ used by \citet{shimer_2012} and \citet{broer_2025}.}
+% broer_2025 p. 5: "the static decomposition proposed by Shimer (2012). We calculate the steady-state unemployment rate implied by current probabilities of separation (EU) and job finding (UE) using the formula u^ss = EU/(EU+UE)". After a destruction shock, the inflow part peaks within two quarters and is nearly gone by the fourth, while the outflow part builds to its peak at the fourth quarter. Summed over three years, outflows account for 8.3 of the 9.7 points the identity attributes, and inflows for only 1.5. Thus, the persistent effect of destruction runs through a lower job-finding rate.
 % q3_persistence_tests.txt Test 2
 
 \subsection{Robustness of the destruction response}
@@ -654,6 +667,7 @@ $s$ & $v$ & $-1.57$ (2) [$-1.91$, $-1.01$] & $-2.49$ (3) & $-1.80$ (3) \\
 \end{figure}
 
 Table~\ref{tab:irf_compare} and Figure~\ref{fig:model_irf} compare the responses. For productivity, the model's responses are a quarter to a half of the data's at the peak and die out faster; summed over three years, the baseline delivers 3.7 points against the data's 19.0. For destruction, the model gets the impact right but peaks after one quarter instead of four, and summed over three years it delivers 1.1 points against 10.8. For separations, on the other hand, the model's impact response is twice the data's, and the response is front-loaded.
+% TODO(MS): fujita_2007 (p. 3688) report that the same creation technology propagates productivity shocks (employment "attains its peak five quarters following the shock"), while AGS misses z persistence. Candidate reasons, unchecked: their b = 0.90 with c, K chosen to match sd(employment); cubic-trend detrending and true-model IRFs vs our HP SVAR on simulated data; AGS's household SDF (sigma = 1) and costly reactivation. A referee will ask; see Notes/ags_equilibrium.md §10.9.
 % q3_persistence_tests.txt Test 1
 
 \subsection{Conditional moments}
@@ -772,6 +786,9 @@ $X_t$, $X_t^r$ & Creation and hiring costs; reactivation costs & \eqref{eq:resou
 \bibitem[Bai, R{\'i}os-Rull and Storesletten(2025)]{bai_2025}
 Bai, Y., J.-V. R{\'i}os-Rull, and K. Storesletten (2025): ``Demand Shocks as Technology Shocks,'' \emph{Review of Economic Studies}, advance access, doi:10.1093/restud/rdaf045.
 
+\bibitem[Broer, Druedahl, Harmenberg and {\"O}berg(2025)]{broer_2025}
+Broer, T., J.~Druedahl, K.~Harmenberg, and E.~{\"O}berg (2025): ``The Unemployment-Risk Channel in Business-Cycle Fluctuations,'' \emph{International Economic Review}, 66(4), 1425--1458, doi:10.1111/iere.12773.
+
 \bibitem[Christiano, Eichenbaum and Trabandt(2016)]{christiano_2016}
 Christiano, L.~J., M.~S. Eichenbaum, and M.~Trabandt (2016): ``Unemployment and Business Cycles,'' \emph{Econometrica}, 84(4), 1523--1569, doi:10.3982/ECTA11776.
 
@@ -784,14 +801,29 @@ Corrado, C., and J.~Mattey (1997): ``Capacity Utilization,'' \emph{Journal of Ec
 \bibitem[den Haan, Ramey and Watson(2000)]{den_haan_2000}
 den Haan, W.~J., G.~Ramey, and J.~Watson (2000): ``Job Destruction and Propagation of Shocks,'' \emph{American Economic Review}, 90(3), 482--498, doi:10.1257/aer.90.3.482.
 
+\bibitem[den Haan, Freund and Rendahl(2021)]{den_haan_2021}
+den Haan, W.~J., L.~B. Freund, and P.~Rendahl (2021): ``Volatile Hiring: Uncertainty in Search and Matching Models,'' \emph{Journal of Monetary Economics}, 123, 1--18, doi:10.1016/j.jmoneco.2021.07.008.
+
+\bibitem[Elsby, Michaels and Solon(2009)]{elsby_2009}
+Elsby, M.~W.~L., R.~Michaels, and G.~Solon (2009): ``The Ins and Outs of Cyclical Unemployment,'' \emph{American Economic Journal: Macroeconomics}, 1(1), 84--110, doi:10.1257/mac.1.1.84.
+
 \bibitem[Elsby and Michaels(2013)]{elsby_2013}
 Elsby, M.~W.~L., and R.~Michaels (2013): ``Marginal Jobs, Heterogeneous Firms, and Unemployment Flows,'' \emph{American Economic Journal: Macroeconomics}, 5(1), 1--48.
+
+\bibitem[Fujita and Ramey(2007)]{fujita_2007}
+Fujita, S., and G.~Ramey (2007): ``Job Matching and Propagation,'' \emph{Journal of Economic Dynamics and Control}, 31(11), 3671--3698, doi:10.1016/j.jedc.2006.12.008.
+
+\bibitem[Fujita and Ramey(2009)]{fujita_2009}
+Fujita, S., and G.~Ramey (2009): ``The Cyclicality of Separation and Job Finding Rates,'' \emph{International Economic Review}, 50(2), 415--430, doi:10.1111/j.1468-2354.2009.00535.x.
 
 \bibitem[Gabrovski and Silva(2025)]{gabrovski_2025}
 Gabrovski, M., and M.~R. Silva (2025): ``Unemployment and Labor Productivity Comovement: the Role of Firm Exit,'' \emph{Journal of Economic Dynamics and Control}, 105205, doi:10.1016/j.jedc.2025.105205.
 
 \bibitem[Gilchrist and Zakraj{\v s}ek(2012)]{gilchrist_2012}
 Gilchrist, S., and E.~Zakraj{\v s}ek (2012): ``Credit Spreads and Business Cycle Fluctuations,'' \emph{American Economic Review}, 102(4), 1692--1720, doi:10.1257/aer.102.4.1692.
+
+\bibitem[Haefke and Reiter(2020)]{haefke_2020}
+Haefke, C., and M.~Reiter (2020): ``Long Live the Vacancy,'' IHS Working Paper 22, Institute for Advanced Studies, Vienna; IZA Discussion Paper 13666 (RePEc: RePEc:ihs:ihswps:22).
 
 \bibitem[Hagedorn and Manovskii(2008)]{hagedorn_2008}
 Hagedorn, M., and I.~Manovskii (2008): ``The Cyclical Behavior of Equilibrium Unemployment and Vacancies Revisited,'' \emph{American Economic Review}, 98(4), 1692--1706.
@@ -807,6 +839,15 @@ Jaimovich, N., and M.~Floetotto (2008): ``Firm Dynamics, Markup Variations, and 
 
 \bibitem[Jord{\`a}(2005)]{jorda_2005}
 Jord{\`a}, {\`O}. (2005): ``Estimation and Inference of Impulse Responses by Local Projections,'' \emph{American Economic Review}, 95(1), 161--182.
+
+\bibitem[Leduc and Liu(2020)]{leduc_2020}
+Leduc, S., and Z.~Liu (2020): ``The Weak Job Recovery in a Macro Model of Search and Recruiting Intensity,'' \emph{American Economic Journal: Macroeconomics}, 12(1), 310--343, doi:10.1257/mac.20170176.
+
+\bibitem[Mercan, Schoefer and Sedl{\'a}{\v c}ek(2024)]{mercan_2024}
+Mercan, Y., B.~Schoefer, and P.~Sedl{\'a}{\v c}ek (2024): ``A Congestion Theory of Unemployment Fluctuations,'' \emph{American Economic Journal: Macroeconomics}, 16(1), 238--285, doi:10.1257/mac.20210171.
+
+\bibitem[Merz and Yashiv(2007)]{merz_2007}
+Merz, M., and E.~Yashiv (2007): ``Labor and the Market Value of the Firm,'' \emph{American Economic Review}, 97(4), 1419--1431, doi:10.1257/aer.97.4.1419.
 
 \bibitem[Michaillat and Saez(2015)]{michaillat_2015}
 Michaillat, P., and E.~Saez (2015): ``Aggregate Demand, Idle Time, and Unemployment,'' \emph{Quarterly Journal of Economics}, 130(2), 507--569.
@@ -825,6 +866,9 @@ Qiu, Z., and J.-V. R{\'i}os-Rull (2022): ``Procyclical Productivity in New Keyne
 
 \bibitem[Shimer(2005)]{shimer_2005}
 Shimer, R. (2005): ``The Cyclical Behavior of Equilibrium Unemployment and Vacancies,'' \emph{American Economic Review}, 95(1), 25--49.
+
+\bibitem[Shimer(2012)]{shimer_2012}
+Shimer, R. (2012): ``Reassessing the Ins and Outs of Unemployment,'' \emph{Review of Economic Dynamics}, 15(2), 127--148, doi:10.1016/j.red.2012.02.001.
 
 \bibitem[Silva and Urias(2025)]{silva_urias_2025}
 Silva, M.~R., and M.~Urias (2025): ``Productive Demand and Sectoral Capacity Utilization,'' \emph{Economic Modelling}, 153, 107317, doi:10.1016/j.econmod.2025.107317.
