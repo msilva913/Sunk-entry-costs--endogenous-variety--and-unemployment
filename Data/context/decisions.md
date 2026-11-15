@@ -1,5 +1,5 @@
 # Decision Register
-**Last updated:** November 6, 2026 (D13 amended: z responses join Block B′, built on the model side; S16: the objective is impulse responses only, Block M leaves it). October 14, 2026 (D13 adopted: SVAR Block B′ replaces Bartik; D3 moot, D10 → (a) as validation). October 12: D12 updated for the Oct 11 theory rebuild; S12 rewritten for the new `sec:mechanism` structure; D1 entry compressed). Earlier: October 9 (D12 added) · **Branch:** `costly_vacancy_reposting`
+**Last updated:** November 15, 2026 (D16 paper identity and D17 z labeling opened, branch `d15_ags_finance`). November 6, 2026 (D13 amended: z responses join Block B′, built on the model side; S16: the objective is impulse responses only, Block M leaves it). October 14, 2026 (D13 adopted: SVAR Block B′ replaces Bartik; D3 moot, D10 → (a) as validation). October 12: D12 updated for the Oct 11 theory rebuild; S12 rewritten for the new `sec:mechanism` structure; D1 entry compressed). Earlier: October 9 (D12 added) · **Branch:** `costly_vacancy_reposting`
 
 One entry = one decision: a *choice*, not a task. Tasks live in
 [`pending_tasks.md`](pending_tasks.md). When a decision is settled, move it to §Settled with
@@ -17,8 +17,27 @@ Status key: 🔴 blocks estimation · 🟠 blocks a paper section · 🟡 improv
 | D12 | Venue and the theory-first pivot (JET?) | 🟠 open (MS), recommendation: no-go for JET; theory-forward paper for RED / JME / AEJ: Macro |
 | D13 | Conditional moments without Bartik: Block B′ = aggregate SVAR responses | 🔴 adopted Oct 14; **amended Nov 6 (MS): z-shock responses included**; model side built (`q3_model_svar.py`); B′'s z, s processes re-matched on its window (Nov 6); open: one-SD vs scaled, the weighting matrix |
 | D14 | Is the s innovation orthogonalized against z and δ? | 🟡 low stakes after Q2 (Oct 20): z and δ explain 1.1 % of the s innovation, so (a) and (b) coincide; take (a). New question: the dropped cross-lag δ_{t−1} → s_t (t = 2.8) |
+| D16 | Paper identity: evidence + diagnostic (Path 1) or a mechanism paper (Path 2) | 🟠 open (MS), Nov 15; recommendation: Path 1 as backbone, mechanism search bounded by pre-specified tests |
+| D17 | Is the z shock technology or measured productivity? | 🟠 open (MS), Nov 15; recommendation: label it measured productivity, report z orthogonalized to utilization as robustness |
 
 ---
+
+## 🟠 D16. Paper identity: evidence plus diagnostic, or a mechanism paper? — open, Nov 15, 2026
+
+**The facts behind it** (findings.md, Nov 10–15; `../Notes/ags_equilibrium.md` §10.7–10.8):
+- The δ-conditional fact (u builds to a peak at quarter 4 through job finding after a short-lived rise in establishment deaths; s fades) is robust under HP to financial conditions, capacity utilization and both jointly; fragile under Hamilton with joint controls.
+- Positions-based propagation (Coles–Kelishomi, AGS at any reactivation rate) cannot produce it: the s responses pin Λ̄_r, and δ's response is invariant to Λ̄_r.
+- No mechanism tried produces it: variety, intermediate inputs, the financial friction (§10.7). Every candidate scales with the lines a δ shock destroys (about 0.014 % a month for about a quarter).
+
+**Options.**
+- **Path 1:** the δ/s conditional facts plus the result that positions-based models, including business formation, fail them. Feasible now; AEJ: Macro plausible, JME if the fact is very robust. Risks: "so what generates it?"; short sample, recursive identification; s short-lived only at p = 4; the Bartik QU placebo.
+- **Path 2:** a mechanism paper (the original objective). No validated candidate. Lead: δ lowers capacity utilization at h 2 and about half of δ → u runs through it (imprecise), which points to propagation through demand (goods-market frictions; Silva and Urias 2025).
+
+**Recommendation:** Path 1 as the backbone; each mechanism candidate must pass pre-specified criteria (as finance did not, Nov 15). **MS to decide** whether a mechanism is necessary for the paper.
+
+## 🟠 D17. The z shock: technology or measured productivity? — open, Nov 15, 2026
+
+SVAR A orders z first as "the most plausibly exogenous" series and AGS treats z as technology, while Silva and Urias (2025, Table 4) estimate that shopping-effort shocks explain 46 % of the Solow residual's variance. Orthogonalizing z to same-quarter capacity utilization (`q3_z_purged.py`; empirical note §2.2h) changes z → u by 13–40 % per unit of z and halves z's variance share of u; the model's z gap survives (2.8–4.4× cumulative). **Recommendation:** call the z shock measured productivity in the paper and report the orthogonalized responses as the technology-like robustness target. Goods-market frictions in the model (utilization observable on both sides) are not forced by the z evidence; they become relevant only if D16 goes to the demand channel. **MS to confirm.**
 
 ## 🟠 D15. Two-part paper: AGS first, then the full model with business formation
 

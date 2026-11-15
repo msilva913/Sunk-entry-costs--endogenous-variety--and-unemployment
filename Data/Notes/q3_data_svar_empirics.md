@@ -219,6 +219,64 @@ How much of a shock's effect on u and v runs *through* exit? The method is a cou
 
 **In the paper:** report δ's share of var(u) as a range, from about 6 % (net of financial conditions, A_F) to about 12 % (A). Use A_F and the mediation to show that δ's effect isn't financial stress relabeled. Treat the model's abstraction from financial disturbances as standard and say so; the δ × NFCI Bartik result can motivate an extension.
 
+### 2.2e δ and credit spreads, both orderings (added Nov 15)
+
+Programs: `q3_delta_finance.py` (F after δ) and `q3_finance_delta.py` (F before δ), with F the Gilchrist–Zakrajšek excess bond premium (EBP; `part7d_ebp.py`, Fed file, quarterly means), the GZ spread, NFCI or ANFCI; HP (BIC lag 1, and p = 4) and Hamilton; residual bootstrap.
+
+| (z, s, δ, F, u, v): one-SD δ shock → F | peak | 90 % band |
+|---|---|---|
+| EBP, HP p = 1 | +3.6 bp (h 1) | [−2.5, +9.4] |
+| EBP, HP p = 4 | +8.2 bp (h 2) | [+0.4, +13.7] |
+| GZ spread, HP p = 4 | +12.2 bp (h 2) | [+1.5, +20.0] |
+| EBP, Hamilton | +6.6 bp (h 4) | [−1.5, +14.0] |
+
+- EBP's response on impact is zero; NFCI and ANFCI barely move. EBP's HP cycle has SD 53 bp, so δ accounts for little of its variation.
+- **F before δ:** innovation correlations with δ are small (EBP +0.05, GZ +0.12, NFCI +0.13). An EBP shock raises δ by about 1.4 at h 1 (δ's own one-SD shock: 5.2), short-lived; under Hamilton the long-horizon sign reverses.
+- **δ net of EBP** (HP, p = 1): u peaks at +1.01 at h 4 (A: +1.41); absorbed share 24 % [−5, 46] (GZ 34 %, NFCI 36 %); at p = 4, 7–18 %, not significant. The hump survives.
+- **Financial shocks** explain 34–59 % of var(u) at 4–8 quarters (an upper bound: F first takes all non-z comovement); 15–18 % of their effect on u runs through δ.
+
+### 2.2f δ and demand: capacity utilization (added Nov 15)
+
+Program `q3_delta_cu.py`; CU = Federal Reserve G.17 total capacity utilization (`part7e_tcu.py`; FRED refuses the cloud container), log HP cycle over 1967Q1–2019Q4. CU covers manufacturing, mining and utilities only. Motivation: in goods-market search models demand moves utilization (Silva and Urias 2025; Bai, Ríos-Rull and Storesletten 2025).
+
+| (z, CU, s, δ, u, v) | corr(CU, δ innov.) | δ → u peak | A peak | absorbed [68 %] |
+|---|---|---|---|---|
+| HP p = 1 | −0.30 | +1.25 (h 4) | +1.41 (h 4) | 14 % [7, 30] |
+| HP p = 4 | −0.27 | +1.60 (h 4) | +1.86 (h 4) | 21 % [−14, 51] |
+| Hamilton | −0.27 | +1.66 (h 5) | +2.18 (h 5) | 27 % [1, 55] |
+
+- **CU after δ (the signature):** a one-SD δ shock lowers CU by −0.15 on impact and −0.48 at h 2, back to zero by h 8 (68 % band excludes zero h 0–6). Holding CU at zero removes about half of δ → u (47 % [22, 79] at p = 1; 54 % Hamilton; p = 4 unreliable).
+- **Reading:** identification and transmission are different questions. CU first changes only the δ shock's identification and removes little (the δ shock is mostly not demand). CU after δ measures transmission: a gradual fall in utilization, with no fall in labor productivity (which a search-demand shock would produce), is more consistent with δ propagating through demand than with contamination. Closures of under-used plants would raise survivors' utilization, so the fall is not mechanical. A lead, not a finding: the mediation is reduced-form and imprecise.
+
+### 2.2g δ net of utilization and EBP jointly (added Nov 15)
+
+Program `q3_delta_joint.py`: (z, CU, EBP, s, δ, u, v); the order of CU and EBP between themselves does not affect the δ shock.
+
+| | δ → u peak | A peak | absorbed [68 %] | δ's FEVD of u, 8q, joint / A |
+|---|---|---|---|---|
+| HP p = 1 | +1.03 (h 4) | +1.41 (h 4) | 29 % [2, 55] | 6 / 12 % |
+| HP p = 4 | +1.33 (h 4) | +1.86 (h 4) | 13 % [−29, 60] | 8 / 13 % |
+| Hamilton | +0.97 (h 11) | +2.18 (h 5) | 58 % [−16, 95] | 1 / 8 % |
+
+- **HP: robust.** Same timing, 15–30 % smaller; the controls overlap (14 % and 24 % alone, 29 % jointly).
+- **Hamilton: fragile.** The joint control flattens the response (about 0.55 for h 2–6, rising to about 1.0 by h 11); bands are too wide to decide (seven variables, T = 99).
+- Uncontrolled: demand that moves neither utilization nor spreads, and service-sector demand.
+
+### 2.2h z orthogonalized to utilization (added Nov 15)
+
+Program `q3_z_purged.py`: SVAR P = (CU, z, s, δ, u, v) against A on the same window and lag. **What it does:** adds lagged CU to the information set and orthogonalizes the z innovation to the same-quarter CU innovation (Cholesky, CU first). It does not adjust the productivity series (unlike Fernald's series or Silva and Urias's eq. 26), it assigns technology-driven utilization to CU (so it over-removes technology), and it leaves demand that bypasses measured utilization in z. The z shock in P is a conservative (lower-bound) version of a technology shock. About 14 % of the z innovation's variance is assigned to CU (impact on z: 0.50 against 0.54).
+
+| | cum z → u, P / A, per 1 % of z [68 %] | z's FEVD of u, 4q / 8q: P | A | CU in P |
+|---|---|---|---|---|
+| HP p = 1 | 0.87 [0.64, 0.98] | 14 / 19 | 34 / 37 | 42 / 33 |
+| HP p = 4 | 0.58 [0.05, 0.86] | 6 / 5 | 29 / 23 | 48 / 40 |
+| Hamilton | 0.79 [0.56, 0.86] | 10 / 16 | 28 / 34 | 42 / 36 |
+
+- Same-quarter demand accounts for a modest part of z's effect on u (13 % per unit of z at p = 1, about 20 % under Hamilton, up to about 40 % at p = 4), but for half of z's variance share: CU becomes the largest source of var(u).
+- **Against the AGS model** (SVAR A on simulated data; z is technology there by construction), HP p = 1, z → u per one SD: data A peak −2.42, data P −1.81 (−1.94 per unit of z), model default −0.69 (compromise −1.29); cumulative −19.0 / −15.3 / −3.7 (−5.9). The model is 2.8–4.4× short cumulatively against the orthogonalized target (1.5–2.8× for the compromise case), mostly in persistence (h 8: data P −1.29, model −0.15).
+- δ → u in P equals §2.2f's first ordering (peak +1.25 at h 4).
+- **Implications:** label the z shock "measured productivity" (Silva and Urias estimate that shopping-effort shocks explain 46 % of the Solow residual's variance); report P as the technology-like robustness target; the z gap is mainly a failure to propagate, not demand mislabeled. Block B′'s three shocks omit the largest single source of var(u) in these SVARs.
+
 ### 2.3 Against the model (working point of `Q2_amplification_sweep.txt`: p_0 = 0.8, Λ̄_r = 0.25)
 
 **Rerun Nov 2, 2026 at the matched (filter-consistent) shock processes** now in `SHOCKS_BASE`: z (0.9628, 0.0062), δ (0.5319, 0.0641), s (0.8048, 0.0437). The earlier version of this section used shocks whose monthly σ was inflated 1.5–2.5× by an inverted formula in part6b's `to_monthly` (Sept 21 – Nov 2). Its conclusion, that the model's total volatility was about right while s was over-propagated about 2×, was mostly an artifact of that bug. Details in findings.md.

@@ -46,6 +46,13 @@ They meet only at estimation, which does not exist yet — see
 | `part6b_shock_persistence_cyclical.py` | **Model shock calibration (S14, Oct 28):** (1) z AR(1) on 1951Q1–2019Q4; (2) (z, δ) VAR(1) on 1992Q3–2019Q4, Cholesky z-first, keeping ρ_δ and σ_δ ⊥ z; (3) s AR(1) on the spliced 1951–2019 series (before 1992Q3, s = (τ − δ̄)/(1 − δ̄) with δ̄ the first-10-BED-quarter mean), σ_s not purged. Series cut at 2019Q4 before filtering (S13), each filtered over its own window. Report includes the method, splice checks, sub-windows, the D14 independence test and Ljung-Box. Run code under `if __name__ == "__main__":` | ✅ Oct 28 → `shock_calibration.csv/.txt` (ρ, σ for z, δ, s; τ as diagnostic) |
 | `q3_data_svar.py` | **Q3 Block B′ data side (Oct 29):** recursive SVARs A (z, δ, s, u, v) 1992Q3–2019Q4, B (z, s, u, v) 1951–2019, C (z, s, u, v) 1992Q3–2019Q4; cycles from part6b plus u, v; BIC lag (p = 1, 2 also reported); FEVD at h = 4, 8, 20, 200 with min–max over orderings of the shock block; IRFs of u, v at h = 0–12 with residual-bootstrap 68 %/90 % bands (1,000 draws). part6c (trivariate VAR) deleted Oct 29 | ✅ Oct 29 → `q3_data_svar.txt`, `_headline.csv`, `_headline.txt` (plain tables, paste-ready), `_fevd.csv`, `_irf.csv`, `_irf.png` |
 | `part7_nfci.py` | Chicago Fed NFCI → quarterly | ✅ |
+| `part7d_ebp.py` | Gilchrist–Zakrajšek GZ spread and excess bond premium (Fed file; browser user agent needed) → `ebp_quarterly.parquet` | ✅ Nov 10 |
+| `part7e_tcu.py` | Total capacity utilization, Fed G.17 text file (FRED refuses the cloud container) → `tcu_quarterly.parquet` | ✅ Nov 15 |
+| `q3_delta_finance.py` | (z, s, δ, F, u, v): δ → F (EBP, GZ, NFCI, ANFCI), share of δ → u through F | ✅ Nov 10 → `q3_delta_finance.txt/.png` |
+| `q3_finance_delta.py` | (z, F, s, δ, u, v): F → δ, δ net of F (joint bootstrap against A), F → u through δ | ✅ Nov 15 → `q3_finance_delta.txt/.png` |
+| `q3_delta_cu.py` | Capacity utilization before and after δ (contamination bound; signature) | ✅ Nov 15 → `q3_delta_cu.txt/.png` |
+| `q3_delta_joint.py` | (z, CU, EBP, s, δ, u, v): δ net of utilization and EBP jointly | ✅ Nov 15 → `q3_delta_joint.txt` |
+| `q3_z_purged.py` | (CU, z, s, δ, u, v): z orthogonalized to same-quarter utilization, against A and the AGS model | ✅ Nov 15 → `q3_z_purged.txt` |
 | `part7b_sloos.py` | SLOOS C&I tightening in place of NFCI_risk | ⚠️ run, but **output stale** (pre-Deaths instrument, `instr_sd`=11.16) |
 | `part7c_recession_placebo.py` | Dual-severity placebo (u^nat level + change) | ✅ headline validation |
 | `part8_shimer_national.py` | Diagnostic only: national Shimer flows; does not feed the LPs | ✅ |
@@ -312,6 +319,12 @@ they were broken before R8 and were not converted in Q1 step 6. Rebuild from
   drops `x_v`, inherits κ, targets b/w_int, leaves ϕ residual.
 
 ---
+
+### AGS programs (`Data/Programs AGS/`, D15 Part 1)
+
+Run from `Programs AGS/` with `julia --project="../Programs baseline" <file>`. `ags_model.jl` (model, solver, helpers) is included by the runners; `ags_finance_model.jl` (§10.3 financial friction) is standalone because the toolkit's derivative functions are global. `ags_finance_irf.jl` writes `ags_finance_irf.txt/.csv`; `julia ags_finance_irf.jl ags` writes the AGS reference `ags_finance_reference.csv`.
+
+**Cloud container setup (Nov 15):** Julia 1.12.7 via juliaup (`curl -fsSL https://install.julialang.org | sh -s -- -y --default-channel 1.12.7`), `Pkg.instantiate()` in `Programs baseline`, and `pip install sympy` for the system Python that PyCall uses (`/usr/bin/python3`).
 
 ## Part 3 — Paper library utility
 

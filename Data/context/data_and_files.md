@@ -15,6 +15,8 @@
 | BEA via FRED (RVAM, RVAC, …) | Real value-added by supersector | 2005Q1–present | Extended to 1992Q1 via Chow-Lin |
 | Chicago Fed NFCI | Financial conditions, risk subindex | 1990Q1+ | Weekly → quarterly; demeaned in sample |
 | Barnichon (2010) Composite HWI | Pre-JOLTS vacancy proxy | 1951–2007 | Spliced with JOLTS at 2001Q1 |
+| Federal Reserve (Favara et al. update) | GZ credit spread, excess bond premium | 1973M1–present | `part7d_ebp.py`; monthly → quarterly means; pp |
+| Federal Reserve G.17 (`utl_sa.txt`, code B50001) | Total capacity utilization (= FRED TCU) | 1967M1–present | `part7e_tcu.py`; monthly → quarterly means; industry only |
 
 **BEA API is blocked** (both sandbox and local). Use FRED exclusively. FRED series IDs:
 

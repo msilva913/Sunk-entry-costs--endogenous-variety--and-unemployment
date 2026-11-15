@@ -1,5 +1,5 @@
 # Pending Tasks
-**Last updated:** October 19, 2026 (Q1 closed and merged; Q2 scoped, D14 opened). Before: October 18, 2026 (Q1 steps 5–7 done, close-out pending; R19 added: pricing replacement offsets the user-cost channel; BK ε-threshold located; `rem:dilution_variety` + App. K). Earlier: October 14, 2026 (quantitative plan Q0–Q6 adopted, D13; E9 superseded). Oct 13: P8 theory-section cleanup logged; R3 flagged as the main theory gap. Oct 12: cleanup after the Oct 11–12 theory sessions: R15, R16, R12, R12c, P5 done and compressed into §Completed). · **Branch:** `costly_vacancy_reposting`
+**Last updated:** November 15, 2026 (status block added; D15 Part 1 results). Before: October 19, 2026 (Q1 closed and merged; Q2 scoped, D14 opened). Before: October 18, 2026 (Q1 steps 5–7 done, close-out pending; R19 added: pricing replacement offsets the user-cost channel; BK ε-threshold located; `rem:dilution_variety` + App. K). Earlier: October 14, 2026 (quantitative plan Q0–Q6 adopted, D13; E9 superseded). Oct 13: P8 theory-section cleanup logged; R3 flagged as the main theory gap. Oct 12: cleanup after the Oct 11–12 theory sessions: R15, R16, R12, R12c, P5 done and compressed into §Completed). · **Branch:** `costly_vacancy_reposting`
 
 Actionable work only. Decisions live in [`decisions.md`](decisions.md), draft section status in
 [`draft_status.md`](draft_status.md), results in [`findings.md`](findings.md), the model
@@ -7,6 +7,21 @@ specification in [`model_equations.md`](model_equations.md).
 
 The theory sections (§§1–3, Appendices G–J) were audited and corrected Oct 11–12. What remains:
 bring the code in line with the draft (R8), regenerate every §5 number once, and write §5.4 and §6.
+
+---
+
+## Status Nov 15, 2026 (branch `d15_ags_finance`; D15 Part 1)
+
+Results: findings.md "Persistence of δ: mechanisms tested and identification checks" and decisions D16–D17.
+
+| Task | Status |
+|---|---|
+| Decide D16 (paper identity) and D17 (z labeling) | ⏳ MS |
+| Reactivation-rate check through the SVAR as a pipeline program (Λ̄_r grid; δ and s responses of u, v, model side SVAR A) — the evidence for "positions-based propagation fails δ at any Λ̄_r" | ❌ (exploratory true-shock version only: scratch `lam_check.jl`) |
+| Bartik QU placebo: resolve or state that the state-level evidence does not corroborate | ❌ |
+| Draft reframing for Path 1 (if adopted); §5.3 is still committed to runs that do not exist | ❌ after D16 |
+| Financial friction in AGS: keep as z accelerator or drop; if kept, settle §10.3's open choices and calibrate κ_d to payout volatility | ⏳ MS |
+| Coles–Kelishomi attribution check in AGS (δ̄ = τ, s̄ ≈ 0), handout §7.7 item 1 | ❌ |
 
 ---
 

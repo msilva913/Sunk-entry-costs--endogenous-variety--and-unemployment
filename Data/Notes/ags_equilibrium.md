@@ -411,7 +411,7 @@ In the full model without exit and with clone replacement, σ = 1 doubles δ's e
 ### 10.1 What the data and the calibration require of any δ mechanism
 
 1. **It must act on job creation, with a delay.** The persistent part of δ's effect on u runs through job finding, not inflows, and it builds for three to four quarters.
-2. **It must be triggered by the death of product lines, not by the loss of positions.** With costly reactivation at Λ̄_r = 0.25, separations retire three quarters of the positions they vacate. Per month in steady state, destruction removes δ(v + 1 − u) ≈ 0.26 % of positions, while retirement after separations removes (1 − δ)(1 − Λ̄_r)s(1 − u) ≈ 2.0 %; per one-SD shock, an s shock retires about five times as many positions as a δ shock destroys. Yet δ's effect on u in the data is at least as large as s's and more persistent. So the δ–s asymmetry cannot come from the number of positions lost. It must come from something destroyed only when an establishment dies.
+2. **It must be triggered by the death of product lines, not by the loss of positions.** With costly reactivation at Λ̄_r = 0.25, separations retire three quarters of the positions they vacate. Per month in steady state, destruction removes δ(v + 1 − u) ≈ 0.26 % of positions, while retirement after separations removes (1 − δ)(1 − Λ̄_r)s(1 − u) ≈ 2.0 %; per one-SD shock, an s shock retires about five times as many positions as a δ shock destroys. *Caveat (Nov 15):* these ratios hold at the working value Λ̄_r = 0.25, which is estimated from s responses and cor(u, v), not measured. Separations retire more positions than destruction removes whenever Λ̄_r ≲ 0.9 (steady-state flows), and an s shock retires more than a δ shock destroys whenever Λ̄_r ≲ 0.83 (rough arithmetic). Near costless reactivation the argument fails. Yet δ's effect on u in the data is at least as large as s's and more persistent. So the δ–s asymmetry cannot come from the number of positions lost. It must come from something destroyed only when an establishment dies.
 3. **It must leave s short-lived:** with enough lags (p = 4), the data's s response fades within a few quarters and overshoots.
 
 ### 10.2 The friction, and its economic rationale
@@ -541,8 +541,32 @@ Its size has the same problem as §10.5. With ζ = 1/36 (three years to maturity
 | Gertler and Karadi (2011), *JME*; Gertler and Kiyotaki (2010) | lender (bank) net worth constraint | an alternative trigger: losses on loans to dying lines deplete lenders' capital. Similar scale arithmetic. |
 | Wasmer and Weil (2004), *AER*; Petrosky-Nadeau and Wasmer (2013, *AEJ: Macro*; 2015, *JME*) | search frictions in credit (and, in 2015, goods) markets | not chosen for credit: congestion would be driven by s (§10.2). The 2015 paper's goods-market friction is the main alternative to finance (customer capital lost when a line dies); add it to `../Key papers/`. |
 
-### 10.7 Next steps
+### 10.7 Results (Nov 10–15, 2026)
 
-1. The δ → F test (§10.5), with the excess bond premium and NFCI.
-2. If it supports a financial channel at scale: code §10.3 in AGS (one new state, W), calibrate b̄, χ and κ_d, and run it through the SVAR against the δ target.
-3. Settle the open choices: whether hiring costs (κ) are financed as well as creation; whether destroyed lines' cash is recovered by households; the units of wage bargaining; the mapping of the monthly spread ψ̄ to observed spreads.
+*Programs: `../Bartek analysis/q3_delta_finance.py`, `q3_finance_delta.py` (data); `../Programs AGS/ags_finance_model.jl`, `ags_finance_irf.jl` (model). Empirical details: §2.2e–2.2h of the empirical note (`q3_data_svar_empirics.md`).*
+
+**Step 1, data: δ and financial conditions.**
+- **δ → EBP** (SVAR (z, s, δ, F, u, v)): zero on impact, then +3.6 bp at quarter 1 (HP, p = 1; 90 % band includes zero), +8.2 bp at quarter 2 (p = 4; 90 % band excludes zero); the GZ spread +6 to +12 bp. NFCI and ANFCI barely respond. Spreads peak at quarters 1–2, ahead of u at quarter 4; holding EBP at zero removes the build-up of u from quarter 1 to 4. The share of δ → u running through EBP is not pinned down (24 % [−36, 52] at p = 1). Scale: the EBP cycle's SD is 53 bp (1992Q3–2019Q4).
+- **Reverse ordering** (z, F, s, δ, u, v): the F and δ innovations are nearly uncorrelated (EBP +0.05, NFCI +0.13). An EBP shock raises δ by about 1.4 at quarter 1 (a quarter of δ's own one-SD shock), briefly. Net of EBP, δ → u still peaks at about 1.0 at quarter 4 (A: 1.41); EBP absorbs 24 % [−5, 46] at p = 1, less at p = 4. Financial shocks move u a lot (EBP explains 34–59 % of var(u)) but only 15–18 % of that runs through δ. So δ is not mainly a financial shock in disguise, and the δ target stays SVAR A.
+
+**Step 2a, model: true-shock responses** (AGS_TARGETS, b̄ = 0.5, χ = 1; κ_d ∈ {0, 0.1, 1, 10, 100}; and χ = 4). Steady state: ψ̄ = 157 bp a year, W ≈ 2 % of monthly output, Π ≈ 1.7 W a month, ϑ̄ = 0.21.
+
+| one-SD shock, quarterly | AGS | κ_d = 0 | κ_d = 1 | κ_d = 100 | χ = 4, κ_d = 1 |
+|---|---|---|---|---|---|
+| δ → u, peak | +0.262 (q1) | +0.261 (q1) | +0.268 (q1) | +0.268 (q1) | +0.270 (q1) |
+| δ → premium, bp | — | −2.7 (q0) | −0.9 (q4) | −1.1 (q4) | −0.7 (q3) |
+| z → u, peak | −0.68 | −0.68 | −0.78 | −0.79 | −0.88 |
+| s → u at q4 | 1.40 | 1.39 | 1.23 | 1.21 | 1.08 |
+
+- **Criteria** (agreed Nov 15): (1) δ → u hump inside the bands: **fails**; (2) δ → premium of 4–8 bp at quarters 1–2: **fails, wrong sign**; (3) s short-lived: passes; (4) z no worse: passes (amplified 15–30 %).
+- **Why** (diagnostic at κ_d = 1, scratch program, not draft-bound): a one-SD δ shock destroys extra funds of about 0.02 % of W a month for about a quarter, but lowers the wage by about 0.005 %. The margin (z̄ − w)/z̄ is 3.5 %, so the lines' cash flow rises by about 0.13 %, which adds about 0.2 % to W. Funds rise, leverage and the premium fall. The same profit channel drives the large W responses to z and s. **The friction, as specified, is a profit-driven accelerator, not a destruction trigger.** The result does not depend on κ_d or χ.
+
+**Reactivation rate cannot substitute** (exploratory true-shock check in AGS, scratch program; not draft-bound until rerun through the SVAR as a pipeline program). As Λ̄_r falls from 1 to 0.03, s turns persistent and Beveridge-consistent (cumulative u response 3.6 → 15.8; v at quarter 4 from +0.19 to −2.02): Coles and Kelishomi's mechanism, nested. δ's response does not change (peak +0.26 to +0.29 at quarter 1, cumulative 1.5–2.8), because reactivation applies only to positions vacated by separations. The s responses identify Λ̄_r; δ's response is then an overidentifying test that positions-based propagation fails at any Λ̄_r.
+
+### 10.8 Status (Nov 15) and next steps
+
+- **Finance does not solve the δ gap.** It stays as a possible z accelerator that also shortens s. Whether to keep it in AGS is open.
+- **The data's δ fact survives the controls we have.** Under HP, δ → u keeps its hump net of financial conditions, of capacity utilization, and of both jointly (peak about 1.0 at quarter 4 against 1.41 in A). Under the Hamilton filter the joint control flattens it (wide bands). Against the most conservative target the model (0.06 at quarter 4) is still far short.
+- **z and δ share a diagnosis:** the model gets the impact roughly right and misses persistence (the z gap survives orthogonalizing z to utilization: 2.8–4.4× cumulative). One slow state in job creation may serve both.
+- **Open decisions** (decisions.md D16, D17): the paper's identity (evidence plus diagnostic, or a mechanism paper); z labeled as measured productivity.
+- **Next, if pursued:** the reactivation-rate check through the SVAR as a pipeline program; the open choices of §10.3 only if finance stays.

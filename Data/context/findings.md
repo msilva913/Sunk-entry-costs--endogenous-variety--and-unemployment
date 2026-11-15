@@ -1109,3 +1109,23 @@ Data (SVAR A): δ 3.0–4.3, z 7.40, s 3.9–4.5.
   - σ(v) 13.25 against 13.82, σ(θ)/σ(LP) 12.85 against 11.70, total σ(u) 7.63 against 9.65.
 - **cor(u,v) stays too weak** in every case, at −0.31 to −0.69 against −0.93.
 - **Implication:** the data favor slow or unpriced replacement of product lines together with elastic vacancy creation. Clone replacement is a device, so the structural question is which entry friction reproduces it. Entry congestion frees ν and weakens the R19 pin, but holds replacement back rather than making it instant and unpriced. The next test is congestion × ξ.
+
+## Persistence of δ: mechanisms tested and identification checks — Nov 10–15, 2026 (branch `d15_ags_finance`)
+
+Details and tables: [`../Notes/ags_equilibrium.md`](../Notes/ags_equilibrium.md) §10.7–10.8 (model) and [`../Notes/q3_data_svar_empirics.md`](../Notes/q3_data_svar_empirics.md) §2.2e–2.2h (data). The common diagnosis: **AGS gets the impact of δ right (u +0.35 at h 0 in data and model, through the SVAR) but not the propagation** (data peak +1.41 at h 4, cumulative 10.8 over h 0–12; model peak +0.39 at h 1, cumulative about 0.8).
+
+**Mechanisms ruled out or failed.**
+- **Variety channel in the full model** (`Q2_full_channels.txt`): N moves −0.02 to −0.04 % after a one-SD δ shock; w_int −0.01 %. Negligible.
+- **Intermediate inputs / input variety** (discussion Nov 11; Basu 1995 read, no variety in it): labor productivity does not fall after δ in the data (SVAR A, ad hoc: +0.05 to +0.10, 90 % band above zero at h 5–11), and N moves too little without endogenous exit.
+- **Financial friction in AGS** (`ags_finance_irf.txt`, Nov 15): δ → u unchanged (peak +0.27 at q1 at every κ_d); the premium falls after δ (−1 bp) because profits, levered by the 3.5 % margin, raise funds by ten times what destruction removes. Amplifies z by 15–30 %, shortens s. Fails the δ criteria agreed Nov 15.
+- **Low reactivation rate** (exploratory true-shock check, scratch `lam_check.jl`; not draft-bound): Λ̄_r from 1 to 0.03 makes s persistent and Beveridge-consistent (Coles–Kelishomi nested) and leaves δ unchanged (peak 0.26–0.29 at q1). Λ̄_r = 0.25 is a working value, not measured; the "s retires 5–8× as many positions as δ destroys" argument holds for Λ̄_r ≲ 0.83–0.9 only.
+
+**Coles and Kelishomi (2018), read Nov 15:** one separation shock with every separation destroying the job (δ_e ≡ τ), quarterly persistence 0.73, inelastic creation (ξ = 0.265); they match the unconditional ρ(u) = 0.95 (0.94 data; free entry 0.88). They do not test persistence by shock type.
+
+**Identification of the δ shock (data).**
+- δ is not mainly a financial or demand shock: innovation correlations with EBP +0.05, NFCI +0.13, CU −0.30; z and s explain 7 % of the δ innovation.
+- δ → u net of controls (HP, p = 1, peak at h 4): EBP 1.01, CU 1.25, both 1.03, against 1.41 in A. Hamilton with both controls: flattened (wide bands).
+- δ → EBP: +4 to +8 bp at h 1–2 (90 % excludes zero only at p = 4). δ → CU: −0.48 at h 2 (significant); about half of δ → u runs through CU (imprecise). Suggests propagation through demand; a lead, not a finding.
+- Uncontrolled: same-quarter demand outside industry and spreads; the Bartik QU placebo failure (demand contamination signature) is unresolved.
+
+**z is measured productivity, not technology.** Silva and Urias (2025, Economic Modelling 153, 107317, Table 4): shopping-effort shocks explain 46 % of the Solow residual's variance. Orthogonalizing z to same-quarter utilization (`q3_z_purged.py`) lowers cum z → u per unit of z by 13 % (p = 1) to about 40 % (p = 4) and halves z's FEVD of u (34–37 → 14–19 %); CU is the largest source of var(u) (33–48 %). The model is still 2.8–4.4× short cumulatively against the orthogonalized target, mostly in persistence.
