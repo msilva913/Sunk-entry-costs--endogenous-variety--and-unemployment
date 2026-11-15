@@ -14,6 +14,11 @@
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage{geometry}
+\usepackage{tikz}
+\usetikzlibrary{arrows}
+\definecolor{turquoise}{RGB}{64, 224, 208}
+\usepackage{longtable}
+\usepackage{array}
 \geometry{verbose,tmargin=2cm,bmargin=2cm,lmargin=2.25cm,rmargin=2.25cm}
 \allowdisplaybreaks
 \graphicspath{
@@ -55,11 +60,15 @@ job destruction \sep separations \sep establishment exit \sep unemployment \sep 
 \section{Introduction}\label{sec:introduction}
 % =============================================================================
 
-Unemployment can rise from either greater job destruction or a lower job finding rate. A worker can lose a job either because the match dissolves--with the employer and business opportunity carrying on--or because an establishment closes and takes every job with it. The search literature usually treats these as one flow. \citet{coles_2018} develops an estimates a model with finitely elastic vacancy creation and a single separation shock, which jointly destroys jobs and vacancies. Finitely elastic vacancy creation causes a separation shock to raise unemployment without inducing a vacancy spike, thus reproducing the negative empirical u-v comovement (the Beveridge curve).
+Unemployment in the United States is volatile and persistent. Its cyclical component has a standard deviation of 12.5 percent and a quarterly autocorrelation of 0.89, and it moves against vacancies with a correlation of $-0.93$ (Section~\ref{sec:stylized}).
+% q3_stylized_moments.txt
+Much of the search literature asks whether productivity shocks can account for this volatility \citep{shimer_2005, hagedorn_2008, pissarides_2009}. Another strand studies how job destruction and separations shape unemployment \citep{mortensen_1994, den_haan_2000, elsby_2013}. This paper asks a narrower question with broad implications: does it matter \emph{how} workers lose their jobs?
 
-\citet{gabrovski_2025} decomposes separation into match separation and destruction flows. They show that this helps generate a mild unemployment-labor productivity comovement in response to a productivity shock while fitting labor market correlations well. The intuition is that, due to sunk costs, vacancies are reposted following match separation and are thus less tied to current productivity.
+Unemployment can rise from either greater job destruction or a lower job finding rate. A worker can lose a job either because the match dissolves--with the employer and business opportunity carrying on--or because an establishment closes and takes every job with it. The search literature usually treats these as one flow. \citet{coles_2018} develop and estimate a model with finitely elastic vacancy creation and a single separation shock, which jointly destroys jobs and vacancies. Finitely elastic vacancy creation causes a separation shock to raise unemployment without inducing a vacancy spike, thus reproducing the negative comovement of unemployment and vacancies (the Beveridge curve).
 
-In this paper, we builds \citet{gabrovski_2025} and \citet{coles_2018}. It distinguishes between match separation and destruction but now also considers stochastic shocks to each. We measure establishment deaths directly, with the employment-weighted death rate from the Business Employment Dynamics (BED), and recover match separations by imputing the aggregate separation rate as by \citet{shimer_2005} and using the accounting identity. A recursive SVAR on 1992--2019 then gives the response of unemployment and vacancies to each.
+\citet{gabrovski_2025} decompose separation into match separation and destruction flows. They show that this helps generate a mild unemployment-labor productivity comovement in response to a productivity shock while fitting labor market correlations well. The intuition is that, due to sunk costs, vacancies are reposted following match separation and are thus less tied to current productivity.
+
+In this paper, we build on \citet{gabrovski_2025} and \citet{coles_2018}. We distinguish match separation from destruction and also consider stochastic shocks to each. We measure establishment deaths directly, with the employment-weighted death rate from the Business Employment Dynamics (BED), and recover match separations by imputing the aggregate separation rate following \citet{shimer_2005} and using an accounting identity. A recursive SVAR on 1992--2019 then gives the response of unemployment and vacancies to each.
 
 \paragraph{The fact} The two shocks do different things. A one-standard-deviation rise in the death rate raises unemployment by 0.35 percent on impact and keeps raising it for four quarters, to a peak of 1.41 percent; the response is gone by about the twelfth quarter. % q3_data_svar.txt §5; Notes/q3_data_svar_empirics.md §2.2
 The rise in deaths itself lasts barely a quarter. The persistent part runs mostly through job finding rather than through inflows into unemployment. A separation shock moves unemployment sooner, with a peak after two quarters, and fades sooner. % q3_persistence_tests.txt Test 2; q3_data_svar.txt
@@ -67,10 +76,14 @@ The destruction response survives local projections, the Hamilton filter, more l
 
 \paragraph{The model} We generalize the labor search model by \citet{gabrovski_2025}. There are three shocks, productivity $z$, destruction $\delta$ and separation $s$. Job positions are durable assets. Destruction removes jobs and the vacancies attached to them. A separation ends a match but leaves the position open. However, reactivating a vacancy is costly, and an employer reactivates only if the cost falls below the value of a vacancy. With costless reactivation the model is \citet{gabrovski_2025} with aggregate shocks; with no separations it is \citet{coles_2018}. Households own the firms and value jobs with their stochastic discount factor.
 
-\paragraph{The puzzle} Run the same SVAR on simulated data, and the model gets the impact of a destruction shock right: 0.35 percent in both. % q3_model_svar.csv, delta -> u, h = 0 It misses the propagation. The model's response peaks after one quarter and is near zero after four; the data's builds for four quarters. Summed over three years, the model delivers about a tenth of the data's response. % q3_model_svar.txt §2; q3_persistence_tests.txt Test 1
+\paragraph{The puzzle} Run the same SVAR on simulated data, and the model gets the impact of a destruction shock right: 0.35 percent in both.
+% q3_model_svar.csv, delta -> u, h = 0
+It misses the propagation. The model's response peaks after one quarter and is near zero after four; the data's builds for four quarters. Summed over three years, the model delivers about a tenth of the data's response. % q3_model_svar.txt §2; q3_persistence_tests.txt Test 1
 The gap does not close with the reactivation rate. A lower reactivation rate makes separations destroy more positions, and with it the model's response to separations becomes persistent, as in \citet{coles_2018}. The response to destruction does not change at all. The reactivation rate is identified by the separation responses; the destruction response is then a test the model fails at any reactivation rate. Losing positions is not what makes destruction persistent. Productivity shocks show the same pattern: the model's impact is about right and its persistence is not.
 
-\paragraph{Roadmap} Section~\ref{sec:beyond_ck} explains why the two margins must be separated. Section~\ref{sec:data} describes the data, Section~\ref{sec:svar} the SVAR and Section~\ref{sec:facts} the facts. Section~\ref{sec:model} derives the model, Section~\ref{sec:calibration} calibrates it and Section~\ref{sec:results} confronts it with the data. Section~\ref{sec:puzzle} states the puzzle.
+\paragraph{Contribution} The paper makes three contributions. First, it measures destruction directly and documents that shocks to destruction and to match separation move unemployment and vacancies differently, with destruction acting through job finding and with a delay. Second, it derives a search model that nests \citet{coles_2018} and \citet{gabrovski_2025} and adds costly reactivation and household ownership of firms, so that the response to separations disciplines how many positions separations destroy. Third, it compares model and data through the same SVAR, shock by shock, which turns the destruction response into a test that positions-based propagation fails.
+
+\paragraph{Roadmap} Section~\ref{sec:beyond_ck} explains why the two margins must be separated. Section~\ref{sec:data} describes the data and Section~\ref{sec:stylized} the stylized facts. Section~\ref{sec:svar} sets out the SVAR and Section~\ref{sec:facts} its results. Section~\ref{sec:model} derives the model, Section~\ref{sec:calibration} calibrates it and Section~\ref{sec:results} confronts it with the data. Section~\ref{sec:puzzle} states the puzzle.
 
 % =============================================================================
 \section{Why separate destruction from separation}\label{sec:beyond_ck}
@@ -128,6 +141,82 @@ Log-linearized, the splice makes the cycle of $s$ a near-constant multiple of th
 \paragraph{Filtering} Every series is cut at 2019Q4 before filtering, so the pandemic does not leak into the 2017--19 cycles through the two-sided filter. Each series is then logged and HP-filtered with $\lambda=1{,}600$ over its own window. The model's simulated data go through the same steps. The standard deviations of the cycles, in percent, are 1.23 for $z$, 5.96 for $\delta$, 5.77 for $s$, 12.48 for $u$ and 13.82 for $v$. % q3_data_svar.txt §1
 Appendix~\ref{app:filters} reports the shock processes under the filter of \citet{hamilton_2018}.
 
+
+% =============================================================================
+\section{Stylized facts}\label{sec:stylized}
+% =============================================================================
+
+\paragraph{Establishment exit is a distinct and cyclical margin of job loss} Table~\ref{tab:jf_t2_ext_2019} extends Table~2 of \citet{jaimovich_2008} through 2019Q4 with BED data and adds establishment deaths, which BED did not publish when they wrote.
+% Bartek analysis/part11_jf_table2.py -> data/results/jf_table2_ext_2019_latex.tex, jf_table2_extension.txt
+Opening establishments account for 20.0 percent of gross job gains and closing establishments for 19.5 percent of gross job losses. Dying establishments, the permanent subset of closings, account for 12.0 percent: about one job lost in eight is lost at an establishment that never reopens. The rest of the closings margin is temporary shutdowns. All three margins move with the cycle. Deaths vary at 0.187 times the cyclical variation of total job losses under the Hamilton filter and 0.180 under the HP filter, against 0.239 and 0.223 for closings. Permanent exit is itself cyclical, and it is separately measurable from other job loss, which makes the decomposition of separations empirically tractable.
+
+The 12 percent is a share of gross job losses, a job flow. The share relevant for unemployment is a worker flow: workers at dying establishments are 8.7 percent of all separations into unemployment.
+% shock_calibration.txt §1: delta/tau = 0.0873
+The two differ because gross job losses include contractions at continuing establishments that are not separations into unemployment, and separations include matches that end without any loss of jobs.
+% TODO(MS): confirm the wording of this reconciliation.
+
+	\begin{table}[H]
+\centering
+\small
+\caption{Shares of gross job flows at opening, closing and dying establishments, and their volatility relative to total flows (BED, 1992Q3--2019Q4)}
+\label{tab:jf_t2_ext_2019}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lccccccccc}
+\toprule
+ & \multicolumn{3}{c}{Mean share} & \multicolumn{3}{c}{Rel.\ std dev (Ham)} & \multicolumn{3}{c}{Rel.\ std dev (HP)} \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(lr){8-10}
+Industry & $\bar{g}^O$ & $\bar{g}^C$ & $\bar{g}^D$ & $\sigma^O/\sigma$ & $\sigma^C/\sigma$ & $\sigma^D/\sigma$ & $\sigma^O/\sigma$ & $\sigma^C/\sigma$ & $\sigma^D/\sigma$ \\
+\midrule
+\midrule
+\textbf{Total private} & 0.200 & 0.195 & 0.120 & 0.269 & 0.239 & 0.187 & 0.275 & 0.223 & 0.180 \\
+Natural resources \& mining & 0.164 & 0.158 & 0.058 & 0.295 & 0.205 & 0.104 & 0.261 & 0.215 & 0.118 \\
+Construction & 0.208 & 0.206 & 0.108 & 0.188 & 0.198 & 0.139 & 0.212 & 0.192 & 0.133 \\
+Manufacturing & 0.125 & 0.139 & 0.102 & 0.234 & 0.123 & 0.092 & 0.260 & 0.119 & 0.091 \\
+Wholesale trade & 0.204 & 0.227 & 0.155 & 0.260 & 0.249 & 0.206 & 0.296 & 0.250 & 0.213 \\
+Retail trade & 0.172 & 0.154 & 0.109 & 0.239 & 0.223 & 0.185 & 0.311 & 0.257 & 0.232 \\
+Transportation \& utilities & 0.165 & 0.175 & 0.119 & 0.208 & 0.223 & 0.187 & 0.147 & 0.174 & 0.149 \\
+Information & 0.206 & 0.210 & 0.150 & 0.292 & 0.367 & 0.318 & 0.327 & 0.399 & 0.361 \\
+Financial activities & 0.235 & 0.247 & 0.170 & 0.352 & 0.387 & 0.331 & 0.481 & 0.455 & 0.410 \\
+Prof.~\& business services & 0.205 & 0.212 & 0.127 & 0.288 & 0.239 & 0.215 & 0.290 & 0.246 & 0.193 \\
+Education \& health services & 0.202 & 0.213 & 0.128 & 0.341 & 0.336 & 0.275 & 0.455 & 0.429 & 0.313 \\
+Leisure \& hospitality & 0.245 & 0.198 & 0.115 & 0.271 & 0.332 & 0.250 & 0.315 & 0.350 & 0.271 \\
+Other services & 0.221 & 0.219 & 0.130 & 0.291 & 0.352 & 0.287 & 0.344 & 0.402 & 0.301 \\
+\midrule
+\multicolumn{10}{p{0.98\linewidth}}{\footnotesize \textit{Notes.} $\bar{g}^O$ ($\bar{g}^C$, $\bar{g}^D$): mean share of gross job gains (losses) from opening (closing, dying) establishments, e.g. $\sum L_D/\sum L$. A death is a closing that reports zero employment for four consecutive quarters, so $\bar{g}^C-\bar{g}^D$ is the temporary-shutdown component. Closings columns replicate Jaimovich \& Floetotto (2008, JME) Table~2, whose sample predates the publication of BED deaths; deaths columns are the permanent-exit margin used in the model. $\sigma^k/\sigma$: relative std dev of the $k$ flow against total flows, raw levels, via the Hamilton (2018) filter ($h{=}8$, $p{=}4$, robust to GFC/Covid outliers) and the HP filter ($\lambda{=}1600$). HP values for total private in the original sample ($\approx 0.33$) closely match Jaimovich \& Floetotto Table~2. Values $<1$: extensive margin less volatile than total flows. $^{*}$ Noisy estimate ($|\text{ratio}|>5$).} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Labor market moments} Table~\ref{tab:moments} reports business-cycle moments. Unemployment and vacancies are volatile, persistent and strongly negatively correlated. Match separations are countercyclical and move with unemployment in the same quarter. Destruction is barely correlated with unemployment in the same quarter, but it leads it: the correlation of destruction with unemployment four quarters later is 0.41, against 0.06 contemporaneously. Separations lead unemployment by about one quarter.
+
+\begin{table}[H]
+\centering
+\caption{Business-cycle moments (HP-filtered log cycles, $\times 100$ for standard deviations)}\label{tab:moments}
+\small
+\begin{tabular}{lccccc}
+\toprule
+ & Window & SD & $\rho_1$ & cor with $u$ & cor with $v$ \\
+\midrule
+$u$ & 1951Q1--2019Q4 & 12.48 & 0.89 & 1 & $-0.925$ \\
+$v$ & 1951Q1--2019Q4 & 13.82 & 0.90 & $-0.925$ & 1 \\
+$\theta$ & 1951Q1--2019Q4 & 25.80 & 0.90 & $-0.979$ & 0.983 \\
+Job finding & 1951Q1--2019Q4 & 8.32 & 0.83 & $-0.917$ & 0.885 \\
+$z$ & 1951Q1--2019Q4 & 1.23 & 0.76 & $-0.220$ & 0.361 \\
+$s$ & 1951Q1--2019Q4 & 5.77 & 0.52 & 0.497 & $-0.539$ \\
+$\delta$ & 1992Q3--2019Q4 & 5.96 & 0.26 & 0.057 & $-0.152$ \\
+\midrule
+\multicolumn{6}{l}{Lead-lag correlation with $u$, $\mathrm{cor}(x_t,u_{t+k})$} \\
+ & $k=0$ & $k=1$ & $k=2$ & $k=4$ & $k=8$ \\
+$z$ & $-0.22$ & $-0.42$ & $-0.52$ & $-0.44$ & $-0.12$ \\
+$s$ & 0.50 & 0.65 & 0.61 & 0.30 & $-0.07$ \\
+$\delta$ & 0.06 & 0.21 & 0.33 & 0.41 & 0.23 \\
+\bottomrule
+\end{tabular}
+\end{table}
+% Bartek analysis/q3_stylized_moments.py -> data/results/q3_stylized_moments.txt
+
+These are unconditional moments. They mix the effects of every shock, and they cannot say whether destruction leads unemployment because it causes later unemployment or because both respond to something else. The SVAR of Section~\ref{sec:svar} addresses that.
+
 % =============================================================================
 \section{The SVAR}\label{sec:svar}
 % =============================================================================
@@ -149,7 +238,7 @@ Appendix~\ref{app:filters} reports the shock processes under the filter of \cite
 \paragraph{The model side} The comparison with the model runs the same SVAR on simulated data (Section~\ref{sec:results}): 200 windows of 110 quarters, each simulated monthly, averaged to quarters, and filtered as the data are. The model's measured productivity is its $z$; its measured exit is destruction dated one month later. The model's true responses are reported only as diagnostics: the SVAR does not recover the model's shocks exactly (Appendix~\ref{app:validation}).
 
 % =============================================================================
-\section{Facts}\label{sec:facts}
+\section{Responses to destruction and separation shocks}\label{sec:facts}
 % =============================================================================
 
 \subsection{Responses to the three shocks}
@@ -178,7 +267,7 @@ $\delta\to v$ & $-0.22$ & $-1.59$ & $-1.48$ & $-0.56$ & $-1.60$ at $h=3$ \\
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{q3_data_svar_irf.png}
-\caption{SVAR A: responses of $u$ and $v$, with 68 and 90 percent bootstrap bands}\label{fig:data_irf}
+\caption{SVAR A: responses of $u$ and $v$ to one-standard-deviation shocks (log points $\times$ 100). Solid line: HP-filtered cycles, with 68 and 90 percent bootstrap bands. Dashed line: Hamilton-filtered cycles, point estimate.}\label{fig:data_irf}
 \end{figure}
 
 \begin{itemize}
@@ -237,90 +326,144 @@ It leaves the destruction response as in the utilization-first system above.
 \section{The model}\label{sec:model}
 % =============================================================================
 
-Time is monthly. Start from the DMP model and add three things: durable job positions, destruction that removes positions, and costly reactivation of positions vacated by separations.
+Time is monthly. The model starts from DMP and adds three features: durable job positions, destruction that removes positions, and costly reactivation of positions vacated by separations. Notation follows the full model of the companion paper; Appendix~\ref{app:notation} collects it.
 
-\subsection{Environment}
+\subsection{Environment}\label{sec:environment}
 
-\paragraph{Timing} Within period $t$: (1) $z_t$, $\delta_t$ and $s_t$ are realized. (2) Positions vacated by separations at the end of $t-1$ are reactivated or retired, and $e_t$ new positions are created. (3) Employed workers produce; $u_t$ unemployed workers and $v_t$ vacancies meet. (4) At the end of the period, separations and destruction take effect.
-
-\paragraph{Matching} A constant-returns matching function with tightness $\theta_t = v_t/u_t$ gives the vacancy-filling rate $q(\theta)=A\theta^{-\eta}$ and the job-finding rate $f(\theta)=\theta q(\theta)$. New matches produce from the next period if they survive.
-
-\paragraph{Positions} A job position is a durable asset. Creating the $e$-th new position in a period costs
-\begin{equation}
-Q(e_t) = x_m e_t^{\xi_{\text{inv}}},
-\end{equation}
-so creation costs are heterogeneous and the supply of positions slopes up with inverse elasticity $\xi_{\text{inv}}$; vacancy free entry is $\xi_{\text{inv}}=0$. Hiring costs $\kappa\ge 0$ per match. Destruction at rate $\delta_t\bar\delta$ removes product lines and every position attached to them, filled or vacant; a destroyed line is replaced by an identical line at no cost (clone replacement). A separation at rate $s_t\bar s$ ends a match and leaves the position.
-
-\paragraph{Reactivation} A position vacated by a separation at the end of $t-1$ draws a reactivation cost $c$ at $t$, independently across positions and periods, from
-\begin{equation}
-F_r(c) = (1-p_r) + p_r (c/a)^{\psi_r},\qquad 0\le c\le a.
-\end{equation}
-With probability $1-p_r$ the cost is zero; otherwise it follows a power law on $[0,a]$ with shape $\psi_r$. The position is reactivated if and only if $c\le Q_t$, the value of a vacant position, and retired otherwise. The reactivation rate is $\Lambda_r(Q_t)=F_r(Q_t)$ while $Q_t\le a$. The expected value of a vacated position, net of the cost paid, is
-\begin{equation}
-Q^{\text{rep}}(Q) = \E\max\{Q-c,0\} = Q\left[\Lambda_r(Q) - \tfrac{\psi_r}{1+\psi_r}\big(\Lambda_r(Q)-1+p_r\big)\right],\qquad Q\le a.
-\end{equation}
-Free positions keep all of $Q$, costly positions that are reactivated keep $Q$ net of their average cost $\tfrac{\psi_r}{1+\psi_r}Q$, and retired positions keep nothing. With $p_r=0$, $\Lambda_r\equiv1$ and $Q^{\text{rep}}=Q$.
-
-\paragraph{Households} A representative household of measure one has utility $\E_0\sum_t\beta^t C_t^{1-\sigma}/(1-\sigma)$. Members supply one unit of labor inelastically; the unemployed enjoy a non-market flow $b$, which sets the outside option in bargaining but is not a market resource. The household holds shares in a mutual fund that owns every firm, in fixed supply, and trades a riskless bond in zero net supply. Its first-order conditions give the share price $V_t=\E_t[m_{t+1}(V_{t+1}+D_{t+1})]$ and the riskless rate $1=R^f_t\E_t[m_{t+1}]$, with the stochastic discount factor
-\begin{equation}
-m_{t+1} = \beta\left(C_{t+1}/C_t\right)^{-\sigma}.
-\end{equation}
-Firms act for their owners and value jobs and positions with $m_{t+1}$. Shares and bonds net out, so the household cannot change aggregate saving by trading. Saving happens inside firms, as investment in positions; the discount factor adjusts until households consume what firms do not invest. With $\sigma=0$, $m_{t+1}=\beta$ and the model is the risk-neutral benchmark of \citet{gabrovski_2025}.
-
-\subsection{Values and job creation}
-
-Let $J_t$ be the value of a filled position at the start of $t$ and $S_t\equiv 1-\delta_t\bar\delta$ the survival rate of a line from $t$ to $t+1$. A filled position produces $\bar z z_t$, pays the wage $w_t$, and at the end of the period either survives as a match, becomes a vacated position worth $Q^{\text{rep}}_{t+1}$ at $t+1$, or is destroyed:
-\begin{equation}
-J_t = \bar z z_t - w_t + \E_t\Big\{m_{t+1}S_t\big[(1-s_t\bar s)J_{t+1} + s_t\bar s\,Q^{\text{rep}}_{t+1}\big]\Big\}.
-\end{equation}
-A vacant position at the matching stage is filled with probability $q_t$, paying $\kappa$, and otherwise carries over:
-\begin{equation}
-V^v_t = q_t\Big(\E_t[m_{t+1}S_tJ_{t+1}]-\kappa\Big) + (1-q_t)\E_t[m_{t+1}S_tQ_{t+1}].
-\end{equation}
-Creation is undertaken until a new vacant position is worth its marginal cost, $V^v_t=Q_t$. Rearranging defines three objects:
+\paragraph{Shocks} Productivity $z_t$, destruction $\delta_t$ and match separation $s_t$ each follow an AR(1) in logs,
 \begin{align}
-K_t &\equiv Q_t - \E_t[m_{t+1}S_tQ_{t+1}] && \text{the user cost of a vacant position,}\\
-\Gamma_t &\equiv \kappa + K_t/q_t && \text{the expected cost of a hire,}\\
-\Rcal_t &\equiv \E_t\big[m_{t+1}S_t\big(Q_{t+1}-Q^{\text{rep}}_{t+1}\big)\big] && \text{the reactivation shortfall.}
+\log z_t &= \rho_z \log z_{t-1} + (1-\rho_z)\log\bar{z} + \sigma_z\epsilon_{zt}, \label{eq:ar1_z}\\
+\log \delta_t &= \rho_\delta \log \delta_{t-1} + (1-\rho_\delta)\log\bar{\delta} + \sigma_\delta\epsilon_{\delta t}, \label{eq:ar1_delta}\\
+\log s_t &= \rho_s \log s_{t-1} + (1-\rho_s)\log\bar{s} + \sigma_s\epsilon_{st}, \label{eq:ar1_s}
 \end{align}
-The creation condition becomes $\Gamma_t = \E_t[m_{t+1}S_t(J_{t+1}-Q_{t+1})]$: the cost of a hire equals the expected value of a filled position over a vacant one. Subtracting $Q_t$ from $J_t$,
-\begin{equation}
-J_t - Q_t = \bar z z_t - w_t - K_t + (1-s_t\bar s)\Gamma_t - s_t\bar s\,\Rcal_t.
+where $\bar z$, $\bar\delta$ and $\bar s$ are the long-run means and the innovations are mutually uncorrelated with unit variance. A worker producing in $t$ produces $z_t$.
+
+\paragraph{Timing} Figure~\ref{fig:timing} shows the order of events within period $t$. The aggregate state, including $\delta_t$ and $s_t$, is observed at the start of the period. Positions vacated at the end of $t-1$ are then reactivated or retired, and new positions are created. Employed workers produce, wages are bargained, and the $u_t$ unemployed meet the $v_t$ vacancies. At the end of the period, destruction and separation take effect. Separation hits only the $1-u_t$ matches in place at the start of $t$; matches formed in $t$ face destruction at the end of $t$ and separation first at the end of $t+1$. Destruction at the end of $t-1$ is measured as exit in $t$: $\delta_{e,t}=\delta_{t-1}$.
+
+\tikzset{>=latex}
+\begin{figure}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+	box/.style={draw=magenta!80, fill=turquoise!60, thick, rounded corners, align=center, font=\small, inner sep=5pt, text width=3.4cm},
+	ebox/.style={draw=magenta!80, fill=turquoise!60, thick, rounded corners, align=center, font=\small, inner sep=5pt, text width=4.0cm},
+	gbox/.style={draw=gray!60, fill=gray!15, thick, rounded corners, align=center, font=\small, inner sep=5pt, text width=4.6cm},
+	dot/.style={circle, draw=black, fill=white, inner sep=0pt, minimum size=3mm},
+	lw/.style={line width=0.5mm}]
+	\draw[lw,->] (-0.5,0) -- (22,0);
+	\draw[lw] (0, 0.25) -- (0,-0.25) node[below]{\large$t$};
+	\draw[lw] (21,0.25) -- (21,-0.25) node[below]{\large$t{+}1$};
+	\node[dot] (d1) at (1.5,0) {};
+	\node[dot] (d2) at (5.5,0) {};
+	\node[dot] (d3) at (9.5,0) {};
+	\node[dot] (d4) at (13.5,0) {};
+	\node[dot] (d5) at (18.5,0) {};
+	\node[box] (B1) at (1.5, 3.2) {$z_t$, $\delta_t$, $s_t$ observed};
+	\node[ebox] (B2) at (5.5, 3.2) {Reactivate vacated position if $\alpha\chi\leq Q_t$\\Create $e_t=G(Q_t)$};
+	\node[box] (B3) at (9.5, 3.2) {Produce $z_t$\\Bargain $w_t$\\Unemployed: $b$};
+	\node[box] (B4) at (13.5, 3.2) {Match $m(u_t,v_t)$\\$\theta_t=v_t/u_t$};
+	\node[ebox] (B5) at (18.5, 3.2) {Destruction $\delta_t$\\Separation $s_t$\\Update $u_{t+1}$, $v_{t+1}$};
+	\node[gbox] (C1) at (5.5, -2.8) {$\delta_{e,t}=\delta_{t-1}$\\$\tau_t=\delta_{t-1}+(1{-}\delta_{t-1})s_{t-1}$\\$1{-}u_t$ employed, produce in $t$};
+	\node[gbox] (C2) at (13.5, -2.2) {Unmatched after matching:\\$(1{-}f(\theta_t))u_t$};
+	\node[gbox] (C3) at (18.5, -2.8) {$s_t$ hits the $1{-}u_t$ only\\New matches $f(\theta_t)u_t$:\\exposed to $\delta_t$, not $s_t$};
+	\foreach \d/\B in {d1/B1, d2/B2, d3/B3, d4/B4, d5/B5} \draw[lw,->] (\d) -- (\B);
+	\draw[lw,->] (d2) -- (C1);
+	\draw[lw,->] (d4) -- (C2);
+	\draw[lw,->] (d5) -- (C3);
+	\fill[yellow!25, opacity=0.7] (16.5,-0.7) rectangle (20.5,0.7);
+	\node[font=\footnotesize, rotate=90] at (16.85,0) {end of $t$};
+\end{tikzpicture}}
+\caption{Timing within period $t$. Turquoise: decisions and events. Grey: implied stocks and rates. Yellow band: destruction and separation at the end of $t$.}\label{fig:timing}
+\end{figure}
+
+\paragraph{Matching} A constant-returns matching function $m(u,v)$ with tightness $\theta_t=v_t/u_t$ gives the vacancy-filling rate $q(\theta)=A\theta^{-\eta_L}$ and the job-finding rate $f(\theta)=\theta q(\theta)$. A new match produces from the next period if its position survives.
+
+\paragraph{Positions} A job position is a durable asset. Recruiters draw sunk costs of opening a position from the power law $G(x)=(x/x_m)^{\xi}$ on $[0,x_m]$ and open one whenever the cost is below the value of a vacancy $Q_t$, so $e_t=G(Q_t)$ new positions are created and
+\begin{equation}\label{eq:Q}
+Q_t = x_m e_t^{1/\xi}.
 \end{equation}
-Holding a position costs $K_t$ whether or not it is filled, and a separation loses $\Rcal_t$ in expectation, through retirement or the reactivation cost.
+The entry elasticity $\xi$ governs how elastic creation is; vacancy free entry is the limit $\xi\to\infty$, where $Q_t=x_m$. Hiring costs $\kappa\ge0$ per match. Destruction removes a product line and every position attached to it, filled or vacant; a destroyed line is replaced by an identical one at no cost (clone replacement). Separation ends a match and leaves the position.
+
+\paragraph{Reactivation} A position vacated by a separation at the end of $t-1$ draws a reactivation cost $\alpha\chi$ at $t$, independently across positions and periods, with
+\begin{equation}
+F_r(\chi) = (1-p_r) + p_r\chi^{\psi_r},\qquad \chi\in[0,1].
+\end{equation}
+With probability $1-p_r$ the cost is zero; otherwise it follows a power law with shape $\psi_r$ and upper bound $\alpha$. The position is reactivated if $\alpha\chi\le Q_t$ and retired otherwise, so the reactivation probability is
+\begin{equation}\label{eq:Lambda_r}
+\Lambda_{r,t} \equiv F_r\!\left(\frac{Q_t}{\alpha}\right) = 1-p_r+p_r\left(\frac{Q_t}{\alpha}\right)^{\psi_r},\qquad Q_t\le\alpha.
+\end{equation}
+The expected value of a vacated position, net of the cost paid, is
+\begin{equation}\label{eq:Qrep}
+Q_t^{rep}\equiv\E\big[\max\{Q_t-\alpha\chi,0\}\big] = Q_t\left[\Lambda_{r,t}-\frac{\psi_r}{1+\psi_r}\big(\Lambda_{r,t}-1+p_r\big)\right].
+\end{equation}
+Free positions keep all of $Q_t$, costly positions that are reactivated keep $Q_t$ net of their average cost, and retired positions keep nothing. With $p_r=0$, $\Lambda_{r,t}\equiv1$ and $Q_t^{rep}=Q_t$. Reactivation has its own cost distribution here; in the full model it shares the distribution of continuation costs.
+
+\paragraph{Households} A representative household of measure one has utility $\E_0\sum_t\beta^tC_t^{1-\sigma}/(1-\sigma)$. Each member supplies one unit of labor inelastically. Unemployed members enjoy a non-market flow $b$, which sets the outside option in bargaining but is not a market resource. The household holds shares in a mutual fund that owns every firm, in fixed supply, and trades a riskless bond in zero net supply.
+
+\subsection{Equilibrium}\label{sec:equilibrium}
+
+\paragraph{Household optimality} The share price satisfies $V_t=\E_t[m_{t+1}(V_{t+1}+D_{t+1})]$ and the riskless rate $1=R^f_t\E_t[m_{t+1}]$, with the stochastic discount factor
+\begin{equation}\label{eq:sdf}
+m_{t+1} = \beta\left(\frac{C_{t+1}}{C_t}\right)^{-\sigma}.
+\end{equation}
+Firms act for their owners and value jobs and positions with $m_{t+1}$. Shares and bonds net out, so the household cannot change aggregate saving by trading. Saving happens inside firms, as investment in positions; the discount factor adjusts until households consume what firms do not invest. With $\sigma=0$, $m_{t+1}=\beta$, the risk-neutral case of \citet{gabrovski_2025}.
+
+\paragraph{Values of positions} A filled position produces $z_t$, pays $w_t$ and, at the end of the period, survives as a match, becomes a vacated position, or is destroyed:
+\begin{equation}\label{eq:value_matched}
+J_t = z_t - w_t + \E_t m_{t+1}(1-\delta_t)\big[(1-s_t)J_{t+1}+s_tQ_{t+1}^{rep}\big].
+\end{equation}
+A vacancy is filled with probability $q(\theta_t)$, paying $\kappa$, and otherwise carries over. Creation equates its value to $Q_t$:
+\begin{equation}\label{eq:value_unmatched}
+Q_t = q(\theta_t)\big[\E_tm_{t+1}(1-\delta_t)J_{t+1}-\kappa\big] + \big(1-q(\theta_t)\big)\E_tm_{t+1}(1-\delta_t)Q_{t+1}.
+\end{equation}
+Define the flow value of a vacancy and the reposting shortfall,
+\begin{align}
+K_t &\equiv Q_t - \E_tm_{t+1}(1-\delta_t)Q_{t+1}, \label{eq:K}\\
+\mathcal{R}_t &\equiv \E_tm_{t+1}(1-\delta_t)\big(Q_{t+1}-Q_{t+1}^{rep}\big). \label{eq:repost_shortfall}
+\end{align}
+$K_t$ is the cost of holding a position for a period: interest, the risk that destruction removes it, and capital losses when $Q$ falls. $\mathcal{R}_t$ is the value a separated position loses relative to costless reactivation, through retirement and the costs paid. Inserting \eqref{eq:K} into \eqref{eq:value_unmatched} places the average hiring cost on the left:
+\begin{equation}\label{eq:average_hiring_cost}
+\kappa+\frac{K_t}{q(\theta_t)} = \E_tm_{t+1}(1-\delta_t)\big(J_{t+1}-Q_{t+1}\big),
+\end{equation}
+and subtracting $Q_t$ from \eqref{eq:value_matched},
+\begin{equation}\label{eq:value_surplus}
+J_t-Q_t = z_t - w_t - K_t + (1-s_t)\left(\kappa+\frac{K_t}{q(\theta_t)}\right) - s_t\mathcal{R}_t.
+\end{equation}
 
 \paragraph{Wages} Workers' values are
 \begin{align}
-W_t &= w_t + \E_t\big\{m_{t+1}[(1-\tau_t)W_{t+1}+\tau_tU_{t+1}]\big\},\\
-U_t &= b + \E_t\big\{m_{t+1}[S_tf_tW_{t+1}+(1-S_tf_t)U_{t+1}]\big\},
+W_t &= w_t + \E_tm_{t+1}\big[(1-\tau_{t+1})W_{t+1}+\tau_{t+1}U_{t+1}\big],\\
+U_t &= b + \E_tm_{t+1}\big[(1-\delta_t)f(\theta_t)W_{t+1}+\big(1-(1-\delta_t)f(\theta_t)\big)U_{t+1}\big],
 \end{align}
-with $\tau_t=\delta_t\bar\delta+S_ts_t\bar s$. Nash bargaining with worker share $\phi$, $(1-\phi)(W_t-U_t)=\phi(J_t-Q_t)$, gives
+where $\tau_{t+1}=\delta_t+(1-\delta_t)s_t$ is the separation rate between $t$ and $t+1$. Nash bargaining with worker share $\phi$, $(1-\phi)(W_t-U_t)=\phi(J_t-Q_t)$, gives
 \begin{equation}\label{eq:wage}
-w_t = \phi\big[\bar z z_t - K_t + \theta_t(K_t + q_t\kappa) - s_t\bar s\,\Rcal_t\big] + (1-\phi)b.
+w_t = \phi\big[z_t - K_t + \theta_t\big(K_t+q(\theta_t)\kappa\big) - s_t\mathcal{R}_t\big] + (1-\phi)b.
 \end{equation}
-The worker shares in the user cost saved and in the hiring cost avoided, as in DMP with $K$ in place of the flow vacancy cost, and bears part of the reactivation shortfall.
+The worker shares in the flow value saved and the hiring cost avoided, as in DMP with $K_t$ in place of a flow vacancy cost, and bears part of the reposting shortfall.
 
-\paragraph{Job creation} Substituting the wage into the creation condition:
-\begin{multline}\label{eq:E2}
-\Gamma_t = \E_t\Big\{m_{t+1}S_t\Big[(1-\phi)(\bar z z_{t+1}-K_{t+1}-b) - \phi\theta_{t+1}K_{t+1} - \phi f_{t+1}\kappa \\
-+ (1-s_{t+1}\bar s)\Gamma_{t+1} - (1-\phi)s_{t+1}\bar s\,\Rcal_{t+1}\Big]\Big\}.
+\paragraph{Job creation} Substituting \eqref{eq:wage} into \eqref{eq:average_hiring_cost} and \eqref{eq:value_surplus}:
+\begin{multline}\label{eq:jcc}
+\kappa+\frac{K_t}{q(\theta_t)} = \E_t m_{t+1}(1-\delta_t)\Big[(1-\phi)(z_{t+1}-K_{t+1}-b) - \phi\theta_{t+1}K_{t+1} - \phi f(\theta_{t+1})\kappa \\
++ (1-s_{t+1})\left(\kappa+\frac{K_{t+1}}{q(\theta_{t+1})}\right) - (1-\phi)s_{t+1}\mathcal{R}_{t+1}\Big].
 \end{multline}
 
-\subsection{Equilibrium}
+\paragraph{Laws of motion} Unemployment and vacancies evolve as
+\begin{align}
+u_{t+1} &= u_t - (1-\delta_t)f(\theta_t)u_t + \tau_{t+1}(1-u_t), \label{eq:u_lom}\\
+v_t &= (1-\delta_{e,t})\big[(1-q(\theta_{t-1}))v_{t-1} + \Lambda_{r,t}s_{t-1}(1-u_{t-1})\big] + e_t. \label{eq:v_lom}
+\end{align}
+Current vacancies are unmatched vacancies that survived destruction, positions vacated by separation and reactivated, and new positions. Destruction multiplies both inherited terms, so a destruction shock removes vacancies as well as jobs. The inherited stock depends on $\Lambda_{r,t}$, a function of $Q_t$, so the two inherited components are carried as separate states.
+
+\paragraph{Resources} Output is $z_t(1-u_t)$. Spending on creation and hiring is $X_t = \frac{\xi}{1+\xi}Q_te_t + \kappa q(\theta_t)v_t$, and spending on reactivation is $X_t^r = (1-\delta_{e,t})s_{t-1}(1-u_{t-1})\big(Q_t\Lambda_{r,t}-Q_t^{rep}\big)$. Consumption is
+\begin{equation}\label{eq:resources}
+C_t = z_t(1-u_t) - X_t - X_t^r.
+\end{equation}
 
 \begin{definition}
-Given initial stocks and the shock processes, an equilibrium is a stochastic sequence $\{\theta_t, e_t, C_t, u_{t+1}, \tilde V^u_{t+1}, \tilde V^s_{t+1}\}$, with $Q_t=Q(e_t)$ and $K_t$, $\Gamma_t$, $\Rcal_t$ as defined above, such that for all $t$:
-\begin{itemize}
-\item[(E1)] vacancies: $\theta_tu_t = \tilde V^u_t + \Lambda_r(Q_t)\tilde V^s_t + e_t$;
-\item[(E2)] job creation: \eqref{eq:E2};
-\item[(E3)] unemployment: $u_{t+1} = u_t - S_tf(\theta_t)u_t + \tau_t(1-u_t)$;
-\item[(E4)] carried-over positions: $\tilde V^u_{t+1} = S_t(1-q(\theta_t))v_t$ and $\tilde V^s_{t+1} = S_ts_t\bar s(1-u_t)$;
-\item[(E5)] resources: $C_t = \bar z z_t(1-u_t) - X_t - X^r_t$,
-\end{itemize}
-where spending on creation and hiring is $X_t = x_me_t^{1+\xi_{\text{inv}}}/(1+\xi_{\text{inv}}) + \kappa q_tv_t$ and spending on reactivation is $X^r_t=\tilde V^s_t\big[Q_t\Lambda_r(Q_t)-Q^{\text{rep}}_t\big]$.
+Given initial stocks and the processes \eqref{eq:ar1_z}--\eqref{eq:ar1_s}, an equilibrium is a stochastic sequence $\{\theta_t, e_t, C_t, u_{t+1}, v_t\}$ with $Q_t$, $\Lambda_{r,t}$ and $Q_t^{rep}$ given by \eqref{eq:Q}--\eqref{eq:Qrep}, $m_{t+1}$ by \eqref{eq:sdf}, and $K_t$ and $\mathcal{R}_t$ by \eqref{eq:K}--\eqref{eq:repost_shortfall}, such that job creation \eqref{eq:jcc}, the laws of motion \eqref{eq:u_lom}--\eqref{eq:v_lom} and the resource constraint \eqref{eq:resources} hold for all $t$.
 \end{definition}
 
-The state is $(u, \tilde V^u, \tilde V^s)$ and the shocks; the jump variables are $(\theta, e, C)$. Inherited vacancies $\tilde V^u_t+\Lambda_r(Q_t)\tilde V^s_t$ depend on $Q_t$, so the two stocks must be carried separately. Table~\ref{tab:dmp} compares the model with DMP.
+The jump variables are $\theta_t$, $e_t$ and $C_t$; the states are unemployment, the two inherited vacancy stocks and the shocks. Table~\ref{tab:dmp} compares the model with DMP.
 
 \begin{table}[H]
 \centering
@@ -330,11 +473,11 @@ The state is $(u, \tilde V^u, \tilde V^s)$ and the shocks; the jump variables ar
 \toprule
  & DMP & This model \\
 \midrule
-Vacancy cost & flow cost $c$ & user cost $K_t$: interest, depreciation through $\delta$, capital gains when creation moves \\
+Vacancy cost & flow cost & flow value $K_t$: interest, depreciation through $\delta_t$, capital losses when creation falls \\
 Discounting & $\beta$ & $m_{t+1}=\beta(C_{t+1}/C_t)^{-\sigma}$ \\
-Separation & the firm posts again & the shortfall $s\Rcal$ acts like a firing cost \\
-Vacancies & jump variable & states $\tilde V^u$, $\tilde V^s$, plus creation $e$ \\
-Destruction & not separate from $s$ & removes jobs and the vacancies attached \\
+Separation & the firm posts again & the shortfall $s_t\mathcal{R}_t$ acts like a firing cost \\
+Vacancies & jump variable & inherited stocks plus creation $e_t$ \\
+Destruction & not separate from separation & removes jobs and the vacancies attached \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -342,33 +485,33 @@ Destruction & not separate from $s$ & removes jobs and the vacancies attached \\
 \subsection{Special cases}
 
 \begin{remark}[Nesting]\label{rem:nesting}
-With costless reactivation ($p_r=0$), $\Lambda_r\equiv1$, $Q^{\text{rep}}=Q$ and $\Rcal=0$: separations remove no positions, and with $\kappa=0$ and $\sigma=0$ the model is \citet{gabrovski_2025} with aggregate shocks. If in addition $s\equiv0$, every separation is destruction and the model has the structure of \citet{coles_2018}.
+With costless reactivation ($p_r=0$), $\Lambda_{r,t}\equiv1$, $Q_t^{rep}=Q_t$ and $\mathcal{R}_t=0$: separations remove no positions, and with $\kappa=0$ and $\sigma=0$ the model is \citet{gabrovski_2025} with aggregate shocks. If in addition $s_t\equiv0$, every separation is destruction and the model has the structure of \citet{coles_2018}.
 \end{remark}
 
 \begin{lemma}[Tightness under vacancy free entry]\label{lem:theta}
-Let $\sigma=0$ and $\xi_{\text{inv}}=0$. Then $Q_t=x_m$, $K_t = x_m[1-\beta(1-\delta_t\bar\delta)]$ and $\Rcal_t=\beta(1-\delta_t\bar\delta)(x_m-Q^{\text{rep}}(x_m))$ depend on the current shock alone, and \eqref{eq:E2} determines $\theta_t$ as a function of the current and expected future shocks only. Tightness does not load on the stocks $(u,\tilde V^u,\tilde V^s)$.
+Let $\sigma=0$ and $\xi\to\infty$. Then $Q_t=x_m$, $K_t=x_m[1-\beta(1-\delta_t)]$ and $\mathcal{R}_t=\beta(1-\delta_t)\big(x_m-Q^{rep}(x_m)\big)$ depend on the current shock alone, and \eqref{eq:jcc} determines $\theta_t$ as a function of current and expected future shocks only. Tightness does not load on unemployment or the vacancy stocks.
 \end{lemma}
 \begin{proof}
-With $\xi_{\text{inv}}=0$, $Q(e)=x_m$ for every $e$, so $\Lambda_r$ and $Q^{\text{rep}}$ are constants and $K_t$ and $\Rcal_t$ follow from their definitions with $m=\beta$. Equation \eqref{eq:E2} then involves only $\theta_t$, $\theta_{t+1}$ and the shocks, and its solution does not depend on the stocks. Creation $e_t$ adjusts to deliver $\theta_t$ through (E1).
+In the limit $Q_t=x_m$ for every $e_t$, so $\Lambda_{r,t}$ and $Q_t^{rep}$ are constant and $K_t$ and $\mathcal{R}_t$ follow from \eqref{eq:K}--\eqref{eq:repost_shortfall} with $m_{t+1}=\beta$. Equation \eqref{eq:jcc} then involves only $\theta_t$, $\theta_{t+1}$ and the shocks, so its solution does not depend on the stocks. Creation $e_t$ adjusts through \eqref{eq:v_lom} to deliver $\theta_t$.
 \end{proof}
 % Checked numerically: ags_run_solution.txt, "Check (σ = 0)".
-In this limit, separations still move tightness through two terms of \eqref{eq:E2}: the continuation $(1-s_{t+1}\bar s)\Gamma_{t+1}$, as in DMP, and the shortfall. Destruction moves it through the user cost. With $\sigma>0$ the lemma fails, because the discount factor depends on consumption and consumption on the stocks.
+In this limit, separations still move tightness through two terms of \eqref{eq:jcc}: the continuation value, as in DMP, and the shortfall. Destruction moves it through the flow value $K_t$. With $\sigma>0$ the lemma fails, because the discount factor depends on consumption and consumption on the stocks.
 
 \subsection{Steady state}
 
-In steady state $m=\beta=1/(1+r)$ whatever $\sigma$, so $\sigma$ affects only the dynamics. Given $\theta$: $q=A\theta^{-\eta}$, $f=\theta q$, $u=\tau/(\tau+(1-\delta)f)$ and $v=\theta u$. Creation replaces the positions destroyed and those retired,
+In steady state $m=\beta=1/(1+r)$ whatever $\sigma$, so $\sigma$ affects only the dynamics. Given $\theta$: $q=A\theta^{-\eta_L}$, $f=\theta q$, $u=\tau/(\tau+(1-\bar\delta)f)$ and $v=\theta u$, with $\tau=\bar\delta+(1-\bar\delta)\bar s$. Creation replaces the positions destroyed and those retired,
 \begin{equation}
-e = \delta(v+1-u) + (1-\delta)(1-\Lambda_r(Q))s(1-u),\qquad Q = x_m e^{\xi_{\text{inv}}},
+e = \bar\delta(v+1-u) + (1-\bar\delta)(1-\Lambda_r)\bar s(1-u),\qquad Q = x_me^{1/\xi},
 \end{equation}
-which has a unique solution in $Q$ because a higher $Q$ raises reactivation and lowers the creation needed. The prices of a position are
+which has a unique solution in $Q$ because a higher $Q$ raises reactivation and lowers the creation needed. The flow value and the shortfall are
 \begin{equation}
-K = Q\,\frac{r+\delta}{1+r},\qquad \Rcal = \frac{(1-\delta)\big(Q-Q^{\text{rep}}(Q)\big)}{1+r}.
+K = Q\,\frac{r+\bar\delta}{1+r},\qquad \mathcal{R} = \frac{(1-\bar\delta)\big(Q-Q^{rep}\big)}{1+r}.
 \end{equation}
 Job creation reads
 \begin{equation}\label{eq:jc_ss}
-(1-\phi)(\bar z - K - b - s\Rcal) - \phi\theta(K+q\kappa) = \frac{r+\tau}{1-\delta}\left(\kappa + \frac{K}{q}\right):
+(1-\phi)(\bar z - K - b - \bar s\mathcal{R}) - \phi\theta(K+q\kappa) = \frac{r+\tau}{1-\bar\delta}\left(\kappa+\frac{K}{q}\right):
 \end{equation}
-the recruiter's share of the flow surplus covers the cost of a hire, annuitized over the expected life of a match. As $\theta$ rises the left side falls and the right side rises, so the steady state is unique.
+the recruiter's share of the flow surplus covers the hiring cost, annuitized over the expected life of a match. As $\theta$ rises the left side falls and the right side rises, so the steady state is unique.
 
 % =============================================================================
 \section{Calibration}\label{sec:calibration}
@@ -390,13 +533,13 @@ Destruction rate & 3.2\% a year & BED Deaths, employment-weighted, 1993--2019 & 
 Total separation rate & 3.1\% a month & CPS & $\bar s$ via the identity \\
 Job-finding rate & 0.41 a month & JOLTS & $A$, $\theta$ \\
 Vacancy-filling rate & 0.80 a month & JOLTS & $\theta$ \\
-Matching elasticity & 0.6 & \citet{petrongolo_2001} & $\eta$ \\
+Matching elasticity & 0.6 & \citet{petrongolo_2001} & $\eta_L$ \\
 Interest rate & 4\% a year & & $\beta$ \\
 Wage & 1 & normalization & $\phi$ \\
 $b/w$ & 0.9 & & $b$ \\
 Sunk share of the cost of a hire & 0.5 & & $\kappa$ \\
 Recruiting costs / output & 1.5\% & & $Q$, then $x_m$ \\
-Inverse creation elasticity & 1 & & $\xi_{\text{inv}}$ \\
+Entry elasticity & 1 & & $\xi$ \\
 Reactivation rate & 0.25 & working value & $a$ \\
 Costly share, shape & 0.8, 1 & working values & $p_r$, $\psi_r$ \\
 Risk aversion & 1 & & $\sigma$ \\
@@ -405,11 +548,11 @@ Risk aversion & 1 & & $\sigma$ \\
 \end{table}
 % TODO(MS): sources for b/w, the sunk share and X/Y (Draft.tex tab:calib_targets).
 
-\paragraph{The closed form} The job-finding and filling rates, divided by $1-\delta$ to condition on survival, give $\theta$, $u$, $v$ and $A$ directly. With $\bar\Lambda_r$ a target, creation $e$ is explicit. Per unit of $Q$, the user cost is $K/Q=(r+\delta)/(1+r)$, the hiring cost is fixed relative to it by the sunk share, and the reactivation shortfall is
+\paragraph{The closed form} The job-finding and filling rates, divided by $1-\delta$ to condition on survival, give $\theta$, $u$, $v$ and $A$ directly. With $\bar\Lambda_r$ a target, creation $e$ is explicit. Per unit of $Q$, the flow value is $K/Q=(r+\bar\delta)/(1+r)$, the hiring cost is fixed relative to it by the sunk share, and the reactivation shortfall is
 \begin{equation}
-\frac{\Rcal}{Q} = \frac{1-\delta}{1+r}\left[(1-\bar\Lambda_r) + \frac{\psi_r}{1+\psi_r}(\bar\Lambda_r-1+p_r)\right].
+\frac{\mathcal{R}}{Q} = \frac{1-\bar\delta}{1+r}\left[(1-\bar\Lambda_r) + \frac{\psi_r}{1+\psi_r}(\bar\Lambda_r-1+p_r)\right].
 \end{equation}
-The flow surplus $\bar z-w$ and recruiting costs $X$ are then both linear in $Q$, so the target for $X/Y$ pins $Q$ without root-finding. Job creation \eqref{eq:jc_ss} gives $\bar z$, the wage equation gives $\phi$, and $x_m=Q/e^{\xi_{\text{inv}}}$. The scale $a$ follows from $\bar\Lambda_r$.
+The flow surplus $\bar z-w$ and recruiting costs $X$ are then both linear in $Q$, so the target for $X/Y$ pins $Q$ without root-finding. Job creation \eqref{eq:jc_ss} gives $\bar z$, the wage equation gives $\phi$, and \eqref{eq:Q} gives $x_m=Qe^{-1/\xi}$. The scale $\alpha$ follows from $\bar\Lambda_r$.
 
 \paragraph{Steady state} Table~\ref{tab:ss} reports the result. Solving forward from the calibrated parameters recovers every target to machine precision, and the reactivation functions match numerical integration. % ags_steady_state_checks.txt
 
@@ -422,7 +565,7 @@ The flow surplus $\bar z-w$ and recruiting costs $X$ are then both linear in $Q$
 $u$ & 0.0703 & $\phi$ & 0.9225 \\
 $\theta$ & 0.5125 & $\kappa$ & 0.0094 \\
 $Q$ & 1.2688 & $\bar z$ & 1.0359 \\
-$\Lambda_r$ & 0.25 & $a$ & 20.30 \\
+$\Lambda_r$ & 0.25 & $\alpha$ & 20.30 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -475,7 +618,7 @@ $s$ & 0.8048 & 0.0437 & 0.7524 & 0.0401 \\
 % =============================================================================
 
 The model is solved by first-order perturbation in logs; a pruned second-order solution changes the moments negligibly. % ags_order_check.txt
-It is simulated monthly. The same SVAR is run on 200 simulated windows of 110 quarters, each filtered as the data are, and we report the mean over windows. Two cases are shown: the baseline and a ``compromise'' with a smaller sunk share of the cost of a hire and more elastic creation ($x_v=0.25$, $\xi_{\text{inv}}=0.5$), which in an earlier grid traded off the amplification of productivity against the comovement after separations best. % ags_xi_sweep.txt; Notes/ags_equilibrium.md §7.6
+It is simulated monthly. The same SVAR is run on 200 simulated windows of 110 quarters, each filtered as the data are, and we report the mean over windows. Two cases are shown: the baseline and a ``compromise'' with a smaller sunk share of the cost of a hire and more elastic creation ($x_v=0.25$, $\xi=2$), which in an earlier grid traded off the amplification of productivity against the comovement after separations best. % ags_xi_sweep.txt; Notes/ags_equilibrium.md §7.6
 
 \subsection{Impulse responses}
 
@@ -501,7 +644,7 @@ $s$ & $v$ & $-1.57$ (2) [$-1.91$, $-1.01$] & $-2.49$ (3) & $-1.80$ (3) \\
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{q3_model_svar.png}
-\caption{Responses through SVAR A: data with bands, and the model's mean over simulated windows}\label{fig:model_irf}
+\caption{Responses of $u$ and $v$ through SVAR A (log points $\times$ 100). Data: point estimate and 68 percent bootstrap band; dotted line: SVAR with NFCI ordered before $\delta$. Model: mean over 200 simulated windows of 110 quarters, baseline (``default'') and compromise cases.}\label{fig:model_irf}
 \end{figure}
 
 \begin{itemize}
@@ -590,6 +733,36 @@ Under the filter of \citet{hamilton_2018} ($h=8$, $p=4$) the processes are more 
 On long simulated samples without filtering, SVAR~A with the BIC lag recovers the model's true responses to productivity and separations within 9 to 15 percent of their peak, and those to destruction within 43 to 47 percent; the HP filter widens all gaps. % q3_model_svar.txt §1
 This is why model and data are compared through the same SVAR, not through the model's true responses.
 
+
+\section{Notation}\label{app:notation}
+Bars denote steady-state values or long-run means.
+{\small
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.2\linewidth}>{\raggedright\arraybackslash}p{0.6\linewidth}l@{}}
+\toprule
+Symbol & Meaning & Defined in \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+$C_t$, $\sigma$, $\beta$, $r$ & Consumption; risk aversion; discount factor; $1/\beta-1$ & \eqref{eq:sdf} \\
+$m_{t+1}$ & Stochastic discount factor $\beta(C_{t+1}/C_t)^{-\sigma}$ & \eqref{eq:sdf} \\
+$z_t$, $\delta_t$, $s_t$ & Productivity; destruction rate; match separation rate & \eqref{eq:ar1_z}--\eqref{eq:ar1_s} \\
+$\rho_x$, $\sigma_x$, $\epsilon_{xt}$ & Persistence; innovation SD; unit-variance innovation, $x\in\{z,\delta,s\}$ & \eqref{eq:ar1_z}--\eqref{eq:ar1_s} \\
+$\delta_{e,t}$, $\tau_t$ & Measured exit $\delta_{t-1}$; total separation rate & Section~\ref{sec:environment} \\
+$u_t$, $v_t$, $\theta_t$ & Unemployment before matching; vacancies; tightness & \eqref{eq:u_lom}, \eqref{eq:v_lom} \\
+$m(u,v)$, $A$, $\eta_L$ & Matching function; scale; elasticity in $u$ & Section~\ref{sec:environment} \\
+$f(\theta)$, $q(\theta)$ & Job-finding and vacancy-filling rates & Section~\ref{sec:environment} \\
+$e_t$, $G$, $x_m$, $\xi$ & New positions; sunk-cost distribution; its bound; entry elasticity & \eqref{eq:Q} \\
+$Q_t$, $K_t$, $J_t$ & Value of a vacancy; its flow value; value of a filled position & \eqref{eq:K}, \eqref{eq:value_matched} \\
+$\kappa$, $x_v$ & Cost per hire; sunk share of the hiring cost & \eqref{eq:average_hiring_cost} \\
+$w_t$, $b$, $\phi$ & Wage; worker's outside option; worker's bargaining power & \eqref{eq:wage} \\
+$\alpha$, $F_r$, $p_r$, $\psi_r$ & Reactivation-cost scale; distribution; mass on positive costs; shape & \eqref{eq:Lambda_r} \\
+$\Lambda_{r,t}$ & Reactivation probability $F_r(Q_t/\alpha)$ & \eqref{eq:Lambda_r} \\
+$Q_t^{rep}$, $\mathcal{R}_t$ & Reactivation option value; reposting shortfall & \eqref{eq:Qrep}, \eqref{eq:repost_shortfall} \\
+$X_t$, $X_t^r$ & Creation and hiring costs; reactivation costs & \eqref{eq:resources} \\
+\end{longtable}
+}
+
 % =============================================================================
 \begin{thebibliography}{}
 \bibitem[Bai, R{\'i}os-Rull and Storesletten(2025)]{bai_2025}
@@ -598,14 +771,26 @@ Bai, Y., J.-V. R{\'i}os-Rull, and K. Storesletten (2025): ``Demand Shocks as Tec
 \bibitem[Coles and Moghaddasi Kelishomi(2018)]{coles_2018}
 Coles, M.~G., and A.~Moghaddasi Kelishomi (2018): ``Do Job Destruction Shocks Matter in the Theory of Unemployment?,'' \emph{American Economic Journal: Macroeconomics}, 10(3), 118--136, doi:10.1257/mac.20150040.
 
+\bibitem[den Haan, Ramey and Watson(2000)]{den_haan_2000}
+den Haan, W.~J., G.~Ramey, and J.~Watson (2000): ``Job Destruction and Propagation of Shocks,'' \emph{American Economic Review}, 90(3), 482--498, doi:10.1257/aer.90.3.482.
+
+\bibitem[Elsby and Michaels(2013)]{elsby_2013}
+Elsby, M.~W.~L., and R.~Michaels (2013): ``Marginal Jobs, Heterogeneous Firms, and Unemployment Flows,'' \emph{American Economic Journal: Macroeconomics}, 5(1), 1--48.
+
 \bibitem[Gabrovski and Silva(2025)]{gabrovski_2025}
 Gabrovski, M., and M.~R. Silva (2025): ``Unemployment and Labor Productivity Comovement: the Role of Firm Exit,'' \emph{Journal of Economic Dynamics and Control}, 105205, doi:10.1016/j.jedc.2025.105205.
 
 \bibitem[Gilchrist and Zakraj{\v s}ek(2012)]{gilchrist_2012}
 Gilchrist, S., and E.~Zakraj{\v s}ek (2012): ``Credit Spreads and Business Cycle Fluctuations,'' \emph{American Economic Review}, 102(4), 1692--1720, doi:10.1257/aer.102.4.1692.
 
+\bibitem[Hagedorn and Manovskii(2008)]{hagedorn_2008}
+Hagedorn, M., and I.~Manovskii (2008): ``The Cyclical Behavior of Equilibrium Unemployment and Vacancies Revisited,'' \emph{American Economic Review}, 98(4), 1692--1706.
+
 \bibitem[Hamilton(2018)]{hamilton_2018}
 Hamilton, J.~D. (2018): ``Why You Should Never Use the Hodrick-Prescott Filter,'' \emph{Review of Economics and Statistics}, 100(5), 831--843.
+
+\bibitem[Jaimovich and Floetotto(2008)]{jaimovich_2008}
+Jaimovich, N., and M.~Floetotto (2008): ``Firm Dynamics, Markup Variations, and the Business Cycle,'' \emph{Journal of Monetary Economics}, 55(7), 1238--1252.
 
 \bibitem[Jord{\`a}(2005)]{jorda_2005}
 Jord{\`a}, {\`O}. (2005): ``Estimation and Inference of Impulse Responses by Local Projections,'' \emph{American Economic Review}, 95(1), 161--182.
@@ -615,6 +800,9 @@ Mortensen, D.~T., and C.~A. Pissarides (1994): ``Job Creation and Job Destructio
 
 \bibitem[Petrongolo and Pissarides(2001)]{petrongolo_2001}
 Petrongolo, B., and C.~A. Pissarides (2001): ``Looking into the Black Box: A Survey of the Matching Function,'' \emph{Journal of Economic Literature}, 39(2), 390--431.
+
+\bibitem[Pissarides(2009)]{pissarides_2009}
+Pissarides, C.~A. (2009): ``The Unemployment Volatility Puzzle: Is Wage Stickiness the Answer?,'' \emph{Econometrica}, 77(5), 1339--1369.
 
 \bibitem[Shimer(2005)]{shimer_2005}
 Shimer, R. (2005): ``The Cyclical Behavior of Equilibrium Unemployment and Vacancies,'' \emph{American Economic Review}, 95(1), 25--49.
