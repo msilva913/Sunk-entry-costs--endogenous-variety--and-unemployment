@@ -1110,6 +1110,23 @@ Data (SVAR A): δ 3.0–4.3, z 7.40, s 3.9–4.5.
 - **cor(u,v) stays too weak** in every case, at −0.31 to −0.69 against −0.93.
 - **Implication:** the data favor slow or unpriced replacement of product lines together with elastic vacancy creation. Clone replacement is a device, so the structural question is which entry friction reproduces it. Entry congestion frees ν and weakens the R19 pin, but holds replacement back rather than making it instant and unpriced. The next test is congestion × ξ.
 
+## The δ–s contrast under HP and Hamilton — Nov 19, 2026 (`q3_filter_contrast.py`, data only)
+
+SVAR A, p = 1, one-SD shocks. Contrasts are δ minus s, computed draw by draw (1,000 bootstrap draws). "HP, 1995Q2" isolates the sample effect.
+
+| | δ: u peak, h8/peak, outflow share | s: u peak, h8/peak, outflow share | peak quarter δ−s [90 %] | h8/peak δ−s [90 %] | outflow share δ−s [90 %] |
+|---|---|---|---|---|---|
+| HP, 1992Q3 | +1.41 (h 4), 0.56, 85 % | +1.54 (h 2), 0.31, 63 % | +2 [−1, +3] | +0.25 [−0.15, +0.62] | **+0.22 [+0.06, +0.67]** |
+| HP, 1995Q2 | +1.46 (h 3), 0.45, 91 % | +1.66 (h 2), 0.29, 68 % | +1 [−1, +3] | +0.17 [−0.23, +0.58] | **+0.23 [+0.08, +0.75]** |
+| Hamilton, 1995Q2 | +2.18 (h 5), 0.88, 61 % | +2.50 (h 5), 0.87, 72 % | 0 [−4, +8] | +0.01 [−0.79, +0.59] | −0.10 [−0.67, +1.10] |
+
+- **Timing and persistence:** not significant even under HP. P(δ peaks later) is 0.73, and the peak-quarter difference is 0 at p = 2. Absent under Hamilton.
+- **"A separation shock acts sooner and fades sooner" (draft) is not supported.**
+- **Composition** (δ works more through job finding): significant under HP, robust to the sample and to p = 2. Absent under Hamilton (point estimate reversed, very wide bands).
+- **Cumulative u per one SD is about equal for δ and s under both filters** (HP 10.8 vs 10.2; Hamilton 21.4 vs 26.7). Under Hamilton, both responses are persistent and humped (peak h 5).
+- **Sample:** the 11 quarters lost to Hamilton do not matter; the filter does.
+- **Reading:** the paper's δ-specific claim cannot rest on a data contrast between δ and s. It can rest on the overidentification test, which does not need one: the reactivation rate that fits the s responses, which are persistent under Hamilton as in CK, still leaves the model's δ response short. That requires the model-side comparison under Hamilton (not yet run).
+
 ## Shock processes: one AR(1) does not fit both filters — Nov 19, 2026 (`part6d_shock_components.py`)
 
 **The test.**

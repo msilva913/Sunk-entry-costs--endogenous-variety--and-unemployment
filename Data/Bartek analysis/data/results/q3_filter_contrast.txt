@@ -1,0 +1,38 @@
+==============================================================================
+The destruction-separation contrast under HP and Hamilton (q3_filter_contrast.py)
+==============================================================================
+The draft's empirical core: after a destruction shock u builds to a peak at quarter 4, mostly
+through a lower job-finding rate, whereas a separation shock acts sooner and fades sooner. Under
+HP (SVAR A) s -> u peaks at h 2 and delta -> u at h 4; under the Hamilton filter both peak at
+h 5 (q3_data_svar.txt section 7). This program asks, on the data only, whether the contrast
+holds under each filter, and separates the filter from the sample.
+
+------------------------------------------------------------------------------
+1. u's response to δ and s (one SD, p = 1; log points × 100)
+------------------------------------------------------------------------------
+spec        window                 shock    u peak       h8/peak    cum 0–12    outflow share    p = 2: peak, outflow
+----------  ---------------------  -------  -----------  ---------  ----------  ---------------  ----------------------
+HP          1992Q3-2019Q4 (T 110)  δ        +1.41 (h 4)  +0.56      +10.8       85 %             h 3, 84 %
+HP          1992Q3-2019Q4 (T 110)  s        +1.54 (h 2)  +0.31      +10.2       63 %             h 3, 53 %
+HP, 1995Q2  1995Q2-2019Q4 (T 99)   δ        +1.46 (h 3)  +0.45      +10.3       91 %             h 3, 85 %
+HP, 1995Q2  1995Q2-2019Q4 (T 99)   s        +1.66 (h 2)  +0.29      +10.7       68 %             h 3, 57 %
+Hamilton    1995Q2-2019Q4 (T 99)   δ        +2.18 (h 5)  +0.88      +21.4       61 %             h 4, 52 %
+Hamilton    1995Q2-2019Q4 (T 99)   s        +2.50 (h 5)  +0.87      +26.7       72 %             h 1, 62 %
+
+  Outflow share: outflow part of the cumulative u response (h = 0–12) over inflow + outflow,
+  from SVAR (z, s, δ, u, v, f); above 100 % when the inflow part is negative.
+
+------------------------------------------------------------------------------
+2. The contrast, δ minus s: point, 68 % and 90 % bootstrap bands, share of draws > 0
+------------------------------------------------------------------------------
+spec        statistic             point    68 %            90 %            P(>0)    p = 2
+----------  --------------------  -------  --------------  --------------  -------  -------
+HP          peak quarter, δ − s   +2       [+0, +2]        [-1, +3]        0.73     +0
+HP          h8/peak, δ − s        +0.25    [+0.00, +0.44]  [-0.15, +0.62]  0.84     +0.15
+HP          outflow share, δ − s  +0.22    [+0.12, +0.43]  [+0.06, +0.67]  0.98     +0.30
+HP, 1995Q2  peak quarter, δ − s   +1       [+0, +2]        [-1, +3]        0.64     +0
+HP, 1995Q2  h8/peak, δ − s        +0.17    [-0.07, +0.38]  [-0.23, +0.58]  0.74     +0.14
+HP, 1995Q2  outflow share, δ − s  +0.23    [+0.14, +0.48]  [+0.08, +0.75]  0.98     +0.29
+Hamilton    peak quarter, δ − s   +0       [-1, +5]        [-4, +8]        0.74     +3
+Hamilton    h8/peak, δ − s        +0.01    [-0.30, +0.35]  [-0.79, +0.59]  0.64     +0.10
+Hamilton    outflow share, δ − s  -0.10    [-0.27, +0.19]  [-0.67, +1.10]  0.43     -0.11
