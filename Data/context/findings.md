@@ -1110,6 +1110,42 @@ Data (SVAR A): δ 3.0–4.3, z 7.40, s 3.9–4.5.
 - **cor(u,v) stays too weak** in every case, at −0.31 to −0.69 against −0.93.
 - **Implication:** the data favor slow or unpriced replacement of product lines together with elastic vacancy creation. Clone replacement is a device, so the structural question is which entry friction reproduces it. Entry congestion frees ν and weakens the R19 pin, but holds replacement back rather than making it instant and unpriced. The next test is congestion × ξ.
 
+## Gross-flow s and f against the duration-based series — Nov 19, 2026 (`part6f_gross_flows.py`, `q3_gross_flows_compare.txt`)
+
+**Data.** BLS CPS labor force status flows (LNS17000000–LNS17900000, February 1990–January 2025), fetched from DBnomics. The BLS site and its anonymous API are blocked from the container. Discrete monthly E→U and U→E probabilities, as quarterly means; s = (τ − δ)/(1 − δ) with the same splice.
+
+**Levels, 1992Q3–2019Q4:**
+
+| | τ | f | s | δ/τ |
+|---|---|---|---|---|
+| duration (Shimer) | 0.0258 | 0.361 | 0.0236 | 0.087 |
+| gross flows | 0.0134 | 0.252 | 0.0112 | **0.168** |
+
+**δ/τ doubles. This bears on the settled calibration target D1 (0.087); MS to decide.**
+
+**HP cycles:**
+- The new s is a different series. Its correlation with the old s is +0.46. It is more volatile (SD 7.4 against 4.8), more persistent (ρ1 0.74 against 0.45), and strongly countercyclical (corr with u +0.82 against +0.27). corr(s, f) is −0.71 against −0.04.
+- f barely changes (correlation 0.90).
+- The 1990 filter span is irrelevant.
+
+**SVAR (z, s, δ, u, v, f), p = 1, one SD, HP:**
+- **The s response changes.**
+  - u peaks *on impact* (+1.46, h 0), cumulative 5.5 (old 10.6), and is back to 0 by h 8.
+  - v falls on impact (−1.04, 90 % [−1.53, −0.48]; old −0.23, not significant).
+  - f on impact is −0.05 (old +1.08).
+- **The impact matching-efficiency residual** f − 0.4(v − u) falls from +1.51 [1.08, 1.84] to +0.95 [0.59, 1.24]. It is smaller, but still significant.
+- **δ → u is unchanged:** +1.58 (h 3), cumulative 11.8 (old +1.56 at h 4, 11.6). z → u is slightly larger.
+- **Under HP the δ–s contrast reappears:** s is front-loaded (peak h 0, cumulative 5.5), while δ builds (peak h 3, cumulative 11.8).
+
+**Hamilton:**
+- s → u is persistent under both measures: cumulative 28.7 (new) against 18.1 for δ.
+- The residual falls from +2.58 to +1.59 [0.60, 2.46].
+
+**Reading.**
+- The duration-based s is a poor measure of separations into unemployment: weakly cyclical, and confounded by inflows from non-participation (Fujita–Ramey 2009, p. 420).
+- With E→U, the s responses look much more like the model at low reactivation: v falls on impact, and u is front-loaded.
+- The leftover impact residual is consistent with composition: newly unemployed workers find jobs faster than the average unemployed worker. Recall is the other candidate. Both are untested, and a model with homogeneous unemployed workers cannot produce either.
+
 ## s–f residual correlation: the measurement check — Nov 19, 2026 (`q3_s_jf_residuals.txt`)
 
 **Test.** Reduced-form VAR(1) (z, s, δ, u, v, f). The model side uses the `ags_svar_filters.jl` windows: default calibration, Λ̄_r from 1 to 0.03, 200 windows each.
