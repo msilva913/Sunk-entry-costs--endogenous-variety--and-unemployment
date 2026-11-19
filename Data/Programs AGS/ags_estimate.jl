@@ -230,8 +230,42 @@ function final()
                      R, string(round.(θ; digits = 3)), sum(e2[1:39]), sum(e2[40:78]), Jd, pval))
 end
 
+"""
+Profile over (Λ̄_r, ξ) with σ, x_v and b/w at the final estimates (ags_estimate_final_<filter>.csv):
+J_z, J_s, J_δ and the responses that show the trade-off (s → v at h 0 and h 2, s → u at h 1,
+z → u at h 4), log points × 100. ξ extends below the search bound (0.05). R = AGS_R.
+Output: ags_estimate_profile_<filter>.csv.
+"""
+function profile()
+    fin = CSV.read(joinpath(@__DIR__, "ags_estimate_final_$(FILTER).csv"), DataFrame)
+    val(n) = fin.value[findfirst(==(n), fin.param)]
+    rows = DataFrame()
+    for Λ in (0.03, 0.1, 0.25, 0.5, 0.75, 0.95), ξ in (0.05, 0.1, 0.25, 0.5, 1.0, 2.0)
+        θ = [val("sigma"), Λ, ξ, val("x_v"), val("b_ratio")]
+        status, out = "ok", fill(NaN, 7)
+        try
+            list, _ = window_irfs(θ, R_SEARCH)
+            Θ = mean_irf(list)
+            me, mt = moment_vec(Θ, ("z", "s")), moment_vec(Θ, ("delta",))
+            e2 = ((me .- D_EST) ./ SD_EST) .^ 2
+            iv, iu, js, jz = 5, 4, 2, 1                     # NAMES order: z, s, delta, u, v, jf
+            out = [sum(e2[1:39]), sum(e2[40:78]), sum(((mt .- D_TST) ./ SD_TST) .^ 2),
+                   100 * Θ[1][iv, js], 100 * Θ[3][iv, js], 100 * Θ[2][iu, js], 100 * Θ[5][iu, jz]]
+        catch err
+            status = first(split(sprint(showerror, err), '\n'))
+        end
+        println(@sprintf("Λ %.2f ξ %.2f | J_z %6.1f J_s %6.1f J_δ %6.1f | s→v h0 %+.2f h2 %+.2f s→u h1 %+.2f z→u h4 %+.2f %s",
+                         Λ, ξ, out..., status))
+        push!(rows, (lambda_r = Λ, xi = ξ, J_z = out[1], J_s = out[2], J_delta = out[3],
+                     s_v_h0 = out[4], s_v_h2 = out[5], s_u_h1 = out[6], z_u_h4 = out[7], status = status))
+    end
+    CSV.write(joinpath(@__DIR__, "ags_estimate_profile_$(FILTER).csv"), rows)
+end
+
 if MODE == "check"
     check()
+elseif MODE == "profile"
+    profile()
 elseif MODE == "search"
     search()
 elseif MODE == "final"
