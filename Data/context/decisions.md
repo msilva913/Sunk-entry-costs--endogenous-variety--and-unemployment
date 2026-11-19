@@ -37,6 +37,27 @@ Status key: 🔴 blocks estimation · 🟠 blocks a paper section · 🟡 improv
 
 **Recommendation:** Path 1 as the backbone; each mechanism candidate must pass pre-specified criteria (as finance did not, Nov 15). **MS to decide** whether a mechanism is necessary for the paper.
 
+## ✅ D20. Shock processes calibrated from SVAR A's own equations — settled Nov 19, 2026 (MS); amends S14 and D14
+
+**Rule.** Each exogenous process (z, s, δ) is calibrated in advance to SVAR A (z, s, δ, u, v; p = 1, recursive), the system the model is compared through, per filter:
+- persistence: the own-lag coefficient of the shock's equation, conditional on the lags of every variable;
+- size: the structural shock's own impact (Cholesky diagonal), net of the shocks ordered before it.
+
+The quarterly targets are converted to monthly AR(1)s with part6b's simulated matching (Step 4b) on the series' own spans and SVAR A's window (`part6e_window_processes.py`, `shock_calibration_window.csv`; the univariate processes are kept as `<f>_uni_*`).
+
+**Why.** With gross flows (D19), the univariate AR(1) for s (ρ_Q 0.73) attributes to the s process persistence that SVAR A assigns to other shocks: s's own-lag is 0.145, its own response h1/h0 0.28, and its own shock explains 30 % of its long-run variance (z 43 %). Estimation with the univariate processes failed (J_s 320 under HP, 411 under Hamilton; estimates at the bounds).
+
+**Relation to Coles and Kelishomi (2018).** They match independent AR(1)s to univariate quarterly autocorrelations and allow correlated innovations (−0.63; p. 124, Table 2). This rule conditions persistence on the full system and orthogonalizes the innovations, as the SVAR does. Consequence: the part of s that responds to z on impact is not in the exogenous s process; the model must produce it (open; endogenous separations or correlated innovations).
+
+**Values (monthly ρ / σ).**
+| | HP target ρ_Q / σ_Q | HP monthly | Hamilton target | Hamilton monthly |
+|---|---|---|---|---|
+| z | 0.635 / 0.0055 | 0.883 / 0.0044 | 0.912 / 0.0092 | 0.999 / 0.0044 (bound; not attained) |
+| δ | 0.170 / 0.0538 | 0.499 / 0.0648 | 0.686 / 0.0590 | 0.856 / 0.0478 |
+| s | 0.146 / 0.0387 | 0.459 / 0.0482 | 0.336 / 0.0638 | 0.586 / 0.0693 |
+
+Univariate (previous) monthly ρ: z 0.941 / 0.999, δ 0.532 / 0.892, s 0.961 / 0.994 (HP / Hamilton).
+
 ## ✅ D19. Separations and job finding from CPS gross flows — settled Nov 19, 2026 (MS); branch `d16_gross_flows`
 
 **Main measure.** Separations τ (E→U) and job finding f (U→E) come from the BLS labor force status flows: matched CPS households, monthly, seasonally adjusted, from 1990. They are fetched via DBnomics (`part6f_gross_flows.py`), and s = (τ − δ)/(1 − δ) as before.
@@ -63,7 +84,7 @@ Status key: 🔴 blocks estimation · 🟠 blocks a paper section · 🟡 improv
 - The reactivation threshold falls from 0.90 to 0.80.
 - The inflow/outflow decompositions now take δ/τ from the data.
 
-**Open (MS).** Recalibrating the level targets to gross flows (τ 0.0134, f 0.252, δ/τ 0.168) reopens D1. MS questioned keeping duration levels with gross-flow cycles ("how could we justify adjusting the cycles but not the levels?"). It is recommended, but not yet run. The draft's model sections are marked pending.
+**Levels (settled Nov 19, MS: "Yes, we need to recalibrate").** `AGS_TARGETS` now uses gross-flow levels: τ 0.01338, f 0.2524, BED Deaths δ 0.0022497 a month. Steady-state u 0.0503. The draft's model sections are marked pending.
 
 ## ✅ D18. Estimation design for AGS — settled Nov 19, 2026 (MS)
 

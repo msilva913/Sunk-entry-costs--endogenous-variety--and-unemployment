@@ -1,21 +1,30 @@
 """
-part6e_window_processes.py -- monthly shock processes for SVAR A's window, by filter.
+part6e_window_processes.py -- monthly shock processes from SVAR A's own equations, by filter.
 
-The model side of SVAR A (ags_svar_sim.jl) needs, for each filter, monthly AR(1) processes whose
-simulated quarterly averages, filtered as the data are, reproduce the data's AR(1) statistics on
-SVAR A's window. part6b already does this for HP (section 9, columns bprime_*). This program
-adds the Hamilton filter (h = 8, p = 4), with part6b's own functions:
-    z, s   Hamilton cycles over 1951-2019 (one-sided, so the first 11 quarters are lost); target
-           = AR(1) on 1995Q2-2019Q4, SVAR A's Hamilton window; the simulation filters the same
-           276 quarters and fits on the last 99.
-    delta  part6b's Hamilton-matched process (section 8), fitted on delta's own Hamilton window
-           (1995Q2-2019Q4) from the (z, delta) VAR, as under HP.
-Under Hamilton no stationary monthly AR(1) may be persistent enough for z; the cap (0.999) is
-then reported as not attained.
+Rule (amends S14/D14, Nov 19, 2026; decisions.md D20). Each exogenous process in the model is
+calibrated to the corresponding shock of SVAR A (z, s, delta, u, v; p = 1, recursive), the system
+the model is compared through:
+    persistence  the own-lag coefficient of the shock's equation, conditional on the lags of every
+                 variable in the system;
+    size         the structural shock's impact on its own series (Cholesky diagonal), i.e. the
+                 innovation net of the shocks ordered before it.
+The univariate AR(1) used before overstates the persistence of a series that responds to the cycle:
+with gross flows, s has a univariate rho_Q of 0.73 but an own-lag of 0.15 in SVAR A, because most of
+its cyclical variation follows productivity and the labor market (FEVD: own shock 30 % in the long
+run). Coles and Kelishomi (2018) also use univariate persistence, with correlated innovations; here
+the innovations are orthogonal, as in the SVAR.
 
-Output: data/results/shock_calibration_window.csv, one row per series (z, delta, s), columns
-hp_rho_m, hp_sigma_m (= part6b's bprime) and ham_rho_m, ham_sigma_m, ham_attained, and the
-targets. Read by Programs AGS/ags_svar_sim.jl (shock_processes, prefix "hp" or "ham").
+Each quarterly target is then converted to a monthly AR(1) with part6b's simulated matching (Step 4b):
+the monthly process is simulated, averaged to quarters, filtered over the series' own span as the
+data are, and fitted on SVAR A's window, until the quarterly persistence and innovation size match.
+    HP        window 1992Q3-2019Q4 (110 quarters); z filtered over 1951-2019, s over 1990-2019,
+              delta over 1992-2019.
+    Hamilton  window 1995Q2-2019Q4 (99 quarters); same spans, first 11 quarters lost.
+
+Output: data/results/shock_calibration_window.csv, one row per series (z, delta, s): columns
+<f>_rho_m, <f>_sigma_m (f = hp, ham; the processes used, read by Programs AGS via shock_processes),
+the quarterly targets <f>_rho_Q, <f>_sigma_Q, <f>_attained, and the previous univariate processes
+<f>_uni_rho_m, <f>_uni_sigma_m for comparison.
 """
 
 import numpy as np
@@ -24,35 +33,55 @@ import pandas as pd
 import part6b_shock_persistence_cyclical as p6b
 import q3_data_svar as q3
 
-OUT_CSV   = p6b.RESULTS_DIR / "shock_calibration_window.csv"
-HAM_START = "1995Q2"
+OUT_CSV  = p6b.RESULTS_DIR / "shock_calibration_window.csv"
+NAMES    = list(q3.SVARS["A"]["vars"])                    # z, s, delta, u, v
+FILTERS  = {"hp": ("hp", q3.BED_START), "ham": ("hamilton", "1995Q2")}
+
+
+def svar_targets(method, start):
+    """Own-lag and own-impact SD of each shock in SVAR A (p = 1) under the given filter."""
+    cyc = q3.build_cycles(method)
+    frame = cyc.loc[cyc.index >= start, NAMES].dropna()
+    fit = q3.fit_var(frame.to_numpy(), 1)
+    P = q3.structural(fit, NAMES, NAMES)
+    A = fit["A"][0]
+    out = {}
+    for x in ("z", "delta", "s"):
+        i = NAMES.index(x)
+        out[x] = {"rho_Q": float(A[i, i]), "sigma_Q": float(P[i, i])}
+    return cyc, frame, out
+
+
+def uni_col(old, fkey, what):
+    """The univariate process: the uni column once this program has run, else the original column."""
+    if f"{fkey}_uni_{what}" in old.columns:
+        return f"{fkey}_uni_{what}"
+    else:
+        return f"{fkey}_{what}"
 
 
 if __name__ == "__main__":
-    calib = pd.read_csv(p6b.RESULTS_DIR / "shock_calibration.csv").set_index("series")
-    cyc = q3.build_cycles("hamilton")
+    old = pd.read_csv(OUT_CSV).set_index("series")
     rng = np.random.default_rng(p6b.MATCH_SEED)
-    lost = p6b.HAMILTON_H + p6b.HAMILTON_P - 1
-    rows = []
-    for name in ("z", "delta", "s"):
-        c = calib.loc[name]
-        row = {"series": name, "hp_rho_m": c["bprime_rho_m"], "hp_sigma_m": c["bprime_sigma_m"]}
-        if name == "delta":
-            row.update({"ham_rho_m": c["hamilton_matched_rho_m"], "ham_sigma_m": c["hamilton_matched_sigma_m"],
-                        "ham_attained": True, "ham_rho_Q": c["hamilton_rho_Q"],
-                        "ham_sigma_Q": c["hamilton_sigma_Q"], "ham_target": "part6b section 8"})
-        else:
-            full = cyc[name].dropna()
-            win = full[full.index >= HAM_START]
-            fit = p6b.fit_ar1(win)
-            nq, n_keep = len(full) + lost, len(win)
-            rho_m, sigma_m, eps, C, attained = p6b.match_process(fit["rho_Q"], fit["sigma_Q"], nq, rng,
-                                                                 method="hamilton", n_keep=n_keep)
-            row.update({"ham_rho_m": rho_m, "ham_sigma_m": sigma_m, "ham_attained": attained,
-                        "ham_rho_Q": fit["rho_Q"], "ham_sigma_Q": fit["sigma_Q"],
-                        "ham_target": f"AR(1) on {win.index[0]}-{win.index[-1]} (n {n_keep})"})
-        rows.append(row)
-    out = pd.DataFrame(rows).set_index("series")
-    print(out.round(4).to_string())
+    rows = {x: {"series": x} for x in ("z", "delta", "s")}
+    for fkey, (method, start) in FILTERS.items():
+        cyc, frame, tg = svar_targets(method, start)
+        n_win = len(frame)
+        lost = 0
+        if method == "hamilton":
+            lost = p6b.HAMILTON_H + p6b.HAMILTON_P - 1
+        for x in ("z", "delta", "s"):
+            nq = len(cyc[x].dropna()) + lost                # quarters before filtering
+            rho_m, sigma_m, eps, C, attained = p6b.match_process(tg[x]["rho_Q"], tg[x]["sigma_Q"], nq, rng,
+                                                                 method=method, n_keep=n_win)
+            rows[x].update({f"{fkey}_rho_m": rho_m, f"{fkey}_sigma_m": sigma_m, f"{fkey}_attained": attained,
+                            f"{fkey}_rho_Q": tg[x]["rho_Q"], f"{fkey}_sigma_Q": tg[x]["sigma_Q"],
+                            f"{fkey}_uni_rho_m": old.loc[x, uni_col(old, fkey, "rho_m")],
+                            f"{fkey}_uni_sigma_m": old.loc[x, uni_col(old, fkey, "sigma_m")]})
+        print(f"{fkey}: SVAR A {frame.index[0]}-{frame.index[-1]}, T = {n_win}")
+    out = pd.DataFrame(rows.values()).set_index("series")
+    cols = [c for f in FILTERS for c in (f"{f}_rho_Q", f"{f}_sigma_Q", f"{f}_rho_m", f"{f}_sigma_m",
+                                         f"{f}_attained", f"{f}_uni_rho_m", f"{f}_uni_sigma_m")]
+    print(out[cols].round(4).to_string())
     out.to_csv(OUT_CSV)
     print(f"\nSaved: {OUT_CSV}")
