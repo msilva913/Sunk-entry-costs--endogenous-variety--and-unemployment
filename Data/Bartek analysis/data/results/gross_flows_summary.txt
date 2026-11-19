@@ -1,0 +1,9 @@
+CPS gross flows (BLS labor force status flows, via DBnomics), monthly means 1992Q3-2019Q4
+(part6f_gross_flows.py). Shares of the origin state's stock in the previous month.
+
+  U -> E (job-finding probability)               0.2524
+  U -> N                                         0.2249
+  all exits from U (U -> E or N)                 0.4773
+  E -> U per employed (separation probability)   0.0134
+  N -> U per employed                            0.0149
+  all inflows to U per employed                  0.0283

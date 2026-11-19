@@ -49,7 +49,18 @@ NAMES_F   = NAMES + ["jf"]                       # test 2
 SHOCKS    = q3.SHOCKS                            # z, delta, s
 LAGS      = (1, 2, 4)
 H, H_MOM  = q3.H_IRF, 200
-W_DELTA, U_BAR = 0.087, 0.06
+U_BAR = 0.06
+
+
+def delta_share():
+    """delta / tau on SVAR A's window under the active flow measure (part6b.FLOW_MEASURE, D19):
+    0.087 with Shimer's duration-based tau, 0.168 with CPS gross flows."""
+    lev = p6b.build_levels(p6b.load_raw())
+    w = lev[(lev.index >= q3.BED_START) & (lev.index <= p6b.SAMPLE_END)]
+    return float(w["delta"].mean() / w["tau"].mean())
+
+
+W_DELTA = delta_share()
 OUT_TXT   = p6b.RESULTS_DIR / "q3_persistence_tests.txt"
 OUT_PNG   = p6b.RESULTS_DIR / "q3_persistence_tests.png"
 LINES = []

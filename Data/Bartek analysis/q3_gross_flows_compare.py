@@ -96,6 +96,11 @@ if __name__ == "__main__":
                    ("s", "s = (tau - delta)/(1 - delta)")):
         tab.append([lab, f"{win(old[c]).mean():.4f}", f"{win(new[c]).mean():.4f}"])
     tab.append(["delta / tau", f"{d_mean / win(old['tau']).mean():.3f}", f"{d_mean / win(new['tau']).mean():.3f}"])
+    # Steady state: separations retire (1 - Lambda) s (1 - delta) positions a month, destruction
+    # delta; separations retire more once Lambda < 1 - delta / ((1 - delta) s) (Section 2).
+    thr = lambda s: 1 - d_mean / ((1 - d_mean) * s)
+    tab.append(["reactivation threshold 1 - delta/((1 - delta)s)", f"{thr(win(old['s']).mean()):.2f}",
+                f"{thr(win(new['s']).mean()):.2f}"])
     say(f"\n{'-' * 78}\n1. Levels, means over 1992Q3-2019Q4\n{'-' * 78}")
     say(tabulate(tab, ["", "duration (old)", "gross flow (new)"], tablefmt="simple", disable_numparse=True))
 
@@ -110,8 +115,10 @@ if __name__ == "__main__":
             other = "jf" if c == "s" else "s"
             tab.append([c, v, f"{100 * x.std():.2f}", f"{x.autocorr():.2f}", f"{x.corr(u):+.2f}",
                         f"{x.corr(win(C[other]).reindex(x.index)):+.2f}",
-                        f"{x.corr(win(cy['new'][c]).reindex(x.index)):+.2f}"])
-    say(tabulate(tab, ["series", "version", "SD", "ρ1", "corr with u", "corr(s, jf)", "corr with new"],
+                        f"{x.corr(win(cy['new'][c]).reindex(x.index)):+.2f}",
+                        f"{x.corr(win(C['delta']).reindex(x.index)):+.2f}"])
+    say(tabulate(tab, ["series", "version", "SD", "ρ1", "corr with u", "corr(s, jf)", "corr with new",
+                       "corr with δ"],
                  tablefmt="simple", disable_numparse=True))
 
     # ── 3. impulse responses ───────────────────────────────────────────────

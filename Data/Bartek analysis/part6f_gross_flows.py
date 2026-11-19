@@ -68,3 +68,22 @@ if __name__ == "__main__":
     print(f"Monthly flows {m.index[0]}-{m.index[-1]}; quarterly {q.index[0]}-{q.index[-1]} (n {len(q)})")
     print(q.describe().round(4).to_string())
     print(f"Saved: {OUT_Q}")
+
+    # Where unemployment's exits go and where its inflows come from, monthly means over SVAR A's
+    # window (1992Q3-2019Q4): the duration-based rates measure all exits and all inflows.
+    w = m[(m.index >= pd.Period("1992-07", "M")) & (m.index <= pd.Period("2019-12", "M"))]
+    U = w["UE"] + w["UU"] + w["UN"]
+    E = w["EE"] + w["EU"] + w["EN"]
+    rows = [("U -> E (job-finding probability)", (w["UE"] / U).mean()),
+            ("U -> N", (w["UN"] / U).mean()),
+            ("all exits from U (U -> E or N)", ((w["UE"] + w["UN"]) / U).mean()),
+            ("E -> U per employed (separation probability)", (w["EU"] / E).mean()),
+            ("N -> U per employed", (w["NU"] / E).mean()),
+            ("all inflows to U per employed", ((w["EU"] + w["NU"]) / E).mean())]
+    lines = ["CPS gross flows (BLS labor force status flows, via DBnomics), monthly means 1992Q3-2019Q4",
+             "(part6f_gross_flows.py). Shares of the origin state's stock in the previous month.", ""]
+    lines += [f"  {lab:<46} {val:.4f}" for lab, val in rows]
+    out_txt = Path("data/results/gross_flows_summary.txt")
+    out_txt.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    print("\n".join(lines))
+    print(f"Saved: {out_txt}")

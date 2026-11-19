@@ -37,7 +37,18 @@ import part6b_shock_persistence_cyclical as p6b
 NAMES   = list(q3.SVARS["A"]["vars"])           # z, s, delta, u, v
 NAMES_F = NAMES + ["jf"]
 H       = q3.H_IRF
-W_DELTA, U_BAR = 0.087, 0.06                    # as q3_persistence_tests.py
+U_BAR = 0.06
+
+
+def delta_share():
+    """delta / tau on SVAR A's window under the active flow measure (part6b.FLOW_MEASURE, D19):
+    0.087 with Shimer's duration-based tau, 0.168 with CPS gross flows."""
+    lev = p6b.build_levels(p6b.load_raw())
+    w = lev[(lev.index >= q3.BED_START) & (lev.index <= p6b.SAMPLE_END)]
+    return float(w["delta"].mean() / w["tau"].mean())
+
+
+W_DELTA = delta_share()
 HAM_START = "1995Q2"
 OUT_TXT = p6b.RESULTS_DIR / "q3_filter_contrast.txt"
 OUT_CSV = p6b.RESULTS_DIR / "q3_filter_contrast.csv"
