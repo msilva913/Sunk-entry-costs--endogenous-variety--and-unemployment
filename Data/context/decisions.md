@@ -18,6 +18,7 @@ Status key: 🔴 blocks estimation · 🟠 blocks a paper section · 🟡 improv
 | D13 | Conditional moments without Bartik: Block B′ = aggregate SVAR responses | 🔴 adopted Oct 14; **amended Nov 6 (MS): z-shock responses included**; model side built (`q3_model_svar.py`); B′'s z, s processes re-matched on its window (Nov 6); open: one-SD vs scaled, the weighting matrix |
 | D14 | Is the s innovation orthogonalized against z and δ? | 🟡 low stakes after Q2 (Oct 20): z and δ explain 1.1 % of the s innovation, so (a) and (b) coincide; take (a). New question: the dropped cross-lag δ_{t−1} → s_t (t = 2.8) |
 | D16 | Paper identity: evidence + diagnostic (Path 1) or a mechanism paper (Path 2) | 🟠 open (MS), Nov 15; recommendation: Path 1 as backbone, mechanism search bounded by pre-specified tests |
+| D19 | s and f from CPS gross flows (E→U, U→E), duration-based as robustness | ✅ settled (MS), Nov 19; level recalibration open |
 | D18 | AGS estimation design: indirect inference on (z, s, δ, u, v, f) responses, diagonal weights, δ held out | ✅ settled (MS), Nov 19 |
 | D17 | Is the z shock technology or measured productivity? | 🟠 open (MS), Nov 15; recommendation: label it measured productivity, report z orthogonalized to utilization as robustness |
 
@@ -35,6 +36,34 @@ Status key: 🔴 blocks estimation · 🟠 blocks a paper section · 🟡 improv
 - **Path 2:** a mechanism paper (the original objective). No validated candidate. Lead: δ lowers capacity utilization at h 2 and about half of δ → u runs through it (imprecise), which points to propagation through demand (goods-market frictions; Silva and Urias 2025).
 
 **Recommendation:** Path 1 as the backbone; each mechanism candidate must pass pre-specified criteria (as finance did not, Nov 15). **MS to decide** whether a mechanism is necessary for the paper.
+
+## ✅ D19. Separations and job finding from CPS gross flows — settled Nov 19, 2026 (MS); branch `d16_gross_flows`
+
+**Main measure.** Separations τ (E→U) and job finding f (U→E) come from the BLS labor force status flows: matched CPS households, monthly, seasonally adjusted, from 1990. They are fetched via DBnomics (`part6f_gross_flows.py`), and s = (τ − δ)/(1 − δ) as before.
+
+**Robustness.** Shimer's duration-based series (`observables.py`), with `FLOW_MEASURE=duration`. Outputs go to `data/results_duration`.
+
+**Justification** (as stated in the draft, Section 3):
+1. **The model's objects.** The model has no participation margin, so its f is U→E and its s is E→U. Duration-based rates count all exits from and entries into unemployment. Over 1992Q3–2019Q4:
+   - U→E is 0.252 and U→N is 0.225 a month;
+   - the duration-based f is 0.361, against all exits of 0.477;
+   - N→U per employed is 0.0149, against E→U of 0.0134 (`gross_flows_summary.txt`).
+
+   Fujita and Ramey (2009, p. 420) favor gross flows for this reason.
+2. **Construction.** Both duration-based rates are built from short-term unemployment, so an error in it moves both the same way. The duration-based s shock raises f while θ falls (+1.08 on impact), which no stable matching function produces.
+
+**Confirmations** (3–4):
+- The gross-flow s is strongly countercyclical: corr with u +0.82, against +0.27.
+- Net of δ, it shares little with destruction (+0.16, against +0.38).
+- With it, v falls on impact after s and the f anomaly shrinks (`q3_gross_flows_compare.txt`).
+
+**Consequences.**
+- s and f cover only 1990Q2–2019Q4, so SVAR B (formerly 1951–2019) now starts in 1990.
+- δ/τ rises from 0.087 to 0.168.
+- The reactivation threshold falls from 0.90 to 0.80.
+- The inflow/outflow decompositions now take δ/τ from the data.
+
+**Open (MS).** Recalibrating the level targets to gross flows (τ 0.0134, f 0.252, δ/τ 0.168) reopens D1. MS questioned keeping duration levels with gross-flow cycles ("how could we justify adjusting the cycles but not the levels?"). It is recommended, but not yet run. The draft's model sections are marked pending.
 
 ## ✅ D18. Estimation design for AGS — settled Nov 19, 2026 (MS)
 
