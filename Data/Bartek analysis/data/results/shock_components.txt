@@ -1,0 +1,79 @@
+==============================================================================
+Persistent AR(1) plus noise: one monthly process for both filters (part6d)
+==============================================================================
+part6b matches a single monthly AR(1) to each shock's filtered quarterly data, under HP and
+under the Hamilton filter separately (shock_calibration.txt, sections 7-8). Because the
+simulated series is filtered exactly as the data are, the two filters should recover the
+same monthly process if the AR(1) is right. They do not: the half-life of delta is about
+one month under HP and six under Hamilton, and similar gaps hold for s and z. The AR(1)
+therefore misses variation at the frequencies where the two filters differ.
+
+Targets (shock_calibration.csv): quarterly AR(1) rho_Q and residual SD x 100.
+Single AR(1) = part6b's matched monthly process under each filter (w = 0 by construction).
+Components = this program's fit of (rho_m, w) to both filters at once.
+
+------------------------------------------------------------------------------
+z: 276 quarters before filtering
+------------------------------------------------------------------------------
+  data: rho_Q HP 0.759, Hamilton 0.894; sigma_Q HP 0.81, Hamilton 1.17
+  part6b, one AR(1) per filter: rho_m HP 0.9628 (half-life 18.3 months), Hamilton 0.9990 (692.8 months)
+  single AR(1), both filters  rho_m 0.9890 (half-life   62.7 m), noise share w 0.00
+                              fit: rho_Q HP 0.782, Ham 0.888; sigma_Q HP 0.81, Ham 1.16; distance 0.0007
+  AR(1) + noise               rho_m 0.9890 (half-life   62.7 m), noise share w 0.00
+                              fit: rho_Q HP 0.782, Ham 0.888; sigma_Q HP 0.81, Ham 1.16; distance 0.0007
+  profile (best rho_m at each noise share w; distance):
+    w 0.00: rho_m 0.9890 (half-life   62.7 m), distance 0.0007
+    w 0.10: rho_m 0.9790 (half-life   32.7 m), distance 0.0512
+    w 0.20: rho_m 0.9670 (half-life   20.7 m), distance 0.1030
+    w 0.30: rho_m 0.9570 (half-life   15.8 m), distance 0.1565
+    w 0.40: rho_m 0.9500 (half-life   13.5 m), distance 0.2211
+    w 0.50: rho_m 0.9500 (half-life   13.5 m), distance 0.3085
+    w 0.60: rho_m 0.9250 (half-life    8.9 m), distance 0.4226
+    w 0.70: rho_m 0.9250 (half-life    8.9 m), distance 0.5785
+    w 0.80: rho_m 0.9250 (half-life    8.9 m), distance 0.8010
+    w 0.90: rho_m 0.9250 (half-life    8.9 m), distance 1.1277
+
+------------------------------------------------------------------------------
+delta: 110 quarters before filtering
+------------------------------------------------------------------------------
+  data: rho_Q HP 0.198, Hamilton 0.744; sigma_Q HP 5.49, Hamilton 6.04
+  part6b, one AR(1) per filter: rho_m HP 0.5319 (half-life 1.1 months), Hamilton 0.8923 (6.1 months)
+  single AR(1), both filters  rho_m 0.7500 (half-life    2.4 m), noise share w 0.00
+                              fit: rho_Q HP 0.439, Ham 0.528; sigma_Q HP 5.70, Ham 5.82; distance 0.1107
+  AR(1) + noise               rho_m 0.9970 (half-life  230.7 m), noise share w 0.10
+                              fit: rho_Q HP 0.279, Ham 0.636; sigma_Q HP 5.28, Ham 6.27; distance 0.0244
+  profile (best rho_m at each noise share w; distance):
+    w 0.00: rho_m 0.7500 (half-life    2.4 m), distance 0.1107
+    w 0.10: rho_m 0.9970 (half-life  230.7 m), distance 0.0244
+    w 0.20: rho_m 0.9930 (half-life   98.7 m), distance 0.0253
+    w 0.30: rho_m 0.9870 (half-life   53.0 m), distance 0.0277
+    w 0.40: rho_m 0.9810 (half-life   36.1 m), distance 0.0321
+    w 0.50: rho_m 0.9690 (half-life   22.0 m), distance 0.0427
+    w 0.60: rho_m 0.9570 (half-life   15.8 m), distance 0.0664
+    w 0.70: rho_m 0.9500 (half-life   13.5 m), distance 0.1164
+    w 0.80: rho_m 0.9250 (half-life    8.9 m), distance 0.2116
+    w 0.90: rho_m 0.9250 (half-life    8.9 m), distance 0.3741
+
+------------------------------------------------------------------------------
+s: 276 quarters before filtering
+------------------------------------------------------------------------------
+  data: rho_Q HP 0.522, Hamilton 0.797; sigma_Q HP 4.94, Hamilton 5.78
+  part6b, one AR(1) per filter: rho_m HP 0.8048 (half-life 3.2 months), Hamilton 0.9069 (7.1 months)
+  single AR(1), both filters  rho_m 0.8750 (half-life    5.2 m), noise share w 0.00
+                              fit: rho_Q HP 0.628, Ham 0.744; sigma_Q HP 5.23, Ham 5.46; distance 0.0269
+  AR(1) + noise               rho_m 0.9770 (half-life   29.8 m), noise share w 0.20
+                              fit: rho_Q HP 0.528, Ham 0.783; sigma_Q HP 4.93, Ham 5.78; distance 0.0003
+  profile (best rho_m at each noise share w; distance):
+    w 0.00: rho_m 0.8750 (half-life    5.2 m), distance 0.0269
+    w 0.10: rho_m 0.9910 (half-life   76.7 m), distance 0.0040
+    w 0.20: rho_m 0.9770 (half-life   29.8 m), distance 0.0003
+    w 0.30: rho_m 0.9630 (half-life   18.4 m), distance 0.0057
+    w 0.40: rho_m 0.9500 (half-life   13.5 m), distance 0.0234
+    w 0.50: rho_m 0.9500 (half-life   13.5 m), distance 0.0609
+    w 0.60: rho_m 0.9250 (half-life    8.9 m), distance 0.1230
+    w 0.70: rho_m 0.9250 (half-life    8.9 m), distance 0.2199
+    w 0.80: rho_m 0.9250 (half-life    8.9 m), distance 0.3722
+    w 0.90: rho_m 0.9250 (half-life    8.9 m), distance 0.6122
+
+delta's targets are the (z, delta) VAR's own lag and z-purged innovation; the
+components treat delta as univariate.

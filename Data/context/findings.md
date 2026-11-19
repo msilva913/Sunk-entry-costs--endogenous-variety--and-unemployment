@@ -1110,6 +1110,33 @@ Data (SVAR A): δ 3.0–4.3, z 7.40, s 3.9–4.5.
 - **cor(u,v) stays too weak** in every case, at −0.31 to −0.69 against −0.93.
 - **Implication:** the data favor slow or unpriced replacement of product lines together with elastic vacancy creation. Clone replacement is a device, so the structural question is which entry friction reproduces it. Entry congestion frees ν and weakens the R19 pin, but holds replacement back rather than making it instant and unpriced. The next test is congestion × ξ.
 
+## Shock processes: one AR(1) does not fit both filters — Nov 19, 2026 (`part6d_shock_components.py`)
+
+**The test.**
+- part6b's filter-consistent matching (Step 4b; `shock_calibration.txt` §8) gives very different monthly AR(1)s under HP and under Hamilton. Half-lives: δ 1.1 vs 6.1 months, s 3.2 vs 7.1, z 18 months vs unattainable.
+- part6d fits one process to both filters at once:
+  - a persistent AR(1) plus independent monthly noise;
+  - 4 targets (ρ_Q and σ_Q under each filter), 3 parameters, 500 replications, simulation exactly as in Step 4b.
+
+**Results.** Distance: smaller is a better fit; 0 is exact.
+
+| series | single AR(1) fitting both filters | AR(1) + noise | persistent component's half-life | monthly noise share w |
+|---|---|---|---|---|
+| z | 0.0007 (ρ_m 0.989) | no noise needed | 63 months | 0 |
+| δ | 0.111 (ρ_m 0.75) | 0.024 | 36–230 months (profile flat for w = 0.1–0.4) | 0.1–0.4 |
+| s | 0.027 (ρ_m 0.875) | 0.0003 | 30 months | 0.20 |
+
+**Reading.**
+- **δ:** measured BED deaths look like a very persistent component plus a large short-lived one. The short-lived part dominates the HP cycle, which is why the HP-matched half-life is about one month.
+  - **"A short-lived rise in establishment deaths" (abstract, introduction) is therefore an HP-specific description and is at risk.**
+  - The persistent half-life is poorly identified (3 to 19 years), and the fit is imperfect (ρ_Q HP 0.28 against 0.20; Hamilton 0.64 against 0.74). δ's targets come from the (z, δ) VAR and are treated as univariate here.
+- **s:** clearly AR(1) plus noise, with a persistent component of about 2.5 years. s has been fed to the model with a half-life of 3 months. That process identifies Λ̄_r, so the reactivation argument must be rechecked with the component process.
+- **z:** a single AR(1) fits both filters, but it is more persistent (0.989) than the HP-only match (0.963).
+
+**No reference distribution yet.** There is no bootstrap, so a distance has no significance level.
+
+**Next, decisive:** the model-data SVAR with δ as a persistent component plus noise. The noise is either measurement error, added to the simulated δ only before the SVAR (no model change), or a real short-lived shock (a two-component δ in the model).
+
 ## Persistence of δ: mechanisms tested and identification checks — Nov 10–15, 2026 (branch `d15_ags_finance`)
 
 Details and tables: [`../Notes/ags_equilibrium.md`](../Notes/ags_equilibrium.md) §10.7–10.8 (model) and [`../Notes/q3_data_svar_empirics.md`](../Notes/q3_data_svar_empirics.md) §2.2e–2.2h (data). The common diagnosis: **AGS gets the impact of δ right (u +0.35 at h 0 in data and model, through the SVAR) but not the propagation** (data peak +1.41 at h 4, cumulative 10.8 over h 0–12; model peak +0.39 at h 1, cumulative about 0.8).
