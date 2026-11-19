@@ -672,7 +672,7 @@ The responses to destruction, another 39 moments, are held out. Once the respons
 We solve the model by first-order perturbation in logs; a pruned second-order solution changes the moments negligibly.
 % ags_order_check.txt
 % TODO(MS): ags_order_check.txt predates D19/D20; rerun at the estimates.
-Table~\ref{tab:estimates} reports the estimates and the fit, and Table~\ref{tab:irf_compare} the responses under the HP filter. The Hamilton responses are in Appendix~\ref{app:filters}.
+Table~\ref{tab:estimates} reports the estimates and the fit, and Table~\ref{tab:irf_compare} and Figure~\ref{fig:model_irf} the responses under the HP filter. The Hamilton responses are in Appendix~\ref{app:filters}.
 
 \begin{table}[H]
 \centering
@@ -725,7 +725,13 @@ $\delta$ & $u$ & $+0.25$ & $+0.50$ (1) & $-0.04$ & $+1.3$ & $+0.48$ & $+1.58$ (3
 \end{tabular}
 \end{table}
 % ags_estimate_report_hp.txt §3; ags_estimate_irf_hp.csv
-% TODO(MS): figure of the model and data responses with bands (replaces the pre-D19 q3_model_svar.png).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{ags_estimate_irf_hp.png}
+\caption{Responses through the SVAR under the HP filter, 1992Q3--2019Q4: estimated model and data (one-SD shocks; log points $\times$ 100). Data: point estimate with 68 and 90 percent bootstrap bands (1,000 draws). Model: mean over 200 simulated windows at the HP estimates. The responses to $z$ and $s$ are estimated; those to $\delta$ are the test.}\label{fig:model_irf}
+\end{figure}
+% q3_estimation_figure.py; ags_estimate_irf_hp.csv; estimation_draws_hp.npz
 
 \subsection{Separations}
 
@@ -748,7 +754,7 @@ The misfit to productivity drives the other HP estimates. Risk aversion and $b/w
 Under the HP filter the model fails the test decisively. $J_\delta$ is 161, whereas the 99th percentile of its simulated distribution is 25 and no simulated window is as far from the model as the data are. Unemployment rises by 0.25 points on impact in the model against 0.48 in the data. The model's response peaks after one quarter at 0.50, against 1.58 after three quarters in the data, and summed over three years it is 1.3 points against 11.8. Vacancies and job finding fall to between a quarter and a third of the data's troughs.
 % ags_estimate_report_hp.txt §2-3
 
-Under the Hamilton filter the test does not reject ($p=0.52$). This reflects the low power of the test on that sample rather than a good fit. The Hamilton responses are much less precise, so the 95th percentile of the simulated $J_\delta$ is 72, against 12 under HP. The model's response of unemployment again reaches about half the data's peak, at 0.98 after two quarters against 2.05 after five, and summed over three years it is 7.0 points against 18.1 (Appendix~\ref{app:filters}).
+Under the Hamilton filter the test does not reject ($p=0.52$). This reflects the low power of the test on that sample rather than a good fit. The Hamilton responses are much less precise: the model's response of unemployment stays inside the data's 90 percent band at every horizon although it is about half the data's at the peak (Figure~\ref{fig:model_irf_ham}), so the 95th percentile of the simulated $J_\delta$ is 72, against 12 under HP. The model's response of unemployment again reaches about half the data's peak, at 0.98 after two quarters against 2.05 after five, and summed over three years it is 7.0 points against 18.1 (Appendix~\ref{app:filters}).
 % ags_estimate_report_ham.txt §2-3
 
 % =============================================================================
@@ -803,7 +809,7 @@ The puzzle, then, is the following. A short-lived rise in establishment deaths, 
 
 \section{Results under the Hamilton filter}\label{app:filters}
 
-Under the filter of \citet{hamilton_2018} ($h=8$, $p=4$) the window starts in 1995Q2 ($T=99$), and the shock processes are more persistent (Table~\ref{tab:shocks}). Table~\ref{tab:irf_ham} reports the responses at the Hamilton estimates.
+Under the filter of \citet{hamilton_2018} ($h=8$, $p=4$) the window starts in 1995Q2 ($T=99$), and the shock processes are more persistent (Table~\ref{tab:shocks}). Table~\ref{tab:irf_ham} and Figure~\ref{fig:model_irf_ham} report the responses at the Hamilton estimates.
 
 \begin{table}[H]
 \centering
@@ -829,6 +835,13 @@ $\delta$ & $u$ & $+0.43$ & $+0.98$ (2) & $+0.38$ & $+7.0$ & $-0.02$ & $+2.05$ (5
 \end{tabular}
 \end{table}
 % ags_estimate_report_ham.txt §3; ags_estimate_irf_ham.csv
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{ags_estimate_irf_ham.png}
+\caption{Responses through the SVAR under the Hamilton filter, 1995Q2--2019Q4: estimated model and data (one-SD shocks; log points $\times$ 100). Data: point estimate with 68 and 90 percent bootstrap bands (1,000 draws). Model: mean over 200 simulated windows at the Hamilton estimates.}\label{fig:model_irf_ham}
+\end{figure}
+% q3_estimation_figure.py; ags_estimate_irf_ham.csv; estimation_draws_ham.npz
 
 Two differences from HP stand out. First, the model's response of unemployment to separations is too large at its peak and too short-lived: 3.66 after two quarters against 2.77 after four, and 0.47 against 2.16 after two years. Second, the model's response to destruction now peaks later and is larger, because the Hamilton process for destruction is persistent. It still reaches only half the data's peak.
 
