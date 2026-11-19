@@ -17,7 +17,7 @@
 #   shape ψ_r on [0, a]) and is reactivated iff c ≤ Q. Λ_r(Q) = min{(1−p_r) + p_r (Q/a)^ψ_r, 1}.
 #
 # Calibration targets (the baseline's, steady_state.jl TARGETS, where they apply):
-#   dest_ann → δ (= measured exit: no endogenous exit), sep → τ, f and q (gross JOLTS, divided by
+#   dest_ann → δ (= measured exit: no endogenous exit), sep → τ and f (CPS gross flows, D19), q (JOLTS); f and q divided by
 #   1 − δ as in the baseline), η_L, r_ann, the wage normalization w = 1, b/w, the sunk share x_v
 #   of recruiting cost, the recruiting cost share X_Y, ξ_inv, and Λ̄_r with p_r, ψ_r.
 # Pinned: δ, s, A, θ, u, v, e, then Q in closed form from X_Y (z̄ and X are both linear in Q),
@@ -36,9 +36,14 @@ Gabrovski–Silva with three shocks); otherwise 1 − p_r < Λr_target < 1. The 
 working point (Λ̄_r = 0.25, p_r = 0.8, ψ_r = 1).
 """
 const AGS_TARGETS = (
-    dest_ann  = 0.0320,   # BED Deaths, employment-weighted, 1993–2019 (D1)
-    sep       = 0.031,    # aggregate separation rate τ, monthly
-    f         = 0.41,     # gross job-finding rate (JOLTS), monthly
+    # D19 (Nov 19, 2026): levels from the same series as the SVAR and the shock processes, over
+    # 1992Q3–2019Q4. δ: the BED death rate's monthly mean 0.0022497 (shock_calibration.csv, delta
+    # mean), i.e. 2.67 % a year, replacing D1's 3.2 % (1993–2019 employment-weighted, a different
+    # denominator). τ and f: CPS gross flows E→U and U→E (shock_calibration.csv tau mean;
+    # q3_gross_flows_compare.txt §1). Together δ/τ = 0.168. Previously 0.0320, 0.031, 0.41.
+    dest_ann  = 0.026665, # BED Deaths death rate, monthly 0.0022497 annualized (D19)
+    sep       = 0.013380, # separation probability τ, E→U, CPS gross flows, monthly (D19)
+    f         = 0.2524,   # job-finding probability, U→E, CPS gross flows, monthly (D19)
     q         = 0.8,      # gross vacancy-filling rate (JOLTS), monthly
     η_L       = 0.6,      # matching elasticity
     r_ann     = 0.04,     # annual discount rate
