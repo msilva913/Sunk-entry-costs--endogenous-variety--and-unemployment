@@ -1190,6 +1190,33 @@ The search pushes toward as much amplification as the bounds allow.
 - check the s–f residual correlation;
 - the Hamilton estimation.
 
+## AGS estimated with gross flows and SVAR-based shock processes (D19 + D20) — Nov 19, 2026 (`ags_estimate.jl`)
+
+Gross-flow levels and cycles; processes from SVAR A's own equations (D20). R = 50 in the search, R = 200 at the final point. 39 moments per shock. Previous run (gross flows, univariate processes) in parentheses.
+
+| | HP | Hamilton |
+|---|---|---|
+| θ = (σ, Λ̄_r, ξ, x_v, b/w) | (**4.0**, **0.03**, 0.59, 0.059, **0.97**) | (**0.0**, **0.03**, 0.30, 0.16, 0.93) |
+| J_z | 180 (144) | 74 (100) |
+| J_s | **45 (320)** | **84 (411)** |
+| J_δ, p | **161, 0.000** (179) | 18.2, 0.52 (24.8, 0.415) |
+
+Bold estimates are at bounds; standard errors are not computed.
+
+**s: the rule works.** J_s falls by a factor of 5–7.
+- Under HP it is close to the number of moments: u peaks at 1.88 (h 1) against 1.46 (h 0); h 8 is matched.
+- The impact of v remains wrong in sign under both filters: +0.16 against −1.04 (HP), +0.12 against −2.74 (Hamilton). Reposting still offsets the vacated positions on impact.
+
+**z: worse under HP.** The z process is less persistent (monthly 0.883 against 0.941), and the model has no propagation of its own. u's response dies out by h 8 (−0.10 against −1.81), and it is too small at the peak (−1.16 at h 3 against −2.74 at h 4). In the data, z's own response is short-lived (h1/h0 0.60), so the long u response to z is propagation through the labor market that the model lacks. Under Hamilton the z process sits at the 0.999 bound, so z persistence comes from the process.
+
+**δ: the puzzle stands under HP; Hamilton does not reject.**
+- HP: u peaks at +0.50 (h 1) against +1.58 (h 3); h 8 −0.04 against +0.75.
+- Hamilton: u peaks at +0.98 (h 2) against +2.05 (h 5); h 8 +0.38 against +1.64. The test has little power (T = 99, wide bands); the shortfall at the peak is a factor of two, as under HP.
+
+**Identification.** Λ̄_r is at its lower bound (0.03) under both filters and σ at opposite bounds (4 under HP, 0 under Hamilton). The objective is flat in σ, or σ is doing different work across filters. The z misfit drives the HP estimates toward maximal amplification (σ, b/w at their upper bounds).
+
+**Not yet done:** the model's own responses of z, s and δ through the SVAR against the data's (validation of D20).
+
 ## The overidentifying test through SVAR A under HP and Hamilton — Nov 19, 2026 (`q3_model_svar_filters.txt`)
 
 Reactivation grid (Λ̄_r from 1 to 0.03), default calibration. Shock processes are matched per filter on SVAR A's window (`part6e`):
