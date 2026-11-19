@@ -1,0 +1,48 @@
+==============================================================================
+SVAR A with measured delta = persistent component + noise (q3_model_svar_components.py)
+==============================================================================
+Model side: ../Programs AGS/ags_svar_components.jl, one case per noise share w on part6d's
+profile (shock_components_profile.csv): the economy's delta shock is the persistent component,
+and the measured delta the SVAR sees carries the noise. z and s keep Block B''s processes and
+the calibration is the default, so the comparison with q3_model_svar.py's default case isolates
+the delta process. Same SVAR code, lag (data BIC) and filter as the data.
+
+Data: SVAR A, T = 110, p = 1; 1000 bootstrap draws for the data SDs.
+
+------------------------------------------------------------------------------
+Delta shock: SVAR responses (one SD; log points x 100), h = 0-12
+------------------------------------------------------------------------------
+case                  own impact    own h2/h0    own h4/h0    u peak       u cum 0-12    u peak per 1 %    v peak       J δ
+--------------------  ------------  -----------  -----------  -----------  ------------  ----------------  -----------  -----
+data                  5.24          +0.08        +0.01        +1.41 (h 4)  +10.8         +0.27 (h 4)       -1.60 (h 3)
+baseline (one AR(1))  5.44          +0.04        -0.00        +0.39 (h 1)  +1.1          +0.07 (h 1)       -0.43 (h 2)  103.3
+noise_w0.1            5.18          +0.08        +0.01        +0.21 (h 1)  +0.6          +0.04 (h 1)       -0.16 (h 3)  122.5
+noise_w0.2            5.21          +0.08        +0.01        +0.22 (h 1)  +0.6          +0.04 (h 1)       -0.17 (h 3)  121.4
+noise_w0.3            5.25          +0.09        +0.01        +0.23 (h 1)  +0.7          +0.04 (h 1)       -0.19 (h 3)  119.7
+noise_w0.4            5.29          +0.08        +0.01        +0.23 (h 1)  +0.6          +0.04 (h 1)       -0.19 (h 2)  119.9
+
+  J δ: Σ ((model − data)/sd_data)² over u and v, h = 0–12 (26 moments).
+
+  u by quarter (one SD):
+    h                 0      1      2      3      4      5      6      7      8      9     10     11     12
+    data          +0.35  +1.05  +1.28  +1.40  +1.41  +1.33  +1.19  +1.00  +0.78  +0.56  +0.34  +0.14  -0.04
+    baseline (on  +0.35  +0.39  +0.28  +0.16  +0.06  +0.01  -0.02  -0.03  -0.03  -0.03  -0.02  -0.02  -0.01
+    noise_w0.1    +0.15  +0.21  +0.14  +0.08  +0.04  +0.02  +0.00  -0.01  -0.01  -0.01  -0.01  -0.01  -0.01
+    noise_w0.2    +0.15  +0.22  +0.15  +0.09  +0.05  +0.02  +0.00  -0.01  -0.01  -0.01  -0.01  -0.01  -0.01
+    noise_w0.3    +0.16  +0.23  +0.16  +0.10  +0.05  +0.02  +0.01  -0.01  -0.01  -0.01  -0.01  -0.01  -0.01
+    noise_w0.4    +0.15  +0.23  +0.16  +0.09  +0.05  +0.02  +0.00  -0.01  -0.01  -0.01  -0.01  -0.01  -0.01
+
+------------------------------------------------------------------------------
+True response of u to the persistent delta shock (not filtered, no noise),
+per 1 % of delta on impact
+------------------------------------------------------------------------------
+    h                 0      1      2      3      4      5      6      7      8      9     10     11     12
+    noise_w0.1    +3.78 +18.99 +28.99 +36.65 +43.02 +48.37 +52.83 +56.54 +59.61 +62.13 +64.18 +65.84 +67.15
+    noise_w0.2    +3.82 +19.19 +29.23 +36.78 +42.94 +47.95 +52.00 +55.23 +57.77 +59.72 +61.17 +62.19 +62.86
+    noise_w0.3    +3.87 +19.43 +29.48 +36.82 +42.60 +47.10 +50.54 +53.08 +54.87 +56.03 +56.68 +56.89 +56.74
+    noise_w0.4    +3.91 +19.61 +29.62 +36.70 +42.07 +46.06 +48.90 +50.79 +51.91 +52.39 +52.35 +51.89 +51.09
+
+  noise_w0.1: persistent δ ρ_m 0.9970 (half-life 231 months), σ 0.0174; noise σ 0.0748
+  noise_w0.2: persistent δ ρ_m 0.9930 (half-life 99 months), σ 0.0177; noise σ 0.0747
+  noise_w0.3: persistent δ ρ_m 0.9870 (half-life 53 months), σ 0.0183; noise σ 0.0745
+  noise_w0.4: persistent δ ρ_m 0.9810 (half-life 36 months), σ 0.0181; noise σ 0.0760

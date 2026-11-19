@@ -1135,7 +1135,16 @@ Data (SVAR A): δ 3.0–4.3, z 7.40, s 3.9–4.5.
 
 **No reference distribution yet.** There is no bootstrap, so a distance has no significance level.
 
-**Next, decisive:** the model-data SVAR with δ as a persistent component plus noise. The noise is either measurement error, added to the simulated δ only before the SVAR (no model change), or a real short-lived shock (a two-component δ in the model).
+**Interpretation (a) tested, Nov 19** (`ags_svar_components.jl`, `q3_model_svar_components.txt`).
+- **Setup:** default calibration. The economy's δ is the persistent component (half-life 36–231 months across noise shares w = 0.1–0.4). The noise is added to measured δ only; z and s are unchanged.
+- **SVAR δ → u:** the peak is +0.21 to +0.23 at h 1 (baseline +0.39 at h 1, data +1.41 at h 4). The cumulative response is 0.6 (baseline 1.1, data 10.8). J_δ is 120–122 (baseline 103). **The fit is worse, and there is still no hump.**
+- **True response of u to the persistent δ** (not filtered, no noise): large, and it keeps rising through h 12 (per 1 % of δ on impact, +43 at h 4 and +52 to +67 at h 12).
+  - SVAR A on model data recovers almost none of it, because the identified δ innovation is mostly noise, which the economy ignores.
+  - Even this true response rises steadily rather than peaking at h 4 and returning, as the data do.
+- **Reading:** under (a), the identified δ shock would be mostly noise, and its response would be small. The data's large response to the δ innovation therefore argues that the short-lived part of measured δ is real destruction (interpretation (b)), or that the persistent part's share is larger than part6d's fit. In either case the measurement-noise reading does not dissolve the puzzle.
+- **Remaining:** (b), a real short-lived δ plus a persistent δ in the model. Expected near the baseline, since the short-lived part reproduces today's δ, but not run.
+
+**Then:** (b), a two-component δ in the model, if needed.
 
 ## Persistence of δ: mechanisms tested and identification checks — Nov 10–15, 2026 (branch `d15_ags_finance`)
 
