@@ -49,7 +49,7 @@
 \address[affil1]{Economics Department, Northeastern University}
 
 \begin{abstract}
-\textit{Provisional.} Workers lose their jobs in two ways: a match ends while the employer carries on, or the establishment itself closes. We measure the second margin directly with establishment deaths from the Business Employment Dynamics, measure match separations and job finding with gross worker flows in the Current Population Survey, and estimate the effects of both margins in a recursive SVAR for 1992--2019. The two shocks propagate very differently. A short-lived rise in establishment deaths raises unemployment for about two years, with a peak after three quarters and a persistent part that runs through a lower job-finding rate, whereas a separation shock raises unemployment most on impact and fades sooner. The destruction response survives controls for financial conditions and capacity utilization. We then develop a search model with durable job positions and costly reactivation of vacated positions, which nests \citet{coles_2018} and \citet{gabrovski_2025}, and confront it with the same SVAR run on simulated data. The model gets the impact of a destruction shock right but not its persistence: its response peaks after one quarter and is gone within a year. This failure does not depend on the reactivation rate, which governs the response to separations but leaves the response to destruction unchanged. Losing positions, in other words, is not what makes destruction persistent.
+\textit{Provisional.} Workers lose their jobs in two ways: a match ends while the employer carries on, or the establishment itself closes. We measure the second margin directly with establishment deaths from the Business Employment Dynamics, measure match separations and job finding with gross worker flows in the Current Population Survey, and estimate the effects of both margins in a recursive SVAR for 1992--2019. The two shocks propagate very differently. A short-lived rise in establishment deaths raises unemployment for about two years, with a peak after three quarters and a persistent part that runs through a lower job-finding rate, whereas a separation shock raises unemployment most on impact and fades sooner. The destruction response survives controls for financial conditions and capacity utilization. We then develop a search model with durable job positions and costly reactivation of vacated positions, which nests \citet{coles_2018} and \citet{gabrovski_2025}. We estimate it by matching its responses to productivity and separation shocks, through the same SVAR run on simulated data, and hold out the responses to destruction as a test. The estimated model fits the responses to separations but misses the persistence of the destruction response: its response peaks after one quarter and is gone within two years. This failure does not depend on the reactivation rate, which governs the fit to separations but leaves the response to destruction unchanged. Losing positions, in other words, is not what makes destruction persistent.
 \end{abstract}
 \begin{keyword}
 job destruction \sep separations \sep establishment exit \sep unemployment \sep vacancies \sep structural VAR
@@ -85,10 +85,10 @@ We generalize the labor search model of \citet{gabrovski_2025}. Our model featur
 % fujita_2007 p. 3684: "a cost of K n_t for creating a new job position, where n_t indicates the total number of positions created"; "Once a position is created, it continues to exist, either filled or unfilled, until eliminated by obsolescence."
 Households own the firms and value jobs with their stochastic discount factor.
 
-% TODO(MS): the model-side numbers in this and the next paragraph predate the gross-flow measures (D19); update after re-estimation.
-The impulse responses of an SVAR can differ from those of the true data generating process because of time aggregation, filtering, lag truncation and small samples. We therefore compare model and data by running the same SVAR on simulated data. The model then gets the impact of a destruction shock right, at 0.35 percent in both, but it misses the propagation: its response peaks after one quarter and is near zero after four, whereas the data's builds for four quarters. Summed over three years, the model delivers about a tenth of the data's response.
-% q3_model_svar.csv, delta -> u, h = 0; q3_model_svar.txt §2; q3_persistence_tests.txt Test 1
-Importantly, the gap does not close with the reactivation rate. A lower reactivation rate makes separations destroy more positions, and the model's response to separations then becomes persistent, as in \citet{coles_2018}, but its response to destruction does not change at all. Since the separation responses identify the reactivation rate, the destruction response becomes a test that the model fails at any reactivation rate. In other words, losing positions is not what makes destruction persistent. Productivity shocks show the same pattern: the model's impact response is about right, but its persistence is not.
+The impulse responses of an SVAR can differ from those of the true data generating process because of time aggregation, filtering, lag truncation and small samples. We therefore compare model and data by running the same SVAR on simulated data. We calibrate the shock processes in advance from the SVAR's own equations, estimate the parameters that govern propagation by matching the model's responses to productivity and separation shocks, and hold out the responses to destruction as a test. The estimated model fits the responses to separations, with a reactivation rate at the bottom of its range, so that separations retire nearly every position they vacate, as in \citet{coles_2018}. It fails the test. Under the HP filter its response of unemployment to destruction peaks after one quarter at a third of the data's peak, and summed over three years it delivers about a ninth of the data's response; no simulated sample lies as far from the model as the data do. Under the Hamilton filter the test lacks power and does not reject, although the model again reaches only half the data's peak.
+% ags_estimate_report_hp.txt §2-3 (delta -> u peak 0.50 vs 1.58; sum 1.3 vs 11.8; p = 0.000); ags_estimate_report_ham.txt (0.98 vs 2.05; p = 0.52)
+Importantly, the gap does not close with the reactivation rate. Across its range, the reactivation rate changes the fit to the separation responses fourfold and leaves the fit to the destruction responses unchanged. Since the separation responses identify the reactivation rate, the destruction response becomes a test that the model fails at any reactivation rate. In other words, losing positions is not what makes destruction persistent. Productivity shocks show a similar failure: the model reproduces the data's own response of productivity, yet its response of unemployment is near zero after two years, whereas the data's is still two-thirds of its peak.
+% ags_estimate_report_hp.txt §3-5
 
 The paper makes three contributions. First, it measures both margins directly from gross flows, destruction from the gross job flows at dying establishments and match separations and job finding from the gross worker flows between employment and unemployment, where \citet{coles_2018} calibrate a single separation process to a duration-based aggregate separation rate. With these measures it documents that shocks to destruction and to match separation move unemployment and vacancies differently, with destruction acting through job finding and with a delay. This is a shock-specific counterpart to the finding of \citet{broer_2025} that separations lead the job-finding rate. Second, it derives a search model that nests \citet{coles_2018} and \citet{gabrovski_2025} and adds costly reactivation and household ownership of firms, so that the response to separations disciplines how many positions separations destroy. Third, it compares model and data through the same SVAR, shock by shock, which turns the destruction response into a novel test.
 
@@ -100,7 +100,7 @@ The second strand treats vacancies as a stock. \citet{fujita_2007} show that a s
 % haefke_2020 p. 1: CK "illustrate the persistence and magnification of business cycle shocks that arise when a large number of newly unemployed job-seekers deplete the vacancy pool that then replenishes only gradually" (labelled "vacancy depletion").
 % per broer_2025 p. 2: "finitely elastic vacancy creation ... (see, e.g., Coles and Kelishomi 2018; Leduc and Liu 2020; Haefke and Reiter 2020; Mercan et al. 2024; Engbom 2021; and Den Haan et al. 2021)"; fn. 15: "convex vacancy-posting costs, as in Merz and Yashiv (2007)". Topics from titles.
 
-The remainder of the paper is organized as follows. Section~\ref{sec:beyond_ck} explains why the two margins must be separated. Section~\ref{sec:data} describes the data and Section~\ref{sec:stylized} documents stylized facts. Section~\ref{sec:svar} presents the SVAR and Section~\ref{sec:facts} its results. Section~\ref{sec:model} develops the model, Section~\ref{sec:calibration} calibrates it, and Section~\ref{sec:results} confronts it with the data. Section~\ref{sec:puzzle} states the puzzle.
+The remainder of the paper is organized as follows. Section~\ref{sec:beyond_ck} explains why the two margins must be separated. Section~\ref{sec:data} describes the data and Section~\ref{sec:stylized} documents stylized facts. Section~\ref{sec:svar} presents the SVAR and Section~\ref{sec:facts} its results. Section~\ref{sec:model} develops the model, Section~\ref{sec:calibration} calibrates and estimates it, and Section~\ref{sec:results} confronts it with the data. Section~\ref{sec:puzzle} states the puzzle.
 
 % =============================================================================
 \section{Why separate destruction from separation}\label{sec:beyond_ck}
@@ -146,9 +146,7 @@ $v$, vacancies & Help-Wanted Index to 2000, JOLTS openings after, over the labor
 % TODO(MS): the composite Help-Wanted Index (Barnichon) needs a verified citation (N11-N14).
 
  BED Deaths count establishments with positive employment that report zero for four consecutive quarters. Their employment, divided by payroll employment and by three, is a monthly rate of job loss through establishment death. It is available from 1992Q3, which sets the window of every system that contains it.
-% TODO(MS): the calibration uses the 1993-2019 employment-weighted rate dest_ann = 3.2% a year
-% (0.27% a month, D1), while the series used for the cycle averages 0.225% a month over 1992Q4-2019Q4
-% (shock_calibration.txt §2). The two denominators differ; reconcile or explain.
+% Resolved by D19 (Nov 19): the calibration now uses this series' own mean, 0.225% a month (AGS_TARGETS dest_ann).
 
  We measure separations and job finding with the gross flows of workers between labor force states that the Bureau of Labor Statistics publishes from 1990, based on the households that the CPS interviews in consecutive months. The total separation rate $\tau_t$ is the share of employed workers who are unemployed the next month, and the job-finding rate $f_t$ is the share of unemployed workers who are employed the next month; we average both monthly probabilities to quarters. This departs from the duration-based measures of \citet{shimer_2005, shimer_2012}, which infer both rates from total and short-term unemployment and which \citet{coles_2018} use, and it follows \citet{fujita_2009}.
 
@@ -256,7 +254,7 @@ We identify the shocks recursively, ordering the shock block before $(u, v)$:
 \end{equation}
 Three features of the ordering deserve comment. First, we order $z$ first and interpret its shock as a shock to measured productivity rather than to technology. Measured productivity also moves with demand: in a model of goods-market search estimated on capacity utilization data, shopping-effort shocks explain 46 percent of the forecast-error variance of the Solow residual \citep[Table 4]{silva_urias_2025}. Ordering $z$ first credits it with all same-quarter comovement between productivity and the other variables, and Section~\ref{sec:checks} therefore also reports $z$ orthogonalized to capacity utilization. Second, we order $s$ before $\delta$ because $s$ is exogenous in the model while measured exit is dated a month after destruction; the alternative ordering only changes how the same-quarter comovement of $\delta$ and $s$ is split between them. Third, $u$ and $v$ come last, and their innovations not explained by the three shocks form a residual of which only the total is identified. Confidence bands come from a residual bootstrap with a recursive design and fixed initial values, with 1,000 draws seeded so that they reproduce; we report 68 and 90 percent bands.
 
-The comparison with the model runs the same SVAR on simulated data (Section~\ref{sec:results}): 200 windows of 110 quarters, each simulated monthly, averaged to quarters, and filtered as the data are. The model's measured productivity is its $z$, and its measured exit is destruction dated one month later. We report the model's true responses only as diagnostics, since the SVAR does not recover the model's shocks exactly (Appendix~\ref{app:validation}).
+The comparison with the model runs the same SVAR, with the job-finding rate added, on simulated data (Sections~\ref{sec:estimation} and \ref{sec:results}): 200 windows of data length, each simulated monthly, averaged to quarters, and filtered as the data are. The model's measured productivity is its $z$, and its measured exit is destruction dated one month later. We report the model's true responses only as diagnostics, since the SVAR does not recover the model's shocks exactly (Appendix~\ref{app:validation}).
 
 % =============================================================================
 \section{Responses to destruction and separation shocks}\label{sec:facts}
@@ -548,16 +546,15 @@ Job creation reads
 the recruiter's share of the flow surplus covers the hiring cost, annuitized over the expected life of a match. As $\theta$ rises the left side falls and the right side rises, so the steady state is unique.
 
 % =============================================================================
-\section{Calibration}\label{sec:calibration}
+\section{Calibration and estimation}\label{sec:calibration}
 % =============================================================================
 
-\textit{[Pending (Nov 19): the long-run targets and steady state below predate the switch to gross-flow measures of separations and job finding (Section~\ref{sec:data}) and will be replaced after recalibration; the shock processes in Section~\ref{sec:shocks} already use the gross-flow series.]}
-% TODO(MS): recalibrate tau, f and delta/tau to the gross-flow levels (0.0134, 0.252, 0.168), then re-estimate (D18).
+We proceed in three steps. The long-run parameters are set so that the steady state reproduces average flows in the data. The shock processes are calibrated in advance from the SVAR. Five parameters that govern propagation are then estimated by matching the model's responses to productivity and separation shocks to those in the data, while the responses to destruction are held out as a test.
 
 \subsection{Long-run targets}
 
-We calibrate the model by running the steady state in reverse. Because every unknown then enters linearly, the calibration is in closed form (Table~\ref{tab:targets}).
-% ags_steady_state.jl AGS_TARGETS, calibrate_ags
+We calibrate the model by running the steady state in reverse. Because every unknown then enters linearly, the calibration is in closed form for any value of the estimated parameters. The levels come from the same series as the SVAR, averaged over 1992Q3--2019Q4 (Table~\ref{tab:targets}). The BED death rate is 0.225 percent a month. The CPS gross flows give a separation rate into unemployment of 1.34 percent a month and a job-finding rate of 0.252 a month. Destruction therefore accounts for 17 percent of separations into unemployment, as in Section~\ref{sec:beyond_ck}.
+% ags_steady_state.jl AGS_TARGETS (D19): dest_ann 0.026665 = 12 x 0.0022497, sep 0.013380, f 0.2524; shock_calibration.txt §1 (delta/tau = 0.1681)
 
 \begin{table}[H]
 \centering
@@ -567,198 +564,232 @@ We calibrate the model by running the steady state in reverse. Because every unk
 \toprule
 Target & Value & Source & Pins \\
 \midrule
-Destruction rate & 3.2\% a year & BED Deaths, employment-weighted, 1993--2019 & $\bar\delta$ \\
-Total separation rate & 3.1\% a month & CPS & $\bar s$ via the identity \\
-Job-finding rate & 0.41 a month & JOLTS & $A$, $\theta$ \\
+Destruction rate & 0.225\% a month & BED Deaths, 1992Q3--2019Q4 & $\bar\delta$ \\
+Separation rate into unemployment & 1.34\% a month & CPS gross flows, E$\to$U, 1992Q3--2019Q4 & $\bar s$ via $\tau=\delta+(1-\delta)s$ \\
+Job-finding rate & 0.252 a month & CPS gross flows, U$\to$E, 1992Q3--2019Q4 & $A$, $\theta$ \\
 Vacancy-filling rate & 0.80 a month & JOLTS & $\theta$ \\
 Matching elasticity & 0.6 & \citet{petrongolo_2001} & $\eta_L$ \\
 Interest rate & 4\% a year & & $\beta$ \\
 Wage & 1 & normalization & $\phi$ \\
-$b/w$ & 0.9 & & $b$ \\
-Sunk share of the cost of a hire & 0.5 & & $\kappa$ \\
 Recruiting costs / output & 1.5\% & & $Q$, then $x_m$ \\
-Entry elasticity & 1 & & $\xi$ \\
-Reactivation rate & 0.25 & working value & $\alpha$ \\
-Costly share, shape & 0.8, 1 & working values & $p_r$, $\psi_r$ \\
-Risk aversion & 1 & & $\sigma$ \\
+Costly share, shape & 0.99, 1 & & $p_r$, $\psi_r$ \\
+\midrule
+\multicolumn{4}{l}{Estimated (Section~\ref{sec:estimation}): $b/w$, the sunk share of the cost of a hire $x_v$, the creation elasticity $\xi$,} \\
+\multicolumn{4}{l}{the reactivation rate $\bar\Lambda_r$, and risk aversion $\sigma$.} \\
 \bottomrule
 \end{tabular}
 \end{table}
-% TODO(MS): sources for b/w, the sunk share and X/Y (Draft.tex tab:calib_targets).
+% TODO(MS): source for the recruiting-cost share X/Y (Draft.tex tab:calib_targets).
 
-The job-finding and filling rates, divided by $1-\delta$ to condition on survival, give $\theta$, $u$, $v$ and $A$ directly. With $\bar\Lambda_r$ a target, creation $e$ is explicit. Per unit of $Q$, the flow value is $K/Q=(r+\bar\delta)/(1+r)$, the hiring cost is fixed relative to it by the sunk share, and the reactivation shortfall is
+The job-finding and filling rates, divided by $1-\delta$ to condition on survival, give $\theta$, $u$, $v$ and $A$ directly. With $\bar\Lambda_r$ given, creation $e$ is explicit. Per unit of $Q$, the flow value is $K/Q=(r+\bar\delta)/(1+r)$, the hiring cost is fixed relative to it by the sunk share, and the reactivation shortfall is
 \begin{equation}
 \frac{\mathcal{R}}{Q} = \frac{1-\bar\delta}{1+r}\left[(1-\bar\Lambda_r) + \frac{\psi_r}{1+\psi_r}(\bar\Lambda_r-1+p_r)\right].
 \end{equation}
-The flow surplus $\bar z-w$ and recruiting costs $X$ are then both linear in $Q$, so the target for $X/Y$ pins $Q$ without root-finding. Job creation \eqref{eq:jc_ss} gives $\bar z$, the wage equation gives $\phi$, and \eqref{eq:Q} gives $x_m=Qe^{-1/\xi}$. The scale $\alpha$ follows from $\bar\Lambda_r$.
+The flow surplus $\bar z-w$ and recruiting costs $X$ are then both linear in $Q$, so the target for $X/Y$ pins $Q$ without root-finding. Job creation \eqref{eq:jc_ss} gives $\bar z$, the wage equation gives $\phi$, and \eqref{eq:Q} gives $x_m=Qe^{-1/\xi}$. The scale $\alpha$ follows from $\bar\Lambda_r$. Solving forward from the calibrated parameters recovers every target to machine precision. % ags_steady_state_checks.txt
 
-Table~\ref{tab:ss} reports the steady state. Solving forward from the calibrated parameters recovers every target to machine precision, and the reactivation functions match numerical integration. % ags_steady_state_checks.txt
+Table~\ref{tab:ss} reports the steady state at the estimates of Section~\ref{sec:estimation}. The targets fix $u$, $\theta$ and $v$, which are therefore the same under both filters. The estimated parameters move the value of a position $Q$, the hiring cost $\kappa$, average productivity $\bar z$ and the bargaining power $\phi$, which the wage normalization implies rather than sets.
 
 \begin{table}[H]
 \centering
-\caption{Steady state at the baseline}\label{tab:ss}
+\caption{Steady state at the estimates}\label{tab:ss}
 \small
-\begin{tabular}{lc@{\hspace{1.5cm}}lc}
+\begin{tabular}{lcc}
 \toprule
-$u$ & 0.0703 & $\phi$ & 0.9225 \\
-$\theta$ & 0.5125 & $\kappa$ & 0.0094 \\
-$Q$ & 1.2688 & $\bar z$ & 1.0359 \\
-$\Lambda_r$ & 0.25 & $\alpha$ & 20.30 \\
+ & HP estimates & Hamilton estimates \\
+\midrule
+$u$ & 0.0503 & 0.0503 \\
+$\theta$ & 0.3155 & 0.3155 \\
+$v$ & 0.0159 & 0.0159 \\
+$\bar\Lambda_r$ & 0.03 & 0.03 \\
+$Q$ & 2.4868 & 4.5603 \\
+$\kappa$ & 0.2735 & 0.1673 \\
+$\bar z$ & 1.0456 & 1.0780 \\
+$\phi$ & 0.2769 & 0.5694 \\
 \bottomrule
 \end{tabular}
 \end{table}
-% ags_run_solution.txt; ags_steady_state_checks.txt
-
-Two features of the calibration matter for what follows. First, bargaining power is close to one. With a low reactivation rate, separations retire many positions, so creation $e$ is large and a fixed recruiting-cost share forces $Q$ down. Little flow surplus is then left, and the wage normalization requires $\phi=0.92$, against 0.61 with costless reactivation; whether to target $\phi$ instead and let $X/Y$ be an outcome is an open choice.
-% ags_steady_state_checks.txt
-Second, reactivation stays well away from its bound: $\Lambda_r$ reaches one only if $Q$ rises sixteenfold, so the first-order solution, which uses the interior branch, is exact in practice.
-% ags_steady_state_checks.txt: bound × 16
+% ags_estimate_report_hp.txt and ags_estimate_report_ham.txt §1
 
 \subsection{Shock processes}\label{sec:shocks}
 
-Each shock follows an AR(1) in logs at a monthly frequency. We estimate the processes on the data in three steps and then convert them to a monthly frequency, so that simulated data, averaged and filtered like the data, reproduce the data's quarterly statistics.
-% shock_calibration.txt §0, §7, §9
+Each shock follows an AR(1) in logs at a monthly frequency. We calibrate the three processes in advance from SVAR~A itself, the system through which we compare model and data, separately for each filter. The persistence of a process is the own-lag coefficient of its equation, which conditions on the lagged values of every variable in the system. Its size is the standard deviation of the structural shock's impact on its own series, the diagonal of the Cholesky factor, which nets out the shocks ordered before it.
+% part6e_window_processes.py; shock_calibration_window.csv; decisions.md D20
 
-\paragraph{Step 1: productivity} A univariate AR(1) on the quarterly cycle of $z$. Productivity is ordered first in every system, so its innovation is not orthogonalized, and its cross-lag terms are insignificant.
+The alternative, a univariate AR(1) for each series, would attribute to a shock's process persistence that the SVAR assigns to other shocks. The difference matters for separations. Measured with gross flows, the separation rate is strongly countercyclical. Its univariate quarterly persistence is 0.73, whereas its own-lag coefficient in SVAR~A is 0.15. Most of the persistence of the separation rate thus comes from the lagged state of the economy, not from its own past. The model has no channel through which productivity or labor-market conditions move separations, so a univariate process would give the exogenous separation shock persistence that in the data belongs to the responses to other shocks. With univariate processes, the estimation below fits the separation responses badly under both filters, with the parameters at the edges of their ranges.
+% shock_calibration.txt (s: rho_Q 0.7278, 1951Q1-2019Q4 spliced); shock_calibration_window.csv hp_rho_Q (s 0.1455); findings.md "AGS estimated with gross flows" (univariate: J_s 320 HP, 411 Hamilton)
 
-\paragraph{Step 2: destruction} A bivariate VAR(1) in $(z,\delta)$ on 1992Q4--2019Q4 with $z$ ordered first. The own-lag coefficient gives the persistence, an OLS object that the Cholesky step does not touch; the residual orthogonal to the productivity innovation gives the standard deviation. The step makes the innovation 4.3 percent smaller. The quarterly persistence is low, 0.20, and the equation's $R^2$ is 0.09: BED Deaths are noisy at a quarterly frequency. % shock_calibration.txt §3
-% TODO(MS): the rationale in shock_calibration.txt is the full model's endogenous exit (no double counting
-% of z -> delta). AGS has no endogenous exit; in Part 1 the reason is consistency with SVAR A, whose delta
-% shock is orthogonal to z. Confirm the wording.
-
-\paragraph{Step 3: separations} A univariate AR(1) on the spliced gross-flow series, 1990Q3--2019Q4, with the residual not orthogonalized. The model has no endogenous separations, so productivity never moves $s$ in the model, and purging $s$ of its correlation with $z$ would remove variation the model cannot regenerate. The rule fixed in advance was to revisit this if the productivity innovation explains at least 10 percent of the separation innovation; it explains 6.4 percent. % shock_calibration.txt §5
+Our approach generalizes that of \citet{coles_2018}. They match independent AR(1) processes for productivity and separations to the quarterly autocorrelations of each series and allow the two innovations to be correlated. We condition persistence on the full system and orthogonalize the innovations, as the SVAR does. One consequence is that the part of the separation rate that responds to productivity within the quarter is not in the exogenous separation process. The model would have to produce that part itself, and it has no mechanism to do so.
+% CK p. 124 and Table 2: independent AR(1)s, rho_p 0.965, rho_delta 0.875 (monthly), innovation correlation -0.63, matched to quarterly first-order autocorrelations and the cross-correlation in Shimer (2005) data.
 
 Plugging the quarterly estimates directly into monthly processes would understate the data's quarterly statistics, since time averaging and the filter cut the standard deviation of the cycle by 21 to 29 percent.
 % shock_calibration.txt §7
-We therefore choose each monthly $(\rho,\sigma)$ so that simulated data, averaged to quarters, filtered over a data-length window and fitted with the same estimator, reproduce the data's quarterly persistence and innovation size (500 replications).
-
-Finally, SVAR~A runs on 1992Q3--2019Q4. Productivity is less persistent and less volatile on that window than over 1951--2019, so we match its process again on it, filtering the cycle over the long window and fitting the AR(1) on the last 110 quarters, in the data and in the simulations alike; we do the same for separations, whose gross-flow series starts in 1990. Destruction is already estimated on the window. Table~\ref{tab:shocks} gives the processes used throughout.
-% shock_calibration.txt §9
+We therefore choose each monthly $(\rho,\sigma)$ so that simulated data reproduce the quarterly targets (500 replications). The simulated data are averaged to quarters, filtered over each series' own span as the data are (productivity from 1951, separations from 1990, destruction from 1992), and fitted on SVAR~A's window.\footnote{In the model the three processes are exogenous and mutually independent, so, up to time aggregation, a univariate fit on simulated data estimates the same object as the own-lag coefficient of the SVAR. Appendix~\ref{app:validation} checks the own responses through the SVAR directly.} Under the Hamilton filter, no stationary monthly AR(1) attains the data's quarterly persistence of productivity, and we set its persistence at 0.999. Table~\ref{tab:shocks} gives the processes.
+% part6b match_process (Step 4b); part6e_window_processes.py
 
 \begin{table}[H]
 \centering
-\caption{Shock processes (monthly AR(1) in logs)}\label{tab:shocks}
+\caption{Shock processes: quarterly targets from SVAR~A and matched monthly AR(1) processes in logs}\label{tab:shocks}
 \small
-\begin{tabular}{lcccc}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lccccc@{\hspace{0.5cm}}ccccc}
 \toprule
- & \multicolumn{2}{c}{Matched on each series' window} & \multicolumn{2}{c}{Matched on SVAR A's window (used)} \\
- & $\rho$ & $\sigma$ & $\rho$ & $\sigma$ \\
+ & \multicolumn{5}{c}{HP, 1992Q3--2019Q4} & \multicolumn{5}{c}{Hamilton, 1995Q2--2019Q4} \\
+ & \multicolumn{2}{c}{Target} & \multicolumn{2}{c}{Monthly} & Univariate & \multicolumn{2}{c}{Target} & \multicolumn{2}{c}{Monthly} & Univariate \\
+ & $\rho_Q$ & $\sigma_Q$ & $\rho$ & $\sigma$ & $\rho$ & $\rho_Q$ & $\sigma_Q$ & $\rho$ & $\sigma$ & $\rho$ \\
 \midrule
-$z$ (1951--2019) & 0.9628 & 0.0062 & 0.9409 & 0.0045 \\
-$\delta$ (1992--2019) & 0.5319 & 0.0641 & 0.5319 & 0.0641 \\
-$s$ (1990--2019) & 0.9502 & 0.0379 & 0.9606 & 0.0387 \\
+$z$ & 0.6350 & 0.0055 & 0.8830 & 0.0044 & 0.9409 & 0.9120 & 0.0092 & 0.9990 & 0.0044 & 0.9990 \\
+$\delta$ & 0.1696 & 0.0538 & 0.4991 & 0.0648 & 0.5319 & 0.6864 & 0.0590 & 0.8560 & 0.0478 & 0.8923 \\
+$s$ & 0.1455 & 0.0387 & 0.4585 & 0.0482 & 0.9606 & 0.3355 & 0.0638 & 0.5860 & 0.0693 & 0.9943 \\
 \bottomrule
+\multicolumn{11}{p{0.95\linewidth}}{\footnotesize \textit{Notes.} Target: own-lag coefficient ($\rho_Q$) and own impact of the one-standard-deviation structural shock ($\sigma_Q$) in SVAR~A. Monthly: the matched process used. Univariate: the monthly persistence matched to each series' univariate AR(1) instead, for comparison. The Hamilton process for $z$ is at the bound and does not attain its target.}
 \end{tabular}
 \end{table}
-% shock_calibration.txt §7 and §9; shock_calibration.csv bprime_* columns
+% shock_calibration_window.csv: <f>_rho_Q, <f>_sigma_Q, <f>_rho_m, <f>_sigma_m, <f>_uni_rho_m
+
+The new processes are much less persistent for separations: a monthly persistence of 0.46 instead of 0.96 under HP. For productivity and destruction they change little.
+
+\subsection{Estimation}\label{sec:estimation}
+
+We estimate five parameters by indirect inference \citep{gourieroux_1993}, matching impulse responses as in \citet{christiano_2005}. The auxiliary model is SVAR~A with the job-finding rate ordered last, $(z,s,\delta,u,v,f)$, with one lag selected by the BIC under both filters. Adding $f$ disciplines the outflow channel, which carries most of the destruction response in the data (Section~\ref{sec:facts}). The moments are the responses of $u$, $v$ and $f$ to one-standard-deviation productivity and separation shocks at horizons 0 to 12, which gives 78 moments. Their data values and standard deviations come from the SVAR and a 1,000-draw residual bootstrap.
+% q3_estimation_targets.py; estimation_targets.csv (BIC p = 1, HP T = 110, Hamilton T = 99)
+
+For a given parameter vector $\vartheta$, we calibrate the steady state as above, solve the model to first order, and simulate it monthly. We draw $R$ windows of data length, average each to quarters, filter it as the data are, and estimate the same SVAR on it. The model's moments $\bar m(\vartheta)$ are the mean responses over the windows. The estimator minimizes
+\begin{equation}\label{eq:loss}
+J(\vartheta)=\sum_{k=1}^{78}\left(\frac{\bar m_k(\vartheta)-d_k}{\text{sd}_k}\right)^2,
+\end{equation}
+where $d_k$ is the data's response and $\text{sd}_k$ its bootstrap standard deviation. A model whose responses lie within one standard deviation of the data's on average has $J$ of about 78, or 39 for each shock. As in \citet{christiano_2005}, the weights use only the variances. The simulations reuse the same random numbers at every $\vartheta$, so the objective is a deterministic function of the parameters. We search over a coarse grid of $\sigma$ and $\bar\Lambda_r$ with $R=50$, start a Nelder--Mead search from the two best points, and evaluate the best point with $R=200$.
+% ags_estimate.jl (AGS_MODE = search, final); decisions.md D18
+
+The estimated parameters are those that govern propagation and that the long-run targets leave free. The reactivation rate $\bar\Lambda_r\in[0.03,0.99]$ sets how many positions separations retire. The creation elasticity $\xi\in[0.25,10]$ sets how fast lost positions are rebuilt. The sunk share of the cost of a hire $x_v\in[0.05,0.9]$ splits that cost between the position and the hire. The ratio $b/w\in[0.5,0.97]$ sets the size of the surplus and therefore the elasticity of job creation to productivity. Risk aversion $\sigma\in[0,4]$ sets how strongly the household's discount factor moves with consumption, which matters because households own the firms and value positions with that factor. We fix the matching elasticity at 0.6 \citep{petrongolo_2001}.
+
+The responses to destruction, another 39 moments, are held out. Once the responses to separations have pinned down the reactivation rate, the response to destruction has no free parameter left in the positions channel, so it is a test of the model's propagation. The statistic $J_\delta$ is the distance \eqref{eq:loss} over these moments. Its distribution under the model comes from the simulations: for each of the 200 windows, we compute the same distance between that window's responses and the model's mean. The $p$-value is the share of windows farther from the mean than the data.
+% ags_estimate.jl final(): Jw, pval
 
 % =============================================================================
-\section{The model against the SVAR}\label{sec:results}
+\section{The estimated model against the SVAR}\label{sec:results}
 % =============================================================================
-
-\textit{[Pending (Nov 19): this section predates the switch to gross-flow measures of separations and job finding (Section~\ref{sec:data}). Its numbers come from the duration-based calibration and shock processes and will be replaced after recalibration and re-estimation.]}
-% TODO(MS): recalibrate tau, f and delta/tau to the gross-flow levels (0.0134, 0.252, 0.168), then re-estimate (D18).
 
 We solve the model by first-order perturbation in logs; a pruned second-order solution changes the moments negligibly.
 % ags_order_check.txt
-We simulate it monthly, run the same SVAR on 200 simulated windows of 110 quarters, each filtered as the data are, and report the mean over windows. We show two cases: the baseline and a ``compromise'' with a smaller sunk share of the cost of a hire and more elastic creation ($x_v=0.25$, $\xi=2$), which in an earlier grid traded off the amplification of productivity against the comovement after separations best.
-% ags_xi_sweep.txt; Notes/ags_equilibrium.md §7.6
-
-\subsection{Impulse responses}
+% TODO(MS): ags_order_check.txt predates D19/D20; rerun at the estimates.
+Table~\ref{tab:estimates} reports the estimates and the fit, and Table~\ref{tab:irf_compare} the responses under the HP filter. The Hamilton responses are in Appendix~\ref{app:filters}.
 
 \begin{table}[H]
 \centering
-\caption{Peak responses through SVAR A: data and model (one SD; log points $\times$ 100; quarter in parentheses)}\label{tab:irf_compare}
+\caption{Estimates and fit}\label{tab:estimates}
 \small
-\begin{tabular}{llccc}
+\begin{tabular}{lcc}
 \toprule
-Shock & Response & Data [68\%] & Baseline & Compromise \\
+ & HP & Hamilton \\
 \midrule
-$z$ & $u$ & $-2.42$ (4) [$-2.83$, $-1.57$] & $-0.69$ (3) & $-1.29$ (3) \\
-$z$ & $v$ & $+2.64$ (3) [1.77, 3.09] & $+1.23$ (3) & $+2.23$ (1) \\
-$\delta$ & $u$ & $+1.41$ (4) [0.83, 1.73] & $+0.39$ (1) & $+0.37$ (1) \\
-$\delta$ & $v$ & $-1.60$ (3) [$-1.95$, $-0.95$] & $-0.43$ (2) & $-0.31$ (2) \\
-$s$ & $u$ & $+1.54$ (2) [1.06, 1.80] & $+3.18$ (1) & $+3.04$ (1) \\
-$s$ & $v$ & $-1.57$ (2) [$-1.91$, $-1.01$] & $-2.49$ (3) & $-1.80$ (3) \\
+Risk aversion $\sigma$ & 4.00$^{b}$ & 0.00$^{b}$ \\
+Reactivation rate $\bar\Lambda_r$ & 0.03$^{b}$ & 0.03$^{b}$ \\
+Creation elasticity $\xi$ & 0.59 & 0.30 \\
+Sunk share $x_v$ & 0.06 & 0.16 \\
+$b/w$ & 0.97$^{b}$ & 0.93 \\
+Implied bargaining power $\phi$ & 0.28 & 0.57 \\
+\midrule
+$J_z$ (39 moments; $u$, $v$, $f$) & 180.1 (87.0, 45.9, 47.2) & 73.6 (52.1, 11.5, 9.9) \\
+$J_s$ (39 moments; $u$, $v$, $f$) & 44.8 (13.1, 22.6, 9.2) & 83.6 (26.5, 35.3, 21.8) \\
+\midrule
+Test: $J_\delta$ (39 moments; $u$, $v$, $f$) & 161.4 (58.6, 52.0, 50.8) & 18.2 (9.2, 7.4, 1.5) \\
+Simulated $J_\delta$: median, 95th, 99th percentile & 2.4, 12.4, 24.7 & 19.2, 72.4, 102.3 \\
+$p$-value & 0.000 & 0.520 \\
 \bottomrule
+\multicolumn{3}{p{0.75\linewidth}}{\footnotesize \textit{Notes.} $^{b}$ at a bound of the search. $R=200$ simulated windows. Data: HP, 1992Q3--2019Q4 ($T=110$); Hamilton, 1995Q2--2019Q4 ($T=99$).}
 \end{tabular}
 \end{table}
-% q3_model_svar.txt §2
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{q3_model_svar.png}
-\caption{Responses of $u$ and $v$ through SVAR A (log points $\times$ 100). Data: point estimate and 68 percent bootstrap band; dotted line: SVAR with NFCI ordered before $\delta$. Model: mean over 200 simulated windows of 110 quarters, baseline and compromise cases.}\label{fig:model_irf}
-\end{figure}
-
-Table~\ref{tab:irf_compare} and Figure~\ref{fig:model_irf} compare the responses. For productivity, the model's responses are a quarter to a half of the data's at the peak and die out faster; summed over three years, the baseline delivers 3.7 points against the data's 19.0. For destruction, the model gets the impact right but peaks after one quarter instead of four, and summed over three years it delivers 1.1 points against 10.8. For separations, on the other hand, the model's impact response is twice the data's, and the response is front-loaded.
-% TODO(MS): fujita_2007 (p. 3688) report that the same creation technology propagates productivity shocks (employment "attains its peak five quarters following the shock"), while AGS misses z persistence. Candidate reasons, unchecked: their b = 0.90 with c, K chosen to match sd(employment); cubic-trend detrending and true-model IRFs vs our HP SVAR on simulated data; AGS's household SDF (sigma = 1) and costly reactivation. A referee will ask; see Notes/ags_equilibrium.md §10.9.
-% q3_persistence_tests.txt Test 1
-
-\subsection{Conditional moments}
-
-Summing the SVAR's responses over a long horizon gives the second moments each shock implies, in the data and in the model (Table~\ref{tab:cond_moments}). These are reported, not targeted.
+% ags_estimate_report_hp.txt and ags_estimate_report_ham.txt §1-2; ags_estimate_final_<filter>.csv
 
 \begin{table}[H]
 \centering
-\caption{Conditional moments through SVAR A (HP cycles; data [68\%], model mean over windows)}\label{tab:cond_moments}
-\small
-\begin{tabular}{llccc}
+\caption{Responses through the SVAR under the HP filter: estimated model and data (one SD; log points $\times$ 100)}\label{tab:irf_compare}
+\footnotesize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{llcccc@{\hspace{0.5cm}}cccc}
 \toprule
-Shock & Statistic & Data & Baseline & Compromise \\
+ & & \multicolumn{4}{c}{Model} & \multicolumn{4}{c}{Data} \\
+Shock & Response & $h=0$ & Peak (quarter) & $h=8$ & Sum, 0--12 & $h=0$ & Peak (quarter) & $h=8$ & Sum, 0--12 \\
 \midrule
-$z$ & $\sigma(u)$ & 6.29 [4.16, 7.68] & 1.55 & 2.59 \\
- & $\rho_1(u)$ & 0.96 & 0.89 & 0.92 \\
- & cor$(u,v)$ & $-0.98$ & $-0.77$ & $-0.89$ \\
-$\delta$ & $\sigma(u)$ & 3.63 [2.22, 4.57] & 0.81 & 0.80 \\
- & $\rho_1(u)$ & 0.96 & 0.73 & 0.73 \\
- & cor$(u,v)$ & $-0.98$ & $-0.66$ & $-0.60$ \\
-$s$ & $\sigma(u)$ & 3.80 [2.60, 4.59] & 4.50 & 4.21 \\
- & $\rho_1(u)$ & 0.94 & 0.80 & 0.78 \\
- & cor$(u,v)$ & $-0.96$ & $-0.45$ & $-0.17$ \\
-All three & $\sigma(u)$ & 8.20 [6.19, 9.68] & 4.89 & 5.08 \\
- & cor$(u,v)$ & $-0.97$ & $-0.52$ & $-0.47$ \\
+$z$ & $u$ & $-0.14$ & $-1.16$ (3) & $-0.10$ & $-5.2$ & $-0.97$ & $-2.74$ (4) & $-1.81$ & $-23.1$ \\
+ & $v$ & $+1.85$ & $+2.70$ (1) & $-0.11$ & $+11.1$ & $+0.81$ & $+2.97$ (3) & $+1.44$ & $+21.8$ \\
+ & $f$ & $+0.79$ & $+1.36$ (2) & $-0.00$ & $+6.5$ & $+0.49$ & $+1.80$ (4) & $+1.24$ & $+15.2$ \\
+$s$ & $u$ & $+0.75$ & $+1.88$ (1) & $-0.11$ & $+5.1$ & $+1.46$ & $+1.46$ (0) & $-0.07$ & $+5.5$ \\
+ & $v$ & $+0.16$ & $-1.86$ (2) & $+0.30$ & $-3.4$ & $-1.04$ & $-1.19$ (1) & $+0.26$ & $-2.7$ \\
+ & $f$ & $-0.24$ & $-1.25$ (2) & $+0.16$ & $-3.4$ & $-0.05$ & $-0.79$ (2) & $+0.02$ & $-2.6$ \\
+$\delta$ & $u$ & $+0.25$ & $+0.50$ (1) & $-0.04$ & $+1.3$ & $+0.48$ & $+1.58$ (3) & $+0.75$ & $+11.8$ \\
+ & $v$ & $+0.02$ & $-0.47$ (2) & $+0.10$ & $-0.7$ & $-0.33$ & $-1.87$ (2) & $-0.51$ & $-11.0$ \\
+ & $f$ & $-0.11$ & $-0.33$ (1) & $+0.06$ & $-0.8$ & $-0.30$ & $-1.02$ (3) & $-0.53$ & $-7.6$ \\
 \bottomrule
+\multicolumn{10}{p{0.95\linewidth}}{\footnotesize \textit{Notes.} SVAR $(z,s,\delta,u,v,f)$, one lag. Model: mean over 200 simulated windows of 110 quarters at the HP estimates. The responses to $z$ and $s$ are estimated; those to $\delta$ are the test.}
 \end{tabular}
 \end{table}
-% q3_model_svar.txt §5
+% ags_estimate_report_hp.txt §3; ags_estimate_irf_hp.csv
+% TODO(MS): figure of the model and data responses with bands (replaces the pre-D19 q3_model_svar.png).
 
-The pattern is the same for productivity and destruction: the model generates too little volatility and too little persistence. Separations, in contrast, are about right in size but wrong in comovement, since the model's vacancies fall too little relative to unemployment. A distance over the 78 responses of $u$ and $v$, $J=\sum((\text{model}-\text{data})/\text{sd}_{\text{data}})^2$, equals 325 for the baseline, against about 78 for a model within one data standard error on average, and no case in the grid does much better.
-% q3_model_svar.txt §3, §6
+\subsection{Separations}
+
+The estimated model fits the responses to separations. Under the HP filter $J_s$ is 45, close to the value of 39 that one standard deviation per moment would give. Summed over three years, unemployment rises by 5.1 points in the model against 5.5 in the data, although the model's response peaks a quarter later. The one systematic miss is the timing of vacancies. On impact they rise slightly in the model (+0.16) but fall in the data ($-1.04$), and the model's trough comes a quarter later and is deeper, at $-1.86$ after two quarters against the data's $-1.19$ after one.
+% ags_estimate_report_hp.txt §2-3
+
+The reactivation rate is estimated at the bottom of its range, 0.03, under both filters: separations retire nearly every position they vacate, which is the assumption of \citet{coles_2018} for every separation. The responses to separations identify this rate sharply. With the other parameters at their estimates, raising $\bar\Lambda_r$ from 0.03 to 0.95 raises $J_s$ from 48 to 193 under HP and from 99 to 457 under Hamilton (Table~\ref{tab:reactivation}). A high reactivation rate replaces vacated positions quickly, and the rise in unemployment after a separation shock is then too small and too brief.
+% ags_estimate_report_<filter>.txt §5 (R = 50)
+
+\subsection{Productivity}
+
+The model fails on productivity, and the failure is one of persistence. Under HP the model's productivity process reproduces the data's own response of productivity through the SVAR (Appendix~\ref{app:validation}), so the impulse is right. Yet unemployment falls by at most 1.16 points in the model against 2.74 in the data. The response is near zero after two years in the model, whereas in the data it is still two-thirds of its peak. Summed over three years the model delivers less than a quarter of the data's response, and the responses of vacancies and job finding show the same pattern. In the data, the response of productivity itself is short-lived, so the long response of unemployment is propagation that the model lacks. Under the Hamilton filter the productivity process is far more persistent and the fit improves ($J_z=74$), but the model still delivers about two-fifths of the data's response.
+% ags_estimate_report_hp.txt §3-4 (z own: model 0.52, 0.35, 0.17 vs data 0.54, 0.32, 0.18; u sum -5.2 vs -23.1; h8 -1.81/-2.74 = 0.66); ags_estimate_report_ham.txt §3 (sum -19.8 vs -48.7)
+
+The misfit to productivity drives the other HP estimates. Risk aversion and $b/w$ sit at the upper bounds of their ranges, the direction that strengthens the response to productivity; a high $b/w$ leaves a small surplus, as in \citet{hagedorn_2008}. Moving $\sigma$ from 0 to 4 lowers $J_z$ from 259 to 185 under HP and leaves the fit to separations unchanged; under Hamilton, $J$ barely moves with $\sigma$, which is estimated at zero. Risk aversion is thus weakly identified. Moving it by a tenth of its range changes the 78 moments by 0.65 data standard deviations (the root of the sum of squares), against 19 for the creation elasticity. We therefore do not report standard errors, which are not meaningful at the bounds, and show profiles instead.
+% ags_estimate_report_<filter>.txt §5-6 (sensitivity: sigma 0.65 HP / 0.26 Ham; xi 19.05 / 32.66)
+
+\subsection{Destruction: the test}
+
+Under the HP filter the model fails the test decisively. $J_\delta$ is 161, whereas the 99th percentile of its simulated distribution is 25 and no simulated window is as far from the model as the data are. Unemployment rises by 0.25 points on impact in the model against 0.48 in the data. The model's response peaks after one quarter at 0.50, against 1.58 after three quarters in the data, and summed over three years it is 1.3 points against 11.8. Vacancies and job finding fall to between a quarter and a third of the data's troughs.
+% ags_estimate_report_hp.txt §2-3
+
+Under the Hamilton filter the test does not reject ($p=0.52$). This reflects the low power of the test on that sample rather than a good fit. The Hamilton responses are much less precise, so the 95th percentile of the simulated $J_\delta$ is 72, against 12 under HP. The model's response of unemployment again reaches about half the data's peak, at 0.98 after two quarters against 2.05 after five, and summed over three years it is 7.0 points against 18.1 (Appendix~\ref{app:filters}).
+% ags_estimate_report_ham.txt §2-3
 
 % =============================================================================
 \section{The puzzle}\label{sec:puzzle}
 % =============================================================================
 
-\textit{[Pending (Nov 19): this section predates the switch to gross-flow measures of separations and job finding (Section~\ref{sec:data}). Its numbers come from the duration-based calibration and shock processes and will be replaced after recalibration and re-estimation.]}
-% TODO(MS): recalibrate tau, f and delta/tau to the gross-flow levels (0.0134, 0.252, 0.168), then re-estimate (D18).
+After a destruction shock, the estimated model's response of unemployment is about half the data's on impact and is gone within two years, whereas the data's keeps building for three quarters. Productivity shows a similar failure. Both gaps are thus mainly about propagation, not about the impulse: the model reproduces the data's own responses of productivity and, under Hamilton, of destruction (Appendix~\ref{app:validation}).
 
-After a destruction shock, the model matches the data on impact and then loses the response within a year, whereas the data's response keeps building for four quarters. The same holds for productivity. Both gaps are thus about persistence, not about the size of the response on impact.
-
-If persistence came from lost positions, lowering the reactivation rate would supply it. As Table~\ref{tab:reactivation} shows, it does so for separations but not for destruction. As $\bar\Lambda_r$ falls from one to 0.03, the cumulative response of unemployment to a separation shock rises from 3.6 to 15.8 points and vacancies come to fall after separations, which is the mechanism of \citet{coles_2018}. The response to destruction, however, does not change: it peaks after one quarter at 0.26 to 0.29 in every case. The reason is simple. Reactivation applies only to positions vacated by separations, whereas a destroyed position is gone whatever the reactivation rate.
-% ags_reactivation_grid.txt
+If persistence came from lost positions, lowering the reactivation rate would supply it. As Table~\ref{tab:reactivation} shows, it does so for separations but not for destruction. At the HP estimates, as $\bar\Lambda_r$ falls from 0.95 to 0.03, the model's cumulative response of unemployment to a separation shock rises from 4.1 to 10.5 points, and $J_s$ falls from 193 to 48. The response to destruction, however, barely changes: it peaks after one quarter at 0.37 to 0.38 points, and $J_\delta$ stays between 161 and 163. Under Hamilton the pattern is the same. The reason is simple. Reactivation applies only to positions vacated by separations, whereas a destroyed position is gone whatever the reactivation rate.
+% ags_estimate_report_hp.txt and ags_estimate_report_ham.txt §5
 
 \begin{table}[H]
 \centering
-\caption{The model's responses across reactivation rates (true shocks, one SD; quarterly averages)}\label{tab:reactivation}
+\caption{The estimated model across reactivation rates (other parameters at the estimates)}\label{tab:reactivation}
 \small
-\begin{tabular}{lcccccc}
+\begin{tabular}{lccccccc}
 \toprule
- & & \multicolumn{2}{c}{$\delta\to u$} & \multicolumn{2}{c}{$s\to u$} & $s\to v$ \\
-$\bar\Lambda_r$ & $\phi$ & peak (q) & sum, q0--12 & peak (q) & sum, q0--12 & at q4 \\
+ & & \multicolumn{2}{c}{Fit through the SVAR} & \multicolumn{2}{c}{True $\delta\to u$} & \multicolumn{2}{c}{True $s\to u$} \\
+$\bar\Lambda_r$ & $\phi$ & $J_s$ & $J_\delta$ & peak (q) & sum, q0--12 & peak (q) & sum, q0--12 \\
 \midrule
-1 (costless) & 0.608 & 0.29 (1) & 2.8 & 1.28 (1) & 3.6 & $+0.19$ \\
-0.9 & 0.733 & 0.27 (1) & 1.9 & 1.51 (1) & 7.0 & $-0.42$ \\
-0.5 & 0.893 & 0.26 (1) & 1.6 & 1.85 (1) & 10.9 & $-1.13$ \\
-0.25 & 0.922 & 0.26 (1) & 1.6 & 2.09 (1) & 13.5 & $-1.61$ \\
-0.1 & 0.933 & 0.26 (1) & 1.5 & 2.23 (1) & 15.1 & $-1.89$ \\
-0.03 & 0.937 & 0.26 (1) & 1.5 & 2.30 (1) & 15.8 & $-2.02$ \\
+\multicolumn{8}{l}{\textit{HP estimates}} \\
+0.03 & 0.277 & 47.7 & 161.0 & 0.37 (1) & 3.2 & 1.24 (1) & 10.5 \\
+0.10 & 0.267 & 48.3 & 161.3 & 0.37 (1) & 3.2 & 1.19 (1) & 10.0 \\
+0.25 & 0.246 & 56.6 & 162.1 & 0.37 (1) & 3.3 & 1.09 (1) & 8.9 \\
+0.50 & 0.208 & 89.6 & 162.8 & 0.37 (1) & 3.4 & 0.93 (1) & 7.1 \\
+0.75 & 0.166 & 142.5 & 162.8 & 0.37 (1) & 3.6 & 0.78 (1) & 5.4 \\
+0.95 & 0.129 & 193.4 & 162.0 & 0.38 (1) & 3.7 & 0.69 (0) & 4.1 \\
+\multicolumn{8}{l}{\textit{Hamilton estimates}} \\
+0.03 & 0.569 & 98.9 & 15.5 & 0.66 (4) & 6.8 & 2.20 (1) & 18.6 \\
+0.10 & 0.556 & 103.4 & 15.7 & 0.66 (4) & 6.7 & 2.11 (1) & 17.2 \\
+0.25 & 0.524 & 129.9 & 16.3 & 0.65 (4) & 6.6 & 1.92 (1) & 14.5 \\
+0.50 & 0.459 & 211.7 & 17.2 & 0.65 (4) & 6.6 & 1.61 (1) & 10.4 \\
+0.75 & 0.373 & 334.1 & 18.1 & 0.66 (4) & 6.8 & 1.31 (1) & 6.6 \\
+0.95 & 0.282 & 456.7 & 17.5 & 0.68 (4) & 7.1 & 1.07 (1) & 3.5 \\
 \bottomrule
+\multicolumn{8}{p{0.9\linewidth}}{\footnotesize \textit{Notes.} $J_s$ and $J_\delta$: distance \eqref{eq:loss} through the SVAR, $R=50$ windows. True responses: one-SD shocks, quarterly averages of the monthly responses, log points $\times$ 100.}
 \end{tabular}
 \end{table}
-% ags_reactivation_grid.txt. True shocks (model against model). TODO: rerun through SVAR A.
+% ags_estimate_report_hp.txt and ags_estimate_report_ham.txt §5
 
-This yields an overidentifying test. The separation responses identify the reactivation rate, and once it is set, the destruction response has no free parameter left in the positions channel; the model fails it at any reactivation rate. Unconditional persistence, the moment \citet{coles_2018} match, cannot make this distinction, because a low reactivation rate combined with persistent separations reproduces it. The conditional responses can.
+This is an overidentifying test. The separation responses identify the reactivation rate, and once it is set, the destruction response has no free parameter left in the positions channel; the model fails the test at any reactivation rate under HP. Unconditional persistence, the moment \citet{coles_2018} match, cannot make this distinction, because a low reactivation rate combined with persistent separations reproduces it. The conditional responses can.
 
 The puzzle, then, is the following. A short-lived rise in establishment deaths, which removes few positions, depresses job finding for about two years, while larger losses of positions through separations do not. Something lost only when an establishment dies, or something that a death sets in motion, keeps job creation low. Within the model, neither the number of positions lost nor how fast they are re-created supplies it.
 
@@ -770,17 +801,73 @@ The puzzle, then, is the following. A short-lived rise in establishment deaths, 
 
 \appendix
 
-\section{Shock processes under the Hamilton filter}\label{app:filters}
+\section{Results under the Hamilton filter}\label{app:filters}
 
-Under the filter of \citet{hamilton_2018} ($h=8$, $p=4$) the processes are more persistent. The matched monthly persistence is 0.89 for destruction and 0.97 for separations; for productivity the data's quarterly persistence cannot be attained by any stationary monthly AR(1). % shock_calibration.txt §8
+Under the filter of \citet{hamilton_2018} ($h=8$, $p=4$) the window starts in 1995Q2 ($T=99$), and the shock processes are more persistent (Table~\ref{tab:shocks}). Table~\ref{tab:irf_ham} reports the responses at the Hamilton estimates.
 
-\section{Does the SVAR recover the model's responses?}\label{app:validation}
+\begin{table}[H]
+\centering
+\caption{Responses through the SVAR under the Hamilton filter: estimated model and data (one SD; log points $\times$ 100)}\label{tab:irf_ham}
+\footnotesize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{llcccc@{\hspace{0.5cm}}cccc}
+\toprule
+ & & \multicolumn{4}{c}{Model} & \multicolumn{4}{c}{Data} \\
+Shock & Response & $h=0$ & Peak (quarter) & $h=8$ & Sum, 0--12 & $h=0$ & Peak (quarter) & $h=8$ & Sum, 0--12 \\
+\midrule
+$z$ & $u$ & $+0.20$ & $-2.22$ (5) & $-1.82$ & $-19.8$ & $-2.20$ & $-4.36$ (6) & $-4.26$ & $-48.7$ \\
+ & $v$ & $+3.02$ & $+4.26$ (4) & $+3.10$ & $+41.8$ & $+1.33$ & $+3.61$ (6) & $+3.51$ & $+38.5$ \\
+ & $f$ & $+1.14$ & $+2.53$ (4) & $+1.88$ & $+24.1$ & $+0.97$ & $+3.29$ (4) & $+2.62$ & $+32.8$ \\
+$s$ & $u$ & $+1.45$ & $+3.66$ (2) & $+0.47$ & $+18.4$ & $+2.54$ & $+2.77$ (4) & $+2.16$ & $+28.7$ \\
+ & $v$ & $+0.12$ & $-3.87$ (3) & $-0.50$ & $-17.5$ & $-2.74$ & $-3.45$ (2) & $-2.12$ & $-31.9$ \\
+ & $f$ & $-0.51$ & $-2.89$ (2) & $-0.33$ & $-13.4$ & $-0.53$ & $-1.13$ (3) & $-0.59$ & $-8.9$ \\
+$\delta$ & $u$ & $+0.43$ & $+0.98$ (2) & $+0.38$ & $+7.0$ & $-0.02$ & $+2.05$ (5) & $+1.64$ & $+18.1$ \\
+ & $v$ & $+0.06$ & $-1.13$ (3) & $-0.47$ & $-7.3$ & $+0.88$ & $-2.08$ (5) & $-1.63$ & $-15.9$ \\
+ & $f$ & $-0.15$ & $-0.81$ (3) & $-0.31$ & $-5.5$ & $+0.51$ & $-0.95$ (3) & $-0.30$ & $-4.8$ \\
+\bottomrule
+\multicolumn{10}{p{0.95\linewidth}}{\footnotesize \textit{Notes.} SVAR $(z,s,\delta,u,v,f)$, one lag, 1995Q2--2019Q4. Model: mean over 200 simulated windows of 99 quarters at the Hamilton estimates.}
+\end{tabular}
+\end{table}
+% ags_estimate_report_ham.txt §3; ags_estimate_irf_ham.csv
 
-\textit{[Pending re-estimation under gross-flow measures.]}
+Two differences from HP stand out. First, the model's response of unemployment to separations is too large at its peak and too short-lived: 3.66 after two quarters against 2.77 after four, and 0.47 against 2.16 after two years. Second, the model's response to destruction now peaks later and is larger, because the Hamilton process for destruction is persistent. It still reaches only half the data's peak.
 
+\section{The shock processes through the SVAR}\label{app:validation}
 
-On long simulated samples without filtering, SVAR~A with the BIC lag recovers the model's true responses to productivity and separations within 9 to 15 percent of their peak, and those to destruction within 43 to 47 percent, and the HP filter widens all gaps. This is why we compare model and data through the same SVAR rather than through the model's true responses.
-% q3_model_svar.txt §1
+The processes of Section~\ref{sec:shocks} are matched with univariate fits on simulated data. Table~\ref{tab:own} checks the object that matters for the comparison: each shock's response of its own series through the SVAR, in the model at the estimates and in the data.
+
+\begin{table}[H]
+\centering
+\caption{Own responses through the SVAR: model at the estimates and data (one SD; log points $\times$ 100)}\label{tab:own}
+\small
+\begin{tabular}{llccccc}
+\toprule
+ & & $h=0$ & $h=1$ & $h=2$ & $h=4$ & $h=8$ \\
+\midrule
+\multicolumn{7}{l}{\textit{HP}} \\
+$z$ & model & $+0.52$ & $+0.35$ & $+0.17$ & $-0.04$ & $-0.07$ \\
+ & data & $+0.54$ & $+0.32$ & $+0.18$ & $+0.01$ & $-0.11$ \\
+$s$ & model & $+3.67$ & $+0.43$ & $-0.71$ & $-0.18$ & $-0.01$ \\
+ & data & $+3.88$ & $+1.12$ & $+0.59$ & $+0.16$ & $-0.20$ \\
+$\delta$ & model & $+4.20$ & $+1.76$ & $-0.61$ & $+0.00$ & $-0.00$ \\
+ & data & $+5.40$ & $+0.85$ & $+0.27$ & $-0.01$ & $-0.20$ \\
+\multicolumn{7}{l}{\textit{Hamilton}} \\
+$z$ & model & $+0.91$ & $+0.80$ & $+0.70$ & $+0.51$ & $+0.25$ \\
+ & data & $+0.92$ & $+0.75$ & $+0.60$ & $+0.39$ & $+0.12$ \\
+$s$ & model & $+6.41$ & $+2.02$ & $+0.44$ & $-0.11$ & $-0.05$ \\
+ & data & $+6.31$ & $+3.40$ & $+2.45$ & $+1.81$ & $+0.96$ \\
+$\delta$ & model & $+5.84$ & $+3.97$ & $+2.71$ & $+1.28$ & $+0.29$ \\
+ & data & $+5.93$ & $+4.05$ & $+2.64$ & $+0.82$ & $-0.56$ \\
+\bottomrule
+\multicolumn{7}{p{0.8\linewidth}}{\footnotesize \textit{Notes.} SVAR $(z,s,\delta,u,v,f)$, one lag. Data bootstrap standard deviations at $h=1$: HP $z$ 0.05, $s$ 0.40, $\delta$ 0.52; Hamilton $z$ 0.09, $s$ 0.66, $\delta$ 0.59.}
+\end{tabular}
+\end{table}
+% ags_estimate_report_hp.txt and ags_estimate_report_ham.txt §4
+
+Productivity matches under both filters, and destruction under Hamilton. Under HP, the model's response of measured exit is smaller on impact and larger after one quarter than the data's. A candidate reason, not yet checked, is the one-month lag between destruction and measured exit, which spreads a monthly shock over two quarters.
+
+Separations do not match: in the model their own response dies out faster than in the data, after one quarter under HP (0.43 against 1.12) and over the first two years under Hamilton. The data's response contains the feedback of lagged unemployment and vacancies onto separations, which the own-lag coefficient leaves out, and the model, whose separations are exogenous, cannot reproduce it. The impulse that a separation shock delivers in the model is therefore shorter-lived than in the data, which is consistent with the short-lived response of unemployment to separations under Hamilton (Appendix~\ref{app:filters}).
+% TODO(MS): the recovery check of the model's true responses by the SVAR on long samples (q3_model_svar.txt §1) predates D19/D20; rerun at the estimates.
 
 \section{Notation}\label{app:notation}
 Bars denote steady-state values or long-run means.
@@ -823,6 +910,9 @@ Broer, T., J.~Druedahl, K.~Harmenberg, and E.~{\"O}berg (2025): ``The Unemployme
 \bibitem[Christiano, Eichenbaum and Trabandt(2016)]{christiano_2016}
 Christiano, L.~J., M.~S. Eichenbaum, and M.~Trabandt (2016): ``Unemployment and Business Cycles,'' \emph{Econometrica}, 84(4), 1523--1569, doi:10.3982/ECTA11776.
 
+\bibitem[Christiano, Eichenbaum and Evans(2005)]{christiano_2005}
+Christiano, L.~J., M.~Eichenbaum, and C.~L. Evans (2005): ``Nominal Rigidities and the Dynamic Effects of a Shock to Monetary Policy,'' \emph{Journal of Political Economy}, 113(1), 1--45, doi:10.1086/426038.
+
 \bibitem[Coles and Moghaddasi Kelishomi(2018)]{coles_2018}
 Coles, M.~G., and A.~Moghaddasi Kelishomi (2018): ``Do Job Destruction Shocks Matter in the Theory of Unemployment?,'' \emph{American Economic Journal: Macroeconomics}, 10(3), 118--136, doi:10.1257/mac.20150040.
 
@@ -852,6 +942,9 @@ Gabrovski, M., and M.~R. Silva (2025): ``Unemployment and Labor Productivity Com
 
 \bibitem[Gilchrist and Zakraj{\v s}ek(2012)]{gilchrist_2012}
 Gilchrist, S., and E.~Zakraj{\v s}ek (2012): ``Credit Spreads and Business Cycle Fluctuations,'' \emph{American Economic Review}, 102(4), 1692--1720, doi:10.1257/aer.102.4.1692.
+
+\bibitem[Gouri{\'e}roux, Monfort and Renault(1993)]{gourieroux_1993}
+Gouri{\'e}roux, C., A.~Monfort, and E.~Renault (1993): ``Indirect Inference,'' \emph{Journal of Applied Econometrics}, 8(S1), S85--S118, doi:10.1002/jae.3950080507.
 
 \bibitem[Haefke and Reiter(2020)]{haefke_2020}
 Haefke, C., and M.~Reiter (2020): ``Long Live the Vacancy,'' IHS Working Paper 22, Institute for Advanced Studies, Vienna; IZA Discussion Paper 13666 (RePEc: RePEc:ihs:ihswps:22).

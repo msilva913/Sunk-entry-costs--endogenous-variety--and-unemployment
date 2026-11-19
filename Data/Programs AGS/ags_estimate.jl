@@ -17,6 +17,7 @@
 #   check   the Julia SVAR on the data cycles against Python's targets; one loss evaluation.
 #   search  coarse grid over (σ, Λ̄_r), then Nelder–Mead from the two best points (R = AGS_R,
 #           default 50); every evaluation is printed and appended to the log.
+#   report  tables for the draft at the final estimates (ags_estimate_report_<filter>.txt).
 #   final   at the best logged point: R = 200 evaluation, the δ test (J_δ against its simulated
 #           distribution), the Jacobian of the moments for the sandwich, and the model responses.
 #
@@ -262,8 +263,136 @@ function profile()
     CSV.write(joinpath(@__DIR__, "ags_estimate_profile_$(FILTER).csv"), rows)
 end
 
+"""
+Report at the final estimates (ags_estimate_final_<filter>.csv), for the draft (N15). R = 200 windows
+for the fit, AGS_R windows for the one-parameter profiles. Output: ags_estimate_report_<filter>.txt.
+  1. θ̂ and the steady state it implies;
+  2. fit by shock and response (J), and the δ test;
+  3. u, v, f responses, model against data: impact, peak (quarter), h 8, sum over h 0–12;
+  4. each shock's own response through the SVAR, model against data (validation of D20);
+  5. profiles: Λ̄_r and σ moved one at a time, the others at θ̂ (J_z, J_s, J_δ through the SVAR;
+     the true responses of u to δ and s, quarterly averages);
+  6. local sensitivity: the change in the 78 estimation moments, in data SDs (root of the sum of
+     squares), when one parameter moves by 10 % of its range (from the Jacobian).
+"""
+function report()
+    fin = CSV.read(joinpath(@__DIR__, "ags_estimate_final_$(FILTER).csv"), DataFrame)
+    val(n) = fin.value[findfirst(==(n), fin.param)]
+    θ = [val(n) for n in PNAMES]
+    lines = String[]
+    say(str) = (push!(lines, str); println(str))
+    pc(x) = 100 * x
+    say("AGS estimation report, filter = $(FILTER) (ags_estimate.jl, AGS_MODE = report)")
+    say(@sprintf("Data: %s–%s, T = %d, p = %d. Shock processes: shock_calibration_window.csv, prefix %s (D20).",
+                 TG_DATA.start[1], TG_DATA[1, "end"], TG_DATA.T[1], P_LAG, FILTER))
+    say(@sprintf("  monthly ρ/σ: z %.4f/%.4f, δ %.4f/%.4f, s %.4f/%.4f",
+                 SHK_F.ρz, SHK_F.σz, SHK_F.ρδ, SHK_F.σδ, SHK_F.ρs, SHK_F.σs))
+
+    # 1. estimates and steady state
+    list, r = window_irfs(θ, 200)
+    st, cal = r.st, r.cal
+    say("\n1. Estimates (bounds in brackets) and the steady state")
+    for i in 1:5
+        at = ""
+        if abs(θ[i] - LO[i]) < 0.01 * (HI[i] - LO[i]) || abs(θ[i] - HI[i]) < 0.01 * (HI[i] - LO[i])
+            at = "  at bound"
+        end
+        say(@sprintf("  %-9s %8.4f  [%.2f, %.2f]%s", PNAMES[i], θ[i], LO[i], HI[i], at))
+    end
+    say(@sprintf("  implied: ϕ %.4f, z̄ %.4f, κ %.4f, b %.4f; steady state u %.4f, θ %.4f, v %.4f, Q %.4f, Λ_r %.4f, w %.4f",
+                 cal.ϕ, cal.zbar, cal.κ, cal.b, st.u, st.θ, st.v, st.Q, st.Λ_r, st.w))
+    say(@sprintf("  X/Y %.4f", st.X / (cal.zbar * (1 - st.u))))
+
+    # 2. fit
+    Θm = mean_irf(list)
+    shocks = ("z", "s", "delta")
+    say("\n2. Fit, J = Σ ((model − data)/sd)², 13 horizons per cell (R = 200)")
+    say(@sprintf("  %-6s %8s %8s %8s %8s", "shock", "u", "v", "f", "all"))
+    for s in shocks
+        j = findfirst(==(s), NAMES)
+        cells = Float64[]
+        for rr in RESP
+            i = findfirst(==(rr), NAMES)
+            rows = TG_DATA[(TG_DATA.shock .== s) .& (TG_DATA.response .== rr), :]
+            m = [Θm[h+1][i, j] for h in 0:H_Q]
+            push!(cells, sum(((m .- rows.data) ./ rows.sd) .^ 2))
+        end
+        say(@sprintf("  %-6s %8.1f %8.1f %8.1f %8.1f", s, cells..., sum(cells)))
+    end
+    Jw = CSV.read(joinpath(@__DIR__, "ags_estimate_jdelta_$(FILTER).csv"), DataFrame).J_window
+    say(@sprintf("  δ test: J_δ %.1f; simulated J_δ (one window against the model mean): median %.1f, 95th pct %.1f, 99th %.1f; p = %.3f",
+                 val("J_delta"), quantile(Jw, 0.5), quantile(Jw, 0.95), quantile(Jw, 0.99), val("p_delta")))
+
+    # 3. responses
+    say("\n3. Responses through the SVAR, model (mean of 200 windows) against data, log points × 100")
+    say(@sprintf("  %-6s %-3s | %-34s | %-34s", "shock", "", "model: h0, peak (h), h8, sum 0–12", "data: h0, peak (h), h8, sum 0–12"))
+    for s in shocks, rr in RESP
+        j, i = findfirst(==(s), NAMES), findfirst(==(rr), NAMES)
+        rows = TG_DATA[(TG_DATA.shock .== s) .& (TG_DATA.response .== rr), :]
+        cells = String[]
+        for x in ([Θm[h+1][i, j] for h in 0:H_Q], rows.data)
+            k = argmax(abs.(x))
+            push!(cells, @sprintf("%+6.2f, %+6.2f (%2d), %+6.2f, %+7.1f", pc(x[1]), pc(x[k]), k - 1, pc(x[9]), pc(sum(x))))
+        end
+        say(@sprintf("  %-6s %-3s | %s | %s", s, rr, cells...))
+    end
+
+    # 4. own responses
+    say("\n4. Own responses through the SVAR (validation of D20), log points × 100: h 0, 1, 2, 4, 8")
+    for s in shocks
+        j = findfirst(==(s), NAMES)
+        rows = TG_DATA[(TG_DATA.shock .== s) .& (TG_DATA.response .== s) .& (TG_DATA.block .== "own"), :]
+        m = [pc(Θm[h+1][j, j]) for h in (0, 1, 2, 4, 8)]
+        d = [pc(rows.data[h+1]) for h in (0, 1, 2, 4, 8)]
+        sd = [pc(rows.sd[h+1]) for h in (0, 1, 2, 4, 8)]
+        say(@sprintf("  %-6s model %s | data %s | data sd %s", s, join([@sprintf("%+6.2f", x) for x in m], " "),
+                     join([@sprintf("%+6.2f", x) for x in d], " "), join([@sprintf("%5.2f", x) for x in sd], " ")))
+    end
+
+    # 5. profiles
+    NQ = 13
+    qa(x) = [mean(x[3k-2:3k]) for k in 1:NQ]
+    function profile_row(θp)
+        lst, rp = window_irfs(θp, R_SEARCH)
+        Θ = mean_irf(lst)
+        me, mt = moment_vec(Θ, ("z", "s")), moment_vec(Θ, ("delta",))
+        e2 = ((me .- D_EST) ./ SD_EST) .^ 2
+        tr = String[]
+        for i in (2, 3)
+            ir = DataFrame(simulate_model((; model..., ne = 1), rp.sol_mat, 3NQ + 1, shock_col(i, SDS_F[i]),
+                                          rp.SS, true, true), varnames)[2:end, :]
+            u = 100 .* qa(ir.u)
+            k = argmax(abs.(u))
+            push!(tr, @sprintf("%+5.2f (q%d) %+6.1f", u[k], k - 1, sum(u)))
+        end
+        return @sprintf("ϕ %.3f | J_z %6.1f J_s %6.1f J_δ %6.1f | true δ→u peak, sum %s | s→u %s",
+                        rp.cal.ϕ, sum(e2[1:39]), sum(e2[40:78]), sum(((mt .- D_TST) ./ SD_TST) .^ 2), tr...)
+    end
+    say("\n5. Profiles (R = $(R_SEARCH)); the other parameters at θ̂; true responses are quarterly averages, × 100")
+    for Λ in (0.03, 0.1, 0.25, 0.5, 0.75, 0.95)
+        θp = copy(θ); θp[2] = Λ
+        say(@sprintf("  Λ̄_r %.2f  %s", Λ, profile_row(θp)))
+    end
+    for σv in (0.0, 0.5, 1.0, 2.0, 4.0)
+        θp = copy(θ); θp[1] = σv
+        say(@sprintf("  σ   %.2f  %s", σv, profile_row(θp)))
+    end
+
+    # 6. sensitivity
+    G = Matrix(CSV.read(joinpath(@__DIR__, "ags_estimate_jacobian_$(FILTER).csv"), DataFrame))
+    say("\n6. Local sensitivity: ‖G_i · 0.1 (HI − LO)_i / sd‖ over the 78 estimation moments")
+    for i in 1:5
+        say(@sprintf("  %-9s %7.2f", PNAMES[i], norm(G[:, i] .* 0.1 .* (HI[i] - LO[i]) ./ SD_EST)))
+    end
+    open(joinpath(@__DIR__, "ags_estimate_report_$(FILTER).txt"), "w") do io
+        foreach(l -> println(io, l), lines)
+    end
+end
+
 if MODE == "check"
     check()
+elseif MODE == "report"
+    report()
 elseif MODE == "profile"
     profile()
 elseif MODE == "search"
@@ -271,5 +400,5 @@ elseif MODE == "search"
 elseif MODE == "final"
     final()
 else
-    error("AGS_MODE must be check, search or final")
+    error("AGS_MODE must be check, search, final, profile or report")
 end

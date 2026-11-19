@@ -1215,7 +1215,11 @@ Bold estimates are at bounds; standard errors are not computed.
 
 **Identification.** Λ̄_r is at its lower bound (0.03) under both filters and σ at opposite bounds (4 under HP, 0 under Hamilton). The objective is flat in σ, or σ is doing different work across filters. The z misfit drives the HP estimates toward maximal amplification (σ, b/w at their upper bounds).
 
-**Not yet done:** the model's own responses of z, s and δ through the SVAR against the data's (validation of D20).
+**Own responses through the SVAR (validation of D20; `ags_estimate_report_<filter>.txt` §4).** z matches under both filters; δ matches under Hamilton (under HP the model's measured exit is smaller on impact, 4.20 against 5.40, and larger at h 1, 1.76 against 0.85; cause unchecked, candidate: the one-month dating of measured exit). **s does not:** the model's own response dies out faster (HP h 1: 0.43 against 1.12, sd 0.40; Hamilton h 4: −0.11 against 1.81). The data's own response contains feedback from lagged u and v onto s, which the own-lag rule leaves out and an exogenous s cannot reproduce.
+
+**Profiles at θ̂ (§5).** Λ̄_r from 0.03 to 0.95: J_s 48 → 193 (HP), 99 → 457 (Hamilton); J_δ 161–163 (HP), 15.5–18.1 (Hamilton); the true δ → u peak is 0.37–0.38 (HP) and 0.65–0.68 (Hamilton) at every Λ̄_r. The overidentifying argument holds at the estimates. σ from 0 to 4: J_z 259 → 185 under HP, flat under Hamilton. Local sensitivity (moments in data SDs per 10 % of the range): σ 0.65 / 0.26, ξ 19 / 33.
+
+**Draft (Nov 19):** Sections 7–9 and Appendices A–B rewritten from `ags_estimate_report_<filter>.txt`; intro and abstract updated.
 
 ## The overidentifying test through SVAR A under HP and Hamilton — Nov 19, 2026 (`q3_model_svar_filters.txt`)
 

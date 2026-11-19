@@ -7,7 +7,7 @@ Hamilton quarter (1995Q2), lag by BIC (q3_data_svar.bic_lag). Responses to one-S
 h = 0-12, in log points (not x 100).
 
 Estimation moments: u, v, jf responses to the z and s shocks (78). Test moments: u, v, jf
-responses to delta (39). Data SDs from a 1,000-draw residual bootstrap (q3_data_svar.bootstrap_irf).
+responses to delta (39). Own responses of z, s, delta (block "own"): validation only. Data SDs from a 1,000-draw residual bootstrap (q3_data_svar.bootstrap_irf).
 
 Outputs:
     data/results/estimation_targets.csv            filter, p, T, shock, response, h, data, sd, block
@@ -54,6 +54,13 @@ if __name__ == "__main__":
                                  "start": str(frame.index[0]), "end": str(frame.index[-1]),
                                  "shock": s, "response": r, "h": h,
                                  "data": Theta[h, i, j], "sd": sd[h, i, j], "block": block})
+            # each shock's response of its own series (validation of D20; not estimated or tested)
+            i = j = NAMES.index(s)
+            for h in range(H + 1):
+                rows.append({"filter": fkey, "p": p, "T": len(frame),
+                             "start": str(frame.index[0]), "end": str(frame.index[-1]),
+                             "shock": s, "response": s, "h": h,
+                             "data": Theta[h, i, j], "sd": sd[h, i, j], "block": "own"})
         est = np.array([moments(D, ("z", "s")) for D in draws])
         tst = np.array([moments(D, ("delta",)) for D in draws])
         np.savez(p6b.RESULTS_DIR / f"estimation_draws_{fkey}.npz", estimation=est, test=tst,

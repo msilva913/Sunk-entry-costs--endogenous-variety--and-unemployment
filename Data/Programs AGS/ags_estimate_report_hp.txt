@@ -1,0 +1,56 @@
+AGS estimation report, filter = hp (ags_estimate.jl, AGS_MODE = report)
+Data: 1992Q3–2019Q4, T = 110, p = 1. Shock processes: shock_calibration_window.csv, prefix hp (D20).
+  monthly ρ/σ: z 0.8830/0.0044, δ 0.4991/0.0648, s 0.4585/0.0482
+
+1. Estimates (bounds in brackets) and the steady state
+  sigma       4.0000  [0.00, 4.00]  at bound
+  lambda_r    0.0300  [0.03, 0.99]  at bound
+  xi          0.5856  [0.25, 10.00]
+  x_v         0.0588  [0.05, 0.90]
+  b_ratio     0.9700  [0.50, 0.97]  at bound
+  implied: ϕ 0.2769, z̄ 1.0456, κ 0.2735, b 0.9700; steady state u 0.0503, θ 0.3155, v 0.0159, Q 2.4868, Λ_r 0.0300, w 1.0000
+  X/Y 0.0150
+
+2. Fit, J = Σ ((model − data)/sd)², 13 horizons per cell (R = 200)
+  shock         u        v        f      all
+  z          87.0     45.9     47.2    180.1
+  s          13.1     22.6      9.2     44.8
+  delta      58.6     52.0     50.8    161.4
+  δ test: J_δ 161.4; simulated J_δ (one window against the model mean): median 2.4, 95th pct 12.4, 99th 24.7; p = 0.000
+
+3. Responses through the SVAR, model (mean of 200 windows) against data, log points × 100
+  shock      | model: h0, peak (h), h8, sum 0–12  | data: h0, peak (h), h8, sum 0–12  
+  z      u   |  -0.14,  -1.16 ( 3),  -0.10,    -5.2 |  -0.97,  -2.74 ( 4),  -1.81,   -23.1
+  z      v   |  +1.85,  +2.70 ( 1),  -0.11,   +11.1 |  +0.81,  +2.97 ( 3),  +1.44,   +21.8
+  z      jf  |  +0.79,  +1.36 ( 2),  -0.00,    +6.5 |  +0.49,  +1.80 ( 4),  +1.24,   +15.2
+  s      u   |  +0.75,  +1.88 ( 1),  -0.11,    +5.1 |  +1.46,  +1.46 ( 0),  -0.07,    +5.5
+  s      v   |  +0.16,  -1.86 ( 2),  +0.30,    -3.4 |  -1.04,  -1.19 ( 1),  +0.26,    -2.7
+  s      jf  |  -0.24,  -1.25 ( 2),  +0.16,    -3.4 |  -0.05,  -0.79 ( 2),  +0.02,    -2.6
+  delta  u   |  +0.25,  +0.50 ( 1),  -0.04,    +1.3 |  +0.48,  +1.58 ( 3),  +0.75,   +11.8
+  delta  v   |  +0.02,  -0.47 ( 2),  +0.10,    -0.7 |  -0.33,  -1.87 ( 2),  -0.51,   -11.0
+  delta  jf  |  -0.11,  -0.33 ( 1),  +0.06,    -0.8 |  -0.30,  -1.02 ( 3),  -0.53,    -7.6
+
+4. Own responses through the SVAR (validation of D20), log points × 100: h 0, 1, 2, 4, 8
+  z      model  +0.52  +0.35  +0.17  -0.04  -0.07 | data  +0.54  +0.32  +0.18  +0.01  -0.11 | data sd  0.04  0.05  0.05  0.04  0.04
+  s      model  +3.67  +0.43  -0.71  -0.18  -0.01 | data  +3.88  +1.12  +0.59  +0.16  -0.20 | data sd  0.33  0.40  0.34  0.30  0.20
+  delta  model  +4.20  +1.76  -0.61  +0.00  -0.00 | data  +5.40  +0.85  +0.27  -0.01  -0.20 | data sd  0.43  0.52  0.26  0.15  0.11
+
+5. Profiles (R = 50); the other parameters at θ̂; true responses are quarterly averages, × 100
+  Λ̄_r 0.03  ϕ 0.277 | J_z  184.6 J_s   47.7 J_δ  161.0 | true δ→u peak, sum +0.37 (q1)   +3.2 | s→u +1.24 (q1)  +10.5
+  Λ̄_r 0.10  ϕ 0.267 | J_z  184.2 J_s   48.3 J_δ  161.3 | true δ→u peak, sum +0.37 (q1)   +3.2 | s→u +1.19 (q1)  +10.0
+  Λ̄_r 0.25  ϕ 0.246 | J_z  184.5 J_s   56.6 J_δ  162.1 | true δ→u peak, sum +0.37 (q1)   +3.3 | s→u +1.09 (q1)   +8.9
+  Λ̄_r 0.50  ϕ 0.208 | J_z  186.3 J_s   89.6 J_δ  162.8 | true δ→u peak, sum +0.37 (q1)   +3.4 | s→u +0.93 (q1)   +7.1
+  Λ̄_r 0.75  ϕ 0.166 | J_z  187.8 J_s  142.5 J_δ  162.8 | true δ→u peak, sum +0.37 (q1)   +3.6 | s→u +0.78 (q1)   +5.4
+  Λ̄_r 0.95  ϕ 0.129 | J_z  188.4 J_s  193.4 J_δ  162.0 | true δ→u peak, sum +0.38 (q1)   +3.7 | s→u +0.69 (q0)   +4.1
+  σ   0.00  ϕ 0.277 | J_z  258.6 J_s   48.0 J_δ  154.5 | true δ→u peak, sum +0.37 (q1)   +2.8 | s→u +1.23 (q1)   +9.3
+  σ   0.50  ϕ 0.277 | J_z  239.4 J_s   47.2 J_δ  155.8 | true δ→u peak, sum +0.37 (q1)   +2.9 | s→u +1.23 (q1)   +9.4
+  σ   1.00  ϕ 0.277 | J_z  224.1 J_s   46.7 J_δ  157.0 | true δ→u peak, sum +0.37 (q1)   +2.9 | s→u +1.23 (q1)   +9.6
+  σ   2.00  ϕ 0.277 | J_z  202.4 J_s   46.6 J_δ  158.8 | true δ→u peak, sum +0.37 (q1)   +3.0 | s→u +1.24 (q1)  +10.0
+  σ   4.00  ϕ 0.277 | J_z  184.6 J_s   47.7 J_δ  161.0 | true δ→u peak, sum +0.37 (q1)   +3.2 | s→u +1.24 (q1)  +10.5
+
+6. Local sensitivity: ‖G_i · 0.1 (HI − LO)_i / sd‖ over the 78 estimation moments
+  sigma        0.65
+  lambda_r     1.46
+  xi          19.05
+  x_v          3.16
+  b_ratio      3.44
