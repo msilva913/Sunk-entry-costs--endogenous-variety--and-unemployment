@@ -1110,6 +1110,35 @@ Data (SVAR A): δ 3.0–4.3, z 7.40, s 3.9–4.5.
 - **cor(u,v) stays too weak** in every case, at −0.31 to −0.69 against −0.93.
 - **Implication:** the data favor slow or unpriced replacement of product lines together with elastic vacancy creation. Clone replacement is a device, so the structural question is which entry friction reproduces it. Entry congestion frees ν and weakens the R19 pin, but holds replacement back rather than making it instant and unpriced. The next test is congestion × ξ.
 
+## The overidentifying test through SVAR A under HP and Hamilton — Nov 19, 2026 (`q3_model_svar_filters.txt`)
+
+Reactivation grid (Λ̄_r from 1 to 0.03), default calibration. Shock processes are matched per filter on SVAR A's window (`part6e`):
+- under Hamilton: δ ρ_m 0.892, s 0.875, z capped at 0.999 (not attained);
+- under HP: δ 0.532, s 0.752, z 0.941.
+
+J has 26 moments per shock (≈ 26 is a good fit) and uses data SDs from the same filter.
+
+| | HP: J_s range (best Λ̄_r) | HP: J_δ at that Λ̄_r; δ→u cum (data) | Hamilton: J_s range (best Λ̄_r) | Hamilton: J_δ at that Λ̄_r; δ→u cum (data) | Hamilton: J_δ at Λ̄_r = 1 |
+|---|---|---|---|---|---|
+| | 103–441 (0.10) | **106**; 1.1 (10.8) | 110–379 (0.25) | **34**; 3.4 (21.4) | 14; 8.9, peak h 4 |
+
+**HP: the puzzle stands.** J_δ is 99–106 at every reactivation rate, and the δ response peaks at h 1.
+
+**But s is badly fitted at every reactivation rate under both filters** (J_s ≥ 103). The model's s response is too large and front-loaded: under Hamilton it peaks at h 2 with 4.8 against the data's h 5 with 2.5. The reactivation rate is therefore weakly identified, and the overidentification argument is weakened.
+
+**Hamilton: the δ test does not reject.** J_δ is 14–36. Two reasons:
+1. The data bands are wide (T = 99).
+2. The Hamilton-matched δ process is persistent (half-life 6 months). The model then produces a hump (at Λ̄_r = 1, peak at h 4), although it is 2.5–6 times too small in cumulative terms.
+
+**Validation** (long sample against the true responses, Λ̄_r = 0.25). Gaps are HP / Hamilton:
+- z: 82 % / 87 %;
+- δ: 51 % / 65 %;
+- s: 51 % / 32 %.
+
+So Hamilton with 1 lag does not recover persistence better than HP, except for s. (The Nov 19 expectation that it would was wrong.)
+
+**Implication.** How strong the puzzle looks depends on the filter, through the persistence of the δ process (HP: one month; Hamilton: six) and through data precision. A single AR(1) fits neither filter (part6d). The coherent test uses one process that fits both filters: the two-component δ and s as real shocks (interpretation (b)), with z's single AR(1) at 0.989. Then HP and Hamilton differ only as summary statistics.
+
 ## The δ–s contrast under HP and Hamilton — Nov 19, 2026 (`q3_filter_contrast.py`, data only)
 
 SVAR A, p = 1, one-SD shocks. Contrasts are δ minus s, computed draw by draw (1,000 bootstrap draws). "HP, 1995Q2" isolates the sample effect.
