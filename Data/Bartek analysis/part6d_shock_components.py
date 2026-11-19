@@ -33,6 +33,7 @@ Diagnostic only: SHOCKS_BASE (run_solution_core.jl) is not changed.
 Outputs:
     data/results/shock_components.txt
     data/results/shock_components.csv
+    data/results/shock_components_profile.csv   model inputs at noise shares w = 0.1-0.4
 """
 
 import numpy as np
@@ -42,7 +43,9 @@ import part6b_shock_persistence_cyclical as p6b
 
 OUT_TXT = p6b.RESULTS_DIR / "shock_components.txt"
 OUT_CSV = p6b.RESULTS_DIR / "shock_components.csv"
+OUT_PROFILE = p6b.RESULTS_DIR / "shock_components_profile.csv"
 SERIES  = ["z", "delta", "s"]
+PROFILE_W = (0.1, 0.2, 0.3, 0.4)           # noise shares passed to the model (flat profile for delta)
 RHO_GRID = np.concatenate([np.linspace(0.0, 0.95, 39), np.linspace(0.955, 0.999, 23)])
 W_GRID   = np.concatenate([[0.0], np.linspace(0.02, 0.98, 49)])
 LINES = []
@@ -133,7 +136,7 @@ if __name__ == "__main__":
     say("Components = this program's fit of (rho_m, w) to both filters at once.\n")
 
     rng = np.random.default_rng(p6b.MATCH_SEED)
-    out = []
+    out, profile_out = [], []
     for name in SERIES:
         c = calib.loc[name]
         nq = int(c["nobs"]) + 1                    # quarters before filtering (AR(1) loses one)
@@ -158,6 +161,16 @@ if __name__ == "__main__":
         prof["dist"] = ((prof.rho_hp - target["rho_hp"]) ** 2 + (prof.rho_ham - target["rho_ham"]) ** 2
                         + (np.log(prof.sig_hp / prof.sig_ham) - log_ratio_data) ** 2)
         profile = prof.loc[prof.groupby("w").dist.idxmin()]
+        # Model inputs along the profile (ags_svar_components.jl): the persistent part's monthly
+        # AR(1) innovation SD and the monthly noise SD, in log points of the observed series.
+        for w in PROFILE_W:
+            p = profile.loc[np.isclose(profile.w, w)].iloc[0]
+            scale = np.sqrt(target["sigma_hp"] / p.sig_hp * target["sigma_ham"] / p.sig_ham)
+            profile_out.append({"series": name, "w": w, "rho_m": p.rho_m,
+                                "half_life_m": half_life(p.rho_m), "dist": p.dist,
+                                "sigma_persistent_m": scale * np.sqrt(1 - w) * np.sqrt(1 - p.rho_m ** 2),
+                                "sigma_noise_m": scale * np.sqrt(w),
+                                "rho_hp_fit": p.rho_hp, "rho_ham_fit": p.rho_ham})
         say(f"{'-' * 78}\n{name}: {nq} quarters before filtering\n{'-' * 78}")
         say(f"  data: rho_Q HP {target['rho_hp']:.3f}, Hamilton {target['rho_ham']:.3f}; "
             f"sigma_Q HP {100 * target['sigma_hp']:.2f}, Hamilton {100 * target['sigma_ham']:.2f}")
@@ -177,5 +190,6 @@ if __name__ == "__main__":
     say("delta's targets are the (z, delta) VAR's own lag and z-purged innovation; the")
     say("components treat delta as univariate.")
     pd.DataFrame(out).to_csv(OUT_CSV, index=False)
+    pd.DataFrame(profile_out).to_csv(OUT_PROFILE, index=False)
     OUT_TXT.write_text("\n".join(LINES) + "\n", encoding="utf-8")
-    print(f"\nSaved: {OUT_TXT}\nSaved: {OUT_CSV}")
+    print(f"\nSaved: {OUT_TXT}\nSaved: {OUT_CSV}\nSaved: {OUT_PROFILE}")
