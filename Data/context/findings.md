@@ -1110,6 +1110,32 @@ Data (SVAR A): δ 3.0–4.3, z 7.40, s 3.9–4.5.
 - **cor(u,v) stays too weak** in every case, at −0.31 to −0.69 against −0.93.
 - **Implication:** the data favor slow or unpriced replacement of product lines together with elastic vacancy creation. Clone replacement is a device, so the structural question is which entry friction reproduces it. Entry congestion frees ν and weakens the R19 pin, but holds replacement back rather than making it instant and unpriced. The next test is congestion × ξ.
 
+## AGS estimated on the z and s responses, HP — Nov 19, 2026 (`ags_estimate.jl`, D18)
+
+**Search.** 12-point grid over (σ, Λ̄_r), then Nelder–Mead from the two best points: 486 evaluations, R = 50, about 0.2 s each.
+
+**Final.** R = 200 at the best point (`ags_estimate_final_hp.csv`, `ags_estimate_irf_hp.csv`).
+
+**Estimates.** Three of five are at their bounds; sandwich standard errors are not meaningful there and were not computed.
+- **σ = 4.0 (upper bound), ξ = 0.25 (lower bound), b/w = 0.97 (upper bound).**
+- x_v = 0.13, Λ̄_r = 0.50 (implied ϕ = 0.26).
+
+The search pushes toward as much amplification as the bounds allow.
+
+**Fit, 39 moments per shock** (default calibration in parentheses):
+- **J_z = 67 (151).** The u response is about half the data's at h 4 (−1.38 against −2.38); v and f fit well.
+- **J_s = 159 (163): barely improved.** The misfit is concentrated at impact:
+  - v *rises* on impact in the model (+1.16 against −0.23), because vacated positions are reposted;
+  - f is flat on impact in the model (−0.05) but rises in the data (+1.08);
+  - u overshoots at h 1 (3.04 against 1.29).
+- **J_δ = 172, p = 0.000** (no simulated window reaches the data's distance). At the estimates, u peaks at +0.38 (h 1) against +1.56 (h 4). **The held-out δ test rejects decisively under HP.**
+
+**A measurement hypothesis for the s misfit (untested).** Shimer's method builds both s and f from short-term unemployment u^s_{t+1}: f_t = 1 − (u_{t+1} − u^s_{t+1})/u_t (`observables.py`). Noise in u^s therefore moves measured s and measured f in the same direction. That would produce the data's positive impact of s on f mechanically, and the model has no counterpart.
+
+**Next:**
+- check the s–f residual correlation;
+- the Hamilton estimation.
+
 ## The overidentifying test through SVAR A under HP and Hamilton — Nov 19, 2026 (`q3_model_svar_filters.txt`)
 
 Reactivation grid (Λ̄_r from 1 to 0.03), default calibration. Shock processes are matched per filter on SVAR A's window (`part6e`):
