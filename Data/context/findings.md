@@ -1110,6 +1110,24 @@ Data (SVAR A): δ 3.0–4.3, z 7.40, s 3.9–4.5.
 - **cor(u,v) stays too weak** in every case, at −0.31 to −0.69 against −0.93.
 - **Implication:** the data favor slow or unpriced replacement of product lines together with elastic vacancy creation. Clone replacement is a device, so the structural question is which entry friction reproduces it. Entry congestion frees ν and weakens the R19 pin, but holds replacement back rather than making it instant and unpriced. The next test is congestion × ξ.
 
+## s–f residual correlation: the measurement check — Nov 19, 2026 (`q3_s_jf_residuals.txt`)
+
+**Test.** Reduced-form VAR(1) (z, s, δ, u, v, f). The model side uses the `ags_svar_filters.jl` windows: default calibration, Λ̄_r from 1 to 0.03, 200 windows each.
+
+| | corr(s, f) HP | corr(s, v) HP | corr(s, f) Hamilton | corr(s, v) Hamilton |
+|---|---|---|---|---|
+| data | +0.28 | −0.10 | +0.13 | −0.32 |
+| model, Λ̄_r 1 → 0.03 | +0.86 → −0.40 | +0.88 → +0.64 | +0.35 → −0.08 | +0.63 → +0.36 |
+
+- **The check is not decisive.** Reactivation alone makes the model's s–f correlation positive, because reposted positions raise job finding in the same quarter. The data's +0.28 lies within the model's range at Λ̄_r ≈ 0.5. So the shared-measurement hypothesis is neither supported nor rejected.
+- **The sharper diagnostic is the matching function.** On impact of the data's s shock:
+  - v falls (−0.23) and u rises (+0.85), so θ falls about 1.1 %;
+  - yet f rises (+1.08);
+  - with η_L = 0.6, implied matching efficiency rises about 1.5 % (my arithmetic).
+
+  No model with a stable aggregate matching function reproduces job finding rising while tightness falls. In the model, f rises after s only if v rises, which is the reposting channel, and the data rule that out.
+- **Candidate explanations:** shared measurement in u^s; recall of laid-off workers without a vacancy (citation unverified); and the confounding of E→U with NILF→U flows in duration-based data. On the last, Fujita–Ramey (2009, IER, p. 420): "In the duration data, these flows are confounded with flows between NILF and unemployment, leading to less reliable measures of separation and job finding rates." All three point to rebuilding s and f from CPS gross flows (E→U, U→E), as Fujita–Ramey (2009) do, with a margin-error correction following Abowd–Zellner.
+
 ## AGS estimated on the z and s responses, HP — Nov 19, 2026 (`ags_estimate.jl`, D18)
 
 **Search.** 12-point grid over (σ, Λ̄_r), then Nelder–Mead from the two best points: 486 evaluations, R = 50, about 0.2 s each.
