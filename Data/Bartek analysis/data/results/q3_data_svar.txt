@@ -124,26 +124,26 @@ Caveats.
 ------------------------------------------------------------------------------
   z      1951Q1-2019Q4  T = 276  SD of cycle   1.23
   delta  1992Q3-2019Q4  T = 110  SD of cycle   5.96
-  s      1951Q1-2019Q4  T = 276  SD of cycle   5.77
+  s      1990Q2-2019Q4  T = 119  SD of cycle   7.36
   u      1951Q1-2019Q4  T = 276  SD of cycle  12.48
   v      1951Q1-2019Q4  T = 276  SD of cycle  13.82
   theta  1951Q1-2019Q4  T = 276  SD of cycle  25.80
-  jf     1951Q1-2019Q4  T = 276  SD of cycle   8.32
+  jf     1990Q2-2019Q4  T = 119  SD of cycle   7.26
   nfci   1990Q1-2019Q4  T = 120  SD of cycle  37.94
   anfci  1990Q1-2019Q4  T = 120  SD of cycle  46.05
 
 ------------------------------------------------------------------------------
 2. Lag selection and stability
 ------------------------------------------------------------------------------
-  SVAR A ('z', 's', 'delta', 'u', 'v')  1992Q3-2019Q4, T = 110; BIC picks p = 1  (BIC: 1: -36.878, 2: -36.144, 3: -35.388, 4: -34.689)
-      p = 1: T = 109, max |root| = 0.910
-      p = 2: T = 108, max |root| = 0.895
-  SVAR B ('z', 's', 'u', 'v')  1951Q1-2019Q4, T = 276; BIC picks p = 1  (BIC: 1: -29.630, 2: -29.542, 3: -29.319, 4: -29.056)
-      p = 1: T = 275, max |root| = 0.884
-      p = 2: T = 274, max |root| = 0.880
-  SVAR C ('z', 's', 'u', 'v')  1992Q3-2019Q4, T = 110; BIC picks p = 1  (BIC: 1: -31.030, 2: -30.574, 3: -30.042, 4: -29.487)
-      p = 1: T = 109, max |root| = 0.906
-      p = 2: T = 108, max |root| = 0.880
+  SVAR A ('z', 's', 'delta', 'u', 'v')  1992Q3-2019Q4, T = 110; BIC picks p = 1  (BIC: 1: -36.961, 2: -36.204, 3: -35.437, 4: -34.827)
+      p = 1: T = 109, max |root| = 0.894
+      p = 2: T = 108, max |root| = 0.898
+  SVAR B ('z', 's', 'u', 'v')  1990Q2-2019Q4, T = 119; BIC picks p = 1  (BIC: 1: -31.081, 2: -30.732, 3: -30.257, 4: -29.821)
+      p = 1: T = 118, max |root| = 0.897
+      p = 2: T = 117, max |root| = 0.884
+  SVAR C ('z', 's', 'u', 'v')  1992Q3-2019Q4, T = 110; BIC picks p = 1  (BIC: 1: -31.125, 2: -30.701, 3: -30.167, 4: -29.729)
+      p = 1: T = 109, max |root| = 0.889
+      p = 2: T = 108, max |root| = 0.882
 
 ------------------------------------------------------------------------------
 3. Shares of the variance of u and v, percent
@@ -160,36 +160,36 @@ SVAR A: z, s, δ, u, v
 1992Q3-2019Q4, p = 1
     h       z     s     δ    Residual
 --  ---  ----  ----  ----  ----------
-u   4q   34.3  18.5  11.3        35.9
-u   LR   35.2  12.9  11.7        40.2
-v   4q   31.6  11.1  12.3        45.0
-v   LR   32.3   9.4  11.8        46.5
+u   4q   40.3  14.3  15.9        29.5
+u   LR   46.7   7.1  13.9        32.4
+v   4q   37.8   5.8  15.8        40.6
+v   LR   43.1   3.9  13.5        39.4
 
 Alternative ordering z, δ, s
     h       z     s     δ
 --  ---  ----  ----  ----
-u   4q   34.3  14.4  15.4
-u   LR   35.2   9.5  15.1
-v   4q   31.6   7.8  15.5
-v   LR   32.3   6.5  14.6
+u   4q   40.3  13.4  16.7
+u   LR   46.7   6.6  14.3
+v   4q   37.8   5.3  16.4
+v   LR   43.1   3.6  13.9
 
 SVAR B: z, s, u, v
-1951Q1-2019Q4, p = 1
+1990Q2-2019Q4, p = 1
     h       z     s    Residual
 --  ---  ----  ----  ----------
-u   4q   31.2  34.6        34.2
-u   LR   32.8  25.0        42.2
-v   4q   32.9  16.6        50.5
-v   LR   32.4  15.1        52.5
+u   4q   46.2  16.8        37.0
+u   LR   62.6   8.1        29.3
+v   4q   47.8   5.4        46.9
+v   LR   59.8   4.1        36.1
 
 SVAR C: z, s, u, v
 1992Q3-2019Q4, p = 1
     h       z     s    Residual
 --  ---  ----  ----  ----------
-u   4q   35.6  26.1        38.3
-u   LR   42.1  19.1        38.8
-v   4q   33.2  18.0        48.8
-v   LR   38.9  15.1        46.0
+u   4q   45.7  18.9        35.4
+u   LR   57.9   9.4        32.7
+v   4q   43.2   9.5        47.3
+v   LR   53.8   6.0        40.3
 
 4q = 4 quarters; LR = long run (h = 200).
 z first. Preferred: z, s, δ (s is
@@ -202,128 +202,128 @@ the same in both orderings.
   Detail 3a. Preferred ordering, p = 1 and 2, u-own and v-own separately; rows sum to 100
                       z  delta     s     u     v
 SVAR lags var h                                 
-A    1    u   4    34.3   11.3  18.5  25.4  10.5
-              8    37.3   12.4  14.4  12.9  23.0
-              200  35.2   11.7  12.9  13.9  26.3
-          v   4    31.6   12.3  11.1   7.8  37.2
-              8    33.6   12.4   9.5   5.3  39.2
-              200  32.3   11.8   9.4   8.2  38.4
-     2    u   4    29.2   13.6  13.2  31.5  12.6
-              8    27.2   15.7  11.8  21.5  23.8
-              200  26.4   15.6  11.3  20.1  26.6
-          v   4    25.7   12.9   7.5  17.8  36.1
-              8    24.0   14.8   7.9  13.3  40.0
-              200  24.3   14.6   8.0  13.7  39.3
-B    1    u   4    31.2      -  34.6  16.6  17.6
-              8    34.4      -  24.1  14.9  26.6
-              200  32.8      -  25.0  15.8  26.4
-          v   4    32.9      -  16.6   5.2  45.3
-              8    33.8      -  12.5   9.4  44.3
-              200  32.4      -  15.1  10.5  42.0
-     2    u   4    22.3      -  24.6  27.7  25.4
-              8    26.1      -  19.1  22.1  32.7
-              200  24.8      -  18.9  23.2  33.1
-          v   4    24.7      -  13.6   9.0  52.7
-              8    27.6      -  11.2  10.1  51.1
-              200  25.9      -  12.0  12.6  49.5
-C    1    u   4    35.6      -  26.1  27.4  11.0
-              8    42.8      -  21.1  14.3  21.8
-              200  42.1      -  19.1  14.2  24.6
-          v   4    33.2      -  18.0   9.9  39.0
-              8    39.5      -  15.6   6.1  38.8
-              200  38.9      -  15.1   8.1  37.9
-     2    u   4    29.5      -  19.5  36.7  14.3
-              8    30.1      -  18.1  27.3  24.5
-              200  29.6      -  17.6  25.9  26.9
-          v   4    26.1      -  12.7  23.0  38.2
-              8    26.6      -  13.3  18.6  41.4
-              200  26.8      -  13.4  18.8  41.1
+A    1    u   4    40.3   15.9  14.3  19.0  10.4
+              8    47.3   15.0   7.8   9.5  20.4
+              200  46.7   13.9   7.1   9.4  22.9
+          v   4    37.8   15.8   5.8   4.3  36.3
+              8    43.7   14.3   3.5   2.8  35.7
+              200  43.1   13.5   3.9   4.2  35.2
+     2    u   4    29.8   17.2  14.7  27.1  11.2
+              8    28.9   19.3  10.3  19.3  22.1
+              200  28.0   19.1   9.7  18.2  25.0
+          v   4    26.3   16.1   7.3  15.3  35.1
+              8    25.6   17.9   5.8  12.2  38.5
+              200  25.5   17.8   6.1  12.6  38.0
+B    1    u   4    46.2      -  16.8  26.8  10.1
+              8    61.2      -   8.6  14.5  15.7
+              200  62.6      -   8.1  12.9  16.4
+          v   4    47.8      -   5.4   9.4  37.5
+              8    59.5      -   3.2   5.7  31.5
+              200  59.8      -   4.1   6.4  29.7
+     2    u   4    28.2      -  18.6  40.3  12.9
+              8    31.6      -  11.9  33.6  22.9
+              200  31.4      -  11.8  31.9  24.9
+          v   4    28.0      -   7.2  27.1  37.7
+              8    30.2      -   5.1  24.4  40.3
+              200  29.9      -   6.3  24.4  39.4
+C    1    u   4    45.7      -  18.9  24.1  11.3
+              8    57.2      -  10.8  12.6  19.4
+              200  57.9      -   9.4  11.3  21.4
+          v   4    43.2      -   9.5   7.7  39.6
+              8    53.5      -   6.0   4.7  35.9
+              200  53.8      -   6.0   5.3  35.0
+     2    u   4    30.4      -  19.6  36.4  13.6
+              8    32.9      -  14.7  29.2  23.1
+              200  32.8      -  14.0  27.9  25.3
+          v   4    26.8      -  11.4  23.7  38.1
+              8    29.3      -   9.5  20.9  40.3
+              200  29.4      -   9.7  21.1  39.9
 
   Detail 3b. Min-max of each shock's share over the z-first orderings (A: two; B, C: one)
                            z      delta          s
 SVAR lags var h                                   
-A    1    u   4    34.3-34.3  11.3-15.4  14.4-18.5
-              8    37.3-37.3  12.4-16.1  10.7-14.4
-              200  35.2-35.2  11.7-15.1   9.5-12.9
-          v   4    31.6-31.6  12.3-15.5   7.8-11.1
-              8    33.6-33.6  12.4-15.4   6.5- 9.5
-              200  32.3-32.3  11.8-14.6   6.5- 9.4
-     2    u   4    29.2-29.2  13.6-17.8   9.0-13.2
-              8    27.2-27.2  15.7-19.9   7.6-11.8
-              200  26.4-26.4  15.6-19.7   7.2-11.3
-          v   4    25.7-25.7  12.9-16.0   4.4- 7.5
-              8    24.0-24.0  14.8-18.2   4.6- 7.9
-              200  24.3-24.3  14.6-18.0   4.7- 8.0
-B    1    u   4    31.2-31.2          -  34.6-34.6
-              8    34.4-34.4          -  24.1-24.1
-              200  32.8-32.8          -  25.0-25.0
-          v   4    32.9-32.9          -  16.6-16.6
-              8    33.8-33.8          -  12.5-12.5
-              200  32.4-32.4          -  15.1-15.1
-     2    u   4    22.3-22.3          -  24.6-24.6
-              8    26.1-26.1          -  19.1-19.1
-              200  24.8-24.8          -  18.9-18.9
-          v   4    24.7-24.7          -  13.6-13.6
-              8    27.6-27.6          -  11.2-11.2
-              200  25.9-25.9          -  12.0-12.0
-C    1    u   4    35.6-35.6          -  26.1-26.1
-              8    42.8-42.8          -  21.1-21.1
-              200  42.1-42.1          -  19.1-19.1
-          v   4    33.2-33.2          -  18.0-18.0
-              8    39.5-39.5          -  15.6-15.6
-              200  38.9-38.9          -  15.1-15.1
-     2    u   4    29.5-29.5          -  19.5-19.5
-              8    30.1-30.1          -  18.1-18.1
-              200  29.6-29.6          -  17.6-17.6
-          v   4    26.1-26.1          -  12.7-12.7
-              8    26.6-26.6          -  13.3-13.3
-              200  26.8-26.8          -  13.4-13.4
+A    1    u   4    40.3-40.3  15.9-16.7  13.4-14.3
+              8    47.3-47.3  15.0-15.6   7.2- 7.8
+              200  46.7-46.7  13.9-14.3   6.6- 7.1
+          v   4    37.8-37.8  15.8-16.4   5.3- 5.8
+              8    43.7-43.7  14.3-14.6   3.2- 3.5
+              200  43.1-43.1  13.5-13.9   3.6- 3.9
+     2    u   4    29.8-29.8  17.2-17.6  14.4-14.7
+              8    28.9-28.9  19.3-19.6  10.0-10.3
+              200  28.0-28.0  19.1-19.4   9.5- 9.7
+          v   4    26.3-26.3  16.1-16.3   7.1- 7.3
+              8    25.6-25.6  17.9-18.1   5.5- 5.8
+              200  25.5-25.5  17.8-18.0   5.9- 6.1
+B    1    u   4    46.2-46.2          -  16.8-16.8
+              8    61.2-61.2          -   8.6- 8.6
+              200  62.6-62.6          -   8.1- 8.1
+          v   4    47.8-47.8          -   5.4- 5.4
+              8    59.5-59.5          -   3.2- 3.2
+              200  59.8-59.8          -   4.1- 4.1
+     2    u   4    28.2-28.2          -  18.6-18.6
+              8    31.6-31.6          -  11.9-11.9
+              200  31.4-31.4          -  11.8-11.8
+          v   4    28.0-28.0          -   7.2- 7.2
+              8    30.2-30.2          -   5.1- 5.1
+              200  29.9-29.9          -   6.3- 6.3
+C    1    u   4    45.7-45.7          -  18.9-18.9
+              8    57.2-57.2          -  10.8-10.8
+              200  57.9-57.9          -   9.4- 9.4
+          v   4    43.2-43.2          -   9.5- 9.5
+              8    53.5-53.5          -   6.0- 6.0
+              200  53.8-53.8          -   6.0- 6.0
+     2    u   4    30.4-30.4          -  19.6-19.6
+              8    32.9-32.9          -  14.7-14.7
+              200  32.8-32.8          -  14.0-14.0
+          v   4    26.8-26.8          -  11.4-11.4
+              8    29.3-29.3          -   9.5- 9.5
+              200  29.4-29.4          -   9.7- 9.7
 
 ------------------------------------------------------------------------------
 4. Omitting delta: A against C on 1992Q3-2019Q4, unconditional, preferred ordering
 ------------------------------------------------------------------------------
   p = 1
-    var(u):  z  A  35.2  C  42.1   s  A  12.9  C  19.1   delta A  11.7   shock block  A  59.8  C  61.2
-    var(v):  z  A  32.3  C  38.9   s  A   9.4  C  15.1   delta A  11.8   shock block  A  53.5  C  54.0
+    var(u):  z  A  46.7  C  57.9   s  A   7.1  C   9.4   delta A  13.9   shock block  A  67.6  C  67.3
+    var(v):  z  A  43.1  C  53.8   s  A   3.9  C   6.0   delta A  13.5   shock block  A  60.6  C  59.7
   p = 2
-    var(u):  z  A  26.4  C  29.6   s  A  11.3  C  17.6   delta A  15.6   shock block  A  53.3  C  47.2
-    var(v):  z  A  24.3  C  26.8   s  A   8.0  C  13.4   delta A  14.6   shock block  A  47.0  C  40.2
+    var(u):  z  A  28.0  C  32.8   s  A   9.7  C  14.0   delta A  19.1   shock block  A  56.8  C  46.8
+    var(v):  z  A  25.5  C  29.4   s  A   6.1  C   9.7   delta A  17.8   shock block  A  49.4  C  39.0
   C's z and s shares minus A's show how much of delta's share the other shocks absorb
   when delta is left out, as it must be in B.
 
 ------------------------------------------------------------------------------
 4b. Financial conditions: A against A with F after z, BIC lag, preferred ordering
 ------------------------------------------------------------------------------
-  SVAR A_F ('z', 'nfci', 's', 'delta', 'u', 'v')  1992Q3-2019Q4, T = 110; BIC picks p = 1  (BIC: 1: -39.661, 2: -38.581, 3: -37.437, 4: -36.359)
-      p = 1: T = 109, max |root| = 0.919
+  SVAR A_F ('z', 'nfci', 's', 'delta', 'u', 'v')  1992Q3-2019Q4, T = 110; BIC picks p = 1  (BIC: 1: -39.793, 2: -38.730, 3: -37.597, 4: -36.593)
+      p = 1: T = 109, max |root| = 0.908
       p = 2: T = 108, max |root| = 0.905
-  SVAR A_Fa ('z', 'anfci', 's', 'delta', 'u', 'v')  1992Q3-2019Q4, T = 110; BIC picks p = 1  (BIC: 1: -39.295, 2: -38.197, 3: -37.036, 4: -35.951)
-      p = 1: T = 109, max |root| = 0.923
-      p = 2: T = 108, max |root| = 0.907
+  SVAR A_Fa ('z', 'anfci', 's', 'delta', 'u', 'v')  1992Q3-2019Q4, T = 110; BIC picks p = 1  (BIC: 1: -39.433, 2: -38.346, 3: -37.192, 4: -36.193)
+      p = 1: T = 109, max |root| = 0.912
+      p = 2: T = 108, max |root| = 0.908
 
   Shares of var(u) and var(v), percent; F = NFCI (A_F) or ANFCI (A_Fa); last column:
   delta's share with delta ordered before s (the alternative ordering)
 var    h    SVAR       z     F     s     δ    Residual    δ (δ before s)
 -----  ---  ------  ----  ----  ----  ----  ----------  ----------------
-u      4q   A       34.3     -  18.5  11.3        35.9              15.4
-u      4q   A_F     25.2  23.8   8.1   6.7        36.2               7.9
-u      4q   A_Fa    26.2  19.3  10.0   7.2        37.3               8.8
-u      LR   A       35.2     -  12.9  11.7        40.2              15.1
-u      LR   A_F     18.6  46.4   4.0   5.5        25.6               6.2
-u      LR   A_Fa    19.8  43.8   5.2   5.7        25.6               6.6
-v      4q   A       31.6     -  11.1  12.3        45.0              15.5
-v      4q   A_F     22.6  25.2   2.6   7.3        42.3               8.0
-v      4q   A_Fa    23.5  21.9   3.7   7.8        43.1               8.8
-v      LR   A       32.3     -   9.4  11.8        46.5              14.6
-v      LR   A_F     17.6  44.2   2.0   5.6        30.7               6.1
-v      LR   A_Fa    18.6  42.5   2.8   5.8        30.3               6.5
+u      4q   A       40.3     -  14.3  15.9        29.5              16.7
+u      4q   A_F     26.7  25.8   6.8   8.2        32.5               7.5
+u      4q   A_Fa    28.2  21.6   7.7   9.1        33.4               8.4
+u      LR   A       46.7     -   7.1  13.9        32.4              14.3
+u      LR   A_F     19.9  50.0   3.8   5.3        21.0               5.1
+u      LR   A_Fa    21.5  48.2   3.9   5.6        20.7               5.5
+v      4q   A       37.8     -   5.8  15.8        40.6              16.4
+v      4q   A_F     24.1  27.3   1.2   7.4        39.9               7.3
+v      4q   A_Fa    25.4  24.4   1.4   8.2        40.5               8.0
+v      LR   A       43.1     -   3.9  13.5        39.4              13.9
+v      LR   A_F     18.9  47.7   2.4   5.0        26.1               5.0
+v      LR   A_Fa    20.3  46.7   2.2   5.3        25.5               5.3
 
   delta shock, peak responses (one SD, log points x 100), preferred ordering
 SVAR    u            v
 ------  -----------  -----------
-A       +1.41 (h 4)  -1.60 (h 3)
-A_F     +0.97 (h 3)  -1.13 (h 2)
-A_Fa    +0.99 (h 3)  -1.16 (h 2)
+A       +1.60 (h 3)  -1.87 (h 2)
+A_F     +1.01 (h 2)  -1.22 (h 1)
+A_Fa    +1.06 (h 2)  -1.28 (h 1)
 
 ------------------------------------------------------------------------------
 4c. Mediation: share of a shock's effect on u and v that runs through delta
@@ -334,133 +334,133 @@ A_Fa    +0.99 (h 3)  -1.16 (h 2)
 
 SVAR    shock    via    resp    peak full    peak cf    cum full    cum cf    share via, %
 ------  -------  -----  ------  -----------  ---------  ----------  --------  --------------
-A       z        δ      u       -2.42 (h 4)  -2.10      -18.96      -18.10    5 [-13, 16]
-A       z        δ      v       +2.64 (h 3)  +2.27      +17.16      +16.64    3 [-19, 15]
-A       z        s      u       -2.42 (h 4)  -1.88      -18.96      -16.47    13 [-7, 25]
-A       z        s      v       +2.64 (h 3)  +2.16      +17.16      +15.37    10 [-8, 21]
-A_F     F        δ      u       +2.72 (h 5)  +2.12      +22.29      +18.25    18 [4, 27]
-A_F     F        δ      v       -2.90 (h 5)  -2.24      -21.41      -17.67    17 [2, 27]
-A_F     F        s      u       +2.72 (h 5)  +1.86      +22.29      +16.39    26 [8, 40]
-A_F     F        s      v       -2.90 (h 5)  -2.30      -21.41      -18.17    15 [-5, 29]
-A_F     z        δ      u       -1.84 (h 3)  -1.71      -11.38      -12.26    -8 [-42, 8]
-A_F     z        δ      v       +2.02 (h 2)  +1.84      +9.50       +10.58    -11 [-47, 10]
-A_Fa    Fa       δ      u       +2.60 (h 6)  +2.00      +21.58      +17.54    19 [5, 29]
-A_Fa    Fa       δ      v       -2.80 (h 5)  -2.16      -21.15      -17.42    18 [3, 28]
-A_Fa    Fa       s      u       +2.60 (h 6)  +1.73      +21.58      +15.00    30 [12, 43]
-A_Fa    Fa       s      v       -2.80 (h 5)  -2.14      -21.15      -17.15    19 [0, 33]
+A       z        δ      u       -2.79 (h 4)  -2.30      -23.41      -20.92    11 [-6, 20]
+A       z        δ      v       +3.03 (h 3)  +2.51      +22.06      +19.96    10 [-9, 19]
+A       z        s      u       -2.79 (h 4)  -0.84      -23.41      -8.01     66 [46, 80]
+A       z        s      v       +3.03 (h 3)  +1.60      +22.06      +12.89    42 [4, 67]
+A_F     F        δ      u       +2.86 (h 5)  +2.18      +23.83      +19.35    19 [4, 28]
+A_F     F        δ      v       -3.06 (h 5)  -2.36      -23.21      -19.30    17 [1, 26]
+A_F     F        s      u       +2.86 (h 5)  +1.60      +23.83      +16.42    31 [-4, 55]
+A_F     F        s      v       -3.06 (h 5)  -2.78      -23.21      -26.76    -15 [-75, 24]
+A_F     z        δ      u       -1.93 (h 3)  -1.77      -12.90      -13.49    -5 [-38, 8]
+A_F     z        δ      v       +2.13 (h 2)  +1.93      +11.27      +12.01    -7 [-40, 9]
+A_Fa    Fa       δ      u       +2.77 (h 6)  +2.10      +23.31      +18.72    20 [5, 30]
+A_Fa    Fa       δ      v       -2.99 (h 5)  -2.29      -23.13      -19.15    17 [2, 27]
+A_Fa    Fa       s      u       +2.77 (h 6)  +1.52      +23.31      +14.55    38 [7, 60]
+A_Fa    Fa       s      v       -2.99 (h 5)  -2.58      -23.13      -24.58    -6 [-58, 28]
   'via s' rows: the same exercise with s as the mediator, for comparison.
 
 ------------------------------------------------------------------------------
 5. Impulse responses, SVAR A, p = 1 (BIC), preferred ordering; one-SD shocks,
    log points x 100; [68 % band] from 1000 bootstrap draws
 ------------------------------------------------------------------------------
-  z     -> u:  h0 -0.99 [-1.17,-0.74]  h1 -1.77 [-2.00,-1.35]  h2 -2.19 [-2.50,-1.60]  h4 -2.42 [-2.83,-1.57]  h6 -2.05 [-2.50,-1.14]  h8 -1.36 [-1.78,-0.49]  h12 +0.06 [-0.28,+0.56]
-  z     -> v:  h0 +0.78 [+0.46,+1.04]  h1 +2.11 [+1.60,+2.45]  h2 +2.55 [+1.85,+2.93]  h4 +2.50 [+1.55,+2.98]  h6 +1.84 [+0.88,+2.31]  h8 +0.97 [+0.16,+1.40]  h12 -0.42 [-0.87,-0.00]
-  delta -> u:  h0 +0.35 [+0.12,+0.56]  h1 +1.05 [+0.70,+1.32]  h2 +1.28 [+0.84,+1.54]  h4 +1.41 [+0.83,+1.73]  h6 +1.19 [+0.56,+1.53]  h8 +0.78 [+0.21,+1.07]  h12 -0.04 [-0.34,+0.17]
-  delta -> v:  h0 -0.22 [-0.52,+0.07]  h1 -1.43 [-1.75,-0.96]  h2 -1.59 [-1.91,-1.02]  h4 -1.48 [-1.84,-0.80]  h6 -1.07 [-1.41,-0.42]  h8 -0.56 [-0.86,-0.02]  h12 +0.25 [-0.01,+0.52]
-  s     -> u:  h0 +1.12 [+0.87,+1.31]  h1 +1.42 [+1.03,+1.66]  h2 +1.54 [+1.06,+1.80]  h4 +1.39 [+0.79,+1.68]  h6 +0.97 [+0.38,+1.30]  h8 +0.48 [-0.03,+0.77]  h12 -0.27 [-0.52,-0.03]
-  s     -> v:  h0 -0.36 [-0.59,-0.07]  h1 -1.32 [-1.63,-0.87]  h2 -1.57 [-1.91,-1.01]  h4 -1.28 [-1.65,-0.62]  h6 -0.74 [-1.09,-0.13]  h8 -0.20 [-0.50,+0.26]  h12 +0.45 [+0.15,+0.66]
+  z     -> u:  h0 -1.04 [-1.22,-0.77]  h1 -1.91 [-2.14,-1.46]  h2 -2.42 [-2.71,-1.82]  h4 -2.79 [-3.18,-1.94]  h6 -2.48 [-2.88,-1.47]  h8 -1.80 [-2.18,-0.78]  h12 -0.31 [-0.65,+0.35]
+  z     -> v:  h0 +0.87 [+0.53,+1.16]  h1 +2.34 [+1.82,+2.66]  h2 +2.88 [+2.17,+3.25]  h4 +2.94 [+1.93,+3.39]  h6 +2.31 [+1.18,+2.72]  h8 +1.43 [+0.42,+1.77]  h12 -0.08 [-0.69,+0.33]
+  delta -> u:  h0 +0.51 [+0.30,+0.67]  h1 +1.34 [+0.93,+1.58]  h2 +1.56 [+1.05,+1.83]  h4 +1.54 [+0.93,+1.87]  h6 +1.22 [+0.56,+1.54]  h8 +0.77 [+0.17,+1.05]  h12 -0.01 [-0.35,+0.20]
+  delta -> v:  h0 -0.36 [-0.65,-0.05]  h1 -1.81 [-2.12,-1.31]  h2 -1.87 [-2.22,-1.24]  h4 -1.55 [-1.92,-0.84]  h6 -1.05 [-1.39,-0.37]  h8 -0.53 [-0.81,+0.03]  h12 +0.21 [-0.04,+0.51]
+  s     -> u:  h0 +1.43 [+1.14,+1.61]  h1 +1.39 [+1.00,+1.64]  h2 +1.20 [+0.75,+1.50]  h4 +0.72 [+0.21,+1.09]  h6 +0.27 [-0.22,+0.64]  h8 -0.07 [-0.43,+0.27]  h12 -0.35 [-0.51,-0.08]
+  s     -> v:  h0 -1.01 [-1.28,-0.64]  h1 -1.13 [-1.50,-0.67]  h2 -0.94 [-1.37,-0.41]  h4 -0.44 [-0.88,+0.10]  h6 -0.02 [-0.42,+0.43]  h8 +0.26 [-0.08,+0.60]  h12 +0.39 [+0.11,+0.52]
 
   Scale: each shock's impact on its own series, and the peak u and v responses per unit
   of that impact (log points per log point; signs as estimated)
-  z     own impact +0.54:  peak u -2.42 at h = 4, per unit -4.47;  peak v +2.64 at h = 3, per unit +4.87
-  delta own impact +5.24:  peak u +1.41 at h = 4, per unit +0.27;  peak v -1.60 at h = 3, per unit -0.30
-  s     own impact +3.82:  peak u +1.54 at h = 2, per unit +0.40;  peak v -1.57 at h = 2, per unit -0.41
+  z     own impact +0.55:  peak u -2.79 at h = 4, per unit -5.11;  peak v +3.03 at h = 3, per unit +5.56
+  delta own impact +5.38:  peak u +1.60 at h = 3, per unit +0.30;  peak v -1.87 at h = 2, per unit -0.35
+  s     own impact +3.87:  peak u +1.43 at h = 0, per unit +0.37;  peak v -1.13 at h = 1, per unit -0.29
 
 ------------------------------------------------------------------------------
 7. Filter robustness: Hamilton (h = 8, p = 4) against HP, BIC lag, preferred ordering
 ------------------------------------------------------------------------------
-  SVAR A (Hamilton): 1995Q2-2019Q4, T = 99, BIC p = 1, max |root| = 0.912
-  SVAR B (Hamilton): 1953Q4-2019Q4, T = 265, BIC p = 1, max |root| = 0.914
-  SVAR C (Hamilton): 1995Q2-2019Q4, T = 99, BIC p = 1, max |root| = 0.899
+  SVAR A (Hamilton): 1995Q2-2019Q4, T = 99, BIC p = 1, max |root| = 0.886
+  SVAR B (Hamilton): 1993Q1-2019Q4, T = 108, BIC p = 1, max |root| = 0.888
+  SVAR C (Hamilton): 1995Q2-2019Q4, T = 99, BIC p = 1, max |root| = 0.891
 
   Shares of var(u) and var(v), percent: HP against Hamilton
 SVAR    var    h    shock       HP    Hamilton
 ------  -----  ---  --------  ----  ----------
-A       u      4q   z         34.3        28.1
-A       u      4q   s         18.5        12.0
-A       u      4q   δ         11.3         6.1
-A       u      4q   Residual  35.9        53.8
-A       u      LR   z         35.2        40.8
-A       u      LR   s         12.9        10.7
-A       u      LR   δ         11.7         7.7
-A       u      LR   Residual  40.2        40.7
-A       v      4q   z         31.6        11.7
-A       v      4q   s         11.1        14.9
-A       v      4q   δ         12.3         2.9
-A       v      4q   Residual  45.0        70.5
-A       v      LR   z         32.3        25.7
-A       v      LR   s          9.4        13.2
-A       v      LR   δ         11.8         8.2
-A       v      LR   Residual  46.5        52.9
-B       u      4q   z         31.2        43.0
-B       u      4q   s         34.6        16.3
-B       u      4q   Residual  34.2        40.7
-B       u      LR   z         32.8        54.4
-B       u      LR   s         25.0        13.2
-B       u      LR   Residual  42.2        32.4
-B       v      4q   z         32.9        23.7
-B       v      4q   s         16.6         7.9
-B       v      4q   Residual  50.5        68.5
-B       v      LR   z         32.4        27.8
-B       v      LR   s         15.1         7.3
-B       v      LR   Residual  52.5        65.0
-C       u      4q   z         35.6        21.5
-C       u      4q   s         26.1        30.3
-C       u      4q   Residual  38.3        48.2
-C       u      LR   z         42.1        35.6
-C       u      LR   s         19.1        27.1
-C       u      LR   Residual  38.8        37.3
-C       v      4q   z         33.2         8.0
-C       v      4q   s         18.0        29.6
-C       v      4q   Residual  48.8        62.5
-C       v      LR   z         38.9        21.2
-C       v      LR   s         15.1        30.9
-C       v      LR   Residual  46.0        47.9
+A       u      4q   z         40.3        27.7
+A       u      4q   s         14.3        16.4
+A       u      4q   δ         15.9         4.7
+A       u      4q   Residual  29.5        51.2
+A       u      LR   z         46.7        41.3
+A       u      LR   s          7.1        12.0
+A       u      LR   δ         13.9         5.8
+A       u      LR   Residual  32.4        40.9
+A       v      4q   z         37.8        10.8
+A       v      4q   s          5.8        19.9
+A       v      4q   δ         15.8         2.7
+A       v      4q   Residual  40.6        66.6
+A       v      LR   z         43.1        26.3
+A       v      LR   s          3.9        15.8
+A       v      LR   δ         13.5         5.5
+A       v      LR   Residual  39.4        52.4
+B       u      4q   z         46.2        19.9
+B       u      4q   s         16.8        27.5
+B       u      4q   Residual  37.0        52.6
+B       u      LR   z         62.6        36.5
+B       u      LR   s          8.1        18.8
+B       u      LR   Residual  29.3        44.7
+B       v      4q   z         47.8         5.5
+B       v      4q   s          5.4        25.5
+B       v      4q   Residual  46.9        69.0
+B       v      LR   z         59.8        21.9
+B       v      LR   s          4.1        21.3
+B       v      LR   Residual  36.1        56.8
+C       u      4q   z         45.7        21.3
+C       u      4q   s         18.9        30.9
+C       u      4q   Residual  35.4        47.8
+C       u      LR   z         57.9        39.0
+C       u      LR   s          9.4        20.5
+C       u      LR   Residual  32.7        40.5
+C       v      4q   z         43.2         7.1
+C       v      4q   s          9.5        30.7
+C       v      4q   Residual  47.3        62.2
+C       v      LR   z         53.8        24.9
+C       v      LR   s          6.0        24.2
+C       v      LR   Residual  40.3        50.8
 
   Peak responses of u and v, SVAR A, one-SD shocks, log points x 100 (h of the peak)
 shock    resp    HP           Hamilton
 -------  ------  -----------  -----------
-z        u       -2.42 (h 4)  -4.55 (h 6)
-z        v       +2.64 (h 3)  +3.75 (h 6)
-δ        u       +1.41 (h 4)  +2.18 (h 5)
-δ        v       -1.60 (h 3)  -2.42 (h 5)
-s        u       +1.54 (h 2)  +2.50 (h 5)
-s        v       -1.57 (h 2)  -2.99 (h 3)
+z        u       -2.79 (h 4)  -4.44 (h 6)
+z        v       +3.03 (h 3)  +3.64 (h 6)
+δ        u       +1.60 (h 3)  +2.06 (h 5)
+δ        v       -1.87 (h 2)  -2.07 (h 5)
+s        u       +1.43 (h 0)  +2.69 (h 4)
+s        v       -1.13 (h 1)  -3.38 (h 2)
 
 ------------------------------------------------------------------------------
 6. Key takeaways (numbers from this run)
 ------------------------------------------------------------------------------
-1. z explains 35 % of var(u) and 32 % of var(v)
+1. z explains 47 % of var(u) and 43 % of var(v)
    (A, LR): the largest share, with z ordered first.
 2. Preferred ordering (z, s, delta): delta explains
-   less than s of var(u) (11.7 vs 12.9 %) and
-   more than s of var(v) (11.8 vs 9.4 %).
-   Alternative (z, delta, s): 15.1 vs 9.5 % for u,
-   14.6 vs 6.5 % for v. The ordering moves only the split:
-   delta + s is 24.6 % of var(u) in both.
-3. The three shocks explain at most 60 % of var(u) and
-   53 % of var(v) (A, LR). An upper bound: they are ordered
+   more than s of var(u) (13.9 vs 7.1 %) and
+   more than s of var(v) (13.5 vs 3.9 %).
+   Alternative (z, delta, s): 14.3 vs 6.6 % for u,
+   13.9 vs 3.6 % for v. The ordering moves only the split:
+   delta + s is 20.9 % of var(u) in both.
+3. The three shocks explain at most 68 % of var(u) and
+   61 % of var(v) (A, LR). An upper bound: they are ordered
    before u and v. A three-shock model should match the
    composition of this share, not total volatility.
-4. s matters more in the short run: 18.5 % of var(u) at 4q
-   against 12.9 % in the LR (A). Shares at 8q and LR differ by at
-   most 3.3 points: HP cycles are short-lived (largest VAR
-   root 0.91), so LR is a business-cycle share.
-5. s acts fastest: the u response peaks at h = 2 after s,
-   h = 4 after z and h = 4 after delta (A, preferred).
+4. s matters more in the short run: 14.3 % of var(u) at 4q
+   against 7.1 % in the LR (A). Shares at 8q and LR differ by at
+   most 2.5 points: HP cycles are short-lived (largest VAR
+   root 0.90), so LR is a business-cycle share.
+5. s acts fastest: the u response peaks at h = 0 after s,
+   h = 4 after z and h = 3 after delta (A, preferred).
 6. Leaving delta out inflates s: on the same window, s's share
-   of var(u) is 12.9 % in A and 19.1 % in C. B's s share
-   (25.0 %) is an upper bound.
+   of var(u) is 7.1 % in A and 9.4 % in C. B's s share
+   (8.1 %) is an upper bound.
 7. z is not weaker after 1992: its share of var(u) is
-   32.8 % in B (1951-2019) and 42.1 % in C (1992-2019).
-8. v falls after delta and after s shocks: troughs -1.60 at
-   h = 3 and -1.57 at h = 2 (log points x 100). delta destroys
+   62.6 % in B (1951-2019) and 57.9 % in C (1992-2019).
+8. v falls after delta and after s shocks: troughs -1.87 at
+   h = 2 and -1.13 at h = 1 (log points x 100). delta destroys
    vacancies; v falling after s argues against costless reposting.
 9. Net of financial conditions, delta's share of var(u) (LR) is
-   5.5 % with NFCI and 5.7 % with ANFCI, against 11.7 % in A.
-   F itself explains 46.4 % (NFCI) and 43.8 % (ANFCI).
+   5.3 % with NFCI and 5.6 % with ANFCI, against 13.9 % in A.
+   F itself explains 50.0 % (NFCI) and 48.2 % (ANFCI).
 10. Exit as a channel: of the financial shock's cumulative effect on
-   u, 18 [4, 27] % runs through delta (NFCI; ANFCI 19 [5, 29] %);
-   for v, 17 [2, 27] %. For z: 5 [-13, 16] % of its effect on u (A).
+   u, 19 [4, 28] % runs through delta (NFCI; ANFCI 20 [5, 30] %);
+   for v, 17 [1, 26] %. For z: 11 [-6, 20] % of its effect on u (A).
    [68 % bootstrap bands in section 4c.]

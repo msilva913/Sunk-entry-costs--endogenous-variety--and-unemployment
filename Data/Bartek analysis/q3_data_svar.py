@@ -212,9 +212,7 @@ def build_levels_all():
     labor productivity, and delta, tau, s, u, v in percent (delta, tau and s
     monthly). s is the spliced series of part6b.
     """
-    dat = pd.read_pickle(p6b.RAW_DATA)
-    if not isinstance(dat.index, pd.PeriodIndex):
-        dat.index = dat.index.to_period("Q")
+    dat = p6b.load_raw()
     lev = p6b.build_levels(dat)
     out = pd.DataFrame({"log z": np.log(p6b.normalized_z(dat)),
                         "delta": 100 * lev["delta"], "tau": 100 * lev["tau"],
@@ -258,9 +256,7 @@ def plot_levels(lev, out_path):
 
 def build_cycles(method="hp"):
     """z, delta, s from part6b; u and v filtered the same way ("hp" or "hamilton")."""
-    dat = pd.read_pickle(p6b.RAW_DATA)
-    if not isinstance(dat.index, pd.PeriodIndex):
-        dat.index = dat.index.to_period("Q")
+    dat = p6b.load_raw()
     cyc = p6b.hp_cycles(dat, p6b.build_levels(dat), method)[["z", "delta", "s"]]
     for name in OUTCOMES:
         cyc[name] = p6b.log_cycle(p6b.window(dat[name]), method)

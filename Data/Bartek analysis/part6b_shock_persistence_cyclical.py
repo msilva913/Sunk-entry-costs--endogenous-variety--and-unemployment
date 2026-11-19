@@ -279,8 +279,35 @@ SAMPLE_END      = "2019Q4"               # S13: pre-pandemic, cut before filteri
 ROBUST_START    = "1985Q1"               # S14 (iv): robustness window
 SPLICE_ANCHOR_Q = 10                     # dbar = mean of the first 10 BED quarters
 RAW_DATA        = Path("../raw_data.pkl")    # built by observables.py
-RESULTS_DIR     = Path("data/results")
+# D19 (Nov 19, 2026): the separation probability tau (hence s) and the job-finding probability
+# come from CPS gross flows (E->U, U->E; part6f_gross_flows.py), 1990Q2 on. FLOW_MEASURE=duration
+# restores Shimer's duration-based series (observables.py), the robustness case; its outputs go to
+# data/results_duration so the two never overwrite each other.
+FLOW_MEASURE    = os.environ.get("FLOW_MEASURE", "gross")
+GROSS_FLOWS_Q   = Path("data/cache/gross_flows_quarterly.parquet")
+if FLOW_MEASURE == "gross":
+    RESULTS_DIR = Path("data/results")
+elif FLOW_MEASURE == "duration":
+    RESULTS_DIR = Path("data/results_duration")
+else:
+    raise ValueError(f"FLOW_MEASURE must be 'gross' or 'duration', not {FLOW_MEASURE!r}")
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def load_raw():
+    """
+    raw_data.pkl on a quarterly PeriodIndex, with 's' (tau) and 'jf' replaced by the gross-flow
+    probabilities under FLOW_MEASURE = gross (NaN before 1990Q2, where the flows start).
+    """
+    dat = pd.read_pickle(RAW_DATA)
+    if not isinstance(dat.index, pd.PeriodIndex):
+        dat.index = dat.index.to_period("Q")
+    if FLOW_MEASURE == "gross":
+        gf = pd.read_parquet(GROSS_FLOWS_Q)
+        gf.index = pd.PeriodIndex(gf.index, freq="Q")
+        dat["s"] = gf["tau_gf"].reindex(dat.index)
+        dat["jf"] = gf["jf_gf"].reindex(dat.index)
+    return dat
 
 # D14 rule: revisit the independence of s if the z innovation explains at least
 # this share of the s innovation variance AND the loading has |t| >= 2.
@@ -660,7 +687,11 @@ def independence(fits, var):
 
     out["z"] = on_z(df)
     # Era split at ROBUST_START: the same residuals, from the full-window fits.
-    out["eras"] = [on_z(df[df.index < ROBUST_START]), on_z(df[df.index >= ROBUST_START])]
+    # Gross-flow s (D19) starts in 1990, so the pre-1985 era can be empty: skip it then.
+    out["eras"] = []
+    for d in (df[df.index < ROBUST_START], df[df.index >= ROBUST_START]):
+        if len(d) > 10:
+            out["eras"].append(on_z(d))
 
     df = pd.concat([fits["s"]["resid"].rename("s"), var["resid"]], axis=1).dropna()
     fit = OLS(df["s"], add_constant(df[["z", "delta"]])).fit(cov_type="HC3")
@@ -1139,9 +1170,7 @@ if __name__ == "__main__":
     report_method()
 
     # ── 1. data ──────────────────────────────────────────────────────────────
-    dat = pd.read_pickle(RAW_DATA)
-    if not isinstance(dat.index, pd.PeriodIndex):
-        dat.index = dat.index.to_period("Q")
+    dat = load_raw()
     levels = build_levels(dat)
     splice, dbar = splice_point(dat["delta"])
     dbar_full = float(window(levels["delta"], start=splice).mean())

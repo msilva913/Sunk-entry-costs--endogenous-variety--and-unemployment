@@ -19,7 +19,11 @@ Outputs:
     data/results/q3_gross_flows_compare.csv
 """
 
+import os
 from pathlib import Path
+
+# The "old" columns are the duration-based baseline: pin the pipeline switch (part6b, D19) to it.
+os.environ["FLOW_MEASURE"] = "duration"
 
 import numpy as np
 import pandas as pd
@@ -33,8 +37,8 @@ H       = q3.H_IRF
 ETA     = 0.6
 GF_Q    = Path("data/cache/gross_flows_quarterly.parquet")
 GF_START = "1990Q2"
-OUT_TXT = p6b.RESULTS_DIR / "q3_gross_flows_compare.txt"
-OUT_CSV = p6b.RESULTS_DIR / "q3_gross_flows_compare.csv"
+OUT_TXT = Path("data/results") / "q3_gross_flows_compare.txt"
+OUT_CSV = Path("data/results") / "q3_gross_flows_compare.csv"
 FILTERS = {"hp": ("hp", q3.BED_START, "HP"), "hamilton": ("hamilton", "1995Q2", "Hamilton")}
 LINES = []
 
