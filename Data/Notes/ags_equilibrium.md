@@ -676,3 +676,21 @@ Its size has the same problem as §10.5. With ζ = 1/36 (three years to maturity
 - Left out: Mueller 2017 (DOI not verified), Engbom 2021 (topic not verified), Fujita and Ramey 2005.
 
 **Bottom line (Nov 15).** No candidate mechanism we have examined (positions, finance, variety, diminishing returns, κ, credible bargaining, goods-market matching, unemployment risk) is δ-specific and propagating. The evidence points to D16 Path 1.
+
+### 10.10 Endogenous separations: Fujita and Ramey (2012) and the z gap (Nov 20, 2026)
+
+**Paper.** Fujita, S., and G. Ramey (2012), "Exogenous versus Endogenous Separation," *AEJ: Macroeconomics* 4(4), 68–93, doi:10.1257/mac.4.4.68 (`Key papers/2012-exogenous-versus-endogenous-separation.pdf`). Textbook MP model, weekly; output z·x with match-specific x redrawn from G at Poisson rate λ; three versions: constant separation, endogenous separation, endogenous separation with on-the-job search (OJS). Evaluated on unconditional HP moments, 1976–2005; no IRFs.
+
+**Results (Table 2, p. 81).**
+- σ(u): data 0.096; constant separation 0.011; endogenous 0.056; OJS 0.059. Productivity elasticity of u: −5.9; −0.7; −4.1; −3.9.
+- Job finding: σ data 0.077, all versions 0.013–0.014; elasticity 3.8 against about 1. p. 82: "Improving the model's performance at the separation margin does not mitigate its problems at the job finding margin."
+- **Autocorrelation of job finding and of v/u is 0.764 in all three versions** (data 0.804 and 0.930): tightness inherits the persistence of z whatever the separation margin.
+- Separation-rate autocorrelation (0.61 / 0.70 against 0.63) is matched by choosing λ (p. 79), not produced.
+- Without OJS, vacancies are countercyclical (cor(p, v) −0.44) and u–v correlation is positive: the "echo" (p. 84): more unemployed make vacancies easier to fill. OJS restores the Beveridge curve.
+- Persistent x concentrates separations on impact (p. 88): "once the matches that have become unviable due to the negative shock are destroyed on impact, only those that experience a switch of productivity can potentially be destroyed in the ensuing periods. Adjustments in the separation rate are therefore less persistent." Footnote 8 (p. 73): the persistence of x "is not an innocuous consideration."
+
+**For AGS.**
+- Endogenous separations (x × z) would supply the inflow response to z: about 43 % of the cumulative and three-quarters of the impact response of u in our data (`q3_persistence_tests.txt` Test 2).
+- They would not supply the persistence of job finding, which is the rest of the z gap and most of the δ gap (FR 2012: JF autocorrelation equals z's in every version).
+- The echo is a risk. AGS's low estimated reactivation (Λ̄_r = 0.03) retires the positions vacated by separations, which may substitute for OJS: in the estimated model v falls after an s shock. Unverified for endogenous separations.
+- Their persistence of x trades off impact against persistence of separations; with a cleansing effect the inflow response reverses. Data: inflow part +0.16 at h 12 (small).
