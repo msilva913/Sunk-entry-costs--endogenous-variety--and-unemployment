@@ -1,0 +1,13 @@
+AGS: responses of u and v to δ and s across reactivation rates (ags_reactivation_grid.jl).
+TRUE shocks (S16), one SD, quarterly averages, 100 × log deviation; q0 = the shock's quarter.
+Costly cases: p_r = 0.99, ψ_r = 1. Everything else at AGS_TARGETS; Block B′ shocks.
+
+case                      ϕ  δ→u peak           q4     q8     cum    v q4   s→u peak           q4     cum    v q4
+costless (Λ̄_r = 1)    0.608  +0.29 (q1)      +0.24  +0.21    +2.8   -0.38   +1.28 (q1)      +0.13    +3.6   +0.19
+Λ̄_r = 0.9             0.733  +0.27 (q1)      +0.18  +0.11    +1.9   -0.25   +1.51 (q1)      +0.52    +7.0   -0.42
+Λ̄_r = 0.5             0.893  +0.26 (q1)      +0.15  +0.08    +1.6   -0.21   +1.85 (q1)      +1.01   +10.9   -1.13
+Λ̄_r = 0.25            0.922  +0.26 (q1)      +0.15  +0.08    +1.6   -0.20   +2.09 (q1)      +1.35   +13.5   -1.61
+Λ̄_r = 0.1             0.933  +0.26 (q1)      +0.14  +0.07    +1.5   -0.19   +2.23 (q1)      +1.56   +15.1   -1.89
+Λ̄_r = 0.03            0.937  +0.26 (q1)      +0.14  +0.07    +1.5   -0.19   +2.30 (q1)      +1.65   +15.8   -2.02
+
+cum: sum over quarters 0–12. v q4: v's response at quarter 4.

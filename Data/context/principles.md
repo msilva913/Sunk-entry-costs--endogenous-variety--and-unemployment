@@ -109,15 +109,31 @@ compliance with a wrong instruction is the most expensive failure mode here.
 **N3. Instruction clarity.** If an instruction is unclear, ask before executing. Do not
 guess at intent and then build on the guess.
 
+**N16. Stay on the project's goals.** Every suggestion must serve the project's goals and the
+question at hand. Do not propose tangents (new mechanisms, extensions, side analyses, extra
+literature) that MS has not raised. If something outside the current question looks
+essential to the project's goals, say so in one line and let MS decide; do not develop it.
+Added Nov 10, 2026.
+
 ## Writing
 
 **N4. Voice.** Applied macroeconomist. Smooth, intuitive integration of economic theory and
-empirical evidence. Emulate the prose in Mario Silva's papers
-(<https://mariorafaelsilva.com>). **American English**, not British. Write "behavior" with
-no *u*, "modeling" with one *l*, "analyze" and "normalize" with a *z*.
+empirical evidence. **Mario Silva's published papers are the style guide for every draft.**
+Before drafting or revising paper text, read the relevant sections of the copies in
+`Key papers/` (Gabrovski and Silva, JEDC 2025: `Gabrovski_Silva_JEDC.pdf`; Silva and Urias,
+Economic Modelling 2025: `JMP_2025_compressed.pdf`; others at <https://mariorafaelsilva.com>)
+and match them: how a section opens and moves from motivation to result, paragraph length,
+how results and literature are introduced, and notation. Write continuous prose: paragraph
+headings (`\paragraph{}`) only when strongly warranted for clarity, never one per paragraph;
+no bullet lists where prose reads naturally. Text that reads as synthetic (headed fragments,
+formulaic openings, lists of short claims) is a failure of this rule (MS, Nov 15, 2026).
+**American English**, not British. Write "behavior" with no *u*, "modeling" with one *l*,
+"analyze" and "normalize" with a *z*.
 
-**N5. Sentences.** Break long sentences into shorter ones. Prefer a period to a dash or a
-semicolon. Em-dashes in particular should be rare.
+**N5. Sentences.** Sentence length follows Mario Silva's published papers (N4): moderate-length,
+connected sentences that carry the argument with connectives ("Consequently", "Moreover", "In
+contrast"), not strings of very short declaratives. Avoid run-ons; em-dashes are occasional, not
+habitual (MS, Nov 15, 2026).
 
 **N6. Exhibits.** Figure and table captions describe only the objects displayed, succinctly.
 All interpretation, mechanism analysis, and intuition belongs in the body text. A caption

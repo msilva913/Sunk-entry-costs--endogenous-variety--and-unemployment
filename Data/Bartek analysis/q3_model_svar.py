@@ -424,6 +424,8 @@ if __name__ == "__main__":
 
     # ── figure ──────────────────────────────────────────────────────────────
     pal = {"default": "#2a78d6", "compromise": "#eb6834"}
+    # labels in the draft's notation (Draft_AGS): xi = 1/xi_inv; "default" is the baseline
+    fig_label = {"default": "model, baseline (x_v = 0.5, ξ = 1)", "compromise": "model, compromise (x_v = 0.25, ξ = 2)"}
     hh = np.arange(H + 1)
     fig, axes = plt.subplots(len(SHOCKS), len(OUTCOMES), figsize=(10, 9), sharex=True)
     for a, shk in enumerate(SHOCKS):
@@ -435,10 +437,10 @@ if __name__ == "__main__":
             ax.plot(hh, 100 * Theta_d[:, i, j], color="#52514e", lw=2, label="data")
             if shk == "delta":
                 ax.plot(hh, 100 * dF[resp], color="#52514e", lw=1.5, ls=":",
-                        label="data, A_F (net of NFCI)")
+                        label="data, NFCI ordered before δ")
             for case in HEADLINE:
                 ax.plot(hh, 100 * res[case]["mean"][:, i, j], color=pal[case], lw=2,
-                        label=f"model, {CASE_LABEL[case]}")
+                        label=fig_label[case])
             ax.axhline(0, color="#8a8984", lw=1, ls="--")
             ax.set_title(f"{q3.LABEL[shk]} shock → {resp}", fontsize=10)
             ax.grid(alpha=0.15)
@@ -446,11 +448,10 @@ if __name__ == "__main__":
                 ax.set_ylabel("log points × 100")
             if a == len(SHOCKS) - 1:
                 ax.set_xlabel("quarters")
-    axes[0, 0].legend(fontsize=7, frameon=False)
-    axes[1, 0].legend(fontsize=7, frameon=False)
-    fig.suptitle(f"SVAR A: data ({frame.index[0]}–{frame.index[-1]}) against the AGS model, "
-                 f"small-sample mean (T = {len(frame)})", fontsize=11)
-    fig.tight_layout()
+    # one legend below the panels (the δ row carries every series); no title: the draft's caption describes the figure
+    handles, labels = axes[1, 0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="lower center", ncol=3, fontsize=8, frameon=False)
+    fig.tight_layout(rect=[0, 0.06, 1, 1])
     fig.savefig(OUT_PNG, dpi=150)
 
     # ── 6. the case grid: z amplification through κ at moderate inelasticity ─

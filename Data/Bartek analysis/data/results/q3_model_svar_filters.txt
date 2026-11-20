@@ -1,0 +1,54 @@
+==============================================================================
+The overidentifying test through SVAR A under HP and Hamilton (q3_model_svar_filters.py)
+==============================================================================
+Model side: ../Programs AGS/ags_svar_filters.jl, reactivation rates 1 to 0.03, default calibration
+otherwise, shock processes matched per filter on SVAR A's window (part6e). Data side: SVAR A on
+the same filter's cycles (q3_data_svar.py), lag by BIC on the data, used on both sides.
+
+==============================================================================
+HP-1600: data 1992Q3-2019Q4, T = 110, p = 1
+==============================================================================
+case    Λ̄_r    J z    J δ    J s    z→u peak     δ→u peak, cum       s→u peak, cum       s→v h4
+------  ------  -----  -----  -----  -----------  ------------------  ------------------  --------
+data                                 -2.42 (h 4)  +1.41 (h 4), +10.8  +1.54 (h 2), +10.2  -1.28
+L1      1.00    226    99     441    -0.08 (h 3)  +0.37 (h 1), +1.0   +2.20 (h 1), +3.7   -0.41
+L0.9    0.90    123    103    283    -0.63 (h 3)  +0.40 (h 1), +0.9   +2.46 (h 1), +4.7   -0.89
+L0.5    0.50    111    104    150    -0.74 (h 3)  +0.39 (h 1), +1.0   +2.87 (h 1), +6.6   -1.44
+L0.25   0.25    107    105    108    -0.78 (h 3)  +0.39 (h 1), +1.1   +3.16 (h 1), +8.2   -1.74
+L0.1    0.10    105    106    103    -0.80 (h 3)  +0.39 (h 1), +1.1   +3.35 (h 1), +9.3   -1.91
+L0.03   0.03    103    106    106    -0.81 (h 3)  +0.39 (h 1), +1.1   +3.44 (h 1), +9.8   -1.98
+
+  Identified by s: Λ̄_r = 0.10 (J_s 103). At that rate: J_δ 106; δ→u cum +1.1 against the data's +10.8; s→u cum +9.3 against +10.2.
+  Smallest J_δ over the grid: 99 (Λ̄_r = 1.00).
+  26 moments per shock: J ≈ 26 is a fit within one data SD on average.
+
+  Validation (Λ̄_r = 0.25, long sample, p = 1): u per unit of own impact
+shock    true peak    SVAR peak    gap
+-------  -----------  -----------  -----
+z        -2.59 (h 6)  -1.30 (h 3)  82 %
+delta    +0.15 (h 1)  +0.07 (h 1)  51 %
+s        +0.88 (h 1)  +0.80 (h 1)  51 %
+
+==============================================================================
+Hamilton (h 8, p 4): data 1995Q2-2019Q4, T = 99, p = 1
+==============================================================================
+case    Λ̄_r    J z    J δ    J s    z→u peak     δ→u peak, cum       s→u peak, cum       s→v h4
+------  ------  -----  -----  -----  -----------  ------------------  ------------------  --------
+data                                 -4.55 (h 6)  +2.18 (h 5), +21.4  +2.50 (h 5), +26.7  -2.89
+L1      1.00    132    14     379    -0.65 (h 7)  +0.87 (h 4), +8.9   +2.52 (h 1), +11.9  +2.49
+L0.9    0.90    61     25     205    -1.88 (h 4)  +0.67 (h 2), +4.8   +3.10 (h 2), +19.1  +0.13
+L0.5    0.50    59     31     125    -2.14 (h 4)  +0.61 (h 2), +3.7   +4.08 (h 2), +24.0  -2.41
+L0.25   0.25    59     34     110    -2.21 (h 4)  +0.59 (h 2), +3.4   +4.78 (h 2), +28.0  -4.04
+L0.1    0.10    60     35     115    -2.23 (h 4)  +0.58 (h 2), +3.3   +5.21 (h 2), +30.6  -4.93
+L0.03   0.03    60     36     122    -2.24 (h 4)  +0.58 (h 2), +3.2   +5.42 (h 2), +31.8  -5.32
+
+  Identified by s: Λ̄_r = 0.25 (J_s 110). At that rate: J_δ 34; δ→u cum +3.4 against the data's +21.4; s→u cum +28.0 against +26.7.
+  Smallest J_δ over the grid: 14 (Λ̄_r = 1.00).
+  26 moments per shock: J ≈ 26 is a fit within one data SD on average.
+
+  Validation (Λ̄_r = 0.25, long sample, p = 1): u per unit of own impact
+shock    true peak     SVAR peak    gap
+-------  ------------  -----------  -----
+z        -7.03 (h 12)  -2.52 (h 4)  87 %
+delta    +0.29 (h 4)   +0.12 (h 2)  65 %
+s        +1.08 (h 2)   +0.98 (h 3)  32 %

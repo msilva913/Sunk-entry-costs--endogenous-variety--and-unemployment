@@ -880,18 +880,23 @@ if __name__ == "__main__":
             ax = axes[r_, c_]
             d = irf_df[(irf_df["filter"] == "hp") & (irf_df.shock == shk) & (irf_df.response == resp)]
             dh = irf_df[(irf_df["filter"] == "hamilton") & (irf_df.shock == shk) & (irf_df.response == resp)]
-            ax.plot(dh.h, dh.irf, color="#d62728", lw=1.4, ls="--", label="Hamilton")
-            ax.fill_between(d.h, d.q05, d.q95, color="#1f77b4", alpha=0.15, lw=0)
-            ax.fill_between(d.h, d.q16, d.q84, color="#1f77b4", alpha=0.30, lw=0)
-            ax.plot(d.h, d.irf, color="#1f77b4", lw=1.8)
+            ax.plot(dh.h, dh.irf, color="#d62728", lw=1.4, ls="--", label="Hamilton, point estimate")
+            ax.fill_between(d.h, d.q05, d.q95, color="#1f77b4", alpha=0.15, lw=0, label="HP, 90 % band")
+            ax.fill_between(d.h, d.q16, d.q84, color="#1f77b4", alpha=0.30, lw=0, label="HP, 68 % band")
+            ax.plot(d.h, d.irf, color="#1f77b4", lw=1.8, label="HP, point estimate")
             ax.axhline(0, color="black", lw=0.7)
-            ax.set_title(f"{shk} shock -> {resp}", fontsize=9)
+            ax.set_title(f"{LABEL[shk]} shock → {resp}", fontsize=9)
+            if c_ == 0:
+                ax.set_ylabel("log points × 100", fontsize=8)
             ax.grid(axis="y", lw=0.4, alpha=0.4)
     for ax in axes[-1]:
         ax.set_xlabel("Quarters", fontsize=8)
-    fig.suptitle(f"SVAR A ({BED_START}-{p6b.SAMPLE_END}, p = {p_bic}, order z, s, delta): one-SD shocks, "
-                 f"68 % and 90 % bootstrap bands", fontsize=10)
-    fig.tight_layout(rect=[0, 0, 1, 0.96])
+    # one legend below the panels; no title: the draft's caption describes the figure
+    handles, labels = axes[0, 0].get_legend_handles_labels()
+    order = [3, 2, 1, 0]                                    # point, 68 %, 90 %, Hamilton
+    fig.legend([handles[k] for k in order], [labels[k] for k in order], loc="lower center", ncol=4,
+               fontsize=8, frameon=False)
+    fig.tight_layout(rect=[0, 0.04, 1, 1])
     p6b._finish(fig, OUT_PNG)
     # ── console summary: the headline, last thing on screen ─────────────────
     print("\nHEADLINE (copy from ``` to ```; also in " + str(OUT_HEAD_TXT) + ")\n")

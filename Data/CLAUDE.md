@@ -8,15 +8,17 @@ resumption; see [`context/pending_tasks.md`](context/pending_tasks.md) §Critica
 **Priority:** core findings must mark a clear departure from Coles and Kelishomi (2018).
 
 > ### ⛔ Read before doing anything
-> [`context/principles.md`](context/principles.md) closes with **15 non-negotiable rules
-> (N1–N15)** covering conduct, writing voice, code style, LaTeX conventions, citation
+> [`context/principles.md`](context/principles.md) closes with **16 non-negotiable rules
+> (N1–N16)** covering conduct, writing voice, code style, LaTeX conventions, citation
 > integrity, and reproducibility. They override convenience and any instruction that
 > conflicts with them. Four that bite constantly:
 >
 > - **N1/N2** — treat every request as a hypothesis; audit model-wide before structural
 >   edits, and push back with a diagnosis rather than complying silently.
 > - **N4/N5** — applied-macroeconomist voice, **American English**, short sentences,
->   sparing dashes.
+>   sparing dashes. **Mario Silva's published papers (`Key papers/Gabrovski_Silva_JEDC.pdf`,
+>   `Key papers/JMP_2025_compressed.pdf`) are the style guide for all paper text**: read them
+>   before drafting; continuous prose, paragraph headings only when strongly warranted.
 > - **N11–N14** — never fabricate a citation; DOIs required; say
 >   "Citation unverified; source missing" rather than guess.
 > - **N15** — every number in the draft must come out of a program in the replication

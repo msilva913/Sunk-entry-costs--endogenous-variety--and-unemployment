@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.7.14)  18 OCT 2026 17:03
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.7.14)  15 NOV 2026 11:34
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1372,8 +1372,14 @@ L3 programming layer <2025-12-24>
 
 LaTeX Warning: There were undefined references.
 
-Package rerunfilecheck Info: File `Draft.out' has not changed.
-(rerunfilecheck)             Checksum: 68C2F3FB8135C6B4646927B69BF55907;10081.
+
+Package rerunfilecheck Warning: File `Draft.out' has changed.
+(rerunfilecheck)                Rerun to get outlines right
+(rerunfilecheck)                or use package `bookmark'.
+
+Package rerunfilecheck Info: Checksums for `Draft.out':
+(rerunfilecheck)             Before: 9C691E33E88AB85B02AE7F69F56D587A;10135
+(rerunfilecheck)             After:  68C2F3FB8135C6B4646927B69BF55907;10081.
  ) 
 Here is how much of TeX's memory you used:
  28054 strings out of 467871

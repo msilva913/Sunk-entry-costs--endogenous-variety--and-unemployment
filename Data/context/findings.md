@@ -1109,3 +1109,189 @@ Data (SVAR A): δ 3.0–4.3, z 7.40, s 3.9–4.5.
   - σ(v) 13.25 against 13.82, σ(θ)/σ(LP) 12.85 against 11.70, total σ(u) 7.63 against 9.65.
 - **cor(u,v) stays too weak** in every case, at −0.31 to −0.69 against −0.93.
 - **Implication:** the data favor slow or unpriced replacement of product lines together with elastic vacancy creation. Clone replacement is a device, so the structural question is which entry friction reproduces it. Entry congestion frees ν and weakens the R19 pin, but holds replacement back rather than making it instant and unpriced. The next test is congestion × ξ.
+
+## Gross-flow s and f against the duration-based series — Nov 19, 2026 (`part6f_gross_flows.py`, `q3_gross_flows_compare.txt`)
+
+**Data.** BLS CPS labor force status flows (LNS17000000–LNS17900000, February 1990–January 2025), fetched from DBnomics. The BLS site and its anonymous API are blocked from the container. Discrete monthly E→U and U→E probabilities, as quarterly means; s = (τ − δ)/(1 − δ) with the same splice.
+
+**Levels, 1992Q3–2019Q4:**
+
+| | τ | f | s | δ/τ |
+|---|---|---|---|---|
+| duration (Shimer) | 0.0258 | 0.361 | 0.0236 | 0.087 |
+| gross flows | 0.0134 | 0.252 | 0.0112 | **0.168** |
+
+**δ/τ doubles. This bears on the settled calibration target D1 (0.087); MS to decide.**
+
+**HP cycles:**
+- The new s is a different series. Its correlation with the old s is +0.46. It is more volatile (SD 7.4 against 4.8), more persistent (ρ1 0.74 against 0.45), and strongly countercyclical (corr with u +0.82 against +0.27). corr(s, f) is −0.71 against −0.04.
+- f barely changes (correlation 0.90).
+- The 1990 filter span is irrelevant.
+
+**SVAR (z, s, δ, u, v, f), p = 1, one SD, HP:**
+- **The s response changes.**
+  - u peaks *on impact* (+1.46, h 0), cumulative 5.5 (old 10.6), and is back to 0 by h 8.
+  - v falls on impact (−1.04, 90 % [−1.53, −0.48]; old −0.23, not significant).
+  - f on impact is −0.05 (old +1.08).
+- **The impact matching-efficiency residual** f − 0.4(v − u) falls from +1.51 [1.08, 1.84] to +0.95 [0.59, 1.24]. It is smaller, but still significant.
+- **δ → u is unchanged:** +1.58 (h 3), cumulative 11.8 (old +1.56 at h 4, 11.6). z → u is slightly larger.
+- **Under HP the δ–s contrast reappears:** s is front-loaded (peak h 0, cumulative 5.5), while δ builds (peak h 3, cumulative 11.8).
+
+**Hamilton:**
+- s → u is persistent under both measures: cumulative 28.7 (new) against 18.1 for δ.
+- The residual falls from +2.58 to +1.59 [0.60, 2.46].
+
+**Reading.**
+- The duration-based s is a poor measure of separations into unemployment: weakly cyclical, and confounded by inflows from non-participation (Fujita–Ramey 2009, p. 420).
+- With E→U, the s responses look much more like the model at low reactivation: v falls on impact, and u is front-loaded.
+- The leftover impact residual is consistent with composition: newly unemployed workers find jobs faster than the average unemployed worker. Recall is the other candidate. Both are untested, and a model with homogeneous unemployed workers cannot produce either.
+
+## s–f residual correlation: the measurement check — Nov 19, 2026 (`q3_s_jf_residuals.txt`)
+
+**Test.** Reduced-form VAR(1) (z, s, δ, u, v, f). The model side uses the `ags_svar_filters.jl` windows: default calibration, Λ̄_r from 1 to 0.03, 200 windows each.
+
+| | corr(s, f) HP | corr(s, v) HP | corr(s, f) Hamilton | corr(s, v) Hamilton |
+|---|---|---|---|---|
+| data | +0.28 | −0.10 | +0.13 | −0.32 |
+| model, Λ̄_r 1 → 0.03 | +0.86 → −0.40 | +0.88 → +0.64 | +0.35 → −0.08 | +0.63 → +0.36 |
+
+- **The check is not decisive.** Reactivation alone makes the model's s–f correlation positive, because reposted positions raise job finding in the same quarter. The data's +0.28 lies within the model's range at Λ̄_r ≈ 0.5. So the shared-measurement hypothesis is neither supported nor rejected.
+- **The sharper diagnostic is the matching function.** On impact of the data's s shock:
+  - v falls (−0.23) and u rises (+0.85), so θ falls about 1.1 %;
+  - yet f rises (+1.08);
+  - with η_L = 0.6, implied matching efficiency rises about 1.5 % (my arithmetic).
+
+  No model with a stable aggregate matching function reproduces job finding rising while tightness falls. In the model, f rises after s only if v rises, which is the reposting channel, and the data rule that out.
+- **Candidate explanations:** shared measurement in u^s; recall of laid-off workers without a vacancy (citation unverified); and the confounding of E→U with NILF→U flows in duration-based data. On the last, Fujita–Ramey (2009, IER, p. 420): "In the duration data, these flows are confounded with flows between NILF and unemployment, leading to less reliable measures of separation and job finding rates." All three point to rebuilding s and f from CPS gross flows (E→U, U→E), as Fujita–Ramey (2009) do, with a margin-error correction following Abowd–Zellner.
+
+## AGS estimated on the z and s responses, HP — Nov 19, 2026 (`ags_estimate.jl`, D18)
+
+**Search.** 12-point grid over (σ, Λ̄_r), then Nelder–Mead from the two best points: 486 evaluations, R = 50, about 0.2 s each.
+
+**Final.** R = 200 at the best point (`ags_estimate_final_hp.csv`, `ags_estimate_irf_hp.csv`).
+
+**Estimates.** Three of five are at their bounds; sandwich standard errors are not meaningful there and were not computed.
+- **σ = 4.0 (upper bound), ξ = 0.25 (lower bound), b/w = 0.97 (upper bound).**
+- x_v = 0.13, Λ̄_r = 0.50 (implied ϕ = 0.26).
+
+The search pushes toward as much amplification as the bounds allow.
+
+**Fit, 39 moments per shock** (default calibration in parentheses):
+- **J_z = 67 (151).** The u response is about half the data's at h 4 (−1.38 against −2.38); v and f fit well.
+- **J_s = 159 (163): barely improved.** The misfit is concentrated at impact:
+  - v *rises* on impact in the model (+1.16 against −0.23), because vacated positions are reposted;
+  - f is flat on impact in the model (−0.05) but rises in the data (+1.08);
+  - u overshoots at h 1 (3.04 against 1.29).
+- **J_δ = 172, p = 0.000** (no simulated window reaches the data's distance). At the estimates, u peaks at +0.38 (h 1) against +1.56 (h 4). **The held-out δ test rejects decisively under HP.**
+
+**A measurement hypothesis for the s misfit (untested).** Shimer's method builds both s and f from short-term unemployment u^s_{t+1}: f_t = 1 − (u_{t+1} − u^s_{t+1})/u_t (`observables.py`). Noise in u^s therefore moves measured s and measured f in the same direction. That would produce the data's positive impact of s on f mechanically, and the model has no counterpart.
+
+**Next:**
+- check the s–f residual correlation;
+- the Hamilton estimation.
+
+## The overidentifying test through SVAR A under HP and Hamilton — Nov 19, 2026 (`q3_model_svar_filters.txt`)
+
+Reactivation grid (Λ̄_r from 1 to 0.03), default calibration. Shock processes are matched per filter on SVAR A's window (`part6e`):
+- under Hamilton: δ ρ_m 0.892, s 0.875, z capped at 0.999 (not attained);
+- under HP: δ 0.532, s 0.752, z 0.941.
+
+J has 26 moments per shock (≈ 26 is a good fit) and uses data SDs from the same filter.
+
+| | HP: J_s range (best Λ̄_r) | HP: J_δ at that Λ̄_r; δ→u cum (data) | Hamilton: J_s range (best Λ̄_r) | Hamilton: J_δ at that Λ̄_r; δ→u cum (data) | Hamilton: J_δ at Λ̄_r = 1 |
+|---|---|---|---|---|---|
+| | 103–441 (0.10) | **106**; 1.1 (10.8) | 110–379 (0.25) | **34**; 3.4 (21.4) | 14; 8.9, peak h 4 |
+
+**HP: the puzzle stands.** J_δ is 99–106 at every reactivation rate, and the δ response peaks at h 1.
+
+**But s is badly fitted at every reactivation rate under both filters** (J_s ≥ 103). The model's s response is too large and front-loaded: under Hamilton it peaks at h 2 with 4.8 against the data's h 5 with 2.5. The reactivation rate is therefore weakly identified, and the overidentification argument is weakened.
+
+**Hamilton: the δ test does not reject.** J_δ is 14–36. Two reasons:
+1. The data bands are wide (T = 99).
+2. The Hamilton-matched δ process is persistent (half-life 6 months). The model then produces a hump (at Λ̄_r = 1, peak at h 4), although it is 2.5–6 times too small in cumulative terms.
+
+**Validation** (long sample against the true responses, Λ̄_r = 0.25). Gaps are HP / Hamilton:
+- z: 82 % / 87 %;
+- δ: 51 % / 65 %;
+- s: 51 % / 32 %.
+
+So Hamilton with 1 lag does not recover persistence better than HP, except for s. (The Nov 19 expectation that it would was wrong.)
+
+**Implication.** How strong the puzzle looks depends on the filter, through the persistence of the δ process (HP: one month; Hamilton: six) and through data precision. A single AR(1) fits neither filter (part6d). The coherent test uses one process that fits both filters: the two-component δ and s as real shocks (interpretation (b)), with z's single AR(1) at 0.989. Then HP and Hamilton differ only as summary statistics.
+
+## The δ–s contrast under HP and Hamilton — Nov 19, 2026 (`q3_filter_contrast.py`, data only)
+
+SVAR A, p = 1, one-SD shocks. Contrasts are δ minus s, computed draw by draw (1,000 bootstrap draws). "HP, 1995Q2" isolates the sample effect.
+
+| | δ: u peak, h8/peak, outflow share | s: u peak, h8/peak, outflow share | peak quarter δ−s [90 %] | h8/peak δ−s [90 %] | outflow share δ−s [90 %] |
+|---|---|---|---|---|---|
+| HP, 1992Q3 | +1.41 (h 4), 0.56, 85 % | +1.54 (h 2), 0.31, 63 % | +2 [−1, +3] | +0.25 [−0.15, +0.62] | **+0.22 [+0.06, +0.67]** |
+| HP, 1995Q2 | +1.46 (h 3), 0.45, 91 % | +1.66 (h 2), 0.29, 68 % | +1 [−1, +3] | +0.17 [−0.23, +0.58] | **+0.23 [+0.08, +0.75]** |
+| Hamilton, 1995Q2 | +2.18 (h 5), 0.88, 61 % | +2.50 (h 5), 0.87, 72 % | 0 [−4, +8] | +0.01 [−0.79, +0.59] | −0.10 [−0.67, +1.10] |
+
+- **Timing and persistence:** not significant even under HP. P(δ peaks later) is 0.73, and the peak-quarter difference is 0 at p = 2. Absent under Hamilton.
+- **"A separation shock acts sooner and fades sooner" (draft) is not supported.**
+- **Composition** (δ works more through job finding): significant under HP, robust to the sample and to p = 2. Absent under Hamilton (point estimate reversed, very wide bands).
+- **Cumulative u per one SD is about equal for δ and s under both filters** (HP 10.8 vs 10.2; Hamilton 21.4 vs 26.7). Under Hamilton, both responses are persistent and humped (peak h 5).
+- **Sample:** the 11 quarters lost to Hamilton do not matter; the filter does.
+- **Reading:** the paper's δ-specific claim cannot rest on a data contrast between δ and s. It can rest on the overidentification test, which does not need one: the reactivation rate that fits the s responses, which are persistent under Hamilton as in CK, still leaves the model's δ response short. That requires the model-side comparison under Hamilton (not yet run).
+
+## Shock processes: one AR(1) does not fit both filters — Nov 19, 2026 (`part6d_shock_components.py`)
+
+**The test.**
+- part6b's filter-consistent matching (Step 4b; `shock_calibration.txt` §8) gives very different monthly AR(1)s under HP and under Hamilton. Half-lives: δ 1.1 vs 6.1 months, s 3.2 vs 7.1, z 18 months vs unattainable.
+- part6d fits one process to both filters at once:
+  - a persistent AR(1) plus independent monthly noise;
+  - 4 targets (ρ_Q and σ_Q under each filter), 3 parameters, 500 replications, simulation exactly as in Step 4b.
+
+**Results.** Distance: smaller is a better fit; 0 is exact.
+
+| series | single AR(1) fitting both filters | AR(1) + noise | persistent component's half-life | monthly noise share w |
+|---|---|---|---|---|
+| z | 0.0007 (ρ_m 0.989) | no noise needed | 63 months | 0 |
+| δ | 0.111 (ρ_m 0.75) | 0.024 | 36–230 months (profile flat for w = 0.1–0.4) | 0.1–0.4 |
+| s | 0.027 (ρ_m 0.875) | 0.0003 | 30 months | 0.20 |
+
+**Reading.**
+- **δ:** measured BED deaths look like a very persistent component plus a large short-lived one. The short-lived part dominates the HP cycle, which is why the HP-matched half-life is about one month.
+  - **"A short-lived rise in establishment deaths" (abstract, introduction) is therefore an HP-specific description and is at risk.**
+  - The persistent half-life is poorly identified (3 to 19 years), and the fit is imperfect (ρ_Q HP 0.28 against 0.20; Hamilton 0.64 against 0.74). δ's targets come from the (z, δ) VAR and are treated as univariate here.
+- **s:** clearly AR(1) plus noise, with a persistent component of about 2.5 years. s has been fed to the model with a half-life of 3 months. That process identifies Λ̄_r, so the reactivation argument must be rechecked with the component process.
+- **z:** a single AR(1) fits both filters, but it is more persistent (0.989) than the HP-only match (0.963).
+
+**No reference distribution yet.** There is no bootstrap, so a distance has no significance level.
+
+**Interpretation (a) tested, Nov 19** (`ags_svar_components.jl`, `q3_model_svar_components.txt`).
+- **Setup:** default calibration. The economy's δ is the persistent component (half-life 36–231 months across noise shares w = 0.1–0.4). The noise is added to measured δ only; z and s are unchanged.
+- **SVAR δ → u:** the peak is +0.21 to +0.23 at h 1 (baseline +0.39 at h 1, data +1.41 at h 4). The cumulative response is 0.6 (baseline 1.1, data 10.8). J_δ is 120–122 (baseline 103). **The fit is worse, and there is still no hump.**
+- **True response of u to the persistent δ** (not filtered, no noise): large, and it keeps rising through h 12 (per 1 % of δ on impact, +43 at h 4 and +52 to +67 at h 12).
+  - SVAR A on model data recovers almost none of it, because the identified δ innovation is mostly noise, which the economy ignores.
+  - Even this true response rises steadily rather than peaking at h 4 and returning, as the data do.
+- **Reading:** under (a), the identified δ shock would be mostly noise, and its response would be small. The data's large response to the δ innovation therefore argues that the short-lived part of measured δ is real destruction (interpretation (b)), or that the persistent part's share is larger than part6d's fit. In either case the measurement-noise reading does not dissolve the puzzle.
+- **Remaining:** (b), a real short-lived δ plus a persistent δ in the model. Expected near the baseline, since the short-lived part reproduces today's δ, but not run.
+
+**Then:** (b), a two-component δ in the model, if needed.
+
+## Persistence of δ: mechanisms tested and identification checks — Nov 10–15, 2026 (branch `d15_ags_finance`)
+
+Details and tables: [`../Notes/ags_equilibrium.md`](../Notes/ags_equilibrium.md) §10.7–10.8 (model) and [`../Notes/q3_data_svar_empirics.md`](../Notes/q3_data_svar_empirics.md) §2.2e–2.2h (data). The common diagnosis: **AGS gets the impact of δ right (u +0.35 at h 0 in data and model, through the SVAR) but not the propagation** (data peak +1.41 at h 4, cumulative 10.8 over h 0–12; model peak +0.39 at h 1, cumulative about 0.8).
+
+**Mechanisms ruled out or failed.**
+- **Variety channel in the full model** (`Q2_full_channels.txt`): N moves −0.02 to −0.04 % after a one-SD δ shock; w_int −0.01 %. Negligible.
+- **Intermediate inputs / input variety** (discussion Nov 11; Basu 1995 read, no variety in it): labor productivity does not fall after δ in the data (SVAR A, ad hoc: +0.05 to +0.10, 90 % band above zero at h 5–11), and N moves too little without endogenous exit.
+- **Financial friction in AGS** (`ags_finance_irf.txt`, Nov 15): δ → u unchanged (peak +0.27 at q1 at every κ_d); the premium falls after δ (−1 bp) because profits, levered by the 3.5 % margin, raise funds by ten times what destruction removes. Amplifies z by 15–30 %, shortens s. Fails the δ criteria agreed Nov 15.
+- **Hall–Milgrom credible bargaining** (discussion Nov 15): amplification through the fundamental surplus, spanned by the κ grid to first order; adds no state; would deepen the job-finding fall after s. Ags_equilibrium §10.9.
+- **Diminishing returns** (Nov 15): with a surviving fixed factor it stabilizes (speeds recovery, damps z); with N as the fixed factor it needs N to move, and N moves −0.02 to −0.04 %; it also predicts the fall in output per worker that the data reject.
+- **Goods-market frictions, Petrosky-Nadeau and Wasmer (2015, JME, doi:10.1016/j.jmoneco.2015.01.006), read Nov 15:** persistence comes from goods tightness ξ = C₀/N_g and bargained prices. After δ, freed customers raise ξ, so the firm meeting rate and the price rise and hiring recovers faster: wrong sign. s also ends the customer match in their model. Household side ad hoc (no saving, linear utility, numeraire from nowhere). Not viable for δ or s.
+- **Unemployment-risk channel, Broer et al. (2025, IER, doi:10.1111/iere.12773), read Nov 15:** zero-liquidity HANK-SAM; endogenous separations, no separation shocks; smooth LPs, no SVAR, no LPs on simulated data. URC 35 % of var(u) against 20 % in DMP. It adds no state, and it is blind to whether job loss destroys the position, so it amplifies front-loaded s risk more than δ. Not a δ mechanism. Useful for framing: they list "a distinction between separations and job destruction" as future work.
+- **Low reactivation rate** (exploratory true-shock check, scratch `lam_check.jl`; not draft-bound): Λ̄_r from 1 to 0.03 makes s persistent and Beveridge-consistent (Coles–Kelishomi nested) and leaves δ unchanged (peak 0.26–0.29 at q1). Λ̄_r = 0.25 is a working value, not measured; the "s retires 5–8× as many positions as δ destroys" argument holds for Λ̄_r ≲ 0.83–0.9 only.
+
+**Coles and Kelishomi (2018), read Nov 15:** one separation shock with every separation destroying the job (δ_e ≡ τ), quarterly persistence 0.73, inelastic creation (ξ = 0.265); they match the unconditional ρ(u) = 0.95 (0.94 data; free entry 0.88). They do not test persistence by shock type.
+
+**Identification of the δ shock (data).**
+- δ is not mainly a financial or demand shock: innovation correlations with EBP +0.05, NFCI +0.13, CU −0.30; z and s explain 7 % of the δ innovation.
+- δ → u net of controls (HP, p = 1, peak at h 4): EBP 1.01, CU 1.25, both 1.03, against 1.41 in A. Hamilton with both controls: flattened (wide bands).
+- δ → EBP: +4 to +8 bp at h 1–2 (90 % excludes zero only at p = 4). δ → CU: −0.48 at h 2 (significant); about half of δ → u runs through CU (imprecise). Suggests propagation through demand; a lead, not a finding. **Qualified Nov 15:** s lowers CU as much and sooner (−0.58 at h 1; cumulative h 0–12 −1.76 against δ's −2.08; `q3_delta_cu.txt` section 2), so the CU fall is not specific to δ and cannot explain why u stays high longer after δ.
+- Uncontrolled: same-quarter demand outside industry and spreads; the Bartik QU placebo failure (demand contamination signature) is unresolved.
+
+**z is measured productivity, not technology.** Silva and Urias (2025, Economic Modelling 153, 107317, Table 4): shopping-effort shocks explain 46 % of the Solow residual's variance. Orthogonalizing z to same-quarter utilization (`q3_z_purged.py`) lowers cum z → u per unit of z by 13 % (p = 1) to about 40 % (p = 4) and halves z's FEVD of u (34–37 → 14–19 %); CU is the largest source of var(u) (33–48 %). The model is still 2.8–4.4× short cumulatively against the orthogonalized target, mostly in persistence.

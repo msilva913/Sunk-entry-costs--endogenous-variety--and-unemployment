@@ -11,7 +11,7 @@ status notes to whichever file was open rather than the file that owns the topic
 
 | File | Owns | Does **not** own |
 |---|---|---|
-| [`principles.md`](principles.md) | Standing rules (1–21) **and the non-negotiable rules N1–N15** that constrain every choice | Anything provisional — that is a decision |
+| [`principles.md`](principles.md) | Standing rules (1–21) **and the non-negotiable rules N1–N16** that constrain every choice | Anything provisional — that is a decision |
 | [`decisions.md`](decisions.md) | Open decisions D2, D3, D4, D10, D11, D12 (venue / theory-first pivot); settled D1, D5–D7, S1–S12 (S10 timing, S11 X^r timing, S12 structure of `sec:mechanism`), each with reasons | Tasks. A decision is a choice; a task is work |
 | [`pending_tasks.md`](pending_tasks.md) | Actionable work, ordered; the critical path | Decisions, results, draft status |
 | [`estimation_design.md`](estimation_design.md) | How Blocks M and B combine; what is missing to run it; build order | Empirical results |

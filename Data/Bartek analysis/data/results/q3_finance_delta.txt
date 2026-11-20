@@ -1,0 +1,62 @@
+==============================================================================
+Do financial shocks move delta? (q3_finance_delta.py)
+==============================================================================
+q3_finance_delta.py -- do financial shocks move delta, and how much of delta's effect survives them?
+
+HP sample 1992Q3-2019Q4, T = 110; Hamilton 1995Q2-2019Q4, T = 99. Bands: residual bootstrap, 1000 draws; [68 %].
+
+------------------------------------------------------------------------------
+1. Do financial shocks move delta? One-SD F shock -> delta (log points × 100)
+------------------------------------------------------------------------------
+  corr: correlation of the F and delta innovations (the impact link, independent of the
+  ordering's direction). peak: largest |response| and its quarter [68 %, 90 % at that quarter].
+
+spec                   F          corr    impact    peak          68 %            90 %            cum 0–12
+---------------------  ---------  ------  --------  ------------  --------------  --------------  ----------
+HP, p = 1 (BIC)        ebp        +0.05   +0.09     +1.37 (h 1)   [+0.87, +1.74]  [+0.62, +2.04]  +1.1
+HP, p = 4              ebp        +0.07   +0.15     +1.22 (h 2)   [+0.57, +1.43]  [+0.24, +1.71]  -1.1
+HP, p = 1 (BIC)        gz_spread  +0.12   +0.39     +1.27 (h 1)   [+0.69, +1.64]  [+0.42, +1.98]  +1.1
+HP, p = 4              gz_spread  +0.12   +0.30     +1.03 (h 2)   [+0.39, +1.27]  [+0.08, +1.60]  -1.3
+HP, p = 1 (BIC)        nfci       +0.13   +0.48     +1.08 (h 1)   [+0.51, +1.42]  [+0.26, +1.79]  +1.7
+HP, p = 4              nfci       +0.13   +0.33     +0.76 (h 3)   [+0.21, +1.05]  [-0.13, +1.34]  -1.1
+HP, p = 1 (BIC)        anfci      +0.10   +0.34     +1.02 (h 1)   [+0.47, +1.39]  [+0.25, +1.70]  +1.9
+HP, p = 4              anfci      +0.09   +0.16     +0.84 (h 3)   [+0.31, +1.14]  [-0.03, +1.45]  -1.1
+Hamilton, p = 1 (BIC)  ebp        +0.13   +0.42     -1.86 (h 11)  [-2.11, -0.89]  [-2.58, -0.55]  -7.2
+
+  For scale: a one-SD delta shock raises delta by about 5.2 on impact (SVAR A).
+
+------------------------------------------------------------------------------
+2. delta's effect on u and v, net of financial conditions
+------------------------------------------------------------------------------
+  peak and cum (h = 0–12) of delta -> u in this SVAR and in SVAR A (same window and lag);
+  absorbed = 1 − cum/cum_A, % [68 %]; FEVD: delta's share of var(u) at 4q and 8q, this SVAR /
+  SVAR A, and F's own share.
+
+spec                   F          δ→u peak      A peak       cum / cum_A    absorbed u    absorbed v    FEVD δ 4q 8q    FEVD F
+---------------------  ---------  ------------  -----------  -------------  ------------  ------------  --------------  --------
+HP, p = 1 (BIC)        ebp        +1.01 (h 4)   +1.41 (h 4)  +8.2 / +10.8   24 [-5, 46]   24 [-7, 48]   6/11 7/12       34 59
+HP, p = 4              ebp        +1.42 (h 4)   +1.86 (h 4)  +10.2 / +11.0  7 [-33, 44]   10 [-43, 65]  9/12 9/13       30 44
+HP, p = 1 (BIC)        gz_spread  +0.91 (h 4)   +1.41 (h 4)  +7.1 / +10.8   34 [3, 57]    35 [4, 61]    5/11 5/12       38 60
+HP, p = 4              gz_spread  +1.39 (h 4)   +1.86 (h 4)  +9.0 / +11.0   18 [-23, 49]  28 [-32, 73]  8/12 8/13       28 40
+HP, p = 1 (BIC)        nfci       +0.97 (h 3)   +1.41 (h 4)  +7.0 / +10.8   36 [9, 58]    38 [9, 61]    7/11 6/12       24 43
+HP, p = 4              nfci       +1.55 (h 4)   +1.86 (h 4)  +9.2 / +11.0   16 [-12, 46]  27 [-22, 65]  10/12 10/13     11 17
+HP, p = 1 (BIC)        anfci      +0.99 (h 3)   +1.41 (h 4)  +6.8 / +10.8   37 [10, 58]   40 [11, 64]   7/11 6/12       19 40
+HP, p = 4              anfci      +1.61 (h 4)   +1.86 (h 4)  +9.6 / +11.0   12 [-13, 43]  22 [-24, 60]  10/12 11/13     8 15
+Hamilton, p = 1 (BIC)  ebp        +1.37 (h 11)  +2.18 (h 5)  +13.9 / +21.4  35 [-36, 74]  34 [-32, 82]  2/6 2/8         35 61
+
+------------------------------------------------------------------------------
+3. How much of a financial shock's effect on u runs through delta?
+------------------------------------------------------------------------------
+  F -> u: peak and cum (h = 0–12); with delta held at zero; share via delta = 1 − cf/full, % [68 %].
+
+spec                   F          F→u peak     cum full    cum δ fixed    share via δ
+---------------------  ---------  -----------  ----------  -------------  -------------
+HP, p = 1 (BIC)        ebp        +3.27 (h 5)  +24.7       +20.5          17 [5, 25]
+HP, p = 4              ebp        +3.28 (h 4)  +21.0       +17.2          18 [-2, 39]
+HP, p = 1 (BIC)        gz_spread  +3.30 (h 5)  +25.5       +21.7          15 [3, 23]
+HP, p = 4              gz_spread  +3.22 (h 5)  +20.4       +17.6          14 [-7, 33]
+HP, p = 1 (BIC)        nfci       +2.72 (h 5)  +22.3       +18.3          18 [4, 27]
+HP, p = 4              nfci       +2.17 (h 5)  +12.1       +10.3          15 [-19, 52]
+HP, p = 1 (BIC)        anfci      +2.60 (h 6)  +21.6       +17.5          19 [5, 29]
+HP, p = 4              anfci      +2.10 (h 5)  +12.0       +10.4          14 [-19, 49]
+Hamilton, p = 1 (BIC)  ebp        +6.78 (h 6)  +64.5       +64.3          0 [-7, 7]

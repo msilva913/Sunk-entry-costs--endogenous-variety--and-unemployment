@@ -180,7 +180,7 @@ monthly simulation `sim` (log deviations, columns `varnames`). Not filtered.
 - f = (1 − δ_t) A θ_t^(1−η), the gross job-finding rate (the data's jf);
 - δ: measured exit δ_e,t = δ_{t−1} (BED Deaths dates destruction one month later).
 """
-function model_quarterly(sim, cal)
+function model_quarterly(sim, cal; δ_noise = nothing)
     m = DataFrame()
     m.u = sim.u
     m.v = sim.v
@@ -189,6 +189,11 @@ function model_quarterly(sim, cal)
     m.s = sim.s
     m.f = log.(1 .- cal.δ .* exp.(sim.δ)) .- log(1 - cal.δ) .+ (1 - cal.η_L) .* sim.θ
     m.δ = vcat(0.0, sim.δ[1:end-1])
+    # Measurement noise in BED deaths (ags_svar_components.jl): monthly log points added to the
+    # measured series only, before quarterly averaging; the economy never sees it.
+    if δ_noise !== nothing
+        m.δ = m.δ .+ δ_noise
+    end
     return monthly_to_quarterly(m)
 end
 
